@@ -2,6 +2,10 @@
 
 Lython is an embeddable, contained-by-design Python runtime implemented in managed C# on .NET. It compiles a supported Python subset through a handwritten front-end and executes it through a pure managed interpreter, with file and path effects mediated by an async host-provided interface.
 
+```powershell
+dotnet add package Lokad.Lython
+```
+
 It is meant for the kind of Python a coding agent naturally writes when it needs to:
 
 - read and rewrite text files
