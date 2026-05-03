@@ -1,0 +1,186 @@
+using System.Numerics;
+using System.Reflection;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
+
+namespace Lokad.Lython.Tests;
+
+public sealed class CallBindingSubsystemTests
+{
+    private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
+
+    [Fact]
+    public void BindNamedArguments_CombinesPositionalKeywordAndOptionalTail()
+    {
+        var result = CallBinder.BindNamedArguments(
+            [
+                new CallArgumentValue(null, 1),
+                new CallArgumentValue("third", 3)
+            ],
+            Span,
+            "demo",
+            "Builtin",
+            ["first", "second", "third"],
+            requiredCount: 1);
+
+        Assert.Equal([1, (object)PyNone.Instance, 3], result);
+    }
+
+    [Fact]
+    public void BindNamedArguments_RejectsDuplicateKeywordBinding()
+    {
+        var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
+            [
+                new CallArgumentValue(null, 1),
+                new CallArgumentValue("first", 2)
+            ],
+            Span,
+            "demo",
+            "Builtin",
+            ["first"],
+            requiredCount: 1));
+
+        Assert.Equal("TypeError", ex.ExceptionType);
+        Assert.Contains("multiple values", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BindNamedArguments_RejectsUnexpectedKeyword()
+    {
+        var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
+            [new CallArgumentValue("nope", 1)],
+            Span,
+            "demo",
+            "Method",
+            ["value"],
+            requiredCount: 1));
+
+        Assert.Equal("TypeError", ex.ExceptionType);
+        Assert.Contains("unexpected keyword", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BindNamedArguments_RejectsKeywordWhenParameterNamesAreMissing()
+    {
+        var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
+            [new CallArgumentValue("value", 1)],
+            Span,
+            "demo",
+            "Builtin",
+            null,
+            requiredCount: 0));
+
+        Assert.Equal("TypeError", ex.ExceptionType);
+        Assert.Contains("does not accept keyword arguments", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        context.Variables["items"] = new PyList([new BigInteger(1), new BigInteger(2)]);
+        var mapping = new PyDict();
+        mapping.SetItem(PyString.FromString("name"), PyString.FromString("lokad"));
+        context.Variables["mapping"] = mapping;
+
+        var raw = CallExpansion.ExpandRawArguments(
+            [
+                new CallArgumentSyntax(null, new StringLiteralExpressionSyntax("head", Span)),
+                new CallArgumentSyntax(null, new IdentifierExpressionSyntax("items", Span), CallArgumentKind.StarredList),
+                new CallArgumentSyntax(null, new IdentifierExpressionSyntax("mapping", Span), CallArgumentKind.StarredDictionary),
+            ],
+            context,
+            InvokeEvaluateExpression);
+
+        var lowered = CallExpansion.ExpandLoweredArguments(
+            [
+                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new StringLiteralExpressionSyntax("head", Span))),
+                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("items", Span)), CallArgumentKind.StarredList),
+                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)), CallArgumentKind.StarredDictionary),
+            ],
+            context,
+            InvokeEvaluateLoweredExpression);
+
+        Assert.Equal(raw, lowered);
+    }
+
+    [Fact]
+    public void CallExpansion_RejectsNonStringDictionaryKeysForRawAndLoweredCalls()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        var mapping = new PyDict();
+        mapping.SetItem(new BigInteger(1), PyString.FromString("bad"));
+        context.Variables["mapping"] = mapping;
+
+        var rawEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandRawArguments(
+            [new CallArgumentSyntax(null, new IdentifierExpressionSyntax("mapping", Span), CallArgumentKind.StarredDictionary)],
+            context,
+            InvokeEvaluateExpression));
+
+        var loweredEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandLoweredArguments(
+            [new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)), CallArgumentKind.StarredDictionary)],
+            context,
+            InvokeEvaluateLoweredExpression));
+
+        Assert.Equal("TypeError", rawEx.ExceptionType);
+        Assert.Equal(rawEx.ExceptionType, loweredEx.ExceptionType);
+        Assert.Equal(rawEx.Message, loweredEx.Message);
+    }
+
+    [Fact]
+    public void KeywordOnlyParameters_RejectMissingKeywordOnlyArgument()
+    {
+        var result = new LythonEngine().Run(
+            """
+def f(*args, name):
+    return name
+
+f("a")
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Contains("name", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void KeywordOnlyParameters_RejectUnexpectedPositionalBinding()
+    {
+        var result = new LythonEngine().Run(
+            """
+def f(*, name):
+    return name
+
+f("a")
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        if (result.Failure is null)
+        {
+            Assert.Contains(result.Diagnostics, d => d.Code == "LA3148");
+            Assert.Contains(result.Diagnostics, d => d.Message.Contains("too many positional arguments", StringComparison.Ordinal));
+        }
+        else
+        {
+            Assert.Equal("TypeError", result.Failure.ExceptionType);
+            Assert.Contains("positional", result.Failure.Message, StringComparison.Ordinal);
+        }
+    }
+
+    private static object InvokeEvaluateExpression(ExpressionSyntax expression, LythonRuntime.ExecutionContext context)
+    {
+        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
+        return method.Invoke(null, [expression, context])!;
+    }
+
+    private static object InvokeEvaluateLoweredExpression(LoweredExpression expression, LythonRuntime.ExecutionContext context)
+    {
+        var method = typeof(LythonRuntime).GetMethod("EvaluateLoweredExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
+        return method.Invoke(null, [expression, context])!;
+    }
+}

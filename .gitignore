@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+TestResults/
+BenchmarkDotNet.Artifacts/
+external/
+
+*.nupkg
+*.snupkg
+*.nettrace
+*.nettrace.etlx
+*.gcdump
+
+.claude/
+tmp/

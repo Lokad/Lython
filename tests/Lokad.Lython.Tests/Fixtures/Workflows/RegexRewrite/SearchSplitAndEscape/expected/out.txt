@@ -1,0 +1,8 @@
+beta
+6
+10
+True
+True
+2
+beta
+a\.b

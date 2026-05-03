@@ -1,0 +1,2 @@
+with resource:
+    pass

@@ -1,0 +1,14 @@
+False
+True
+42
+2.5
+[1, 2]
+(3, 4)
+{'k': 5}
+hello
+hello  
+  hello
+2
+A-3
+\n
+beta

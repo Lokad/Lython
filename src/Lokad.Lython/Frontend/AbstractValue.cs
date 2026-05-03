@@ -1,0 +1,648 @@
+namespace Lokad.Lython.Frontend;
+
+internal enum AbstractValueKind
+{
+    Unknown,
+    Never,
+    String,
+    StringType,
+    Bytes,
+    BytesType,
+    Integer,
+    IntegerType,
+    Float,
+    FloatType,
+    Boolean,
+    BooleanType,
+    None,
+    List,
+    ListType,
+    Tuple,
+    Dict,
+    Set,
+    Path,
+    TextFileHandle,
+    Module,
+    KnownCallable,
+    RegexPattern,
+    MaybeRegexMatch,
+    RegexMatch,
+    ArgparseParser,
+    ArgparseMutuallyExclusiveGroup,
+    ArgparseNamespace,
+    CsvWriter,
+    SubprocessCompletedProcess,
+    DataclassField,
+    Function,
+    UserClass,
+    UserInstance,
+}
+
+internal enum AbstractTextFileMode
+{
+    Unknown,
+    Read,
+    Write,
+    Append,
+}
+
+internal sealed record AbstractFunctionSummary(
+    IReadOnlyList<FunctionParameterSyntax> Parameters,
+    IReadOnlyList<StatementSyntax> Body,
+    AbstractState CapturedBindings,
+    LythonSourceSpan Span);
+
+internal sealed record AbstractArgparseParserSummary(
+    IReadOnlyDictionary<string, AbstractValue> Members,
+    bool IsSealed);
+
+internal sealed record AbstractArgparseNamespaceSummary(
+    IReadOnlyDictionary<string, AbstractValue> Members,
+    bool IsSealed);
+
+internal sealed record AbstractArgparseGroupSummary(
+    string ParserName);
+
+internal sealed record AbstractRegexPatternSummary(
+    string? PatternText,
+    int? CaptureSlotCount,
+    IReadOnlyDictionary<string, int> NamedGroups);
+
+internal sealed record AbstractRegexMatchSummary(
+    int? CaptureSlotCount,
+    IReadOnlyDictionary<string, int> NamedGroups);
+
+internal sealed record AbstractClassSummary(
+    string Name,
+    IReadOnlyList<AbstractClassFieldSummary> Fields,
+    IReadOnlyDictionary<string, AbstractFunctionSummary> Methods,
+    bool IsDataclass,
+    LythonSourceSpan Span);
+
+internal readonly record struct AbstractClassFieldSummary(
+    string Name,
+    AbstractValue DefaultValue,
+    bool HasDefault,
+    bool IncludeInInit,
+    bool KeywordOnly,
+    bool StoreOnInstance,
+    LythonSourceSpan Span);
+
+internal sealed record AbstractInstanceSummary(
+    AbstractClassSummary Class,
+    IReadOnlyDictionary<string, AbstractValue> Fields,
+    LythonSourceSpan Span);
+
+internal sealed record AbstractDataclassFieldSummary(
+    string Name,
+    LythonSourceSpan Span);
+
+internal readonly record struct AbstractValue(
+    AbstractValueKind Kind,
+    object Value,
+    LythonSourceSpan Span)
+{
+    private static readonly LythonSourceSpan SyntheticSpan = new(0, 0, 0, 0);
+
+    public static AbstractValue Unknown() => Unknown(SyntheticSpan);
+    public static AbstractValue Unknown(LythonSourceSpan span) => new(AbstractValueKind.Unknown, "unknown", span);
+    public static AbstractValue Never() => Never(SyntheticSpan);
+    public static AbstractValue Never(LythonSourceSpan span) => new(AbstractValueKind.Never, "never", span);
+    public static AbstractValue String(string value, LythonSourceSpan span) => new(AbstractValueKind.String, value, span);
+    public static AbstractValue StringType(LythonSourceSpan span) => new(AbstractValueKind.StringType, "str", span);
+    public static AbstractValue Bytes(byte[] value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, value, span);
+    public static AbstractValue BytesType(LythonSourceSpan span) => new(AbstractValueKind.BytesType, "bytes", span);
+    public static AbstractValue Integer(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Integer, valueText, span);
+    public static AbstractValue IntegerType(LythonSourceSpan span) => new(AbstractValueKind.IntegerType, "int", span);
+    public static AbstractValue Float(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Float, valueText, span);
+    public static AbstractValue FloatType(LythonSourceSpan span) => new(AbstractValueKind.FloatType, "float", span);
+    public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, value, span);
+    public static AbstractValue BooleanType(LythonSourceSpan span) => new(AbstractValueKind.BooleanType, "bool", span);
+    public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, new object(), span);
+    public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, item, span);
+    public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, pairs, span);
+    public static AbstractValue Path(LythonSourceSpan span) => new(AbstractValueKind.Path, "pathlib.Path", span);
+    public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, mode, span);
+    public static AbstractValue Module(string name, LythonSourceSpan span) => new(AbstractValueKind.Module, name, span);
+    public static AbstractValue KnownCallable(string targetName, LythonSourceSpan span) => new(AbstractValueKind.KnownCallable, targetName, span);
+    public static AbstractValue RegexPattern(LythonSourceSpan span) => RegexPattern(CreateUnknownRegexPatternSummary(), span);
+    public static AbstractValue RegexPattern(AbstractRegexPatternSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexPattern, summary, span);
+    public static AbstractValue MaybeRegexMatch(LythonSourceSpan span) => MaybeRegexMatch(CreateUnknownRegexMatchSummary(), span);
+    public static AbstractValue MaybeRegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.MaybeRegexMatch, summary, span);
+    public static AbstractValue RegexMatch(LythonSourceSpan span) => RegexMatch(CreateUnknownRegexMatchSummary(), span);
+    public static AbstractValue RegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexMatch, summary, span);
+    public static AbstractValue ArgparseParser(LythonSourceSpan span) => ArgparseParser(new AbstractArgparseParserSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: true), span);
+    public static AbstractValue ArgparseParser(AbstractArgparseParserSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseParser, summary, span);
+    public static AbstractValue ArgparseMutuallyExclusiveGroup(LythonSourceSpan span) => ArgparseMutuallyExclusiveGroup(string.Empty, span);
+    public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new AbstractArgparseGroupSummary(parserName), span);
+    public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => ArgparseNamespace(new AbstractArgparseNamespaceSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: false), span);
+    public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, summary, span);
+    public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
+    public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
+    public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
+    public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span) => new(AbstractValueKind.Function, summary, span);
+    public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserClass, summary, span);
+    public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserInstance, summary, span);
+
+    public bool IsLiteralLike =>
+        Kind is AbstractValueKind.String or
+            AbstractValueKind.Bytes or
+            AbstractValueKind.Integer or
+            AbstractValueKind.Float or
+            AbstractValueKind.Boolean or
+            AbstractValueKind.None or
+            AbstractValueKind.List or
+            AbstractValueKind.Tuple or
+            AbstractValueKind.Dict or
+            AbstractValueKind.Set;
+
+    public bool IsStringLike => Kind is AbstractValueKind.String or AbstractValueKind.StringType;
+
+    public bool IsDefinitelyNonStringLike =>
+        Kind is not AbstractValueKind.Unknown and
+            not AbstractValueKind.Never and
+            not AbstractValueKind.String and
+            not AbstractValueKind.StringType;
+
+    public AbstractValue WithSpan(LythonSourceSpan span) => this with { Span = span };
+
+    public static AbstractValue Join(AbstractValue left, AbstractValue right)
+        => Join(left, right, left.Span);
+
+    public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        if (left.Kind == AbstractValueKind.Never)
+        {
+            return right.WithSpan(span);
+        }
+
+        if (right.Kind == AbstractValueKind.Never)
+        {
+            return left.WithSpan(span);
+        }
+
+        if (left.Kind == AbstractValueKind.Unknown || right.Kind == AbstractValueKind.Unknown)
+        {
+            return Unknown(span);
+        }
+
+        if (left.Kind == right.Kind)
+        {
+            return JoinSameKind(left, right, span);
+        }
+
+        if (left.IsStringLike && right.IsStringLike)
+        {
+            return StringType(span);
+        }
+
+        if (IsIntegerLike(left) && IsIntegerLike(right))
+        {
+            return IntegerType(span);
+        }
+
+        if (IsFloatLike(left) && IsFloatLike(right))
+        {
+            return FloatType(span);
+        }
+
+        if (IsBooleanLike(left) && IsBooleanLike(right))
+        {
+            return BooleanType(span);
+        }
+
+        if (IsBytesLike(left) && IsBytesLike(right))
+        {
+            return BytesType(span);
+        }
+
+        if (TryGetListElement(left, out var leftItem) && TryGetListElement(right, out var rightItem))
+        {
+            return ListOf(Join(leftItem, rightItem, span), span);
+        }
+
+        return Unknown(span);
+    }
+
+    private static AbstractValue JoinSameKind(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        return left.Kind switch
+        {
+            AbstractValueKind.String => Equals(left.Value, right.Value) ? left.WithSpan(span) : StringType(span),
+            AbstractValueKind.Bytes => ByteArraysEqual((byte[])left.Value, (byte[])right.Value) ? left.WithSpan(span) : BytesType(span),
+            AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
+            AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
+            AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
+            AbstractValueKind.List => JoinLiteralLists(left, right, span),
+            AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+            AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
+            AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes((AbstractTextFileMode)left.Value, (AbstractTextFileMode)right.Value), span),
+            AbstractValueKind.Module => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+            AbstractValueKind.KnownCallable => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+            AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
+            AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
+            AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
+            AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries((AbstractArgparseParserSummary)left.Value, (AbstractArgparseParserSummary)right.Value, span), span),
+            AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries((AbstractArgparseNamespaceSummary)left.Value, (AbstractArgparseNamespaceSummary)right.Value, span), span),
+            AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
+            AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
+            AbstractValueKind.Function => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+            AbstractValueKind.UserClass => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+            AbstractValueKind.UserInstance => JoinUserInstances(left, right, span),
+            _ => left.WithSpan(span)
+        };
+    }
+
+    private static AbstractArgparseParserSummary JoinArgparseParserSummaries(
+        AbstractArgparseParserSummary left,
+        AbstractArgparseParserSummary right,
+        LythonSourceSpan span)
+        => new(JoinMemberMaps(left.Members, right.Members, span), left.IsSealed && right.IsSealed && HaveSameKeys(left.Members, right.Members));
+
+    private static AbstractArgparseNamespaceSummary JoinArgparseNamespaceSummaries(
+        AbstractArgparseNamespaceSummary left,
+        AbstractArgparseNamespaceSummary right,
+        LythonSourceSpan span)
+        => new(JoinMemberMaps(left.Members, right.Members, span), left.IsSealed && right.IsSealed && HaveSameKeys(left.Members, right.Members));
+
+    private static IReadOnlyDictionary<string, AbstractValue> JoinMemberMaps(
+        IReadOnlyDictionary<string, AbstractValue> left,
+        IReadOnlyDictionary<string, AbstractValue> right,
+        LythonSourceSpan span)
+    {
+        var members = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
+        foreach (var (name, leftValue) in left)
+        {
+            if (right.TryGetValue(name, out var rightValue))
+            {
+                members[name] = Join(leftValue, rightValue, span);
+            }
+        }
+
+        return members;
+    }
+
+    private static bool HaveSameKeys(
+        IReadOnlyDictionary<string, AbstractValue> left,
+        IReadOnlyDictionary<string, AbstractValue> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        foreach (var name in left.Keys)
+        {
+            if (!right.ContainsKey(name))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static AbstractValue JoinDataclassFields(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftField = (AbstractDataclassFieldSummary)left.Value;
+        var rightField = (AbstractDataclassFieldSummary)right.Value;
+        return string.Equals(leftField.Name, rightField.Name, StringComparison.Ordinal)
+            ? DataclassField(leftField.Name, span)
+            : Unknown(span);
+    }
+
+    private static AbstractValue JoinArgparseGroups(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftGroup = (AbstractArgparseGroupSummary)left.Value;
+        var rightGroup = (AbstractArgparseGroupSummary)right.Value;
+        return string.Equals(leftGroup.ParserName, rightGroup.ParserName, StringComparison.Ordinal)
+            ? ArgparseMutuallyExclusiveGroup(leftGroup.ParserName, span)
+            : ArgparseMutuallyExclusiveGroup(span);
+    }
+
+    private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftInstance = (AbstractInstanceSummary)left.Value;
+        var rightInstance = (AbstractInstanceSummary)right.Value;
+        if (!Equals(leftInstance.Class, rightInstance.Class))
+        {
+            return Unknown(span);
+        }
+
+        var fields = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
+        foreach (var name in leftInstance.Fields.Keys.Concat(rightInstance.Fields.Keys).Distinct(StringComparer.Ordinal))
+        {
+            if (leftInstance.Fields.TryGetValue(name, out var leftField) &&
+                rightInstance.Fields.TryGetValue(name, out var rightField))
+            {
+                fields[name] = Join(leftField, rightField, span);
+            }
+        }
+
+        return fields.Count == 0
+            ? Unknown(span)
+            : UserInstance(new AbstractInstanceSummary(leftInstance.Class, fields, span), span);
+    }
+
+    private static AbstractValue JoinLiteralLists(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftItems = (IReadOnlyList<AbstractValue>)left.Value;
+        var rightItems = (IReadOnlyList<AbstractValue>)right.Value;
+        if (leftItems.Count == rightItems.Count)
+        {
+            var allSame = true;
+            for (var i = 0; i < leftItems.Count; i++)
+            {
+                if (!Equals(leftItems[i], rightItems[i]))
+                {
+                    allSame = false;
+                    break;
+                }
+            }
+
+            if (allSame)
+            {
+                return left.WithSpan(span);
+            }
+        }
+
+        return ListOf(JoinListItems(leftItems, rightItems, span), span);
+    }
+
+    private static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)left.Value;
+        var rightPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)right.Value;
+        if (leftPairs.Count != rightPairs.Count)
+        {
+            return Unknown(span);
+        }
+
+        var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
+        foreach (var leftPair in leftPairs)
+        {
+            var found = false;
+            foreach (var rightPair in rightPairs)
+            {
+                if (!AbstractValuesEqual(leftPair.Key, rightPair.Key))
+                {
+                    continue;
+                }
+
+                joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
+                    leftPair.Key.WithSpan(span),
+                    Join(leftPair.Value, rightPair.Value, span)));
+                found = true;
+                break;
+            }
+
+            if (!found)
+            {
+                return Unknown(span);
+            }
+        }
+
+        return Dict(joinedPairs, span);
+    }
+
+    private static AbstractValue JoinRegexPatterns(AbstractValue left, AbstractValue right, LythonSourceSpan span)
+    {
+        var leftSummary = (AbstractRegexPatternSummary)left.Value;
+        var rightSummary = (AbstractRegexPatternSummary)right.Value;
+        return RegexPatternSummariesEqual(leftSummary, rightSummary)
+            ? RegexPattern(leftSummary, span)
+            : RegexPattern(span);
+    }
+
+    private static AbstractValue JoinRegexMatches(AbstractValue left, AbstractValue right, LythonSourceSpan span, bool maybe)
+    {
+        var leftSummary = (AbstractRegexMatchSummary)left.Value;
+        var rightSummary = (AbstractRegexMatchSummary)right.Value;
+        if (!RegexMatchSummariesEqual(leftSummary, rightSummary))
+        {
+            return maybe ? MaybeRegexMatch(span) : RegexMatch(span);
+        }
+
+        return maybe ? MaybeRegexMatch(leftSummary, span) : RegexMatch(leftSummary, span);
+    }
+
+    private static AbstractValue JoinListItems(IReadOnlyList<AbstractValue> leftItems, IReadOnlyList<AbstractValue> rightItems, LythonSourceSpan span)
+    {
+        var result = Never(span);
+        foreach (var item in leftItems)
+        {
+            result = Join(result, item, span);
+        }
+
+        foreach (var item in rightItems)
+        {
+            result = Join(result, item, span);
+        }
+
+        return result.Kind == AbstractValueKind.Never ? Unknown(span) : result;
+    }
+
+    private static bool TryGetListElement(AbstractValue value, out AbstractValue item)
+    {
+        if (value.Kind == AbstractValueKind.ListType)
+        {
+            item = (AbstractValue)value.Value;
+            return true;
+        }
+
+        if (value.Kind == AbstractValueKind.List)
+        {
+            item = JoinListItems((IReadOnlyList<AbstractValue>)value.Value, Array.Empty<AbstractValue>(), value.Span);
+            return true;
+        }
+
+        item = default;
+        return false;
+    }
+
+    private static AbstractTextFileMode JoinTextFileModes(AbstractTextFileMode left, AbstractTextFileMode right)
+        => left == right ? left : AbstractTextFileMode.Unknown;
+
+    private static bool IsIntegerLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Integer or AbstractValueKind.IntegerType;
+
+    private static bool IsFloatLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Float or AbstractValueKind.FloatType;
+
+    private static bool IsBooleanLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Boolean or AbstractValueKind.BooleanType;
+
+    private static bool IsBytesLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Bytes or AbstractValueKind.BytesType;
+
+    private static AbstractRegexPatternSummary CreateUnknownRegexPatternSummary()
+        => new(null, null, new Dictionary<string, int>(StringComparer.Ordinal));
+
+    private static AbstractRegexMatchSummary CreateUnknownRegexMatchSummary()
+        => new(null, new Dictionary<string, int>(StringComparer.Ordinal));
+
+    private static bool RegexPatternSummariesEqual(AbstractRegexPatternSummary left, AbstractRegexPatternSummary right)
+        => string.Equals(left.PatternText, right.PatternText, StringComparison.Ordinal) &&
+           left.CaptureSlotCount == right.CaptureSlotCount &&
+           IntegerMapsEqual(left.NamedGroups, right.NamedGroups);
+
+    private static bool RegexMatchSummariesEqual(AbstractRegexMatchSummary left, AbstractRegexMatchSummary right)
+        => left.CaptureSlotCount == right.CaptureSlotCount &&
+           IntegerMapsEqual(left.NamedGroups, right.NamedGroups);
+
+    private static bool IntegerMapsEqual(
+        IReadOnlyDictionary<string, int> left,
+        IReadOnlyDictionary<string, int> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        foreach (var (key, value) in left)
+        {
+            if (!right.TryGetValue(key, out var rightValue) || value != rightValue)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool AbstractValuesEqual(AbstractValue left, AbstractValue right)
+    {
+        if (left.Kind != right.Kind)
+        {
+            return false;
+        }
+
+        return left.Kind switch
+        {
+            AbstractValueKind.String or
+            AbstractValueKind.Integer or
+            AbstractValueKind.Float or
+            AbstractValueKind.Boolean => Equals(left.Value, right.Value),
+            AbstractValueKind.Bytes => ByteArraysEqual((byte[])left.Value, (byte[])right.Value),
+            AbstractValueKind.None => true,
+            _ => false
+        };
+    }
+
+    private static bool ByteArraysEqual(byte[] left, byte[] right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Length; i++)
+        {
+            if (left[i] != right[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+internal sealed class AbstractState
+{
+    private readonly Dictionary<ExpressionSyntax, CachedAbstractValue> _abstractValueCache;
+    private readonly Dictionary<string, AbstractValue> _values;
+    private int _version;
+
+    public AbstractState()
+    {
+        _values = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
+        _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
+    }
+
+    private AbstractState(Dictionary<string, AbstractValue> values)
+    {
+        _values = values;
+        _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
+    }
+
+    public bool TryGet(string name, out AbstractValue value) => _values.TryGetValue(name, out value);
+
+    public IReadOnlyCollection<string> Names => _values.Keys;
+
+    public void Set(string name, AbstractValue value)
+    {
+        _values[name] = value;
+        InvalidateCachedFacts();
+    }
+
+    public void Remove(string name)
+    {
+        if (_values.Remove(name))
+        {
+            InvalidateCachedFacts();
+        }
+    }
+
+    public AbstractState Clone() => new(new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal));
+
+    public void ReplaceWith(AbstractState other)
+    {
+        _values.Clear();
+        foreach (var (name, value) in other._values)
+        {
+            _values[name] = value;
+        }
+
+        InvalidateCachedFacts();
+    }
+
+    public void MergeFrom(AbstractState left, AbstractState right)
+    {
+        _values.Clear();
+        foreach (var name in left._values.Keys.Concat(right._values.Keys).Distinct(StringComparer.Ordinal))
+        {
+            if (left._values.TryGetValue(name, out var leftValue) &&
+                right._values.TryGetValue(name, out var rightValue))
+            {
+                _values[name] = AbstractValue.Join(leftValue, rightValue);
+            }
+        }
+
+        InvalidateCachedFacts();
+    }
+
+    public static AbstractState Merge(AbstractState left, AbstractState right)
+    {
+        var merged = new AbstractState();
+        merged.MergeFrom(left, right);
+        return merged;
+    }
+
+    public bool TryGetCachedAbstractValue(ExpressionSyntax expression, out bool success, out AbstractValue value)
+    {
+        if (_abstractValueCache.TryGetValue(expression, out var cached) && cached.Version == _version)
+        {
+            success = cached.Success;
+            value = cached.Value;
+            return true;
+        }
+
+        success = false;
+        value = default;
+        return false;
+    }
+
+    public void SetCachedAbstractValue(ExpressionSyntax expression, bool success, AbstractValue value)
+    {
+        _abstractValueCache[expression] = new CachedAbstractValue(_version, success, value);
+    }
+
+    private void InvalidateCachedFacts()
+    {
+        _version++;
+        _abstractValueCache.Clear();
+    }
+
+    private readonly record struct CachedAbstractValue(int Version, bool Success, AbstractValue Value);
+}

@@ -1,0 +1,142 @@
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Text;
+
+namespace Lokad.Lython.Runtime;
+
+internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyDynamicAttributes
+{
+    private readonly IReadOnlyList<LoweredFunctionParameter> _parameters;
+    private readonly ExecutableCodeObject _codeObject;
+    private readonly LythonRuntime.ExecutionContext _closure;
+    private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
+    private readonly Dictionary<string, object> _defaultValues;
+    private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+
+    public PyExecutableFunction(
+        string name,
+        IReadOnlyList<LoweredFunctionParameter> parameters,
+        ExecutableCodeObject codeObject,
+        LythonRuntime.ExecutionContext closure,
+        IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
+        Dictionary<string, object> defaultValues)
+    {
+        Name = name;
+        _parameters = parameters;
+        _codeObject = codeObject;
+        _closure = closure;
+        _closureCells = closureCells;
+        _defaultValues = defaultValues;
+    }
+
+    public string Name { get; }
+
+    public PyType? OwnerType { get; private set; }
+
+    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecutionBudget(span);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, Name, "Function", _parameters, _defaultValues, context);
+
+        var frame = new LythonRuntime.ExecutionContext(_closure);
+        if (_codeObject.RequiresLocalVariableMirroring)
+        {
+            foreach (var pair in boundArguments)
+            {
+                frame.Variables[pair.Key] = pair.Value;
+            }
+        }
+
+        if (TryBuildImplicitSuperContext(boundArguments, out var anchorType, out var receiver))
+        {
+            frame.BindImplicitSuper(anchorType, receiver);
+        }
+
+        frame.EnterFunctionCall(span);
+        try
+        {
+            LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells);
+            return PyNone.Instance;
+        }
+        catch (LythonRuntime.ReturnSignal signal)
+        {
+            return signal.Value;
+        }
+        catch (LythonRuntimeException ex)
+        {
+            ex.SetSourcePathIfMissing(frame.SourcePath);
+            ex.AddFrame(Name, span, frame.SourcePath);
+            throw;
+        }
+        finally
+        {
+            frame.LeaveFunctionCall();
+        }
+    }
+
+    public object Bind(object self) => new PyBoundMethod(self, this);
+
+    public void BindOwner(PyType owner) => OwnerType ??= owner;
+
+    public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+        => instance is null ? this : Bind(instance);
+
+    public bool TryGetMember(string name, out object value)
+    {
+        if (_metadata.TryGetValue(name, out value!))
+        {
+            return true;
+        }
+
+        value = name switch
+        {
+            "__name__" => PyString.FromString(Name),
+            "__qualname__" => PyString.FromString(Name),
+            _ => PyNone.Instance
+        };
+        return !ReferenceEquals(value, PyNone.Instance);
+    }
+
+    public bool TrySetMember(string name, object value)
+    {
+        _metadata[name] = value;
+        return true;
+    }
+
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<function {Name}>");
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public override string ToString() => $"<function {Name}>";
+
+    private bool TryBuildImplicitSuperContext(Dictionary<string, object> boundArguments, out PyType anchorType, out object receiver)
+    {
+        if (OwnerType is null || _parameters.Count == 0)
+        {
+            anchorType = null!;
+            receiver = null!;
+            return false;
+        }
+
+        var firstParameterName = _parameters[0].Name;
+        if (!boundArguments.TryGetValue(firstParameterName, out receiver!))
+        {
+            anchorType = null!;
+            receiver = null!;
+            return false;
+        }
+
+        switch (receiver)
+        {
+            case PyInstance instance when instance.Type.IsSubtypeOf(OwnerType):
+                anchorType = OwnerType;
+                return true;
+            case PyType type when type.IsSubtypeOf(OwnerType):
+                anchorType = OwnerType;
+                return true;
+            default:
+                anchorType = null!;
+                receiver = null!;
+                return false;
+        }
+    }
+}
