@@ -940,6 +940,71 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> SortedAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
+        }
+
+        var values = await MaterializeSequenceAsync(arguments[0], span).ConfigureAwait(false);
+        var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
+        if (keyCallable is not null &&
+            !ReferenceEquals(keyCallable, PyNone.Instance) &&
+            keyCallable is not ICallable)
+        {
+            throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
+        }
+
+        var reverse = false;
+        if (arguments.Length >= 3)
+        {
+            if (arguments[2] is not bool reverseFlag)
+            {
+                throw new LythonRuntimeException("TypeError", "sorted(..., reverse=...) expects a bool.", span);
+            }
+
+            reverse = reverseFlag;
+        }
+
+        var keyed = new List<SortKeyValue>(values.Count);
+        foreach (var item in values)
+        {
+            keyed.Add(new SortKeyValue(
+                item,
+                keyCallable is ICallable callable
+                    ? await callable.InvokeAsync([new CallArgumentValue(null, item)], span, context).ConfigureAwait(false)
+                    : item));
+        }
+
+        for (var i = 1; i < keyed.Count; i++)
+        {
+            var current = keyed[i];
+            var j = i - 1;
+            while (j >= 0 && await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0)
+            {
+                keyed[j + 1] = keyed[j];
+                j--;
+            }
+
+            keyed[j + 1] = current;
+        }
+        if (reverse)
+        {
+            keyed.Reverse();
+        }
+
+        var items = new object[keyed.Count];
+        for (var i = 0; i < keyed.Count; i++)
+        {
+            items[i] = keyed[i].Value;
+        }
+
+        var result = new PyList(items, context.MemoryGovernor, span);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
     private static object Any(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -1051,6 +1116,38 @@ internal sealed partial class LythonRuntime
         }
 
         return Compare(left, right, span);
+    }
+
+    private static async ValueTask<int> CompareSortKeysAsync(object left, object right, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (left is PyCmpKey leftKey &&
+            right is PyCmpKey rightKey &&
+            ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
+        {
+            var result = await leftKey.Comparer.InvokeAsync(
+                    [new CallArgumentValue(null, leftKey.Value), new CallArgumentValue(null, rightKey.Value)],
+                    span,
+                    context)
+                .ConfigureAwait(false);
+            if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
+            }
+
+            return integer.Sign;
+        }
+
+        return Compare(left, right, span);
+    }
+
+    private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span)
+    {
+        if (value is PyGeneratorExpression generator)
+        {
+            return await generator.IterateAsync().ConfigureAwait(false);
+        }
+
+        return [.. ToSequence(value, span)];
     }
 
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1499,7 +1596,7 @@ internal sealed partial class LythonRuntime
 
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyContextManager, IPyIterableValue
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIterableValue
         {
             private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
 
@@ -1564,6 +1661,8 @@ internal sealed partial class LythonRuntime
 
             object IPyContextManager.Enter() => Enter();
 
+            ValueTask<object> IPyAsyncContextManager.EnterAsync() => ValueTask.FromResult<object>(Enter());
+
             bool IPyContextManager.Exit(object exceptionType, object exceptionValue, object traceback)
             {
                 _ = Exit();
@@ -1627,6 +1726,12 @@ internal sealed partial class LythonRuntime
                 }
 
                 IsClosed = true;
+                return false;
+            }
+
+            async ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)
+            {
+                _ = await ExitAsync().ConfigureAwait(false);
                 return false;
             }
 

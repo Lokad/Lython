@@ -296,12 +296,16 @@ internal sealed class MockLythonHost : ILythonHost
 
     public void EnableSubprocess() => _subprocess.Enabled = true;
 
+    public void CompleteSubprocessAsynchronously() => _subprocess.CompleteAsynchronously = true;
+
     public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode, string stdout = "", string stderr = "")
     {
         _subprocess.SeedResult(args, returnCode, stdout, stderr);
     }
 
     public LythonSubprocessRequest? LastSubprocessRequest => _subprocess.LastRequest;
+
+    public bool SubprocessCompletedAsynchronously => _subprocess.CompletedAsynchronously;
 
     public string ReadText(string path)
     {
@@ -450,6 +454,10 @@ internal sealed class MockLythonHost : ILythonHost
 
         public bool Enabled { get; set; }
 
+        public bool CompleteAsynchronously { get; set; }
+
+        public bool CompletedAsynchronously { get; private set; }
+
         public LythonSubprocessRequest? LastRequest { get; private set; }
 
         public void SeedResult(IReadOnlyList<string> args, int returnCode, string stdout, string stderr)
@@ -460,13 +468,30 @@ internal sealed class MockLythonHost : ILythonHost
         public ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (CompleteAsynchronously)
+            {
+                return RunDelayedAsync(request, cancellationToken);
+            }
+
+            return ValueTask.FromResult(Run(request));
+        }
+
+        private async ValueTask<LythonSubprocessResult> RunDelayedAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(25, cancellationToken);
+            CompletedAsynchronously = true;
+            return Run(request);
+        }
+
+        private LythonSubprocessResult Run(LythonSubprocessRequest request)
+        {
             LastRequest = request;
             if (!_results.TryGetValue(Key(request.Args), out var result))
             {
                 throw new InvalidOperationException($"No subprocess result seeded for: {Key(request.Args)}");
             }
 
-            return ValueTask.FromResult(result);
+            return result;
         }
 
         private static string Key(IReadOnlyList<string> args) => string.Join("\u001F", args);

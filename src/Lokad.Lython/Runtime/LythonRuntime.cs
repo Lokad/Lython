@@ -2391,7 +2391,7 @@ internal sealed partial class LythonRuntime
                 ["input"] = new BuiltinCallable("input", Input, InputAsync, ["prompt"], requiredCount: 0),
                 ["str"] = new BuiltinCallable("str", Str, ["value"]),
                 ["len"] = new BuiltinCallable("len", Len),
-                ["sorted"] = new BuiltinCallable("sorted", Sorted, ["iterable", "key", "reverse"], requiredCount: 1),
+                ["sorted"] = new BuiltinCallable("sorted", Sorted, SortedAsync, ["iterable", "key", "reverse"], requiredCount: 1),
                 ["any"] = new BuiltinCallable("any", Any),
                 ["all"] = new BuiltinCallable("all", All),
                 ["min"] = new BuiltinCallable("min", Min),

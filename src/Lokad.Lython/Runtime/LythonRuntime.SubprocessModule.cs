@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "run" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessRun, Run),
+                "run" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessRun, Run, RunAsync),
                 _ => null!
             };
 
@@ -37,6 +37,36 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "subprocess.run(args[, input][, cwd][, timeout][, check][, capture_output]) expects between one and six arguments.", span);
         }
 
+        var invocation = BuildSubprocessInvocation(arguments, span, context);
+
+        context.RegisterHostCall(span);
+        var result = context.RunSubprocess(invocation.Request, span);
+
+        return CompleteSubprocessRun(result, invocation.Check, span, context);
+    }
+
+    private static async ValueTask<object> RunAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (context.Host.SubprocessRunner is null)
+        {
+            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+        }
+
+        if (arguments.Length is < 1 or > 6)
+        {
+            throw new LythonRuntimeException("TypeError", "subprocess.run(args[, input][, cwd][, timeout][, check][, capture_output]) expects between one and six arguments.", span);
+        }
+
+        var invocation = BuildSubprocessInvocation(arguments, span, context);
+
+        context.RegisterHostCall(span);
+        var result = await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false);
+
+        return CompleteSubprocessRun(result, invocation.Check, span, context);
+    }
+
+    private static SubprocessInvocation BuildSubprocessInvocation(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
         var args = ParseSubprocessArgs(arguments[0], span);
         var stdin = arguments.Length >= 2 && arguments[1] is not PyNone && arguments[1] is not null
             ? PyStringOps.TryAsString(arguments[1], out var input)
@@ -62,16 +92,19 @@ internal sealed partial class LythonRuntime
                 : throw new LythonRuntimeException("TypeError", "subprocess.run(..., capture_output=...) expects a bool or None.", span)
             : false;
 
-        context.RegisterHostCall(span);
-        var result = context.RunSubprocess(new LythonSubprocessRequest(
-            Args: args,
-            Cwd: cwd,
-            Environment: null,
-            StandardInputUtf8: stdin,
-            TimeoutMilliseconds: timeout,
-            MaxOutputBytes: context.Limits.MaxStringLength),
-            span);
+        return new SubprocessInvocation(
+            new LythonSubprocessRequest(
+                Args: args,
+                Cwd: cwd,
+                Environment: null,
+                StandardInputUtf8: stdin,
+                TimeoutMilliseconds: timeout,
+                MaxOutputBytes: context.Limits.MaxStringLength),
+            check);
+    }
 
+    private static object CompleteSubprocessRun(LythonSubprocessResult result, bool check, LythonSourceSpan span, ExecutionContext context)
+    {
         var stdout = result.StandardOutputUtf8.Length == 0
             ? PyString.Empty
             : PyString.FromUtf8(result.StandardOutputUtf8, context.MemoryGovernor, span);
@@ -89,6 +122,8 @@ internal sealed partial class LythonRuntime
 
         return completed;
     }
+
+    private readonly record struct SubprocessInvocation(LythonSubprocessRequest Request, bool Check);
 
     private static IReadOnlyList<string> ParseSubprocessArgs(object value, LythonSourceSpan span)
     {

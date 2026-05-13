@@ -226,6 +226,46 @@ write_text("/out.txt", "|".join(vals))
         Assert.Equal("alpha|False|False|True|False", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public async Task OsModule_RunAsync_AwaitsAsynchronousHostOperations()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/a.txt", "alpha");
+        host.SeedFile("/repo/docs/b.txt", "beta");
+        host.SeedFile("/repo/tmp/keep.txt", "keep");
+        host.SeedFile("/repo/tmp/sub/leaf.txt", "leaf");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import os
+
+vals = []
+vals.append(str(sorted(os.listdir("/repo/docs"))))
+vals.append(str(os.path.exists("/repo/docs/a.txt")))
+vals.append(str(os.path.isfile("/repo/docs/a.txt")))
+vals.append(str(os.path.isdir("/repo/docs")))
+os.makedirs("/repo/out/nested", exist_ok=True)
+os.rename("/repo/docs/a.txt", "/repo/docs/c.txt")
+os.replace("/repo/docs/c.txt", "/repo/docs/b.txt")
+os.remove("/repo/tmp/sub/leaf.txt")
+os.removedirs("/repo/tmp/sub")
+os.mkdir("/repo/empty")
+os.rmdir("/repo/empty")
+vals.append(read_text("/repo/docs/b.txt"))
+vals.append(str(os.path.isdir("/repo/out/nested")))
+vals.append(str(os.path.exists("/repo/docs/a.txt")))
+vals.append(str(os.path.exists("/repo/tmp/sub")))
+vals.append(str(os.path.exists("/repo/tmp")))
+vals.append(str(os.path.exists("/repo/empty")))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal("[a.txt, b.txt]|True|True|True|alpha|True|False|False|True|False", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData(
         """

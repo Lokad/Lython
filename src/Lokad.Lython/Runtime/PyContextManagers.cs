@@ -131,6 +131,11 @@ internal static class PyContextManagers
             return callable.EnterAsync();
         }
 
+        if (manager is IPyAsyncContextManager asyncManager)
+        {
+            return asyncManager.EnterAsync();
+        }
+
         return ValueTask.FromResult(manager.Enter());
     }
 
@@ -145,6 +150,11 @@ internal static class PyContextManagers
         if (manager is CallableContextManager callable)
         {
             return callable.ExitAsync(exceptionType, exceptionValue, traceback);
+        }
+
+        if (manager is IPyAsyncContextManager asyncManager)
+        {
+            return asyncManager.ExitAsync(exceptionType, exceptionValue, traceback);
         }
 
         return ValueTask.FromResult(manager.Exit(exceptionType, exceptionValue, traceback));

@@ -911,6 +911,16 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     return context.HostExists(path.Value.AsString(), span);
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.exists() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return await context.HostExistsAsync(path.Value.AsString(), span).ConfigureAwait(false);
                 }),
                 "is_file" => new BoundCallable((arguments, span, context) =>
                 {
@@ -921,6 +931,16 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     return context.HostStat(path.Value.AsString(), span).IsFile;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.is_file() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsFile;
                 }),
                 "is_dir" => new BoundCallable((arguments, span, context) =>
                 {
@@ -931,6 +951,16 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     return context.HostStat(path.Value.AsString(), span).IsDir;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.is_dir() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsDir;
                 }),
                 "unlink" => new BoundCallable((arguments, span, context) =>
                 {
@@ -941,6 +971,17 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     context.HostRemove(path.Value.AsString(), span);
+                    return PyNone.Instance;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.unlink() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
                 "rename" => new BoundCallable((arguments, span, context) =>
@@ -954,6 +995,18 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
                     return target;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.rename(target) expects one argument.", span);
+                    }
+
+                    var target = RequirePath(arguments[0], "Path.rename(target)", span);
+                    context.RegisterHostCall(span);
+                    await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
+                    return target;
                 }, "Path.rename", ["target"]),
                 "mkdir" => new BoundCallable((arguments, span, context) =>
                 {
@@ -964,6 +1017,17 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     context.HostMkDir(path.Value.AsString(), span);
+                    return PyNone.Instance;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.mkdir() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    await context.HostMkDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
                 "open" => new BoundCallable((arguments, span, context) =>
@@ -1002,6 +1066,17 @@ internal sealed partial class LythonRuntime
                         "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context),
                         _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
                     };
+                },
+                async (arguments, span, context) =>
+                {
+                    var modeText = ParsePathOpenArguments(arguments, span).AsString();
+                    return modeText switch
+                    {
+                        "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path.Value.AsString(), context).ConfigureAwait(false),
+                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context),
+                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context),
+                        _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
+                    };
                 }, "Path.open", ["mode", "encoding"], 0),
                 "glob" => new BoundCallable((arguments, span, context) =>
                 {
@@ -1013,6 +1088,28 @@ internal sealed partial class LythonRuntime
                     var results = new PyList([], context.MemoryGovernor, span);
                     context.RegisterHostCall(span);
                     foreach (var name in context.HostListDir(path.Value.AsString(), span))
+                    {
+                        context.CheckExecutionBudget(span);
+                        if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
+                        {
+                            results.Add(new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
+                            context.ObserveCollectionCount(results.Count, span);
+                        }
+                    }
+
+                    return results;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.glob(pattern) expects one string argument.", span);
+                    }
+
+                    var results = new PyList([], context.MemoryGovernor, span);
+                    context.RegisterHostCall(span);
+                    var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                    foreach (var name in names)
                     {
                         context.CheckExecutionBudget(span);
                         if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
@@ -1037,6 +1134,11 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadGovernedHostText(path.Value.AsString(), context, span);
+                },
+                async (arguments, span, context) =>
+                {
+                    ValidatePathReadTextArguments(arguments, span);
+                    return await ReadGovernedHostTextAsync(path.Value.AsString(), context, span).ConfigureAwait(false);
                 }, "Path.read_text", ["encoding"], 0),
                 "write_text" => new BoundCallable((arguments, span, context) =>
                 {
@@ -1060,6 +1162,14 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     context.WriteTextUtf8(path.Value.AsString(), PyStringOps.EncodeUtf8(text), span);
                     return new BigInteger(text.Length);
+                },
+                async (arguments, span, context) =>
+                {
+                    var text = ParsePathWriteTextArguments(arguments, span);
+                    context.ObserveString(text, span);
+                    context.RegisterHostCall(span);
+                    await context.WriteTextUtf8Async(path.Value.AsString(), PyStringOps.EncodeUtf8(text), span).ConfigureAwait(false);
+                    return new BigInteger(text.Length);
                 }, "Path.write_text", ["text", "encoding", "newline"], 1),
                 "rglob" => new BoundCallable((arguments, span, context) =>
                 {
@@ -1075,6 +1185,17 @@ internal sealed partial class LythonRuntime
                         context.ObserveCollectionCount(results.Count, span);
                     }
 
+                    return results;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.rglob(pattern) expects one string argument.", span);
+                    }
+
+                    var results = new PyList([], context.MemoryGovernor, span);
+                    await EnumerateRecursiveAsync(path.Value, pattern, context, span, results).ConfigureAwait(false);
                     return results;
                 }, "Path.rglob", ["pattern"]),
                 _ => null!,
@@ -1105,6 +1226,71 @@ internal sealed partial class LythonRuntime
             };
         }
 
+        private static PyString ParsePathOpenArguments(object[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length > 2)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding]) expects zero to two arguments.", span);
+            }
+
+            var mode = arguments.Length >= 1
+                ? arguments[0] switch
+                {
+                    null => PyString.FromString("r"),
+                    PyNone => PyString.FromString("r"),
+                    PyString text => text,
+                    _ => throw new LythonRuntimeException("TypeError", "Path.open(mode) expects mode to be a string.", span)
+                }
+                : PyString.FromString("r");
+
+            if (arguments.Length == 2 &&
+                (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            {
+                throw new LythonRuntimeException("ValueError", "Path.open() only supports encoding='utf-8'.", span);
+            }
+
+            var modeText = mode.AsString();
+            if (modeText.Contains('b'))
+            {
+                throw new LythonRuntimeException("ValueError", "Path.open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
+            }
+
+            return mode;
+        }
+
+        private static void ValidatePathReadTextArguments(object[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length > 1)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.read_text([encoding]) expects zero or one argument.", span);
+            }
+
+            if (arguments.Length == 1 && (!PyStringOps.TryAsString(arguments[0], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            {
+                throw new LythonRuntimeException("ValueError", "Path.read_text() only supports encoding='utf-8'.", span);
+            }
+        }
+
+        private static PyString ParsePathWriteTextArguments(object[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
+            {
+                throw new LythonRuntimeException("TypeError", "Path.write_text(text[, encoding][, newline]) expects a string plus optional keyword-compatible arguments.", span);
+            }
+
+            if (arguments.Length >= 2 && (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            {
+                throw new LythonRuntimeException("ValueError", "Path.write_text() only supports encoding='utf-8'.", span);
+            }
+
+            if (arguments.Length == 3 && (!PyStringOps.TryAsString(arguments[2], out var newline) || !newline.Equals(PyString.Empty)))
+            {
+                throw new LythonRuntimeException("ValueError", "Path.write_text() only supports newline=''.", span);
+            }
+
+            return PyStringOps.NormalizeNewlines(text);
+        }
+
         private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)
         {
             context.RegisterHostCall(span);
@@ -1127,6 +1313,30 @@ internal sealed partial class LythonRuntime
                 if (stat.IsFile && MatchRglobPattern(name, pattern))
                 {
                     yield return child;
+                }
+            }
+        }
+
+        private static async ValueTask EnumerateRecursiveAsync(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span, PyList results)
+        {
+            context.RegisterHostCall(span);
+            var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
+            foreach (var name in names)
+            {
+                context.CheckExecutionBudget(span);
+                var child = new PyPath(PathOps.Join(root, PyString.FromString(name)));
+                context.RegisterHostCall(span);
+                var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
+                if (stat.IsDir)
+                {
+                    await EnumerateRecursiveAsync(child.Value, pattern, context, span, results).ConfigureAwait(false);
+                    continue;
+                }
+
+                if (stat.IsFile && MatchRglobPattern(name, pattern))
+                {
+                    results.Add(child);
+                    context.ObserveCollectionCount(results.Count, span);
                 }
             }
         }

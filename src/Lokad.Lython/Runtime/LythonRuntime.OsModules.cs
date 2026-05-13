@@ -20,17 +20,17 @@ internal sealed partial class LythonRuntime
                 "sep" => PyStringOps.SlashLiteral,
                 "curdir" => PyStringOps.DotLiteral,
                 "pardir" => PyString.FromString(".."),
-                "listdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsListDir, OsListDir),
+                "listdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsListDir, OsListDir, OsListDirAsync),
                 "walk" => new BuiltinCallable(LythonKnownCallableSignatures.OsWalk, OsWalk),
                 "getcwd" => new BuiltinCallable(LythonKnownCallableSignatures.OsGetCwd, OsGetCwd),
-                "mkdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsMkdir, OsMkDir),
-                "makedirs" => new BuiltinCallable(LythonKnownCallableSignatures.OsMakedirs, OsMkDirs),
-                "remove" => new BuiltinCallable(LythonKnownCallableSignatures.OsRemove, OsRemove),
-                "unlink" => new BuiltinCallable(LythonKnownCallableSignatures.OsUnlink, OsRemove),
-                "rename" => new BuiltinCallable(LythonKnownCallableSignatures.OsRename, OsRename),
-                "replace" => new BuiltinCallable(LythonKnownCallableSignatures.OsReplace, OsReplace),
-                "rmdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsRmdir, OsRmDir),
-                "removedirs" => new BuiltinCallable(LythonKnownCallableSignatures.OsRemovedirs, OsRmDirs),
+                "mkdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsMkdir, OsMkDir, OsMkDirAsync),
+                "makedirs" => new BuiltinCallable(LythonKnownCallableSignatures.OsMakedirs, OsMkDirs, OsMkDirsAsync),
+                "remove" => new BuiltinCallable(LythonKnownCallableSignatures.OsRemove, OsRemove, OsRemoveAsync),
+                "unlink" => new BuiltinCallable(LythonKnownCallableSignatures.OsUnlink, OsRemove, OsRemoveAsync),
+                "rename" => new BuiltinCallable(LythonKnownCallableSignatures.OsRename, OsRename, OsRenameAsync),
+                "replace" => new BuiltinCallable(LythonKnownCallableSignatures.OsReplace, OsReplace, OsReplaceAsync),
+                "rmdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsRmdir, OsRmDir, OsRmDirAsync),
+                "removedirs" => new BuiltinCallable(LythonKnownCallableSignatures.OsRemovedirs, OsRmDirs, OsRmDirsAsync),
                 _ => null!,
             };
 
@@ -60,9 +60,9 @@ internal sealed partial class LythonRuntime
                 "abspath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathAbsPath, OsPathAbsPath),
                 "relpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathRelPath, OsPathRelPath),
                 "commonpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathCommonPath, OsPathCommonPath),
-                "exists" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathExists, OsPathExists),
-                "isfile" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsFile, OsPathIsFile),
-                "isdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsDir, OsPathIsDir),
+                "exists" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathExists, OsPathExists, OsPathExistsAsync),
+                "isfile" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsFile, OsPathIsFile, OsPathIsFileAsync),
+                "isdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsDir, OsPathIsDir, OsPathIsDirAsync),
                 _ => null!,
             };
 
@@ -76,6 +76,19 @@ internal sealed partial class LythonRuntime
         context.RegisterHostCall(span);
         var result = new PyList(
             context.HostListDir(path, span).Select<string, object>(item => PyString.FromString(item)),
+            context.MemoryGovernor,
+            span);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
+    private static async ValueTask<object> OsListDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetPathOrDefault(arguments, "os.listdir", span, context.Host.Cwd);
+        context.RegisterHostCall(span);
+        var names = await context.HostListDirAsync(path, span).ConfigureAwait(false);
+        var result = new PyList(
+            names.Select<string, object>(item => PyString.FromString(item)),
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(result.Count, span);
@@ -144,6 +157,14 @@ internal sealed partial class LythonRuntime
         return PyNone.Instance;
     }
 
+    private static async ValueTask<object> OsMkDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.mkdir", span);
+        context.RegisterHostCall(span);
+        await context.HostMkDirAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
+        return PyNone.Instance;
+    }
+
     private static object OsMkDirs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length is < 1 or > 2)
@@ -192,11 +213,67 @@ internal sealed partial class LythonRuntime
         return PyNone.Instance;
     }
 
+    private static async ValueTask<object> OsMkDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "os.makedirs(path[, exist_ok]) expects one or two arguments.", span);
+        }
+
+        var path = GetPath(arguments[0], "os.makedirs", span);
+        var existOk = arguments.Length == 2
+            ? arguments[1] switch
+            {
+                bool value => value,
+                _ => throw new LythonRuntimeException("TypeError", "os.makedirs(path, exist_ok) expects exist_ok to be a bool.", span)
+            }
+            : false;
+
+        var normalized = PathOps.Normalize(path, context.Host.Cwd);
+        var stat = await OsHostStatAsync(normalized, context, span).ConfigureAwait(false);
+        if (stat.Exists)
+        {
+            if (stat.IsDir && existOk)
+            {
+                return PyNone.Instance;
+            }
+
+            throw new LythonRuntimeException("RuntimeError", $"os.makedirs() target already exists: {normalized}", span);
+        }
+
+        foreach (var current in EnumerateMissingDirectories(normalized))
+        {
+            var currentStat = await OsHostStatAsync(current, context, span).ConfigureAwait(false);
+            if (currentStat.Exists)
+            {
+                if (!currentStat.IsDir)
+                {
+                    throw new LythonRuntimeException("RuntimeError", $"os.makedirs() path component is not a directory: {current}", span);
+                }
+
+                continue;
+            }
+
+            context.RegisterHostCall(span);
+            await context.HostMkDirAsync(current, span).ConfigureAwait(false);
+        }
+
+        return PyNone.Instance;
+    }
+
     private static object OsRemove(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.remove", span);
         context.RegisterHostCall(span);
         context.HostRemove(PathOps.Normalize(path, context.Host.Cwd), span);
+        return PyNone.Instance;
+    }
+
+    private static async ValueTask<object> OsRemoveAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.remove", span);
+        context.RegisterHostCall(span);
+        await context.HostRemoveAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -211,6 +288,20 @@ internal sealed partial class LythonRuntime
         var destination = GetPath(arguments[1], "os.rename", span);
         context.RegisterHostCall(span);
         context.HostMove(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span);
+        return PyNone.Instance;
+    }
+
+    private static async ValueTask<object> OsRenameAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "os.rename(src, dst) expects two string arguments.", span);
+        }
+
+        var source = GetPath(arguments[0], "os.rename", span);
+        var destination = GetPath(arguments[1], "os.rename", span);
+        context.RegisterHostCall(span);
+        await context.HostMoveAsync(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -235,11 +326,40 @@ internal sealed partial class LythonRuntime
         return PyNone.Instance;
     }
 
+    private static async ValueTask<object> OsReplaceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "os.replace(src, dst) expects two string arguments.", span);
+        }
+
+        var source = PathOps.Normalize(GetPath(arguments[0], "os.replace", span), context.Host.Cwd);
+        var destination = PathOps.Normalize(GetPath(arguments[1], "os.replace", span), context.Host.Cwd);
+        var destinationStat = await OsHostStatAsync(destination, context, span).ConfigureAwait(false);
+        if (destinationStat.Exists)
+        {
+            context.RegisterHostCall(span);
+            await context.HostRemoveAsync(destination, span).ConfigureAwait(false);
+        }
+
+        context.RegisterHostCall(span);
+        await context.HostMoveAsync(source, destination, span).ConfigureAwait(false);
+        return PyNone.Instance;
+    }
+
     private static object OsRmDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.rmdir", span);
         context.RegisterHostCall(span);
         context.HostRemove(PathOps.Normalize(path, context.Host.Cwd), span);
+        return PyNone.Instance;
+    }
+
+    private static async ValueTask<object> OsRmDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.rmdir", span);
+        context.RegisterHostCall(span);
+        await context.HostRemoveAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -270,6 +390,49 @@ internal sealed partial class LythonRuntime
             {
                 context.RegisterHostCall(span);
                 context.HostRemove(current, span);
+            }
+            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            {
+                break;
+            }
+            catch (InvalidOperationException)
+            {
+                break;
+            }
+
+            current = ParentDirectory(current);
+        }
+
+        return PyNone.Instance;
+    }
+
+    private static async ValueTask<object> OsRmDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span), context.Host.Cwd);
+        var stat = await OsHostStatAsync(path, context, span).ConfigureAwait(false);
+        if (!stat.Exists || !stat.IsDir)
+        {
+            context.RegisterHostCall(span);
+            await context.HostRemoveAsync(path, span).ConfigureAwait(false);
+            return PyNone.Instance;
+        }
+
+        context.RegisterHostCall(span);
+        await context.HostRemoveAsync(path, span).ConfigureAwait(false);
+
+        var current = ParentDirectory(path);
+        while (current is not "/" and not ".")
+        {
+            var currentStat = await OsHostStatAsync(current, context, span).ConfigureAwait(false);
+            if (!currentStat.Exists || !currentStat.IsDir)
+            {
+                break;
+            }
+
+            try
+            {
+                context.RegisterHostCall(span);
+                await context.HostRemoveAsync(current, span).ConfigureAwait(false);
             }
             catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
             {
@@ -397,16 +560,34 @@ internal sealed partial class LythonRuntime
         return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).Exists;
     }
 
+    private static async ValueTask<object> OsPathExistsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.exists", span);
+        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Exists;
+    }
+
     private static object OsPathIsFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.isfile", span);
         return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).IsFile;
     }
 
+    private static async ValueTask<object> OsPathIsFileAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.isfile", span);
+        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsFile;
+    }
+
     private static object OsPathIsDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.isdir", span);
         return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).IsDir;
+    }
+
+    private static async ValueTask<object> OsPathIsDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.isdir", span);
+        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsDir;
     }
 
     private static string GetSinglePath(object[] arguments, string owner, LythonSourceSpan span)
@@ -443,6 +624,12 @@ internal sealed partial class LythonRuntime
     {
         context.RegisterHostCall(span);
         return context.HostStat(path, span);
+    }
+
+    private static async ValueTask<LythonPathStat> OsHostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
+    {
+        context.RegisterHostCall(span);
+        return await context.HostStatAsync(path, span).ConfigureAwait(false);
     }
 
     private static bool IsHostRuntimeFailure(LythonRuntimeException exception)

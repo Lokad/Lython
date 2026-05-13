@@ -28,6 +28,13 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyIterableValue
         return IterateClauses(_clauses, 0, _closure);
     }
 
+    public async ValueTask<List<object>> IterateAsync()
+    {
+        var result = new List<object>();
+        await IterateClausesAsync(_clauses, 0, _closure, result).ConfigureAwait(false);
+        return result;
+    }
+
     private IEnumerable<object> IterateClauses(
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
@@ -55,6 +62,36 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyIterableValue
                 {
                     yield return nested;
                 }
+            }
+        }
+    }
+
+    private async ValueTask IterateClausesAsync(
+        IReadOnlyList<LoweredComprehensionClause> clauses,
+        int index,
+        LythonRuntime.ExecutionContext context,
+        List<object> result)
+    {
+        var clause = clauses[index];
+        var iterable = await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
+        foreach (var item in LythonRuntime.ToSequence(iterable, clause.Iterable.Span))
+        {
+            var scope = new LythonRuntime.ExecutionContext(context);
+            LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
+
+            if (clause.Condition is not null &&
+                !LythonRuntime.IsTruthy(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Condition, scope).ConfigureAwait(false)))
+            {
+                continue;
+            }
+
+            if (index == clauses.Count - 1)
+            {
+                result.Add(LythonRuntime.RuntimeValue(await LythonRuntime.EvaluateLoweredExpressionAsync(_itemExpression, scope).ConfigureAwait(false)));
+            }
+            else
+            {
+                await IterateClausesAsync(clauses, index + 1, scope, result).ConfigureAwait(false);
             }
         }
     }

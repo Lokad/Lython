@@ -71,6 +71,31 @@ write_text("/out.txt", "|".join(vals))
         Assert.Equal("[]|[/repo/sub/vis.py]", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public async Task GlobModule_RunAsync_AwaitsAsynchronousHostOperations()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/a.md", "alpha");
+        host.SeedFile("/repo/docs/b.txt", "bravo");
+        host.SeedFile("/repo/docs/sub/c.md", "charlie");
+        host.SeedFile("/repo/docs/.hidden.md", "hidden");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import glob
+
+vals = []
+vals.append(str(sorted(item.as_posix() for item in glob.glob("/repo/docs/*.md"))))
+vals.append(str(sorted(item.as_posix() for item in glob.iglob("/repo/docs/**/*.md", recursive=True))))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal("[/repo/docs/a.md]|[/repo/docs/a.md, /repo/docs/sub/c.md]", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData(
         """

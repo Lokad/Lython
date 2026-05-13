@@ -62,4 +62,45 @@ subprocess.run(["fail"], check=True)
         Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
         Assert.Contains("return code 7", result.Failure.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task SubprocessRunAsync_AwaitsAsynchronousHostRunner()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.CompleteSubprocessAsynchronously();
+        host.SeedSubprocessResult(["tool"], 0, "done", "");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import subprocess
+proc = subprocess.run(["tool"], capture_output=True)
+write_text("/out.txt", str(proc.returncode) + "|" + proc.stdout)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.SubprocessCompletedAsynchronously);
+        Assert.Equal("0|done", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void SubprocessRun_WithAsynchronousHostRunner_FailsFastWithRunAsyncGuidance()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.CompleteSubprocessAsynchronously();
+        host.SeedSubprocessResult(["tool"], 0, "done", "");
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+subprocess.run(["tool"])
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
+    }
 }
