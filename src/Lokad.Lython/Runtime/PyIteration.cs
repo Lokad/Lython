@@ -12,7 +12,6 @@ internal static class PyIteration
             PyDict dict => dict.Keys,
             IPyIteratorValue iterator => EnumerateIterator(iterator),
             IPyIterableValue iterable => iterable.Iterate(),
-            LythonRuntime.ReFindAllResult findAll => findAll.Items,
             IEnumerable<object> typed => typed,
             System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
             _ => throw RuntimeErrors.Type("Object is not iterable.", span)

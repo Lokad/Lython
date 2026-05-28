@@ -23,7 +23,35 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ReCapture?> Captures,
         IReadOnlyDictionary<string, int> NamedGroups);
 
-    internal sealed record ReFindAllResult(PyList Items);
+    internal sealed record ReFindAllResult(PyList Items)
+        : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
+    {
+        public int Count => Items.Count;
+
+        public int Length => Items.Length;
+
+        public object this[int index] => Items[index];
+
+        public object GetItem(int index) => Items.GetItem(index);
+
+        public object CreateSlice(IEnumerable<object> items) => Items.CreateSlice(items);
+
+        public object GetIndex(int index) => Items.GetIndex(index);
+
+        public object GetSlice(IEnumerable<int> indices) => Items.GetSlice(indices);
+
+        public bool IsTruthy() => Items.IsTruthy();
+
+        public IEnumerable<object> Iterate() => Items;
+
+        public PyString RenderPython(PyRenderingContext context) => Items.RenderPython(context);
+
+        public PyString RenderInterpolated(PyRenderingContext context) => Items.RenderInterpolated(context);
+
+        public IEnumerator<object> GetEnumerator() => Items.GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
 
     internal sealed record RePatternObject(
         PyString Pattern,

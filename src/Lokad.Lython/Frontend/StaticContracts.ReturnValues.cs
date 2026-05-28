@@ -10,6 +10,7 @@ internal static partial class StaticContracts
         return shape switch
         {
             StaticReturnShape.String => AbstractValue.StringType(span),
+            StaticReturnShape.ListOfUnknown => AbstractValue.ListOf(AbstractValue.Unknown(span), span),
             StaticReturnShape.ListOfString => AbstractValue.ListOf(AbstractValue.StringType(span), span),
             StaticReturnShape.Boolean => AbstractValue.BooleanType(span),
             StaticReturnShape.None => AbstractValue.None(span),

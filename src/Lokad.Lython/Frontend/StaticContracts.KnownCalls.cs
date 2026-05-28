@@ -16,7 +16,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.ReSearch, "LA3151", "re.search(pattern, string[, flags]) expects two or three arguments.", StaticReturnShape.MaybeRegexMatch),
         new(LythonKnownCallableSignatures.ReMatch, "LA3151", "re.match(pattern, string[, flags]) expects two or three arguments.", StaticReturnShape.MaybeRegexMatch),
         new(LythonKnownCallableSignatures.ReFullMatch, "LA3151", "re.fullmatch(pattern, string[, flags]) expects two or three arguments.", StaticReturnShape.MaybeRegexMatch),
-        new(LythonKnownCallableSignatures.ReFindAll, "LA3151", "re.findall(pattern, string[, flags]) expects two or three arguments."),
+        new(LythonKnownCallableSignatures.ReFindAll, "LA3151", "re.findall(pattern, string[, flags]) expects two or three arguments.", StaticReturnShape.ListOfUnknown),
         new(LythonKnownCallableSignatures.ReFindIter, "LA3151", "re.finditer(pattern, string[, flags]) expects two or three arguments."),
         new(LythonKnownCallableSignatures.ReSub, "LA3151", "re.sub(pattern, repl, string[, count][, flags]) expects three to five arguments.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.ReSubn, "LA3151", "re.subn(pattern, repl, string[, count][, flags]) expects three to five arguments."),

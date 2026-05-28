@@ -13,7 +13,6 @@ internal static class PyTruthiness
             bool boolean => boolean,
             BigInteger integer => integer != BigInteger.Zero,
             double floating => floating != 0.0,
-            LythonRuntime.ReFindAllResult matches => matches.Items.Count != 0,
             IPyIterableValue iterable => HasAny(iterable.Iterate()),
             IReadOnlyCollection<object> collection => collection.Count != 0,
             System.Collections.ICollection collection => collection.Count != 0,

@@ -153,6 +153,7 @@ internal static class StaticRegexContractFamily
 
         value = memberName switch
         {
+            "findall" => AbstractValue.ListOf(AbstractValue.Unknown(call.Span), call.Span),
             "sub" => AbstractValue.StringType(call.Span),
             "split" => AbstractValue.ListOf(AbstractValue.StringType(call.Span), call.Span),
             _ => default

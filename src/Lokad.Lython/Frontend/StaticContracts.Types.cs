@@ -5,6 +5,7 @@ namespace Lokad.Lython.Frontend;
 internal enum StaticReturnShape
 {
     String,
+    ListOfUnknown,
     ListOfString,
     Boolean,
     None,
