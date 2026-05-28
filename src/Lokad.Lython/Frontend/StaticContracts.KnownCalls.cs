@@ -6,6 +6,7 @@ internal static partial class StaticContracts
 {
     private static readonly StaticKnownCallContract[] KnownCallContracts =
     [
+        new(LythonKnownCallableSignatures.SysExit, "LA3151", "sys.exit([code]) expects zero or one argument.", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.PathlibPath, "LA3151", "pathlib.Path(path[, ...]) expects one or more arguments.", StaticReturnShape.Path),
         new(LythonKnownCallableSignatures.JsonLoads, "LA3151", "json.loads(s) expects one argument."),
         new(LythonKnownCallableSignatures.JsonDumps, "LA3151", "json.dumps(obj) expects one argument.", StaticReturnShape.String),

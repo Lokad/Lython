@@ -5,7 +5,7 @@ internal static partial class StaticContracts
     private static readonly Dictionary<string, HashSet<string>> ModuleMembers = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
-        ["sys"] = Members("argv", "stdin", "stdout", "stderr"),
+        ["sys"] = Members("argv", "stdin", "stdout", "stderr", "exit"),
         ["argparse"] = Members("ArgumentParser", "Namespace", "SUPPRESS"),
         ["dataclasses"] = Members("dataclass", "field", "is_dataclass", "fields", "asdict", "astuple", "replace", "MISSING", "KW_ONLY", "InitVar", "FrozenInstanceError"),
         ["typing"] = Members("ClassVar"),

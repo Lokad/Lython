@@ -16,6 +16,8 @@ internal readonly record struct LythonCallableSignature(
 
 internal static class LythonKnownCallableSignatures
 {
+    public static readonly LythonCallableSignature SysExit = new("sys.exit", ["code"], RequiredCount: 0);
+
     public static readonly LythonCallableSignature PathlibPath = new("pathlib.Path", RequiredCount: 1);
 
     public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s"]);

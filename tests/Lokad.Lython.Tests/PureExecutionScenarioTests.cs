@@ -516,6 +516,54 @@ write_text("/out.txt", str(grouped))
     }
 
     [Fact]
+    public void SysExit_IntegerCode_UsesStructuredTermination()
+    {
+        var result = new LythonEngine().Run(
+            """
+import sys
+sys.exit(3)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal(3, result.ExitCode);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+    }
+
+    [Fact]
+    public void SysExit_OmittedCode_UsesZeroExitCode()
+    {
+        var result = new LythonEngine().Run(
+            """
+import sys
+sys.exit()
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal(0, result.ExitCode);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+    }
+
+    [Fact]
+    public void SysExit_KeywordCode_UsesStructuredTermination()
+    {
+        var result = new LythonEngine().Run(
+            """
+import sys
+sys.exit(code=4)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal(4, result.ExitCode);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+    }
+
+    [Fact]
     public void SystemExit_PropagatesAsStructuredTermination()
     {
         var result = new LythonEngine().Run(

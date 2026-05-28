@@ -1006,10 +1006,23 @@ internal sealed partial class LythonRuntime
                 "stdin" => _stdin,
                 "stdout" => _stdout,
                 "stderr" => _stderr,
+                "exit" => new BuiltinCallable(LythonKnownCallableSignatures.SysExit, Exit),
                 _ => null!
             };
 
             return value is not null;
+        }
+
+        private static object Exit(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            if (arguments.Length > 1)
+            {
+                throw new LythonRuntimeException("TypeError", "sys.exit([code]) expects zero or one argument.", span);
+            }
+
+            var value = arguments.Length == 0 ? PyNone.Instance : arguments[0];
+            throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, payload: value);
         }
     }
 

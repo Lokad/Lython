@@ -675,15 +675,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var value = arguments.Length == 0 ? PyNone.Instance : arguments[0].Value;
-                var message = value switch
-                {
-                    PyNone => string.Empty,
-                    BigInteger integer => integer.ToString(),
-                    bool boolean => boolean ? "True" : "False",
-                    _ when PyStringOps.TryAsString(value, out var text) => text.AsString(),
-                    _ => value.ToString() ?? string.Empty
-                };
-                return new PyException(TypeName, message, value);
+                return new PyException(TypeName, FormatSystemExitMessage(value), value);
             }
 
             if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0].Value, out var generalMessage))
@@ -694,4 +686,14 @@ internal sealed partial class LythonRuntime
             return new PyException(TypeName, generalMessage.AsString(), generalMessage);
         }
     }
+
+    private static string FormatSystemExitMessage(object value)
+        => value switch
+        {
+            PyNone => string.Empty,
+            BigInteger integer => integer.ToString(),
+            bool boolean => boolean ? "True" : "False",
+            _ when PyStringOps.TryAsString(value, out var text) => text.AsString(),
+            _ => value.ToString() ?? string.Empty
+        };
 }
