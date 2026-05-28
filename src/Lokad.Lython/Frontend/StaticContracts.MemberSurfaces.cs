@@ -137,6 +137,7 @@ internal static partial class StaticContracts
     {
         "__enter__",
         "__exit__",
+        "close",
         "read",
         "readline",
         "readlines",

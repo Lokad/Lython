@@ -47,6 +47,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.Path, "glob", 1, 1, "LA3114", "Path.glob(pattern) expects one argument.", ParameterNames: ["pattern"]),
             new(AbstractValueKind.Path, "rglob", 1, 1, "LA3114", "Path.rglob(pattern) expects one argument.", ParameterNames: ["pattern"]),
             new(AbstractValueKind.Path, "joinpath", 1, null, "LA3114", "Path.joinpath(*other) expects at least one argument."),
+            new(AbstractValueKind.TextFileHandle, "close", 0, 0, "LA3108", "file.close() expects no arguments."),
             new(AbstractValueKind.TextFileHandle, "read", 0, 0, "LA3108", "file.read() expects no arguments."),
             new(AbstractValueKind.TextFileHandle, "readline", 0, 0, "LA3108", "file.readline() expects no arguments."),
             new(AbstractValueKind.TextFileHandle, "readlines", 0, 0, "LA3108", "file.readlines() expects no arguments."),

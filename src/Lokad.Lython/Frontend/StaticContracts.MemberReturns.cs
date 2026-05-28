@@ -86,6 +86,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.Path, "is_dir", StaticReturnShape.Boolean),
             new(AbstractValueKind.Path, "unlink", StaticReturnShape.None),
             new(AbstractValueKind.Path, "mkdir", StaticReturnShape.None),
+            new(AbstractValueKind.TextFileHandle, "close", StaticReturnShape.None),
             new(AbstractValueKind.TextFileHandle, "read", StaticReturnShape.String),
             new(AbstractValueKind.TextFileHandle, "readline", StaticReturnShape.String),
             new(AbstractValueKind.TextFileHandle, "readlines", StaticReturnShape.ListOfString),

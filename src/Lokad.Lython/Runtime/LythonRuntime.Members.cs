@@ -1380,6 +1380,26 @@ internal sealed partial class LythonRuntime
 
                     return await handle.ExitAsync().ConfigureAwait(false);
                 }),
+                "close" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.close() expects no arguments.", span);
+                    }
+
+                    handle.Exit();
+                    return PyNone.Instance;
+                },
+                async (arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.close() expects no arguments.", span);
+                    }
+
+                    await handle.ExitAsync().ConfigureAwait(false);
+                    return PyNone.Instance;
+                }),
                 "read" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)

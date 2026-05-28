@@ -3252,6 +3252,57 @@ except ValueError as err:
         Assert.Equal(expected, host.ReadText("/out.txt"));
     }
 
+    [Theory]
+    [InlineData(
+        """
+handle = open("/output.txt", "w")
+handle.write("alpha")
+closed = handle.close()
+write_text("/out.txt", str(closed) + "|" + read_text("/output.txt"))
+""",
+        "None|alpha")]
+    [InlineData(
+        """
+write_text("/append.txt", "base")
+handle = open("/append.txt", "a")
+handle.write("-extra")
+handle.close()
+handle.close()
+write_text("/out.txt", read_text("/append.txt"))
+""",
+        "base-extra")]
+    [InlineData(
+        """
+write_text("/input.txt", "alpha")
+handle = open("/input.txt", "r")
+handle.close()
+try:
+    handle.read()
+except ValueError as err:
+    write_text("/out.txt", err.message)
+""",
+        "I/O operation on closed file")]
+    [InlineData(
+        """
+handle = open("/output.txt", "w")
+handle.close()
+try:
+    handle.write("alpha")
+except ValueError as err:
+    write_text("/out.txt", err.message)
+""",
+        "I/O operation on closed file")]
+    public void FileClose_CoversManualLifecycleModesAndClosedHandleErrors(string source, string expected)
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(source, host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal(expected, host.ReadText("/out.txt"));
+    }
+
     [Fact]
     public void FormattedStrings_SupportInterpolationAndEscapedBraces()
     {
