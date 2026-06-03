@@ -51,4 +51,87 @@ result = helper(*["a", "b"], suffix="?")
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
         Assert.Empty(compiled.Diagnostics);
     }
+
+    [Fact]
+    public void Compile_AcceptsImplicitLineJoiningAcrossGroupedPythonSyntax()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+class Base:
+    pass
+
+class Child(
+    Base,
+):
+    pass
+
+def helper(
+    first,
+    second=[
+        "b",
+    ][
+        0
+    ],
+    *,
+    suffix="!",
+):
+    return first + second + suffix
+
+rows = [
+    (
+        "a",
+        "xx",
+    ),
+    (
+        "b",
+        "y",
+    ),
+]
+
+items = [
+    (
+        name,
+        len(value),
+    )
+    for name, value in rows
+    if (
+        len(value)
+        > 0
+    )
+]
+
+mapping = {
+    "items": items,
+    "unique": {
+        "a",
+        "b",
+    },
+}
+
+result = helper(
+    "a",
+    suffix="?",
+)
+
+match [
+    1,
+    2,
+]:
+    case [
+        first,
+        *rest,
+    ]:
+        matched = first
+    case _:
+        matched = 0
+""");
+
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Empty(compiled.Diagnostics);
+    }
+
+    private static string FormatDiagnostic(LythonDiagnostic diagnostic)
+        => diagnostic.Span is null
+            ? $"{diagnostic.Code}: {diagnostic.Message}"
+            : $"{diagnostic.Code}: {diagnostic.Message} @ {diagnostic.Span.Line}:{diagnostic.Span.Column}";
 }

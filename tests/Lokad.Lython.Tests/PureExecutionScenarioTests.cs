@@ -3403,6 +3403,129 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
+    public void MultiLineListsIterationAppendIndexingAndComprehensions_WorkLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+files = [
+    "/input/A/Parts.csv",
+    "/input/B/Parts.csv",
+    "/input/C/Parts.csv",
+]
+
+markers = []
+for path in files:
+    markers.append(path[7] + ":" + str(files[0] == "/input/A/Parts.csv"))
+
+selected = [
+    path
+    for path in files
+    if path != "/input/B/Parts.csv"
+]
+
+write_text(
+    "/out.txt",
+    str(files[0]) + "|" + str(files[:2]) + "|" + str(markers) + "|" + str(selected),
+)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("/input/A/Parts.csv|[/input/A/Parts.csv, /input/B/Parts.csv]|[A:True, B:True, C:True]|[/input/A/Parts.csv, /input/C/Parts.csv]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void MultiLineCollectionVariantsAndPatterns_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+values = (
+    [
+        1,
+        2,
+        3,
+    ],
+)
+
+numbers = values[
+    0
+]
+
+picked = numbers[
+    1
+]
+
+window = numbers[
+    1:
+    3
+]
+
+pairs = [
+    (
+        name,
+        value,
+    )
+    for name, value in [
+        (
+            "a",
+            1,
+        ),
+        (
+            "b",
+            2,
+        ),
+    ]
+    if (
+        value
+        > 1
+    )
+]
+
+row = {
+    "pairs": pairs,
+    "window": window,
+}
+
+seen = {
+    "a",
+    "b",
+    "a",
+}
+
+parts = []
+match [
+    "head",
+    "tail",
+]:
+    case [
+        first,
+        second,
+    ]:
+        parts.append(first)
+        parts.append(second)
+    case _:
+        parts.append("miss")
+
+parts.append(str(picked))
+parts.append(str(row["pairs"]))
+parts.append(str(row["window"]))
+parts.append(str(len(seen)))
+parts.append(str("b" in seen))
+write_text("/out.txt", "|".join(parts))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("head|tail|2|[(b, 2)]|[2, 3]|2|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DictUpdate_OverwritesValuesWithoutChangingExistingKeyOrder()
     {
         var host = new MockLythonHost();

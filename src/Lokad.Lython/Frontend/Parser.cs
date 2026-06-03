@@ -5,6 +5,7 @@ namespace Lokad.Lython.Frontend;
 internal sealed class Parser
 {
     private readonly LexerResult<Token> _tokens;
+    private readonly bool[] _implicitLineJoinTrivia;
     private readonly Queue<StatementSyntax> _pendingStatements = new();
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private int _position;
@@ -13,6 +14,7 @@ internal sealed class Parser
     public Parser(LexerResult<Token> tokens)
     {
         _tokens = tokens;
+        _implicitLineJoinTrivia = ComputeImplicitLineJoinTrivia(tokens);
     }
 
     public FrontendResult Parse()
@@ -1402,6 +1404,12 @@ internal sealed class Parser
             }
 
             ReadToken();
+            if (CurrentToken == terminator)
+            {
+                terminatorToken = ReadToken();
+                parameters = parsed;
+                return true;
+            }
         }
     }
 
@@ -2571,6 +2579,7 @@ internal sealed class Parser
             {
                 var openParenToken = ReadToken();
                 var arguments = new List<CallArgumentSyntax>();
+                SkipGroupedExpressionTrivia();
 
                 if (CurrentToken != Token.CloseParen)
                 {
@@ -2616,6 +2625,7 @@ internal sealed class Parser
                             return null;
                         }
 
+                        SkipGroupedExpressionTrivia();
                         if (CurrentToken == Token.For && kind == CallArgumentKind.Positional && argumentName is null)
                         {
                             if (!TryParseComprehensionClauses(out var clauses, out _))
@@ -2628,6 +2638,7 @@ internal sealed class Parser
                                 clauses,
                                 Merge(argument.Span, clauses[^1].Span));
                         }
+                        SkipGroupedExpressionTrivia();
 
                         arguments.Add(new CallArgumentSyntax(argumentName, argument, kind));
 
@@ -2637,9 +2648,15 @@ internal sealed class Parser
                         }
 
                         ReadToken();
+                        SkipGroupedExpressionTrivia();
+                        if (CurrentToken == Token.CloseParen)
+                        {
+                            break;
+                        }
                     }
                 }
 
+                SkipGroupedExpressionTrivia();
                 if (!TryRead(Token.CloseParen, out var closeParenToken))
                 {
                     AddDiagnostic("LA1006", "Expected ')' after call arguments.", openParenToken);
@@ -2656,6 +2673,7 @@ internal sealed class Parser
             if (CurrentToken == Token.OpenBracket)
             {
                 var openBracketToken = ReadToken();
+                SkipGroupedExpressionTrivia();
                 ExpressionSyntax? start = null;
                 if (CurrentToken != Token.Colon)
                 {
@@ -2665,11 +2683,13 @@ internal sealed class Parser
                         AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
                         return null;
                     }
+                    SkipGroupedExpressionTrivia();
                 }
 
                 if (CurrentToken == Token.Colon)
                 {
                     ReadToken();
+                    SkipGroupedExpressionTrivia();
 
                     ExpressionSyntax? end = null;
                     if (CurrentToken != Token.CloseBracket && CurrentToken != Token.Colon)
@@ -2680,12 +2700,14 @@ internal sealed class Parser
                             AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
                             return null;
                         }
+                        SkipGroupedExpressionTrivia();
                     }
 
                     ExpressionSyntax? step = null;
                     if (CurrentToken == Token.Colon)
                     {
                         ReadToken();
+                        SkipGroupedExpressionTrivia();
                         if (CurrentToken != Token.CloseBracket)
                         {
                             step = ParseExpression();
@@ -2694,9 +2716,11 @@ internal sealed class Parser
                                 AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
                                 return null;
                             }
+                            SkipGroupedExpressionTrivia();
                         }
                     }
 
+                    SkipGroupedExpressionTrivia();
                     if (!TryRead(Token.CloseBracket, out var closeSliceToken))
                     {
                         AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
@@ -2724,6 +2748,7 @@ internal sealed class Parser
                     while (CurrentToken == Token.Comma)
                     {
                         ReadToken();
+                        SkipGroupedExpressionTrivia();
                         if (CurrentToken == Token.CloseBracket)
                         {
                             break;
@@ -2735,6 +2760,7 @@ internal sealed class Parser
                             AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
                             return null;
                         }
+                        SkipGroupedExpressionTrivia();
 
                         items.Add(next);
                     }
@@ -2744,6 +2770,7 @@ internal sealed class Parser
                         Merge(items[0].Span, items[^1].Span));
                 }
 
+                SkipGroupedExpressionTrivia();
                 if (!TryRead(Token.CloseBracket, out var closeBracketToken))
                 {
                     AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
@@ -2907,6 +2934,7 @@ internal sealed class Parser
     {
         var openBracket = ReadToken();
         var items = new List<ExpressionSyntax>();
+        SkipGroupedExpressionTrivia();
 
         if (CurrentToken != Token.CloseBracket)
         {
@@ -2919,6 +2947,7 @@ internal sealed class Parser
                 }
 
                 items.Add(item);
+                SkipGroupedExpressionTrivia();
 
                 if (CurrentToken == Token.For)
                 {
@@ -2933,6 +2962,7 @@ internal sealed class Parser
                         return null;
                     }
 
+                    SkipGroupedExpressionTrivia();
                     if (!TryRead(Token.CloseBracket, out var closeComprehension))
                     {
                         AddDiagnostic("LA1021", "Expected ']' after list literal.", openBracket);
@@ -2951,9 +2981,15 @@ internal sealed class Parser
                 }
 
                 ReadToken();
+                SkipGroupedExpressionTrivia();
+                if (CurrentToken == Token.CloseBracket)
+                {
+                    break;
+                }
             }
         }
 
+        SkipGroupedExpressionTrivia();
         if (!TryRead(Token.CloseBracket, out var closeBracket))
         {
             AddDiagnostic("LA1021", "Expected ']' after list literal.", openBracket);
@@ -2966,6 +3002,7 @@ internal sealed class Parser
     private ExpressionSyntax? ParseTupleOrParenthesized()
     {
         var openParen = ReadToken();
+        SkipGroupedExpressionTrivia();
 
         if (CurrentToken == Token.CloseParen)
         {
@@ -2978,6 +3015,7 @@ internal sealed class Parser
         {
             return null;
         }
+        SkipGroupedExpressionTrivia();
 
         if (CurrentToken != Token.Comma)
         {
@@ -2988,6 +3026,7 @@ internal sealed class Parser
                     return null;
                 }
 
+                SkipGroupedExpressionTrivia();
                 if (!TryRead(Token.CloseParen, out var closeComprehension))
                 {
                     AddDiagnostic("LA1045", "Expected ')' after generator expression.", openParen);
@@ -3000,6 +3039,7 @@ internal sealed class Parser
                     Merge(SpanOf(openParen), SpanOf(closeComprehension)));
             }
 
+            SkipGroupedExpressionTrivia();
             if (!TryRead(Token.CloseParen, out var closeParen))
             {
                 AddDiagnostic("LA1008", "Expected ')' after expression.", first.Span);
@@ -3013,6 +3053,7 @@ internal sealed class Parser
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
+            SkipGroupedExpressionTrivia();
             if (CurrentToken == Token.CloseParen)
             {
                 break;
@@ -3025,13 +3066,15 @@ internal sealed class Parser
             }
 
             items.Add(item);
+            SkipGroupedExpressionTrivia();
         }
 
-            if (!TryRead(Token.CloseParen, out var closeTuple))
-            {
-                AddDiagnostic("LA1045", "Expected ')' after tuple literal.", openParen);
-                return null;
-            }
+        SkipGroupedExpressionTrivia();
+        if (!TryRead(Token.CloseParen, out var closeTuple))
+        {
+            AddDiagnostic("LA1045", "Expected ')' after tuple literal.", openParen);
+            return null;
+        }
 
         return new TupleLiteralExpressionSyntax(items, Merge(SpanOf(openParen), SpanOf(closeTuple)));
     }
@@ -3041,6 +3084,7 @@ internal sealed class Parser
         var openBrace = ReadToken();
         var items = new List<KeyValuePair<ExpressionSyntax, ExpressionSyntax>>();
         var setItems = new List<ExpressionSyntax>();
+        SkipGroupedExpressionTrivia();
 
         if (CurrentToken != Token.CloseBrace)
         {
@@ -3051,6 +3095,7 @@ internal sealed class Parser
                 {
                     return null;
                 }
+                SkipGroupedExpressionTrivia();
 
                 if (!TryRead(Token.Colon, out var colonToken))
                 {
@@ -3064,6 +3109,7 @@ internal sealed class Parser
                         while (CurrentToken == Token.Comma)
                         {
                             ReadToken();
+                            SkipGroupedExpressionTrivia();
                             if (CurrentToken == Token.CloseBrace)
                             {
                                 break;
@@ -3076,8 +3122,10 @@ internal sealed class Parser
                             }
 
                             setItems.Add(setItem);
+                            SkipGroupedExpressionTrivia();
                         }
 
+                        SkipGroupedExpressionTrivia();
                         if (!TryRead(Token.CloseBrace, out var closeSet))
                         {
                             AddDiagnostic("LA1026", "Expected '}' after set literal.", openBrace);
@@ -3094,12 +3142,14 @@ internal sealed class Parser
                     return null;
                 }
 
+                SkipGroupedExpressionTrivia();
                 var value = ParseExpression();
                 if (value is null)
                 {
                     AddDiagnostic("LA1025", "Expected value in dictionary literal.", colonToken);
                     return null;
                 }
+                SkipGroupedExpressionTrivia();
 
                 items.Add(new KeyValuePair<ExpressionSyntax, ExpressionSyntax>(key, value));
 
@@ -3116,6 +3166,7 @@ internal sealed class Parser
                         return null;
                     }
 
+                    SkipGroupedExpressionTrivia();
                     if (!TryRead(Token.CloseBrace, out var closeComprehension))
                     {
                         AddDiagnostic("LA1026", "Expected '}' after dictionary literal.", openBrace);
@@ -3135,9 +3186,15 @@ internal sealed class Parser
                 }
 
                 ReadToken();
+                SkipGroupedExpressionTrivia();
+                if (CurrentToken == Token.CloseBrace)
+                {
+                    break;
+                }
             }
         }
 
+        SkipGroupedExpressionTrivia();
         if (!TryRead(Token.CloseBrace, out var closeBrace))
         {
             AddDiagnostic("LA1026", "Expected '}' after dictionary literal.", openBrace);
@@ -3157,36 +3214,43 @@ internal sealed class Parser
         var parsedClauses = new List<ComprehensionClauseSyntax>();
         while (true)
         {
+            SkipGroupedExpressionTrivia();
             var forToken = ReadToken();
+            SkipGroupedExpressionTrivia();
             if (!TryParseLoopTarget(out var parsedTarget, out var targetToken))
             {
                 AddDiagnostic("LA1015", "Expected loop variable after 'for'.", forToken);
                 return false;
             }
 
+            SkipGroupedExpressionTrivia();
             if (!TryRead(Token.In, out _))
             {
                 AddDiagnostic("LA1016", "Expected 'in' in comprehension.", targetToken);
                 return false;
             }
 
+            SkipGroupedExpressionTrivia();
             var iterable = ParseComprehensionIterableExpression();
             if (iterable is null)
             {
                 AddDiagnostic("LA1017", "Expected iterable expression in comprehension.", targetToken);
                 return false;
             }
+            SkipGroupedExpressionTrivia();
 
             ExpressionSyntax? condition = null;
             if (CurrentToken == Token.If)
             {
                 ReadToken();
+                SkipGroupedExpressionTrivia();
                 condition = ParseExpression();
                 if (condition is null)
                 {
                     AddDiagnostic("LA1010", "Expected condition after 'if'.", _position);
                     return false;
                 }
+                SkipGroupedExpressionTrivia();
             }
 
             parsedClauses.Add(new ComprehensionClauseSyntax(
@@ -3195,6 +3259,7 @@ internal sealed class Parser
                 condition,
                 Merge(SpanOf(forToken), (condition ?? iterable).Span)));
 
+            SkipGroupedExpressionTrivia();
             if (CurrentToken != Token.For)
             {
                 break;
@@ -3357,6 +3422,14 @@ internal sealed class Parser
         }
     }
 
+    private void SkipGroupedExpressionTrivia()
+    {
+        while (CurrentToken is Token.Eol or Token.Indent or Token.Dedent)
+        {
+            _position++;
+        }
+    }
+
     private void SkipGroupedImportTrivia()
     {
         while (CurrentToken is Token.Eol or Token.Indent or Token.Dedent)
@@ -3365,16 +3438,34 @@ internal sealed class Parser
         }
     }
 
-    private Token CurrentToken => _tokens.Tokens[_position].Token;
+    private Token CurrentToken
+    {
+        get
+        {
+            SkipImplicitLineJoinTrivia();
+            return _tokens.Tokens[_position].Token;
+        }
+    }
 
     private Token PeekToken(int offset)
     {
-        var position = _position + offset;
+        SkipImplicitLineJoinTrivia();
+        var position = _position;
+        for (var remaining = offset; remaining > 0; remaining--)
+        {
+            position++;
+            while (IsImplicitLineJoinTrivia(position))
+            {
+                position++;
+            }
+        }
+
         return position < _tokens.Count ? _tokens.Tokens[position].Token : Token.End;
     }
 
     private int ReadToken()
     {
+        SkipImplicitLineJoinTrivia();
         var tokenIndex = _position;
         _position++;
         return tokenIndex;
@@ -3407,6 +3498,54 @@ internal sealed class Parser
     private bool TryReadMemberName(out int tokenIndex) => TryReadNameToken(out tokenIndex);
 
     private static bool IsNameToken(Token token) => token is Token.Identifier or Token.Match or Token.Case;
+
+    private void SkipImplicitLineJoinTrivia()
+    {
+        while (IsImplicitLineJoinTrivia(_position))
+        {
+            _position++;
+        }
+    }
+
+    private bool IsImplicitLineJoinTrivia(int position)
+        => position >= 0 &&
+           position < _implicitLineJoinTrivia.Length &&
+           _implicitLineJoinTrivia[position];
+
+    private static bool[] ComputeImplicitLineJoinTrivia(LexerResult<Token> tokens)
+    {
+        var hidden = new bool[tokens.Count];
+        var depth = 0;
+
+        for (var i = 0; i < tokens.Count; i++)
+        {
+            var token = tokens.Tokens[i].Token;
+            if (depth > 0 && token is Token.Eol or Token.Indent or Token.Dedent)
+            {
+                hidden[i] = true;
+                continue;
+            }
+
+            switch (token)
+            {
+                case Token.OpenParen:
+                case Token.OpenBracket:
+                case Token.OpenBrace:
+                    depth++;
+                    break;
+                case Token.CloseParen:
+                case Token.CloseBracket:
+                case Token.CloseBrace:
+                    if (depth > 0)
+                    {
+                        depth--;
+                    }
+                    break;
+            }
+        }
+
+        return hidden;
+    }
 
     private void ReadExpected(Token token, string code, string message)
     {
