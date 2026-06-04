@@ -134,6 +134,8 @@ internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public PyString IsoFormat() => PyString.FromString(Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
+    public BigInteger ToOrdinal() => new(Value.DayNumber + 1);
+
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
@@ -236,6 +238,8 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyTime TimePart() => new(TimeOnly.FromDateTime(Value), TzInfo);
 
+    public PyTime NaiveTimePart() => new(TimeOnly.FromDateTime(Value));
+
     public PyString IsoFormat()
     {
         var text = Value.ToString(Value.Microsecond == 0 ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm:ss.ffffff", CultureInfo.InvariantCulture);
@@ -249,6 +253,8 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public DateTimeOffset ToOffset()
         => new(Value, TzInfo?.Offset ?? TimeSpan.Zero);
+
+    public BigInteger ToOrdinal() => new(DateOnly.FromDateTime(Value).DayNumber + 1);
 
     public PyString RenderPython(PyRenderingContext context)
     {
@@ -268,8 +274,79 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public override string ToString() => IsoFormat().AsString();
 }
 
+internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, IPyIterableValue, IPyTruthyValue, IPyRenderableValue, IPyDynamicAttributes
+{
+    private readonly PyTuple _items;
+
+    public PyIsoCalendarDate(int year, int week, int weekday)
+    {
+        Year = new BigInteger(year);
+        Week = new BigInteger(week);
+        Weekday = new BigInteger(weekday);
+        _items = new PyTuple([Year, Week, Weekday]);
+    }
+
+    public BigInteger Year { get; }
+
+    public BigInteger Week { get; }
+
+    public BigInteger Weekday { get; }
+
+    public int Count => _items.Count;
+
+    public int Length => _items.Length;
+
+    public object this[int index] => _items[index];
+
+    public object GetItem(int index) => _items.GetItem(index);
+
+    public object CreateSlice(IEnumerable<object> items) => new PyTuple(items);
+
+    public object GetIndex(int index) => _items.GetIndex(index);
+
+    public object GetSlice(IEnumerable<int> indices) => _items.GetSlice(indices);
+
+    public bool IsTruthy() => true;
+
+    public IEnumerable<object> Iterate() => _items;
+
+    public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public bool TryGetMember(string name, out object value)
+    {
+        value = name switch
+        {
+            "year" => Year,
+            "week" => Week,
+            "weekday" => Weekday,
+            _ => null!,
+        };
+
+        return value is not null;
+    }
+
+    public bool TrySetMember(string name, object value)
+    {
+        _ = name;
+        _ = value;
+        return false;
+    }
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        _ = context;
+        return PyString.FromString($"datetime.IsoCalendarDate(year={Year}, week={Week}, weekday={Weekday})");
+    }
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+}
+
 internal static class PyDateTimeOps
 {
+    private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
     private sealed class TypeMemberCallable : LythonRuntime.ICallable
     {
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
@@ -301,7 +378,12 @@ internal static class PyDateTimeOps
         CreateDate,
         memberName => memberName switch
         {
+            "min" => new PyDate(DateOnly.MinValue),
+            "max" => new PyDate(DateOnly.MaxValue),
+            "resolution" => new PyTimedelta(TimeSpan.FromDays(1)),
+            "fromordinal" => new TypeMemberCallable("datetime.date.fromordinal", DateFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.date.fromisoformat", DateFromIsoFormat, ["date_string"]),
+            "fromtimestamp" => new TypeMemberCallable("datetime.date.fromtimestamp", DateFromTimestamp, ["timestamp"]),
             "today" => new TypeMemberCallable("datetime.date.today", DateToday),
             _ => null
         });
@@ -311,6 +393,9 @@ internal static class PyDateTimeOps
         CreateTime,
         memberName => memberName switch
         {
+            "min" => new PyTime(TimeOnly.MinValue),
+            "max" => new PyTime(new TimeOnly(23, 59, 59, 999).Add(TimeSpan.FromTicks(9990))),
+            "resolution" => new PyTimedelta(TimeSpan.FromTicks(10)),
             "fromisoformat" => new TypeMemberCallable("datetime.time.fromisoformat", TimeFromIsoFormat, ["time_string"]),
             _ => null
         });
@@ -320,9 +405,16 @@ internal static class PyDateTimeOps
         CreateDateTime,
         memberName => memberName switch
         {
+            "min" => new PyDateTime(DateTime.MinValue),
+            "max" => new PyDateTime(new DateTime(9999, 12, 31, 23, 59, 59, 999, DateTimeKind.Unspecified).AddTicks(9990)),
+            "resolution" => new PyTimedelta(TimeSpan.FromTicks(10)),
+            "combine" => new TypeMemberCallable("datetime.datetime.combine", DateTimeCombine, ["date", "time", "tzinfo"], 2),
+            "fromordinal" => new TypeMemberCallable("datetime.datetime.fromordinal", DateTimeFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.datetime.fromisoformat", DateTimeFromIsoFormat, ["date_string"]),
+            "fromtimestamp" => new TypeMemberCallable("datetime.datetime.fromtimestamp", DateTimeFromTimestamp, ["timestamp", "tz"], 1),
             "strptime" => new TypeMemberCallable("datetime.datetime.strptime", DateTimeStrptime, ["date_string", "format"]),
             "now" => new TypeMemberCallable("datetime.datetime.now", DateTimeNow, ["tz"], 0),
+            "utcfromtimestamp" => new TypeMemberCallable("datetime.datetime.utcfromtimestamp", DateTimeUtcFromTimestamp, ["timestamp"]),
             "utcnow" => new TypeMemberCallable("datetime.datetime.utcnow", DateTimeUtcNow),
             _ => null
         });
@@ -393,7 +485,7 @@ internal static class PyDateTimeOps
             "datetime.time",
             "Builtin",
             ["hour", "minute", "second", "microsecond", "tzinfo"],
-            1);
+            0);
 
         return new PyTime(
             new TimeOnly(
@@ -486,6 +578,29 @@ internal static class PyDateTimeOps
         }
     }
 
+    public static object DateFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.date.fromordinal(ordinal) expects one integer argument.", span);
+        }
+
+        return new PyDate(DateFromOrdinalValue(arguments[0], "datetime.date.fromordinal", span));
+    }
+
+    public static object DateFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.date.fromtimestamp(timestamp) expects one argument.", span);
+        }
+
+        context.RegisterHostCall(span);
+        var instant = DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.date.fromtimestamp", span), span);
+        return new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime));
+    }
+
     public static object TimeFromIsoFormat(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
@@ -520,6 +635,82 @@ internal static class PyDateTimeOps
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
+    }
+
+    public static object DateTimeFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromordinal(ordinal) expects one integer argument.", span);
+        }
+
+        return new PyDateTime(DateFromOrdinalValue(arguments[0], "datetime.datetime.fromordinal", span).ToDateTime(TimeOnly.MinValue));
+    }
+
+    public static object DateTimeFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects one or two arguments.", span);
+        }
+
+        var instant = DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.datetime.fromtimestamp", span), span);
+        if (arguments.Length == 1 || arguments[1] is PyNone)
+        {
+            context.RegisterHostCall(span);
+            return new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(context.Host.LocalNow.Offset).DateTime, DateTimeKind.Unspecified));
+        }
+
+        if (arguments[1] is not PyTimezone tz)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects tz to be a timezone or None.", span);
+        }
+
+        return new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(tz.Offset).DateTime, DateTimeKind.Unspecified), tz);
+    }
+
+    public static object DateTimeUtcFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.utcfromtimestamp(timestamp) expects one argument.", span);
+        }
+
+        return new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.datetime.utcfromtimestamp", span), span).UtcDateTime, DateTimeKind.Unspecified));
+    }
+
+    public static object DateTimeCombine(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is < 2 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects two or three arguments.", span);
+        }
+
+        var date = arguments[0] switch
+        {
+            PyDate value => value.Value,
+            PyDateTime value => DateOnly.FromDateTime(value.Value),
+            _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects a date and a time.", span)
+        };
+
+        if (arguments[1] is not PyTime time)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects a date and a time.", span);
+        }
+
+        var timezone = arguments.Length == 2
+            ? time.TzInfo
+            : arguments[2] switch
+            {
+                PyNone => null,
+                PyTimezone tz => tz,
+                _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects tzinfo to be a timezone or None.", span)
+            };
+
+        return new PyDateTime(date.ToDateTime(time.Value), timezone);
     }
 
     public static object DateTimeStrptime(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -586,6 +777,44 @@ internal static class PyDateTimeOps
         context.RegisterHostCall(span);
         var utcNow = context.Host.UtcNow;
         return new PyDateTime(DateTime.SpecifyKind(utcNow.UtcDateTime, DateTimeKind.Unspecified));
+    }
+
+    public static PyIsoCalendarDate IsoCalendar(DateOnly date)
+    {
+        var dateTime = date.ToDateTime(TimeOnly.MinValue);
+        return new PyIsoCalendarDate(
+            ISOWeek.GetYear(dateTime),
+            ISOWeek.GetWeekOfYear(dateTime),
+            ((int)date.DayOfWeek + 6) % 7 + 1);
+    }
+
+    public static PyString CTime(DateOnly date)
+        => CTime(date.ToDateTime(TimeOnly.MinValue));
+
+    public static PyString CTime(DateTime dateTime)
+    {
+        var prefix = dateTime.ToString("ddd MMM", CultureInfo.InvariantCulture);
+        var time = dateTime.ToString("HH:mm:ss yyyy", CultureInfo.InvariantCulture);
+        return PyString.FromString($"{prefix} {dateTime.Day,2} {time}");
+    }
+
+    public static PyTuple TimeTuple(DateOnly date)
+        => CreateTimeTuple(date, TimeOnly.MinValue, isDst: -1);
+
+    public static PyTuple TimeTuple(DateTime dateTime, int isDst = -1)
+        => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst);
+
+    public static double Timestamp(PyDateTime dateTime, TimeSpan localOffset, LythonSourceSpan span)
+    {
+        try
+        {
+            var offset = dateTime.TzInfo?.Offset ?? localOffset;
+            return (new DateTimeOffset(dateTime.Value, offset) - UnixEpoch).TotalSeconds;
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new LythonRuntimeException("ValueError", ex.Message, span);
+        }
     }
 
     public static object Add(object left, object right, LythonSourceSpan span)
@@ -808,6 +1037,66 @@ internal static class PyDateTimeOps
         body = text;
         offset = default;
         return false;
+    }
+
+    private static PyTuple CreateTimeTuple(DateOnly date, TimeOnly time, int isDst)
+    {
+        return new PyTuple([
+            new BigInteger(date.Year),
+            new BigInteger(date.Month),
+            new BigInteger(date.Day),
+            new BigInteger(time.Hour),
+            new BigInteger(time.Minute),
+            new BigInteger(time.Second),
+            new BigInteger(((int)date.DayOfWeek + 6) % 7),
+            new BigInteger(date.DayOfYear),
+            new BigInteger(isDst)
+        ]);
+    }
+
+    private static DateOnly DateFromOrdinalValue(object value, string owner, LythonSourceSpan span)
+    {
+        if (!Numbers.PyNumberOps.TryAsInteger(value, out var ordinal))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(ordinal) expects an integer ordinal.", span);
+        }
+
+        if (ordinal < BigInteger.One || ordinal > new BigInteger(DateOnly.MaxValue.DayNumber + 1))
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner}(ordinal) ordinal is out of range.", span);
+        }
+
+        return DateOnly.FromDayNumber((int)ordinal - 1);
+    }
+
+    private static double GetTimestamp(object value, string owner, LythonSourceSpan span)
+    {
+        if (!Numbers.PyNumberOps.TryAsNumber(value, out var number))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(timestamp) expects a real number.", span);
+        }
+
+        var timestamp = number.ToDouble();
+        if (!double.IsFinite(timestamp))
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner}(timestamp) timestamp is out of range.", span);
+        }
+
+        return timestamp;
+    }
+
+    private static DateTimeOffset DateTimeOffsetFromTimestamp(double timestamp, LythonSourceSpan span)
+    {
+        try
+        {
+            var ticks = checked((long)Math.Round(timestamp * TimeSpan.TicksPerSecond, MidpointRounding.ToEven));
+            ticks -= ticks % 10;
+            return UnixEpoch.AddTicks(ticks);
+        }
+        catch (Exception ex) when (ex is OverflowException or ArgumentOutOfRangeException)
+        {
+            throw new LythonRuntimeException("ValueError", "timestamp out of range.", span);
+        }
     }
 
     private static double GetReal(object? value, string owner, LythonSourceSpan span)

@@ -19,6 +19,7 @@ internal static class PyMemberAccess
             [typeof(PyTime)] = static (object target, string memberName, out object value) => LythonRuntime.TimeMembers.TryGetMember((PyTime)target, memberName, out value),
             [typeof(PyDateTime)] = static (object target, string memberName, out object value) => LythonRuntime.DateTimeMembers.TryGetMember((PyDateTime)target, memberName, out value),
             [typeof(PyTimedelta)] = static (object target, string memberName, out object value) => LythonRuntime.TimedeltaMembers.TryGetMember((PyTimedelta)target, memberName, out value),
+            [typeof(PyTimezone)] = static (object target, string memberName, out object value) => LythonRuntime.TimezoneMembers.TryGetMember((PyTimezone)target, memberName, out value),
             [typeof(PyDefaultDict)] = static (object target, string memberName, out object value) => LythonRuntime.DefaultDictMembers.TryGetMember((PyDefaultDict)target, memberName, out value),
             [typeof(PyCounter)] = static (object target, string memberName, out object value) => LythonRuntime.CounterMembers.TryGetMember((PyCounter)target, memberName, out value),
             [typeof(PyDeque)] = static (object target, string memberName, out object value) => LythonRuntime.DequeMembers.TryGetMember((PyDeque)target, memberName, out value),
