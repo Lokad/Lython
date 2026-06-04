@@ -72,6 +72,7 @@ The builtin module surface is explicitly allowlisted:
 - `dataclasses`
 - `datetime`
 - `decimal`
+- `difflib`
 - `fnmatch`
 - `functools`
 - `glob`

@@ -301,6 +301,7 @@ internal sealed partial class LythonRuntime
             "functools" => FunctoolsModule.Instance,
             "re" => ReModule.Instance,
             "fnmatch" => FnMatchModule.Instance,
+            "difflib" => DifflibModule.Instance,
             "json" => JsonModule.Instance,
             "csv" => CsvModule.Instance,
             "subprocess" when context.Host.SubprocessRunner is not null => SubprocessModule.Instance,

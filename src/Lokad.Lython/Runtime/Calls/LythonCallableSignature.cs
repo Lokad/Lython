@@ -79,4 +79,11 @@ internal static class LythonKnownCallableSignatures
 
     public static readonly LythonCallableSignature FnMatch = new("fnmatch.fnmatch", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = new("fnmatch.filter", ["names", "pattern"]);
+
+    public static readonly LythonCallableSignature DifflibUnifiedDiff = new("difflib.unified_diff", ["a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibContextDiff = new("difflib.context_diff", ["a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibNdiff = new("difflib.ndiff", ["a", "b"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibRestore = new("difflib.restore", ["delta", "which"]);
+    public static readonly LythonCallableSignature DifflibGetCloseMatches = new("difflib.get_close_matches", ["word", "possibilities", "n", "cutoff"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibSequenceMatcher = new("difflib.SequenceMatcher", ["isjunk", "a", "b", "autojunk"], RequiredCount: 0);
 }

@@ -37,6 +37,7 @@ internal static class PyMemberAccess
             [typeof(LythonRuntime.ArgparseNamespaceObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.ArgparseNamespaceObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.ArgparseMutuallyExclusiveGroupObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.ArgparseMutuallyExclusiveGroupObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.ChainFactory)] = static (object target, string memberName, out object value) => ((LythonRuntime.ChainFactory)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.DifflibSequenceMatcherObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.DifflibSequenceMatcherObject)target).TryGetMember(memberName, out value),
         };
 
     public static bool TryResolve(object target, string memberName, out object value)

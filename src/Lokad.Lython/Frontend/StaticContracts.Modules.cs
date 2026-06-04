@@ -25,6 +25,7 @@ internal static partial class StaticContracts
         ["functools"] = Members("update_wrapper", "wraps", "total_ordering", "reduce", "partial", "cmp_to_key"),
         ["re"] = Members("compile", "search", "match", "fullmatch", "findall", "finditer", "sub", "subn", "split", "escape", "Pattern", "Match", "IGNORECASE", "I", "UNICODE", "U", "MULTILINE", "M", "DOTALL", "S", "VERBOSE", "X"),
         ["fnmatch"] = Members("fnmatch", "filter"),
+        ["difflib"] = Members("unified_diff", "context_diff", "ndiff", "restore", "get_close_matches", "SequenceMatcher"),
         ["json"] = Members("loads", "dumps"),
         ["csv"] = Members("reader", "writer"),
         ["subprocess"] = Members("run"),

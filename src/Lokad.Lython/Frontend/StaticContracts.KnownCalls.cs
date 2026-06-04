@@ -58,6 +58,12 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.GlobEscape, "LA3151", "glob.escape(pathname) expects one argument.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.FnMatch, "LA3151", "fnmatch.fnmatch(name, pattern) expects two arguments.", StaticReturnShape.Boolean),
         new(LythonKnownCallableSignatures.FnMatchFilter, "LA3151", "fnmatch.filter(names, pattern) expects two arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibUnifiedDiff, "LA3151", "difflib.unified_diff(a, b[, fromfile][, tofile][, fromfiledate][, tofiledate][, n][, lineterm]) expects two to eight arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibContextDiff, "LA3151", "difflib.context_diff(a, b[, fromfile][, tofile][, fromfiledate][, tofiledate][, n][, lineterm]) expects two to eight arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibNdiff, "LA3151", "difflib.ndiff(a, b) expects two arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibRestore, "LA3151", "difflib.restore(delta, which) expects two arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibGetCloseMatches, "LA3151", "difflib.get_close_matches(word, possibilities[, n][, cutoff]) expects two to four arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.DifflibSequenceMatcher, "LA3151", "difflib.SequenceMatcher([isjunk][, a][, b][, autojunk]) expects zero to four arguments."),
     ];
 
     public static bool TryGetKnownCallContract(string targetName, out StaticKnownCallContract contract)
