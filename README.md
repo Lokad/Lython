@@ -6,6 +6,8 @@ Lython is an embeddable, contained-by-design Python runtime implemented in manag
 dotnet add package Lokad.Lython
 ```
 
+Release notes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
 It is meant for the kind of Python a coding agent naturally writes when it needs to:
 
 - read and rewrite text files
