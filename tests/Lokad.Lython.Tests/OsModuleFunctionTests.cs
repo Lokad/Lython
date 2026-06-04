@@ -12,10 +12,13 @@ public sealed class OsModuleFunctionTests
         var result = new LythonEngine().Run(
             """
 import os
+from pathlib import Path
 from os import path
 
 vals = []
 vals.append(os.sep)
+vals.append(os.fspath(Path("/repo/docs/guide.md")))
+vals.append(path.join(Path("/repo"), "docs", Path("guide.md")))
 vals.append(path.join("/repo", "docs", "guide.md"))
 vals.append(str(path.split("/repo/docs/guide.md")))
 vals.append(str(path.splitext("/repo/docs/guide.md")))
@@ -24,6 +27,7 @@ vals.append(path.dirname("/repo/docs/guide.md"))
 vals.append(str(path.isabs("/repo/docs")))
 vals.append(path.normpath("/repo/docs/../site/./page.md"))
 vals.append(path.abspath("../docs/guide.md"))
+vals.append(path.realpath("../docs/guide.md"))
 vals.append(path.relpath("/repo/docs/guide.md", "/repo"))
 vals.append(path.commonpath(["/repo/docs/a.md", "/repo/docs/b.txt"]))
 write_text("/out.txt", "|".join(vals))
@@ -31,7 +35,7 @@ write_text("/out.txt", "|".join(vals))
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("/|/repo/docs/guide.md|(/repo/docs, guide.md)|(/repo/docs/guide, .md)|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
+        Assert.Equal("/|/repo/docs/guide.md|/repo/docs/guide.md|/repo/docs/guide.md|(/repo/docs, guide.md)|(/repo/docs/guide, .md)|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -44,6 +48,7 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 import os
+from pathlib import Path
 
 vals = []
 vals.append(str(sorted(os.listdir("/repo/docs"))))
@@ -51,6 +56,16 @@ vals.append(os.getcwd())
 vals.append(str(os.path.exists("/repo/docs/a.txt")))
 vals.append(str(os.path.isfile("/repo/docs/a.txt")))
 vals.append(str(os.path.isdir("/repo/docs")))
+vals.append(str(os.stat(Path("/repo/docs/a.txt")).st_size))
+vals.append(str(os.lstat("/repo/docs/a.txt").st_mtime))
+vals.append(str(os.path.getsize(Path("/repo/docs/a.txt"))))
+vals.append(str(os.path.getmtime("/repo/docs/a.txt")))
+vals.append(str(os.path.lexists("/repo/docs/a.txt")))
+entries = []
+for entry in os.scandir("/repo/docs"):
+    entries.append(entry.name + ":" + str(entry.is_file()) + ":" + str(entry.is_dir()) + ":" + str(entry.stat().st_size))
+vals.append(str(sorted(entries)))
+vals.append(str(os.path.samefile("/repo/docs/a.txt", Path("/repo/docs/a.txt"))))
 os.makedirs("/repo/out/nested", exist_ok=True)
 os.rename("/repo/docs/a.txt", "/repo/docs/c.txt")
 os.unlink("/repo/docs/sub/b.txt")
@@ -62,7 +77,7 @@ write_text("/out.txt", "|".join(vals))
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.txt, sub]|/repo|True|True|True|True|True|False", host.ReadText("/out.txt"));
+        Assert.Equal("[a.txt, sub]|/repo|True|True|True|5|0|5|0|True|[a.txt:True:False:5, sub:False:True:0]|True|True|True|False", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -244,6 +259,9 @@ vals.append(str(sorted(os.listdir("/repo/docs"))))
 vals.append(str(os.path.exists("/repo/docs/a.txt")))
 vals.append(str(os.path.isfile("/repo/docs/a.txt")))
 vals.append(str(os.path.isdir("/repo/docs")))
+vals.append(str(os.stat("/repo/docs/a.txt").st_size))
+vals.append(str(os.path.getsize("/repo/docs/b.txt")))
+vals.append(str(sorted([entry.name for entry in os.scandir("/repo/docs")])))
 os.makedirs("/repo/out/nested", exist_ok=True)
 os.rename("/repo/docs/a.txt", "/repo/docs/c.txt")
 os.replace("/repo/docs/c.txt", "/repo/docs/b.txt")
@@ -263,7 +281,7 @@ write_text("/out.txt", "|".join(vals))
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
-        Assert.Equal("[a.txt, b.txt]|True|True|True|alpha|True|False|False|True|False", host.ReadText("/out.txt"));
+        Assert.Equal("[a.txt, b.txt]|True|True|True|5|4|[a.txt, b.txt]|alpha|True|False|False|True|False", host.ReadText("/out.txt"));
     }
 
     [Theory]
@@ -273,7 +291,7 @@ import os
 os.path.commonpath([])
 """,
         "compile",
-        "non-empty iterable of strings")]
+        "non-empty iterable of path-like values")]
     [InlineData(
         """
 import os
@@ -287,7 +305,7 @@ import os
 os.path.commonpath("/repo/docs")
 """,
         "compile",
-        "iterable of strings, not a single string")]
+        "iterable of path-like values, not a single path")]
     [InlineData(
         """
 import os
@@ -295,6 +313,13 @@ os.makedirs("/repo", exist_ok=False)
 """,
         "RuntimeError",
         "target already exists")]
+    [InlineData(
+        """
+import os
+os.path.samefile("/repo/missing.txt", "/repo/also-missing.txt")
+""",
+        "RuntimeError",
+        "both paths")]
     public void OsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost("/repo"));

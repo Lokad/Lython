@@ -2020,11 +2020,12 @@ from pathlib import Path
 
 j.dumps(obj=1, extra=2)
 writer(delimiter=",", extra=True)
-Path()
+Path(1)
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Equal(3, compiled.Diagnostics.Count(d => d.Code == "LA3151"));
+        Assert.Equal(2, compiled.Diagnostics.Count(d => d.Code == "LA3151"));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pathlib.Path", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -2266,8 +2267,8 @@ import re
 def helper(name):
     return name
 
-empty = []
-Path(*empty)
+bad_path_args = [1]
+Path(*bad_path_args)
 kwargs = {"bad": 1}
 helper(**kwargs)
 args = [1, "abc"]
@@ -2275,7 +2276,7 @@ re.search(*args)
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3151");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pathlib.Path", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3148");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158");
     }

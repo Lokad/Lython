@@ -16,7 +16,7 @@ internal static class StaticFilesystemContractFamily
         {
             for (var i = 0; i < arguments.Positional.Count; i++)
             {
-                emitted |= AnalyzeStringArgument(arguments, i, string.Empty, "pathlib.Path(path[, ...]) expects string path segments.", diagnostics, bindings);
+                emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, "pathlib.Path([path][, ...]) expects string or Path path segments.", diagnostics, bindings);
             }
 
             return emitted;
@@ -66,12 +66,12 @@ internal static class StaticFilesystemContractFamily
         var emitted = false;
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsListDir.Name, StringComparison.Ordinal))
         {
-            return AnalyzeStringArgument(arguments, 0, "path", "os.listdir([path]) expects path to be a string.", diagnostics, bindings);
+            return AnalyzePathLikeArgument(arguments, 0, "path", "os.listdir([path]) expects path to be path-like.", diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsWalk.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "top", "os.walk([top][, topdown][, onerror][, followlinks]) expects top to be a string.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "top", "os.walk([top][, topdown][, onerror][, followlinks]) expects top to be path-like.", diagnostics, bindings);
             emitted |= AnalyzeBooleanOrNoneArgument(arguments, 1, "topdown", "os.walk(..., topdown=...) expects a bool or None.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "onerror", "os.walk(..., onerror=...) expects a callable or None.", diagnostics, bindings);
             emitted |= AnalyzeBooleanOrNoneArgument(arguments, 3, "followlinks", "os.walk(..., followlinks=...) expects a bool or None.", diagnostics, bindings);
@@ -80,20 +80,20 @@ internal static class StaticFilesystemContractFamily
 
         if (IsSinglePathKnownCall(targetName))
         {
-            return AnalyzeStringArgument(arguments, 0, "path", $"{targetName}(path) expects a string path.", diagnostics, bindings);
+            return AnalyzePathLikeArgument(arguments, 0, "path", $"{targetName}(path) expects a path-like argument.", diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsMakedirs.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "path", "os.makedirs(path[, exist_ok]) expects path to be a string.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "path", "os.makedirs(path[, exist_ok]) expects path to be path-like.", diagnostics, bindings);
             emitted |= AnalyzeBooleanArgument(arguments, 1, "exist_ok", "os.makedirs(path[, exist_ok]) expects exist_ok to be a bool.", diagnostics, bindings);
             return emitted;
         }
 
         if (IsTwoPathKnownCall(targetName))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "src", $"{targetName}(src, dst) expects string path arguments.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "dst", $"{targetName}(src, dst) expects string path arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "src", $"{targetName}(src, dst) expects path-like arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 1, "dst", $"{targetName}(src, dst) expects path-like arguments.", diagnostics, bindings);
             return emitted;
         }
 
@@ -101,7 +101,7 @@ internal static class StaticFilesystemContractFamily
         {
             for (var i = 0; i < arguments.Positional.Count; i++)
             {
-                emitted |= AnalyzeStringArgument(arguments, i, string.Empty, "os.path.join(path, *paths) expects string path arguments.", diagnostics, bindings);
+                emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, "os.path.join(path, *paths) expects path-like arguments.", diagnostics, bindings);
             }
 
             return emitted;
@@ -109,19 +109,26 @@ internal static class StaticFilesystemContractFamily
 
         if (IsOsPathSinglePathKnownCall(targetName))
         {
-            return AnalyzeStringArgument(arguments, 0, "path", $"{targetName}(path) expects a string path.", diagnostics, bindings);
+            return AnalyzePathLikeArgument(arguments, 0, "path", $"{targetName}(path) expects a path-like argument.", diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsPathRelPath.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "path", "os.path.relpath(path[, start]) expects string path arguments.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "start", "os.path.relpath(path[, start]) expects string path arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "path", "os.path.relpath(path[, start]) expects path-like arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 1, "start", "os.path.relpath(path[, start]) expects path-like arguments.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.OsPathSameFile.Name, StringComparison.Ordinal))
+        {
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "path1", "os.path.samefile(path1, path2) expects path-like arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 1, "path2", "os.path.samefile(path1, path2) expects path-like arguments.", diagnostics, bindings);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsPathCommonPath.Name, StringComparison.Ordinal))
         {
-            return AnalyzeIterableOfStringsArgument(arguments, 0, "paths", "os.path.commonpath(paths) expects a non-empty iterable of strings, not a single string.", diagnostics, bindings, rejectSingleString: true, requireNonEmpty: true);
+            return AnalyzeIterableOfPathLikeArgument(arguments, 0, "paths", "os.path.commonpath(paths) expects a non-empty iterable of path-like values, not a single path.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
         }
 
         return false;
@@ -174,7 +181,11 @@ internal static class StaticFilesystemContractFamily
     }
 
     private static bool IsSinglePathKnownCall(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.OsMkdir.Name, StringComparison.Ordinal) ||
+        => string.Equals(targetName, LythonKnownCallableSignatures.OsFspath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsStat.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsLstat.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsScandir.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsMkdir.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsRemove.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsUnlink.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsRmdir.Name, StringComparison.Ordinal) ||
@@ -193,8 +204,12 @@ internal static class StaticFilesystemContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathNormPath.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathAbsPath.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathExists.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsPathLexists.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathIsFile.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.OsPathIsDir.Name, StringComparison.Ordinal);
+           string.Equals(targetName, LythonKnownCallableSignatures.OsPathIsDir.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsPathGetSize.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsPathGetMTime.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.OsPathRealPath.Name, StringComparison.Ordinal);
 
     private static void AnalyzeOsWalkCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
@@ -231,9 +246,10 @@ internal static class StaticFilesystemContractFamily
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolveKnownString(pathsExpression, bindings, out _))
+        var pathsValue = StaticAbstractValueResolver.ResolveOrUnknown(pathsExpression, bindings);
+        if (IsPathLike(pathsValue))
         {
-            AddDiagnostic(diagnostics, "LA3043", "os.path.commonpath(paths) expects an iterable of strings, not a single string.", pathsExpression.Span);
+            AddDiagnostic(diagnostics, "LA3043", "os.path.commonpath(paths) expects an iterable of path-like values, not a single path.", pathsExpression.Span);
             return;
         }
 

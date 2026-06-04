@@ -13,6 +13,15 @@ internal static class StaticKnownCallArgumentChecks
         AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.IsStringLike);
 
+    internal static bool AnalyzePathLikeArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsPathLike);
+
     internal static bool AnalyzeStringOrNoneArgument(
         ConcreteCallArguments arguments,
         int position,
@@ -153,6 +162,74 @@ internal static class StaticKnownCallArgumentChecks
         return false;
     }
 
+    internal static bool AnalyzeIterableOfPathLikeArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        bool rejectSinglePathLike = false,
+        bool requireNonEmpty = false)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
+        {
+            return false;
+        }
+
+        if (IsUnknown(value))
+        {
+            return false;
+        }
+
+        if (rejectSinglePathLike && IsPathLike(value))
+        {
+            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+            return true;
+        }
+
+        if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
+        {
+            var items = (IReadOnlyList<AbstractValue>)value.Value;
+            if (requireNonEmpty && items.Count == 0)
+            {
+                AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+                return true;
+            }
+
+            foreach (var item in items)
+            {
+                if (!IsPathLike(item) && !IsUnknown(item))
+                {
+                    AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.ListType)
+        {
+            var item = (AbstractValue)value.Value;
+            if (!IsPathLike(item) && !IsUnknown(item))
+            {
+                AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (StaticAbstractFacts.IsDefinitelyNonIterable(value))
+        {
+            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+            return true;
+        }
+
+        return false;
+    }
+
     internal static bool AnalyzeArgument(
         ConcreteCallArguments arguments,
         int position,
@@ -214,6 +291,9 @@ internal static class StaticKnownCallArgumentChecks
 
     internal static bool IsBooleanLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Boolean or AbstractValueKind.BooleanType;
+
+    internal static bool IsPathLike(AbstractValue value)
+        => value.IsStringLike || value.Kind == AbstractValueKind.Path;
 
     internal static LythonSourceSpan DiagnosticSpan(ExpressionSyntax expression, AbstractValue value)
         => value.Span.Length != 0 ? value.Span : expression.Span;

@@ -18,7 +18,7 @@ internal static class LythonKnownCallableSignatures
 {
     public static readonly LythonCallableSignature SysExit = new("sys.exit", ["code"], RequiredCount: 0);
 
-    public static readonly LythonCallableSignature PathlibPath = new("pathlib.Path", RequiredCount: 1);
+    public static readonly LythonCallableSignature PathlibPath = new("pathlib.Path", RequiredCount: 0);
 
     public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s"]);
     public static readonly LythonCallableSignature JsonDumps = new("json.dumps", ["obj"]);
@@ -50,6 +50,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OsListDir = new("os.listdir", ["path"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsWalk = new("os.walk", ["top", "topdown", "onerror", "followlinks"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsGetCwd = new("os.getcwd", []);
+    public static readonly LythonCallableSignature OsFspath = new("os.fspath", ["path"]);
+    public static readonly LythonCallableSignature OsStat = new("os.stat", ["path"]);
+    public static readonly LythonCallableSignature OsLstat = new("os.lstat", ["path"]);
+    public static readonly LythonCallableSignature OsScandir = new("os.scandir", ["path"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsMkdir = new("os.mkdir", ["path"]);
     public static readonly LythonCallableSignature OsMakedirs = new("os.makedirs", ["path", "exist_ok"], RequiredCount: 1);
     public static readonly LythonCallableSignature OsRemove = new("os.remove", ["path"]);
@@ -70,8 +74,13 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OsPathRelPath = new("os.path.relpath", ["path", "start"], RequiredCount: 1);
     public static readonly LythonCallableSignature OsPathCommonPath = new("os.path.commonpath", ["paths"]);
     public static readonly LythonCallableSignature OsPathExists = new("os.path.exists", ["path"]);
+    public static readonly LythonCallableSignature OsPathLexists = new("os.path.lexists", ["path"]);
     public static readonly LythonCallableSignature OsPathIsFile = new("os.path.isfile", ["path"]);
     public static readonly LythonCallableSignature OsPathIsDir = new("os.path.isdir", ["path"]);
+    public static readonly LythonCallableSignature OsPathGetSize = new("os.path.getsize", ["path"]);
+    public static readonly LythonCallableSignature OsPathGetMTime = new("os.path.getmtime", ["path"]);
+    public static readonly LythonCallableSignature OsPathSameFile = new("os.path.samefile", ["path1", "path2"]);
+    public static readonly LythonCallableSignature OsPathRealPath = new("os.path.realpath", ["path"]);
 
     public static readonly LythonCallableSignature Glob = new("glob.glob", ["pathname", "recursive"], RequiredCount: 1);
     public static readonly LythonCallableSignature IGlob = new("glob.iglob", ["pathname", "recursive"], RequiredCount: 1);

@@ -6,8 +6,12 @@ internal static partial class StaticContracts
     [
         new(AbstractValueKind.Path, "name", StaticReturnShape.String),
         new(AbstractValueKind.Path, "suffix", StaticReturnShape.String),
+        new(AbstractValueKind.Path, "suffixes", StaticReturnShape.ListOfString),
         new(AbstractValueKind.Path, "stem", StaticReturnShape.String),
         new(AbstractValueKind.Path, "parent", StaticReturnShape.Path),
+        new(AbstractValueKind.Path, "drive", StaticReturnShape.String),
+        new(AbstractValueKind.Path, "root", StaticReturnShape.String),
+        new(AbstractValueKind.Path, "anchor", StaticReturnShape.String),
         new(AbstractValueKind.SubprocessCompletedProcess, "returncode", StaticReturnShape.Integer),
         new(AbstractValueKind.SubprocessCompletedProcess, "stdout", StaticReturnShape.String),
         new(AbstractValueKind.SubprocessCompletedProcess, "stderr", StaticReturnShape.String),

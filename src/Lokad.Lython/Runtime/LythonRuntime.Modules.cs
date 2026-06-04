@@ -1958,15 +1958,20 @@ internal sealed partial class LythonRuntime
             _ = context;
             if (arguments.Length == 0)
             {
-                throw new LythonRuntimeException("TypeError", "pathlib.Path(path[, ...]) expects one or more string arguments.", span);
+                return new PyPath(PyStringOps.DotLiteral);
             }
 
             PyString? path = null;
             foreach (var argument in arguments)
             {
-                if (!PyStringOps.TryAsString(argument, out var segment))
+                PyString segment;
+                if (argument is PyPath pyPath)
                 {
-                    throw new LythonRuntimeException("TypeError", "pathlib.Path(path[, ...]) expects one or more string arguments.", span);
+                    segment = pyPath.Value;
+                }
+                else if (!PyStringOps.TryAsString(argument, out segment))
+                {
+                    throw new LythonRuntimeException("TypeError", "pathlib.Path([path][, ...]) expects string or Path arguments.", span);
                 }
 
                 path = path is null ? segment : PathOps.Join(path, segment);

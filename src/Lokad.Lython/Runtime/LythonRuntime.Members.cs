@@ -732,6 +732,10 @@ internal sealed partial class LythonRuntime
                 "is_dir" => stat.IsDir,
                 "size" => stat.Size,
                 "modified_at" => stat.ModifiedAt,
+                "st_size" => stat.Size,
+                "st_mtime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
+                "st_ctime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
+                "st_atime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
                 _ => null!,
             };
 
@@ -795,10 +799,14 @@ internal sealed partial class LythonRuntime
             {
                 "name" => PyString.FromString(PathOps.BaseName(path.Value.AsString())),
                 "suffix" => PyString.FromString(PathOps.Suffix(path.Value.AsString())),
+                "suffixes" => PathSuffixes(path.Value),
                 "stem" => PyString.FromString(PathOps.Stem(path.Value.AsString())),
                 "parent" => new PyPath(PathOps.Parent(path.Value)),
                 "parents" => PathOps.Parents(path.Value),
                 "parts" => PathOps.Parts(path.Value),
+                "drive" => PyString.Empty,
+                "root" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
+                "anchor" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
                 "is_absolute" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -837,6 +845,24 @@ internal sealed partial class LythonRuntime
 
                     return PathOps.Match(path.Value.AsString(), pattern.AsString());
                 }, "Path.match", ["pattern"]),
+                "is_relative_to" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.is_relative_to(other) expects one argument.", span);
+                    }
+
+                    var other = RequirePath(arguments[0], "Path.is_relative_to(other)", span);
+                    try
+                    {
+                        PathOps.RelativeTo(path.Value.AsString(), other.Value.AsString());
+                        return true;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return false;
+                    }
+                }, "Path.is_relative_to", ["other"]),
                 "as_posix" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -851,6 +877,15 @@ internal sealed partial class LythonRuntime
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Path.resolve() expects no arguments.", span);
+                    }
+
+                    return new PyPath(PathOps.Normalize(path.Value, PyString.FromString(context.Host.Cwd)));
+                }),
+                "absolute" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.absolute() expects no arguments.", span);
                     }
 
                     return new PyPath(PathOps.Normalize(path.Value, PyString.FromString(context.Host.Cwd)));
@@ -904,6 +939,42 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("ValueError", ex.Message, span);
                     }
                 }, "Path.with_name", ["name"]),
+                "with_stem" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var stem))
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.with_stem(stem) expects one string argument.", span);
+                    }
+
+                    try
+                    {
+                        return new PyPath(PyString.FromString(PathOps.WithName(path.Value.AsString(), stem.AsString() + PathOps.Suffix(path.Value.AsString()))));
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        throw new LythonRuntimeException("ValueError", ex.Message, span);
+                    }
+                }, "Path.with_stem", ["stem"]),
+                "stat" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return context.HostStat(path.Value.AsString(), span);
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                }),
                 "exists" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -964,11 +1035,62 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsDir;
                 }),
-                "unlink" => new BoundCallable((arguments, span, context) =>
+                "is_symlink" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
-                        throw new LythonRuntimeException("TypeError", "Path.unlink() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "Path.is_symlink() expects no arguments.", span);
+                    }
+
+                    return false;
+                }),
+                "unlink" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.unlink([missing_ok]) expects zero or one argument.", span);
+                    }
+
+                    var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
+                    if (missingOk)
+                    {
+                        context.RegisterHostCall(span);
+                        if (!context.HostStat(path.Value.AsString(), span).Exists)
+                        {
+                            return PyNone.Instance;
+                        }
+                    }
+
+                    context.RegisterHostCall(span);
+                    context.HostRemove(path.Value.AsString(), span);
+                    return PyNone.Instance;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.unlink([missing_ok]) expects zero or one argument.", span);
+                    }
+
+                    var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
+                    if (missingOk)
+                    {
+                        context.RegisterHostCall(span);
+                        if (!(await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).Exists)
+                        {
+                            return PyNone.Instance;
+                        }
+                    }
+
+                    context.RegisterHostCall(span);
+                    await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                    return PyNone.Instance;
+                }, "Path.unlink", ["missing_ok"], 0),
+                "rmdir" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
                     }
 
                     context.RegisterHostCall(span);
@@ -979,7 +1101,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (arguments.Length != 0)
                     {
-                        throw new LythonRuntimeException("TypeError", "Path.unlink() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
                     }
 
                     context.RegisterHostCall(span);
@@ -1010,28 +1132,64 @@ internal sealed partial class LythonRuntime
                     await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                     return target;
                 }, "Path.rename", ["target"]),
-                "mkdir" => new BoundCallable((arguments, span, context) =>
+                "replace" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 0)
+                    if (arguments.Length != 1)
                     {
-                        throw new LythonRuntimeException("TypeError", "Path.mkdir() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
+                    }
+
+                    var target = RequirePath(arguments[0], "Path.replace(target)", span);
+                    context.RegisterHostCall(span);
+                    if (context.HostStat(target.Value.AsString(), span).Exists)
+                    {
+                        context.RegisterHostCall(span);
+                        context.HostRemove(target.Value.AsString(), span);
                     }
 
                     context.RegisterHostCall(span);
-                    context.HostMkDir(path.Value.AsString(), span);
+                    context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
+                    return target;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
+                    }
+
+                    var target = RequirePath(arguments[0], "Path.replace(target)", span);
+                    context.RegisterHostCall(span);
+                    if ((await context.HostStatAsync(target.Value.AsString(), span).ConfigureAwait(false)).Exists)
+                    {
+                        context.RegisterHostCall(span);
+                        await context.HostRemoveAsync(target.Value.AsString(), span).ConfigureAwait(false);
+                    }
+
+                    context.RegisterHostCall(span);
+                    await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
+                    return target;
+                }, "Path.replace", ["target"]),
+                "mkdir" => new BoundCallable((arguments, span, context) =>
+                {
+                    PathMkDir(path.Value.AsString(), arguments, span, context);
                     return PyNone.Instance;
                 },
                 async (arguments, span, context) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.mkdir() expects no arguments.", span);
-                    }
-
-                    context.RegisterHostCall(span);
-                    await context.HostMkDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                    await PathMkDirAsync(path.Value.AsString(), arguments, span, context).ConfigureAwait(false);
                     return PyNone.Instance;
-                }),
+                }, "Path.mkdir", ["mode", "parents", "exist_ok"], 0),
+                "touch" => new BoundCallable((arguments, span, context) =>
+                {
+                    PathTouch(path.Value.AsString(), arguments, span, context);
+                    return PyNone.Instance;
+                },
+                async (arguments, span, context) =>
+                {
+                    await PathTouchAsync(path.Value.AsString(), arguments, span, context).ConfigureAwait(false);
+                    return PyNone.Instance;
+                }, "Path.touch", ["mode", "exist_ok"], 0),
                 "open" => new BoundCallable((arguments, span, context) =>
                 {
                     var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
@@ -1099,6 +1257,30 @@ internal sealed partial class LythonRuntime
 
                     return results;
                 }, "Path.glob", ["pattern"]),
+                "iterdir" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    var entries = context.HostListDir(path.Value.AsString(), span)
+                        .Select<string, object>(name => new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
+                    return new PyList(entries, context.MemoryGovernor, span);
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                    var entries = names.Select<string, object>(name => new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
+                    return new PyList(entries, context.MemoryGovernor, span);
+                }),
                 "read_text" => new BoundCallable((arguments, span, context) =>
                 {
                     var encodingMode = ParsePathReadTextArguments(arguments, span);
@@ -1152,6 +1334,27 @@ internal sealed partial class LythonRuntime
                     await EnumerateRecursiveAsync(path.Value, pattern, context, span, results).ConfigureAwait(false);
                     return results;
                 }, "Path.rglob", ["pattern"]),
+                "samefile" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.samefile(other_path) expects one argument.", span);
+                    }
+
+                    var other = RequirePath(arguments[0], "Path.samefile(other_path)", span);
+                    var left = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
+                    var right = PathOps.Normalize(other.Value.AsString(), context.Host.Cwd);
+                    context.RegisterHostCall(span);
+                    var leftStat = context.HostStat(left, span);
+                    context.RegisterHostCall(span);
+                    var rightStat = context.HostStat(right, span);
+                    if (!leftStat.Exists || !rightStat.Exists)
+                    {
+                        throw new LythonRuntimeException("RuntimeError", "Path.samefile() expects both paths to exist.", span);
+                    }
+
+                    return string.Equals(left, right, StringComparison.Ordinal);
+                }, "Path.samefile", ["other_path"]),
                 _ => null!,
             };
 
@@ -1178,6 +1381,238 @@ internal sealed partial class LythonRuntime
                 _ when PyStringOps.TryAsString(value, out var text) => new PyPath(PathOps.Normalize(text)),
                 _ => throw new LythonRuntimeException("TypeError", $"{signature} expects a Path or string argument.", span)
             };
+        }
+
+        private static PyList PathSuffixes(PyString path)
+        {
+            var name = PathOps.BaseName(path.AsString());
+            var suffixes = new List<object>();
+            var dot = name.IndexOf('.', name.StartsWith(".", StringComparison.Ordinal) ? 1 : 0);
+            while (dot >= 0 && dot < name.Length - 1)
+            {
+                var next = name.IndexOf('.', dot + 1);
+                suffixes.Add(PyString.FromString(next < 0 ? name[dot..] : name[dot..next]));
+                dot = next;
+            }
+
+            return new PyList(suffixes);
+        }
+
+        private static bool ParseOptionalBool(object[] arguments, int index, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
+        {
+            if (arguments.Length <= index || arguments[index] is null or PyNone)
+            {
+                return defaultValue;
+            }
+
+            return arguments[index] is bool value
+                ? value
+                : throw new LythonRuntimeException("TypeError", $"{owner} expects {parameterName} to be a bool.", span);
+        }
+
+        private static void ValidateIgnoredPathMode(object[] arguments, int index, string owner, LythonSourceSpan span)
+        {
+            if (arguments.Length <= index || arguments[index] is null or PyNone)
+            {
+                return;
+            }
+
+            if (!Numbers.PyNumberOps.TryAsInteger(arguments[index], out _))
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner} expects mode to be an integer.", span);
+            }
+        }
+
+        private static void PathMkDir(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.mkdir([mode][, parents][, exist_ok]) expects zero to three arguments.", span);
+            }
+
+            ValidateIgnoredPathMode(arguments, 0, "Path.mkdir([mode][, parents][, exist_ok])", span);
+            var parents = ParseOptionalBool(arguments, 1, false, "Path.mkdir([mode][, parents][, exist_ok])", "parents", span);
+            var existOk = ParseOptionalBool(arguments, 2, false, "Path.mkdir([mode][, parents][, exist_ok])", "exist_ok", span);
+            var normalized = PathOps.Normalize(path, context.Host.Cwd);
+
+            if (parents)
+            {
+                PathMkDirs(normalized, existOk, span, context);
+                return;
+            }
+
+            if (existOk)
+            {
+                context.RegisterHostCall(span);
+                var stat = context.HostStat(normalized, span);
+                if (stat.Exists && stat.IsDir)
+                {
+                    return;
+                }
+
+                if (stat.Exists)
+                {
+                    throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
+                }
+            }
+
+            context.RegisterHostCall(span);
+            context.HostMkDir(normalized, span);
+        }
+
+        private static async ValueTask PathMkDirAsync(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.mkdir([mode][, parents][, exist_ok]) expects zero to three arguments.", span);
+            }
+
+            ValidateIgnoredPathMode(arguments, 0, "Path.mkdir([mode][, parents][, exist_ok])", span);
+            var parents = ParseOptionalBool(arguments, 1, false, "Path.mkdir([mode][, parents][, exist_ok])", "parents", span);
+            var existOk = ParseOptionalBool(arguments, 2, false, "Path.mkdir([mode][, parents][, exist_ok])", "exist_ok", span);
+            var normalized = PathOps.Normalize(path, context.Host.Cwd);
+
+            if (parents)
+            {
+                await PathMkDirsAsync(normalized, existOk, span, context).ConfigureAwait(false);
+                return;
+            }
+
+            if (existOk)
+            {
+                context.RegisterHostCall(span);
+                var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
+                if (stat.Exists && stat.IsDir)
+                {
+                    return;
+                }
+
+                if (stat.Exists)
+                {
+                    throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
+                }
+            }
+
+            context.RegisterHostCall(span);
+            await context.HostMkDirAsync(normalized, span).ConfigureAwait(false);
+        }
+
+        private static void PathMkDirs(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.RegisterHostCall(span);
+            var stat = context.HostStat(normalized, span);
+            if (stat.Exists)
+            {
+                if (stat.IsDir && existOk)
+                {
+                    return;
+                }
+
+                throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
+            }
+
+            foreach (var current in EnumerateMissingDirectories(normalized))
+            {
+                context.RegisterHostCall(span);
+                var currentStat = context.HostStat(current, span);
+                if (currentStat.Exists)
+                {
+                    if (!currentStat.IsDir)
+                    {
+                        throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() path component is not a directory: {current}", span);
+                    }
+
+                    continue;
+                }
+
+                context.RegisterHostCall(span);
+                context.HostMkDir(current, span);
+            }
+        }
+
+        private static async ValueTask PathMkDirsAsync(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.RegisterHostCall(span);
+            var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
+            if (stat.Exists)
+            {
+                if (stat.IsDir && existOk)
+                {
+                    return;
+                }
+
+                throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
+            }
+
+            foreach (var current in EnumerateMissingDirectories(normalized))
+            {
+                context.RegisterHostCall(span);
+                var currentStat = await context.HostStatAsync(current, span).ConfigureAwait(false);
+                if (currentStat.Exists)
+                {
+                    if (!currentStat.IsDir)
+                    {
+                        throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() path component is not a directory: {current}", span);
+                    }
+
+                    continue;
+                }
+
+                context.RegisterHostCall(span);
+                await context.HostMkDirAsync(current, span).ConfigureAwait(false);
+            }
+        }
+
+        private static void PathTouch(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > 2)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.touch([mode][, exist_ok]) expects zero to two arguments.", span);
+            }
+
+            ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
+            var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
+            var normalized = PathOps.Normalize(path, context.Host.Cwd);
+            context.RegisterHostCall(span);
+            var stat = context.HostStat(normalized, span);
+            if (stat.Exists)
+            {
+                if (existOk)
+                {
+                    return;
+                }
+
+                throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
+            }
+
+            context.RegisterHostCall(span);
+            context.WriteTextUtf8(normalized, Array.Empty<byte>(), span);
+        }
+
+        private static async ValueTask PathTouchAsync(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > 2)
+            {
+                throw new LythonRuntimeException("TypeError", "Path.touch([mode][, exist_ok]) expects zero to two arguments.", span);
+            }
+
+            ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
+            var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
+            var normalized = PathOps.Normalize(path, context.Host.Cwd);
+            context.RegisterHostCall(span);
+            var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
+            if (stat.Exists)
+            {
+                if (existOk)
+                {
+                    return;
+                }
+
+                throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
+            }
+
+            context.RegisterHostCall(span);
+            await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
         }
 
         private static (PyString Mode, TextEncodingMode EncodingMode) ParsePathOpenArguments(object[] arguments, LythonSourceSpan span)
