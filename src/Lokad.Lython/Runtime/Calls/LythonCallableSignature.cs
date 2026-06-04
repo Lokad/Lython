@@ -86,4 +86,9 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DifflibRestore = new("difflib.restore", ["delta", "which"]);
     public static readonly LythonCallableSignature DifflibGetCloseMatches = new("difflib.get_close_matches", ["word", "possibilities", "n", "cutoff"], RequiredCount: 2);
     public static readonly LythonCallableSignature DifflibSequenceMatcher = new("difflib.SequenceMatcher", ["isjunk", "a", "b", "autojunk"], RequiredCount: 0);
+
+    public static readonly LythonCallableSignature PkgutilIterModules = new("pkgutil.iter_modules", ["path", "prefix"], RequiredCount: 0);
+    public static readonly LythonCallableSignature PkgutilWalkPackages = new("pkgutil.walk_packages", ["path", "prefix", "onerror"], RequiredCount: 0);
+    public static readonly LythonCallableSignature PkgutilFindLoader = new("pkgutil.find_loader", ["fullname"]);
+    public static readonly LythonCallableSignature PkgutilGetLoader = new("pkgutil.get_loader", ["module_or_name"]);
 }

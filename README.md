@@ -82,6 +82,7 @@ The builtin module surface is explicitly allowlisted:
 - `operator`
 - `os`
 - `pathlib`
+- `pkgutil`
 - `random`
 - `re`
 - `statistics`

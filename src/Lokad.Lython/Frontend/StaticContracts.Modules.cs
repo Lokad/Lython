@@ -10,6 +10,7 @@ internal static partial class StaticContracts
         ["dataclasses"] = Members("dataclass", "field", "is_dataclass", "fields", "asdict", "astuple", "replace", "MISSING", "KW_ONLY", "InitVar", "FrozenInstanceError"),
         ["typing"] = Members("ClassVar"),
         ["pathlib"] = Members("Path"),
+        ["pkgutil"] = Members("iter_modules", "walk_packages", "find_loader", "get_loader"),
         ["collections"] = Members("defaultdict", "Counter", "deque"),
         ["itertools"] = Members("chain", "islice", "product", "zip_longest"),
         ["os"] = Members("path", "sep", "curdir", "pardir", "listdir", "walk", "getcwd", "mkdir", "makedirs", "remove", "unlink", "rename", "replace", "rmdir", "removedirs"),

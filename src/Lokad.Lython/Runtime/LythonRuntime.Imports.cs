@@ -5,6 +5,34 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static readonly string[] AlwaysDiscoverableBuiltinModuleNames =
+    [
+        "__future__",
+        "argparse",
+        "collections",
+        "copy",
+        "csv",
+        "dataclasses",
+        "datetime",
+        "decimal",
+        "difflib",
+        "fnmatch",
+        "functools",
+        "glob",
+        "itertools",
+        "json",
+        "math",
+        "operator",
+        "os",
+        "pathlib",
+        "pkgutil",
+        "random",
+        "re",
+        "statistics",
+        "sys",
+        "typing",
+    ];
+
     private sealed class FutureModule : PyModule
     {
         public static readonly FutureModule Instance = new();
@@ -287,6 +315,7 @@ internal sealed partial class LythonRuntime
             "dataclasses" => DataclassesModule.Instance,
             "typing" => TypingModule.Instance,
             "pathlib" => PathlibModule.Instance,
+            "pkgutil" => PkgutilModule.Instance,
             "collections" => CollectionsModule.Instance,
             "itertools" => ItertoolsModule.Instance,
             "os" => OsModule.Instance,
@@ -307,6 +336,30 @@ internal sealed partial class LythonRuntime
             "subprocess" when context.Host.SubprocessRunner is not null => SubprocessModule.Instance,
             _ => null,
         };
+    }
+
+    private static IEnumerable<string> EnumerateDiscoverableBuiltinModuleNames(ExecutionContext context)
+    {
+        foreach (var moduleName in AlwaysDiscoverableBuiltinModuleNames)
+        {
+            yield return moduleName;
+        }
+
+        if (context.Host.SubprocessRunner is not null)
+        {
+            yield return "subprocess";
+        }
+    }
+
+    private static bool IsDiscoverableBuiltinModuleName(string moduleName, ExecutionContext context)
+    {
+        if (AlwaysDiscoverableBuiltinModuleNames.Contains(moduleName, StringComparer.Ordinal))
+        {
+            return true;
+        }
+
+        return string.Equals(moduleName, "subprocess", StringComparison.Ordinal) &&
+            context.Host.SubprocessRunner is not null;
     }
 
     private static bool ImportsOnlyFutureAnnotations(IReadOnlyList<ImportedMemberSyntax> importedMembers)

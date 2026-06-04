@@ -64,6 +64,10 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.DifflibRestore, "LA3151", "difflib.restore(delta, which) expects two arguments.", StaticReturnShape.ListOfString),
         new(LythonKnownCallableSignatures.DifflibGetCloseMatches, "LA3151", "difflib.get_close_matches(word, possibilities[, n][, cutoff]) expects two to four arguments.", StaticReturnShape.ListOfString),
         new(LythonKnownCallableSignatures.DifflibSequenceMatcher, "LA3151", "difflib.SequenceMatcher([isjunk][, a][, b][, autojunk]) expects zero to four arguments."),
+        new(LythonKnownCallableSignatures.PkgutilIterModules, "LA3151", "pkgutil.iter_modules([path][, prefix]) expects zero to two arguments.", StaticReturnShape.ListOfUnknown),
+        new(LythonKnownCallableSignatures.PkgutilWalkPackages, "LA3151", "pkgutil.walk_packages([path][, prefix][, onerror]) expects zero to three arguments.", StaticReturnShape.ListOfUnknown),
+        new(LythonKnownCallableSignatures.PkgutilFindLoader, "LA3151", "pkgutil.find_loader(fullname) expects one argument."),
+        new(LythonKnownCallableSignatures.PkgutilGetLoader, "LA3151", "pkgutil.get_loader(module_or_name) expects one argument."),
     ];
 
     public static bool TryGetKnownCallContract(string targetName, out StaticKnownCallContract contract)
