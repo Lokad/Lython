@@ -10,6 +10,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "could not be parsed")]
     [InlineData("float(\"bad\")\n", "ValueError", "input string")]
+    [InlineData("sum([\"a\"])\n", "TypeError", "string or bytes operands")]
+    [InlineData("sum([b\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("read_text(1)\n", "compile", "expects one string argument")]
     [InlineData("write_text(\"/x\", 1)\n", "compile", "expects two string arguments")]
     [InlineData("append_text(\"/x\", 1)\n", "compile", "expects two string arguments")]
@@ -79,7 +81,9 @@ public sealed class BuiltinValidationScenarioTests
 
     [Theory]
     [InlineData("str()\n", "is missing argument 'value'")]
+    [InlineData("repr()\n", "is missing argument 'value'")]
     [InlineData("bool()\n", "is missing argument 'value'")]
+    [InlineData("sum()\n", "is missing argument 'iterable'")]
     [InlineData("sorted()\n", "is missing argument 'iterable'")]
     [InlineData("any()\n", "expects one argument")]
     [InlineData("all()\n", "expects one argument")]

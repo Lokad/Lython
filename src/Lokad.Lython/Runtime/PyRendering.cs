@@ -78,6 +78,19 @@ internal static class PyRendering
 
     public static string ToInterpolatedString(object value, PyRenderingContext context) => ToInterpolatedPyString(value, context).AsString();
 
+    public static PyString ToReprPyString(object value, PyRenderingContext context)
+    {
+        context.Context.EnterInterpreterFrame(null);
+        try
+        {
+            return ToReprPyStringCore(value, context, new HashSet<object>(ReferenceEqualityComparer.Instance));
+        }
+        finally
+        {
+            context.Context.LeaveInterpreterFrame();
+        }
+    }
+
     public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix)
     {
         var builder = new Utf8ValueBuilder();
@@ -179,6 +192,227 @@ internal static class PyRendering
             rendered,
             "}",
             context);
+    }
+
+    private static PyString ToReprPyStringCore(object value, PyRenderingContext context, HashSet<object> activeContainers)
+    {
+        if (PyStringOps.TryAsString(value, out var text))
+        {
+            return RenderStringLiteral(text.AsString(), context);
+        }
+
+        return value switch
+        {
+            PyList list => RenderReprSequence(list, "[", "]", "[...]", context, activeContainers),
+            PyTuple tuple => RenderReprTuple(tuple, context, activeContainers),
+            PyDict dict => RenderReprDictionary(dict, context, activeContainers),
+            PySet set => RenderReprSet(set, context, activeContainers),
+            PyNone => PyStringOps.NoneLiteral,
+            bool boolean => boolean ? TrueLiteral : FalseLiteral,
+            BigInteger integer => PyString.FromString(integer.ToString()),
+            double floating => PyString.FromString(floating.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
+            LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
+            LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
+            PyException exception => RenderExceptionRepr(exception, context),
+            IPyRenderableValue renderable => renderable.RenderPython(context),
+            _ => PyString.FromString(value.ToString() ?? string.Empty)
+        };
+    }
+
+    private static PyString RenderStringLiteral(string text, PyRenderingContext context)
+    {
+        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        builder.AppendAscii("'");
+        for (var i = 0; i < text.Length; i++)
+        {
+            var ch = text[i];
+            switch (ch)
+            {
+                case '\\':
+                    builder.AppendAscii("\\\\");
+                    break;
+                case '\'':
+                    builder.AppendAscii("\\'");
+                    break;
+                case '\n':
+                    builder.AppendAscii("\\n");
+                    break;
+                case '\r':
+                    builder.AppendAscii("\\r");
+                    break;
+                case '\t':
+                    builder.AppendAscii("\\t");
+                    break;
+                case '\b':
+                    builder.AppendAscii("\\x08");
+                    break;
+                case '\f':
+                    builder.AppendAscii("\\x0c");
+                    break;
+                default:
+                    if (char.IsControl(ch))
+                    {
+                        builder.AppendString(ch <= 0xff ? $"\\x{(int)ch:x2}" : $"\\u{(int)ch:x4}");
+                    }
+                    else if (char.IsHighSurrogate(ch) &&
+                             i + 1 < text.Length &&
+                             char.IsLowSurrogate(text[i + 1]))
+                    {
+                        builder.AppendString(text.Substring(i, 2));
+                        i++;
+                    }
+                    else
+                    {
+                        builder.AppendString(ch.ToString());
+                    }
+
+                    break;
+            }
+        }
+
+        builder.AppendAscii("'");
+        return builder.ToPyString();
+    }
+
+    private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object> activeContainers)
+    {
+        if (!activeContainers.Add(tuple))
+        {
+            return PyString.FromString("(...)");
+        }
+
+        try
+        {
+            return tuple.Count == 1
+                ? RenderSingletonTuple(ToReprPyStringCore(tuple[0], context, activeContainers))
+                : RenderReprItems(tuple, "(", ")", context, activeContainers);
+        }
+        finally
+        {
+            activeContainers.Remove(tuple);
+        }
+    }
+
+    private static PyString RenderReprSequence(
+        IEnumerable<object> items,
+        string prefix,
+        string suffix,
+        string recursiveLiteral,
+        PyRenderingContext context,
+        HashSet<object> activeContainers)
+    {
+        if (!activeContainers.Add(items))
+        {
+            return PyString.FromString(recursiveLiteral);
+        }
+
+        try
+        {
+            return RenderReprItems(items, prefix, suffix, context, activeContainers);
+        }
+        finally
+        {
+            activeContainers.Remove(items);
+        }
+    }
+
+    private static PyString RenderReprItems(
+        IEnumerable<object> items,
+        string prefix,
+        string suffix,
+        PyRenderingContext context,
+        HashSet<object> activeContainers)
+    {
+        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        builder.AppendString(prefix);
+        var first = true;
+        foreach (var item in items)
+        {
+            if (!first)
+            {
+                builder.AppendAscii(", ");
+            }
+
+            builder.Append(ToReprPyStringCore(item, context, activeContainers));
+            first = false;
+        }
+
+        builder.AppendString(suffix);
+        return builder.ToPyString();
+    }
+
+    private static PyString RenderReprDictionary(PyDict dict, PyRenderingContext context, HashSet<object> activeContainers)
+    {
+        if (!activeContainers.Add(dict))
+        {
+            return PyString.FromString("{...}");
+        }
+
+        try
+        {
+            var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+            builder.AppendAscii("{");
+            var first = true;
+            foreach (var pair in dict)
+            {
+                if (!first)
+                {
+                    builder.AppendAscii(", ");
+                }
+
+                builder.Append(ToReprPyStringCore(pair.Key, context, activeContainers));
+                builder.AppendAscii(": ");
+                builder.Append(ToReprPyStringCore(pair.Value, context, activeContainers));
+                first = false;
+            }
+
+            builder.AppendAscii("}");
+            return builder.ToPyString();
+        }
+        finally
+        {
+            activeContainers.Remove(dict);
+        }
+    }
+
+    private static PyString RenderReprSet(PySet set, PyRenderingContext context, HashSet<object> activeContainers)
+    {
+        if (set.Count == 0)
+        {
+            return EmptySetLiteral;
+        }
+
+        if (!activeContainers.Add(set))
+        {
+            return PyString.FromString("{...}");
+        }
+
+        try
+        {
+            var rendered = new List<PyString>(set.Count);
+            foreach (var item in set)
+            {
+                rendered.Add(ToReprPyStringCore(item, context, activeContainers));
+            }
+
+            rendered.Sort(PyStringOrdinalComparer.Instance);
+            return JoinRenderedSequence("{", rendered, "}", context);
+        }
+        finally
+        {
+            activeContainers.Remove(set);
+        }
+    }
+
+    private static PyString RenderExceptionRepr(PyException exception, PyRenderingContext context)
+    {
+        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        builder.AppendString(exception.TypeName);
+        builder.AppendAscii("(");
+        builder.Append(RenderStringLiteral(exception.Message, context));
+        builder.AppendAscii(")");
+        return builder.ToPyString();
     }
 
     private sealed class RenderedSequence : IEnumerable<PyString>

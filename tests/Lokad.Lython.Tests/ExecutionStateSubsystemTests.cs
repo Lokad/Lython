@@ -15,5 +15,9 @@ public sealed class ExecutionStateSubsystemTests
         Assert.Empty(state.ImportedModules);
         Assert.Empty(state.LoadingModules);
         Assert.Contains("str", ExecutionState.BuiltinNames);
+        Assert.Contains("repr", ExecutionState.BuiltinNames);
+        Assert.Contains("sum", ExecutionState.BuiltinNames);
+        Assert.Contains("bytes", ExecutionState.BuiltinNames);
+        Assert.Contains("TypeError", ExecutionState.BuiltinNames);
     }
 }

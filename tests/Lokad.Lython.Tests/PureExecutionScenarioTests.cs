@@ -2681,6 +2681,96 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
+    public void Builtins_ReprAndSumCoverCommonScratchScriptPatterns()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+line = " a\t\n"
+vals = []
+vals.append(repr(line))
+vals.append(repr(["a", 2, None, True]))
+vals.append(repr(("x",)))
+vals.append(repr({"b": [1, "two"]}))
+vals.append(repr({"z", "a"}))
+vals.append(f"{line!r}")
+vals.append(str(sum([1, 2, 3])))
+vals.append(str(sum((1, 2), 10)))
+vals.append(str(sum(x for x in range(4))))
+vals.append(str(sum([1.5, 2])))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("' a\\t\\n'|['a', 2, None, True]|('x',)|{'b': [1, 'two']}|{'a', 'z'}|' a\\t\\n'|6|13|6|3.5", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void Builtins_CommonExceptionTypesCanBeNamedRaisedAndCaught()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+vals = []
+try:
+    len(1)
+except TypeError as err:
+    vals.append(err.type)
+
+try:
+    raise ImportError("missing")
+except (ImportError, NameError) as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise AttributeError("attr")
+except AttributeError as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise FileNotFoundError("gone")
+except FileNotFoundError as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise OSError("os")
+except OSError as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise StopIteration("done")
+except StopIteration as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise ZeroDivisionError("zero")
+except ZeroDivisionError as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise NotImplementedError("missing implementation")
+except NotImplementedError as err:
+    vals.append(err.type + ":" + err.message)
+
+try:
+    raise RuntimeError()
+except RuntimeError as err:
+    vals.append(err.type + ":" + err.message)
+
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("TypeError|ImportError:missing|AttributeError:attr|FileNotFoundError:gone|OSError:os|StopIteration:done|ZeroDivisionError:zero|NotImplementedError:missing implementation|RuntimeError:", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ConstructorsAndDictionaryViews_HandleEmptyAndCopyCases()
     {
         var host = new MockLythonHost();

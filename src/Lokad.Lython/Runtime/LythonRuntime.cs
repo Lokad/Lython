@@ -1798,6 +1798,9 @@ internal sealed partial class LythonRuntime
     private static string ToPythonString(object value, ExecutionContext context)
         => PyRendering.ToPythonString(value, new PyRenderingContext(context));
 
+    private static PyString ToReprPyString(object value, ExecutionContext context)
+        => PyRendering.ToReprPyString(value, new PyRenderingContext(context));
+
     private static PyString FormatInterpolatedStringPart(
         object value,
         char? conversion,
@@ -1809,7 +1812,7 @@ internal sealed partial class LythonRuntime
         {
             null => null,
             's' => ToInterpolatedPyString(value, context),
-            'r' or 'a' => ToPythonPyString(value, context),
+            'r' or 'a' => ToReprPyString(value, context),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown conversion specifier '!{conversion}'.", span)
         };
 
@@ -2859,12 +2862,14 @@ internal sealed partial class LythonRuntime
                 ["print"] = new PrintCallable(),
                 ["input"] = new BuiltinCallable("input", Input, InputAsync, ["prompt"], requiredCount: 0),
                 ["str"] = new BuiltinCallable("str", Str, ["value"]),
+                ["repr"] = new BuiltinCallable("repr", Repr, ["value"]),
                 ["len"] = new BuiltinCallable("len", Len),
                 ["sorted"] = new BuiltinCallable("sorted", Sorted, SortedAsync, ["iterable", "key", "reverse"], requiredCount: 1),
                 ["any"] = new BuiltinCallable("any", Any),
                 ["all"] = new BuiltinCallable("all", All),
                 ["min"] = new BuiltinCallable("min", Min),
                 ["max"] = new BuiltinCallable("max", Max),
+                ["sum"] = new BuiltinCallable("sum", Sum, ["iterable", "start"], requiredCount: 1),
                 ["range"] = new BuiltinCallable("range", Range),
                 ["enumerate"] = new BuiltinCallable("enumerate", Enumerate),
                 ["zip"] = new BuiltinCallable("zip", Zip),
@@ -2881,11 +2886,21 @@ internal sealed partial class LythonRuntime
                 ["basename"] = new BuiltinCallable("basename", BaseName, ["path"]),
                 ["stat"] = new BuiltinCallable("stat", Stat, StatAsync, ["path"]),
                 ["Exception"] = new ExceptionTypeValue("Exception"),
+                ["TypeError"] = new ExceptionTypeValue("TypeError"),
                 ["ValueError"] = new ExceptionTypeValue("ValueError"),
                 ["KeyError"] = new ExceptionTypeValue("KeyError"),
                 ["IndexError"] = new ExceptionTypeValue("IndexError"),
                 ["RuntimeError"] = new ExceptionTypeValue("RuntimeError"),
                 ["AssertionError"] = new ExceptionTypeValue("AssertionError"),
+                ["ImportError"] = new ExceptionTypeValue("ImportError"),
+                ["NameError"] = new ExceptionTypeValue("NameError"),
+                ["AttributeError"] = new ExceptionTypeValue("AttributeError"),
+                ["FileNotFoundError"] = new ExceptionTypeValue("FileNotFoundError"),
+                ["OSError"] = new ExceptionTypeValue("OSError"),
+                ["StopIteration"] = new ExceptionTypeValue("StopIteration"),
+                ["ZeroDivisionError"] = new ExceptionTypeValue("ZeroDivisionError"),
+                ["NotImplementedError"] = new ExceptionTypeValue("NotImplementedError"),
+                ["OverflowError"] = new ExceptionTypeValue("OverflowError"),
                 ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
                 ["bool"] = new BuiltinCallable("bool", Bool, ["value"]),
                 ["int"] = new BuiltinCallable("int", Int, ["value"]),

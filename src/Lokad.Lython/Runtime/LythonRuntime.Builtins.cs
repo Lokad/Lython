@@ -235,6 +235,16 @@ internal sealed partial class LythonRuntime
         return ToPythonPyString(arguments[0], context);
     }
 
+    private static object Repr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "repr(value) expects one argument.", span);
+        }
+
+        return ToReprPyString(arguments[0], context);
+    }
+
     private static object Bool(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -1095,6 +1105,32 @@ internal sealed partial class LythonRuntime
         }
 
         return best;
+    }
+
+    private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "sum(iterable[, start]) expects one iterable and optional start argument.", span);
+        }
+
+        var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
+        EnsureSummableValue(total, span);
+        foreach (var item in ToSequence(arguments[0], span))
+        {
+            EnsureSummableValue(item, span);
+            total = EvaluateAdd(total, item, context, span);
+        }
+
+        return total;
+    }
+
+    private static void EnsureSummableValue(object value, LythonSourceSpan span)
+    {
+        if (PyStringOps.TryAsString(value, out _) || value is PyBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "sum() does not support string or bytes operands.", span);
+        }
     }
 
     private static int CompareSortKeys(object left, object right, LythonSourceSpan span, ExecutionContext context)

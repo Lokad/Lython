@@ -32,6 +32,12 @@ internal static class StaticCollectionContractFamily
             return true;
         }
 
+        if (call.Target is IdentifierExpressionSyntax { Name: "sum" })
+        {
+            AnalyzeFirstIterableArgument(arguments, diagnostics, bindings);
+            return true;
+        }
+
         if (call.Target is IdentifierExpressionSyntax { Name: "sorted" })
         {
             AnalyzeSortedCall(arguments, diagnostics, bindings);
@@ -77,6 +83,21 @@ internal static class StaticCollectionContractFamily
             return;
         }
 
+        AnalyzeIterableExpression(iterableExpression, diagnostics, bindings);
+    }
+
+    private static void AnalyzeFirstIterableArgument(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(0, "iterable", out var iterableExpression))
+        {
+            return;
+        }
+
+        AnalyzeIterableExpression(iterableExpression, diagnostics, bindings);
+    }
+
+    private static void AnalyzeIterableExpression(ExpressionSyntax iterableExpression, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
         if (StaticAbstractFacts.IsDefinitelyKnownNonIterable(iterableExpression, bindings))
         {
             AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", iterableExpression.Span);

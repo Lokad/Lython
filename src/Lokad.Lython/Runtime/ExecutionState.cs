@@ -4,10 +4,13 @@ internal sealed class ExecutionState
 {
     public static readonly HashSet<string> BuiltinNames =
     [
-        "read_text", "write_text", "append_text", "open", "print", "str", "len", "sorted", "any", "all", "min", "max",
+        "object", "type", "read_text", "write_text", "append_text", "open", "print", "input", "str", "repr",
+        "len", "sorted", "any", "all", "min", "max", "sum",
         "range", "enumerate", "zip", "next", "exists", "listdir", "mkdir", "remove", "copy", "move", "cwd", "join_path",
-        "dirname", "basename", "stat", "input", "Exception", "ValueError", "KeyError", "IndexError", "RuntimeError",
-        "AssertionError", "SystemExit", "bool", "int", "float", "list", "tuple", "dict", "set"
+        "dirname", "basename", "stat", "Exception", "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
+        "AssertionError", "ImportError", "NameError", "AttributeError", "FileNotFoundError", "OSError", "StopIteration",
+        "ZeroDivisionError", "NotImplementedError", "OverflowError", "SystemExit", "bool", "int", "float", "bytes",
+        "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass", "list", "tuple", "dict", "set"
     ];
 
     public ExecutionState(ILythonHost host, LythonRunOptions? options)

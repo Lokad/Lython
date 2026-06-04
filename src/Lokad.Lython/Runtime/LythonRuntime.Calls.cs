@@ -678,9 +678,19 @@ internal sealed partial class LythonRuntime
                 return new PyException(TypeName, FormatSystemExitMessage(value), value);
             }
 
-            if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0].Value, out var generalMessage))
+            if (arguments.Length > 1)
             {
-                throw new LythonRuntimeException("TypeError", $"{TypeName}(message) expects one string argument.", span);
+                throw new LythonRuntimeException("TypeError", $"{TypeName}([message]) expects zero or one string argument.", span);
+            }
+
+            if (arguments.Length == 0)
+            {
+                return new PyException(TypeName, string.Empty, PyNone.Instance);
+            }
+
+            if (!PyStringOps.TryAsString(arguments[0].Value, out var generalMessage))
+            {
+                throw new LythonRuntimeException("TypeError", $"{TypeName}([message]) expects zero or one string argument.", span);
             }
 
             return new PyException(TypeName, generalMessage.AsString(), generalMessage);

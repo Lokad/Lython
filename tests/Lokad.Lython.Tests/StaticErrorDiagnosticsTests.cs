@@ -100,6 +100,7 @@ any(1)
 all(None)
 min(False)
 max(1)
+sum(1)
 sorted(1)
 sorted([1], key=1, reverse=1)
 """);
