@@ -279,6 +279,33 @@ internal static class StaticContractChecks
         }
     }
 
+    public static void AnalyzeIterableOfPathLikeLiteral(
+        IReadOnlyList<AbstractValue> items,
+        string code,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        bool requireNonEmpty = false,
+        string? emptyCode = null,
+        string? emptyMessage = null,
+        LythonSourceSpan? emptySpan = null)
+    {
+        if (requireNonEmpty && items.Count == 0)
+        {
+            AddDiagnostic(diagnostics, emptyCode!, emptyMessage!, emptySpan!);
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            if (!StaticKnownCallArgumentChecks.IsPathLike(item) &&
+                !StaticKnownCallArgumentChecks.IsUnknown(item))
+            {
+                AddDiagnostic(diagnostics, code, message, item.Span);
+                return;
+            }
+        }
+    }
+
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
     {
         StaticDiagnosticSink.AddError(diagnostics, code, message, span);

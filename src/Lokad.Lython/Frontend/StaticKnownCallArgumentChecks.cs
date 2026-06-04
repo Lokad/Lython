@@ -22,6 +22,15 @@ internal static class StaticKnownCallArgumentChecks
         AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsPathLike);
 
+    internal static bool AnalyzePathLikeOrNoneArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || IsPathLike(value));
+
     internal static bool AnalyzeStringOrNoneArgument(
         ConcreteCallArguments arguments,
         int position,

@@ -19,7 +19,7 @@ write_text("/out.txt", str(proc.returncode) + "|" + proc.stdout + "|" + proc.std
 """,
             host);
 
-        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("0|one\ntwo|", host.ReadText("/out.txt"));
     }
 
@@ -37,11 +37,113 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
 """,
             host);
 
-        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(result.Success, DescribeFailure(result));
         Assert.NotNull(host.LastSubprocessRequest);
         Assert.Equal("/repo/work", host.LastSubprocessRequest!.Cwd);
         Assert.Equal(1500, host.LastSubprocessRequest.TimeoutMilliseconds);
         Assert.Equal("payload", System.Text.Encoding.UTF8.GetString(host.LastSubprocessRequest.StandardInputUtf8.Span));
+    }
+
+    [Fact]
+    public void SubprocessRun_ThreadsStreamModesTextOptionsAndEnvironmentIntoHostRequest()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["tool", "/repo/input.txt"], 0, "ok", "ignored");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+import subprocess
+
+env = {"NAME": "VALUE"}
+proc = subprocess.run(["tool", Path("/repo/input.txt")], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=Path("/repo/work"), text=True, encoding="utf-8", errors="strict", env=env)
+write_text("/out.txt", proc.stdout + "|" + str(proc.stderr))
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("ok|None", host.ReadText("/out.txt"));
+        Assert.NotNull(host.LastSubprocessRequest);
+        Assert.Equal(["tool", "/repo/input.txt"], host.LastSubprocessRequest!.Args);
+        Assert.Equal("/repo/work", host.LastSubprocessRequest.Cwd);
+        Assert.Equal(LythonSubprocessStreamMode.DevNull, host.LastSubprocessRequest.StandardInput);
+        Assert.Equal(LythonSubprocessStreamMode.Pipe, host.LastSubprocessRequest.StandardOutput);
+        Assert.Equal(LythonSubprocessStreamMode.StandardOutput, host.LastSubprocessRequest.StandardError);
+        Assert.False(host.LastSubprocessRequest.UseShell);
+        Assert.True(host.LastSubprocessRequest.TextMode);
+        Assert.Equal("utf-8", host.LastSubprocessRequest.Encoding);
+        Assert.Equal("strict", host.LastSubprocessRequest.Errors);
+        Assert.NotNull(host.LastSubprocessRequest.Environment);
+        Assert.Equal("VALUE", host.LastSubprocessRequest.Environment!["NAME"]);
+    }
+
+    [Fact]
+    public void SubprocessRun_AllowsStringOrPathCommandWhenShellIsExplicit()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["echo hi"], 0, "hi", "");
+        host.SeedSubprocessResult(["/repo/script.sh"], 0, "path", "");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+import subprocess
+first = subprocess.run("echo hi", shell=True, stdout=subprocess.PIPE)
+second = subprocess.run(Path("/repo/script.sh"), shell=True, stdout=subprocess.PIPE)
+write_text("/out.txt", first.stdout + "|" + first.args[0] + "|" + second.stdout + "|" + second.args[0])
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("hi|echo hi|path|/repo/script.sh", host.ReadText("/out.txt"));
+        Assert.NotNull(host.LastSubprocessRequest);
+        Assert.True(host.LastSubprocessRequest!.UseShell);
+        Assert.Equal(["/repo/script.sh"], host.LastSubprocessRequest.Args);
+    }
+
+    [Fact]
+    public void SubprocessWrappers_ReturnPythonCompatibleShapes()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["out"], 0, "value", "");
+        host.SeedSubprocessResult(["call"], 3, "", "");
+        host.SeedSubprocessResult(["check"], 0, "", "");
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+out = subprocess.check_output(["out"])
+code = subprocess.call(["call"])
+checked = subprocess.check_call(["check"])
+write_text("/out.txt", out + "|" + str(code) + "|" + str(checked))
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("value|3|0", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void CompletedProcess_ExposesArgsAndNoneForUncapturedOutput()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["quiet"], 0, "hidden", "ignored");
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+proc = subprocess.run(["quiet"])
+proc.check_returncode()
+write_text("/out.txt", str(proc.stdout) + "|" + str(proc.stderr) + "|" + proc.args[0])
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("None|None|quiet", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -64,6 +166,46 @@ subprocess.run(["fail"], check=True)
     }
 
     [Fact]
+    public void CompletedProcess_CheckReturnCodeFailsCleanlyForNonZeroExit()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["fail"], 8, "", "");
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+proc = subprocess.run(["fail"])
+proc.check_returncode()
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Contains("return code 8", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("subprocess.run([\"tool\"], input=\"x\", stdin=subprocess.PIPE)")]
+    [InlineData("subprocess.run([\"tool\"], capture_output=True, stdout=subprocess.PIPE)")]
+    [InlineData("subprocess.check_output([\"tool\"], stdout=subprocess.PIPE)")]
+    public void SubprocessRun_RejectsConflictingStreamOptions(string statement)
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+
+        var result = new LythonEngine().Run(
+            $"""
+import subprocess
+{statement}
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+    }
+
+    [Fact]
     public async Task SubprocessRunAsync_AwaitsAsynchronousHostRunner()
     {
         var host = new MockLythonHost();
@@ -79,7 +221,7 @@ write_text("/out.txt", str(proc.returncode) + "|" + proc.stdout)
 """,
             host);
 
-        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(result.Success, DescribeFailure(result));
         Assert.True(host.SubprocessCompletedAsynchronously);
         Assert.Equal("0|done", host.ReadText("/out.txt"));
     }
@@ -103,4 +245,8 @@ subprocess.run(["tool"])
         Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
         Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
     }
+
+    private static string DescribeFailure(LythonExecutionResult result)
+        => result.Failure?.Message ??
+           string.Join(Environment.NewLine, result.Diagnostics.Select(d => $"{d.Code}: {d.Message}"));
 }

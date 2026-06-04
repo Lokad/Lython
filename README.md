@@ -96,7 +96,7 @@ Intentionally unsupported or constrained:
 - arbitrary package loading
 - unrestricted imports from disk
 - sockets and HTTP
-- broad shell/process authority beyond the host-mediated `subprocess.run(...)` surface
+- broad shell/process authority beyond the host-mediated `subprocess` surface
 - `yield` and async/await
 - parts of Python metaprogramming and object-model edge behavior outside the contained runtime model
 - a full general-purpose Python standard library
@@ -144,7 +144,7 @@ All host effects are async and receive the run cancellation token. That base sur
 
 - `StandardInput`, `StandardOutput`, and `StandardError`
 - `WalkAsync(...)` for `os.walk`
-- `SubprocessRunner` for `subprocess.run(...)`
+- `SubprocessRunner` for the host-mediated `subprocess` module surface
 
 The stream capability is deliberately text-shaped:
 
@@ -164,17 +164,22 @@ Process execution is also optional and host-mediated. [`ILythonSubprocessRunner`
 - optional cwd
 - optional environment
 - UTF-8 stdin bytes
+- stdin/stdout/stderr stream modes
+- shell/text-mode flags
+- optional encoding and error-mode requests
 - optional timeout
 - optional max-output bound
 
 and returns a [`LythonSubprocessResult`](src/Lokad.Lython/Host/LythonSubprocessResult.cs) with return code plus captured UTF-8 stdout/stderr.
 
-The initial subprocess contract is intentionally narrow:
+The subprocess contract remains host-mediated:
 
-- `subprocess.run(...)` only
+- `subprocess.run(...)`, `subprocess.call(...)`, `subprocess.check_call(...)`, and `subprocess.check_output(...)`
+- `subprocess.PIPE`, `subprocess.STDOUT`, and `subprocess.DEVNULL`
+- string and `pathlib.Path` command parts
+- `shell=True` as an explicit host request, not ambient shell authority
 - text-oriented captured I/O
 - no `Popen`
-- no `shell=True`
 - no background or async process model
 
 This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.

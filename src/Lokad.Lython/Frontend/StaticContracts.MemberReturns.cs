@@ -139,6 +139,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.CsvWriter, "writerow", StaticReturnShape.None),
             new(AbstractValueKind.CsvWriter, "writerows", StaticReturnShape.None),
             new(AbstractValueKind.CsvWriter, "getvalue", StaticReturnShape.String),
+            new(AbstractValueKind.SubprocessCompletedProcess, "check_returncode", StaticReturnShape.None),
         ]);
 
         return contracts.ToArray();

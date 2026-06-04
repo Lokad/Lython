@@ -5,23 +5,49 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticProcessContractFamily
 {
+    private const int ArgsIndex = 0;
+    private const int InputIndex = 1;
+    private const int CwdIndex = 2;
+    private const int TimeoutIndex = 3;
+    private const int CheckIndex = 4;
+    private const int CaptureOutputIndex = 5;
+    private const int StdinIndex = 6;
+    private const int StdoutIndex = 7;
+    private const int StderrIndex = 8;
+    private const int ShellIndex = 9;
+    private const int TextIndex = 10;
+    private const int EncodingIndex = 11;
+    private const int ErrorsIndex = 12;
+    private const int EnvIndex = 13;
+    private const int UniversalNewlinesIndex = 14;
+
     public static bool AnalyzeKnownCallArgumentTypes(
         string targetName,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (!string.Equals(targetName, LythonKnownCallableSignatures.SubprocessRun.Name, StringComparison.Ordinal))
+        if (!IsSubprocessKnownCall(targetName))
         {
             return false;
         }
 
-        var emitted = AnalyzeIterableOfStringsArgument(arguments, 0, "args", "subprocess.run(args) expects a non-empty iterable of strings, not a single string.", diagnostics, bindings, rejectSingleString: true, requireNonEmpty: true);
-        emitted |= AnalyzeStringOrNoneArgument(arguments, 1, "input", "subprocess.run(..., input=...) expects a string or None.", diagnostics, bindings);
-        emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "cwd", "subprocess.run(..., cwd=...) expects a string or None.", diagnostics, bindings);
-        emitted |= AnalyzeIntegerOrNoneArgument(arguments, 3, "timeout", "subprocess.run(..., timeout=...) expects an integer or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, 4, "check", "subprocess.run(..., check=...) expects a bool or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, 5, "capture_output", "subprocess.run(..., capture_output=...) expects a bool or None.", diagnostics, bindings);
+        var owner = targetName;
+        var emitted = AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, InputIndex, "input", $"{owner}(..., input=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzePathLikeOrNoneArgument(arguments, CwdIndex, "cwd", $"{owner}(..., cwd=...) expects a string, Path, or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, TimeoutIndex, "timeout", $"{owner}(..., timeout=...) expects an integer or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, CheckIndex, "check", $"{owner}(..., check=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, CaptureOutputIndex, "capture_output", $"{owner}(..., capture_output=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StdinIndex, "stdin", $"{owner}(..., stdin=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StdoutIndex, "stdout", $"{owner}(..., stdout=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StderrIndex, "stderr", $"{owner}(..., stderr=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, ShellIndex, "shell", $"{owner}(..., shell=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, TextIndex, "text", $"{owner}(..., text=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, EncodingIndex, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, ErrorsIndex, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, UniversalNewlinesIndex, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings);
         return emitted;
     }
 
@@ -31,85 +57,250 @@ internal static class StaticProcessContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (call.Target is not MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: "subprocess" },
-                MemberName: "run"
-            })
+        if (call.Target is not MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "subprocess" } } member ||
+            !IsSubprocessMemberName(member.MemberName))
         {
             return false;
         }
 
-        AnalyzeSubprocessRunCall(arguments, diagnostics, bindings);
+        AnalyzeSubprocessCall(member.MemberName, arguments, diagnostics, bindings);
         return true;
     }
 
-    private static void AnalyzeSubprocessRunCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    private static bool AnalyzeSubprocessArgsArgument(
+        ConcreteCallArguments arguments,
+        string owner,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
     {
-        if (arguments.TryGetValue(0, "args", out var argsExpression))
+        if (!arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
         {
-            if (StaticAbstractValueResolver.TryResolveKnownString(argsExpression, bindings, out _))
+            return false;
+        }
+
+        if (IsShellKnownTrue(arguments, bindings))
+        {
+            var value = StaticAbstractValueResolver.ResolveOrUnknown(argsExpression, bindings);
+            if (value.IsStringLike || value.Kind == AbstractValueKind.Path || StaticKnownCallArgumentChecks.IsUnknown(value))
             {
-                AddDiagnostic(diagnostics, "LA3020", "subprocess.run(args) expects an iterable of strings, not a single string.", argsExpression.Span);
+                return false;
+            }
+
+            return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, requireNonEmpty: true);
+        }
+
+        return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
+    }
+
+    private static bool AnalyzeSubprocessEnvArgument(
+        ConcreteCallArguments arguments,
+        string owner,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(EnvIndex, "env", out var envExpression) ||
+            envExpression is NoneLiteralExpressionSyntax)
+        {
+            return false;
+        }
+
+        var value = StaticAbstractValueResolver.ResolveOrUnknown(envExpression, bindings);
+        if (StaticKnownCallArgumentChecks.IsUnknown(value) || value.Kind == AbstractValueKind.Dict)
+        {
+            return false;
+        }
+
+        if (value.IsLiteralLike)
+        {
+            AddDiagnostic(diagnostics, "LA3158", $"{owner}(..., env=...) expects a dictionary of strings or None.", envExpression.Span);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void AnalyzeSubprocessCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        var owner = "subprocess." + memberName;
+        if (arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
+        {
+            if (!IsShellKnownTrue(arguments, bindings) &&
+                StaticAbstractValueResolver.TryResolveKnownString(argsExpression, bindings, out _))
+            {
+                AddDiagnostic(diagnostics, "LA3020", $"{owner}(args) expects an iterable of strings or Paths, not a single string.", argsExpression.Span);
             }
             else if (StaticAbstractValueResolver.TryResolveKnownSequenceItems(argsExpression, bindings, out var sequenceItems))
             {
-                StaticContractChecks.AnalyzeIterableOfStringsLiteral(
+                StaticContractChecks.AnalyzeIterableOfPathLikeLiteral(
                     sequenceItems,
                     "LA3021",
-                    "subprocess.run(args) expects an iterable of strings.",
+                    $"{owner}(args) expects an iterable of strings or Paths.",
                     diagnostics,
                     requireNonEmpty: true,
                     emptyCode: "LA3027",
-                    emptyMessage: "subprocess.run(args) expects at least one command part.",
+                    emptyMessage: $"{owner}(args) expects at least one command part.",
                     emptySpan: argsExpression.Span);
             }
             else if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(argsExpression, bindings))
             {
-                AddDiagnostic(diagnostics, "LA3021", "subprocess.run(args) expects an iterable of strings.", argsExpression.Span);
+                AddDiagnostic(diagnostics, "LA3021", $"{owner}(args) expects an iterable of strings or Paths.", argsExpression.Span);
             }
         }
 
         StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
             arguments,
-            1,
+            InputIndex,
             "input",
             "LA3022",
-            "subprocess.run(..., input=...) expects a string or None.",
+            $"{owner}(..., input=...) expects a string or None.",
             diagnostics,
             bindings);
-        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
+        AnalyzeKnownPathLikeOrNoneArgument(
             arguments,
-            2,
+            CwdIndex,
             "cwd",
             "LA3023",
-            "subprocess.run(..., cwd=...) expects a string or None.",
+            $"{owner}(..., cwd=...) expects a string, Path, or None.",
             diagnostics,
             bindings);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
-            3,
+            TimeoutIndex,
             "timeout",
             "LA3024",
-            "subprocess.run(..., timeout=...) expects an integer or None.",
+            $"{owner}(..., timeout=...) expects an integer or None.",
             diagnostics,
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            4,
+            CheckIndex,
             "check",
             "LA3025",
-            "subprocess.run(..., check=...) expects a bool or None.",
+            $"{owner}(..., check=...) expects a bool or None.",
             diagnostics,
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            5,
+            CaptureOutputIndex,
             "capture_output",
             "LA3026",
-            "subprocess.run(..., capture_output=...) expects a bool or None.",
+            $"{owner}(..., capture_output=...) expects a bool or None.",
             diagnostics,
             bindings);
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(
+            arguments,
+            StdinIndex,
+            "stdin",
+            "LA3028",
+            $"{owner}(..., stdin=...) expects a subprocess stream constant or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(
+            arguments,
+            StdoutIndex,
+            "stdout",
+            "LA3028",
+            $"{owner}(..., stdout=...) expects a subprocess stream constant or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(
+            arguments,
+            StderrIndex,
+            "stderr",
+            "LA3028",
+            $"{owner}(..., stderr=...) expects a subprocess stream constant or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
+            arguments,
+            ShellIndex,
+            "shell",
+            "LA3029",
+            $"{owner}(..., shell=...) expects a bool or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
+            arguments,
+            TextIndex,
+            "text",
+            "LA3030",
+            $"{owner}(..., text=...) expects a bool or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
+            arguments,
+            EncodingIndex,
+            "encoding",
+            "LA3031",
+            $"{owner}(..., encoding=...) expects a string or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
+            arguments,
+            ErrorsIndex,
+            "errors",
+            "LA3032",
+            $"{owner}(..., errors=...) expects a string or None.",
+            diagnostics,
+            bindings);
+        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
+            arguments,
+            UniversalNewlinesIndex,
+            "universal_newlines",
+            "LA3030",
+            $"{owner}(..., universal_newlines=...) expects a bool or None.",
+            diagnostics,
+            bindings);
+    }
+
+    private static bool IsSubprocessKnownCall(string targetName)
+        => string.Equals(targetName, LythonKnownCallableSignatures.SubprocessRun.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCall.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckCall.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckOutput.Name, StringComparison.Ordinal);
+
+    private static bool IsSubprocessMemberName(string memberName)
+        => memberName is "run" or "call" or "check_call" or "check_output";
+
+    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(ShellIndex, "shell", out var shellExpression))
+        {
+            return false;
+        }
+
+        return StaticAbstractValueResolver.TryResolve(shellExpression, bindings, out var value) &&
+            value.Kind == AbstractValueKind.Boolean &&
+            value.Value is true;
+    }
+
+    private static void AnalyzeKnownPathLikeOrNoneArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string code,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax)
+        {
+            return;
+        }
+
+        var value = StaticAbstractValueResolver.ResolveOrUnknown(expression, bindings);
+        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never ||
+            value.IsStringLike ||
+            value.Kind == AbstractValueKind.Path)
+        {
+            return;
+        }
+
+        if (value.IsLiteralLike)
+        {
+            AddDiagnostic(diagnostics, code, message, expression.Span);
+        }
     }
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)

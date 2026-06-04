@@ -43,9 +43,11 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
     {
+        "args",
         "returncode",
         "stdout",
         "stderr",
+        "check_returncode",
     };
 
     private static readonly HashSet<string> DataclassFieldMembers = new(StringComparer.Ordinal)

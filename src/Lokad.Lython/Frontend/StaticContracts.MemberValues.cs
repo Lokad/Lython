@@ -12,6 +12,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Path, "drive", StaticReturnShape.String),
         new(AbstractValueKind.Path, "root", StaticReturnShape.String),
         new(AbstractValueKind.Path, "anchor", StaticReturnShape.String),
+        new(AbstractValueKind.SubprocessCompletedProcess, "args", StaticReturnShape.ListOfString),
         new(AbstractValueKind.SubprocessCompletedProcess, "returncode", StaticReturnShape.Integer),
         new(AbstractValueKind.SubprocessCompletedProcess, "stdout", StaticReturnShape.String),
         new(AbstractValueKind.SubprocessCompletedProcess, "stderr", StaticReturnShape.String),

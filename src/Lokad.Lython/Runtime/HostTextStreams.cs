@@ -307,12 +307,15 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
 internal sealed class PyCompletedProcess : IPyRenderableValue
 {
-    public PyCompletedProcess(BigInteger returnCode, object stdout, object stderr)
+    public PyCompletedProcess(object args, BigInteger returnCode, object stdout, object stderr)
     {
+        Args = args;
         ReturnCode = returnCode;
         Stdout = stdout;
         Stderr = stderr;
     }
+
+    public object Args { get; }
 
     public BigInteger ReturnCode { get; }
 

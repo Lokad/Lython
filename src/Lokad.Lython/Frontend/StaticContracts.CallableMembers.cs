@@ -102,6 +102,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.CsvWriter, "writerow", 1, 1, "LA3155", "csv.writerow(row) expects one argument.", ParameterNames: ["row"]),
             new(AbstractValueKind.CsvWriter, "writerows", 1, 1, "LA3155", "csv.writerows(rows) expects one argument.", ParameterNames: ["rows"]),
             new(AbstractValueKind.CsvWriter, "getvalue", 0, 0, "LA3155", "csv.getvalue() expects no arguments."),
+            new(AbstractValueKind.SubprocessCompletedProcess, "check_returncode", 0, 0, "LA3160", "CompletedProcess.check_returncode() expects no arguments."),
         ]);
 
         return contracts.ToArray();

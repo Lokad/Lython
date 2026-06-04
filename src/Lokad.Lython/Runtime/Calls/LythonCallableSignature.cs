@@ -45,7 +45,12 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DataclassesAsTuple = new("dataclasses.astuple", ["obj", "tuple_factory"], RequiredCount: 1);
     public static readonly LythonCallableSignature DataclassesReplace = new("dataclasses.replace", ["obj"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
 
-    public static readonly LythonCallableSignature SubprocessRun = new("subprocess.run", ["args", "input", "cwd", "timeout", "check", "capture_output"], RequiredCount: 1);
+    private static readonly string[] SubprocessParameters = ["args", "input", "cwd", "timeout", "check", "capture_output", "stdin", "stdout", "stderr", "shell", "text", "encoding", "errors", "env", "universal_newlines"];
+
+    public static readonly LythonCallableSignature SubprocessRun = new("subprocess.run", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
+    public static readonly LythonCallableSignature SubprocessCall = new("subprocess.call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
+    public static readonly LythonCallableSignature SubprocessCheckCall = new("subprocess.check_call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
+    public static readonly LythonCallableSignature SubprocessCheckOutput = new("subprocess.check_output", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
 
     public static readonly LythonCallableSignature OsListDir = new("os.listdir", ["path"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsWalk = new("os.walk", ["top", "topdown", "onerror", "followlinks"], RequiredCount: 0);

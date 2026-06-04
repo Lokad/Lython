@@ -2025,9 +2025,24 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "args" => process.Args,
                 "returncode" => process.ReturnCode,
                 "stdout" => process.Stdout,
                 "stderr" => process.Stderr,
+                "check_returncode" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "CompletedProcess.check_returncode() expects no arguments.", span);
+                    }
+
+                    if (process.ReturnCode != BigInteger.Zero)
+                    {
+                        throw new LythonRuntimeException("RuntimeError", $"subprocess.CompletedProcess failed with return code {process.ReturnCode}.", span, payload: process);
+                    }
+
+                    return PyNone.Instance;
+                }),
                 _ => null!
             };
 

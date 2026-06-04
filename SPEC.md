@@ -100,7 +100,7 @@ The following are explicitly outside the initial scope:
 - dynamic imports from disk
 - native extensions
 - unrestricted process execution
-- shell command execution from scripts
+- ambient shell command execution outside host mediation
 - unrestricted networking
 - unrestricted reflection
 - concurrency primitives intended for long-running applications
@@ -676,10 +676,10 @@ The initial subset does not support Python's `open(...)` surface.
 
 Lython scripts must not be able to:
 
-- spawn shell commands
-- invoke external utilities
-- pipe data through external executables
-- rely on shell expansion semantics
+- bypass host-mediated subprocess policy to spawn shell commands
+- bypass host-mediated subprocess policy to invoke external utilities
+- bypass host-mediated subprocess policy to pipe data through external executables
+- rely on shell expansion semantics without an explicit host-mediated subprocess request
 - access a local filesystem directly outside the host-managed path space
 
 ### 11.3 Path Semantics
@@ -997,6 +997,24 @@ The runtime must support the ability to:
 
 This capability is provided through the `csv` surface defined in section 11.9 together with the builtins defined in sections 11.2 through 11.6.
 
+### 11.12 Host-Mediated Subprocesses
+
+Process execution is optional and must remain host-mediated.
+
+When the host provides a subprocess capability, Lython may expose a contained subset of Python's `subprocess` module:
+
+- `subprocess.run(...)`
+- `subprocess.call(...)`
+- `subprocess.check_call(...)`
+- `subprocess.check_output(...)`
+- `subprocess.PIPE`
+- `subprocess.STDOUT`
+- `subprocess.DEVNULL`
+
+The subprocess request sent to the host must carry the command arguments, optional cwd, optional environment, stdin bytes, stream modes, shell/text-mode flags, encoding and error-mode requests, timeout, and output bounds. The host remains authoritative over whether a command may run, how streams are connected, whether shell execution is allowed, and what process environment is used.
+
+The supported subprocess surface does not include `Popen`, background processes, unmanaged pipes, or ambient shell authority.
+
 ---
 
 ## 12. Host Capability Interface
@@ -1036,6 +1054,7 @@ Optional capabilities are limited to:
 - patch application
 - streams
 - pipes
+- subprocess execution
 
 These capabilities must remain explicit and capability-bound.
 
@@ -1314,8 +1333,9 @@ The initial supported subset consists of the exact Python-surface subset defined
 - the `re`, `json`, `csv`, and `fnmatch` subsets defined in sections 11.7 through 11.10
 - structured delimited text processing and tabular reshaping
 - controlled path-space operations
+- host-mediated subprocess execution as defined in section 11.12, when the host provides the capability
 
-The initial subset explicitly excludes shell command execution from scripts.
+The initial subset explicitly excludes ambient shell command execution outside host mediation.
 
 This subset must be sufficient for a coding agent to naturally write scripts such as:
 

@@ -65,13 +65,13 @@ internal static partial class StaticContracts
         if (call.Target is MemberExpressionSyntax
             {
                 Target: IdentifierExpressionSyntax { Name: "subprocess" },
-                MemberName: "run"
-            })
+                MemberName: "run" or "call" or "check_call" or "check_output"
+            } member)
         {
             requirement = new StaticHostRequirement(
                 StaticHostCapability.Subprocess,
                 "LA3041",
-                "subprocess.run(...) requires subprocess support from the host.",
+                $"subprocess.{member.MemberName}(...) requires subprocess support from the host.",
                 call.Span);
             return true;
         }
