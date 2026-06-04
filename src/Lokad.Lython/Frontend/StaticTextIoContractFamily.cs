@@ -135,6 +135,15 @@ internal static class StaticTextIoContractFamily
             "Path.read_text() only supports encoding='utf-8' or 'utf-8-sig'.",
             diagnostics,
             bindings);
+        AnalyzeErrorsArgument(
+            arguments,
+            1,
+            "errors",
+            "LA3049",
+            "Path.read_text() only supports errors='strict'.",
+            "Path.read_text() only supports errors='strict'.",
+            diagnostics,
+            bindings);
     }
 
     private static void AnalyzePathWriteTextCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -145,7 +154,7 @@ internal static class StaticTextIoContractFamily
             (StaticAbstractValueResolver.IsDefinitelyKnownLiteral(textExpression, bindings) ||
              StaticAbstractValueResolver.IsDefinitelyKnownNonStringLike(textExpression, bindings)))
         {
-            AddDiagnostic(diagnostics, "LA3072", "Path.write_text(text[, encoding][, newline]) expects a string plus optional keyword-compatible arguments.", textExpression.Span);
+            AddDiagnostic(diagnostics, "LA3072", "Path.write_text(text[, encoding][, errors][, newline]) expects a string plus optional keyword-compatible arguments.", textExpression.Span);
         }
 
         AnalyzeEncodingArgument(
@@ -157,9 +166,18 @@ internal static class StaticTextIoContractFamily
             "Path.write_text() only supports encoding='utf-8' or 'utf-8-sig'.",
             diagnostics,
             bindings);
-        AnalyzeNewlineArgument(
+        AnalyzeErrorsArgument(
             arguments,
             2,
+            "errors",
+            "LA3053",
+            "Path.write_text() only supports errors='strict'.",
+            "Path.write_text() only supports errors='strict'.",
+            diagnostics,
+            bindings);
+        AnalyzeNewlineArgument(
+            arguments,
+            3,
             "newline",
             "LA3054",
             "Path.write_text() only supports newline=''.",
@@ -201,6 +219,24 @@ internal static class StaticTextIoContractFamily
             "LA3063",
             "Path.open() only supports encoding='utf-8' or 'utf-8-sig'.",
             "Path.open() only supports encoding='utf-8' or 'utf-8-sig'.",
+            diagnostics,
+            bindings);
+        AnalyzeErrorsArgument(
+            arguments,
+            2,
+            "errors",
+            "LA3063",
+            "Path.open() only supports errors='strict'.",
+            "Path.open() only supports errors='strict'.",
+            diagnostics,
+            bindings);
+        AnalyzeNewlineArgument(
+            arguments,
+            3,
+            "newline",
+            "LA3064",
+            "Path.open() only supports newline=''.",
+            "Path.open() only supports newline=''.",
             diagnostics,
             bindings);
     }
@@ -383,6 +419,40 @@ internal static class StaticTextIoContractFamily
                  newlineText.Length != 0)
         {
             AddDiagnostic(diagnostics, code, unsupportedNewlineMessage, newlineExpression.Span);
+        }
+    }
+
+    private static void AnalyzeErrorsArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string code,
+        string knownLiteralMessage,
+        string unsupportedErrorsMessage,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var errorsExpression))
+        {
+            return;
+        }
+
+        if (errorsExpression is not NoneLiteralExpressionSyntax &&
+            !StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out _))
+        {
+            if (StaticAbstractValueResolver.IsDefinitelyKnownLiteral(errorsExpression, bindings))
+            {
+                AddDiagnostic(diagnostics, code, knownLiteralMessage, errorsExpression.Span);
+            }
+
+            return;
+        }
+
+        if (errorsExpression is not NoneLiteralExpressionSyntax &&
+            StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out var errorsText) &&
+            !errorsText.Equals("strict", StringComparison.OrdinalIgnoreCase))
+        {
+            AddDiagnostic(diagnostics, code, unsupportedErrorsMessage, errorsExpression.Span);
         }
     }
 

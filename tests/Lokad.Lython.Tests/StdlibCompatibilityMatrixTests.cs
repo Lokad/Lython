@@ -593,7 +593,28 @@ Path("/repo/input.txt").read_text(encoding="latin-1")
     [InlineData(
         """
 from pathlib import Path
+Path("/repo/input.txt").read_text(errors="ignore")
+""",
+        "compile",
+        "only supports errors='strict'")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/output.txt").write_text("alpha", encoding="utf-8", errors="ignore")
+""",
+        "compile",
+        "only supports errors='strict'")]
+    [InlineData(
+        """
+from pathlib import Path
 Path("/repo/output.txt").write_text("alpha", encoding="utf-8", newline="\r\n")
+""",
+        "compile",
+        "only supports newline=''")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.txt").open(encoding="utf-8", newline="\r\n")
 """,
         "compile",
         "only supports newline=''")]

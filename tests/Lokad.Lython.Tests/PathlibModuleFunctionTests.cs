@@ -49,13 +49,13 @@ from pathlib import Path
 
 src = Path("/repo/docs/a.md")
 dst = Path("/repo/docs/out.md")
-dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8", newline="")
+dst.write_text(src.read_text(encoding="utf-8-sig", errors="strict"), encoding="utf-8-sig", errors="strict", newline="")
 items = sorted(Path("/repo/docs").glob("*.md"))
 tree = sorted(Path("/repo/docs").rglob("*.md"))
 renamed = Path("/repo/docs/out.md").rename(Path("/repo/docs/final.md"))
 Path("/repo/docs/final.md").unlink()
 Path("/repo/newdir").mkdir()
-with src.open(encoding="utf-8") as f:
+with src.open(encoding="utf-8", errors="strict", newline="") as f:
     first = f.readline().rstrip()
 vals = []
 vals.append(first)
@@ -85,10 +85,10 @@ from pathlib import Path
 
 src = Path("/repo/docs/a.md")
 dst = Path("/repo/docs/out.md")
-dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8", newline="")
-with Path("/repo/docs/opened.md").open("w", encoding="utf-8") as f:
+dst.write_text(src.read_text(encoding="utf-8-sig", errors="strict"), encoding="utf-8-sig", errors="strict", newline="")
+with Path("/repo/docs/opened.md").open("w", encoding="utf-8-sig", errors="strict", newline="") as f:
     f.write("opened")
-with Path("/repo/docs/opened.md").open(encoding="utf-8") as f:
+with Path("/repo/docs/opened.md").open(encoding="utf-8-sig", errors="strict", newline="") as f:
     opened = f.read()
 items = sorted(Path("/repo/docs").glob("*.md"))
 tree = sorted(Path("/repo/docs").rglob("*.md"))

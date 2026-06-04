@@ -353,6 +353,72 @@ write_text("/result.txt", "|".join(vals))
     }
 
     [Fact]
+    public void PathlibPath_TextEditingScriptPatterns_AreFirstClass()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile(
+            "/repo/tool.py",
+            "\uFEFF# header\r\ndef render():\r\n    return f\"{{old}} café\"\r\nPLACEHOLDER PLACEHOLDER\r\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+path = Path("/repo/tool.py")
+text = path.read_text(encoding="utf-8-sig", errors="strict")
+needle = '''def render():
+    return f"{{old}} café"
+'''
+replacement = '''def render():
+    return f"{{new}} café"
+'''
+
+if needle not in text:
+    raise SystemExit("needle missing")
+
+start = text.find(needle)
+text = text[:start] + replacement + text[start + len(needle):]
+text = text.replace("PLACEHOLDER", "done", 1)
+written = path.write_text(text, encoding="UTF-8-SIG", errors="strict", newline="")
+after = path.read_text(encoding="utf-8-sig")
+write_text("/result.txt", str(written == len(text)) + "|" + after)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "True|# header\n" +
+            "def render():\n" +
+            "    return f\"{{new}} café\"\n" +
+            "done PLACEHOLDER\n",
+            host.ReadText("/result.txt"));
+        Assert.StartsWith("\uFEFF# header\n", host.ReadText("/repo/tool.py"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PathlibPath_TextEditingScriptCanExitWhenNeedleIsMissing()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/tool.py", "alpha\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+text = Path("/repo/tool.py").read_text()
+if "needle" not in text:
+    raise SystemExit("needle missing")
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("needle missing", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PathlibPath_ExplicitRepoRootBranchMatchesScriptLikeTraversal()
     {
         var host = new MockLythonHost("/");

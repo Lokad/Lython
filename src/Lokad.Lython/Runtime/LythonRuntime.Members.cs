@@ -787,6 +787,8 @@ internal sealed partial class LythonRuntime
 
     internal static class PathMembers
     {
+        private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
+
         public static bool TryGetMember(PyPath path, string name, out object value)
         {
             value = name switch
@@ -1032,52 +1034,28 @@ internal sealed partial class LythonRuntime
                 }),
                 "open" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length > 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding]) expects zero to two arguments.", span);
-                    }
-
-                    var mode = arguments.Length >= 1
-                        ? arguments[0] switch
-                        {
-                            null => PyString.FromString("r"),
-                            PyNone => PyString.FromString("r"),
-                            PyString text => text,
-                            _ => throw new LythonRuntimeException("TypeError", "Path.open(mode) expects mode to be a string.", span)
-                        }
-                        : PyString.FromString("r");
-
-                    if (arguments.Length == 2 &&
-                        (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
-                    {
-                        throw new LythonRuntimeException("ValueError", "Path.open() only supports encoding='utf-8'.", span);
-                    }
-
+                    var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
                     var modeText = mode.AsString();
-                    if (modeText.Contains('b'))
-                    {
-                        throw new LythonRuntimeException("ValueError", "Path.open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
-                    }
-
                     return modeText switch
                     {
-                        "r" => LythonRuntime.ExecutionContext.TextFileHandle.ForRead(path.Value.AsString(), context),
-                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context),
-                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context),
+                        "r" => LythonRuntime.ExecutionContext.TextFileHandle.ForRead(path.Value.AsString(), context, encodingMode),
+                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context, encodingMode),
+                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context, encodingMode),
                         _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
                     };
                 },
                 async (arguments, span, context) =>
                 {
-                    var modeText = ParsePathOpenArguments(arguments, span).AsString();
+                    var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
+                    var modeText = mode.AsString();
                     return modeText switch
                     {
-                        "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path.Value.AsString(), context).ConfigureAwait(false),
-                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context),
-                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context),
+                        "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path.Value.AsString(), context, encodingMode).ConfigureAwait(false),
+                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context, encodingMode),
+                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context, encodingMode),
                         _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
                     };
-                }, "Path.open", ["mode", "encoding"], 0),
+                }, "Path.open", ["mode", "encoding", "errors", "newline"], 0),
                 "glob" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
@@ -1123,54 +1101,30 @@ internal sealed partial class LythonRuntime
                 }, "Path.glob", ["pattern"]),
                 "read_text" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.read_text([encoding]) expects zero or one argument.", span);
-                    }
-
-                    if (arguments.Length == 1 && (!PyStringOps.TryAsString(arguments[0], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
-                    {
-                        throw new LythonRuntimeException("ValueError", "Path.read_text() only supports encoding='utf-8'.", span);
-                    }
-
-                    return ReadGovernedHostText(path.Value.AsString(), context, span);
+                    var encodingMode = ParsePathReadTextArguments(arguments, span);
+                    return ReadPathText(path.Value.AsString(), encodingMode, context, span);
                 },
                 async (arguments, span, context) =>
                 {
-                    ValidatePathReadTextArguments(arguments, span);
-                    return await ReadGovernedHostTextAsync(path.Value.AsString(), context, span).ConfigureAwait(false);
-                }, "Path.read_text", ["encoding"], 0),
+                    var encodingMode = ParsePathReadTextArguments(arguments, span);
+                    return await ReadPathTextAsync(path.Value.AsString(), encodingMode, context, span).ConfigureAwait(false);
+                }, "Path.read_text", ["encoding", "errors"], 0),
                 "write_text" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.write_text(text[, encoding][, newline]) expects a string plus optional keyword-compatible arguments.", span);
-                    }
-
-                    if (arguments.Length >= 2 && (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
-                    {
-                        throw new LythonRuntimeException("ValueError", "Path.write_text() only supports encoding='utf-8'.", span);
-                    }
-
-                    if (arguments.Length == 3 && (!PyStringOps.TryAsString(arguments[2], out var newline) || !newline.Equals(PyString.Empty)))
-                    {
-                        throw new LythonRuntimeException("ValueError", "Path.write_text() only supports newline=''.", span);
-                    }
-
-                    text = PyStringOps.NormalizeNewlines(text);
+                    var (text, encodingMode) = ParsePathWriteTextArguments(arguments, span);
                     context.ObserveString(text, span);
                     context.RegisterHostCall(span);
-                    context.WriteTextUtf8(path.Value.AsString(), PyStringOps.EncodeUtf8(text), span);
+                    context.WriteTextUtf8(path.Value.AsString(), EncodePathText(text, encodingMode), span);
                     return new BigInteger(text.Length);
                 },
                 async (arguments, span, context) =>
                 {
-                    var text = ParsePathWriteTextArguments(arguments, span);
+                    var (text, encodingMode) = ParsePathWriteTextArguments(arguments, span);
                     context.ObserveString(text, span);
                     context.RegisterHostCall(span);
-                    await context.WriteTextUtf8Async(path.Value.AsString(), PyStringOps.EncodeUtf8(text), span).ConfigureAwait(false);
+                    await context.WriteTextUtf8Async(path.Value.AsString(), EncodePathText(text, encodingMode), span).ConfigureAwait(false);
                     return new BigInteger(text.Length);
-                }, "Path.write_text", ["text", "encoding", "newline"], 1),
+                }, "Path.write_text", ["text", "encoding", "errors", "newline"], 1),
                 "rglob" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
@@ -1226,11 +1180,11 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static PyString ParsePathOpenArguments(object[] arguments, LythonSourceSpan span)
+        private static (PyString Mode, TextEncodingMode EncodingMode) ParsePathOpenArguments(object[] arguments, LythonSourceSpan span)
         {
-            if (arguments.Length > 2)
+            if (arguments.Length > 4)
             {
-                throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding]) expects zero to two arguments.", span);
+                throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding][, errors][, newline]) expects supported text-mode options.", span);
             }
 
             var mode = arguments.Length >= 1
@@ -1243,10 +1197,18 @@ internal sealed partial class LythonRuntime
                 }
                 : PyString.FromString("r");
 
-            if (arguments.Length == 2 &&
-                (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            var encodingMode = arguments.Length >= 2
+                ? ParseTextEncoding(arguments[1], "Path.open()", span)
+                : TextEncodingMode.Utf8;
+
+            if (arguments.Length >= 3)
             {
-                throw new LythonRuntimeException("ValueError", "Path.open() only supports encoding='utf-8'.", span);
+                ValidateStrictTextErrors(arguments[2], "Path.open()", span);
+            }
+
+            if (arguments.Length == 4)
+            {
+                ValidatePathNewline(arguments[3], "Path.open()", span);
             }
 
             var modeText = mode.AsString();
@@ -1255,40 +1217,112 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Path.open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
             }
 
-            return mode;
+            return (mode, encodingMode);
         }
 
-        private static void ValidatePathReadTextArguments(object[] arguments, LythonSourceSpan span)
+        private static TextEncodingMode ParsePathReadTextArguments(object[] arguments, LythonSourceSpan span)
         {
-            if (arguments.Length > 1)
+            if (arguments.Length > 2)
             {
-                throw new LythonRuntimeException("TypeError", "Path.read_text([encoding]) expects zero or one argument.", span);
+                throw new LythonRuntimeException("TypeError", "Path.read_text([encoding][, errors]) expects zero to two arguments.", span);
             }
 
-            if (arguments.Length == 1 && (!PyStringOps.TryAsString(arguments[0], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            var encodingMode = arguments.Length >= 1
+                ? ParseTextEncoding(arguments[0], "Path.read_text()", span)
+                : TextEncodingMode.Utf8;
+
+            if (arguments.Length == 2)
             {
-                throw new LythonRuntimeException("ValueError", "Path.read_text() only supports encoding='utf-8'.", span);
+                ValidateStrictTextErrors(arguments[1], "Path.read_text()", span);
+            }
+
+            return encodingMode;
+        }
+
+        private static (PyString Text, TextEncodingMode EncodingMode) ParsePathWriteTextArguments(object[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length is < 1 or > 4 || !PyStringOps.TryAsString(arguments[0], out var text))
+            {
+                throw new LythonRuntimeException("TypeError", "Path.write_text(text[, encoding][, errors][, newline]) expects a string plus optional keyword-compatible arguments.", span);
+            }
+
+            var encodingMode = arguments.Length >= 2
+                ? ParseTextEncoding(arguments[1], "Path.write_text()", span)
+                : TextEncodingMode.Utf8;
+
+            if (arguments.Length >= 3)
+            {
+                ValidateStrictTextErrors(arguments[2], "Path.write_text()", span);
+            }
+
+            if (arguments.Length == 4)
+            {
+                ValidatePathNewline(arguments[3], "Path.write_text()", span);
+            }
+
+            return (PyStringOps.NormalizeNewlines(text), encodingMode);
+        }
+
+        private static void ValidateStrictTextErrors(object value, string owner, LythonSourceSpan span)
+        {
+            if (value is null or PyNone)
+            {
+                return;
+            }
+
+            if (!PyStringOps.TryAsString(value, out var errors) ||
+                !errors.AsString().Equals("strict", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new LythonRuntimeException("ValueError", $"{owner} only supports errors='strict'.", span);
             }
         }
 
-        private static PyString ParsePathWriteTextArguments(object[] arguments, LythonSourceSpan span)
+        private static void ValidatePathNewline(object value, string owner, LythonSourceSpan span)
         {
-            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
+            if (value is null or PyNone)
             {
-                throw new LythonRuntimeException("TypeError", "Path.write_text(text[, encoding][, newline]) expects a string plus optional keyword-compatible arguments.", span);
+                return;
             }
 
-            if (arguments.Length >= 2 && (!PyStringOps.TryAsString(arguments[1], out var encoding) || !encoding.Equals(PyString.FromString("utf-8"))))
+            if (!PyStringOps.TryAsString(value, out var newline) || newline.Length != 0)
             {
-                throw new LythonRuntimeException("ValueError", "Path.write_text() only supports encoding='utf-8'.", span);
+                throw new LythonRuntimeException("ValueError", $"{owner} only supports newline=''.", span);
+            }
+        }
+
+        private static PyString ReadPathText(string path, TextEncodingMode encodingMode, ExecutionContext context, LythonSourceSpan span)
+        {
+            var text = StripUtf8Bom(ReadGovernedHostText(path, context, span), encodingMode);
+            context.ObserveString(text, span);
+            return text;
+        }
+
+        private static async ValueTask<PyString> ReadPathTextAsync(string path, TextEncodingMode encodingMode, ExecutionContext context, LythonSourceSpan span)
+        {
+            var text = StripUtf8Bom(await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false), encodingMode);
+            context.ObserveString(text, span);
+            return text;
+        }
+
+        private static PyString StripUtf8Bom(PyString text, TextEncodingMode encodingMode)
+        {
+            if (encodingMode != TextEncodingMode.Utf8Bom)
+            {
+                return text;
             }
 
-            if (arguments.Length == 3 && (!PyStringOps.TryAsString(arguments[2], out var newline) || !newline.Equals(PyString.Empty)))
-            {
-                throw new LythonRuntimeException("ValueError", "Path.write_text() only supports newline=''.", span);
-            }
+            var decoded = text.AsString();
+            return decoded.Length > 0 && decoded[0] == '\uFEFF'
+                ? PyString.FromString(decoded[1..])
+                : text;
+        }
 
-            return PyStringOps.NormalizeNewlines(text);
+        private static byte[] EncodePathText(PyString text, TextEncodingMode encodingMode)
+        {
+            var utf8 = PyStringOps.EncodeUtf8(text);
+            return encodingMode == TextEncodingMode.Utf8Bom
+                ? [.. Utf8Bom, .. utf8]
+                : utf8;
         }
 
         private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)

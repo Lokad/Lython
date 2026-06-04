@@ -212,6 +212,11 @@ internal sealed partial class LythonRuntime
 
     private static TextEncodingMode ParseTextEncoding(object value, string owner, LythonSourceSpan span)
     {
+        if (value is null or PyNone)
+        {
+            return TextEncodingMode.Utf8;
+        }
+
         if (!PyStringOps.TryAsString(value, out var encoding))
         {
             throw new LythonRuntimeException("ValueError", $"{owner} only supports encoding='utf-8' or 'utf-8-sig'.", span);

@@ -615,7 +615,7 @@ path = Path("/repo/input.txt")
 path.as_posix(1)
 path.resolve(extra=1)
 path.exists(1)
-path.read_text("utf-8", "extra")
+path.read_text("utf-8", "strict", "extra")
 path.write_text()
 path.with_suffix()
 path.joinpath()
@@ -641,7 +641,7 @@ with open("/repo/input.txt", "r") as reader:
 from pathlib import Path
 
 path = Path("/repo/input.txt")
-path.read_text(errors="ignore")
+path.read_text(unknown=1)
 path.write_text(encoding="utf-8")
 path.write_text("alpha", text="beta")
 path.joinpath(other="child")
@@ -1537,8 +1537,9 @@ text2.find(needle2)
 from pathlib import Path
 
 Path("/repo/in.txt").read_text(encoding="utf-8-sig")
-Path("/repo/out.txt").write_text("alpha", encoding="utf-8-sig")
-Path("/repo/out.txt").open("w", encoding="utf-8-sig")
+Path("/repo/in.txt").read_text(encoding="utf-8-sig", errors="strict")
+Path("/repo/out.txt").write_text("alpha", encoding="utf-8-sig", errors="strict", newline="")
+Path("/repo/out.txt").open("w", encoding="utf-8-sig", errors="strict", newline="")
 """);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));
