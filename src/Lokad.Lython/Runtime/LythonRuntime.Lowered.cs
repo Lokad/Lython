@@ -542,7 +542,12 @@ internal sealed partial class LythonRuntime
                     builder.AppendString(text.Text);
                     break;
                 case LoweredFormattedStringExpressionPart expression:
-                    builder.Append(ToInterpolatedPyString(EvaluateLoweredExpression(expression.Expression, context), context));
+                    builder.Append(FormatInterpolatedStringPart(
+                        EvaluateLoweredExpression(expression.Expression, context),
+                        expression.Conversion,
+                        expression.FormatSpecifier,
+                        context,
+                        formatted.Span));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");

@@ -60,14 +60,16 @@ for item in [1]:
     public void LoweredScript_LowersFormattedStringsAndComprehensions()
     {
         var frontend = LythonFrontend.Compile("""
-values = [f"{item}" for item in [1, 2] if item]
-mapping = {item: f"{item}" for item in [1, 2]}
+values = [f"{item:03d}" for item in [1, 2] if item]
+mapping = {item: f"{item!s}" for item in [1, 2]}
 """);
 
         var lowered = LoweredScript.Lower(frontend.Script!);
         var listAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
         var listComprehension = Assert.IsType<LoweredListComprehensionExpression>(listAssignment.Expression);
-        Assert.IsType<LoweredFormattedStringExpression>(listComprehension.ItemExpression);
+        var listFormatted = Assert.IsType<LoweredFormattedStringExpression>(listComprehension.ItemExpression);
+        var listPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(listFormatted.Parts));
+        Assert.Equal("03d", listPart.FormatSpecifier);
         Assert.Single(listComprehension.Clauses);
         Assert.IsType<LoweredListLiteralExpression>(listComprehension.Clauses[0].Iterable);
         Assert.IsType<LoweredIdentifierExpression>(listComprehension.Clauses[0].Condition);
@@ -75,7 +77,9 @@ mapping = {item: f"{item}" for item in [1, 2]}
         var dictAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[1]);
         var dictComprehension = Assert.IsType<LoweredDictComprehensionExpression>(dictAssignment.Expression);
         Assert.IsType<LoweredIdentifierExpression>(dictComprehension.KeyExpression);
-        Assert.IsType<LoweredFormattedStringExpression>(dictComprehension.ValueExpression);
+        var dictFormatted = Assert.IsType<LoweredFormattedStringExpression>(dictComprehension.ValueExpression);
+        var dictPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(dictFormatted.Parts));
+        Assert.Equal('s', dictPart.Conversion);
     }
 
     [Fact]

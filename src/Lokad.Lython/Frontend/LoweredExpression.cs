@@ -55,7 +55,9 @@ internal sealed record LoweredFormattedStringTextPart(
     string Text) : LoweredFormattedStringPart;
 
 internal sealed record LoweredFormattedStringExpressionPart(
-    LoweredExpression Expression) : LoweredFormattedStringPart;
+    LoweredExpression Expression,
+    char? Conversion,
+    string? FormatSpecifier) : LoweredFormattedStringPart;
 
 internal sealed record LoweredFormattedStringExpression(
     FormattedStringExpressionSyntax FormattedString,

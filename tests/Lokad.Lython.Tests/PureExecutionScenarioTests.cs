@@ -3350,6 +3350,17 @@ write_text("/out.txt", f"{'yes' if flag else 'no'}")
         "yes")]
     [InlineData(
         """
+values = [10, 20, 30]
+write_text("/out.txt", f"{values[1:3]}")
+""",
+        "[20, 30]")]
+    [InlineData(
+        """
+write_text("/out.txt", f"{ {'answer': 42}['answer'] }")
+""",
+        "42")]
+    [InlineData(
+        """
 write_text("/out.txt", f"{{left}}-{1 + 1}-{{right}}")
 """,
         "{left}-2-{right}")]
@@ -3364,11 +3375,62 @@ write_text("/out.txt", f"{{left}}-{1 + 1}-{{right}}")
         Assert.Equal(expected, host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void FormattedStrings_FormatLineNumberDiagnosticsLikePython()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/project/script.nvn", "zero\none\ntwo\nthree\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+path = Path("/project/script.nvn")
+lines = path.read_text().splitlines()
+
+for i in range(1, 3):
+    print(f"{i + 1:5d}: {lines[i]}")
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("    2: one\n    3: two\n", result.StandardOutput);
+    }
+
+    [Fact]
+    public void FormattedStrings_CoverCommonFormatSpecifiersAndConversions()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+parts = []
+parts.append(f"{15:04d}")
+parts.append(f"{-15:05d}")
+parts.append(f"{15:#x}")
+parts.append(f"{12345:,d}")
+parts.append(f"{2.5:.2f}")
+parts.append(f"{0.125:.1%}")
+parts.append(f"{'xy':>4s}")
+parts.append(f"{'x':05}")
+parts.append(f"{'abcdef':.3s}")
+parts.append(f"{3:<4}!")
+parts.append(f"{15!s:>4}")
+write_text("/out.txt", "|".join(parts))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("0015|-0015|0xf|12,345|2.50|12.5%|  xy|x0000|abc|3   !|  15", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("write_text(\"/out.txt\", f\"{\")\n")]
     [InlineData("write_text(\"/out.txt\", f\"}\")\n")]
     [InlineData("write_text(\"/out.txt\", f\"{}\")\n")]
-    [InlineData("write_text(\"/out.txt\", f\"{1 + {2}}\")\n")]
+    [InlineData("write_text(\"/out.txt\", f\"{1:{2}}\")\n")]
     public void FormattedStrings_InvalidShapes_ReportCompileDiagnostic(string source)
     {
         var compiled = new LythonEngine().Compile(source);

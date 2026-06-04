@@ -254,7 +254,10 @@ internal sealed class LoweredScript
         return part switch
         {
             FormattedStringTextPartSyntax text => new LoweredFormattedStringTextPart(text.Text),
-            FormattedStringExpressionPartSyntax expression => new LoweredFormattedStringExpressionPart(LowerExpression(expression.Expression)),
+            FormattedStringExpressionPartSyntax expression => new LoweredFormattedStringExpressionPart(
+                LowerExpression(expression.Expression),
+                expression.Conversion,
+                expression.FormatSpecifier),
             _ => throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}")
         };
     }

@@ -252,7 +252,9 @@ internal sealed record FormattedStringTextPartSyntax(
     string Text) : FormattedStringPartSyntax;
 
 internal sealed record FormattedStringExpressionPartSyntax(
-    ExpressionSyntax Expression) : FormattedStringPartSyntax;
+    ExpressionSyntax Expression,
+    char? Conversion = null,
+    string? FormatSpecifier = null) : FormattedStringPartSyntax;
 
 internal sealed record FormattedStringExpressionSyntax(
     IReadOnlyList<FormattedStringPartSyntax> Parts,
