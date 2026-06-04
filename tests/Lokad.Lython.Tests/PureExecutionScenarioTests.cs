@@ -3829,6 +3829,80 @@ with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
     }
 
     [Fact]
+    public void OneLineSuites_HandleCommonCompoundStatements()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+vals = []
+if True: vals.append("if")
+else: vals.append("bad")
+if False: vals.append("bad")
+else: vals.append("else")
+for item in [1, 2]: vals.append("f" + str(item)); vals.append("tail")
+count = 0
+while count < 2: vals.append("w" + str(count)); count += 1
+try: raise ValueError("bad")
+except ValueError: vals.append("caught")
+try: vals.append("try")
+except ValueError: vals.append("bad")
+else: vals.append("try-else")
+finally: vals.append("finally")
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("if|else|f1|tail|f2|tail|w0|w1|caught|try|try-else|finally", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OneLineSuites_HandleTryExceptContinueScratchPattern()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+vals = []
+for text in ["1", "x", "2"]:
+    try: value = int(text)
+    except ValueError: continue
+    vals.append(str(value))
+if vals: write_text("/out.txt", ",".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("1,2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OneLineSuites_HandleDefinitionsWithAndMatchCaseBodies()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/source.txt", "L");
+
+        var result = new LythonEngine().Run(
+            """
+def inc(value): return value + 1
+class Box: label = "box"
+with open("/source.txt", "r") as handle: text = handle.read()
+match inc(1):
+    case 1: text = text + "bad"
+    case 2: text = text + Box.label
+write_text("/out.txt", text)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("Lbox", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ChainedAssignment_EvaluatesRightHandSideOnce()
     {
         var host = new MockLythonHost();

@@ -108,6 +108,26 @@ internal sealed class Parser
             return ParseWhileStatement();
         }
 
+        return ParseSimpleStatement();
+    }
+
+    private StatementSyntax? ParseSimpleStatement()
+    {
+        if (_pendingStatements.Count != 0)
+        {
+            return _pendingStatements.Dequeue();
+        }
+
+        if (TryParseUnsupportedStatement(out var unsupported))
+        {
+            return unsupported;
+        }
+
+        if (CurrentToken is Token.Import or Token.From)
+        {
+            return ParseImportStatement();
+        }
+
         if (CurrentToken == Token.Pass)
         {
             var passToken = ReadToken();
@@ -201,7 +221,7 @@ internal sealed class Parser
             return null;
         }
 
-        var thenStatements = ParseBlock("LA1012", "Expected indented block after 'if'.");
+        var thenStatements = ParseSuite("LA1012", "Expected indented block after 'if'.");
         if (thenStatements is null)
         {
             return null;
@@ -227,7 +247,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var elifBody = ParseBlock("LA1015", "Expected indented block after 'elif'.");
+            var elifBody = ParseSuite("LA1015", "Expected indented block after 'elif'.");
             if (elifBody is null)
             {
                 return null;
@@ -261,7 +281,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var parsedElse = ParseBlock("LA1017", "Expected indented block after 'else'.");
+            var parsedElse = ParseSuite("LA1017", "Expected indented block after 'else'.");
             if (parsedElse is null)
             {
                 return null;
@@ -380,7 +400,7 @@ internal sealed class Parser
             return null;
         }
 
-        var body = ParseBlock("LA1090", "Expected indented block after 'case'.");
+        var body = ParseSuite("LA1090", "Expected indented block after 'case'.");
         if (body is null)
         {
             return null;
@@ -896,7 +916,7 @@ internal sealed class Parser
             return null;
         }
 
-        var body = ParseBlock("LA1019", "Expected indented block after 'for'.");
+        var body = ParseSuite("LA1019", "Expected indented block after 'for'.");
         if (body is null)
         {
             return null;
@@ -912,7 +932,7 @@ internal sealed class Parser
                 return null;
             }
 
-            elseStatements = ParseBlock("LA1019", "Expected indented block after 'else'.");
+            elseStatements = ParseSuite("LA1019", "Expected indented block after 'else'.");
             if (elseStatements is null)
             {
                 return null;
@@ -943,7 +963,7 @@ internal sealed class Parser
             return null;
         }
 
-        var body = ParseBlock("LA1029", "Expected indented block after 'while'.");
+        var body = ParseSuite("LA1029", "Expected indented block after 'while'.");
         if (body is null)
         {
             return null;
@@ -959,7 +979,7 @@ internal sealed class Parser
                 return null;
             }
 
-            elseStatements = ParseBlock("LA1029", "Expected indented block after 'else'.");
+            elseStatements = ParseSuite("LA1029", "Expected indented block after 'else'.");
             if (elseStatements is null)
             {
                 return null;
@@ -1011,7 +1031,7 @@ internal sealed class Parser
         _functionDepth++;
         try
         {
-            body = ParseBlock("LA1035", "Expected indented block after function definition.");
+            body = ParseSuite("LA1035", "Expected indented block after function definition.");
         }
         finally
         {
@@ -1267,7 +1287,7 @@ internal sealed class Parser
             return null;
         }
 
-        var body = ParseBlock("LA1104", "Expected indented block after class definition.");
+        var body = ParseSuite("LA1104", "Expected indented block after class definition.");
         if (body is null)
         {
             return null;
@@ -1416,7 +1436,7 @@ internal sealed class Parser
     private StatementSyntax? ParseReturnStatement()
     {
         var returnToken = ReadToken();
-        if (CurrentToken is Token.Eol or Token.Dedent or Token.End)
+        if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End)
         {
             return new ReturnStatementSyntax(null, SpanOf(returnToken));
         }
@@ -1504,7 +1524,7 @@ internal sealed class Parser
             return null;
         }
 
-        var tryBody = ParseBlock("LA1044", "Expected indented block after 'try'.");
+        var tryBody = ParseSuite("LA1044", "Expected indented block after 'try'.");
         if (tryBody is null)
         {
             return null;
@@ -1581,7 +1601,7 @@ internal sealed class Parser
                 return null;
             }
 
-            exceptBody = ParseBlock("LA1047", "Expected indented block after 'except'.");
+            exceptBody = ParseSuite("LA1047", "Expected indented block after 'except'.");
             if (exceptBody is null)
             {
                 return null;
@@ -1599,7 +1619,7 @@ internal sealed class Parser
                 return null;
             }
 
-            elseBody = ParseBlock("LA1048", "Expected indented block after 'else'.");
+            elseBody = ParseSuite("LA1048", "Expected indented block after 'else'.");
             if (elseBody is null)
             {
                 return null;
@@ -1617,7 +1637,7 @@ internal sealed class Parser
                 return null;
             }
 
-            finallyBody = ParseBlock("LA1049", "Expected indented block after 'finally'.");
+            finallyBody = ParseSuite("LA1049", "Expected indented block after 'finally'.");
             if (finallyBody is null)
             {
                 return null;
@@ -1909,7 +1929,7 @@ internal sealed class Parser
             return null;
         }
 
-        var body = ParseBlock("LA1012", "Expected indented block after 'with'.");
+        var body = ParseSuite("LA1012", "Expected indented block after 'with'.");
         if (body is null)
         {
             return null;
@@ -3353,11 +3373,71 @@ internal sealed class Parser
         return expression;
     }
 
-    private IReadOnlyList<StatementSyntax>? ParseBlock(string code, string message)
+    private IReadOnlyList<StatementSyntax>? ParseSuite(string code, string message)
     {
-        if (!TryRead(Token.Eol, out _))
+        if (TryRead(Token.Eol, out _))
         {
-            AddDiagnostic(code, "Expected end-of-line before block.", _position);
+            return ParseIndentedSuite(code, message);
+        }
+
+        return ParseSimpleStatementSuite(code);
+    }
+
+    private IReadOnlyList<StatementSyntax>? ParseSimpleStatementSuite(string code)
+    {
+        var statements = new List<StatementSyntax>();
+        while (true)
+        {
+            var statement = ParseSimpleStatement();
+            if (statement is null)
+            {
+                return null;
+            }
+
+            statements.Add(statement);
+            DrainPendingStatements(statements);
+
+            if (CurrentToken != Token.Semicolon)
+            {
+                break;
+            }
+
+            ReadToken();
+            if (CurrentToken is Token.Eol or Token.Dedent or Token.End)
+            {
+                break;
+            }
+        }
+
+        if (CurrentToken == Token.Eol)
+        {
+            ReadToken();
+            SkipEndOfLines();
+            return statements;
+        }
+
+        if (CurrentToken is Token.Dedent or Token.End)
+        {
+            return statements;
+        }
+
+        AddDiagnostic(code, "Expected end-of-line after one-line suite.", _position);
+        return null;
+    }
+
+    private void DrainPendingStatements(List<StatementSyntax> statements)
+    {
+        while (_pendingStatements.Count != 0)
+        {
+            statements.Add(_pendingStatements.Dequeue());
+        }
+    }
+
+    private IReadOnlyList<StatementSyntax>? ParseIndentedSuite(string code, string message)
+    {
+        if (CurrentToken == Token.Eol)
+        {
+            AddDiagnostic(code, message, _position);
             return null;
         }
 
