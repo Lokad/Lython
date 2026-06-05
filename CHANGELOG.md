@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 - 2026-06-05
+
+- Added `LythonSubprocessCompletion.CompleteBufferedAsync(...)`, a public host-side helper for applying subprocess stream modes to buffered stdout and stderr.
+- Covered `PIPE`, inherited streams, `DEVNULL`, `STDOUT` redirection, and output-bound handling for host subprocess runners.
+
 ## 0.4.0 - 2026-06-04
 
 This release broadens Lython's Python compatibility for coding-agent scratch scripts and text-editing workflows while preserving the host-mediated containment model.
