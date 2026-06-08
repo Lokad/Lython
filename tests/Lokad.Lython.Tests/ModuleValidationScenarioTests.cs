@@ -65,6 +65,23 @@ write_text("/out.txt", dumps(loads("{\"ok\": true}")))
     }
 
     [Fact]
+    public void DottedFromImport_SupportsBuiltinSubmodules()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from os.path import basename, join
+write_text("/out.txt", join("/repo", "docs", basename("/repo/source/guide.md")))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("/repo/docs/guide.md", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void RegexAndJson_ModuleFunctionsAcceptKeywordArguments()
     {
         var host = new MockLythonHost();

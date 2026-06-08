@@ -1725,22 +1725,26 @@ internal sealed class Parser
     private StatementSyntax? ParseFromImportStatement()
     {
         var fromToken = ReadToken();
-        if (!TryRead(Token.Identifier, out var moduleToken))
+        if (!TryReadDottedModuleName(
+                "LA1052",
+                "Expected module name after 'from'.",
+                fromToken,
+                out var moduleName,
+                out var moduleStartToken,
+                out var moduleEndToken))
         {
-            AddDiagnostic("LA1052", "Expected module name after 'from'.", fromToken);
             return null;
         }
 
-        var moduleName = _tokens.GetString(moduleToken).Trim();
         if (!IsSupportedImport(moduleName))
         {
-            AddDiagnostic("LA1002", $"Unsupported module '{moduleName}'.", moduleToken);
+            AddDiagnostic("LA1002", $"Unsupported module '{moduleName}'.", moduleStartToken);
             return null;
         }
 
         if (!TryRead(Token.Import, out _))
         {
-            AddDiagnostic("LA1053", "Expected 'import' after module name.", moduleToken);
+            AddDiagnostic("LA1053", "Expected 'import' after module name.", moduleEndToken);
             return null;
         }
 
@@ -1808,7 +1812,44 @@ internal sealed class Parser
             moduleName,
             moduleName,
             importedMembers,
-            Merge(fromToken, moduleToken));
+            Merge(fromToken, moduleEndToken));
+    }
+
+    private bool TryReadDottedModuleName(
+        string diagnosticCode,
+        string diagnosticMessage,
+        int anchorToken,
+        out string moduleName,
+        out int startToken,
+        out int endToken)
+    {
+        moduleName = string.Empty;
+        startToken = -1;
+        endToken = -1;
+
+        if (!TryRead(Token.Identifier, out startToken))
+        {
+            AddDiagnostic(diagnosticCode, diagnosticMessage, anchorToken);
+            return false;
+        }
+
+        endToken = startToken;
+        var parts = new List<string> { _tokens.GetString(startToken).Trim() };
+        while (CurrentToken == Token.Dot)
+        {
+            ReadToken();
+            if (!TryRead(Token.Identifier, out var partToken))
+            {
+                AddDiagnostic(diagnosticCode, "Expected module name after '.'.", _position);
+                return false;
+            }
+
+            parts.Add(_tokens.GetString(partToken).Trim());
+            endToken = partToken;
+        }
+
+        moduleName = string.Join(".", parts);
+        return true;
     }
 
     private StatementSyntax? ParseAssignmentStatement()
