@@ -209,4 +209,23 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature PkgutilIterZipimportModules = new("pkgutil.iter_zipimport_modules", ["importer", "prefix"], RequiredCount: 1);
     public static readonly LythonCallableSignature PkgutilGetData = new("pkgutil.get_data", ["package", "resource"]);
     public static readonly LythonCallableSignature PkgutilReadCode = new("pkgutil.read_code", ["stream"]);
+
+    public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
+    public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
+    public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ItertoolsCycle = new("itertools.cycle", ["iterable"]);
+    public static readonly LythonCallableSignature ItertoolsIslice = new("itertools.islice", ["iterable", "start", "stop", "step"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ItertoolsCombinations = new("itertools.combinations", ["iterable", "r"]);
+    public static readonly LythonCallableSignature ItertoolsCombinationsWithReplacement = new("itertools.combinations_with_replacement", ["iterable", "r"]);
+    public static readonly LythonCallableSignature ItertoolsPermutations = new("itertools.permutations", ["iterable", "r"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ItertoolsAccumulate = new("itertools.accumulate", ["iterable", "func", "initial"], RequiredCount: 1, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ItertoolsCompress = new("itertools.compress", ["data", "selectors"]);
+    public static readonly LythonCallableSignature ItertoolsFilterFalse = new("itertools.filterfalse", ["function", "iterable"]);
+    public static readonly LythonCallableSignature ItertoolsDropWhile = new("itertools.dropwhile", ["predicate", "iterable"]);
+    public static readonly LythonCallableSignature ItertoolsTakeWhile = new("itertools.takewhile", ["predicate", "iterable"]);
+    public static readonly LythonCallableSignature ItertoolsStarmap = new("itertools.starmap", ["function", "iterable"]);
+    public static readonly LythonCallableSignature ItertoolsPairwise = new("itertools.pairwise", ["iterable"]);
+    public static readonly LythonCallableSignature ItertoolsGroupBy = new("itertools.groupby", ["iterable", "key"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ItertoolsTee = new("itertools.tee", ["iterable", "n"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ItertoolsBatched = new("itertools.batched", ["iterable", "n", "strict"], RequiredCount: 2, MaxPositionalCount: 2);
 }

@@ -1500,6 +1500,9 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Add(lhs, rhs);
     }
 
+    internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
+        => EvaluateAdd(left, right, context, span);
+
     private static object EvaluateSubtract(object left, object right, LythonSourceSpan span)
     {
         if (left is PySet leftSet && right is PySet rightSet)

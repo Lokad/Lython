@@ -587,6 +587,18 @@ Dictionary iteration must follow Python semantics for the supported subset.
 - `enumerate(iterable)`
 - `enumerate(iterable, start)`
 
+The `itertools` module supports common lazy iterator helpers:
+
+- `chain`, including `chain.from_iterable`
+- `islice`, `product`, and `zip_longest`
+- `count`, `repeat`, and `cycle`
+- `combinations`, `combinations_with_replacement`, and `permutations`
+- `accumulate`, including `func=None` addition and keyword-only `initial`
+- `compress`, `filterfalse`, `dropwhile`, and `takewhile`
+- `starmap`, `pairwise`, `groupby`, `tee`, and `batched`
+
+Unbounded forms such as `count`, `repeat(..., times=None)`, and `cycle` must remain lazy. Helpers that cache values by design, including `cycle`, combinatorics, `groupby` group iterators, and `tee`, must remain subject to execution and memory limits.
+
 ### 9.9 Exceptions
 
 The initial subset must support Python-style exception propagation.
