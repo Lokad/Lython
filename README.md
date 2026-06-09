@@ -111,6 +111,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `Counter` arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.
 
+`copy` supports `copy`, `deepcopy(x, memo=None)`, `copy.replace(obj, **changes)`, `Error`/`error`, and a compatibility `dispatch_table`. Deep copies preserve cycles and explicit memo dictionaries, `replace` works for dataclasses, namedtuple-like values, and `__replace__` hooks, and pickle-style reduce/state protocols fail explicitly unless a direct copy hook is provided.
+
 `itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; functions that must cache inputs or buffers are still subject to Lython's execution limits.
 
 `os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.

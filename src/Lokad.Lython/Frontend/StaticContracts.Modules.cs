@@ -347,7 +347,7 @@ internal static partial class StaticContracts
             "paretovariate",
             "vonmisesvariate",
             "weibullvariate"),
-        ["copy"] = Members("copy", "deepcopy", "Error"),
+        ["copy"] = Members("copy", "deepcopy", "replace", "Error", "error", "dispatch_table"),
         ["operator"] = Members("add", "sub", "mul", "truediv", "eq", "ne", "lt", "le", "gt", "ge", "getitem", "setitem", "contains", "itemgetter", "attrgetter", "methodcaller"),
         ["openpyxl"] = Members("Workbook", "load_workbook", "__version__", "utils", "workbook", "reader", "styles", "comments", "chart", "cell", "worksheet", "drawing"),
         ["openpyxl.workbook"] = Members("Workbook"),

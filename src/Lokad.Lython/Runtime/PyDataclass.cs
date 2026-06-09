@@ -933,7 +933,7 @@ internal static class PyDataclass
                 throw new LythonRuntimeException("TypeError", "dataclasses.replace(obj, **changes) expects a dataclass instance as its first positional argument.", span);
             }
 
-            var changes = new Dictionary<string, object>(StringComparer.Ordinal);
+            var changes = new List<CallArgumentValue>();
             for (var i = 1; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
@@ -942,23 +942,50 @@ internal static class PyDataclass
                     throw new LythonRuntimeException("TypeError", "dataclasses.replace(obj, **changes) only accepts keyword changes after the dataclass instance.", span);
                 }
 
-                if (!changes.TryAdd(argument.Name, argument.Value))
-                {
-                    throw CallErrors.MultipleValues("Builtin", "dataclasses.replace", argument.Name, span);
-                }
+                changes.Add(argument);
             }
+
+            return ReplaceInstance(instance, changes, span, context, "dataclasses.replace");
+        }
+    }
+
+    public static object ReplaceInstance(
+        PyInstance instance,
+        IReadOnlyList<CallArgumentValue> changeArguments,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context,
+        string owner)
+    {
+        if (instance.Type.DataclassFields is null)
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(obj, **changes) expects a dataclass instance.", span);
+        }
+
+        var changes = new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (var argument in changeArguments)
+        {
+            if (argument.Name is null)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(obj, **changes) only accepts keyword changes after the dataclass instance.", span);
+            }
+
+            if (!changes.TryAdd(argument.Name, argument.Value))
+            {
+                throw CallErrors.MultipleValues("Builtin", owner, argument.Name, span);
+            }
+        }
 
             foreach (var change in changes.Keys)
             {
                 var field = instance.Type.DataclassFields.FirstOrDefault(candidate => candidate.Name == change);
                 if (field is null)
                 {
-                    throw new LythonRuntimeException("TypeError", $"dataclasses.replace() got an unexpected field '{change}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{owner}() got an unexpected field '{change}'.", span);
                 }
 
                 if (!field.Init)
                 {
-                    throw new LythonRuntimeException("TypeError", $"dataclasses.replace() cannot override init=False field '{change}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{owner}() cannot override init=False field '{change}'.", span);
                 }
             }
 
@@ -990,7 +1017,7 @@ internal static class PyDataclass
                         continue;
                     }
 
-                    throw new LythonRuntimeException("ValueError", $"InitVar '{field.Name}' must be specified with dataclasses.replace().", span);
+                    throw new LythonRuntimeException("ValueError", $"InitVar '{field.Name}' must be specified with {owner}().", span);
                 }
 
                 _ = instance.TryGetOwnAttribute(field.Name, out var existingValue);
@@ -998,7 +1025,6 @@ internal static class PyDataclass
             }
 
             return instance.Type.Invoke(callArguments.ToArray(), span, context);
-        }
     }
 
     public static object IsDataclass(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

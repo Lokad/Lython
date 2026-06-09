@@ -51,6 +51,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CollectionsUserList = new("collections.UserList", RequiredCount: 0);
     public static readonly LythonCallableSignature CollectionsUserString = new("collections.UserString", RequiredCount: 0);
 
+    public static readonly LythonCallableSignature CopyCopy = new("copy.copy", ["x"]);
+    public static readonly LythonCallableSignature CopyDeepCopy = new("copy.deepcopy", ["x", "memo"], RequiredCount: 1);
+    public static readonly LythonCallableSignature CopyReplace = new("copy.replace", ["__object"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+
     public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value", "context"], RequiredCount: 0);
     public static readonly LythonCallableSignature DecimalTuple = new("decimal.DecimalTuple", ["sign", "digits", "exponent"]);
     public static readonly LythonCallableSignature DecimalContext = new("decimal.Context", ["prec", "rounding", "Emin", "Emax", "capitals", "clamp", "flags", "traps"], RequiredCount: 0);

@@ -58,6 +58,11 @@ internal static class StaticDataModuleContractFamily
             return true;
         }
 
+        if (AnalyzeCopyKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
+        {
+            return true;
+        }
+
         if (AnalyzeRandomKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
         {
             return true;
@@ -472,6 +477,126 @@ internal static class StaticDataModuleContractFamily
             "fnmatch.filter(names, pattern) expects an iterable and a string pattern.",
             diagnostics,
             bindings);
+    }
+
+    private static bool AnalyzeCopyKnownCallArgumentTypes(
+        string targetName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        var emitted = false;
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.CopyCopy.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeUnsupportedCopyProtocols(arguments, deep: false, diagnostics, bindings);
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.CopyReplace.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeCopyReplaceDataclassFields(arguments, diagnostics, bindings);
+        }
+
+        if (!string.Equals(targetName, LythonKnownCallableSignatures.CopyDeepCopy.Name, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (TryGetArgument(arguments, 1, "memo", bindings, out var memoExpression, out var memoValue) &&
+            !IsUnknown(memoValue) &&
+            memoValue.Kind is not (AbstractValueKind.None or AbstractValueKind.Dict))
+        {
+            AddDiagnostic(diagnostics, "LA3158", "copy.deepcopy(..., memo=...) expects a dict or None.", memoExpression.Span);
+            emitted = true;
+        }
+
+        emitted |= AnalyzeUnsupportedCopyProtocols(arguments, deep: true, diagnostics, bindings);
+        return emitted;
+    }
+
+    private static bool AnalyzeUnsupportedCopyProtocols(
+        ConcreteCallArguments arguments,
+        bool deep,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, 0, "x", bindings, out var expression, out var value) ||
+            value.Kind != AbstractValueKind.UserInstance)
+        {
+            return false;
+        }
+
+        var instance = (AbstractInstanceSummary)value.Value;
+        var hook = deep ? "__deepcopy__" : "__copy__";
+        if (instance.Class.Methods.ContainsKey(hook) || instance.Class.Fields.Any(field => field.Name == hook))
+        {
+            return false;
+        }
+
+        foreach (var protocol in new[] { "__reduce_ex__", "__reduce__", "__getstate__", "__setstate__" })
+        {
+            if (instance.Class.Methods.ContainsKey(protocol) || instance.Class.Fields.Any(field => field.Name == protocol))
+            {
+                AddDiagnostic(diagnostics, "LA3158", $"copy protocol {protocol} is unsupported by Lython; define {hook} instead.", expression.Span);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool AnalyzeCopyReplaceDataclassFields(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (arguments.Positional.Count == 0)
+        {
+            return false;
+        }
+
+        var value = arguments.ResolvePositionalValue(0, bindings);
+        if (value.Kind != AbstractValueKind.UserInstance)
+        {
+            return false;
+        }
+
+        var instance = (AbstractInstanceSummary)value.Value;
+        if (!instance.Class.IsDataclass)
+        {
+            return false;
+        }
+
+        foreach (var keyword in arguments.Keywords)
+        {
+            var found = false;
+            var includeInInit = false;
+            foreach (var candidate in instance.Class.Fields)
+            {
+                if (candidate.Name != keyword.Key)
+                {
+                    continue;
+                }
+
+                found = true;
+                includeInInit = candidate.IncludeInInit;
+                break;
+            }
+
+            if (!found)
+            {
+                AddDiagnostic(diagnostics, "LA3156", $"copy.replace() got an unexpected field '{keyword.Key}'.", keyword.Value.Span);
+                return true;
+            }
+
+            if (!includeInInit)
+            {
+                AddDiagnostic(diagnostics, "LA3156", $"copy.replace() cannot override init=False field '{keyword.Key}'.", keyword.Value.Span);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool AnalyzeRandomKnownCallArgumentTypes(

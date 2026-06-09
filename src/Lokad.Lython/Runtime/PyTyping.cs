@@ -617,6 +617,7 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
         value = name switch
         {
             "_fields" => new PyTuple(_fieldNames.Select(PyString.FromString).Cast<object>()),
+            "_replace" => new BoundNamedTupleReplace(this),
             _ => PyNone.Instance
         };
 
@@ -643,6 +644,8 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _values.GetEnumerator();
 
+    private object[] ToArray() => [.. _values];
+
     private int IndexOfField(string name)
     {
         for (var i = 0; i < _fieldNames.Count; i++)
@@ -654,5 +657,46 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
         }
 
         return -1;
+    }
+
+    private sealed class BoundNamedTupleReplace : LythonRuntime.ICallable, IPyRenderableValue
+    {
+        private readonly PyTypingNamedTupleObject _owner;
+
+        public BoundNamedTupleReplace(PyTypingNamedTupleObject owner)
+        {
+            _owner = owner;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var values = _owner.ToArray();
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{_owner._typeName}._replace(...) expects keyword arguments.", span);
+                }
+
+                var fieldIndex = _owner.IndexOfField(argument.Name);
+                if (fieldIndex < 0)
+                {
+                    throw new LythonRuntimeException("ValueError", $"{_owner._typeName}._replace(...) got unexpected field name '{argument.Name}'.", span);
+                }
+
+                values[fieldIndex] = argument.Value;
+            }
+
+            return new PyTypingNamedTupleObject(_owner._typeName, _owner._fieldNames, values);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString($"<bound method {_owner._typeName}._replace>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 }

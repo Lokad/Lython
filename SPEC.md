@@ -331,6 +331,15 @@ accepts them. Weight validation for `choices` must reject mismatched lengths,
 non-monotonic cumulative weights, non-finite weights, and all-zero totals.
 `SystemRandom` must fail explicitly rather than reading ambient system entropy.
 
+The `copy` subset includes `copy.copy`, `copy.deepcopy(x, memo=None)`,
+`copy.replace(obj, **changes)`, `Error`/`error`, and `dispatch_table`.
+Deep-copy operations must preserve cycles and honor explicit memo dictionaries
+using contained object identity keys. `copy.replace` supports dataclass
+instances, namedtuple-like values, and objects exposing `__replace__`.
+`__copy__` and `__deepcopy__(memo)` hooks are supported; pickle-oriented
+`__reduce__`, `__reduce_ex__`, `__getstate__`, and `__setstate__` protocols
+must fail explicitly unless a direct copy hook handles the object.
+
 ### 8.3 Supported Literal Surface
 
 The initial subset must support exactly the following literal forms:
