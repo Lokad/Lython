@@ -3093,6 +3093,10 @@ internal sealed partial class LythonRuntime
 
         public Dictionary<string, object> Variables => Frame.Variables;
 
+        public PyDecimalContext DecimalContext => State.DecimalContext;
+
+        public void SetDecimalContext(PyDecimalContext context) => State.DecimalContext = context;
+
         internal bool TryGetNonlocalTarget(string name, out ExecutionContext context)
             => NonlocalTargets.TryGetValue(name, out context!);
 

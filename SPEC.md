@@ -748,6 +748,8 @@ The `glob` module follows the same contained path model. `glob.glob(pathname, *,
 
 `glob.escape(pathname)`, `glob.has_magic(s)`, and `glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None)` are supported for common agent-authored scripts. `glob.glob0`, `glob.glob1`, and any non-`None` `dir_fd` must fail explicitly because raw file descriptors and CPython internal traversal helpers are outside the host path model.
 
+The `decimal` module exposes the common CPython-shaped `Decimal`, `DecimalTuple`, `Context`, `getcontext`, `setcontext`, `localcontext`, rounding constants, and decimal signal names expected by ordinary scripts. Lython `Decimal` remains backed by .NET `decimal`: arithmetic is fixed-precision, context precision is surfaced for compatibility but does not provide CPython arbitrary precision, and `NaN`, `sNaN`, `Infinity`, and values outside the .NET decimal range must fail explicitly.
+
 The `os` module follows the same contained path model. It may expose Python-shaped constants such as `name`, `sep`, `linesep`, `pathsep`, `extsep`, `devnull`, and access-mode constants using documented contained values. Supported file-tree operations must remain host-mediated through `ILythonHost`.
 
 `os.environ` is a live mapping backed only by an explicit contained environment supplied by the embedder. `os.getenv`, `os.putenv`, `os.unsetenv`, `os.get_exec_path`, and `os.path.expandvars` must use that contained mapping. The runtime must not read or mutate the ambient process environment by default.

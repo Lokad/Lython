@@ -109,6 +109,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.
 
+`decimal` is compatibility-oriented over .NET's fixed-precision `decimal`, not CPython's arbitrary-precision engine. Common `Decimal`, `DecimalTuple`, context, rounding constant, predicate, tuple-conversion, and integral-rounding APIs are available for agent-authored scripts. `NaN`, `sNaN`, `Infinity`, and precision beyond the .NET decimal range fail explicitly.
+
 `glob` is host-mediated over the same contained path model. Module-level `glob.glob(...)` returns Python strings, `glob.iglob(...)` returns a one-shot iterator over materialized string results, and relative patterns return relative paths. `root_dir`, `recursive`, `include_hidden`, `escape`, `has_magic`, and `translate` are supported; `dir_fd`, `glob0`, and `glob1` fail explicitly.
 
 `pathlib` uses Lython's normalized `/`-separated path model over host-mediated files and directories. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, globbing APIs materialize lists eagerly, and file handles are UTF-8 text-only with explicit unsupported diagnostics for binary, symlink, permission, and random-access operations.

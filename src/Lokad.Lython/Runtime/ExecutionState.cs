@@ -20,6 +20,7 @@ internal sealed class ExecutionState
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         LegacyApproximateMemoryDiagnostics = new LegacyApproximateMemoryDiagnostics(Limits.MaxExecutionMemoryBytes);
         RandomState = new PyRandomState();
+        DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
         AllowedLocalModules = options?.AllowedLocalModules;
         Args = (options?.Args ?? Array.Empty<string>())
@@ -52,6 +53,8 @@ internal sealed class ExecutionState
     public LegacyApproximateMemoryDiagnostics LegacyApproximateMemoryDiagnostics { get; }
 
     public PyRandomState RandomState { get; }
+
+    public PyDecimalContext DecimalContext { get; set; }
 
     public bool DisableLocalModuleImports { get; }
 

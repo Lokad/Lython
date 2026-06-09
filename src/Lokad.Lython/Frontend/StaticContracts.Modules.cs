@@ -206,7 +206,34 @@ internal static partial class StaticContracts
             "islink",
             "supports_unicode_filenames"),
         ["glob"] = Members("glob", "iglob", "escape", "has_magic", "translate", "glob0", "glob1"),
-        ["decimal"] = Members("Decimal", "InvalidOperation", "DivisionByZero", "ROUND_HALF_EVEN", "ROUND_DOWN", "ROUND_UP"),
+        ["decimal"] = Members(
+            "Decimal",
+            "DecimalTuple",
+            "Context",
+            "getcontext",
+            "setcontext",
+            "localcontext",
+            "DefaultContext",
+            "BasicContext",
+            "ExtendedContext",
+            "DecimalException",
+            "InvalidOperation",
+            "DivisionByZero",
+            "Inexact",
+            "Rounded",
+            "Overflow",
+            "Underflow",
+            "Subnormal",
+            "Clamped",
+            "FloatOperation",
+            "ROUND_CEILING",
+            "ROUND_FLOOR",
+            "ROUND_HALF_UP",
+            "ROUND_HALF_DOWN",
+            "ROUND_HALF_EVEN",
+            "ROUND_DOWN",
+            "ROUND_UP",
+            "ROUND_05UP"),
         ["math"] = Members("pi", "e", "tau", "inf", "nan", "sqrt", "exp", "log", "log10", "log2", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", "floor", "ceil", "fabs", "trunc", "degrees", "radians", "isfinite", "isinf", "isnan", "pow", "hypot", "fmod", "copysign", "isclose", "prod", "fsum"),
         ["datetime"] = Members("MINYEAR", "MAXYEAR", "timedelta", "date", "time", "datetime", "timezone"),
         ["statistics"] = Members("StatisticsError", "mean", "fmean", "median", "median_low", "median_high", "mode", "multimode", "pstdev", "stdev", "pvariance", "variance"),
@@ -484,7 +511,15 @@ internal static partial class StaticContracts
             ("math", "pi") or ("math", "e") or ("math", "tau") or ("math", "inf") or ("math", "nan") => AbstractValue.FloatType(span),
             ("openpyxl", "__version__") => AbstractValue.StringType(span),
             ("datetime", "MINYEAR") or ("datetime", "MAXYEAR") => AbstractValue.IntegerType(span),
-            ("decimal", "ROUND_HALF_EVEN") or ("decimal", "ROUND_DOWN") or ("decimal", "ROUND_UP") => AbstractValue.StringType(span),
+            ("decimal", "DefaultContext") or ("decimal", "BasicContext") or ("decimal", "ExtendedContext") => AbstractValue.DecimalContext(span),
+            ("decimal", "ROUND_CEILING") or
+            ("decimal", "ROUND_FLOOR") or
+            ("decimal", "ROUND_HALF_UP") or
+            ("decimal", "ROUND_HALF_DOWN") or
+            ("decimal", "ROUND_HALF_EVEN") or
+            ("decimal", "ROUND_DOWN") or
+            ("decimal", "ROUND_UP") or
+            ("decimal", "ROUND_05UP") => AbstractValue.StringType(span),
             ("re", "IGNORECASE") or ("re", "I") or ("re", "UNICODE") or ("re", "U") or ("re", "MULTILINE") or ("re", "M") or ("re", "DOTALL") or ("re", "S") or ("re", "VERBOSE") or ("re", "X") => AbstractValue.IntegerType(span),
             ("csv", "QUOTE_MINIMAL") or ("csv", "QUOTE_ALL") or ("csv", "QUOTE_NONE") or ("csv", "QUOTE_NONNUMERIC") => AbstractValue.IntegerType(span),
             ("subprocess", "PIPE") or ("subprocess", "STDOUT") or ("subprocess", "DEVNULL") => AbstractValue.IntegerType(span),

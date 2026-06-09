@@ -34,7 +34,7 @@ write_text("/out.txt", "|".join(vals))
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4.5000|5.0000|1.2500|2.5|2.5|2|2718|2302|3|2|-2|-2|2|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("4.5000|5.0000|1.2500|2.5|2.5|2|2718|2302|3|2|-2|-2|3|True|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -66,6 +66,123 @@ write_text("/out.txt", "|".join(vals))
         Assert.Equal("2.6|2.6|InvalidOperation|bad|DivisionByZero|zero", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DecimalModule_ContextsAndTuples_HaveDirectCoverage()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal, DecimalTuple, Context, getcontext, setcontext, localcontext, ROUND_DOWN, ROUND_HALF_UP
+
+vals = []
+ctx = getcontext()
+vals.append(str(ctx.prec))
+ctx.rounding = ROUND_DOWN
+vals.append(f"{Decimal('2.9').to_integral_value()}")
+setcontext(Context(prec=9, rounding=ROUND_HALF_UP))
+vals.append(str(getcontext().prec))
+vals.append(f"{Decimal('2.5').to_integral_value()}")
+with localcontext(Context(rounding=ROUND_DOWN)) as local:
+    vals.append(str(local.prec))
+    vals.append(f"{Decimal('2.9').to_integral_value()}")
+vals.append(f"{Decimal('2.5').to_integral_value()}")
+t = Decimal('12.30').as_tuple()
+vals.append(str(t.sign))
+vals.append(f"{t.digits}")
+vals.append(str(t.exponent))
+vals.append(f"{Decimal(DecimalTuple(0, (1, 2, 3), -2))}")
+vals.append(f"{getcontext().copy().create_decimal('4.50')}")
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("28|2|9|3|28|2|3|0|(1, 2, 3, 0)|-2|1.23|4.50", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DecimalModule_ExpandedMethodsAndRoundingModes_HaveDirectCoverage()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, ROUND_HALF_DOWN, ROUND_05UP
+
+vals = []
+vals.append(f"{Decimal('2.55').quantize(Decimal('0.1'), ROUND_HALF_UP)}")
+vals.append(f"{Decimal('2.55').quantize(Decimal('0.1'), ROUND_HALF_DOWN)}")
+vals.append(f"{Decimal('-2.51').quantize(Decimal('0.1'), ROUND_FLOOR)}")
+vals.append(f"{Decimal('2.51').quantize(Decimal('0.1'), ROUND_CEILING)}")
+vals.append(f"{Decimal('1.51').quantize(Decimal('0.1'), ROUND_05UP)}")
+vals.append(str(Decimal('123.45').adjusted()))
+vals.append(f"{Decimal('2').compare(Decimal('3'))}")
+vals.append(f"{Decimal('1.0').compare_total(Decimal('1.00'))}")
+vals.append(str(Decimal('1').is_nan()))
+vals.append(str(Decimal('1').is_infinite()))
+vals.append(str(Decimal('1').is_finite()))
+vals.append(str(Decimal('0').is_zero()))
+vals.append(str(Decimal('-2').is_signed()))
+vals.append(f"{Decimal('123.45').to_eng_string()}")
+vals.append(f"{Decimal('12.3').scaleb(2)}")
+vals.append(f"{Decimal('12.3').shift(2)}")
+vals.append(f"{Decimal('12.3').rotate(1)}")
+vals.append(str(Decimal('1.2').same_quantum(Decimal('3.4'))))
+vals.append(str(Decimal('1.2').same_quantum(Decimal('3.45'))))
+vals.append(f"{Decimal('10').remainder_near(Decimal('6'))}")
+vals.append(f"{Decimal('-2').min(Decimal('3'))}")
+vals.append(f"{Decimal('-2').max(Decimal('3'))}")
+vals.append(f"{Decimal('-2').min_mag(Decimal('3'))}")
+vals.append(f"{Decimal('-2').max_mag(Decimal('3'))}")
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("2.6|2.5|-2.6|2.6|1.6|2|-1|1|False|False|True|True|True|123.45|1230.0|1230.0|31.2|True|False|-2|-2|3|-2|3", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DecimalModule_StaticDiagnosticsCoverExpandedSurface()
+    {
+        var valid = new LythonEngine().Compile(
+            """
+from decimal import Decimal, DecimalTuple, Context, getcontext, setcontext, localcontext, ROUND_DOWN
+
+ctx = getcontext()
+ctx.prec
+ctx.rounding = ROUND_DOWN
+setcontext(Context(prec=9, rounding=ROUND_DOWN))
+with localcontext(Context()) as local:
+    local.copy()
+d = Decimal("1.25")
+d.quantize(Decimal("0.1"), ROUND_DOWN)
+d.as_tuple().digits
+d.adjusted()
+d.compare(Decimal("2"))
+d.is_finite()
+d.scaleb(2)
+Decimal(DecimalTuple(0, (1, 2), -1))
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+from decimal import Decimal, Context
+
+Decimal(1, 2, 3)
+Decimal("1").as_tuple(1)
+Decimal("1").bogus()
+Context().copy(1)
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3151" && d.Message.Contains("decimal.Decimal", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.as_tuple", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("bogus", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Context.copy", StringComparison.Ordinal));
+    }
+
     [Theory]
     [InlineData(
         """
@@ -88,6 +205,27 @@ Decimal("2.5").quantize(Decimal("0.1"), "ROUND_SIDEWAYS")
 """,
         "ValueError",
         "Unsupported decimal rounding mode")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("NaN")
+""",
+        "InvalidOperation",
+        "NaN, sNaN, and Infinity")]
+    [InlineData(
+        """
+from decimal import Context
+Context(prec=100)
+""",
+        "ValueError",
+        "prec")]
+    [InlineData(
+        """
+from decimal import DecimalTuple
+DecimalTuple(0, (1, 12), -1)
+""",
+        "ValueError",
+        "digits")]
     public void DecimalModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

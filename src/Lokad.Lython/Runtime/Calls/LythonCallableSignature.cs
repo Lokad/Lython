@@ -51,7 +51,12 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CollectionsUserList = new("collections.UserList", RequiredCount: 0);
     public static readonly LythonCallableSignature CollectionsUserString = new("collections.UserString", RequiredCount: 0);
 
-    public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value"]);
+    public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value", "context"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DecimalTuple = new("decimal.DecimalTuple", ["sign", "digits", "exponent"]);
+    public static readonly LythonCallableSignature DecimalContext = new("decimal.Context", ["prec", "rounding", "Emin", "Emax", "capitals", "clamp", "flags", "traps"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DecimalGetContext = new("decimal.getcontext", []);
+    public static readonly LythonCallableSignature DecimalSetContext = new("decimal.setcontext", ["context"]);
+    public static readonly LythonCallableSignature DecimalLocalContext = new("decimal.localcontext", ["context"], RequiredCount: 0);
 
     public static readonly LythonCallableSignature OpenPyxlWorkbook = new("openpyxl.Workbook", ["write_only", "iso_dates"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlLoadWorkbook = new("openpyxl.load_workbook", ["filename", "read_only", "keep_vba", "data_only", "keep_links", "rich_text"], RequiredCount: 1);

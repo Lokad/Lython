@@ -771,6 +771,64 @@ internal static partial class StaticContracts
         "copy",
     };
 
+    private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)
+    {
+        "quantize",
+        "normalize",
+        "sqrt",
+        "exp",
+        "ln",
+        "log10",
+        "copy_abs",
+        "copy_negate",
+        "copy_sign",
+        "to_integral_value",
+        "to_integral_exact",
+        "to_integral",
+        "as_tuple",
+        "adjusted",
+        "compare",
+        "compare_total",
+        "is_nan",
+        "is_infinite",
+        "is_finite",
+        "is_zero",
+        "is_signed",
+        "to_eng_string",
+        "scaleb",
+        "shift",
+        "rotate",
+        "same_quantum",
+        "remainder_near",
+        "min",
+        "max",
+        "min_mag",
+        "max_mag",
+    };
+
+    private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)
+    {
+        "prec",
+        "rounding",
+        "Emin",
+        "Emax",
+        "capitals",
+        "clamp",
+        "flags",
+        "traps",
+        "copy",
+        "clear_flags",
+        "create_decimal",
+        "create_decimal_from_float",
+    };
+
+    private static readonly HashSet<string> DecimalTupleMembers = new(StringComparer.Ordinal)
+    {
+        "sign",
+        "digits",
+        "exponent",
+    };
+
     public static bool IsKnownSealedMemberSurface(AbstractValue value)
         => value.Kind is AbstractValueKind.Module && ModuleMembers.ContainsKey((string)value.Value) ||
            value.Kind is AbstractValueKind.Path or
@@ -795,6 +853,9 @@ internal static partial class StaticContracts
             AbstractValueKind.CollectionsCounter or
             AbstractValueKind.CollectionsDeque or
             AbstractValueKind.CollectionsChainMap or
+            AbstractValueKind.Decimal or
+            AbstractValueKind.DecimalContext or
+            AbstractValueKind.DecimalTuple or
             AbstractValueKind.RegexPattern or
             AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
@@ -874,6 +935,9 @@ internal static partial class StaticContracts
             AbstractValueKind.CollectionsCounter => CollectionsCounterMembers.Contains(memberName),
             AbstractValueKind.CollectionsDeque => CollectionsDequeMembers.Contains(memberName),
             AbstractValueKind.CollectionsChainMap => CollectionsChainMapMembers.Contains(memberName),
+            AbstractValueKind.Decimal => DecimalMembers.Contains(memberName),
+            AbstractValueKind.DecimalContext => DecimalContextMembers.Contains(memberName),
+            AbstractValueKind.DecimalTuple => DecimalTupleMembers.Contains(memberName),
             AbstractValueKind.RegexPattern => RegexPatternMembers.Contains(memberName),
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),

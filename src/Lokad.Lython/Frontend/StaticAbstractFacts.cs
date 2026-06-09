@@ -34,6 +34,9 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictReader or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.Decimal or
+            AbstractValueKind.DecimalContext or
+            AbstractValueKind.DecimalTuple or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
@@ -112,6 +115,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.Decimal or
+            AbstractValueKind.DecimalContext or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -171,6 +176,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.Decimal or
+            AbstractValueKind.DecimalContext or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -245,6 +252,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.Decimal or
+            AbstractValueKind.DecimalContext or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -293,6 +302,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
+            AbstractValueKind.DecimalTuple or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo;
 
@@ -314,7 +324,7 @@ internal static class StaticAbstractFacts
         => value.Kind is AbstractValueKind.Float or AbstractValueKind.FloatType;
 
     public static bool IsNumericLike(AbstractValue value)
-        => IsIntegerLike(value) || IsFloatLike(value);
+        => IsIntegerLike(value) || IsFloatLike(value) || value.Kind == AbstractValueKind.Decimal;
 
     public static bool IsDefinitelyNonNone(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
@@ -383,6 +393,9 @@ internal static class StaticAbstractFacts
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
                 count = ((IReadOnlyList<AbstractValue>)value.Value).Count;
+                return true;
+            case AbstractValueKind.DecimalTuple:
+                count = 3;
                 return true;
             case AbstractValueKind.DifflibMatch:
             case AbstractValueKind.PkgutilModuleInfo:
