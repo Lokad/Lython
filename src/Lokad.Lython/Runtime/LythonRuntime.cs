@@ -71,6 +71,48 @@ internal sealed partial class LythonRuntime
         return text;
     }
 
+    internal static ReadOnlyMemory<byte> ReadGovernedHostBytes(string path, ExecutionContext context, LythonSourceSpan? span)
+    {
+        context.RegisterHostCall(span);
+        var stat = context.HostStat(path, span);
+        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
+            stat.Size > new BigInteger(maxHostReadBytes))
+        {
+            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", span);
+        }
+
+        context.RegisterHostCall(span);
+        var payload = context.ReadHostBytes(path, span);
+        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
+        {
+            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
+        }
+
+        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(payload.Length), span);
+        return payload;
+    }
+
+    internal static async ValueTask<ReadOnlyMemory<byte>> ReadGovernedHostBytesAsync(string path, ExecutionContext context, LythonSourceSpan? span)
+    {
+        context.RegisterHostCall(span);
+        var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
+        if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
+            stat.Size > new BigInteger(maxHostReadBytes))
+        {
+            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", span);
+        }
+
+        context.RegisterHostCall(span);
+        var payload = await context.ReadHostBytesAsync(path, span).ConfigureAwait(false);
+        if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
+        {
+            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
+        }
+
+        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(payload.Length), span);
+        return payload;
+    }
+
     internal static PyTuple CreateTuple(int count, Func<int, object> itemFactory, ExecutionContext context, LythonSourceSpan? span)
     {
         if (count == 0)
@@ -407,6 +449,10 @@ internal sealed partial class LythonRuntime
                 var index = EvaluateExpression(subscript.Index, context);
                 switch (target)
                 {
+                    case IDeletablePySubscriptableValue subscriptable:
+                        subscriptable.DeleteSubscript(index, statement.Span);
+                        return;
+
                     case IMutablePySequenceValue sequence:
                         sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span));
                         return;
@@ -543,6 +589,10 @@ internal sealed partial class LythonRuntime
 
         switch (target)
         {
+            case IMutablePySubscriptableValue subscriptable:
+                subscriptable.SetSubscript(index, value, statement.Span);
+                return;
+
             case IMutablePySequenceValue sequence:
                 sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span), value);
                 return;
@@ -614,6 +664,10 @@ internal sealed partial class LythonRuntime
 
         switch (target)
         {
+            case IMutablePySubscriptableValue subscriptable:
+                subscriptable.SetSubscript(index, value, subscript.Span);
+                return;
+
             case IMutablePySequenceValue sequence:
                 sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, subscript.Span), value);
                 return;
@@ -2629,6 +2683,18 @@ internal sealed partial class LythonRuntime
         public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.AppendTextUtf8Async(path, utf8, Limits.CancellationToken), "append_text", span);
 
+        public ReadOnlyMemory<byte> ReadHostBytes(string path, LythonSourceSpan? span)
+            => AwaitHost(() => Host.ReadBytesAsync(path, Limits.CancellationToken), "read_bytes", span);
+
+        public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesAsync(string path, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.ReadBytesAsync(path, Limits.CancellationToken), "read_bytes", span);
+
+        public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
+            => AwaitHost(() => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
+
+        public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
+
         public bool HostExists(string path, LythonSourceSpan? span)
             => AwaitHost(() => Host.ExistsAsync(path, Limits.CancellationToken), "exists", span);
 
@@ -2729,6 +2795,10 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
+            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
+            {
+                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
+            }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 throw RuntimeErrors.Host(name, ex, span);
@@ -2763,6 +2833,10 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
+            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
+            {
+                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
+            }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 throw RuntimeErrors.Host(name, ex, span);
@@ -2783,6 +2857,10 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
+            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
+            {
+                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
+            }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 throw RuntimeErrors.Host(name, ex, span);
@@ -2802,6 +2880,10 @@ internal sealed partial class LythonRuntime
             catch (LythonRuntimeException)
             {
                 throw;
+            }
+            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
+            {
+                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {

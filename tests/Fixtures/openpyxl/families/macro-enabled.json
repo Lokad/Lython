@@ -1,0 +1,6 @@
+{
+  "id": "macro-enabled",
+  "description": "Macro-enabled .xlsm fixtures for keep_vba=True byte-preservation once implemented.",
+  "caseIds": [],
+  "allowEmpty": true
+}

@@ -1,0 +1,5 @@
+{
+  "id": "views-print",
+  "description": "Worksheet views, selections, freeze panes, dimensions, page setup, and print settings.",
+  "caseIds": ["excel-dimensions", "excel-freeze-panes", "excel-print-settings", "excel-rich-features", "excel-sheet-view"]
+}

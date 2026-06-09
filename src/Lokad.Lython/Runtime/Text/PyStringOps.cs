@@ -5,6 +5,11 @@ using System.Globalization;
 
 namespace Lokad.Lython.Runtime.Text;
 
+internal interface IPyStringCoercibleValue
+{
+    PyString ToPyString();
+}
+
 internal static class PyStringOps
 {
     public static readonly PyString NoneLiteral = PyString.FromOwnedUtf8([(byte)'N', (byte)'o', (byte)'n', (byte)'e']);
@@ -27,6 +32,9 @@ internal static class PyStringOps
                 return true;
             case string legacy:
                 text = PyString.FromString(legacy);
+                return true;
+            case IPyStringCoercibleValue stringLike:
+                text = stringLike.ToPyString();
                 return true;
             default:
                 text = PyString.Empty;

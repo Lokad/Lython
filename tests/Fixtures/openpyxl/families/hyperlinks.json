@@ -1,0 +1,5 @@
+{
+  "id": "hyperlinks",
+  "description": "Worksheet hyperlink relationships and loaded hyperlink targets.",
+  "caseIds": ["excel-hyperlinks", "excel-rich-features"]
+}

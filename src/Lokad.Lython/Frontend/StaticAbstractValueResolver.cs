@@ -475,6 +475,11 @@ internal static class StaticAbstractValueResolver
             return TryGetIndexedSequenceValue(target, null, subscript.Span, out value);
         }
 
+        if (TryResolveOpenPyxlSubscriptValue(target, subscript, bindings, out value))
+        {
+            return true;
+        }
+
         if (target.Kind == AbstractValueKind.Dict &&
             TryResolve(subscript.Index, bindings, out var key))
         {
@@ -491,6 +496,60 @@ internal static class StaticAbstractValueResolver
 
         value = default;
         return false;
+    }
+
+    private static bool TryResolveOpenPyxlSubscriptValue(
+        AbstractValue target,
+        SubscriptExpressionSyntax subscript,
+        AbstractState bindings,
+        out AbstractValue value)
+    {
+        if (target.Kind == AbstractValueKind.OpenPyxlWorkbook)
+        {
+            if (!TryResolve(subscript.Index, bindings, out var index) ||
+                index.Kind == AbstractValueKind.Unknown ||
+                index.IsStringLike)
+            {
+                value = AbstractValue.OpenPyxlWorksheet(subscript.Span);
+                return true;
+            }
+        }
+
+        if (target.Kind == AbstractValueKind.OpenPyxlWorksheet &&
+            TryResolveKnownString(subscript.Index, bindings, out var reference) &&
+            IsOpenPyxlCellReference(reference))
+        {
+            value = AbstractValue.OpenPyxlCell(subscript.Span);
+            return true;
+        }
+
+        if (target.Kind == AbstractValueKind.OpenPyxlTableCollection)
+        {
+            if (!TryResolve(subscript.Index, bindings, out var index) ||
+                index.Kind == AbstractValueKind.Unknown ||
+                index.IsStringLike)
+            {
+                value = AbstractValue.OpenPyxlTable(subscript.Span);
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool IsOpenPyxlCellReference(string text)
+    {
+        var normalized = text.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
+        var index = 0;
+        while (index < normalized.Length && char.IsLetter(normalized[index]))
+        {
+            index++;
+        }
+
+        return index > 0 &&
+            index < normalized.Length &&
+            normalized.Skip(index).All(char.IsDigit);
     }
 
     private static bool TryResolveSliceAbstractValue(SliceExpressionSyntax slice, AbstractState bindings, out AbstractValue value)

@@ -1,0 +1,33 @@
+{
+  "id": "excel-merged-cells",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "focused", "merged-cells"],
+  "features": [
+    "merged-cells"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/sheet1.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Merged"],
+    "observations": {
+      "Merged!E1": "merged",
+      "mergedRanges": ["E1:F1"]
+    }
+  },
+  "allowedUnsupportedFeatures": []
+}

@@ -1,0 +1,40 @@
+{
+  "id": "excel-dimensions",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "dimensions", "rows", "columns"],
+  "features": [
+    "column-width",
+    "hidden-column",
+    "row-height",
+    "hidden-row",
+    "shared-strings"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/sheet1.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Dimensions"],
+    "observations": {
+      "Dimensions!A2": "A001",
+      "columnDimensions.B.width": 19.33203125,
+      "columnDimensions.C.hidden": true,
+      "rowDimensions.2.height": 24.3,
+      "rowDimensions.3.hidden": true
+    }
+  },
+  "allowedUnsupportedFeatures": []
+}

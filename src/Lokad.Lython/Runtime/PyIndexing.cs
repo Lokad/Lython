@@ -9,6 +9,7 @@ internal static class PyIndexing
     {
         return target switch
         {
+            IPySubscriptableValue value => value.GetSubscript(index, span),
             IPyIndexableValue value => value.GetIndex(NormalizeIndex(index, value.Length, span)),
             PyDict dict => ReadDictIndex(dict, index, span),
             PyCounter counter => ReadCounterIndex(counter, index, span),
@@ -21,6 +22,7 @@ internal static class PyIndexing
     {
         return target switch
         {
+            IPySliceableValue value => value.GetSlice(start, end, step, span),
             IPyIndexableValue value => value.GetSlice(SliceIndices(value.Length, start, end, step, span)),
             _ when PyStringOps.TryAsString(target, out var text) => text.Slice(SliceIndices(text.Length, start, end, step, span).ToArray()),
             _ => throw RuntimeErrors.NotSliceable(span)

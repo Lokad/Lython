@@ -47,6 +47,18 @@ internal sealed class DelayedLythonHost : ILythonHost
         await _inner.AppendTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
     }
 
+    public async ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
+    {
+        await Delay(cancellationToken).ConfigureAwait(false);
+        return await _inner.ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        await Delay(cancellationToken).ConfigureAwait(false);
+        await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
+    }
+
     public async ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);

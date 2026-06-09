@@ -141,6 +141,11 @@ internal static class PyMemberAccess
             return true;
         }
 
+        if (target is IPyDynamicAttributes dynamicAttributes && dynamicAttributes.TrySetMember(memberName, value))
+        {
+            return true;
+        }
+
         if (target is PyInstance instance)
         {
             if (instance.Type.TryLookupInMro("__setattr__", 0, out var setattrValue, out _))

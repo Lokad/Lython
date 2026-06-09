@@ -409,6 +409,10 @@ internal sealed partial class LythonRuntime
 
         switch (target)
         {
+            case IMutablePySubscriptableValue subscriptable:
+                subscriptable.SetSubscript(index, value, statement.Span);
+                return;
+
             case IMutablePySequenceValue sequence:
                 sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span), value);
                 return;
@@ -778,6 +782,9 @@ internal sealed partial class LythonRuntime
                 var index = EvaluateLoweredExpression(subscript.Index, context);
                 switch (target)
                 {
+                    case IDeletablePySubscriptableValue subscriptable:
+                        subscriptable.DeleteSubscript(index, statement.Span);
+                        return;
                     case IMutablePySequenceValue sequence:
                         sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span));
                         return;

@@ -2053,6 +2053,87 @@ result.not_real
     }
 
     [Fact]
+    public void OpenPyxlRuntimeObjectContracts_ReportSealedMemberTypos()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+import openpyxl
+from openpyxl.chart import BarChart
+from openpyxl.comments import Comment
+from openpyxl.drawing.image import Image
+from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Protection, Side
+from openpyxl.styles.colors import Color
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.worksheet.datavalidation import DataValidation
+
+wb = openpyxl.Workbook()
+wb.not_a_workbook_member
+wb.security.not_a_workbook_protection_member
+wb.security.set_workbook_password()
+wb.named_styles[0].not_a_named_style_member
+wb.named_styles[0].font.not_a_font_member
+
+ws = wb.active
+ws.not_a_worksheet_member
+wb["Sheet"].not_a_sheet_member
+
+cell = ws.cell(row=1, column=1)
+cell.not_a_cell_member
+ws["A1"].not_a_cell_member
+cell.offset(row=1).not_a_cell_member
+cell.font.not_a_font_member
+
+Font(bold=True).not_a_font_member
+PatternFill(fill_type="solid").not_a_fill_member
+Border(left=Side(style="thin")).left.not_a_side_member
+Alignment(horizontal="center").not_a_alignment_member
+Protection(locked=True).not_a_protection_member
+NamedStyle("named").not_a_named_style_member
+Color(rgb="FF0000").not_a_color_member
+
+comment = Comment("note", "me")
+comment.not_a_comment_member
+
+table = Table(displayName="Table1", ref="A1:B2")
+table.not_a_table_member
+TableStyleInfo(name="TableStyleMedium2").not_a_table_style_member
+DataValidation(type="whole").not_a_validation_member
+BarChart().not_a_chart_member
+Image("/image.png").not_a_image_member
+
+cell.offset(1, 2, 3)
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.True(
+            compiled.Diagnostics.Count(d => d.Code == "LA3113") >= 15,
+            string.Join(" | ", compiled.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3161");
+
+        var worksheetSatellites = new LythonEngine().Compile(
+            """
+import openpyxl
+
+ws = openpyxl.Workbook().active
+ws.auto_filter.not_a_filter_member
+ws.sheet_view.not_a_sheet_view_member
+ws.page_margins.not_a_margins_member
+ws.page_setup.not_a_setup_member
+ws.protection.not_a_sheet_protection_member
+ws.tables.not_a_table_list_member
+ws.data_validations.not_a_validation_list_member
+ws.conditional_formatting.not_a_conditional_formatting_member
+ws.merged_cells.not_a_ranges_member
+ws._drawing.not_a_drawing_member
+""");
+
+        Assert.False(worksheetSatellites.IsValid);
+        Assert.True(
+            worksheetSatellites.Diagnostics.Count(d => d.Code == "LA3113") >= 10,
+            string.Join(" | ", worksheetSatellites.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+    }
+
+    [Fact]
     public void UserDefinedCallShapes_ReportProvableMismatches()
     {
         var compiled = new LythonEngine().Compile(

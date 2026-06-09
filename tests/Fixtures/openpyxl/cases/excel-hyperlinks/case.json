@@ -1,0 +1,34 @@
+{
+  "id": "excel-hyperlinks",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "focused", "hyperlinks"],
+  "features": [
+    "hyperlinks"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/_rels/sheet1.xml.rels",
+    "xl/worksheets/sheet1.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Links"],
+    "observations": {
+      "Links!A1": "link",
+      "Links!A1.hyperlink": "https://www.lokad.com/"
+    }
+  },
+  "allowedUnsupportedFeatures": []
+}

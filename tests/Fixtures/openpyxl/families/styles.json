@@ -1,0 +1,5 @@
+{
+  "id": "styles",
+  "description": "Cell styles, dimensions, themes, and style table preservation.",
+  "caseIds": ["excel-basic", "excel-dimensions", "excel-styles", "excel-rich-features"]
+}

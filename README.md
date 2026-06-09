@@ -82,6 +82,7 @@ The builtin module surface is explicitly allowlisted:
 - `json`
 - `math`
 - `operator`
+- `openpyxl` for contained `.xlsx` workbook automation
 - `os`
 - `pathlib`
 - `pkgutil`
@@ -139,7 +140,7 @@ Unless `DisableDefaultLimits` is set, Lython applies practical defaults, includi
 `ILythonHost` is the authority boundary of the runtime. Core filesystem and clock operations stay small:
 
 - current working directory and wall-clock access
-- UTF-8 text reads, writes, and appends
+- UTF-8 text reads/writes/appends and binary reads/writes
 - existence, stat, directory listing, mkdir, remove, copy, and move
 
 All host effects are async and receive the run cancellation token. That base surface is enough for the built-in text/file/path workflows. The richer host-mediated features are optional and exposed through default interface members:
@@ -185,6 +186,10 @@ The subprocess contract remains host-mediated:
 - no background or async process model
 
 This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
+
+`import openpyxl` provides a vanilla-Python-shaped subset for common `.xlsx`
+workbook automation. Workbook load/save uses host-mediated binary file
+operations and does not add workbook-specific package dependencies.
 
 ## Safety Guarantees
 

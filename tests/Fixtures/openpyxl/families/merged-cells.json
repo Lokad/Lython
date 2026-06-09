@@ -1,0 +1,5 @@
+{
+  "id": "merged-cells",
+  "description": "Merged-cell ranges and preservation of merge metadata.",
+  "caseIds": ["excel-merged-cells", "excel-rich-features"]
+}

@@ -1,0 +1,5 @@
+{
+  "id": "basics",
+  "description": "Workbook loading, sheets, scalar values, shared strings, formulas, and active-sheet metadata.",
+  "caseIds": ["excel-basic", "excel-rich-features"]
+}

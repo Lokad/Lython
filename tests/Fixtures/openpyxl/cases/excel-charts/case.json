@@ -1,0 +1,39 @@
+{
+  "id": "excel-charts",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "focused", "charts", "drawings"],
+  "features": [
+    "drawings",
+    "charts"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/charts/chart1.xml",
+    "xl/drawings/_rels/drawing1.xml.rels",
+    "xl/drawings/drawing1.xml",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/_rels/sheet1.xml.rels",
+    "xl/worksheets/sheet1.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Chart"],
+    "observations": {
+      "Chart!A2": "A001",
+      "charts": 1,
+      "drawings": 1
+    }
+  },
+  "allowedUnsupportedFeatures": []
+}

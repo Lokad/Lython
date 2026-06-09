@@ -1,0 +1,5 @@
+{
+  "id": "tables",
+  "description": "Table, auto-filter, and table relationship preservation and future loaded Table object model.",
+  "caseIds": ["excel-tables", "excel-rich-features"]
+}

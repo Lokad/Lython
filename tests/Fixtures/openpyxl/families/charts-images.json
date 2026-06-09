@@ -1,0 +1,5 @@
+{
+  "id": "charts-images",
+  "description": "Preservation and future object-model coverage for worksheet drawings, charts, and images.",
+  "caseIds": ["excel-charts", "excel-images", "excel-rich-features"]
+}

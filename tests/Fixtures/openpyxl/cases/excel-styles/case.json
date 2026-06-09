@@ -1,0 +1,38 @@
+{
+  "id": "excel-styles",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "focused", "styles"],
+  "features": [
+    "font-style",
+    "fill-style",
+    "border-style",
+    "alignment"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/sheet1.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Styles"],
+    "observations": {
+      "Styles!A1.font.bold": true,
+      "Styles!B1.fill.fgColor": "FFFFFF00",
+      "Styles!B1.alignment.horizontal": "center",
+      "Styles!B1.border.left.style": "thin"
+    }
+  },
+  "allowedUnsupportedFeatures": []
+}

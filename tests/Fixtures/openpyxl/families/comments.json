@@ -1,0 +1,5 @@
+{
+  "id": "comments",
+  "description": "Comment preservation and future loaded Comment object-model coverage.",
+  "caseIds": ["excel-comments", "excel-rich-features"]
+}

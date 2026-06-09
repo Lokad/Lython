@@ -1,0 +1,5 @@
+{
+  "id": "validations",
+  "description": "Data validation and conditional formatting preservation and future object-model coverage.",
+  "caseIds": ["excel-validations", "excel-rich-features"]
+}

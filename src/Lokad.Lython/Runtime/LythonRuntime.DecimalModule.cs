@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "Decimal" => new BuiltinCallable("decimal.Decimal", DecimalCtor, ["value"], requiredCount: 1),
+                "Decimal" => new BuiltinCallable(LythonKnownCallableSignatures.Decimal, DecimalCtor),
                 "InvalidOperation" => new ExceptionTypeValue("InvalidOperation"),
                 "DivisionByZero" => new ExceptionTypeValue("DivisionByZero"),
                 "ROUND_HALF_EVEN" => Runtime.Text.PyString.FromString("ROUND_HALF_EVEN"),

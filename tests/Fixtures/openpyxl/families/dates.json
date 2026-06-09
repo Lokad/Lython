@@ -1,0 +1,5 @@
+{
+  "id": "dates",
+  "description": "Date-like cells and Excel serial date behavior in Office-authored workbooks.",
+  "caseIds": ["excel-dates", "excel-rich-features"]
+}

@@ -1,0 +1,5 @@
+{
+  "id": "formulas",
+  "description": "Formula text, cached values, and calculation-chain package metadata.",
+  "caseIds": ["excel-basic", "excel-rich-features"]
+}

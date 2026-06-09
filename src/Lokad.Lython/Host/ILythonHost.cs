@@ -14,6 +14,12 @@ public interface ILythonHost
 
     ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
+    ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
+        => throw new NotSupportedException("Host binary file I/O is not available.");
+
+    ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+        => throw new NotSupportedException("Host binary file I/O is not available.");
+
     ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken);
 
     ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken);

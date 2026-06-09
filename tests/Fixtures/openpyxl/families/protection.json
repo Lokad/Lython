@@ -1,0 +1,6 @@
+{
+  "id": "protection",
+  "description": "Sheet and workbook protection metadata once public fixtures are available.",
+  "caseIds": [],
+  "allowEmpty": true
+}

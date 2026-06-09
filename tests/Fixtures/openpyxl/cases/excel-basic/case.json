@@ -1,0 +1,46 @@
+{
+  "id": "excel-basic",
+  "kind": "xlsx",
+  "input": "input.xlsx",
+  "producer": "Microsoft Excel",
+  "producerVersion": "Microsoft Excel desktop",
+  "createdByTool": "tools/NewExcelOpenPyxlFixtures.ps1",
+  "sanitizedByTool": "tools/SanitizeOpenPyxlFixtures.ps1",
+  "tags": ["excel", "basic", "shared-strings", "formulas", "multi-sheet"],
+  "features": [
+    "shared-strings",
+    "inline-compatible-scalar-values",
+    "boolean-cells",
+    "formula-cached-values",
+    "calc-chain",
+    "multiple-worksheets",
+    "active-sheet"
+  ],
+  "expectedParts": [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "docProps/app.xml",
+    "docProps/core.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/calcChain.xml",
+    "xl/sharedStrings.xml",
+    "xl/styles.xml",
+    "xl/theme/theme1.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/sheet1.xml",
+    "xl/worksheets/sheet2.xml"
+  ],
+  "expectedObjectModel": {
+    "sheetNames": ["Inventory", "Second"],
+    "activeSheet": "Second",
+    "observations": {
+      "Inventory!A2": "A001",
+      "Inventory!B2": " Widget ",
+      "Inventory!C2": 5,
+      "Inventory!D2": true,
+      "Inventory!E2": "=C2*2",
+      "Second!B2": "extra"
+    }
+  },
+  "allowedUnsupportedFeatures": ["calc-chain-preservation"]
+}

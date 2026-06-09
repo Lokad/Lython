@@ -1,0 +1,5 @@
+{
+  "id": "structural-edits",
+  "description": "Workbooks used to verify insert/delete/move behavior around preserved worksheet metadata.",
+  "caseIds": ["excel-comments", "excel-tables", "excel-validations", "excel-rich-features"]
+}

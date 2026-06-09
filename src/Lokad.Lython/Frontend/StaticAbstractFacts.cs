@@ -32,7 +32,39 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.DataclassField;
+            AbstractValueKind.DataclassField or
+            AbstractValueKind.OpenPyxlWorkbook or
+            AbstractValueKind.OpenPyxlWorksheet or
+            AbstractValueKind.OpenPyxlCell or
+            AbstractValueKind.OpenPyxlHyperlink or
+            AbstractValueKind.OpenPyxlComment or
+            AbstractValueKind.OpenPyxlFont or
+            AbstractValueKind.OpenPyxlPatternFill or
+            AbstractValueKind.OpenPyxlBorder or
+            AbstractValueKind.OpenPyxlSide or
+            AbstractValueKind.OpenPyxlAlignment or
+            AbstractValueKind.OpenPyxlProtection or
+            AbstractValueKind.OpenPyxlNamedStyle or
+            AbstractValueKind.OpenPyxlColor or
+            AbstractValueKind.OpenPyxlTable or
+            AbstractValueKind.OpenPyxlTableStyleInfo or
+            AbstractValueKind.OpenPyxlDataValidation or
+            AbstractValueKind.OpenPyxlConditionalFormattingRule or
+            AbstractValueKind.OpenPyxlAutoFilter or
+            AbstractValueKind.OpenPyxlSheetProtection or
+            AbstractValueKind.OpenPyxlWorkbookProtection or
+            AbstractValueKind.OpenPyxlDrawing or
+            AbstractValueKind.OpenPyxlChart or
+            AbstractValueKind.OpenPyxlImage or
+            AbstractValueKind.OpenPyxlSheetView or
+            AbstractValueKind.OpenPyxlSelection or
+            AbstractValueKind.OpenPyxlPageMargins or
+            AbstractValueKind.OpenPyxlPageSetup or
+            AbstractValueKind.OpenPyxlTableCollection or
+            AbstractValueKind.OpenPyxlDataValidationList or
+            AbstractValueKind.OpenPyxlColumnDimension or
+            AbstractValueKind.OpenPyxlRowDimension or
+            AbstractValueKind.OpenPyxlMergedCellSet;
 
     public static bool IsKnownIntegerLiteral(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
@@ -72,6 +104,34 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
+            AbstractValueKind.OpenPyxlWorksheet or
+            AbstractValueKind.OpenPyxlCell or
+            AbstractValueKind.OpenPyxlHyperlink or
+            AbstractValueKind.OpenPyxlComment or
+            AbstractValueKind.OpenPyxlFont or
+            AbstractValueKind.OpenPyxlPatternFill or
+            AbstractValueKind.OpenPyxlBorder or
+            AbstractValueKind.OpenPyxlSide or
+            AbstractValueKind.OpenPyxlAlignment or
+            AbstractValueKind.OpenPyxlProtection or
+            AbstractValueKind.OpenPyxlNamedStyle or
+            AbstractValueKind.OpenPyxlColor or
+            AbstractValueKind.OpenPyxlTable or
+            AbstractValueKind.OpenPyxlTableStyleInfo or
+            AbstractValueKind.OpenPyxlDataValidation or
+            AbstractValueKind.OpenPyxlConditionalFormattingRule or
+            AbstractValueKind.OpenPyxlAutoFilter or
+            AbstractValueKind.OpenPyxlSheetProtection or
+            AbstractValueKind.OpenPyxlWorkbookProtection or
+            AbstractValueKind.OpenPyxlDrawing or
+            AbstractValueKind.OpenPyxlChart or
+            AbstractValueKind.OpenPyxlImage or
+            AbstractValueKind.OpenPyxlSheetView or
+            AbstractValueKind.OpenPyxlSelection or
+            AbstractValueKind.OpenPyxlPageMargins or
+            AbstractValueKind.OpenPyxlPageSetup or
+            AbstractValueKind.OpenPyxlColumnDimension or
+            AbstractValueKind.OpenPyxlRowDimension or
             AbstractValueKind.Function;
 
     public static bool IsDefinitelyKnownNonSized(ExpressionSyntax expression, AbstractState bindings)
@@ -98,6 +158,38 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
+            AbstractValueKind.OpenPyxlWorkbook or
+            AbstractValueKind.OpenPyxlWorksheet or
+            AbstractValueKind.OpenPyxlCell or
+            AbstractValueKind.OpenPyxlHyperlink or
+            AbstractValueKind.OpenPyxlComment or
+            AbstractValueKind.OpenPyxlFont or
+            AbstractValueKind.OpenPyxlPatternFill or
+            AbstractValueKind.OpenPyxlBorder or
+            AbstractValueKind.OpenPyxlSide or
+            AbstractValueKind.OpenPyxlAlignment or
+            AbstractValueKind.OpenPyxlProtection or
+            AbstractValueKind.OpenPyxlNamedStyle or
+            AbstractValueKind.OpenPyxlColor or
+            AbstractValueKind.OpenPyxlTable or
+            AbstractValueKind.OpenPyxlTableStyleInfo or
+            AbstractValueKind.OpenPyxlDataValidation or
+            AbstractValueKind.OpenPyxlAutoFilter or
+            AbstractValueKind.OpenPyxlSheetProtection or
+            AbstractValueKind.OpenPyxlWorkbookProtection or
+            AbstractValueKind.OpenPyxlDrawing or
+            AbstractValueKind.OpenPyxlChart or
+            AbstractValueKind.OpenPyxlImage or
+            AbstractValueKind.OpenPyxlSheetView or
+            AbstractValueKind.OpenPyxlSelection or
+            AbstractValueKind.OpenPyxlPageMargins or
+            AbstractValueKind.OpenPyxlPageSetup or
+            AbstractValueKind.OpenPyxlTableCollection or
+            AbstractValueKind.OpenPyxlDataValidationList or
+            AbstractValueKind.OpenPyxlConditionalFormattingCollection or
+            AbstractValueKind.OpenPyxlColumnDimension or
+            AbstractValueKind.OpenPyxlRowDimension or
+            AbstractValueKind.OpenPyxlMergedCellSet or
             AbstractValueKind.Function;
 
     public static bool IsDefinitelySized(AbstractValue value)
@@ -133,6 +225,34 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
+            AbstractValueKind.OpenPyxlCell or
+            AbstractValueKind.OpenPyxlHyperlink or
+            AbstractValueKind.OpenPyxlComment or
+            AbstractValueKind.OpenPyxlFont or
+            AbstractValueKind.OpenPyxlPatternFill or
+            AbstractValueKind.OpenPyxlBorder or
+            AbstractValueKind.OpenPyxlSide or
+            AbstractValueKind.OpenPyxlAlignment or
+            AbstractValueKind.OpenPyxlProtection or
+            AbstractValueKind.OpenPyxlNamedStyle or
+            AbstractValueKind.OpenPyxlColor or
+            AbstractValueKind.OpenPyxlTable or
+            AbstractValueKind.OpenPyxlTableStyleInfo or
+            AbstractValueKind.OpenPyxlDataValidation or
+            AbstractValueKind.OpenPyxlConditionalFormattingRule or
+            AbstractValueKind.OpenPyxlAutoFilter or
+            AbstractValueKind.OpenPyxlSheetProtection or
+            AbstractValueKind.OpenPyxlWorkbookProtection or
+            AbstractValueKind.OpenPyxlDrawing or
+            AbstractValueKind.OpenPyxlChart or
+            AbstractValueKind.OpenPyxlImage or
+            AbstractValueKind.OpenPyxlSheetView or
+            AbstractValueKind.OpenPyxlSelection or
+            AbstractValueKind.OpenPyxlPageMargins or
+            AbstractValueKind.OpenPyxlPageSetup or
+            AbstractValueKind.OpenPyxlColumnDimension or
+            AbstractValueKind.OpenPyxlRowDimension or
+            AbstractValueKind.OpenPyxlMergedCellSet or
             AbstractValueKind.Function;
 
     public static bool IsDefinitelyNonSliceable(AbstractValue value)

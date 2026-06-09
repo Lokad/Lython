@@ -33,6 +33,39 @@ internal enum AbstractValueKind
     CsvWriter,
     SubprocessCompletedProcess,
     DataclassField,
+    OpenPyxlWorkbook,
+    OpenPyxlWorksheet,
+    OpenPyxlCell,
+    OpenPyxlHyperlink,
+    OpenPyxlComment,
+    OpenPyxlFont,
+    OpenPyxlPatternFill,
+    OpenPyxlBorder,
+    OpenPyxlSide,
+    OpenPyxlAlignment,
+    OpenPyxlProtection,
+    OpenPyxlNamedStyle,
+    OpenPyxlColor,
+    OpenPyxlTable,
+    OpenPyxlTableStyleInfo,
+    OpenPyxlDataValidation,
+    OpenPyxlConditionalFormattingRule,
+    OpenPyxlAutoFilter,
+    OpenPyxlSheetProtection,
+    OpenPyxlWorkbookProtection,
+    OpenPyxlDrawing,
+    OpenPyxlChart,
+    OpenPyxlImage,
+    OpenPyxlSheetView,
+    OpenPyxlSelection,
+    OpenPyxlPageMargins,
+    OpenPyxlPageSetup,
+    OpenPyxlTableCollection,
+    OpenPyxlDataValidationList,
+    OpenPyxlConditionalFormattingCollection,
+    OpenPyxlColumnDimension,
+    OpenPyxlRowDimension,
+    OpenPyxlMergedCellSet,
     Function,
     UserClass,
     UserInstance,
@@ -140,6 +173,39 @@ internal readonly record struct AbstractValue(
     public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
     public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
     public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
+    public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbook, "openpyxl.Workbook", span);
+    public static AbstractValue OpenPyxlWorksheet(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorksheet, "openpyxl.worksheet.worksheet.Worksheet", span);
+    public static AbstractValue OpenPyxlCell(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlCell, "openpyxl.cell.cell.Cell", span);
+    public static AbstractValue OpenPyxlHyperlink(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlHyperlink, "openpyxl.worksheet.hyperlink.Hyperlink", span);
+    public static AbstractValue OpenPyxlComment(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlComment, "openpyxl.comments.Comment", span);
+    public static AbstractValue OpenPyxlFont(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlFont, "openpyxl.styles.Font", span);
+    public static AbstractValue OpenPyxlPatternFill(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPatternFill, "openpyxl.styles.PatternFill", span);
+    public static AbstractValue OpenPyxlBorder(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlBorder, "openpyxl.styles.Border", span);
+    public static AbstractValue OpenPyxlSide(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSide, "openpyxl.styles.Side", span);
+    public static AbstractValue OpenPyxlAlignment(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlAlignment, "openpyxl.styles.Alignment", span);
+    public static AbstractValue OpenPyxlProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlProtection, "openpyxl.styles.Protection", span);
+    public static AbstractValue OpenPyxlNamedStyle(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlNamedStyle, "openpyxl.styles.NamedStyle", span);
+    public static AbstractValue OpenPyxlColor(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlColor, "openpyxl.styles.colors.Color", span);
+    public static AbstractValue OpenPyxlTable(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTable, "openpyxl.worksheet.table.Table", span);
+    public static AbstractValue OpenPyxlTableStyleInfo(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTableStyleInfo, "openpyxl.worksheet.table.TableStyleInfo", span);
+    public static AbstractValue OpenPyxlDataValidation(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDataValidation, "openpyxl.worksheet.datavalidation.DataValidation", span);
+    public static AbstractValue OpenPyxlConditionalFormattingRule(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlConditionalFormattingRule, "openpyxl.formatting.rule.Rule", span);
+    public static AbstractValue OpenPyxlAutoFilter(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlAutoFilter, "openpyxl.worksheet.filters.AutoFilter", span);
+    public static AbstractValue OpenPyxlSheetProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSheetProtection, "openpyxl.worksheet.protection.SheetProtection", span);
+    public static AbstractValue OpenPyxlWorkbookProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbookProtection, "openpyxl.workbook.protection.WorkbookProtection", span);
+    public static AbstractValue OpenPyxlDrawing(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDrawing, "openpyxl.drawing.spreadsheet_drawing.SpreadsheetDrawing", span);
+    public static AbstractValue OpenPyxlChart(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlChart, "openpyxl.chart._chart.ChartBase", span);
+    public static AbstractValue OpenPyxlImage(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlImage, "openpyxl.drawing.image.Image", span);
+    public static AbstractValue OpenPyxlSheetView(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSheetView, "openpyxl.worksheet.views.SheetView", span);
+    public static AbstractValue OpenPyxlSelection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSelection, "openpyxl.worksheet.views.Selection", span);
+    public static AbstractValue OpenPyxlPageMargins(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPageMargins, "openpyxl.worksheet.page.PageMargins", span);
+    public static AbstractValue OpenPyxlPageSetup(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPageSetup, "openpyxl.worksheet.page.PrintPageSetup", span);
+    public static AbstractValue OpenPyxlTableCollection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTableCollection, "openpyxl.worksheet.table.TableList", span);
+    public static AbstractValue OpenPyxlDataValidationList(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDataValidationList, "openpyxl.worksheet.datavalidation.DataValidationList", span);
+    public static AbstractValue OpenPyxlConditionalFormattingCollection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlConditionalFormattingCollection, "openpyxl.formatting.formatting.ConditionalFormattingList", span);
+    public static AbstractValue OpenPyxlColumnDimension(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlColumnDimension, "openpyxl.worksheet.dimensions.ColumnDimension", span);
+    public static AbstractValue OpenPyxlRowDimension(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlRowDimension, "openpyxl.worksheet.dimensions.RowDimension", span);
+    public static AbstractValue OpenPyxlMergedCellSet(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlMergedCellSet, "openpyxl.worksheet.cell_range.MultiCellRange", span);
     public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span) => new(AbstractValueKind.Function, summary, span);
     public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserClass, summary, span);
     public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserInstance, summary, span);

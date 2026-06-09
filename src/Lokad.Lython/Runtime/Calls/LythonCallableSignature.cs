@@ -26,6 +26,40 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CsvReader = new("csv.reader", ["lines", "delimiter"], RequiredCount: 1);
     public static readonly LythonCallableSignature CsvWriter = new("csv.writer", ["delimiter"], RequiredCount: 0);
 
+    public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value"]);
+
+    public static readonly LythonCallableSignature OpenPyxlWorkbook = new("openpyxl.Workbook", ["write_only", "iso_dates"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlLoadWorkbook = new("openpyxl.load_workbook", ["filename", "read_only", "keep_vba", "data_only", "keep_links", "rich_text"], RequiredCount: 1);
+    public static readonly LythonCallableSignature OpenPyxlGetColumnLetter = new("openpyxl.utils.get_column_letter", ["col_idx"]);
+    public static readonly LythonCallableSignature OpenPyxlColumnIndexFromString = new("openpyxl.utils.column_index_from_string", ["col"]);
+    public static readonly LythonCallableSignature OpenPyxlCoordinateFromString = new("openpyxl.utils.coordinate_from_string", ["coord_string"]);
+    public static readonly LythonCallableSignature OpenPyxlCoordinateToTuple = new("openpyxl.utils.coordinate_to_tuple", ["coordinate"]);
+    public static readonly LythonCallableSignature OpenPyxlRangeBoundaries = new("openpyxl.utils.range_boundaries", ["range_string"]);
+    public static readonly LythonCallableSignature OpenPyxlGetColumnInterval = new("openpyxl.utils.get_column_interval", ["start", "end"]);
+    public static readonly LythonCallableSignature OpenPyxlAbsoluteCoordinate = new("openpyxl.utils.absolute_coordinate", ["coord_string"]);
+    public static readonly LythonCallableSignature OpenPyxlQuoteSheetName = new("openpyxl.utils.quote_sheetname", ["sheetname"]);
+    public static readonly LythonCallableSignature OpenPyxlRowsFromRange = new("openpyxl.utils.rows_from_range", ["range_string"]);
+    public static readonly LythonCallableSignature OpenPyxlColsFromRange = new("openpyxl.utils.cols_from_range", ["range_string"]);
+    public static readonly LythonCallableSignature OpenPyxlComment = new("openpyxl.comments.Comment", ["text", "author"]);
+    public static readonly LythonCallableSignature OpenPyxlFont = new("openpyxl.styles.Font", ["name", "sz", "bold", "italic", "color", "underline", "b", "i"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlPatternFill = new("openpyxl.styles.PatternFill", ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlBorder = new("openpyxl.styles.Border", ["left", "right", "top", "bottom"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlSide = new("openpyxl.styles.Side", ["style", "color", "border_style"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlAlignment = new("openpyxl.styles.Alignment", ["horizontal", "vertical", "wrap_text", "text_rotation"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlProtection = new("openpyxl.styles.Protection", ["locked", "hidden"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlNamedStyle = new("openpyxl.styles.NamedStyle", ["name", "font", "fill", "border", "alignment", "number_format", "protection"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlColor = new("openpyxl.styles.colors.Color", ["rgb", "indexed", "auto", "theme", "tint", "type"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlTable = new("openpyxl.worksheet.table.Table", ["displayName", "ref"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlTableStyleInfo = new("openpyxl.worksheet.table.TableStyleInfo", ["name", "showFirstColumn", "showLastColumn", "showRowStripes", "showColumnStripes"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlDataValidation = new("openpyxl.worksheet.datavalidation.DataValidation", ["type", "formula1", "formula2", "allow_blank", "showErrorMessage", "showInputMessage", "operator", "errorTitle", "error", "promptTitle", "prompt"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlBarChart = new("openpyxl.chart.BarChart", []);
+    public static readonly LythonCallableSignature OpenPyxlLineChart = new("openpyxl.chart.LineChart", []);
+    public static readonly LythonCallableSignature OpenPyxlPieChart = new("openpyxl.chart.PieChart", []);
+    public static readonly LythonCallableSignature OpenPyxlScatterChart = new("openpyxl.chart.ScatterChart", []);
+    public static readonly LythonCallableSignature OpenPyxlChartReference = new("openpyxl.chart.Reference", ["worksheet", "min_col", "min_row", "max_col", "max_row", "range_string"], RequiredCount: 1);
+    public static readonly LythonCallableSignature OpenPyxlChartSeries = new("openpyxl.chart.Series", ["values", "xvalues", "title"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlDrawingImage = new("openpyxl.drawing.image.Image", ["img"]);
+
     public static readonly LythonCallableSignature ReCompile = new("re.compile", ["pattern", "flags"], RequiredCount: 1);
     public static readonly LythonCallableSignature ReSearch = new("re.search", ["pattern", "string", "flags"], RequiredCount: 2);
     public static readonly LythonCallableSignature ReMatch = new("re.match", ["pattern", "string", "flags"], RequiredCount: 2);
