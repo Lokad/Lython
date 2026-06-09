@@ -111,6 +111,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `decimal` is compatibility-oriented over .NET's fixed-precision `decimal`, not CPython's arbitrary-precision engine. Common `Decimal`, `DecimalTuple`, context, rounding constant, predicate, tuple-conversion, and integral-rounding APIs are available for agent-authored scripts. `NaN`, `sNaN`, `Infinity`, and precision beyond the .NET decimal range fail explicitly.
 
+`math` tracks the common CPython 3.13 scalar and aggregate helpers used in generated scripts, including integer combinatorics, `dist`, variadic `hypot`, `frexp`/`ldexp`/`modf`, IEEE-adjacent helpers, `gamma`/`lgamma`, `fma`, and `sumprod`. Exact combinatorics are arbitrary-size where practical, but computations that imply unbounded local loops fail explicitly under Lython's contained execution model.
+
 `glob` is host-mediated over the same contained path model. Module-level `glob.glob(...)` returns Python strings, `glob.iglob(...)` returns a one-shot iterator over materialized string results, and relative patterns return relative paths. `root_dir`, `recursive`, `include_hidden`, `escape`, `has_magic`, and `translate` are supported; `dir_fd`, `glob0`, and `glob1` fail explicitly.
 
 `pathlib` uses Lython's normalized `/`-separated path model over host-mediated files and directories. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, globbing APIs materialize lists eagerly, and file handles are UTF-8 text-only with explicit unsupported diagnostics for binary, symlink, permission, and random-access operations.

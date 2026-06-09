@@ -20,6 +20,16 @@ internal static partial class StaticContracts
             StaticReturnShape.Dict => AbstractValue.Dict([], span),
             StaticReturnShape.Integer => AbstractValue.IntegerType(span),
             StaticReturnShape.Float => AbstractValue.FloatType(span),
+            StaticReturnShape.TupleFloatInteger => new(AbstractValueKind.Tuple, new[]
+            {
+                AbstractValue.FloatType(span),
+                AbstractValue.IntegerType(span),
+            }, span),
+            StaticReturnShape.TupleFloatFloat => new(AbstractValueKind.Tuple, new[]
+            {
+                AbstractValue.FloatType(span),
+                AbstractValue.FloatType(span),
+            }, span),
             StaticReturnShape.RegexPattern => AbstractValue.RegexPattern(span),
             StaticReturnShape.MaybeRegexMatch => AbstractValue.MaybeRegexMatch(span),
             StaticReturnShape.RegexMatch => AbstractValue.RegexMatch(span),

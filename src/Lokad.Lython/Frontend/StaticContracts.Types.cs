@@ -19,6 +19,8 @@ internal enum StaticReturnShape
     SetSame,
     Integer,
     Float,
+    TupleFloatInteger,
+    TupleFloatFloat,
     RegexPattern,
     MaybeRegexMatch,
     RegexMatch,

@@ -299,6 +299,7 @@ internal static class StaticContractEngine
         emitted |= StaticArgparseContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= StaticProcessContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= StaticFilesystemContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
+        emitted |= StaticMathContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         return emitted;
     }
 

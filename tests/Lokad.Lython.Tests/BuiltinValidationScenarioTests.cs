@@ -30,7 +30,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import math\nmath.log(0)\n", "ValueError", "math domain error")]
     [InlineData("import math\nmath.isclose(1, 2, -1)\n", "ValueError", "non-negative")]
     [InlineData("import math\nmath.prod([1, \"x\"])\n", "TypeError", "iterable of real numbers")]
-    [InlineData("import math\nmath.floor(\"x\")\n", "TypeError", "expects a real number")]
+    [InlineData("import math\nmath.floor(\"x\")\n", "compile", "expects a real number")]
     [InlineData("import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\na < b\n", "TypeError", "naive and timezone-aware datetimes")]
     [InlineData("import datetime\ndatetime.timezone(1)\n", "TypeError", "expects a timedelta offset")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"bad\")\n", "ValueError", "not recognized")]

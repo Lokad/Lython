@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
         PythonReCompileOptions Options,
         Utf8PythonRegex Regex);
 
-    private sealed class MathModule : PyModule
+    private sealed partial class MathModule : PyModule
     {
         public static readonly MathModule Instance = new();
 
@@ -75,37 +75,60 @@ internal sealed partial class LythonRuntime
                 "tau" => Math.Tau,
                 "inf" => double.PositiveInfinity,
                 "nan" => double.NaN,
-                "sqrt" => new BuiltinCallable("math.sqrt", Sqrt, ["x"]),
-                "exp" => new BuiltinCallable("math.exp", Exp, ["x"]),
-                "log" => new BuiltinCallable("math.log", Log, ["x", "base"], requiredCount: 1),
-                "log10" => new BuiltinCallable("math.log10", Log10, ["x"]),
-                "log2" => new BuiltinCallable("math.log2", Log2, ["x"]),
-                "sin" => new BuiltinCallable("math.sin", Sin, ["x"]),
-                "cos" => new BuiltinCallable("math.cos", Cos, ["x"]),
-                "tan" => new BuiltinCallable("math.tan", Tan, ["x"]),
-                "asin" => new BuiltinCallable("math.asin", Asin, ["x"]),
-                "acos" => new BuiltinCallable("math.acos", Acos, ["x"]),
-                "atan" => new BuiltinCallable("math.atan", Atan, ["x"]),
-                "atan2" => new BuiltinCallable("math.atan2", Atan2, ["y", "x"]),
-                "sinh" => new BuiltinCallable("math.sinh", Sinh, ["x"]),
-                "cosh" => new BuiltinCallable("math.cosh", Cosh, ["x"]),
-                "tanh" => new BuiltinCallable("math.tanh", Tanh, ["x"]),
-                "floor" => new BuiltinCallable("math.floor", Floor, ["x"]),
-                "ceil" => new BuiltinCallable("math.ceil", Ceil, ["x"]),
-                "fabs" => new BuiltinCallable("math.fabs", Fabs, ["x"]),
-                "trunc" => new BuiltinCallable("math.trunc", Trunc, ["x"]),
-                "degrees" => new BuiltinCallable("math.degrees", Degrees, ["x"]),
-                "radians" => new BuiltinCallable("math.radians", Radians, ["x"]),
-                "isfinite" => new BuiltinCallable("math.isfinite", IsFinite, ["x"]),
-                "isinf" => new BuiltinCallable("math.isinf", IsInf, ["x"]),
-                "isnan" => new BuiltinCallable("math.isnan", IsNaN, ["x"]),
-                "pow" => new BuiltinCallable("math.pow", Pow, ["x", "y"]),
-                "hypot" => new BuiltinCallable("math.hypot", Hypot, ["x", "y"]),
-                "fmod" => new BuiltinCallable("math.fmod", Fmod, ["x", "y"]),
-                "copysign" => new BuiltinCallable("math.copysign", CopySign, ["x", "y"]),
-                "isclose" => new BuiltinCallable("math.isclose", IsClose, ["a", "b", "rel_tol", "abs_tol"], requiredCount: 2),
-                "prod" => new BuiltinCallable("math.prod", Prod, ["iterable", "start"], requiredCount: 1),
-                "fsum" => new BuiltinCallable("math.fsum", Fsum, ["iterable"]),
+                "sqrt" => new BuiltinCallable(LythonKnownCallableSignatures.MathSqrt, Sqrt),
+                "exp" => new BuiltinCallable(LythonKnownCallableSignatures.MathExp, Exp),
+                "log" => new BuiltinCallable(LythonKnownCallableSignatures.MathLog, Log),
+                "log10" => new BuiltinCallable(LythonKnownCallableSignatures.MathLog10, Log10),
+                "log2" => new BuiltinCallable(LythonKnownCallableSignatures.MathLog2, Log2),
+                "sin" => new BuiltinCallable(LythonKnownCallableSignatures.MathSin, Sin),
+                "cos" => new BuiltinCallable(LythonKnownCallableSignatures.MathCos, Cos),
+                "tan" => new BuiltinCallable(LythonKnownCallableSignatures.MathTan, Tan),
+                "asin" => new BuiltinCallable(LythonKnownCallableSignatures.MathAsin, Asin),
+                "acos" => new BuiltinCallable(LythonKnownCallableSignatures.MathAcos, Acos),
+                "atan" => new BuiltinCallable(LythonKnownCallableSignatures.MathAtan, Atan),
+                "atan2" => new BuiltinCallable(LythonKnownCallableSignatures.MathAtan2, Atan2),
+                "sinh" => new BuiltinCallable(LythonKnownCallableSignatures.MathSinh, Sinh),
+                "cosh" => new BuiltinCallable(LythonKnownCallableSignatures.MathCosh, Cosh),
+                "tanh" => new BuiltinCallable(LythonKnownCallableSignatures.MathTanh, Tanh),
+                "floor" => new BuiltinCallable(LythonKnownCallableSignatures.MathFloor, Floor),
+                "ceil" => new BuiltinCallable(LythonKnownCallableSignatures.MathCeil, Ceil),
+                "fabs" => new BuiltinCallable(LythonKnownCallableSignatures.MathFabs, Fabs),
+                "trunc" => new BuiltinCallable(LythonKnownCallableSignatures.MathTrunc, Trunc),
+                "degrees" => new BuiltinCallable(LythonKnownCallableSignatures.MathDegrees, Degrees),
+                "radians" => new BuiltinCallable(LythonKnownCallableSignatures.MathRadians, Radians),
+                "isfinite" => new BuiltinCallable(LythonKnownCallableSignatures.MathIsFinite, IsFinite),
+                "isinf" => new BuiltinCallable(LythonKnownCallableSignatures.MathIsInf, IsInf),
+                "isnan" => new BuiltinCallable(LythonKnownCallableSignatures.MathIsNaN, IsNaN),
+                "pow" => new BuiltinCallable(LythonKnownCallableSignatures.MathPow, Pow),
+                "hypot" => new BuiltinCallable(LythonKnownCallableSignatures.MathHypot, Hypot),
+                "fmod" => new BuiltinCallable(LythonKnownCallableSignatures.MathFmod, Fmod),
+                "copysign" => new BuiltinCallable(LythonKnownCallableSignatures.MathCopySign, CopySign),
+                "isclose" => new BuiltinCallable(LythonKnownCallableSignatures.MathIsClose, IsClose),
+                "prod" => new BuiltinCallable(LythonKnownCallableSignatures.MathProd, Prod),
+                "fsum" => new BuiltinCallable(LythonKnownCallableSignatures.MathFsum, Fsum),
+                "factorial" => new BuiltinCallable(LythonKnownCallableSignatures.MathFactorial, Factorial),
+                "gcd" => new BuiltinCallable(LythonKnownCallableSignatures.MathGcd, Gcd),
+                "lcm" => new BuiltinCallable(LythonKnownCallableSignatures.MathLcm, Lcm),
+                "comb" => new BuiltinCallable(LythonKnownCallableSignatures.MathComb, Comb),
+                "perm" => new BuiltinCallable(LythonKnownCallableSignatures.MathPerm, Perm),
+                "isqrt" => new BuiltinCallable(LythonKnownCallableSignatures.MathIsqrt, ISqrt),
+                "dist" => new BuiltinCallable(LythonKnownCallableSignatures.MathDist, Dist),
+                "frexp" => new BuiltinCallable(LythonKnownCallableSignatures.MathFrexp, Frexp),
+                "ldexp" => new BuiltinCallable(LythonKnownCallableSignatures.MathLdexp, Ldexp),
+                "modf" => new BuiltinCallable(LythonKnownCallableSignatures.MathModf, Modf),
+                "remainder" => new BuiltinCallable(LythonKnownCallableSignatures.MathRemainder, Remainder),
+                "nextafter" => new BuiltinCallable(LythonKnownCallableSignatures.MathNextAfter, NextAfter),
+                "ulp" => new BuiltinCallable(LythonKnownCallableSignatures.MathUlp, Ulp),
+                "exp2" => new BuiltinCallable(LythonKnownCallableSignatures.MathExp2, Exp2),
+                "expm1" => new BuiltinCallable(LythonKnownCallableSignatures.MathExpm1, Expm1),
+                "log1p" => new BuiltinCallable(LythonKnownCallableSignatures.MathLog1p, Log1p),
+                "cbrt" => new BuiltinCallable(LythonKnownCallableSignatures.MathCbrt, Cbrt),
+                "erf" => new BuiltinCallable(LythonKnownCallableSignatures.MathErf, Erf),
+                "erfc" => new BuiltinCallable(LythonKnownCallableSignatures.MathErfc, Erfc),
+                "gamma" => new BuiltinCallable(LythonKnownCallableSignatures.MathGamma, Gamma),
+                "lgamma" => new BuiltinCallable(LythonKnownCallableSignatures.MathLgamma, LGamma),
+                "fma" => new BuiltinCallable(LythonKnownCallableSignatures.MathFma, Fma),
+                "sumprod" => new BuiltinCallable(LythonKnownCallableSignatures.MathSumProd, SumProd),
                 _ => null!,
             };
 
@@ -124,7 +147,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static object Exp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.exp", span, context, Math.Exp);
+            => UnaryCheckedFloat(arguments, "math.exp", span, context, Math.Exp);
 
         private static object Log(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -214,10 +237,10 @@ internal sealed partial class LythonRuntime
             => BinaryFloat(arguments, "math.atan2", span, context, Math.Atan2);
 
         private static object Sinh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.sinh", span, context, Math.Sinh);
+            => UnaryCheckedFloat(arguments, "math.sinh", span, context, Math.Sinh);
 
         private static object Cosh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.cosh", span, context, Math.Cosh);
+            => UnaryCheckedFloat(arguments, "math.cosh", span, context, Math.Cosh);
 
         private static object Tanh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => UnaryFloat(arguments, "math.tanh", span, context, Math.Tanh);
@@ -274,15 +297,63 @@ internal sealed partial class LythonRuntime
             => UnaryBool(arguments, "math.isnan", span, context, static x => double.IsNaN(x));
 
         private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => BinaryFloat(arguments, "math.pow", span, context, Math.Pow);
+        {
+            var (x, y) = ExpectBinaryReal(arguments, "math.pow", span, context);
+            if (x == 0.0 && y < 0.0)
+            {
+                throw new LythonRuntimeException("ValueError", "math domain error", span);
+            }
+
+            var result = Math.Pow(x, y);
+            if (double.IsNaN(result) && !double.IsNaN(x) && !double.IsNaN(y))
+            {
+                throw new LythonRuntimeException("ValueError", "math domain error", span);
+            }
+
+            return CheckedMathResult(result, "math.pow", span, x, y);
+        }
 
         private static object Hypot(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => BinaryFloat(arguments, "math.hypot", span, context, static (x, y) => Math.Sqrt(x * x + y * y));
+        {
+            _ = context;
+            if (arguments.Length == 0)
+            {
+                return 0.0;
+            }
+
+            var max = 0.0;
+            var values = new double[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                var value = Math.Abs(ExpectReal(arguments[i], "math.hypot", span));
+                if (double.IsPositiveInfinity(value))
+                {
+                    return double.PositiveInfinity;
+                }
+
+                values[i] = value;
+                max = Math.Max(max, value);
+            }
+
+            if (max == 0.0 || double.IsNaN(max))
+            {
+                return max;
+            }
+
+            var scaled = 0.0;
+            foreach (var value in values)
+            {
+                var ratio = value / max;
+                scaled += ratio * ratio;
+            }
+
+            return max * Math.Sqrt(scaled);
+        }
 
         private static object Fmod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.fmod", span, context);
-            if (y == 0.0)
+            if (y == 0.0 || double.IsInfinity(x))
             {
                 throw new LythonRuntimeException("ValueError", "math domain error", span);
             }
@@ -415,6 +486,22 @@ internal sealed partial class LythonRuntime
         {
             var (x, y) = ExpectBinaryReal(arguments, owner, span, context);
             return func(x, y);
+        }
+
+        private static object UnaryCheckedFloat(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)
+        {
+            var value = ExpectUnaryReal(arguments, owner, span, context);
+            return CheckedMathResult(func(value), owner, span, value);
+        }
+
+        private static double CheckedMathResult(double result, string owner, LythonSourceSpan span, params double[] inputs)
+        {
+            if (double.IsInfinity(result) && inputs.All(double.IsFinite))
+            {
+                throw new LythonRuntimeException("OverflowError", "math range error", span);
+            }
+
+            return result;
         }
 
         private static double ExpectReal(object value, string owner, LythonSourceSpan span)

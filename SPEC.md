@@ -295,8 +295,9 @@ The initial subset does not support:
 The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `collections`, `csv`,
-`difflib`, `fnmatch`, `glob`, `itertools`, `json`, `os`, `pathlib`, `pkgutil`,
-`re`, `subprocess` when host-enabled, `sys`, and related contained helpers.
+`decimal`, `difflib`, `fnmatch`, `glob`, `itertools`, `json`, `math`, `os`,
+`pathlib`, `pkgutil`, `re`, `subprocess` when host-enabled, `sys`, and related
+contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members. The runtime must reject imports outside the
@@ -749,6 +750,8 @@ The `glob` module follows the same contained path model. `glob.glob(pathname, *,
 `glob.escape(pathname)`, `glob.has_magic(s)`, and `glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None)` are supported for common agent-authored scripts. `glob.glob0`, `glob.glob1`, and any non-`None` `dir_fd` must fail explicitly because raw file descriptors and CPython internal traversal helpers are outside the host path model.
 
 The `decimal` module exposes the common CPython-shaped `Decimal`, `DecimalTuple`, `Context`, `getcontext`, `setcontext`, `localcontext`, rounding constants, and decimal signal names expected by ordinary scripts. Lython `Decimal` remains backed by .NET `decimal`: arithmetic is fixed-precision, context precision is surfaced for compatibility but does not provide CPython arbitrary precision, and `NaN`, `sNaN`, `Infinity`, and values outside the .NET decimal range must fail explicitly.
+
+The `math` module exposes the common CPython 3.13 scalar and aggregate helpers expected by generated scripts: elementary functions and constants, `factorial`, `gcd`, `lcm`, `comb`, `perm`, `isqrt`, `dist`, variadic `hypot`, `frexp`, `ldexp`, `modf`, `remainder`, `nextafter`, `ulp`, `exp2`, `expm1`, `log1p`, `cbrt`, `erf`, `erfc`, `gamma`, `lgamma`, `fma`, `sumprod`, `prod`, and `fsum`. Integer-only functions must accept `bool` as an integer. Domain, overflow, and keyword-only call-shape errors should follow CPython for supported functions. Exact integer helpers should use arbitrary-size integers where practical, while computations that imply unbounded local loops may fail explicitly under Lython's contained execution model.
 
 The `os` module follows the same contained path model. It may expose Python-shaped constants such as `name`, `sep`, `linesep`, `pathsep`, `extsep`, `devnull`, and access-mode constants using documented contained values. Supported file-tree operations must remain host-mediated through `ILythonHost`.
 
