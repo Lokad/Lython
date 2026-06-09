@@ -9,6 +9,8 @@ internal abstract class PyModule
 
     public string Name { get; }
 
+    public virtual IReadOnlyList<string> ExportedNames => [];
+
     public abstract bool TryGetMember(string name, out object value);
 
     public virtual bool TrySetMember(string name, object value)
@@ -30,6 +32,9 @@ internal sealed class ScriptPyModule : PyModule
     }
 
     public override bool TryGetMember(string name, out object value) => _members.TryGetValue(name, out value!);
+
+    public override IReadOnlyList<string> ExportedNames
+        => _members.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
 
     public override bool TrySetMember(string name, object value)
     {

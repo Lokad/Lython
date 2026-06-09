@@ -925,6 +925,21 @@ internal sealed partial class LythonRuntime
         }
 
         var importedModule = ResolveImportedModule(importBinding.ModuleName, context, importBinding.Span);
+        if (IsStarImport(importBinding.ImportedMembers))
+        {
+            foreach (var name in importedModule.ExportedNames)
+            {
+                if (!importedModule.TryGetMember(name, out var value))
+                {
+                    throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, name, importBinding.Span);
+                }
+
+                AssignExecutableBoundName(codeObject, locals, localCells, name, value, context, importBinding.Span);
+            }
+
+            return;
+        }
+
         foreach (var importedMember in importBinding.ImportedMembers)
         {
             if (!importedModule.TryGetMember(importedMember.Name, out var value))

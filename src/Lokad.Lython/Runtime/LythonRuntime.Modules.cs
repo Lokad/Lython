@@ -1353,17 +1353,10 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
-        {
-            if (name == "ClassVar")
-            {
-                value = PyString.FromString("ClassVar");
-                return true;
-            }
+        public override IReadOnlyList<string> ExportedNames => PyTyping.ExportedNames;
 
-            value = PyNone.Instance;
-            return false;
-        }
+        public override bool TryGetMember(string name, out object value)
+            => PyTyping.TryGetMember(name, out value);
     }
 
     internal static class RePatternMembers

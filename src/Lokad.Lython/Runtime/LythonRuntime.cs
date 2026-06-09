@@ -1383,15 +1383,27 @@ internal sealed partial class LythonRuntime
                 : Array.Empty<PyType>();
         }
 
-        var bases = new PyType[baseValues.Length];
-        for (var i = 0; i < baseValues.Length; i++)
+        var bases = new List<PyType>(baseValues.Length);
+        foreach (var baseValue in baseValues)
         {
-            if (baseValues[i] is not PyType type)
+            if (baseValue is PyTypingAlias { IsInertClassBase: true })
+            {
+                continue;
+            }
+
+            if (baseValue is not PyType type)
             {
                 throw new LythonRuntimeException("TypeError", "Class bases must be user-defined Lython classes.", span);
             }
 
-            bases[i] = type;
+            bases.Add(type);
+        }
+
+        if (bases.Count == 0)
+        {
+            return context.TryGetBuiltinType("object", out var rootType)
+                ? [rootType]
+                : Array.Empty<PyType>();
         }
 
         return bases;

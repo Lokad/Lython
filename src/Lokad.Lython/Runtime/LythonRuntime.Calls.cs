@@ -6,6 +6,11 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+internal interface INamedRuntimeCallable
+{
+    string Name { get; }
+}
+
 internal sealed partial class LythonRuntime
 {
     private static readonly PyString DefaultPrintSeparator = PyString.FromOwnedUtf8([(byte)' ']);
@@ -117,7 +122,7 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
-    private sealed class BuiltinCallable : ICallable
+    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
@@ -155,6 +160,14 @@ internal sealed partial class LythonRuntime
         }
 
         public string Name => _signature.Name;
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

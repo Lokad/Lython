@@ -1819,6 +1819,27 @@ internal sealed class Parser
             SkipGroupedImportTrivia();
         }
 
+        if (CurrentToken == Token.Star)
+        {
+            var starToken = ReadToken();
+            importedMembers.Add(new ImportedMemberSyntax("*", "*"));
+            if (grouped)
+            {
+                SkipGroupedImportTrivia();
+                if (!TryRead(Token.CloseParen, out _))
+                {
+                    AddDiagnostic("LA1067", "Expected ')' after grouped import list.", _position);
+                    return null;
+                }
+            }
+
+            return new ImportStatementSyntax(
+                moduleName,
+                moduleName,
+                importedMembers,
+                Merge(fromToken, starToken));
+        }
+
         while (true)
         {
             if (!TryRead(Token.Identifier, out var memberToken))

@@ -1627,6 +1627,7 @@ internal static class PyDataclass
         {
             PyDataclassInitVarMarker => DataclassFieldKind.InitVar,
             PyDataclassAnnotationValue syntax => ClassifyFieldKind(syntax.Expression),
+            PyTypingAlias { ShortName: "ClassVar" } => DataclassFieldKind.ClassVar,
             PyString text when IsClassVarText(text.AsString()) => DataclassFieldKind.ClassVar,
             PyString text when IsInitVarText(text.AsString()) => DataclassFieldKind.InitVar,
             string text when IsClassVarText(text) => DataclassFieldKind.ClassVar,

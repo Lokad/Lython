@@ -24,6 +24,23 @@ internal static class StaticBindingEngine
                 }
                 else
                 {
+                    if (IsStarImport(importStatement.ImportedMembers))
+                    {
+                        foreach (var memberName in StaticContracts.GetModuleExportedMemberNames(importStatement.ModuleName))
+                        {
+                            if (StaticContracts.TryGetModuleMemberValue(importStatement.ModuleName, memberName, importStatement.Span, out var memberValue))
+                            {
+                                bindings.Set(memberName, memberValue);
+                            }
+                            else
+                            {
+                                bindings.Remove(memberName);
+                            }
+                        }
+
+                        break;
+                    }
+
                     foreach (var member in importStatement.ImportedMembers)
                     {
                         if (StaticContracts.TryGetModuleMemberValue(importStatement.ModuleName, member.Name, importStatement.Span, out var memberValue))
@@ -118,6 +135,9 @@ internal static class StaticBindingEngine
             bindings.Remove(receiver);
         }
     }
+
+    private static bool IsStarImport(IReadOnlyList<ImportedMemberSyntax> members)
+        => members.Count == 1 && members[0].Name == "*";
 
     private static void RemoveAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
     {

@@ -158,7 +158,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 names.Add(importStatement.BindingName);
                 if (importStatement.ImportedMembers is not null)
                 {
-                    foreach (var member in importStatement.ImportedMembers) names.Add(member.BindingName);
+                    foreach (var memberName in EnumerateImportedBindingNames(importStatement)) names.Add(memberName);
                 }
                 break;
             case AssignmentStatementSyntax assignment:
@@ -271,6 +271,29 @@ internal static class StaticScopeDirectiveDiagnostics
             {
                 CollectSeenNames(statement, names);
             }
+        }
+    }
+
+    private static IEnumerable<string> EnumerateImportedBindingNames(ImportStatementSyntax importStatement)
+    {
+        if (importStatement.ImportedMembers is null)
+        {
+            yield break;
+        }
+
+        if (importStatement.ImportedMembers.Count == 1 && importStatement.ImportedMembers[0].Name == "*")
+        {
+            foreach (var memberName in StaticContracts.GetModuleExportedMemberNames(importStatement.ModuleName))
+            {
+                yield return memberName;
+            }
+
+            yield break;
+        }
+
+        foreach (var member in importStatement.ImportedMembers)
+        {
+            yield return member.BindingName;
         }
     }
 

@@ -223,9 +223,9 @@ internal static class ScopeDirectiveFactsCollector
                     names.Add(importStatement.BindingName);
                     if (importStatement.ImportedMembers is not null)
                     {
-                        foreach (var member in importStatement.ImportedMembers)
+                        foreach (var memberName in EnumerateImportedBindingNames(importStatement))
                         {
-                            names.Add(member.BindingName);
+                            names.Add(memberName);
                         }
                     }
                     break;
@@ -299,6 +299,29 @@ internal static class ScopeDirectiveFactsCollector
                     CollectExpressionBindings(expressionStatement.Expression, names);
                     break;
             }
+        }
+    }
+
+    private static IEnumerable<string> EnumerateImportedBindingNames(ImportStatementSyntax importStatement)
+    {
+        if (importStatement.ImportedMembers is null)
+        {
+            yield break;
+        }
+
+        if (importStatement.ImportedMembers.Count == 1 && importStatement.ImportedMembers[0].Name == "*")
+        {
+            foreach (var memberName in StaticContracts.GetModuleExportedMemberNames(importStatement.ModuleName))
+            {
+                yield return memberName;
+            }
+
+            yield break;
+        }
+
+        foreach (var member in importStatement.ImportedMembers)
+        {
+            yield return member.BindingName;
         }
     }
 

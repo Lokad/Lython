@@ -112,6 +112,14 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DataclassesAsTuple = new("dataclasses.astuple", ["obj", "tuple_factory"], RequiredCount: 1);
     public static readonly LythonCallableSignature DataclassesReplace = new("dataclasses.replace", ["obj"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
 
+    public static readonly LythonCallableSignature TypingTypeVar = new("typing.TypeVar", ["name"], RequiredCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature TypingNewType = new("typing.NewType", ["name", "tp"]);
+    public static readonly LythonCallableSignature TypingCast = new("typing.cast", ["typ", "val"]);
+    public static readonly LythonCallableSignature TypingGetOrigin = new("typing.get_origin", ["tp"]);
+    public static readonly LythonCallableSignature TypingGetArgs = new("typing.get_args", ["tp"]);
+    public static readonly LythonCallableSignature TypingNamedTuple = new("typing.NamedTuple", ["typename", "fields"], RequiredCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature TypingTypedDict = new("typing.TypedDict", ["typename", "fields"], RequiredCount: 1, AllowsExtraKeywords: true);
+
     private static readonly string[] SubprocessParameters = ["args", "input", "cwd", "timeout", "check", "capture_output", "stdin", "stdout", "stderr", "shell", "text", "encoding", "errors", "env", "universal_newlines"];
 
     public static readonly LythonCallableSignature SubprocessRun = new("subprocess.run", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);

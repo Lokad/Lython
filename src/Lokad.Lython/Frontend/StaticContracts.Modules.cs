@@ -50,7 +50,36 @@ internal static partial class StaticContracts
             "PARSER",
             "REMAINDER"),
         ["dataclasses"] = Members("dataclass", "Field", "field", "make_dataclass", "is_dataclass", "fields", "asdict", "astuple", "replace", "MISSING", "KW_ONLY", "InitVar", "FrozenInstanceError"),
-        ["typing"] = Members("ClassVar"),
+        ["typing"] = Members(
+            "Any",
+            "Optional",
+            "Union",
+            "List",
+            "Dict",
+            "Tuple",
+            "Set",
+            "FrozenSet",
+            "Sequence",
+            "Iterable",
+            "Iterator",
+            "Mapping",
+            "MutableMapping",
+            "Callable",
+            "Type",
+            "ClassVar",
+            "Final",
+            "Literal",
+            "Annotated",
+            "TYPE_CHECKING",
+            "TypeVar",
+            "NewType",
+            "Generic",
+            "Protocol",
+            "NamedTuple",
+            "TypedDict",
+            "cast",
+            "get_origin",
+            "get_args"),
         ["pathlib"] = Members("Path"),
         ["pkgutil"] = Members(
             "ModuleInfo",
@@ -108,6 +137,11 @@ internal static partial class StaticContracts
 
     public static bool IsKnownBuiltinModule(string moduleName)
         => ModuleMembers.ContainsKey(moduleName);
+
+    public static IReadOnlyList<string> GetModuleExportedMemberNames(string moduleName)
+        => ModuleMembers.TryGetValue(moduleName, out var members)
+            ? members.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray()
+            : [];
 
     public static bool TryGetModuleMemberValue(string moduleName, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
@@ -304,6 +338,7 @@ internal static partial class StaticContracts
         value = (moduleName, memberName) switch
         {
             ("__future__", "annotations") => AbstractValue.None(span),
+            ("typing", "TYPE_CHECKING") => AbstractValue.Boolean(false, span),
             ("sys", "argv") => AbstractValue.ListOf(AbstractValue.StringType(span), span),
             ("sys", "stdin") => AbstractValue.TextFileHandle(AbstractTextFileMode.Read, span),
             ("sys", "stdout") => AbstractValue.TextFileHandle(AbstractTextFileMode.Write, span),

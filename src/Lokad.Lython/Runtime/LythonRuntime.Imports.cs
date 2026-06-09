@@ -94,6 +94,12 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (IsStarImport(statement.ImportedMembers))
+        {
+            ExecuteStarImport(module, context, statement.Span);
+            return;
+        }
+
         foreach (var importedMember in statement.ImportedMembers)
         {
             if (!module.TryGetMember(importedMember.Name, out var value))
@@ -261,6 +267,12 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (IsStarImport(statement.ImportedMembers))
+        {
+            ExecuteStarImport(module, context, statement.Span);
+            return;
+        }
+
         foreach (var importedMember in statement.ImportedMembers)
         {
             if (!module.TryGetMember(importedMember.Name, out var value))
@@ -269,6 +281,22 @@ internal sealed partial class LythonRuntime
             }
 
             StoreName(importedMember.BindingName, value, context, statement.Span);
+        }
+    }
+
+    private static bool IsStarImport(IReadOnlyList<ImportedMemberSyntax> members)
+        => members.Count == 1 && members[0].Name == "*";
+
+    private static void ExecuteStarImport(PyModule module, ExecutionContext context, LythonSourceSpan span)
+    {
+        foreach (var name in module.ExportedNames)
+        {
+            if (!module.TryGetMember(name, out var value))
+            {
+                throw RuntimeErrors.CannotImportMember(module.Name, name, span);
+            }
+
+            StoreName(name, value, context, span);
         }
     }
 

@@ -252,6 +252,11 @@ internal static class StaticContractEngine
             return true;
         }
 
+        if (StaticTypingContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
+        {
+            return true;
+        }
+
         return StaticContracts.TryGetKnownCallReturn(targetName, call.Span, out value);
     }
 

@@ -67,6 +67,8 @@ Lython supports a broad, practical subset of Python. Ordinary control flow, func
 
 Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
 
+`typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.
+
 The builtin module surface is explicitly allowlisted:
 
 - `argparse`
@@ -93,6 +95,7 @@ The builtin module surface is explicitly allowlisted:
 - `statistics`
 - `subprocess` when the host provides a subprocess capability
 - `sys`
+- `typing`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
 
