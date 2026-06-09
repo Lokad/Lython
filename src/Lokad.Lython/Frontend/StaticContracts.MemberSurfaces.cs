@@ -936,6 +936,33 @@ internal static partial class StaticContracts
         "samples",
     };
 
+    private static readonly HashSet<string> RandomMembers = new(StringComparer.Ordinal)
+    {
+        "seed",
+        "random",
+        "getstate",
+        "setstate",
+        "randrange",
+        "randint",
+        "choice",
+        "choices",
+        "shuffle",
+        "sample",
+        "getrandbits",
+        "randbytes",
+        "uniform",
+        "triangular",
+        "betavariate",
+        "expovariate",
+        "gammavariate",
+        "gauss",
+        "normalvariate",
+        "lognormvariate",
+        "paretovariate",
+        "vonmisesvariate",
+        "weibullvariate",
+    };
+
     public static bool IsKnownSealedMemberSurface(AbstractValue value)
         => value.Kind is AbstractValueKind.Module && ModuleMembers.ContainsKey((string)value.Value) ||
            value.Kind is AbstractValueKind.Path or
@@ -970,6 +997,7 @@ internal static partial class StaticContracts
             AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.StatisticsNormalDist or
+            AbstractValueKind.Random or
             AbstractValueKind.RegexPattern or
             AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
@@ -1059,6 +1087,7 @@ internal static partial class StaticContracts
             AbstractValueKind.DateTimeTimezone => DateTimeTimezoneMembers.Contains(memberName),
             AbstractValueKind.StatisticsLinearRegression => StatisticsLinearRegressionMembers.Contains(memberName),
             AbstractValueKind.StatisticsNormalDist => StatisticsNormalDistMembers.Contains(memberName),
+            AbstractValueKind.Random => RandomMembers.Contains(memberName),
             AbstractValueKind.RegexPattern => RegexPatternMembers.Contains(memberName),
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),

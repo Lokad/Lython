@@ -58,6 +58,11 @@ internal static class StaticDataModuleContractFamily
             return true;
         }
 
+        if (AnalyzeRandomKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -121,21 +126,21 @@ internal static class StaticDataModuleContractFamily
 
         if (call.Target is MemberExpressionSyntax
             {
-                Target: IdentifierExpressionSyntax { Name: "random" },
-                MemberName: "choices"
-            })
-        {
-            AnalyzeRandomChoicesCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
                 Target: IdentifierExpressionSyntax { Name: "functools" },
                 MemberName: "update_wrapper"
             })
         {
             AnalyzeFunctoolsUpdateWrapperCall(arguments, diagnostics, bindings);
+            return true;
+        }
+
+        if (call.Target is MemberExpressionSyntax
+            {
+                Target: IdentifierExpressionSyntax { Name: "random" },
+                MemberName: "SystemRandom"
+            })
+        {
+            AddDiagnostic(diagnostics, "LA3158", "random.SystemRandom(...) is unsupported by Lython because system entropy is not exposed.", call.Span);
             return true;
         }
 
@@ -172,6 +177,12 @@ internal static class StaticDataModuleContractFamily
             if (receiver.Kind == AbstractValueKind.PkgutilLoader)
             {
                 AnalyzePkgutilLoaderMemberCall(memberName, arguments, diagnostics, bindings);
+                return true;
+            }
+
+            if (receiver.Kind == AbstractValueKind.Random)
+            {
+                AnalyzeRandomMemberCall(memberName, arguments, diagnostics, bindings);
                 return true;
             }
         }
@@ -463,8 +474,94 @@ internal static class StaticDataModuleContractFamily
             bindings);
     }
 
+    private static bool AnalyzeRandomKnownCallArgumentTypes(
+        string targetName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!targetName.StartsWith("random.", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var emitted = false;
+        switch (targetName)
+        {
+            case "random.Random":
+                return AnalyzeRandomSeedArgument(arguments, 0, "a", diagnostics, bindings);
+            case "random.seed":
+                emitted |= AnalyzeRandomSeedArgument(arguments, 0, "a", diagnostics, bindings);
+                emitted |= AnalyzeIntegerArgument(arguments, 1, "version", "random.seed(..., version=...) expects an integer version.", diagnostics, bindings);
+                return emitted;
+            case "random.setstate":
+                return false;
+            case "random.randrange":
+                emitted |= AnalyzeIntegerOrNoneArgument(arguments, 0, "start", "random.randrange(...) expects integer arguments.", diagnostics, bindings);
+                emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "stop", "random.randrange(...) expects integer arguments.", diagnostics, bindings);
+                emitted |= AnalyzeIntegerOrNoneArgument(arguments, 2, "step", "random.randrange(...) expects integer arguments.", diagnostics, bindings);
+                return emitted;
+            case "random.randint":
+                emitted |= AnalyzeIntegerArgument(arguments, 0, "a", "random.randint(a, b) expects integer bounds.", diagnostics, bindings);
+                emitted |= AnalyzeIntegerArgument(arguments, 1, "b", "random.randint(a, b) expects integer bounds.", diagnostics, bindings);
+                return emitted;
+            case "random.choice":
+                return AnalyzeIterableArgument(arguments, 0, "seq", "random.choice(seq) expects an iterable sequence.", diagnostics, bindings);
+            case "random.choices":
+                AnalyzeRandomChoicesCall(arguments, diagnostics, bindings);
+                return true;
+            case "random.shuffle":
+                return AnalyzeMutableSequenceArgument(arguments, 0, "x", "random.shuffle(x) expects a mutable sequence.", diagnostics, bindings);
+            case "random.sample":
+                emitted |= AnalyzeIterableArgument(arguments, 0, "population", "random.sample(population, k, *, counts=None) expects an iterable population.", diagnostics, bindings);
+                emitted |= AnalyzeIntegerArgument(arguments, 1, "k", "random.sample(..., k=...) expects an integer.", diagnostics, bindings);
+                emitted |= AnalyzeIterableOrNoneArgument(arguments, 2, "counts", "random.sample(..., counts=...) expects an iterable of counts or None.", diagnostics, bindings);
+                return emitted;
+            case "random.getrandbits":
+                return AnalyzeIntegerArgument(arguments, 0, "k", "random.getrandbits(k) expects an integer.", diagnostics, bindings);
+            case "random.randbytes":
+                return AnalyzeIntegerArgument(arguments, 0, "n", "random.randbytes(n) expects an integer.", diagnostics, bindings);
+            case "random.uniform":
+                emitted |= AnalyzeRealArgument(arguments, 0, "a", "random.uniform(a, b) expects real numbers.", diagnostics, bindings);
+                emitted |= AnalyzeRealArgument(arguments, 1, "b", "random.uniform(a, b) expects real numbers.", diagnostics, bindings);
+                return emitted;
+            case "random.triangular":
+                emitted |= AnalyzeRealOrNoneArgument(arguments, 0, "low", "random.triangular(..., low=...) expects a real number or None.", diagnostics, bindings);
+                emitted |= AnalyzeRealOrNoneArgument(arguments, 1, "high", "random.triangular(..., high=...) expects a real number or None.", diagnostics, bindings);
+                emitted |= AnalyzeRealOrNoneArgument(arguments, 2, "mode", "random.triangular(..., mode=...) expects a real number or None.", diagnostics, bindings);
+                return emitted;
+            case "random.expovariate":
+            case "random.gauss":
+            case "random.normalvariate":
+                emitted |= AnalyzeRealOrNoneArgument(arguments, 0, targetName.EndsWith("expovariate", StringComparison.Ordinal) ? "lambd" : "mu", $"{targetName}(...) expects real arguments.", diagnostics, bindings);
+                emitted |= AnalyzeRealOrNoneArgument(arguments, 1, "sigma", $"{targetName}(...) expects real arguments.", diagnostics, bindings);
+                return emitted;
+            case "random.betavariate":
+            case "random.gammavariate":
+            case "random.lognormvariate":
+            case "random.weibullvariate":
+            case "random.vonmisesvariate":
+                emitted |= AnalyzeRealArgument(arguments, 0, FirstRandomDistributionParameter(targetName), $"{targetName}(...) expects real arguments.", diagnostics, bindings);
+                emitted |= AnalyzeRealArgument(arguments, 1, SecondRandomDistributionParameter(targetName), $"{targetName}(...) expects real arguments.", diagnostics, bindings);
+                return emitted;
+            case "random.paretovariate":
+                return AnalyzeRealArgument(arguments, 0, "alpha", "random.paretovariate(alpha) expects a real argument.", diagnostics, bindings);
+            default:
+                return false;
+        }
+    }
+
+    private static void AnalyzeRandomMemberCall(
+        string memberName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+        => AnalyzeRandomKnownCallArgumentTypes("random." + memberName, arguments, diagnostics, bindings);
+
     private static void AnalyzeRandomChoicesCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
+        AnalyzeIterableArgument(arguments, 0, "population", "random.choices(population, ...) expects an iterable population.", diagnostics, bindings);
+
         if (arguments.TryGetValue(1, "weights", out var weightsExpression) &&
             weightsExpression is not NoneLiteralExpressionSyntax &&
             StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(weightsExpression, bindings))
@@ -498,6 +595,53 @@ internal static class StaticDataModuleContractFamily
             diagnostics,
             bindings);
     }
+
+    private static bool AnalyzeRandomSeedArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, "random seed expects None, bool, int, float, str, or bytes.", diagnostics, bindings, static value =>
+            value.Kind is AbstractValueKind.None or
+                AbstractValueKind.Boolean or
+                AbstractValueKind.BooleanType or
+                AbstractValueKind.Integer or
+                AbstractValueKind.IntegerType or
+                AbstractValueKind.Float or
+                AbstractValueKind.FloatType or
+                AbstractValueKind.String or
+                AbstractValueKind.StringType or
+                AbstractValueKind.Bytes or
+                AbstractValueKind.BytesType);
+
+    private static bool AnalyzeIterableArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => !StaticAbstractFacts.IsDefinitelyNonIterable(value));
+
+    private static bool AnalyzeIterableOrNoneArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || !StaticAbstractFacts.IsDefinitelyNonIterable(value));
+
+    private static bool AnalyzeMutableSequenceArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value =>
+            value.Kind is AbstractValueKind.List or AbstractValueKind.ListType || StaticKnownCallArgumentChecks.IsUnknown(value));
+
+    private static bool AnalyzeRealArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsNumericLike);
+
+    private static bool AnalyzeRealOrNoneArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsNumericLike(value));
+
+    private static string FirstRandomDistributionParameter(string targetName)
+        => targetName switch
+        {
+            "random.betavariate" or "random.gammavariate" or "random.paretovariate" or "random.weibullvariate" => "alpha",
+            "random.vonmisesvariate" or "random.lognormvariate" => "mu",
+            _ => "a"
+        };
+
+    private static string SecondRandomDistributionParameter(string targetName)
+        => targetName switch
+        {
+            "random.betavariate" or "random.gammavariate" or "random.weibullvariate" => "beta",
+            "random.vonmisesvariate" => "kappa",
+            "random.lognormvariate" => "sigma",
+            _ => "b"
+        };
 
     private static void AnalyzeFunctoolsUpdateWrapperCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {

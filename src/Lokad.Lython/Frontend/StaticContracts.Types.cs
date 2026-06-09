@@ -5,6 +5,7 @@ namespace Lokad.Lython.Frontend;
 internal enum StaticReturnShape
 {
     String,
+    Bytes,
     ListOfUnknown,
     ListOfString,
     ListOfFloat,
@@ -46,6 +47,7 @@ internal enum StaticReturnShape
     DateTimeTimezone,
     StatisticsLinearRegression,
     StatisticsNormalDist,
+    Random,
     DifflibDiffer,
     DifflibHtmlDiff,
     DifflibMatch,

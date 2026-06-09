@@ -847,7 +847,8 @@ internal sealed partial class LythonRuntime
             "datetime.datetime" or
             "datetime.timezone" or
             "datetime.tzinfo" or
-            "statistics.NormalDist";
+            "statistics.NormalDist" or
+            "random.Random";
     }
 
     private static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -871,6 +872,7 @@ internal sealed partial class LythonRuntime
             "datetime.timezone" => value is PyTimezone,
             "datetime.tzinfo" => value is PyTimezone,
             "statistics.NormalDist" => value is StatisticsModule.PyNormalDist,
+            "random.Random" => value is RandomModule.PyRandom,
             _ => false
         };
     }

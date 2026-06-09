@@ -625,6 +625,7 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.DateTimeTimezone => "datetime.timezone",
             AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
             AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
+            AbstractValueKind.Random => "random.Random",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

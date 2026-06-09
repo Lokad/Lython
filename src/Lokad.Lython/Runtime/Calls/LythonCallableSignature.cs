@@ -105,6 +105,32 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature StatisticsKde = new("statistics.kde", RequiredCount: 0);
     public static readonly LythonCallableSignature StatisticsKdeRandom = new("statistics.kde_random", RequiredCount: 0);
 
+    public static readonly LythonCallableSignature RandomClass = new("random.Random", ["a"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomSystemRandom = new("random.SystemRandom", ["a"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomSeed = new("random.seed", ["a", "version"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomRandom = new("random.random", []);
+    public static readonly LythonCallableSignature RandomGetState = new("random.getstate", []);
+    public static readonly LythonCallableSignature RandomSetState = new("random.setstate", ["state"]);
+    public static readonly LythonCallableSignature RandomRandRange = new("random.randrange", ["start", "stop", "step"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomRandInt = new("random.randint", ["a", "b"]);
+    public static readonly LythonCallableSignature RandomChoice = new("random.choice", ["seq"]);
+    public static readonly LythonCallableSignature RandomChoices = new("random.choices", ["population", "weights", "cum_weights", "k"], RequiredCount: 1);
+    public static readonly LythonCallableSignature RandomShuffle = new("random.shuffle", ["x"]);
+    public static readonly LythonCallableSignature RandomSample = new("random.sample", ["population", "k", "counts"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature RandomGetRandBits = new("random.getrandbits", ["k"]);
+    public static readonly LythonCallableSignature RandomRandBytes = new("random.randbytes", ["n"]);
+    public static readonly LythonCallableSignature RandomUniform = new("random.uniform", ["a", "b"]);
+    public static readonly LythonCallableSignature RandomTriangular = new("random.triangular", ["low", "high", "mode"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomBetaVariate = new("random.betavariate", ["alpha", "beta"]);
+    public static readonly LythonCallableSignature RandomExpVariate = new("random.expovariate", ["lambd"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomGammaVariate = new("random.gammavariate", ["alpha", "beta"]);
+    public static readonly LythonCallableSignature RandomGauss = new("random.gauss", ["mu", "sigma"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomNormalVariate = new("random.normalvariate", ["mu", "sigma"], RequiredCount: 0);
+    public static readonly LythonCallableSignature RandomLogNormVariate = new("random.lognormvariate", ["mu", "sigma"]);
+    public static readonly LythonCallableSignature RandomParetoVariate = new("random.paretovariate", ["alpha"]);
+    public static readonly LythonCallableSignature RandomVonMisesVariate = new("random.vonmisesvariate", ["mu", "kappa"]);
+    public static readonly LythonCallableSignature RandomWeibullVariate = new("random.weibullvariate", ["alpha", "beta"]);
+
     public static readonly LythonCallableSignature MathSqrt = new("math.sqrt", ["x"]);
     public static readonly LythonCallableSignature MathExp = new("math.exp", ["x"]);
     public static readonly LythonCallableSignature MathLog = new("math.log", ["x", "base"], RequiredCount: 1);

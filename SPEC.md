@@ -296,8 +296,8 @@ The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `collections`, `csv`,
 `datetime`, `decimal`, `difflib`, `fnmatch`, `glob`, `itertools`, `json`,
-`math`, `os`, `pathlib`, `pkgutil`, `re`, `subprocess` when host-enabled, `sys`,
-and related contained helpers.
+`math`, `os`, `pathlib`, `pkgutil`, `random`, `re`, `subprocess` when
+host-enabled, `sys`, and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members. The runtime must reject imports outside the
@@ -320,6 +320,16 @@ correlation/regression inputs, and zero-sigma distribution operations must fail
 explicitly with CPython-shaped exceptions. `NormalDist.samples(...)` is
 deterministic when no seed is supplied; KDE helpers are outside the contained
 surface and must fail explicitly.
+
+The `random` subset is deterministic unless a future host-provided entropy
+abstraction is explicitly added. Module-level helpers and `random.Random`
+instances expose independent deterministic state, `seed`, `getstate`,
+`setstate`, `randrange`, `randint`, `choice`, `choices`, `shuffle`, `sample`,
+`getrandbits`, `randbytes`, and common distribution helpers. `sample(...,
+counts=...)` and keyword-shaped calls are supported where CPython commonly
+accepts them. Weight validation for `choices` must reject mismatched lengths,
+non-monotonic cumulative weights, non-finite weights, and all-zero totals.
+`SystemRandom` must fail explicitly rather than reading ambient system entropy.
 
 ### 8.3 Supported Literal Surface
 

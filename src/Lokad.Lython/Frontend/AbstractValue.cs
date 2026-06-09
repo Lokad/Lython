@@ -48,6 +48,7 @@ internal enum AbstractValueKind
     DateTimeTimezone,
     StatisticsLinearRegression,
     StatisticsNormalDist,
+    Random,
     DifflibDiffer,
     DifflibHtmlDiff,
     DifflibMatch,
@@ -211,6 +212,7 @@ internal readonly record struct AbstractValue(
     public static AbstractValue DateTimeTimezone(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTimezone, "datetime.timezone", span);
     public static AbstractValue StatisticsLinearRegression(LythonSourceSpan span) => new(AbstractValueKind.StatisticsLinearRegression, "statistics.LinearRegression", span);
     public static AbstractValue StatisticsNormalDist(LythonSourceSpan span) => new(AbstractValueKind.StatisticsNormalDist, "statistics.NormalDist", span);
+    public static AbstractValue Random(LythonSourceSpan span) => new(AbstractValueKind.Random, "random.Random", span);
     public static AbstractValue DifflibDiffer(LythonSourceSpan span) => new(AbstractValueKind.DifflibDiffer, "difflib.Differ", span);
     public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => new(AbstractValueKind.DifflibHtmlDiff, "difflib.HtmlDiff", span);
     public static AbstractValue DifflibMatch(LythonSourceSpan span) => new(AbstractValueKind.DifflibMatch, "difflib.Match", span);

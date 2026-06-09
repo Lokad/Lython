@@ -44,6 +44,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.StatisticsNormalDist or
+            AbstractValueKind.Random or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
@@ -130,6 +131,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.StatisticsNormalDist or
+            AbstractValueKind.Random or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -197,6 +199,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.StatisticsNormalDist or
+            AbstractValueKind.Random or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -280,6 +283,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.StatisticsNormalDist or
+            AbstractValueKind.Random or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -524,6 +528,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTimezone => "datetime.timezone",
             AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
             AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
+            AbstractValueKind.Random => "random.Random",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

@@ -10,6 +10,7 @@ internal static partial class StaticContracts
         return shape switch
         {
             StaticReturnShape.String => AbstractValue.StringType(span),
+            StaticReturnShape.Bytes => AbstractValue.BytesType(span),
             StaticReturnShape.ListOfUnknown => AbstractValue.ListOf(AbstractValue.Unknown(span), span),
             StaticReturnShape.ListOfString => AbstractValue.ListOf(AbstractValue.StringType(span), span),
             StaticReturnShape.ListOfFloat => AbstractValue.ListOf(AbstractValue.FloatType(span), span),
@@ -55,6 +56,7 @@ internal static partial class StaticContracts
             StaticReturnShape.DateTimeTimezone => AbstractValue.DateTimeTimezone(span),
             StaticReturnShape.StatisticsLinearRegression => AbstractValue.StatisticsLinearRegression(span),
             StaticReturnShape.StatisticsNormalDist => AbstractValue.StatisticsNormalDist(span),
+            StaticReturnShape.Random => AbstractValue.Random(span),
             StaticReturnShape.DifflibDiffer => AbstractValue.DifflibDiffer(span),
             StaticReturnShape.DifflibHtmlDiff => AbstractValue.DifflibHtmlDiff(span),
             StaticReturnShape.DifflibMatch => AbstractValue.DifflibMatch(span),

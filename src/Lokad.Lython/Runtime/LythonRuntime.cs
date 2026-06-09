@@ -1369,6 +1369,7 @@ internal sealed partial class LythonRuntime
             "datetime.datetime" => subject is PyDateTime,
             "datetime.timezone" => subject is PyTimezone,
             "statistics.NormalDist" => subject is StatisticsModule.PyNormalDist,
+            "random.Random" => subject is RandomModule.PyRandom,
             "re.Match" => subject is ReMatchObject,
             "re.Pattern" => subject is RePatternObject,
             _ => false

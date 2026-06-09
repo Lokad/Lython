@@ -105,6 +105,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `statistics` covers common averages, medians, modes, variance, standard deviation, quantiles, covariance, correlation, linear regression, and `NormalDist`. Numeric summary helpers coerce supported real inputs, including `decimal.Decimal`, to `double` when needed; empty data, singleton sample statistics, invalid quantile parameters, degenerate correlation/regression, and zero-sigma distribution methods raise CPython-shaped errors. `NormalDist.samples(...)` is deterministic when no seed is supplied, and KDE helpers fail explicitly.
 
+`random` is deterministic by design. It exposes module-level helpers and independent `Random` instances, state snapshot/restore, `randbytes`, `sample(..., counts=...)`, stricter `choices` validation, and common distribution helpers. `SystemRandom` remains explicitly unsupported unless a future host entropy abstraction is added.
+
 `sys` is also contained: metadata, `path`, `modules`, builtin module names, `exc_info()`, `getsizeof(...)`, and std streams describe Lython and host-mediated handles rather than the host process or an ambient CPython installation.
 
 `collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `Counter` arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.

@@ -17,6 +17,10 @@ internal sealed class PyRandomState
         _state = seed == 0 ? DefaultSeed : seed;
     }
 
+    public ulong Snapshot() => _state;
+
+    public void Restore(ulong state) => _state = state;
+
     public double NextDouble()
     {
         // Match the usual Python contract: 0.0 <= x < 1.0.
@@ -82,5 +86,27 @@ internal sealed class PyRandomState
         }
 
         return new BigInteger(bytes);
+    }
+
+    public byte[] GetRandBytes(int byteCount)
+    {
+        if (byteCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(byteCount));
+        }
+
+        var bytes = new byte[byteCount];
+        var offset = 0;
+        while (offset < bytes.Length)
+        {
+            var chunk = NextUInt64();
+            for (var i = 0; i < 8 && offset < bytes.Length; i++, offset++)
+            {
+                bytes[offset] = (byte)(chunk & 0xFF);
+                chunk >>= 8;
+            }
+        }
+
+        return bytes;
     }
 }
