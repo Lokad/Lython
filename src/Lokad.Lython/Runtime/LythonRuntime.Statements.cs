@@ -15,8 +15,11 @@ internal sealed partial class LythonRuntime
                     ExecuteImport(importStatement, context);
                     return;
 
+                case ScopeDirectiveStatementSyntax:
+                    return;
+
                 case AssignmentStatementSyntax assignmentStatement:
-                    context.Variables[assignmentStatement.Name] = EvaluateExpression(assignmentStatement.Expression, context);
+                    StoreName(assignmentStatement.Name, EvaluateExpression(assignmentStatement.Expression, context), context, assignmentStatement.Span);
                     return;
 
                 case ChainedAssignmentStatementSyntax chainedAssignmentStatement:
@@ -157,8 +160,13 @@ internal sealed partial class LythonRuntime
                         loweredParameters,
                         LoweredScript.Lower(new ScriptSyntax(functionDefinition.Body)).Statements,
                         context.FunctionClosureContext,
-                        BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
-                    context.Variables[functionDefinition.Name] = ApplyDecorators(function, functionDefinition.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), functionDefinition.Span, context);
+                        BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
+                        ScopeDirectiveFactsCollector.ForFunction(functionDefinition));
+                    StoreName(
+                        functionDefinition.Name,
+                        ApplyDecorators(function, functionDefinition.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), functionDefinition.Span, context),
+                        context,
+                        functionDefinition.Span);
                     return;
 
                 case ClassDefinitionStatementSyntax classDefinition:
@@ -236,7 +244,7 @@ internal sealed partial class LythonRuntime
                 var exceptContext = new ExecutionContext(context);
                 if (statement.Syntax.ExceptionVariableName is not null)
                 {
-                    exceptContext.Variables[statement.Syntax.ExceptionVariableName] = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
+                    StoreName(statement.Syntax.ExceptionVariableName, new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance), exceptContext, statement.Syntax.Span);
                 }
 
                 pendingControl = ExecuteStatements(statement.ExceptBody, exceptContext);

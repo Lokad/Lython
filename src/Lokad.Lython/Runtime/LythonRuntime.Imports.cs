@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
 
         if (statement.ImportedMembers is null)
         {
-            context.Variables[statement.BindingName] = module;
+            StoreName(statement.BindingName, module, context, statement.Span);
             return;
         }
 
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportMember(statement.ModuleName, importedMember.Name, statement.Span);
             }
 
-            context.Variables[importedMember.BindingName] = value;
+            StoreName(importedMember.BindingName, value, context, statement.Span);
         }
     }
 
@@ -268,7 +268,7 @@ internal sealed partial class LythonRuntime
 
         if (statement.ImportedMembers is null)
         {
-            context.Variables[statement.BindingName] = module;
+            StoreName(statement.BindingName, module, context, statement.Span);
             return;
         }
 
@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportMember(statement.ModuleName, importedMember.Name, statement.Span);
             }
 
-            context.Variables[importedMember.BindingName] = value;
+            StoreName(importedMember.BindingName, value, context, statement.Span);
         }
     }
 

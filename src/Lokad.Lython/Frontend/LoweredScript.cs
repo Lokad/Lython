@@ -59,6 +59,7 @@ internal sealed class LoweredScript
         return statement switch
         {
             ImportStatementSyntax importStatement => new LoweredImportStatement(importStatement),
+            ScopeDirectiveStatementSyntax scopeDirective => new LoweredScopeDirectiveStatement(scopeDirective),
             FunctionDefinitionStatementSyntax functionDefinition => new LoweredFunctionDefinitionStatement(
                 functionDefinition,
                 functionDefinition.Decorators.Select(LowerExpression).ToArray(),

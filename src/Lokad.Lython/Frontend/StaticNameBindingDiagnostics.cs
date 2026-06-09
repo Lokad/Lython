@@ -72,9 +72,14 @@ internal static class StaticNameBindingDiagnostics
 
         var localNames = new HashSet<string>(StringComparer.Ordinal);
         CollectLocalAssignments(functionDefinition.Body, localNames);
+        var scopeFacts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
+        localNames.ExceptWith(scopeFacts.GlobalNames);
+        localNames.ExceptWith(scopeFacts.NonlocalNames);
 
         var maybeAssigned = new HashSet<string>(
-            functionDefinition.Parameters.Select(static parameter => parameter.Name),
+            functionDefinition.Parameters
+                .Select(static parameter => parameter.Name)
+                .Where(name => !scopeFacts.GlobalNames.Contains(name) && !scopeFacts.NonlocalNames.Contains(name)),
             StringComparer.Ordinal);
         AnalyzeStatements(functionDefinition.Body, context, localNames, maybeAssigned);
     }

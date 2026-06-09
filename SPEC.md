@@ -345,8 +345,6 @@ The following Python features are outside the initial subset and must be rejecte
 - `async`
 - `await`
 - pattern matching
-- `global`
-- `nonlocal`
 - `assert`
 - `del`
 - keyword arguments
@@ -633,9 +631,20 @@ The runtime must support:
 - module/script scope
 - function-local scope
 
-### 10.2 Unsupported Scope Features
+### 10.2 Scope Directives
 
-`global` and `nonlocal` are unsupported in the initial subset and must be rejected explicitly.
+`global` is supported in module and function bodies. A function-level `global`
+directive makes reads, writes, deletes, imports, function definitions, class
+definitions, loop targets, unpacking targets, context-manager aliases, exception
+aliases, pattern captures, and assignment expressions bind against module scope.
+
+`nonlocal` is supported in nested function bodies when an enclosing function
+declares a local binding for the named value. A `nonlocal` directive must bind to
+the nearest enclosing function scope that owns the name, and the same binding
+forms as `global` must target that enclosing scope.
+
+Scope directives inside class bodies are outside the supported subset and must be
+reported explicitly.
 
 ### 10.3 Principle
 

@@ -4,6 +4,7 @@ internal static class StaticAnalyzer
 {
     private static readonly Action<StaticAnalysisContext>[] Passes =
     [
+        StaticScopeDirectiveDiagnostics.Analyze,
         StaticAbstractInterpreter.Analyze,
         StaticRegexDiagnostics.Analyze,
         StaticNameBindingDiagnostics.Analyze,

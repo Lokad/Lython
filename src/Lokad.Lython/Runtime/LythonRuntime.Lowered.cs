@@ -36,6 +36,8 @@ internal sealed partial class LythonRuntime
             case LoweredImportStatement importStatement:
                 ExecuteLoweredImport(importStatement, context);
                 return;
+            case LoweredScopeDirectiveStatement:
+                return;
             case LoweredFunctionDefinitionStatement functionDefinition:
                 ExecuteLoweredFunctionDefinition(functionDefinition, context);
                 return;
@@ -108,8 +110,9 @@ internal sealed partial class LythonRuntime
                 functionDefinition.Parameters,
                 functionDefinition.Body,
                 context.FunctionClosureContext,
-                BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)));
-            context.Variables[syntax.Name] = ApplyDecorators(function, functionDefinition.Decorators, functionDefinition.Span, context);
+                BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)),
+                ScopeDirectiveFactsCollector.ForFunction(syntax));
+            StoreName(syntax.Name, ApplyDecorators(function, functionDefinition.Decorators, functionDefinition.Span, context), context, functionDefinition.Span);
         }
         finally
         {
@@ -165,7 +168,7 @@ internal sealed partial class LythonRuntime
             PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, context, classDefinition.Span);
             type.InitializeClassMembers(context, classDefinition.Span);
             InvokeInitSubclass(type, classKeywordArguments, classDefinition.Span, context);
-            context.Variables[classDefinition.Syntax.Name] = ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context);
+            StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context), context, classDefinition.Span);
         }
         finally
         {
@@ -336,7 +339,7 @@ internal sealed partial class LythonRuntime
             switch (assignment.Syntax)
             {
                 case AssignmentStatementSyntax simple:
-                    context.Variables[simple.Name] = EvaluateLoweredExpression(assignment.Expression!, context);
+                    StoreName(simple.Name, EvaluateLoweredExpression(assignment.Expression!, context), context, assignment.Span);
                     return;
                 case ChainedAssignmentStatementSyntax chained:
                     var chainedValue = EvaluateLoweredExpression(assignment.Expression!, context);
@@ -348,7 +351,7 @@ internal sealed partial class LythonRuntime
                 case AnnotatedAssignmentStatementSyntax annotated:
                     if (assignment.Expression is not null)
                     {
-                        context.Variables[annotated.Name] = EvaluateLoweredExpression(assignment.Expression, context);
+                        StoreName(annotated.Name, EvaluateLoweredExpression(assignment.Expression, context), context, assignment.Span);
                     }
                     return;
                 case AugmentedAssignmentStatementSyntax augmented:
@@ -834,7 +837,7 @@ internal sealed partial class LythonRuntime
         switch (statement.Target.Syntax)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!context.Variables.Remove(identifier.Name))
+                if (!DeleteName(identifier.Name, context, statement.Span))
                 {
                     throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
                 }
@@ -944,7 +947,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)
     {
         var value = EvaluateLoweredExpression(assignment.Expression, context);
-        context.Variables[assignment.Assignment.Name] = value;
+        StoreName(assignment.Assignment.Name, value, context, assignment.Span);
         return value;
     }
 

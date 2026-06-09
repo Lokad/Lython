@@ -230,6 +230,11 @@ internal static class StaticAbstractInterpreter
                     }
                 }
 
+                if (ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body))
+                {
+                    break;
+                }
+
                 var functionBindings = bindings.Clone();
                 foreach (var parameter in functionDefinition.Parameters)
                 {

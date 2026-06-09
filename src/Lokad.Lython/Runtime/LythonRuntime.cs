@@ -437,7 +437,7 @@ internal sealed partial class LythonRuntime
         switch (statement.Target)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!context.Variables.Remove(identifier.Name))
+                if (!DeleteName(identifier.Name, context, statement.Span))
                 {
                     throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
                 }
@@ -575,7 +575,7 @@ internal sealed partial class LythonRuntime
     {
         if (statement.Expression is not null)
         {
-            context.Variables[statement.Name] = EvaluateExpression(statement.Expression, context);
+            StoreName(statement.Name, EvaluateExpression(statement.Expression, context), context, statement.Span);
         }
     }
 
@@ -658,7 +658,7 @@ internal sealed partial class LythonRuntime
         switch (target)
         {
             case NameAssignmentTargetSyntax name:
-                context.Variables[name.Name] = value;
+                StoreName(name.Name, value, context, name.Span);
                 return;
             case UnpackingAssignmentTargetGroupSyntax unpacking:
                 AssignTargets(unpacking.Targets, value, unpacking.Span, context);
@@ -747,14 +747,11 @@ internal sealed partial class LythonRuntime
         switch (target)
         {
             case NameAssignmentTargetSyntax name:
-                if (!context.Variables.TryGetValue(name.Name, out var currentValue))
-                {
-                    throw new LythonRuntimeException("NameError", $"Name '{name.Name}' is not defined.", name.Span);
-                }
+                var currentValue = ResolveName(name.Name, name.Span, context);
 
                 return new AugmentedAssignmentTargetReference(
                     currentValue,
-                    value => context.Variables[name.Name] = value);
+                    value => StoreName(name.Name, value, context, name.Span));
 
             case SubscriptAssignmentTargetSyntax subscript:
                 var subscriptTarget = EvaluateExpression(subscript.Target, context);
@@ -993,7 +990,7 @@ internal sealed partial class LythonRuntime
 
             foreach (var pair in bindings)
             {
-                context.Variables[pair.Key] = pair.Value;
+                StoreName(pair.Key, pair.Value, context, matchCase.Span);
             }
 
             var signal = ExecuteStatements(matchCase.Body, context);
@@ -1403,7 +1400,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateAssignmentExpression(AssignmentExpressionSyntax assignment, ExecutionContext context)
     {
         var value = EvaluateExpression(assignment.Expression, context);
-        context.Variables[assignment.Name] = value;
+        StoreName(assignment.Name, value, context, assignment.Span);
         return value;
     }
 
@@ -2557,22 +2554,94 @@ internal sealed partial class LythonRuntime
         char? Type);
 
     private static object ResolveIdentifier(IdentifierExpressionSyntax identifier, ExecutionContext context)
+        => ResolveName(identifier.Name, identifier.Span, context);
+
+    internal static object ResolveName(string name, LythonSourceSpan span, ExecutionContext context)
     {
-        for (var current = context; current is not null; current = current.Parent)
+        if (context.ScopeFacts.IsGlobal(name))
         {
-            if (current.CurrentExecutableFrame is not null &&
-                current.CurrentExecutableFrame.TryResolveLocalOrClosure(identifier.Name, out var executableValue))
+            var globalContext = GetGlobalContext(context);
+            if (globalContext.CurrentExecutableFrame is not null &&
+                globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
             {
                 return executableValue;
             }
 
-            if (current.Variables.TryGetValue(identifier.Name, out var value))
+            if (globalContext.Variables.TryGetValue(name, out var globalValue))
+            {
+                return globalValue;
+            }
+
+            throw RuntimeErrors.NameNotDefined(name, span);
+        }
+
+        if (context.TryGetNonlocalTarget(name, out var nonlocalContext))
+        {
+            if (nonlocalContext.Variables.TryGetValue(name, out var nonlocalValue))
+            {
+                return nonlocalValue;
+            }
+
+            throw RuntimeErrors.NameNotDefined(name, span);
+        }
+
+        for (var current = context; current is not null; current = current.Parent)
+        {
+            if (current.CurrentExecutableFrame is not null &&
+                current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
+            {
+                return executableValue;
+            }
+
+            if (current.Variables.TryGetValue(name, out var value))
             {
                 return value;
             }
         }
 
-        throw RuntimeErrors.NameNotDefined(identifier.Name, identifier.Span);
+        throw RuntimeErrors.NameNotDefined(name, span);
+    }
+
+    internal static void StoreName(string name, object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        var storageContext = ResolveNameStorageContext(name, context, span);
+        storageContext.Variables[name] = value;
+        storageContext.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+    }
+
+    internal static bool DeleteName(string name, ExecutionContext context, LythonSourceSpan span)
+    {
+        var storageContext = ResolveNameStorageContext(name, context, span);
+        var removed = storageContext.Variables.Remove(name);
+        removed |= storageContext.CurrentExecutableFrame?.TryDeleteLocalOrClosure(name) == true;
+
+        return removed;
+    }
+
+    internal static ExecutionContext ResolveNameStorageContext(string name, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (context.ScopeFacts.IsGlobal(name))
+        {
+            return GetGlobalContext(context);
+        }
+
+        if (context.TryGetNonlocalTarget(name, out var nonlocalContext))
+        {
+            return nonlocalContext;
+        }
+
+        return context;
+    }
+
+    internal static ExecutionContext GetGlobalContext(ExecutionContext context)
+    {
+        var current = context;
+        while (current.Parent is not null)
+        {
+            current = current.Parent;
+        }
+
+        return current;
     }
 
     private static object ResolveMember(MemberExpressionSyntax member, ExecutionContext context)
@@ -2705,7 +2774,7 @@ internal sealed partial class LythonRuntime
         switch (target)
         {
             case LoopNameTargetSyntax name:
-                context.Variables[name.Name] = value;
+                StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
                 var values = MaterializeSequenceForUnpacking(value, span);
@@ -2733,7 +2802,7 @@ internal sealed partial class LythonRuntime
     {
         if (targets.Count == 1 && !targets[0].IsStarred)
         {
-            context.Variables[targets[0].Name] = value;
+            StoreName(targets[0].Name, value, context, span);
             return;
         }
 
@@ -2757,7 +2826,7 @@ internal sealed partial class LythonRuntime
 
             for (var i = 0; i < targets.Count; i++)
             {
-                context.Variables[targets[i].Name] = values[i];
+                StoreName(targets[i].Name, values[i], context, span);
             }
 
             return;
@@ -2771,18 +2840,18 @@ internal sealed partial class LythonRuntime
 
         for (var i = 0; i < starredIndex; i++)
         {
-            context.Variables[targets[i].Name] = values[i];
+            StoreName(targets[i].Name, values[i], context, span);
         }
 
         var starredCount = values.Length - required;
         var starredItems = new object[starredCount];
         Array.Copy(values, starredIndex, starredItems, 0, starredCount);
-        context.Variables[targets[starredIndex].Name] = new PyList(starredItems, context.MemoryGovernor, span);
+        StoreName(targets[starredIndex].Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
 
         for (var i = starredIndex + 1; i < targets.Count; i++)
         {
             var offset = values.Length - (targets.Count - i);
-            context.Variables[targets[i].Name] = values[offset];
+            StoreName(targets[i].Name, values[offset], context, span);
         }
     }
 
@@ -2822,6 +2891,8 @@ internal sealed partial class LythonRuntime
             Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath));
             ParentContext = null;
             FunctionClosureContext = this;
+            ScopeFacts = ScopeDirectiveFacts.Empty;
+            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
 
             var globals = options?.Globals;
             if (globals is null)
@@ -2842,6 +2913,19 @@ internal sealed partial class LythonRuntime
             Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             ParentContext = parent;
             FunctionClosureContext = this;
+            ScopeFacts = ScopeDirectiveFacts.Empty;
+            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+        }
+
+        public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        {
+            Services = parent.Services;
+            SourcePath = parent.SourcePath;
+            Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
+            ParentContext = parent;
+            FunctionClosureContext = this;
+            ScopeFacts = scopeFacts;
+            NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
         }
 
         public ExecutionContext(ExecutionContext template, bool moduleScope, string? sourcePath = null)
@@ -2852,6 +2936,8 @@ internal sealed partial class LythonRuntime
             Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath));
             ParentContext = null;
             FunctionClosureContext = this;
+            ScopeFacts = ScopeDirectiveFacts.Empty;
+            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
         }
 
         public ExecutionContext(ExecutionContext parent, bool classBodyScope)
@@ -2862,6 +2948,8 @@ internal sealed partial class LythonRuntime
             Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             ParentContext = parent;
             FunctionClosureContext = parent.FunctionClosureContext;
+            ScopeFacts = ScopeDirectiveFacts.Empty;
+            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
         }
 
         public ExecutionServices Services { get; }
@@ -2880,6 +2968,10 @@ internal sealed partial class LythonRuntime
 
         public ExecutionContext FunctionClosureContext { get; }
 
+        internal ScopeDirectiveFacts ScopeFacts { get; }
+
+        private Dictionary<string, ExecutionContext> NonlocalTargets { get; }
+
         internal ExecutableFrameState? CurrentExecutableFrame { get; private set; }
 
         public PyType? ImplicitSuperAnchorType { get; private set; }
@@ -2891,6 +2983,32 @@ internal sealed partial class LythonRuntime
         public MemoryGovernor MemoryGovernor => Services.MemoryGovernor;
 
         public Dictionary<string, object> Variables => Frame.Variables;
+
+        internal bool TryGetNonlocalTarget(string name, out ExecutionContext context)
+            => NonlocalTargets.TryGetValue(name, out context!);
+
+        private static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        {
+            var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            foreach (var name in scopeFacts.NonlocalNames)
+            {
+                for (var current = parent; current is not null && current.Parent is not null; current = current.Parent)
+                {
+                    if (current.ScopeFacts.LocalNames.Contains(name))
+                    {
+                        targets[name] = current;
+                        break;
+                    }
+                }
+
+                if (!targets.ContainsKey(name))
+                {
+                    throw RuntimeErrors.NameNotDefined(name, null);
+                }
+            }
+
+            return targets;
+        }
 
         internal void EnterExecutableSlots(ExecutableFrameState frame) => CurrentExecutableFrame = frame;
 

@@ -1350,6 +1350,7 @@ internal static class StaticBindingEngine
     {
         if (functionDefinition.Decorators.Count != 0 ||
             functionDefinition.Parameters.Any(static parameter => parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary) ||
+            ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body) ||
             !IsStraightLineSummaryBody(functionDefinition.Body))
         {
             summary = default!;

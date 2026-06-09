@@ -20,6 +20,17 @@ internal sealed record ImportedMemberSyntax(
     string Name,
     string BindingName);
 
+internal enum ScopeDirectiveKind
+{
+    Global,
+    Nonlocal,
+}
+
+internal sealed record ScopeDirectiveStatementSyntax(
+    ScopeDirectiveKind Kind,
+    IReadOnlyList<string> Names,
+    LythonSourceSpan Span) : StatementSyntax(Span);
+
 internal sealed record AssignmentStatementSyntax(
     string Name,
     ExpressionSyntax Expression,

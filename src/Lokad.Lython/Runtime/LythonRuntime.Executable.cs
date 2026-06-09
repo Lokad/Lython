@@ -93,6 +93,54 @@ internal sealed partial class LythonRuntime
             cell = null!;
             return false;
         }
+
+        public bool TryStoreLocalOrClosure(string name, object value)
+        {
+            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            {
+                _locals[localSlot] = value;
+                if (_localCells?[localSlot] is ExecutableCell localCell)
+                {
+                    localCell.Value = value;
+                }
+
+                return true;
+            }
+
+            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            {
+                _closureCells[closureSlot].Value = value;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryDeleteLocalOrClosure(string name)
+        {
+            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            {
+                var removed = !ReferenceEquals(_locals[localSlot], UninitializedLocal);
+                _locals[localSlot] = UninitializedLocal;
+                if (_localCells?[localSlot] is ExecutableCell localCell)
+                {
+                    removed |= !ReferenceEquals(localCell.Value, UninitializedLocal);
+                    localCell.Value = UninitializedLocal;
+                }
+
+                return removed;
+            }
+
+            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            {
+                var cell = _closureCells[closureSlot];
+                var removed = !ReferenceEquals(cell.Value, UninitializedLocal);
+                cell.Value = UninitializedLocal;
+                return removed;
+            }
+
+            return false;
+        }
     }
 
     private sealed record PendingAbruptSignal(
@@ -315,6 +363,10 @@ internal sealed partial class LythonRuntime
                                 stack.Push(LoadClosure(codeObject, context, instruction.A, instruction.Span));
                                 break;
 
+                            case ExecutableOpCode.LoadGlobal:
+                                stack.Push(ResolveExecutableGlobal(codeObject.Names[instruction.A], instruction.Span, context));
+                                break;
+
                             case ExecutableOpCode.LoadName:
                                 stack.Push(ResolveExecutableName(codeObject.Names[instruction.A], instruction.Span, context));
                                 break;
@@ -368,15 +420,26 @@ internal sealed partial class LythonRuntime
                                 break;
                             }
 
+                            case ExecutableOpCode.StoreClosure:
+                            {
+                                var value = Pop(stack, instruction.Span);
+                                StoreExecutableClosure(codeObject, context, instruction.A, value, instruction.Span);
+                                break;
+                            }
+
+                            case ExecutableOpCode.StoreGlobal:
+                            {
+                                var value = Pop(stack, instruction.Span);
+                                var name = codeObject.Names[instruction.A];
+                                StoreName(name, value, context, instruction.Span);
+                                break;
+                            }
+
                             case ExecutableOpCode.StoreName:
                             {
                                 var value = Pop(stack, instruction.Span);
                                 var name = codeObject.Names[instruction.A];
-                                SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
-                                if (codeObject.RequiresLocalVariableMirroring || !codeObject.LocalNameToSlot.ContainsKey(name))
-                                {
-                                    context.Variables[name] = value;
-                                }
+                                AssignExecutableBoundName(codeObject, locals, localCells, name, value, context, instruction.Span);
                                 break;
                             }
 
@@ -665,6 +728,35 @@ internal sealed partial class LythonRuntime
         return cell.Value!;
     }
 
+    private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
+    {
+        var globalContext = GetGlobalContext(context);
+        if (globalContext.CurrentExecutableFrame is not null &&
+            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
+        {
+            return executableValue;
+        }
+
+        if (globalContext.Variables.TryGetValue(name, out var value))
+        {
+            return value;
+        }
+
+        throw RuntimeErrors.NameNotDefined(name, span);
+    }
+
+    private static void StoreExecutableClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, object value, LythonSourceSpan span)
+    {
+        var frame = context.CurrentExecutableFrame;
+        if (frame is null || !frame.TryGetClosureCell(slot, out var cell))
+        {
+            throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
+        }
+
+        cell.Value = value;
+        StoreName(codeObject.ClosureNames[slot], value, context, span);
+    }
+
     private static object ResolveExecutableName(string name, LythonSourceSpan span, ExecutionContext context)
     {
         for (var current = context; current is not null; current = current.Parent)
@@ -724,10 +816,12 @@ internal sealed partial class LythonRuntime
             pendingAbrupt = null;
             if (region.ExceptionVariableName is not null)
             {
-                context.Variables[region.ExceptionVariableName] = new PyException(
+                StoreName(region.ExceptionVariableName, new PyException(
                     abrupt.Exception.ExceptionType,
                     abrupt.Exception.Message,
-                    abrupt.Exception.Payload ?? PyNone.Instance);
+                    abrupt.Exception.Payload ?? PyNone.Instance),
+                    context,
+                    span);
             }
 
             nextBlockIndex = exceptBlock;
@@ -798,7 +892,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in bindings)
         {
-            context.Variables[pair.Key] = pair.Value;
+            StoreName(pair.Key, pair.Value, context, matchCase.Case.Span);
             if (matchCase.LocalBindingSlots.TryGetValue(pair.Key, out var slot))
             {
                 locals[slot] = pair.Value;
@@ -822,7 +916,7 @@ internal sealed partial class LythonRuntime
         if (importBinding.ImportedMembers is null)
         {
             var module = ResolveImportedModule(importBinding.ModuleName, context, importBinding.Span);
-            AssignExecutableBoundName(codeObject, locals, localCells, importBinding.BindingName, module, context);
+            AssignExecutableBoundName(codeObject, locals, localCells, importBinding.BindingName, module, context, importBinding.Span);
             return;
         }
 
@@ -834,7 +928,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, importedMember.Name, importBinding.Span);
             }
 
-            AssignExecutableBoundName(codeObject, locals, localCells, importedMember.BindingName, value, context);
+            AssignExecutableBoundName(codeObject, locals, localCells, importedMember.BindingName, value, context, importBinding.Span);
         }
     }
 
@@ -854,16 +948,18 @@ internal sealed partial class LythonRuntime
                     functionBinding.Function.Parameters,
                     functionBinding.Function.Body,
                     context.FunctionClosureContext,
-                    BuildDefaultArgumentMap(functionBinding.Function.Parameters, expression => EvaluateLoweredExpression(expression, context)))
+                    BuildDefaultArgumentMap(functionBinding.Function.Parameters, expression => EvaluateLoweredExpression(expression, context)),
+                    ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
                 : new PyExecutableFunction(
                     functionBinding.Function.Syntax.Name,
                     functionBinding.Function.Parameters,
                     functionBinding.CodeObject,
                     context.FunctionClosureContext,
                     CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span),
-                    MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context));
+                    MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context),
+                    functionBinding.CodeObject.ScopeFacts);
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
-            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context);
+            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }
         finally
         {
@@ -1027,8 +1123,27 @@ internal sealed partial class LythonRuntime
         ExecutableCell?[]? localCells,
         string name,
         object value,
-        ExecutionContext context)
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
+        if (codeObject.ScopeFacts.IsGlobal(name))
+        {
+            StoreName(name, value, context, span);
+            return;
+        }
+
+        if (codeObject.ScopeFacts.IsNonlocal(name))
+        {
+            if (codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            {
+                StoreExecutableClosure(codeObject, context, closureSlot, value, span);
+                return;
+            }
+
+            StoreName(name, value, context, span);
+            return;
+        }
+
         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
         if (codeObject.RequiresLocalVariableMirroring || !codeObject.LocalNameToSlot.ContainsKey(name))
         {

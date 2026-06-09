@@ -17,7 +17,7 @@ internal static class PyContextManagers
 
         if (variableName is not null)
         {
-            context.Variables[variableName] = entered;
+            LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
         try
@@ -60,7 +60,7 @@ internal static class PyContextManagers
 
         if (variableName is not null)
         {
-            context.Variables[variableName] = entered;
+            LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
         try

@@ -30,8 +30,6 @@ public sealed class UnsupportedFeatureScenarioTests
     [InlineData("yield 1\n", "yield")]
     [InlineData("async def f():\n    pass\n", "async")]
     [InlineData("value = await work()\n", "await")]
-    [InlineData("global value\n", "global")]
-    [InlineData("nonlocal value\n", "nonlocal")]
     [InlineData("def f(a = 1, b):\n    pass\n", "non-default parameter after default parameter")]
     [InlineData("f(a = 1, 2)\n", "positional argument after keyword argument")]
     [InlineData("a, *b, *c = [1, 2, 3]\n", "multiple starred assignment targets")]

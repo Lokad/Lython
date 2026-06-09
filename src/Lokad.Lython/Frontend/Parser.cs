@@ -68,6 +68,11 @@ internal sealed class Parser
             return ParseDecoratedStatement();
         }
 
+        if (CurrentToken is Token.Global or Token.Nonlocal)
+        {
+            return ParseScopeDirectiveStatement();
+        }
+
         if (TryParseUnsupportedStatement(out var unsupported))
         {
             return unsupported;
@@ -121,6 +126,11 @@ internal sealed class Parser
         if (TryParseUnsupportedStatement(out var unsupported))
         {
             return unsupported;
+        }
+
+        if (CurrentToken is Token.Global or Token.Nonlocal)
+        {
+            return ParseScopeDirectiveStatement();
         }
 
         if (CurrentToken is Token.Import or Token.From)
@@ -1855,6 +1865,48 @@ internal sealed class Parser
             moduleName,
             importedMembers,
             Merge(fromToken, moduleEndToken));
+    }
+
+    private StatementSyntax? ParseScopeDirectiveStatement()
+    {
+        var directiveToken = ReadToken();
+        var kind = _tokens.Tokens[directiveToken].Token == Token.Global
+            ? ScopeDirectiveKind.Global
+            : ScopeDirectiveKind.Nonlocal;
+        var names = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var endToken = directiveToken;
+
+        while (true)
+        {
+            if (!TryReadNameToken(out var nameToken))
+            {
+                AddDiagnostic(
+                    "LA1070",
+                    $"Expected identifier after '{(kind == ScopeDirectiveKind.Global ? "global" : "nonlocal")}'.",
+                    _position);
+                return null;
+            }
+
+            var name = _tokens.GetString(nameToken);
+            if (!seen.Add(name))
+            {
+                AddDiagnostic("LA1071", $"Duplicate scope directive name '{name}'.", nameToken);
+                return null;
+            }
+
+            names.Add(name);
+            endToken = nameToken;
+
+            if (CurrentToken != Token.Comma)
+            {
+                break;
+            }
+
+            ReadToken();
+        }
+
+        return new ScopeDirectiveStatementSyntax(kind, names, Merge(directiveToken, endToken));
     }
 
     private bool TryReadDottedModuleName(
@@ -4519,8 +4571,6 @@ internal sealed class Parser
             Token.Async => "async",
             Token.Await => "await",
             Token.Lambda => "lambda",
-            Token.Global => "global",
-            Token.Nonlocal => "nonlocal",
             Token.Del => "del",
             Token.From => "from import",
             Token.At => "decorator",

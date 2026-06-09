@@ -10,6 +10,7 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
     private readonly Dictionary<string, object> _defaultValues;
+    private readonly ScopeDirectiveFacts _scopeFacts;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
 
     public PyExecutableFunction(
@@ -18,7 +19,8 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         ExecutableCodeObject codeObject,
         LythonRuntime.ExecutionContext closure,
         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
-        Dictionary<string, object> defaultValues)
+        Dictionary<string, object> defaultValues,
+        ScopeDirectiveFacts scopeFacts)
     {
         Name = name;
         _parameters = parameters;
@@ -26,6 +28,7 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         _closure = closure;
         _closureCells = closureCells;
         _defaultValues = defaultValues;
+        _scopeFacts = scopeFacts;
     }
 
     public string Name { get; }
@@ -37,7 +40,7 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         context.CheckExecutionBudget(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, Name, "Function", _parameters, _defaultValues, context);
 
-        var frame = new LythonRuntime.ExecutionContext(_closure);
+        var frame = new LythonRuntime.ExecutionContext(_closure, _scopeFacts);
         if (_codeObject.RequiresLocalVariableMirroring)
         {
             foreach (var pair in boundArguments)

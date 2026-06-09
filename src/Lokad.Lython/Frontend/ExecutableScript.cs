@@ -13,10 +13,13 @@ internal enum ExecutableOpCode
     LoadConst,
     LoadLocal,
     LoadClosure,
+    LoadGlobal,
     LoadName,
     EvaluateFallbackExpression,
     LoadMember,
     StoreLocal,
+    StoreClosure,
+    StoreGlobal,
     StoreName,
     Dup,
     PopTop,
@@ -123,6 +126,9 @@ internal readonly record struct ExecutableInstruction(
     public static ExecutableInstruction LoadClosure(int slot, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadClosure, span, A: slot);
 
+    public static ExecutableInstruction LoadGlobal(int nameIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.LoadGlobal, span, A: nameIndex);
+
     public static ExecutableInstruction LoadName(int nameIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadName, span, A: nameIndex);
 
@@ -134,6 +140,12 @@ internal readonly record struct ExecutableInstruction(
 
     public static ExecutableInstruction StoreLocal(int slot, LythonSourceSpan span)
         => new(ExecutableOpCode.StoreLocal, span, A: slot);
+
+    public static ExecutableInstruction StoreClosure(int slot, LythonSourceSpan span)
+        => new(ExecutableOpCode.StoreClosure, span, A: slot);
+
+    public static ExecutableInstruction StoreGlobal(int nameIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.StoreGlobal, span, A: nameIndex);
 
     public static ExecutableInstruction StoreName(int nameIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.StoreName, span, A: nameIndex);
@@ -276,6 +288,7 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<int> capturedLocalSlots,
         IReadOnlyList<string> closureNames,
         IReadOnlyDictionary<string, int> closureNameToSlot,
+        ScopeDirectiveFacts scopeFacts,
         IReadOnlyList<ExecutableBasicBlock> blocks,
         int entryBlockIndex,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
@@ -299,6 +312,7 @@ internal sealed class ExecutableCodeObject
         CapturedLocalSlots = capturedLocalSlots;
         ClosureNames = closureNames;
         ClosureNameToSlot = closureNameToSlot;
+        ScopeFacts = scopeFacts;
         Blocks = blocks;
         EntryBlockIndex = entryBlockIndex;
         ExceptionRegions = exceptionRegions;
@@ -330,6 +344,8 @@ internal sealed class ExecutableCodeObject
     public IReadOnlyList<string> ClosureNames { get; }
 
     public IReadOnlyDictionary<string, int> ClosureNameToSlot { get; }
+
+    public ScopeDirectiveFacts ScopeFacts { get; }
 
     public IReadOnlyList<ExecutableBasicBlock> Blocks { get; }
 
@@ -408,6 +424,7 @@ internal sealed class ExecutableScript
 
         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
         private readonly HashSet<string> _parentClosureCandidates;
+        private ScopeDirectiveFacts _scopeFacts = ScopeDirectiveFacts.Empty;
 
         internal Builder(
             IReadOnlyList<LoweredFunctionParameter>? functionParameters = null,
@@ -421,6 +438,7 @@ internal sealed class ExecutableScript
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements)
         {
+            _scopeFacts = ScopeDirectiveFactsCollector.ForLoweredStatements(_functionParameters, statements);
             CollectLocals(statements);
 
             var entryBlock = CreateBlock();
@@ -454,6 +472,7 @@ internal sealed class ExecutableScript
                 capturedLocalSlots,
                 _closures.ToArray(),
                 new Dictionary<string, int>(_closureIndexes, StringComparer.Ordinal),
+                _scopeFacts,
                 normalizedBlocks,
                 0,
                 normalizedRegions,
@@ -491,6 +510,10 @@ internal sealed class ExecutableScript
                     {
                         captured.Add(slot);
                     }
+                    else if (_parentClosureCandidates.Contains(closureName))
+                    {
+                        InternClosure(closureName);
+                    }
                 }
             }
 
@@ -517,7 +540,10 @@ internal sealed class ExecutableScript
                 {
                     if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.KeywordOnly or FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary)
                     {
-                        InternLocal(parameter.Name);
+                        if (IsLocalBindingName(parameter.Name))
+                        {
+                            InternLocal(parameter.Name);
+                        }
                     }
                 }
             }
@@ -553,7 +579,7 @@ internal sealed class ExecutableScript
                     case LoweredWithStatement withStatement:
                         if (withStatement.Syntax.VariableName is not null)
                         {
-                            InternLocal(withStatement.Syntax.VariableName);
+                            if (IsLocalBindingName(withStatement.Syntax.VariableName)) InternLocal(withStatement.Syntax.VariableName);
                         }
                         CollectLocals(withStatement.Body);
                         break;
@@ -566,20 +592,20 @@ internal sealed class ExecutableScript
             switch (syntax)
             {
                 case AssignmentStatementSyntax assignment:
-                    InternLocal(assignment.Name);
+                    if (IsLocalBindingName(assignment.Name)) InternLocal(assignment.Name);
                     break;
                 case AnnotatedAssignmentStatementSyntax annotated:
-                    InternLocal(annotated.Name);
+                    if (IsLocalBindingName(annotated.Name)) InternLocal(annotated.Name);
                     break;
                 case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
-                    InternLocal(nameTarget.Name);
+                    if (IsLocalBindingName(nameTarget.Name)) InternLocal(nameTarget.Name);
                     break;
                 case ChainedAssignmentStatementSyntax chained:
                     foreach (var target in chained.Targets)
                     {
                         if (target is NameAssignmentTargetSyntax name)
                         {
-                            InternLocal(name.Name);
+                            if (IsLocalBindingName(name.Name)) InternLocal(name.Name);
                         }
                     }
                     break;
@@ -591,7 +617,7 @@ internal sealed class ExecutableScript
             switch (pattern)
             {
                 case MatchCapturePatternSyntax capture:
-                    InternLocal(capture.Name);
+                    if (IsLocalBindingName(capture.Name)) InternLocal(capture.Name);
                     break;
                 case MatchSequencePatternSyntax sequence:
                     foreach (var item in sequence.Items)
@@ -606,7 +632,7 @@ internal sealed class ExecutableScript
                     }
                     if (mapping.RestName is not null)
                     {
-                        InternLocal(mapping.RestName);
+                        if (IsLocalBindingName(mapping.RestName)) InternLocal(mapping.RestName);
                     }
                     break;
                 case MatchClassPatternSyntax classPattern:
@@ -620,11 +646,11 @@ internal sealed class ExecutableScript
                     }
                     break;
                 case MatchStarPatternSyntax star when star.Name is not null:
-                    InternLocal(star.Name);
+                    if (IsLocalBindingName(star.Name)) InternLocal(star.Name);
                     break;
                 case MatchAsPatternSyntax asPattern:
                     CollectPatternLocals(asPattern.Pattern);
-                    InternLocal(asPattern.Name);
+                    if (IsLocalBindingName(asPattern.Name)) InternLocal(asPattern.Name);
                     break;
                 case MatchOrPatternSyntax orPattern:
                     foreach (var item in orPattern.Patterns)
@@ -657,6 +683,9 @@ internal sealed class ExecutableScript
             {
                 case LoweredImportStatement importStatement:
                     AddInstruction(currentBlock, ExecutableInstruction.Import(InternImport(importStatement), importStatement.Span));
+                    return currentBlock;
+
+                case LoweredScopeDirectiveStatement:
                     return currentBlock;
 
                 case LoweredFunctionDefinitionStatement functionDefinition:
@@ -723,7 +752,7 @@ internal sealed class ExecutableScript
             {
                 case AssignmentStatementSyntax simple:
                     CompileExpression(assignment.Expression!, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(simple.Name), assignment.Span));
+                    CompileStoreBoundName(simple.Name, assignment.Span, currentBlock);
                     return currentBlock;
 
                 case AnnotatedAssignmentStatementSyntax annotated:
@@ -733,7 +762,7 @@ internal sealed class ExecutableScript
                     }
 
                     CompileExpression(assignment.Expression, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(annotated.Name), assignment.Span));
+                    CompileStoreBoundName(annotated.Name, assignment.Span, currentBlock);
                     return currentBlock;
 
                 case AugmentedAssignmentStatementSyntax augmented:
@@ -743,10 +772,10 @@ internal sealed class ExecutableScript
                         return currentBlock;
                     }
 
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(InternLocal(augmentedName.Name), assignment.Span));
+                    CompileLoadIdentifier(augmentedName.Name, assignment.Span, currentBlock);
                     CompileExpression(assignment.Expression!, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Operator), assignment.Span));
-                    AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(augmentedName.Name), assignment.Span));
+                    CompileStoreBoundName(augmentedName.Name, assignment.Span, currentBlock);
                     return currentBlock;
 
                 case ChainedAssignmentStatementSyntax chained:
@@ -763,7 +792,7 @@ internal sealed class ExecutableScript
                             AddInstruction(currentBlock, ExecutableInstruction.Dup(assignment.Span));
                         }
 
-                        AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(name.Name), assignment.Span));
+                        CompileStoreBoundName(name.Name, assignment.Span, currentBlock);
                     }
                     return currentBlock;
 
@@ -934,7 +963,7 @@ internal sealed class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.EnterContextManager(statement.ContextExpression.Span));
             if (statement.Syntax.VariableName is not null)
             {
-                AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(statement.Syntax.VariableName), statement.Span));
+                CompileStoreBoundName(statement.Syntax.VariableName, statement.Span, currentBlock);
             }
             else
             {
@@ -1126,18 +1155,7 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredIdentifierExpression identifier:
-                    if (_localIndexes.TryGetValue(identifier.Identifier.Name, out var slot))
-                    {
-                        AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, identifier.Span));
-                    }
-                    else if (_parentClosureCandidates.Contains(identifier.Identifier.Name))
-                    {
-                        AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(identifier.Identifier.Name), identifier.Span));
-                    }
-                    else
-                    {
-                        AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(identifier.Identifier.Name), identifier.Span));
-                    }
+                    CompileLoadIdentifier(identifier.Identifier.Name, identifier.Span, currentBlock);
                     return;
 
                 case LoweredMemberExpression member:
@@ -1477,6 +1495,46 @@ internal sealed class ExecutableScript
             _locals.Add(name);
             _localIndexes.Add(name, index);
             return index;
+        }
+
+        private bool IsLocalBindingName(string name)
+            => !_scopeFacts.IsGlobal(name) && !_scopeFacts.IsNonlocal(name);
+
+        private void CompileLoadIdentifier(string name, LythonSourceSpan span, int currentBlock)
+        {
+            if (_scopeFacts.IsGlobal(name))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.LoadGlobal(InternName(name), span));
+            }
+            else if (_localIndexes.TryGetValue(name, out var slot))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, span));
+            }
+            else if (_scopeFacts.IsNonlocal(name) || _parentClosureCandidates.Contains(name))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
+            }
+            else
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
+            }
+        }
+
+        private void CompileStoreBoundName(string name, LythonSourceSpan span, int currentBlock)
+        {
+            if (_scopeFacts.IsGlobal(name))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.StoreGlobal(InternName(name), span));
+                return;
+            }
+
+            if (_scopeFacts.IsNonlocal(name))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.StoreClosure(InternClosure(name), span));
+                return;
+            }
+
+            AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(name), span));
         }
 
         private int InternSyntheticLocal(string prefix) => InternLocal($"<{prefix}:{_syntheticLocalCounter++}>");

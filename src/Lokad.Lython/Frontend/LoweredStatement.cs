@@ -22,6 +22,12 @@ internal sealed record LoweredImportStatement(
     public override LoweredStatementKind Kind => LoweredStatementKind.Import;
 }
 
+internal sealed record LoweredScopeDirectiveStatement(
+    ScopeDirectiveStatementSyntax Syntax) : LoweredStatement(Syntax.Span)
+{
+    public override LoweredStatementKind Kind => LoweredStatementKind.Other;
+}
+
 internal sealed record LoweredFunctionParameter(
     string Name,
     FunctionParameterKind Kind,

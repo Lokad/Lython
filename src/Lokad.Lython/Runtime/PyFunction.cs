@@ -9,6 +9,7 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
     private readonly IReadOnlyList<LoweredStatement> _body;
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly Dictionary<string, object> _defaultValues;
+    private readonly ScopeDirectiveFacts _scopeFacts;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
 
     public PyFunction(
@@ -16,13 +17,15 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
         IReadOnlyList<LoweredFunctionParameter> parameters,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext closure,
-        Dictionary<string, object> defaultValues)
+        Dictionary<string, object> defaultValues,
+        ScopeDirectiveFacts? scopeFacts = null)
     {
         Name = name;
         _parameters = parameters;
         _body = body;
         _closure = closure;
         _defaultValues = defaultValues;
+        _scopeFacts = scopeFacts ?? ScopeDirectiveFacts.Empty;
     }
 
     public string Name { get; }
@@ -34,7 +37,7 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
         context.CheckExecutionBudget(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, Name, "Function", _parameters, _defaultValues, context);
 
-        var frame = new LythonRuntime.ExecutionContext(_closure);
+        var frame = new LythonRuntime.ExecutionContext(_closure, _scopeFacts);
         foreach (var pair in boundArguments)
         {
             frame.Variables[pair.Key] = pair.Value;
@@ -77,7 +80,7 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
         context.CheckExecutionBudget(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, Name, "Function", _parameters, _defaultValues, context);
 
-        var frame = new LythonRuntime.ExecutionContext(_closure);
+        var frame = new LythonRuntime.ExecutionContext(_closure, _scopeFacts);
         foreach (var pair in boundArguments)
         {
             frame.Variables[pair.Key] = pair.Value;

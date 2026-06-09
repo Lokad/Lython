@@ -35,6 +35,8 @@ internal sealed partial class LythonRuntime
             case LoweredImportStatement importStatement:
                 await ExecuteImportAsync(importStatement.Syntax, context).ConfigureAwait(false);
                 return;
+            case LoweredScopeDirectiveStatement:
+                return;
             case LoweredFunctionDefinitionStatement functionDefinition:
                 await ExecuteLoweredFunctionDefinitionAsync(functionDefinition, context).ConfigureAwait(false);
                 return;
@@ -102,8 +104,13 @@ internal sealed partial class LythonRuntime
                 functionDefinition.Parameters,
                 functionDefinition.Body,
                 context.FunctionClosureContext,
-                await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false));
-            context.Variables[syntax.Name] = await ApplyDecoratorsAsync(function, functionDefinition.Decorators, functionDefinition.Span, context).ConfigureAwait(false);
+                await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false),
+                ScopeDirectiveFactsCollector.ForFunction(syntax));
+            StoreName(
+                syntax.Name,
+                await ApplyDecoratorsAsync(function, functionDefinition.Decorators, functionDefinition.Span, context).ConfigureAwait(false),
+                context,
+                functionDefinition.Span);
         }
         finally
         {
@@ -160,7 +167,11 @@ internal sealed partial class LythonRuntime
             PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, context, classDefinition.Span);
             type.InitializeClassMembers(context, classDefinition.Span);
             await InvokeInitSubclassAsync(type, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
-            context.Variables[classDefinition.Syntax.Name] = await ApplyDecoratorsAsync(type, classDefinition.Decorators, classDefinition.Span, context).ConfigureAwait(false);
+            StoreName(
+                classDefinition.Syntax.Name,
+                await ApplyDecoratorsAsync(type, classDefinition.Decorators, classDefinition.Span, context).ConfigureAwait(false),
+                context,
+                classDefinition.Span);
         }
         finally
         {
@@ -351,7 +362,7 @@ internal sealed partial class LythonRuntime
                 var exceptContext = new ExecutionContext(context);
                 if (statement.Syntax.ExceptionVariableName is not null)
                 {
-                    exceptContext.Variables[statement.Syntax.ExceptionVariableName] = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
+                    StoreName(statement.Syntax.ExceptionVariableName, new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance), exceptContext, statement.Span);
                 }
 
                 pendingControl = await ExecuteStatementsAsync(statement.ExceptBody!, exceptContext).ConfigureAwait(false);
@@ -414,7 +425,7 @@ internal sealed partial class LythonRuntime
             switch (assignment.Syntax)
             {
                 case AssignmentStatementSyntax simple:
-                    context.Variables[simple.Name] = await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false);
+                    StoreName(simple.Name, await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false), context, assignment.Span);
                     return;
                 case ChainedAssignmentStatementSyntax chained:
                     var chainedValue = await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false);
@@ -426,7 +437,7 @@ internal sealed partial class LythonRuntime
                 case AnnotatedAssignmentStatementSyntax annotated:
                     if (assignment.Expression is not null)
                     {
-                        context.Variables[annotated.Name] = await EvaluateLoweredExpressionAsync(assignment.Expression, context).ConfigureAwait(false);
+                        StoreName(annotated.Name, await EvaluateLoweredExpressionAsync(assignment.Expression, context).ConfigureAwait(false), context, assignment.Span);
                     }
                     return;
                 case AugmentedAssignmentStatementSyntax augmented:
@@ -916,7 +927,7 @@ internal sealed partial class LythonRuntime
         switch (statement.Target.Syntax)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!context.Variables.Remove(identifier.Name))
+                if (!DeleteName(identifier.Name, context, statement.Span))
                 {
                     throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
                 }
@@ -1010,7 +1021,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)
     {
         var value = await EvaluateLoweredExpressionAsync(assignment.Expression, context).ConfigureAwait(false);
-        context.Variables[assignment.Assignment.Name] = value;
+        StoreName(assignment.Assignment.Name, value, context, assignment.Span);
         return value;
     }
 
