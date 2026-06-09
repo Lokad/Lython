@@ -58,6 +58,29 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DecimalSetContext = new("decimal.setcontext", ["context"]);
     public static readonly LythonCallableSignature DecimalLocalContext = new("decimal.localcontext", ["context"], RequiredCount: 0);
 
+    public static readonly LythonCallableSignature DateTimeTimedelta = new("datetime.timedelta", ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DateTimeDate = new("datetime.date", ["year", "month", "day"]);
+    public static readonly LythonCallableSignature DateTimeDateToday = new("datetime.date.today", []);
+    public static readonly LythonCallableSignature DateTimeDateFromTimestamp = new("datetime.date.fromtimestamp", ["timestamp"]);
+    public static readonly LythonCallableSignature DateTimeDateFromOrdinal = new("datetime.date.fromordinal", ["ordinal"]);
+    public static readonly LythonCallableSignature DateTimeDateFromIsoFormat = new("datetime.date.fromisoformat", ["date_string"]);
+    public static readonly LythonCallableSignature DateTimeDateFromIsoCalendar = new("datetime.date.fromisocalendar", ["year", "week", "day"]);
+    public static readonly LythonCallableSignature DateTimeTime = new("datetime.time", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DateTimeTimeFromIsoFormat = new("datetime.time.fromisoformat", ["time_string"]);
+    public static readonly LythonCallableSignature DateTimeDateTime = new("datetime.datetime", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], RequiredCount: 3);
+    public static readonly LythonCallableSignature DateTimeDateTimeToday = new("datetime.datetime.today", []);
+    public static readonly LythonCallableSignature DateTimeDateTimeNow = new("datetime.datetime.now", ["tz"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DateTimeDateTimeUtcNow = new("datetime.datetime.utcnow", []);
+    public static readonly LythonCallableSignature DateTimeDateTimeFromTimestamp = new("datetime.datetime.fromtimestamp", ["timestamp", "tz"], RequiredCount: 1);
+    public static readonly LythonCallableSignature DateTimeDateTimeUtcFromTimestamp = new("datetime.datetime.utcfromtimestamp", ["timestamp"]);
+    public static readonly LythonCallableSignature DateTimeDateTimeFromOrdinal = new("datetime.datetime.fromordinal", ["ordinal"]);
+    public static readonly LythonCallableSignature DateTimeDateTimeCombine = new("datetime.datetime.combine", ["date", "time", "tzinfo"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DateTimeDateTimeFromIsoFormat = new("datetime.datetime.fromisoformat", ["date_string"]);
+    public static readonly LythonCallableSignature DateTimeDateTimeFromIsoCalendar = new("datetime.datetime.fromisocalendar", ["year", "week", "day"]);
+    public static readonly LythonCallableSignature DateTimeDateTimeStrptime = new("datetime.datetime.strptime", ["date_string", "format"]);
+    public static readonly LythonCallableSignature DateTimeTimezone = new("datetime.timezone", ["offset", "name"], RequiredCount: 1);
+    public static readonly LythonCallableSignature DateTimeTzInfo = new("datetime.tzinfo", []);
+
     public static readonly LythonCallableSignature MathSqrt = new("math.sqrt", ["x"]);
     public static readonly LythonCallableSignature MathExp = new("math.exp", ["x"]);
     public static readonly LythonCallableSignature MathLog = new("math.log", ["x", "base"], RequiredCount: 1);

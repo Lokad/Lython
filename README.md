@@ -101,6 +101,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 
+`datetime` covers the common `date`, `time`, `datetime`, `timedelta`, `timezone`, and `tzinfo` surface with CPython-shaped formatting and ISO parsing for fixed-offset timezones. Host-clock APIs such as `today()`, `now()`, `fromtimestamp()`, `timestamp()` for naive values, and `astimezone()` are mediated through `ILythonHost`; Lython does not expose an ambient IANA timezone database.
+
 `sys` is also contained: metadata, `path`, `modules`, builtin module names, `exc_info()`, `getsizeof(...)`, and std streams describe Lython and host-mediated handles rather than the host process or an ambient CPython installation.
 
 `collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `Counter` arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.

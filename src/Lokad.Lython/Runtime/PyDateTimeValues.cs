@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
@@ -8,6 +9,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
+    public static readonly PyTimedelta Min = new(TimeSpan.MinValue);
+    public static readonly PyTimedelta Max = new(TimeSpan.MaxValue);
+    public static readonly PyTimedelta Resolution = new(TimeSpan.FromTicks(10));
+
     public PyTimedelta(TimeSpan value)
     {
         Value = Normalize(value);
@@ -84,7 +89,7 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public bool IsTruthy() => true;
 
-    public int GetPyHashCode() => HashCode.Combine(Offset.Ticks, Name);
+    public int GetPyHashCode() => HashCode.Combine(Offset.Ticks);
 
     public PyString RenderPython(PyRenderingContext context)
     {
@@ -99,7 +104,7 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    public override bool Equals(object? obj) => obj is PyTimezone other && Offset.Equals(other.Offset) && string.Equals(Name, other.Name, StringComparison.Ordinal);
+    public override bool Equals(object? obj) => obj is PyTimezone other && Offset.Equals(other.Offset);
 
     public override int GetHashCode() => GetPyHashCode();
 
@@ -153,15 +158,18 @@ internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public PyTime(TimeOnly value, PyTimezone? tzinfo = null)
+    public PyTime(TimeOnly value, PyTimezone? tzinfo = null, int fold = 0)
     {
         Value = value;
         TzInfo = tzinfo;
+        Fold = fold;
     }
 
     public TimeOnly Value { get; }
 
     public PyTimezone? TzInfo { get; }
+
+    public int Fold { get; }
 
     public BigInteger Hour => new(Value.Hour);
 
@@ -173,11 +181,11 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public bool IsTruthy() => true;
 
-    public int GetPyHashCode() => HashCode.Combine(Value.Ticks, TzInfo?.GetPyHashCode() ?? 0);
+    public int GetPyHashCode() => HashCode.Combine(TzInfo is null ? Value.Ticks : PyDateTimeOps.AdjustTimeTicks(Value, TzInfo.Offset));
 
-    public PyString IsoFormat()
+    public PyString IsoFormat(string timespec = "auto")
     {
-        var text = Value.ToString(Value.Microsecond == 0 ? "HH:mm:ss" : "HH:mm:ss.ffffff", CultureInfo.InvariantCulture);
+        var text = PyDateTimeOps.FormatIsoTime(Value, timespec);
         if (TzInfo is not null)
         {
             text += PyDateTimeOps.FormatOffset(TzInfo.Offset);
@@ -196,8 +204,7 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public override bool Equals(object? obj)
         => obj is PyTime other &&
-           Value.Equals(other.Value) &&
-           Equals(TzInfo, other.TzInfo);
+           PyDateTimeOps.TimeEquals(this, other);
 
     public override int GetHashCode() => GetPyHashCode();
 
@@ -206,15 +213,18 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public PyDateTime(DateTime value, PyTimezone? tzinfo = null)
+    public PyDateTime(DateTime value, PyTimezone? tzinfo = null, int fold = 0)
     {
         Value = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
         TzInfo = tzinfo;
+        Fold = fold;
     }
 
     public DateTime Value { get; }
 
     public PyTimezone? TzInfo { get; }
+
+    public int Fold { get; }
 
     public BigInteger Year => new(Value.Year);
 
@@ -232,17 +242,17 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public bool IsTruthy() => true;
 
-    public int GetPyHashCode() => HashCode.Combine(Value.Ticks, TzInfo?.GetPyHashCode() ?? 0);
+    public int GetPyHashCode() => HashCode.Combine(TzInfo is null ? Value.Ticks : ToOffset().UtcTicks);
 
     public PyDate DatePart() => new(DateOnly.FromDateTime(Value));
 
-    public PyTime TimePart() => new(TimeOnly.FromDateTime(Value), TzInfo);
+    public PyTime TimePart() => new(TimeOnly.FromDateTime(Value), TzInfo, Fold);
 
-    public PyTime NaiveTimePart() => new(TimeOnly.FromDateTime(Value));
+    public PyTime NaiveTimePart() => new(TimeOnly.FromDateTime(Value), fold: Fold);
 
-    public PyString IsoFormat()
+    public PyString IsoFormat(string separator = "T", string timespec = "auto")
     {
-        var text = Value.ToString(Value.Microsecond == 0 ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm:ss.ffffff", CultureInfo.InvariantCulture);
+        var text = Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + separator + PyDateTimeOps.FormatIsoTime(TimeOnly.FromDateTime(Value), timespec);
         if (TzInfo is not null)
         {
             text += PyDateTimeOps.FormatOffset(TzInfo.Offset);
@@ -266,8 +276,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public override bool Equals(object? obj)
         => obj is PyDateTime other &&
-           Value.Equals(other.Value) &&
-           Equals(TzInfo, other.TzInfo);
+           PyDateTimeOps.DateTimeEquals(this, other);
 
     public override int GetHashCode() => GetPyHashCode();
 
@@ -371,7 +380,14 @@ internal static class PyDateTimeOps
 
     public static readonly PyBuiltinRuntimeType TimedeltaType = new(
         "datetime.timedelta",
-        CreateTimedelta);
+        CreateTimedelta,
+        memberName => memberName switch
+        {
+            "min" => PyTimedelta.Min,
+            "max" => PyTimedelta.Max,
+            "resolution" => PyTimedelta.Resolution,
+            _ => null
+        });
 
     public static readonly PyBuiltinRuntimeType DateType = new(
         "datetime.date",
@@ -383,6 +399,7 @@ internal static class PyDateTimeOps
             "resolution" => new PyTimedelta(TimeSpan.FromDays(1)),
             "fromordinal" => new TypeMemberCallable("datetime.date.fromordinal", DateFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.date.fromisoformat", DateFromIsoFormat, ["date_string"]),
+            "fromisocalendar" => new TypeMemberCallable("datetime.date.fromisocalendar", DateFromIsoCalendar, ["year", "week", "day"]),
             "fromtimestamp" => new TypeMemberCallable("datetime.date.fromtimestamp", DateFromTimestamp, ["timestamp"]),
             "today" => new TypeMemberCallable("datetime.date.today", DateToday),
             _ => null
@@ -411,6 +428,7 @@ internal static class PyDateTimeOps
             "combine" => new TypeMemberCallable("datetime.datetime.combine", DateTimeCombine, ["date", "time", "tzinfo"], 2),
             "fromordinal" => new TypeMemberCallable("datetime.datetime.fromordinal", DateTimeFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.datetime.fromisoformat", DateTimeFromIsoFormat, ["date_string"]),
+            "fromisocalendar" => new TypeMemberCallable("datetime.datetime.fromisocalendar", DateTimeFromIsoCalendar, ["year", "week", "day"]),
             "fromtimestamp" => new TypeMemberCallable("datetime.datetime.fromtimestamp", DateTimeFromTimestamp, ["timestamp", "tz"], 1),
             "strptime" => new TypeMemberCallable("datetime.datetime.strptime", DateTimeStrptime, ["date_string", "format"]),
             "now" => new TypeMemberCallable("datetime.datetime.now", DateTimeNow, ["tz"], 0),
@@ -418,6 +436,10 @@ internal static class PyDateTimeOps
             "utcnow" => new TypeMemberCallable("datetime.datetime.utcnow", DateTimeUtcNow),
             _ => null
         });
+
+    public static readonly PyBuiltinRuntimeType TzInfoType = new(
+        "datetime.tzinfo",
+        CreateTzInfo);
 
     public static readonly PyBuiltinRuntimeType TimezoneType = new(
         "datetime.timezone",
@@ -484,9 +506,10 @@ internal static class PyDateTimeOps
             span,
             "datetime.time",
             "Builtin",
-            ["hour", "minute", "second", "microsecond", "tzinfo"],
+            ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
             0);
 
+        var fold = GetFold(ArgAt(bound, 5), "datetime.time", span);
         return new PyTime(
             new TimeOnly(
                 GetInteger(ArgAt(bound, 0), "datetime.time", span),
@@ -494,7 +517,8 @@ internal static class PyDateTimeOps
                 GetInteger(ArgAt(bound, 2), "datetime.time", span),
                 GetInteger(ArgAt(bound, 3), "datetime.time", span) / 1000,
                 GetInteger(ArgAt(bound, 3), "datetime.time", span) % 1000),
-            GetTimezone(ArgAt(bound, 4), "datetime.time", span));
+            GetTimezone(ArgAt(bound, 4), "datetime.time", span),
+            fold);
     }
 
     public static object CreateDateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -505,10 +529,11 @@ internal static class PyDateTimeOps
             span,
             "datetime.datetime",
             "Builtin",
-            ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo"],
+            ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
             3);
 
         var microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
+        var fold = GetFold(ArgAt(bound, 8), "datetime.datetime", span);
         return new PyDateTime(
             new DateTime(
                 GetInteger(ArgAt(bound, 0), "datetime.datetime", span),
@@ -519,7 +544,19 @@ internal static class PyDateTimeOps
                 GetInteger(ArgAt(bound, 5), "datetime.datetime", span),
                 microsecond / 1000,
                 DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-            GetTimezone(ArgAt(bound, 7), "datetime.datetime", span));
+            GetTimezone(ArgAt(bound, 7), "datetime.datetime", span),
+            fold);
+    }
+
+    public static object CreateTzInfo(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.tzinfo() expects no arguments.", span);
+        }
+
+        throw new LythonRuntimeException("NotImplementedError", "datetime.tzinfo is an abstract base; use datetime.timezone(...) for fixed-offset timezones.", span);
     }
 
     public static object CreateTimezone(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -589,6 +626,17 @@ internal static class PyDateTimeOps
         return new PyDate(DateFromOrdinalValue(arguments[0], "datetime.date.fromordinal", span));
     }
 
+    public static object DateFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 3)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.date.fromisocalendar(year, week, day) expects three integer arguments.", span);
+        }
+
+        return new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.date.fromisocalendar", span));
+    }
+
     public static object DateFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length != 1)
@@ -646,6 +694,17 @@ internal static class PyDateTimeOps
         }
 
         return new PyDateTime(DateFromOrdinalValue(arguments[0], "datetime.datetime.fromordinal", span).ToDateTime(TimeOnly.MinValue));
+    }
+
+    public static object DateTimeFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 3)
+        {
+            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromisocalendar(year, week, day) expects three integer arguments.", span);
+        }
+
+        return new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.datetime.fromisocalendar", span).ToDateTime(TimeOnly.MinValue));
     }
 
     public static object DateTimeFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -710,7 +769,7 @@ internal static class PyDateTimeOps
                 _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects tzinfo to be a timezone or None.", span)
             };
 
-        return new PyDateTime(date.ToDateTime(time.Value), timezone);
+        return new PyDateTime(date.ToDateTime(time.Value), timezone, time.Fold);
     }
 
     public static object DateTimeStrptime(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -725,14 +784,7 @@ internal static class PyDateTimeOps
 
         try
         {
-            var translated = TranslateStrftimeFormat(format.AsString(), span);
-            if (translated.Contains("zzz", StringComparison.Ordinal))
-            {
-                var parsedOffset = DateTimeOffset.ParseExact(text.AsString(), translated, CultureInfo.InvariantCulture);
-                return new PyDateTime(parsedOffset.DateTime, new PyTimezone(parsedOffset.Offset));
-            }
-
-            return new PyDateTime(DateTime.ParseExact(text.AsString(), translated, CultureInfo.InvariantCulture));
+            return ParseStrptime(text.AsString(), format.AsString(), span);
         }
         catch (FormatException ex)
         {
@@ -817,15 +869,30 @@ internal static class PyDateTimeOps
         }
     }
 
+    public static PyDateTime Astimezone(PyDateTime dateTime, PyTimezone? targetTimezone, TimeSpan localOffset, LythonSourceSpan span)
+    {
+        try
+        {
+            var sourceOffset = dateTime.TzInfo?.Offset ?? localOffset;
+            var target = targetTimezone ?? new PyTimezone(localOffset);
+            var instant = new DateTimeOffset(dateTime.Value, sourceOffset).ToOffset(target.Offset);
+            return new PyDateTime(DateTime.SpecifyKind(instant.DateTime, DateTimeKind.Unspecified), target, dateTime.Fold);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new LythonRuntimeException("ValueError", ex.Message, span);
+        }
+    }
+
     public static object Add(object left, object right, LythonSourceSpan span)
     {
         return (left, right) switch
         {
             (PyTimedelta lhs, PyTimedelta rhs) => new PyTimedelta(lhs.Value + rhs.Value),
-            (PyDate date, PyTimedelta delta) => new PyDate(date.Value.AddDays(delta.Value.Days)),
-            (PyTimedelta delta, PyDate date) => new PyDate(date.Value.AddDays(delta.Value.Days)),
-            (PyDateTime dateTime, PyTimedelta delta) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo),
-            (PyTimedelta delta, PyDateTime dateTime) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo),
+            (PyDate date, PyTimedelta delta) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
+            (PyTimedelta delta, PyDate date) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
+            (PyDateTime dateTime, PyTimedelta delta) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold),
+            (PyTimedelta delta, PyDateTime dateTime) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span)
         };
     }
@@ -835,9 +902,9 @@ internal static class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta lhs, PyTimedelta rhs) => new PyTimedelta(lhs.Value - rhs.Value),
-            (PyDate lhs, PyTimedelta rhs) => new PyDate(lhs.Value.AddDays(-rhs.Value.Days)),
+            (PyDate lhs, PyTimedelta rhs) => new PyDate(lhs.Value.AddDays(-GetDateDeltaDays(rhs))),
             (PyDate lhs, PyDate rhs) => new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)),
-            (PyDateTime lhs, PyTimedelta rhs) => new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo),
+            (PyDateTime lhs, PyTimedelta rhs) => new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold),
             (PyDateTime lhs, PyDateTime rhs) => SubtractDateTimes(lhs, rhs, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '-'.", span)
         };
@@ -882,6 +949,23 @@ internal static class PyDateTimeOps
         };
     }
 
+    public static object Modulo(object left, object right, LythonSourceSpan span)
+    {
+        if (left is PyTimedelta delta && right is PyTimedelta other)
+        {
+            return TimedeltaModulo(delta, other, span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "Operands are not compatible with '%'.", span);
+    }
+
+    public static PyTuple DivMod(PyTimedelta left, PyTimedelta right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var quotient = FloorDivide(left, right, span);
+        var remainder = TimedeltaModulo(left, right, span);
+        return new PyTuple([quotient, remainder], context.MemoryGovernor, span);
+    }
+
     public static int Compare(object left, object right, LythonSourceSpan span)
     {
         return (left, right) switch
@@ -901,39 +985,157 @@ internal static class PyDateTimeOps
         return $"{sign}{offset.Hours:00}:{offset.Minutes:00}";
     }
 
+    public static string FormatIsoTime(TimeOnly value, string timespec)
+    {
+        return timespec switch
+        {
+            "auto" => value.Microsecond == 0
+                ? value.ToString("HH:mm:ss", CultureInfo.InvariantCulture)
+                : value.ToString("HH:mm:ss.ffffff", CultureInfo.InvariantCulture),
+            "hours" => value.ToString("HH", CultureInfo.InvariantCulture),
+            "minutes" => value.ToString("HH:mm", CultureInfo.InvariantCulture),
+            "seconds" => value.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
+            "milliseconds" => value.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture),
+            "microseconds" => value.ToString("HH:mm:ss.ffffff", CultureInfo.InvariantCulture),
+            _ => throw new LythonRuntimeException("ValueError", "Unknown timespec value.", default)
+        };
+    }
+
+    public static PyString FormatValue(object value, PyString format, LythonSourceSpan span)
+    {
+        if (format.Length == 0)
+        {
+            return value switch
+            {
+                PyDate date => date.IsoFormat(),
+                PyTime time => time.IsoFormat(),
+                PyDateTime dateTime => dateTime.IsoFormat(" "),
+                _ => PyString.FromString(string.Empty)
+            };
+        }
+
+        return value switch
+        {
+            PyDate date => Strftime(date.Value, format, span),
+            PyTime time => Strftime(time.Value, time.TzInfo, format, span),
+            PyDateTime dateTime => Strftime(dateTime.Value, dateTime.TzInfo, format, span),
+            _ => throw new LythonRuntimeException("TypeError", "__format__ expects a date, time, or datetime value.", span)
+        };
+    }
+
     public static PyString Strftime(DateOnly value, PyString format, LythonSourceSpan span)
-        => PyString.FromString(value.ToString(TranslateStrftimeFormat(format.AsString(), span), CultureInfo.InvariantCulture));
+        => PyString.FromString(FormatStrftime(value.ToDateTime(TimeOnly.MinValue), null, format.AsString(), span));
 
     public static PyString Strftime(TimeOnly value, PyTimezone? timezone, PyString format, LythonSourceSpan span)
     {
-        var translated = TranslateStrftimeFormat(format.AsString(), span);
-        if (timezone is null)
-        {
-            return PyString.FromString(value.ToString(translated, CultureInfo.InvariantCulture));
-        }
-
-        var dateTimeOffset = new DateTimeOffset(
-            1,
-            1,
-            1,
-            value.Hour,
-            value.Minute,
-            value.Second,
-            value.Millisecond,
-            timezone.Offset)
+        var dateTime = new DateTime(1900, 1, 1, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Unspecified)
             .AddTicks(value.Ticks % TimeSpan.TicksPerMillisecond);
-        return PyString.FromString(dateTimeOffset.ToString(translated, CultureInfo.InvariantCulture));
+        return PyString.FromString(FormatStrftime(dateTime, timezone, format.AsString(), span));
     }
 
     public static PyString Strftime(DateTime value, PyTimezone? timezone, PyString format, LythonSourceSpan span)
+        => PyString.FromString(FormatStrftime(value, timezone, format.AsString(), span));
+
+    private static string FormatStrftime(DateTime value, PyTimezone? timezone, string format, LythonSourceSpan span)
     {
-        var translated = TranslateStrftimeFormat(format.AsString(), span);
-        if (timezone is null)
+        var builder = new StringBuilder(format.Length * 2);
+        for (var i = 0; i < format.Length; i++)
         {
-            return PyString.FromString(value.ToString(translated, CultureInfo.InvariantCulture));
+            var ch = format[i];
+            if (ch != '%')
+            {
+                builder.Append(ch);
+                continue;
+            }
+
+            if (i + 1 >= format.Length)
+            {
+                throw new LythonRuntimeException("ValueError", "strftime format string cannot end with '%'.", span);
+            }
+
+            var directive = format[++i];
+            switch (directive)
+            {
+                case '%':
+                    builder.Append('%');
+                    break;
+                case 'Y':
+                    builder.Append(value.Year.ToString("0000", CultureInfo.InvariantCulture));
+                    break;
+                case 'y':
+                    builder.Append((value.Year % 100).ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'm':
+                    builder.Append(value.Month.ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'd':
+                    builder.Append(value.Day.ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'H':
+                    builder.Append(value.Hour.ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'I':
+                    var hour12 = value.Hour % 12;
+                    builder.Append((hour12 == 0 ? 12 : hour12).ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'p':
+                    builder.Append(value.Hour < 12 ? "AM" : "PM");
+                    break;
+                case 'M':
+                    builder.Append(value.Minute.ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'S':
+                    builder.Append(value.Second.ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'f':
+                    builder.Append(value.Microsecond.ToString("000000", CultureInfo.InvariantCulture));
+                    break;
+                case 'z':
+                    builder.Append(timezone is null ? string.Empty : FormatCompactOffset(timezone.Offset));
+                    break;
+                case 'Z':
+                    builder.Append(timezone?.Name ?? string.Empty);
+                    break;
+                case 'a':
+                    builder.Append(value.ToString("ddd", CultureInfo.InvariantCulture));
+                    break;
+                case 'A':
+                    builder.Append(value.ToString("dddd", CultureInfo.InvariantCulture));
+                    break;
+                case 'b':
+                case 'h':
+                    builder.Append(value.ToString("MMM", CultureInfo.InvariantCulture));
+                    break;
+                case 'B':
+                    builder.Append(value.ToString("MMMM", CultureInfo.InvariantCulture));
+                    break;
+                case 'j':
+                    builder.Append(value.DayOfYear.ToString("000", CultureInfo.InvariantCulture));
+                    break;
+                case 'w':
+                    builder.Append(((int)value.DayOfWeek).ToString(CultureInfo.InvariantCulture));
+                    break;
+                case 'u':
+                    builder.Append((((int)value.DayOfWeek + 6) % 7 + 1).ToString(CultureInfo.InvariantCulture));
+                    break;
+                case 'U':
+                    builder.Append(WeekNumber(value, DayOfWeek.Sunday).ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'W':
+                    builder.Append(WeekNumber(value, DayOfWeek.Monday).ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                case 'G':
+                    builder.Append(ISOWeek.GetYear(value).ToString("0000", CultureInfo.InvariantCulture));
+                    break;
+                case 'V':
+                    builder.Append(ISOWeek.GetWeekOfYear(value).ToString("00", CultureInfo.InvariantCulture));
+                    break;
+                default:
+                    throw new LythonRuntimeException("ValueError", $"strftime directive '%{directive}' is not supported in Lython yet.", span);
+            }
         }
 
-        return PyString.FromString(new DateTimeOffset(value, timezone.Offset).ToString(translated, CultureInfo.InvariantCulture));
+        return builder.ToString();
     }
 
     public static bool MatchesBuiltinType(string typeName, object value)
@@ -945,6 +1147,7 @@ internal static class PyDateTimeOps
             "datetime.time" => value is PyTime,
             "datetime.datetime" => value is PyDateTime,
             "datetime.timezone" => value is PyTimezone,
+            "datetime.tzinfo" => value is PyTimezone,
             _ => false
         };
     }
@@ -985,13 +1188,276 @@ internal static class PyDateTimeOps
             return left.Value.CompareTo(right.Value);
         }
 
-        var leftAdjusted = DateTime.Today.Add(left.Value.ToTimeSpan()) - left.TzInfo!.Offset;
-        var rightAdjusted = DateTime.Today.Add(right.Value.ToTimeSpan()) - right.TzInfo!.Offset;
+        var leftAdjusted = AdjustTimeTicks(left.Value, left.TzInfo!.Offset);
+        var rightAdjusted = AdjustTimeTicks(right.Value, right.TzInfo!.Offset);
         return leftAdjusted.CompareTo(rightAdjusted);
+    }
+
+    public static bool DateTimeEquals(PyDateTime left, PyDateTime right)
+    {
+        if ((left.TzInfo is null) != (right.TzInfo is null))
+        {
+            return false;
+        }
+
+        return left.TzInfo is null
+            ? left.Value == right.Value
+            : left.ToOffset().UtcDateTime == right.ToOffset().UtcDateTime;
+    }
+
+    public static bool TimeEquals(PyTime left, PyTime right)
+    {
+        if ((left.TzInfo is null) != (right.TzInfo is null))
+        {
+            return false;
+        }
+
+        if (left.TzInfo is null)
+        {
+            return left.Value == right.Value;
+        }
+
+        return AdjustTimeTicks(left.Value, left.TzInfo!.Offset) == AdjustTimeTicks(right.Value, right.TzInfo!.Offset);
+    }
+
+    public static long AdjustTimeTicks(TimeOnly value, TimeSpan offset)
+    {
+        var ticks = (value.Ticks - offset.Ticks) % TimeSpan.TicksPerDay;
+        return ticks < 0 ? ticks + TimeSpan.TicksPerDay : ticks;
+    }
+
+    private static int WeekNumber(DateTime value, DayOfWeek firstDay)
+    {
+        var first = new DateTime(value.Year, 1, 1);
+        var offset = ((int)firstDay - (int)first.DayOfWeek + 7) % 7;
+        var firstWeekStart = first.AddDays(offset);
+        if (value.Date < firstWeekStart)
+        {
+            return 0;
+        }
+
+        return ((value.Date - firstWeekStart).Days / 7) + 1;
+    }
+
+    private static string FormatCompactOffset(TimeSpan offset)
+    {
+        var sign = offset < TimeSpan.Zero ? "-" : "+";
+        offset = offset.Duration();
+        return $"{sign}{(int)offset.TotalHours:00}{offset.Minutes:00}";
+    }
+
+    private static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span)
+    {
+        var pattern = new StringBuilder(format.Length * 3);
+        var groups = new Dictionary<char, string>();
+        var groupIndex = 0;
+        pattern.Append('^');
+
+        for (var i = 0; i < format.Length; i++)
+        {
+            var ch = format[i];
+            if (char.IsWhiteSpace(ch))
+            {
+                while (i + 1 < format.Length && char.IsWhiteSpace(format[i + 1]))
+                {
+                    i++;
+                }
+
+                pattern.Append(@"\s+");
+                continue;
+            }
+
+            if (ch != '%')
+            {
+                pattern.Append(Regex.Escape(ch.ToString()));
+                continue;
+            }
+
+            if (i + 1 >= format.Length)
+            {
+                throw new LythonRuntimeException("ValueError", "strptime format string cannot end with '%'.", span);
+            }
+
+            var directive = format[++i];
+            if (directive == '%')
+            {
+                pattern.Append('%');
+                continue;
+            }
+
+            var groupName = "g" + groupIndex.ToString(CultureInfo.InvariantCulture);
+            groupIndex++;
+            groups[directive] = groupName;
+            pattern.Append("(?<").Append(groupName).Append('>').Append(StrptimeDirectivePattern(directive, span)).Append(')');
+        }
+
+        pattern.Append('$');
+        var match = Regex.Match(text, pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        if (!match.Success)
+        {
+            throw new FormatException("time data does not match format.");
+        }
+
+        string? Capture(char directive)
+            => groups.TryGetValue(directive, out var group) ? match.Groups[group].Value : null;
+
+        static int ParseInt(string? value, int fallback)
+            => string.IsNullOrEmpty(value) ? fallback : int.Parse(value, CultureInfo.InvariantCulture);
+
+        var year = ParseYear(Capture('Y'), Capture('y'));
+        var month = ParseMonth(Capture('m'), Capture('b'), Capture('B'));
+        var day = ParseInt(Capture('d'), 1);
+
+        if (Capture('G') is not null || Capture('V') is not null || Capture('u') is not null)
+        {
+            if (Capture('G') is null || Capture('V') is null || Capture('u') is null)
+            {
+                throw new FormatException("ISO year, week, and weekday directives must be used together.");
+            }
+
+            var isoDate = DateFromIsoCalendarParts(
+                int.Parse(Capture('G')!, CultureInfo.InvariantCulture),
+                int.Parse(Capture('V')!, CultureInfo.InvariantCulture),
+                int.Parse(Capture('u')!, CultureInfo.InvariantCulture));
+            year = isoDate.Year;
+            month = isoDate.Month;
+            day = isoDate.Day;
+        }
+        else if (Capture('j') is { } dayOfYearText)
+        {
+            var dayOfYear = int.Parse(dayOfYearText, CultureInfo.InvariantCulture);
+            var date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1);
+            if (date.Year != year)
+            {
+                throw new FormatException("day of year out of range.");
+            }
+
+            month = date.Month;
+            day = date.Day;
+        }
+
+        var hour = ParseInt(Capture('H'), 0);
+        if (Capture('I') is { } hour12Text)
+        {
+            hour = int.Parse(hour12Text, CultureInfo.InvariantCulture) % 12;
+            if (string.Equals(Capture('p'), "PM", StringComparison.OrdinalIgnoreCase))
+            {
+                hour += 12;
+            }
+        }
+
+        var minute = ParseInt(Capture('M'), 0);
+        var second = ParseInt(Capture('S'), 0);
+        var microsecond = ParseMicrosecond(Capture('f'));
+        var value = new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified)
+            .AddTicks((microsecond % 1000) * 10L);
+
+        var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'));
+        return new PyDateTime(value, timezone);
+    }
+
+    private static string StrptimeDirectivePattern(char directive, LythonSourceSpan span)
+    {
+        return directive switch
+        {
+            'Y' => @"\d{1,4}",
+            'y' => @"\d{2}",
+            'm' => @"\d{1,2}",
+            'd' => @"\d{1,2}",
+            'H' => @"\d{1,2}",
+            'I' => @"\d{1,2}",
+            'p' => @"AM|PM|am|pm",
+            'M' => @"\d{1,2}",
+            'S' => @"\d{1,2}",
+            'f' => @"\d{1,6}",
+            'z' => @"Z|[+-]\d{2}:?\d{2}",
+            'Z' => @"[A-Za-z_][A-Za-z0-9_+-]*",
+            'a' or 'A' => @"[A-Za-z]+",
+            'b' or 'h' or 'B' => @"[A-Za-z]+",
+            'j' => @"\d{1,3}",
+            'w' => @"\d",
+            'u' => @"\d",
+            'U' or 'W' => @"\d{1,2}",
+            'G' => @"\d{1,4}",
+            'V' => @"\d{1,2}",
+            _ => throw new LythonRuntimeException("ValueError", $"strptime directive '%{directive}' is not supported in Lython yet.", span)
+        };
+    }
+
+    private static int ParseYear(string? yearText, string? shortYearText)
+    {
+        if (!string.IsNullOrEmpty(yearText))
+        {
+            return int.Parse(yearText, CultureInfo.InvariantCulture);
+        }
+
+        if (string.IsNullOrEmpty(shortYearText))
+        {
+            return 1900;
+        }
+
+        var shortYear = int.Parse(shortYearText, CultureInfo.InvariantCulture);
+        return shortYear <= 68 ? 2000 + shortYear : 1900 + shortYear;
+    }
+
+    private static int ParseMonth(string? monthText, string? abbreviatedName, string? fullName)
+    {
+        if (!string.IsNullOrEmpty(monthText))
+        {
+            return int.Parse(monthText, CultureInfo.InvariantCulture);
+        }
+
+        var name = abbreviatedName ?? fullName;
+        if (string.IsNullOrEmpty(name))
+        {
+            return 1;
+        }
+
+        for (var i = 1; i <= 12; i++)
+        {
+            var date = new DateTime(2000, i, 1);
+            if (string.Equals(name, date.ToString("MMM", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(name, date.ToString("MMMM", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        throw new FormatException("month name is not recognized.");
+    }
+
+    private static int ParseMicrosecond(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return 0;
+        }
+
+        return int.Parse(text.PadRight(6, '0'), CultureInfo.InvariantCulture);
+    }
+
+    private static PyTimezone? ParseStrptimeTimezone(string? offsetText, string? nameText)
+    {
+        if (!string.IsNullOrEmpty(offsetText))
+        {
+            if (!TryParseOffsetText(offsetText, out var offset))
+            {
+                throw new FormatException("timezone offset is not recognized.");
+            }
+
+            return new PyTimezone(offset);
+        }
+
+        return nameText is not null &&
+            (string.Equals(nameText, "UTC", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(nameText, "GMT", StringComparison.OrdinalIgnoreCase))
+            ? PyTimezone.Utc
+            : null;
     }
 
     private static PyTime ParseTime(string text)
     {
+        text = NormalizeIsoText(text);
         if (text.EndsWith("Z", StringComparison.Ordinal))
         {
             text = text[..^1] + "+00:00";
@@ -1007,14 +1473,15 @@ internal static class PyDateTimeOps
 
     private static PyDateTime ParseDateTime(string text)
     {
+        text = NormalizeIsoText(text);
         if (text.EndsWith("Z", StringComparison.Ordinal))
         {
             text = text[..^1] + "+00:00";
         }
 
-        if (DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var offsetValue) && TryParseTrailingOffset(text, out _, out var offset))
+        if (TryParseTrailingOffset(text, out var body, out var offset))
         {
-            return new PyDateTime(offsetValue.DateTime, new PyTimezone(offset));
+            return new PyDateTime(DateTime.Parse(body, CultureInfo.InvariantCulture, DateTimeStyles.None), new PyTimezone(offset));
         }
 
         return new PyDateTime(DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.None));
@@ -1025,11 +1492,17 @@ internal static class PyDateTimeOps
         if (text.Length >= 6 && (text[^6] == '+' || text[^6] == '-') && text[^3] == ':')
         {
             body = text[..^6];
-            var sign = text[^6] == '-' ? -1 : 1;
-            if (int.TryParse(text.Substring(text.Length - 5, 2), CultureInfo.InvariantCulture, out var hours) &&
-                int.TryParse(text.Substring(text.Length - 2, 2), CultureInfo.InvariantCulture, out var minutes))
+            if (TryParseOffsetText(text[^6..], out offset))
             {
-                offset = new TimeSpan(sign * hours, sign * minutes, 0);
+                return true;
+            }
+        }
+
+        if (text.Length >= 5 && (text[^5] == '+' || text[^5] == '-'))
+        {
+            body = text[..^5];
+            if (TryParseOffsetText(text[^5..], out offset))
+            {
                 return true;
             }
         }
@@ -1038,6 +1511,43 @@ internal static class PyDateTimeOps
         offset = default;
         return false;
     }
+
+    private static bool TryParseOffsetText(string text, out TimeSpan offset)
+    {
+        if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase))
+        {
+            offset = TimeSpan.Zero;
+            return true;
+        }
+
+        if (text.Length is not 5 and not 6 || (text[0] is not '+' and not '-'))
+        {
+            offset = default;
+            return false;
+        }
+
+        var hoursStart = 1;
+        var minutesStart = text.Length == 6 ? 4 : 3;
+        if (text.Length == 6 && text[3] != ':')
+        {
+            offset = default;
+            return false;
+        }
+
+        if (!int.TryParse(text.Substring(hoursStart, 2), CultureInfo.InvariantCulture, out var hours) ||
+            !int.TryParse(text.Substring(minutesStart, 2), CultureInfo.InvariantCulture, out var minutes))
+        {
+            offset = default;
+            return false;
+        }
+
+        var sign = text[0] == '-' ? -1 : 1;
+        offset = new TimeSpan(sign * hours, sign * minutes, 0);
+        return true;
+    }
+
+    private static string NormalizeIsoText(string text)
+        => text.Replace(',', '.');
 
     private static PyTuple CreateTimeTuple(DateOnly date, TimeOnly time, int isDst)
     {
@@ -1067,6 +1577,42 @@ internal static class PyDateTimeOps
         }
 
         return DateOnly.FromDayNumber((int)ordinal - 1);
+    }
+
+    private static DateOnly DateFromIsoCalendarValue(object yearValue, object weekValue, object dayValue, string owner, LythonSourceSpan span)
+    {
+        if (!Numbers.PyNumberOps.TryAsInteger(yearValue, out var year) ||
+            !Numbers.PyNumberOps.TryAsInteger(weekValue, out var week) ||
+            !Numbers.PyNumberOps.TryAsInteger(dayValue, out var day))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(year, week, day) expects integer fields.", span);
+        }
+
+        try
+        {
+            return DateFromIsoCalendarParts((int)year, (int)week, (int)day);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new LythonRuntimeException("ValueError", ex.Message, span);
+        }
+    }
+
+    private static DateOnly DateFromIsoCalendarParts(int year, int week, int day)
+    {
+        var dayOfWeek = day switch
+        {
+            1 => DayOfWeek.Monday,
+            2 => DayOfWeek.Tuesday,
+            3 => DayOfWeek.Wednesday,
+            4 => DayOfWeek.Thursday,
+            5 => DayOfWeek.Friday,
+            6 => DayOfWeek.Saturday,
+            7 => DayOfWeek.Sunday,
+            _ => throw new ArgumentOutOfRangeException(nameof(day), "ISO weekday must be in 1..7.")
+        };
+
+        return DateOnly.FromDateTime(ISOWeek.ToDateTime(year, week, dayOfWeek));
     }
 
     private static double GetTimestamp(object value, string owner, LythonSourceSpan span)
@@ -1139,6 +1685,17 @@ internal static class PyDateTimeOps
         };
     }
 
+    private static int GetFold(object? value, string owner, LythonSourceSpan span)
+    {
+        var fold = GetInteger(value, owner, span);
+        if (fold is not 0 and not 1)
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner} fold must be either 0 or 1.", span);
+        }
+
+        return fold;
+    }
+
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 
     private static string TranslateStrftimeFormat(string format, LythonSourceSpan span)
@@ -1197,11 +1754,11 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("ValueError", "division by zero", span);
         }
 
-        var scaledTicks = delta.Value.Ticks * scale;
-        var roundedTicks = floor
-            ? Math.Floor(scaledTicks)
-            : Math.Round(scaledTicks, MidpointRounding.ToEven);
-        return new PyTimedelta(new TimeSpan((long)roundedTicks));
+        var scaledMicroseconds = delta.Value.Ticks * scale / 10.0;
+        var roundedMicroseconds = floor
+            ? Math.Floor(scaledMicroseconds)
+            : Math.Round(scaledMicroseconds, MidpointRounding.ToEven);
+        return new PyTimedelta(new TimeSpan(checked((long)roundedMicroseconds * 10L)));
     }
 
     private static double DivideTimedeltas(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
@@ -1213,4 +1770,19 @@ internal static class PyDateTimeOps
 
         return (double)left.Value.Ticks / right.Value.Ticks;
     }
+
+    private static PyTimedelta TimedeltaModulo(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
+    {
+        if (right.Value == TimeSpan.Zero)
+        {
+            throw new LythonRuntimeException("ValueError", "integer division or modulo by zero", span);
+        }
+
+        var quotient = Math.Floor((double)left.Value.Ticks / right.Value.Ticks);
+        var remainderTicks = left.Value.Ticks - checked((long)quotient * right.Value.Ticks);
+        return new PyTimedelta(new TimeSpan(remainderTicks));
+    }
+
+    private static int GetDateDeltaDays(PyTimedelta delta)
+        => (int)delta.Days;
 }

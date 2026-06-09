@@ -244,7 +244,8 @@ internal static class StaticStructuralDiagnostics
 
         if (unary.Operator is UnaryOperatorSyntax.Plus or UnaryOperatorSyntax.Minus)
         {
-            if (!StaticAbstractFacts.IsNumericLike(operand))
+            if (!StaticAbstractFacts.IsNumericLike(operand) &&
+                operand.Kind != AbstractValueKind.DateTimeTimedelta)
             {
                 AddDiagnostic(diagnostics, "LA3144", "Operand is not numeric.", unary.Span);
             }
@@ -376,16 +377,21 @@ internal static class StaticStructuralDiagnostics
         return op switch
         {
             BinaryOperatorSyntax.Add => CanApplyAdd(left, right),
-            BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) || IsSetLike(left) && IsSetLike(right),
+            BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                CanApplyDateTimeSubtract(left, right) ||
+                IsSetLike(left) && IsSetLike(right),
             BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                IsTimedeltaNumericPair(left, right) ||
                 left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
                 IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && IsListLike(right),
             BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)) ||
                 left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
             BinaryOperatorSyntax.FloorDivide or
-            BinaryOperatorSyntax.Modulo or
+            BinaryOperatorSyntax.Modulo => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)),
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
             BinaryOperatorSyntax.BitwiseOr or
             BinaryOperatorSyntax.BitwiseXor or
@@ -399,6 +405,9 @@ internal static class StaticStructuralDiagnostics
     private static bool CanApplyAdd(AbstractValue left, AbstractValue right)
         => left.IsStringLike && right.IsStringLike ||
            StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+           left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
+           IsDateOrDateTime(left) && right.Kind == AbstractValueKind.DateTimeTimedelta ||
+           left.Kind == AbstractValueKind.DateTimeTimedelta && IsDateOrDateTime(right) ||
            IsListLike(left) && IsListLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
            IsSetLike(left) && IsSetLike(right);
@@ -406,9 +415,25 @@ internal static class StaticStructuralDiagnostics
     private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)
         => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
            left.IsStringLike && right.IsStringLike ||
+           left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
+           left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate ||
+           left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime ||
+           left.Kind == AbstractValueKind.DateTimeTime && right.Kind == AbstractValueKind.DateTimeTime ||
            left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
            IsListLike(left) && IsListLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
+
+    private static bool CanApplyDateTimeSubtract(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
+           left.Kind == AbstractValueKind.DateTimeDate && (right.Kind == AbstractValueKind.DateTimeDate || right.Kind == AbstractValueKind.DateTimeTimedelta) ||
+           left.Kind == AbstractValueKind.DateTimeDateTime && (right.Kind == AbstractValueKind.DateTimeDateTime || right.Kind == AbstractValueKind.DateTimeTimedelta);
+
+    private static bool IsTimedeltaNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
+
+    private static bool IsDateOrDateTime(AbstractValue value)
+        => value.Kind is AbstractValueKind.DateTimeDate or AbstractValueKind.DateTimeDateTime;
 
     private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)
     {
@@ -575,6 +600,11 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.Decimal => "decimal.Decimal",
             AbstractValueKind.DecimalContext => "decimal.Context",
             AbstractValueKind.DecimalTuple => "decimal.DecimalTuple",
+            AbstractValueKind.DateTimeTimedelta => "datetime.timedelta",
+            AbstractValueKind.DateTimeDate => "datetime.date",
+            AbstractValueKind.DateTimeTime => "datetime.time",
+            AbstractValueKind.DateTimeDateTime => "datetime.datetime",
+            AbstractValueKind.DateTimeTimezone => "datetime.timezone",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

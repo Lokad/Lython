@@ -829,6 +829,87 @@ internal static partial class StaticContracts
         "exponent",
     };
 
+    private static readonly HashSet<string> DateTimeTimedeltaMembers = new(StringComparer.Ordinal)
+    {
+        "days",
+        "seconds",
+        "microseconds",
+        "total_seconds",
+    };
+
+    private static readonly HashSet<string> DateTimeDateMembers = new(StringComparer.Ordinal)
+    {
+        "year",
+        "month",
+        "day",
+        "weekday",
+        "isoweekday",
+        "isocalendar",
+        "toordinal",
+        "timetuple",
+        "ctime",
+        "isoformat",
+        "__format__",
+        "strftime",
+        "replace",
+    };
+
+    private static readonly HashSet<string> DateTimeTimeMembers = new(StringComparer.Ordinal)
+    {
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+        "tzinfo",
+        "fold",
+        "utcoffset",
+        "tzname",
+        "dst",
+        "isoformat",
+        "__format__",
+        "strftime",
+        "replace",
+    };
+
+    private static readonly HashSet<string> DateTimeDateTimeMembers = new(StringComparer.Ordinal)
+    {
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+        "tzinfo",
+        "fold",
+        "date",
+        "time",
+        "timetz",
+        "weekday",
+        "isoweekday",
+        "isocalendar",
+        "toordinal",
+        "timetuple",
+        "utctimetuple",
+        "ctime",
+        "timestamp",
+        "utcoffset",
+        "tzname",
+        "dst",
+        "astimezone",
+        "isoformat",
+        "__format__",
+        "strftime",
+        "replace",
+    };
+
+    private static readonly HashSet<string> DateTimeTimezoneMembers = new(StringComparer.Ordinal)
+    {
+        "utcoffset",
+        "tzname",
+        "dst",
+    };
+
     public static bool IsKnownSealedMemberSurface(AbstractValue value)
         => value.Kind is AbstractValueKind.Module && ModuleMembers.ContainsKey((string)value.Value) ||
            value.Kind is AbstractValueKind.Path or
@@ -856,6 +937,11 @@ internal static partial class StaticContracts
             AbstractValueKind.Decimal or
             AbstractValueKind.DecimalContext or
             AbstractValueKind.DecimalTuple or
+            AbstractValueKind.DateTimeTimedelta or
+            AbstractValueKind.DateTimeDate or
+            AbstractValueKind.DateTimeTime or
+            AbstractValueKind.DateTimeDateTime or
+            AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.RegexPattern or
             AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
@@ -938,6 +1024,11 @@ internal static partial class StaticContracts
             AbstractValueKind.Decimal => DecimalMembers.Contains(memberName),
             AbstractValueKind.DecimalContext => DecimalContextMembers.Contains(memberName),
             AbstractValueKind.DecimalTuple => DecimalTupleMembers.Contains(memberName),
+            AbstractValueKind.DateTimeTimedelta => DateTimeTimedeltaMembers.Contains(memberName),
+            AbstractValueKind.DateTimeDate => DateTimeDateMembers.Contains(memberName),
+            AbstractValueKind.DateTimeTime => DateTimeTimeMembers.Contains(memberName),
+            AbstractValueKind.DateTimeDateTime => DateTimeDateTimeMembers.Contains(memberName),
+            AbstractValueKind.DateTimeTimezone => DateTimeTimezoneMembers.Contains(memberName),
             AbstractValueKind.RegexPattern => RegexPatternMembers.Contains(memberName),
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),

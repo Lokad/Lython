@@ -41,6 +41,11 @@ internal enum AbstractValueKind
     Decimal,
     DecimalContext,
     DecimalTuple,
+    DateTimeTimedelta,
+    DateTimeDate,
+    DateTimeTime,
+    DateTimeDateTime,
+    DateTimeTimezone,
     DifflibDiffer,
     DifflibHtmlDiff,
     DifflibMatch,
@@ -197,6 +202,11 @@ internal readonly record struct AbstractValue(
     public static AbstractValue Decimal(LythonSourceSpan span) => new(AbstractValueKind.Decimal, "decimal.Decimal", span);
     public static AbstractValue DecimalContext(LythonSourceSpan span) => new(AbstractValueKind.DecimalContext, "decimal.Context", span);
     public static AbstractValue DecimalTuple(LythonSourceSpan span) => new(AbstractValueKind.DecimalTuple, "decimal.DecimalTuple", span);
+    public static AbstractValue DateTimeTimedelta(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTimedelta, "datetime.timedelta", span);
+    public static AbstractValue DateTimeDate(LythonSourceSpan span) => new(AbstractValueKind.DateTimeDate, "datetime.date", span);
+    public static AbstractValue DateTimeTime(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTime, "datetime.time", span);
+    public static AbstractValue DateTimeDateTime(LythonSourceSpan span) => new(AbstractValueKind.DateTimeDateTime, "datetime.datetime", span);
+    public static AbstractValue DateTimeTimezone(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTimezone, "datetime.timezone", span);
     public static AbstractValue DifflibDiffer(LythonSourceSpan span) => new(AbstractValueKind.DifflibDiffer, "difflib.Differ", span);
     public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => new(AbstractValueKind.DifflibHtmlDiff, "difflib.HtmlDiff", span);
     public static AbstractValue DifflibMatch(LythonSourceSpan span) => new(AbstractValueKind.DifflibMatch, "difflib.Match", span);

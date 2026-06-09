@@ -37,6 +37,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Decimal or
             AbstractValueKind.DecimalContext or
             AbstractValueKind.DecimalTuple or
+            AbstractValueKind.DateTimeTimedelta or
+            AbstractValueKind.DateTimeDate or
+            AbstractValueKind.DateTimeTime or
+            AbstractValueKind.DateTimeDateTime or
+            AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
@@ -117,6 +122,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictWriter or
             AbstractValueKind.Decimal or
             AbstractValueKind.DecimalContext or
+            AbstractValueKind.DateTimeTimedelta or
+            AbstractValueKind.DateTimeDate or
+            AbstractValueKind.DateTimeTime or
+            AbstractValueKind.DateTimeDateTime or
+            AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -178,6 +188,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictWriter or
             AbstractValueKind.Decimal or
             AbstractValueKind.DecimalContext or
+            AbstractValueKind.DateTimeTimedelta or
+            AbstractValueKind.DateTimeDate or
+            AbstractValueKind.DateTimeTime or
+            AbstractValueKind.DateTimeDateTime or
+            AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -254,6 +269,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictWriter or
             AbstractValueKind.Decimal or
             AbstractValueKind.DecimalContext or
+            AbstractValueKind.DateTimeTimedelta or
+            AbstractValueKind.DateTimeDate or
+            AbstractValueKind.DateTimeTime or
+            AbstractValueKind.DateTimeDateTime or
+            AbstractValueKind.DateTimeTimezone or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -490,6 +510,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictReader => "csv.DictReader",
             AbstractValueKind.CsvWriter => "csv.writer",
             AbstractValueKind.CsvDictWriter => "csv.DictWriter",
+            AbstractValueKind.DateTimeTimedelta => "datetime.timedelta",
+            AbstractValueKind.DateTimeDate => "datetime.date",
+            AbstractValueKind.DateTimeTime => "datetime.time",
+            AbstractValueKind.DateTimeDateTime => "datetime.datetime",
+            AbstractValueKind.DateTimeTimezone => "datetime.timezone",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

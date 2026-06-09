@@ -845,7 +845,8 @@ internal sealed partial class LythonRuntime
             "datetime.date" or
             "datetime.time" or
             "datetime.datetime" or
-            "datetime.timezone";
+            "datetime.timezone" or
+            "datetime.tzinfo";
     }
 
     private static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -867,6 +868,7 @@ internal sealed partial class LythonRuntime
             "datetime.time" => value is PyTime,
             "datetime.datetime" => value is PyDateTime,
             "datetime.timezone" => value is PyTimezone,
+            "datetime.tzinfo" => value is PyTimezone,
             _ => false
         };
     }
@@ -1143,6 +1145,27 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", "sum() does not support string or bytes operands.", span);
         }
+    }
+
+    private static object DivMod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "divmod(a, b) expects two arguments.", span);
+        }
+
+        if (arguments[0] is PyTimedelta leftDelta && arguments[1] is PyTimedelta rightDelta)
+        {
+            return PyDateTimeOps.DivMod(leftDelta, rightDelta, context, span);
+        }
+
+        return new PyTuple(
+            [
+                EvaluateFloorDivide(arguments[0], arguments[1], span),
+                EvaluateModulo(arguments[0], arguments[1], span)
+            ],
+            context.MemoryGovernor,
+            span);
     }
 
     private static int CompareSortKeys(object left, object right, LythonSourceSpan span, ExecutionContext context)

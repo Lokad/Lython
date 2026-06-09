@@ -279,9 +279,26 @@ internal static class StaticAbstractValueResolver
             return true;
         }
 
-        if (binary.Operator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Multiply) ||
+        if (binary.Operator is not (
+                BinaryOperatorSyntax.Add or
+                BinaryOperatorSyntax.Subtract or
+                BinaryOperatorSyntax.Multiply or
+                BinaryOperatorSyntax.Divide or
+                BinaryOperatorSyntax.FloorDivide or
+                BinaryOperatorSyntax.Modulo) ||
             !TryResolve(binary.Left, bindings, out var left) ||
             !TryResolve(binary.Right, bindings, out var right))
+        {
+            value = default;
+            return false;
+        }
+
+        if (TryResolveDateTimeBinaryAbstractValue(binary.Operator, left, right, binary.Span, out value))
+        {
+            return true;
+        }
+
+        if (binary.Operator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Multiply))
         {
             value = default;
             return false;
@@ -354,6 +371,41 @@ internal static class StaticAbstractValueResolver
         return false;
     }
 
+    private static bool TryResolveDateTimeBinaryAbstractValue(
+        BinaryOperatorSyntax op,
+        AbstractValue left,
+        AbstractValue right,
+        LythonSourceSpan span,
+        out AbstractValue value)
+    {
+        value = op switch
+        {
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDate(span),
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDate => AbstractValue.DateTimeDate(span),
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDateTime(span),
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeDateTime(span),
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDate(span),
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDateTime(span),
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Multiply when IsTimedeltaNumericPair(left, right) => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.FloatType(span),
+            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.IntegerType(span),
+            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Modulo when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
+            _ => default
+        };
+
+        return value.Kind != default;
+    }
+
+    private static bool IsTimedeltaNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
+
     private static bool TryResolveUnaryAbstractValue(UnaryExpressionSyntax unary, AbstractState bindings, out AbstractValue value)
     {
         if (unary.Operator == UnaryOperatorSyntax.Not)
@@ -378,6 +430,12 @@ internal static class StaticAbstractValueResolver
         if (StaticAbstractFacts.IsFloatLike(operand))
         {
             value = AbstractValue.FloatType(unary.Span);
+            return true;
+        }
+
+        if (operand.Kind == AbstractValueKind.DateTimeTimedelta)
+        {
+            value = AbstractValue.DateTimeTimedelta(unary.Span);
             return true;
         }
 

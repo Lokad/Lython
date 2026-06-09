@@ -102,6 +102,15 @@ internal sealed partial class LythonRuntime
 
                     return date.IsoFormat();
                 }),
+                "__format__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", "date.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    return PyDateTimeOps.FormatValue(date, format, span);
+                }, "date.__format__", ["format_spec"]),
                 "strftime" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
@@ -136,6 +145,7 @@ internal sealed partial class LythonRuntime
                 "second" => time.Second,
                 "microsecond" => time.Microsecond,
                 "tzinfo" => time.TzInfo is null ? PyNone.Instance : time.TzInfo,
+                "fold" => new BigInteger(time.Fold),
                 "utcoffset" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -165,13 +175,23 @@ internal sealed partial class LythonRuntime
                 }),
                 "isoformat" => new BoundCallable((arguments, span, _) =>
                 {
-                    if (arguments.Length != 0)
+                    if (arguments.Length > 1)
                     {
-                        throw new LythonRuntimeException("TypeError", "time.isoformat() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "time.isoformat([timespec]) expects zero or one argument.", span);
                     }
 
-                    return time.IsoFormat();
-                }),
+                    var timespec = GetTimespec(ArgAt(arguments, 0), "time.isoformat", span);
+                    return time.IsoFormat(timespec);
+                }, "time.isoformat", ["timespec"], 0),
+                "__format__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", "time.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    return PyDateTimeOps.FormatValue(time, format, span);
+                }, "time.__format__", ["format_spec"]),
                 "strftime" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
@@ -186,6 +206,8 @@ internal sealed partial class LythonRuntime
                     _ = context;
                     var microArg = ArgAt(arguments, 3);
                     var microsecond = microArg is null or PyNone ? (int)time.Microsecond : ToInt(microArg, "time.replace", span);
+                    var foldArg = ArgAt(arguments, 5);
+                    var fold = foldArg is null or PyNone ? time.Fold : ToFold(foldArg, "time.replace", span);
                     return new PyTime(
                         new TimeOnly(
                             ArgAt(arguments, 0) is null or PyNone ? (int)time.Hour : ToInt(ArgAt(arguments, 0)!, "time.replace", span),
@@ -199,8 +221,9 @@ internal sealed partial class LythonRuntime
                             PyNone => null,
                             PyTimezone tz => tz,
                             _ => throw new LythonRuntimeException("TypeError", "time.replace(..., tzinfo=...) expects a timezone or None.", span)
-                        });
-                }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo"], 0),
+                        },
+                        fold);
+                }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => null!
             };
 
@@ -222,6 +245,7 @@ internal sealed partial class LythonRuntime
                 "second" => dateTime.Second,
                 "microsecond" => dateTime.Microsecond,
                 "tzinfo" => dateTime.TzInfo is null ? PyNone.Instance : dateTime.TzInfo,
+                "fold" => new BigInteger(dateTime.Fold),
                 "date" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -356,15 +380,43 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }),
-                "isoformat" => new BoundCallable((arguments, span, _) =>
+                "astimezone" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 0)
+                    if (arguments.Length > 1)
                     {
-                        throw new LythonRuntimeException("TypeError", "datetime.isoformat() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "datetime.astimezone([tz]) expects zero or one argument.", span);
                     }
 
-                    return dateTime.IsoFormat();
-                }),
+                    var targetTimezone = ArgAt(arguments, 0) switch
+                    {
+                        null or PyNone => null,
+                        PyTimezone tz => tz,
+                        _ => throw new LythonRuntimeException("TypeError", "datetime.astimezone(tz) expects tz to be a timezone or None.", span)
+                    };
+
+                    context.RegisterHostCall(span);
+                    return PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span);
+                }, "datetime.astimezone", ["tz"], 0),
+                "isoformat" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "datetime.isoformat([sep][, timespec]) expects zero to two arguments.", span);
+                    }
+
+                    var separator = GetSeparator(ArgAt(arguments, 0), "datetime.isoformat", span);
+                    var timespec = GetTimespec(ArgAt(arguments, 1), "datetime.isoformat", span);
+                    return dateTime.IsoFormat(separator, timespec);
+                }, "datetime.isoformat", ["sep", "timespec"], 0),
+                "__format__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", "datetime.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    return PyDateTimeOps.FormatValue(dateTime, format, span);
+                }, "datetime.__format__", ["format_spec"]),
                 "strftime" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
@@ -378,6 +430,8 @@ internal sealed partial class LythonRuntime
                 {
                     var microArg = ArgAt(arguments, 6);
                     var microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, "datetime.replace", span);
+                    var foldArg = ArgAt(arguments, 8);
+                    var fold = foldArg is null or PyNone ? dateTime.Fold : ToFold(foldArg, "datetime.replace", span);
                     return new PyDateTime(
                         new DateTime(
                             ArgAt(arguments, 0) is null or PyNone ? (int)dateTime.Year : ToInt(ArgAt(arguments, 0)!, "datetime.replace", span),
@@ -394,8 +448,9 @@ internal sealed partial class LythonRuntime
                             PyNone => null,
                             PyTimezone tz => tz,
                             _ => throw new LythonRuntimeException("TypeError", "datetime.replace(..., tzinfo=...) expects a timezone or None.", span)
-                        });
-                }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo"], 0),
+                        },
+                        fold);
+                }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => null!
             };
 
@@ -461,6 +516,50 @@ internal sealed partial class LythonRuntime
         }
 
         throw new LythonRuntimeException("TypeError", $"{owner} expects integer fields.", span);
+    }
+
+    private static int ToFold(object value, string owner, LythonSourceSpan span)
+    {
+        var fold = ToInt(value, owner, span);
+        if (fold is not 0 and not 1)
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner} fold must be either 0 or 1.", span);
+        }
+
+        return fold;
+    }
+
+    private static string GetTimespec(object? value, string owner, LythonSourceSpan span)
+    {
+        if (value is null or PyNone)
+        {
+            return "auto";
+        }
+
+        if (!PyStringOps.TryAsString(value, out var text))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., timespec=...) expects a string.", span);
+        }
+
+        var timespec = text.AsString();
+        return timespec is "auto" or "hours" or "minutes" or "seconds" or "milliseconds" or "microseconds"
+            ? timespec
+            : throw new LythonRuntimeException("ValueError", "Unknown timespec value.", span);
+    }
+
+    private static string GetSeparator(object? value, string owner, LythonSourceSpan span)
+    {
+        if (value is null or PyNone)
+        {
+            return "T";
+        }
+
+        if (!PyStringOps.TryAsString(value, out var text) || text.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., sep=...) expects a one-character string.", span);
+        }
+
+        return text.AsString();
     }
 
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;

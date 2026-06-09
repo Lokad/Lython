@@ -564,10 +564,12 @@ internal sealed partial class LythonRuntime
             {
                 "MINYEAR" => BigInteger.One,
                 "MAXYEAR" => new BigInteger(9999),
+                "UTC" => PyTimezone.Utc,
                 "timedelta" => PyDateTimeOps.TimedeltaType,
                 "date" => PyDateTimeOps.DateType,
                 "time" => PyDateTimeOps.TimeType,
                 "datetime" => PyDateTimeOps.DateTimeType,
+                "tzinfo" => PyDateTimeOps.TzInfoType,
                 "timezone" => PyDateTimeOps.TimezoneType,
                 _ => null!,
             };

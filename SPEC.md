@@ -295,13 +295,21 @@ The initial subset does not support:
 The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `collections`, `csv`,
-`decimal`, `difflib`, `fnmatch`, `glob`, `itertools`, `json`, `math`, `os`,
-`pathlib`, `pkgutil`, `re`, `subprocess` when host-enabled, `sys`, and related
-contained helpers.
+`datetime`, `decimal`, `difflib`, `fnmatch`, `glob`, `itertools`, `json`,
+`math`, `os`, `pathlib`, `pkgutil`, `re`, `subprocess` when host-enabled, `sys`,
+and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members. The runtime must reject imports outside the
 allowlist and local imports not explicitly permitted by the embedder.
+
+The `datetime` subset is fixed-offset and host-mediated. `date`, `time`,
+`datetime`, `timedelta`, `timezone`, `tzinfo`, ISO parsing, formatting, and
+ordinary arithmetic/comparison behavior follow CPython shapes where practical.
+Clock- and local-offset-sensitive operations such as `today()`, `now()`,
+`fromtimestamp()`, naive `timestamp()`, and `astimezone()` must read time through
+the configured host rather than the ambient process. IANA timezone databases and
+ambient locale/timezone discovery are outside the supported surface.
 
 ### 8.3 Supported Literal Surface
 

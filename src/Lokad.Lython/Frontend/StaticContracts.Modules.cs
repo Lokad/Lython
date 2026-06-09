@@ -294,7 +294,7 @@ internal static partial class StaticContracts
             "lgamma",
             "fma",
             "sumprod"),
-        ["datetime"] = Members("MINYEAR", "MAXYEAR", "timedelta", "date", "time", "datetime", "timezone"),
+        ["datetime"] = Members("MINYEAR", "MAXYEAR", "UTC", "timedelta", "date", "time", "datetime", "timezone", "tzinfo"),
         ["statistics"] = Members("StatisticsError", "mean", "fmean", "median", "median_low", "median_high", "mode", "multimode", "pstdev", "stdev", "pvariance", "variance"),
         ["random"] = Members("seed", "random", "randrange", "randint", "choice", "choices", "shuffle", "sample", "getrandbits"),
         ["copy"] = Members("copy", "deepcopy", "Error"),
@@ -570,6 +570,7 @@ internal static partial class StaticContracts
             ("math", "pi") or ("math", "e") or ("math", "tau") or ("math", "inf") or ("math", "nan") => AbstractValue.FloatType(span),
             ("openpyxl", "__version__") => AbstractValue.StringType(span),
             ("datetime", "MINYEAR") or ("datetime", "MAXYEAR") => AbstractValue.IntegerType(span),
+            ("datetime", "UTC") => AbstractValue.DateTimeTimezone(span),
             ("decimal", "DefaultContext") or ("decimal", "BasicContext") or ("decimal", "ExtendedContext") => AbstractValue.DecimalContext(span),
             ("decimal", "ROUND_CEILING") or
             ("decimal", "ROUND_FLOOR") or

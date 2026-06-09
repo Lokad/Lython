@@ -1648,6 +1648,11 @@ internal sealed partial class LythonRuntime
             return PyDecimalOps.Modulo(left, right, span);
         }
 
+        if (left is PyTimedelta || right is PyTimedelta)
+        {
+            return PyDateTimeOps.Modulo(left, right, span);
+        }
+
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '%'.", span);
@@ -2232,6 +2237,11 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (value is PyDate or PyTime or PyDateTime)
+        {
+            return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();
+        }
+
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
@@ -3420,6 +3430,7 @@ internal sealed partial class LythonRuntime
                 ["min"] = new BuiltinCallable("min", Min),
                 ["max"] = new BuiltinCallable("max", Max),
                 ["sum"] = new BuiltinCallable("sum", Sum, ["iterable", "start"], requiredCount: 1),
+                ["divmod"] = new BuiltinCallable("divmod", DivMod, ["a", "b"]),
                 ["range"] = new BuiltinCallable("range", Range),
                 ["enumerate"] = new BuiltinCallable("enumerate", Enumerate),
                 ["zip"] = new BuiltinCallable("zip", Zip),
