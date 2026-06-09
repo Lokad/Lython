@@ -588,42 +588,23 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
                 }, "Counter.get", ["key", "default"], 1),
-                "update" => new BoundCallable((arguments, span, context) =>
+                "update" => new CounterUpdateCallable(counter, subtract: false),
+                "subtract" => new CounterUpdateCallable(counter, subtract: true),
+                "total" => new BoundCallable((arguments, span, _) =>
                 {
-                    if (arguments.Length != 1)
+                    if (arguments.Length != 0)
                     {
-                        throw new LythonRuntimeException("TypeError", "Counter.update(iterable) expects one iterable or mapping argument.", span);
+                        throw new LythonRuntimeException("TypeError", "Counter.total() expects no arguments.", span);
                     }
 
-                    try
+                    var total = BigInteger.Zero;
+                    foreach (var pair in counter.Items)
                     {
-                        PopulateCounter(counter, arguments[0], span, context, subtract: false);
-                    }
-                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.update(iterable) expects one iterable or mapping argument.", span);
+                        total += ExpectCounterCount(pair.Value, span);
                     }
 
-                    return PyNone.Instance;
-                }, "Counter.update", ["iterable"]),
-                "subtract" => new BoundCallable((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.subtract(iterable) expects one iterable or mapping argument.", span);
-                    }
-
-                    try
-                    {
-                        PopulateCounter(counter, arguments[0], span, context, subtract: true);
-                    }
-                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.subtract(iterable) expects one iterable or mapping argument.", span);
-                    }
-
-                    return PyNone.Instance;
-                }, "Counter.subtract", ["iterable"]),
+                    return total;
+                }, "Counter.total", []),
                 "most_common" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -738,6 +719,82 @@ internal sealed partial class LythonRuntime
 
             return value is not null;
         }
+
+        private sealed class CounterUpdateCallable : ICallable, IPyRenderableValue
+        {
+            private readonly PyCounter _counter;
+            private readonly bool _subtract;
+
+            public CounterUpdateCallable(PyCounter counter, bool subtract)
+            {
+                _counter = counter;
+                _subtract = subtract;
+            }
+
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                object? source = null;
+                var hasSource = false;
+                var positionalCount = 0;
+                var keywordItems = new List<KeyValuePair<string, object>>();
+
+                foreach (var argument in arguments)
+                {
+                    if (argument.Name is null)
+                    {
+                        if (positionalCount >= 1)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"Counter.{Name}([iterable], **kwargs) expects at most one positional argument.", span);
+                        }
+
+                        source = argument.Value;
+                        hasSource = true;
+                        positionalCount++;
+                        continue;
+                    }
+
+                    if (argument.Name is "iterable" or "mapping")
+                    {
+                        if (hasSource)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"Counter.{Name}(...) got multiple values for iterable.", span);
+                        }
+
+                        source = argument.Value;
+                        hasSource = true;
+                        continue;
+                    }
+
+                    keywordItems.Add(new(argument.Name, argument.Value));
+                }
+
+                if (hasSource)
+                {
+                    try
+                    {
+                        PopulateCounter(_counter, source!, span, context, _subtract);
+                    }
+                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+                    {
+                        throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
+                    }
+                }
+
+                PopulateCounterKeywords(_counter, keywordItems, span, context, _subtract);
+                return PyNone.Instance;
+            }
+
+            public PyString RenderPython(PyRenderingContext context)
+            {
+                _ = context;
+                return PyString.FromString($"Counter.{Name}");
+            }
+
+            public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+            private string Name => _subtract ? "subtract" : "update";
+        }
     }
 
     private static PyList BuildItemsList(IEnumerable<KeyValuePair<object, object>> pairs, ExecutionContext context, LythonSourceSpan span)
@@ -769,6 +826,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "maxlen" => deque.MaxLength is int maxLength ? new BigInteger(maxLength) : PyNone.Instance,
                 "append" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -862,7 +920,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.copy() expects no arguments.", span);
                     }
 
-                    return new PyDeque(deque);
+                    return new PyDeque(deque, deque.MaxLength);
                 }),
                 "count" => new BoundCallable((arguments, span, _) =>
                 {
@@ -873,6 +931,57 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(deque.CountValue(arguments[0]));
                 }),
+                "index" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length is < 1 or > 3)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.index(value[, start[, stop]]) expects one to three arguments.", span);
+                    }
+
+                    var start = NormalizeDequeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, span);
+                    var stop = NormalizeDequeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, span);
+                    var index = deque.IndexOf(arguments[0], start, stop);
+                    if (index < 0)
+                    {
+                        throw new LythonRuntimeException("ValueError", "deque.index(value): value is not in deque", span);
+                    }
+
+                    return new BigInteger(index);
+                }, "deque.index", ["value", "start", "stop"], 1),
+                "insert" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.insert(index, value) expects two arguments.", span);
+                    }
+
+                    var index = ExpectDequeInsertIndex(arguments[0], span);
+                    try
+                    {
+                        deque.Insert(index, arguments[1]);
+                    }
+                    catch (InvalidOperationException ex) when (ex.Message == "deque already at its maximum size")
+                    {
+                        throw new LythonRuntimeException("IndexError", ex.Message, span);
+                    }
+
+                    context.ObserveCollectionCount(deque.Count, span);
+                    return PyNone.Instance;
+                }, "deque.insert", ["index", "value"]),
+                "remove" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.remove(value) expects one argument.", span);
+                    }
+
+                    if (!deque.RemoveValue(arguments[0]))
+                    {
+                        throw new LythonRuntimeException("ValueError", "deque.remove(value): value is not in deque", span);
+                    }
+
+                    return PyNone.Instance;
+                }, "deque.remove", ["value"]),
                 "reverse" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -903,6 +1012,49 @@ internal sealed partial class LythonRuntime
             };
 
             return value is not null;
+        }
+
+        private static int NormalizeDequeSearchBound(object? value, int length, int defaultValue, LythonSourceSpan span)
+        {
+            if (value is null)
+            {
+                return defaultValue;
+            }
+
+            var integer = ExpectInteger(value, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+            if (integer < int.MinValue)
+            {
+                return 0;
+            }
+
+            if (integer > int.MaxValue)
+            {
+                return length;
+            }
+
+            var index = (int)integer;
+            if (index < 0)
+            {
+                index += length;
+            }
+
+            return Math.Clamp(index, 0, length);
+        }
+
+        private static int ExpectDequeInsertIndex(object value, LythonSourceSpan span)
+        {
+            var integer = ExpectInteger(value, "deque.insert(index, value) expects an integer index.", span);
+            if (integer < int.MinValue)
+            {
+                return int.MinValue;
+            }
+
+            if (integer > int.MaxValue)
+            {
+                return int.MaxValue;
+            }
+
+            return (int)integer;
         }
     }
 

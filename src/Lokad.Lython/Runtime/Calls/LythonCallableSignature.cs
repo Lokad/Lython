@@ -41,6 +41,16 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CsvDictReader = new("csv.DictReader", ["f", "fieldnames", "restkey", "restval", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 1, MaxPositionalCount: 5);
     public static readonly LythonCallableSignature CsvDictWriter = new("csv.DictWriter", ["f", "fieldnames", "restval", "extrasaction", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 2, MaxPositionalCount: 5);
 
+    public static readonly LythonCallableSignature CollectionsDefaultDict = new("collections.defaultdict", ["default_factory", "iterable"], RequiredCount: 0, MaxPositionalCount: 2, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CollectionsCounter = new("collections.Counter", ["iterable"], RequiredCount: 0, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CollectionsDeque = new("collections.deque", ["iterable", "maxlen"], RequiredCount: 0);
+    public static readonly LythonCallableSignature CollectionsNamedTuple = new("collections.namedtuple", ["typename", "field_names", "rename", "defaults", "module"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature CollectionsOrderedDict = new("collections.OrderedDict", ["mapping"], RequiredCount: 0, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CollectionsChainMap = new("collections.ChainMap", RequiredCount: 0);
+    public static readonly LythonCallableSignature CollectionsUserDict = new("collections.UserDict", RequiredCount: 0);
+    public static readonly LythonCallableSignature CollectionsUserList = new("collections.UserList", RequiredCount: 0);
+    public static readonly LythonCallableSignature CollectionsUserString = new("collections.UserString", RequiredCount: 0);
+
     public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value"]);
 
     public static readonly LythonCallableSignature OpenPyxlWorkbook = new("openpyxl.Workbook", ["write_only", "iso_dates"], RequiredCount: 0);

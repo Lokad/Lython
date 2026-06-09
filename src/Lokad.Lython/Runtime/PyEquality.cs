@@ -1,5 +1,6 @@
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
+using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -50,7 +51,7 @@ internal static class PyEquality
             return true;
         }
 
-        if (left is PyTuple leftTuple && right is PyTuple rightTuple)
+        if (TryAsTupleLike(left, out var leftTuple) && TryAsTupleLike(right, out var rightTuple))
         {
             if (leftTuple.Count != rightTuple.Count)
             {
@@ -60,6 +61,24 @@ internal static class PyEquality
             for (var i = 0; i < leftTuple.Count; i++)
             {
                 if (!AreEqual(leftTuple[i], rightTuple[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (left is PyDeque leftDeque && right is PyDeque rightDeque)
+        {
+            if (leftDeque.Count != rightDeque.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < leftDeque.Count; i++)
+            {
+                if (!AreEqual(leftDeque[i], rightDeque[i]))
                 {
                     return false;
                 }
@@ -84,6 +103,11 @@ internal static class PyEquality
             }
 
             return true;
+        }
+
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            return CountersEqual(leftCounter, rightCounter);
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -115,5 +139,48 @@ internal static class PyEquality
         }
 
         return Equals(left, right);
+    }
+
+    private static bool TryAsTupleLike(object value, out IReadOnlyList<object> sequence)
+    {
+        switch (value)
+        {
+            case PyTuple tuple:
+                sequence = tuple;
+                return true;
+            case PyNamedTupleObject namedTuple:
+                sequence = namedTuple;
+                return true;
+            case PyTypingNamedTupleObject typingNamedTuple:
+                sequence = typingNamedTuple;
+                return true;
+            default:
+                sequence = Array.Empty<object>();
+                return false;
+        }
+    }
+
+    private static bool CountersEqual(PyCounter left, PyCounter right)
+    {
+        var keys = new List<object>();
+        foreach (var key in left.Keys.Concat(right.Keys))
+        {
+            if (!keys.Any(existing => AreEqual(existing, key)))
+            {
+                keys.Add(key);
+            }
+        }
+
+        foreach (var key in keys)
+        {
+            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
+            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
+            if (!AreEqual(leftValue, rightValue))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

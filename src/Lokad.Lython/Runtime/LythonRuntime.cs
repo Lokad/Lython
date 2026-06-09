@@ -1482,6 +1482,11 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => lhs + rhs, keepPositiveOnly: true, span);
+        }
+
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
             return PyDateTimeOps.Add(left, right, span);
@@ -1506,6 +1511,11 @@ internal sealed partial class LythonRuntime
                 : new PySet(leftSet, governor, allocationSpan);
             result.ExceptWith(rightSet);
             return result;
+        }
+
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => lhs - rhs, keepPositiveOnly: true, span);
         }
 
         if (left is PyDecimal || right is PyDecimal)
@@ -1789,6 +1799,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
     {
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Max, keepPositiveOnly: true, span);
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
@@ -1831,6 +1846,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateBitwiseAnd(object left, object right, LythonSourceSpan span)
     {
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Min, keepPositiveOnly: true, span);
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
@@ -1895,6 +1915,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateUnaryPlus(object operand, LythonSourceSpan span)
     {
+        if (operand is PyCounter positiveCounter)
+        {
+            return BuildCounterUnaryResult(positiveCounter, count => count, keepPositiveOnly: true, span);
+        }
+
         if (operand is PyDecimal)
         {
             return operand;
@@ -1910,6 +1935,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateUnaryMinus(object operand, LythonSourceSpan span)
     {
+        if (operand is PyCounter negativeCounter)
+        {
+            return BuildCounterUnaryResult(negativeCounter, count => -count, keepPositiveOnly: true, span);
+        }
+
         if (operand is PyTimedelta)
         {
             return PyDateTimeOps.Negate(operand, span);
@@ -1926,6 +1956,70 @@ internal sealed partial class LythonRuntime
         }
 
         return PyNumberOps.Negate(numeric);
+    }
+
+    private static PyCounter BuildCounterUnaryResult(
+        PyCounter source,
+        Func<BigInteger, BigInteger> transform,
+        bool keepPositiveOnly,
+        LythonSourceSpan span)
+    {
+        var result = CreateCounterResult(source, null, span);
+        foreach (var pair in source.Items)
+        {
+            var count = transform(ExpectCounterCount(pair.Value, span));
+            if (keepPositiveOnly && count <= 0)
+            {
+                continue;
+            }
+
+            result.SetItem(pair.Key, count);
+        }
+
+        return result;
+    }
+
+    private static PyCounter BuildCounterBinaryResult(
+        PyCounter left,
+        PyCounter right,
+        Func<BigInteger, BigInteger, BigInteger> combine,
+        bool keepPositiveOnly,
+        LythonSourceSpan span)
+    {
+        var result = CreateCounterResult(left, right, span);
+        foreach (var key in UnionCounterKeys(left, right))
+        {
+            var count = combine(left.GetIntegerCountOrZero(key, span), right.GetIntegerCountOrZero(key, span));
+            if (keepPositiveOnly && count <= 0)
+            {
+                continue;
+            }
+
+            result.SetItem(key, count);
+        }
+
+        return result;
+    }
+
+    private static PyCounter CreateCounterResult(PyCounter left, PyCounter? right, LythonSourceSpan span)
+    {
+        var governor = left.OwnerMemoryGovernor ?? right?.OwnerMemoryGovernor;
+        var allocationSpan = left.AllocationSpan ?? right?.AllocationSpan ?? span;
+        return governor is null ? new PyCounter() : new PyCounter(governor, allocationSpan);
+    }
+
+    private static IReadOnlyList<object> UnionCounterKeys(PyCounter left, PyCounter right)
+    {
+        var keys = new List<object>();
+        foreach (var key in left.Keys.Concat(right.Keys))
+        {
+            if (!keys.Any(existing => AreEqual(existing, key)))
+            {
+                keys.Add(key);
+            }
+        }
+
+        return keys;
     }
 
     private static object EvaluateBitwiseNot(object operand, LythonSourceSpan span)

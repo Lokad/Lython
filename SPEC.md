@@ -547,6 +547,18 @@ The initial subset must support:
 
 `list(iterable)`, `tuple(iterable)`, and `dict(iterable_of_pairs)` must follow Python semantics for the supported subset.
 
+The `collections` module supports the common contained container helpers:
+
+- `defaultdict`, including mapping/keyword initialization and mutable `default_factory`
+- `Counter`, including `total()`, keyword updates/subtractions, positive-count arithmetic, unary `+`/`-`, `&`, `|`, and missing-count equality semantics
+- `deque`, including `maxlen`, bounded eviction, indexing, assignment, `index`, `insert`, `remove`, `rotate`, and copy/clear/reverse helpers
+- `namedtuple`, including generated callable tuple-like records, field attributes, `_fields`, `_field_defaults`, `_make`, `_asdict`, and `_replace`
+- insertion-ordered `OrderedDict` as a dict-shaped alias
+- `ChainMap` for layered lookup with first-map writes/deletes
+- inert/importable `collections.abc` names for compatibility
+
+`UserDict`, `UserList`, and `UserString` are explicitly unsupported unless a future object-wrapper model is specified.
+
 ### 9.7 Strings
 
 Strings must behave as Python Unicode strings, not as byte arrays.

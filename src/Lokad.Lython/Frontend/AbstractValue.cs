@@ -34,6 +34,10 @@ internal enum AbstractValueKind
     CsvDictReader,
     CsvWriter,
     CsvDictWriter,
+    CollectionsDefaultDict,
+    CollectionsCounter,
+    CollectionsDeque,
+    CollectionsChainMap,
     DifflibDiffer,
     DifflibHtmlDiff,
     DifflibMatch,
@@ -183,6 +187,10 @@ internal readonly record struct AbstractValue(
     public static AbstractValue CsvDictReader(LythonSourceSpan span) => new(AbstractValueKind.CsvDictReader, "csv.DictReader", span);
     public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
     public static AbstractValue CsvDictWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvDictWriter, "csv.DictWriter", span);
+    public static AbstractValue CollectionsDefaultDict(LythonSourceSpan span) => new(AbstractValueKind.CollectionsDefaultDict, "collections.defaultdict", span);
+    public static AbstractValue CollectionsCounter(LythonSourceSpan span) => new(AbstractValueKind.CollectionsCounter, "collections.Counter", span);
+    public static AbstractValue CollectionsDeque(LythonSourceSpan span) => new(AbstractValueKind.CollectionsDeque, "collections.deque", span);
+    public static AbstractValue CollectionsChainMap(LythonSourceSpan span) => new(AbstractValueKind.CollectionsChainMap, "collections.ChainMap", span);
     public static AbstractValue DifflibDiffer(LythonSourceSpan span) => new(AbstractValueKind.DifflibDiffer, "difflib.Differ", span);
     public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => new(AbstractValueKind.DifflibHtmlDiff, "difflib.HtmlDiff", span);
     public static AbstractValue DifflibMatch(LythonSourceSpan span) => new(AbstractValueKind.DifflibMatch, "difflib.Match", span);

@@ -14,6 +14,7 @@ internal enum StaticReturnShape
     ListOfPath,
     ListSame,
     ListElement,
+    Dict,
     DictSame,
     SetSame,
     Integer,
@@ -28,6 +29,10 @@ internal enum StaticReturnShape
     CsvDictReader,
     CsvWriter,
     CsvDictWriter,
+    CollectionsDefaultDict,
+    CollectionsCounter,
+    CollectionsDeque,
+    CollectionsChainMap,
     DifflibDiffer,
     DifflibHtmlDiff,
     DifflibMatch,
@@ -209,7 +214,8 @@ internal readonly record struct StaticCallableContract(
     string DiagnosticCode,
     string Message,
     StaticMutationKind Mutation = StaticMutationKind.None,
-    string[]? ParameterNames = null)
+    string[]? ParameterNames = null,
+    bool AllowsExtraKeywords = false)
 {
     public bool AcceptsArgumentCount(int count)
         => Shape.AcceptsArgumentCount(count);
@@ -223,7 +229,7 @@ internal readonly record struct StaticCallableContract(
         out ExpressionSyntax? offendingExpression)
         => Shape.TryGetArgumentShapeFailure(arguments, out reason, out offendingExpression);
 
-    private StaticCallShapeContract Shape => new(MinArgumentCount, MaxArgumentCount, ParameterNames);
+    private StaticCallShapeContract Shape => new(MinArgumentCount, MaxArgumentCount, ParameterNames, AllowsExtraKeywords: AllowsExtraKeywords);
 }
 
 internal readonly record struct StaticKnownCallContract(

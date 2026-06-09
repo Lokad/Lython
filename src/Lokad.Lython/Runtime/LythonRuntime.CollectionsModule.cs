@@ -13,18 +13,202 @@ internal sealed partial class LythonRuntime
         {
         }
 
+        public override IReadOnlyList<string> ExportedNames
+            =>
+            [
+                "defaultdict",
+                "Counter",
+                "deque",
+                "namedtuple",
+                "OrderedDict",
+                "ChainMap",
+                "UserDict",
+                "UserList",
+                "UserString",
+                "abc",
+            ];
+
         public override bool TryGetMember(string name, out object value)
         {
             value = name switch
             {
-                "defaultdict" => new BuiltinCallable("collections.defaultdict", DefaultDict, ["default_factory", "iterable"], requiredCount: 0),
-                "Counter" => new BuiltinCallable("collections.Counter", Counter, ["iterable"], requiredCount: 0),
-                "deque" => new BuiltinCallable("collections.deque", Deque, ["iterable"], requiredCount: 0),
+                "defaultdict" => new CollectionsCallable("collections.defaultdict", DefaultDict),
+                "Counter" => new CollectionsCallable("collections.Counter", Counter),
+                "deque" => new CollectionsCallable("collections.deque", Deque),
+                "namedtuple" => new CollectionsCallable("collections.namedtuple", NamedTuple),
+                "OrderedDict" => new CollectionsCallable("collections.OrderedDict", OrderedDict),
+                "ChainMap" => new CollectionsCallable("collections.ChainMap", ChainMap),
+                "UserDict" => new UnsupportedCollectionsCallable("collections.UserDict"),
+                "UserList" => new UnsupportedCollectionsCallable("collections.UserList"),
+                "UserString" => new UnsupportedCollectionsCallable("collections.UserString"),
+                "abc" => CollectionsAbcModule.Instance,
                 _ => null!,
             };
 
             return value is not null;
         }
+    }
+
+    private sealed class CollectionsAbcModule : PyModule
+    {
+        public static readonly CollectionsAbcModule Instance = new();
+        private static readonly string[] Names =
+        [
+            "Iterable",
+            "Iterator",
+            "Sequence",
+            "MutableSequence",
+            "Mapping",
+            "MutableMapping",
+            "Set",
+            "MutableSet",
+            "Callable",
+        ];
+
+        private CollectionsAbcModule() : base("collections.abc")
+        {
+        }
+
+        public override IReadOnlyList<string> ExportedNames => Names;
+
+        public override bool TryGetMember(string name, out object value)
+        {
+            if (Names.Contains(name, StringComparer.Ordinal))
+            {
+                value = new PyTypingAlias(name, qualified: false);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+    }
+
+    private sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
+    {
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+
+        public CollectionsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
+        {
+            Name = name;
+            _implementation = implementation;
+        }
+
+        public string Name { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return _implementation(arguments, span, context);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class UnsupportedCollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
+    {
+        public UnsupportedCollectionsCallable(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            context.CheckExecutionBudget(span);
+            throw new LythonRuntimeException("NotImplementedError", $"{Name} is not supported by Lython.", span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private static object DefaultDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var positional = new List<object>();
+        object? defaultFactory = PyNone.Instance;
+        object? source = null;
+        var hasDefaultFactory = false;
+        var hasSource = false;
+        var keywordItems = new List<KeyValuePair<string, object>>();
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is null)
+            {
+                positional.Add(argument.Value);
+                continue;
+            }
+
+            if (argument.Name == "default_factory")
+            {
+                if (hasDefaultFactory || positional.Count >= 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.defaultdict(...) got multiple values for argument 'default_factory'.", span);
+                }
+
+                defaultFactory = argument.Value;
+                hasDefaultFactory = true;
+                continue;
+            }
+
+            if (argument.Name is "iterable" or "mapping")
+            {
+                if (hasSource || positional.Count >= 2)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.defaultdict(...) got multiple values for mapping.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                continue;
+            }
+
+            keywordItems.Add(new(argument.Name, argument.Value));
+        }
+
+        if (positional.Count > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "collections.defaultdict([default_factory][, iterable], **kwargs) expects at most two positional arguments.", span);
+        }
+
+        if (positional.Count >= 1)
+        {
+            defaultFactory = RuntimeValue(positional[0]);
+        }
+
+        if (positional.Count == 2)
+        {
+            source = positional[1];
+            hasSource = true;
+        }
+
+        var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        if (hasSource)
+        {
+            PopulateDefaultDict(result, source!, span, context);
+        }
+
+        foreach (var pair in keywordItems)
+        {
+            result.SetItem(PyString.FromString(pair.Key), RuntimeValue(pair.Value));
+            context.ObserveCollectionCount(result.Count, span);
+        }
+
+        return result;
     }
 
     private static object DefaultDict(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -45,6 +229,53 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static object Counter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? source = null;
+        var hasSource = false;
+        var keywordItems = new List<KeyValuePair<string, object>>();
+        var positionalCount = 0;
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is null)
+            {
+                if (positionalCount >= 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.Counter([iterable], **kwargs) expects at most one positional argument.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                positionalCount++;
+                continue;
+            }
+
+            if (argument.Name is "iterable" or "mapping")
+            {
+                if (hasSource)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.Counter(...) got multiple values for iterable.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                continue;
+            }
+
+            keywordItems.Add(new(argument.Name, argument.Value));
+        }
+
+        var result = new PyCounter(context.MemoryGovernor, span);
+        if (hasSource)
+        {
+            PopulateCounter(result, source!, span, context, subtract: false);
+        }
+
+        PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
+        return result;
+    }
+
     private static object Counter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 1)
@@ -61,6 +292,71 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static object Deque(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? iterable = null;
+        var hasIterable = false;
+        int? maxLength = null;
+        var hasMaxLength = false;
+        var positionalCount = 0;
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is null)
+            {
+                if (positionalCount == 0)
+                {
+                    iterable = argument.Value;
+                    hasIterable = true;
+                }
+                else if (positionalCount == 1)
+                {
+                    maxLength = ExpectDequeMaxLength(argument.Value, span);
+                    hasMaxLength = true;
+                }
+                else
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque([iterable][, maxlen]) expects at most two positional arguments.", span);
+                }
+
+                positionalCount++;
+                continue;
+            }
+
+            if (argument.Name == "iterable")
+            {
+                if (hasIterable)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque(...) got multiple values for argument 'iterable'.", span);
+                }
+
+                iterable = argument.Value;
+                hasIterable = true;
+                continue;
+            }
+
+            if (argument.Name == "maxlen")
+            {
+                if (hasMaxLength)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque(...) got multiple values for argument 'maxlen'.", span);
+                }
+
+                maxLength = ExpectDequeMaxLength(argument.Value, span);
+                hasMaxLength = true;
+                continue;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"collections.deque(...) received an unexpected keyword argument '{argument.Name}'.", span);
+        }
+
+        var result = hasIterable
+            ? new PyDeque(ToSequence(iterable!, span), maxLength)
+            : new PyDeque(maxLength);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
     private static object Deque(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 1)
@@ -73,6 +369,123 @@ internal sealed partial class LythonRuntime
             : new PyDeque(ToSequence(arguments[0], span));
         context.ObserveCollectionCount(result.Count, span);
         return result;
+    }
+
+    private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Count(static argument => argument.Name is null) > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None) accepts only typename and field_names positionally.", span);
+        }
+
+        if (!TryGetArgument(arguments, 0, "typename", span, out var typeNameValue) ||
+            !PyStringOps.TryAsString(typeNameValue, out var typeName))
+        {
+            throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, ...) expects a string type name.", span);
+        }
+
+        if (!TryGetArgument(arguments, 1, "field_names", span, out var fieldNamesValue))
+        {
+            throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, ...) missing field_names.", span);
+        }
+
+        var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
+        var defaults = TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone
+            ? ToSequence(defaultsValue, span).ToArray()
+            : [];
+
+        if (defaults.Length > 0 && defaults.Length > ParseNamedTupleFieldNames(fieldNamesValue, span).Count)
+        {
+            throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is not null &&
+                argument.Name is not ("typename" or "field_names" or "rename" or "defaults" or "module"))
+            {
+                throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) received an unexpected keyword argument '{argument.Name}'.", span);
+            }
+        }
+
+        var fields = NormalizeNamedTupleFields(ParseNamedTupleFieldNames(fieldNamesValue, span), rename, span);
+        if (defaults.Length > fields.Count)
+        {
+            throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+        }
+
+        return new PyNamedTupleType(typeName.AsString(), fields, defaults);
+    }
+
+    private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? source = null;
+        var hasSource = false;
+        var positionalCount = 0;
+        var keywordItems = new List<KeyValuePair<string, object>>();
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is null)
+            {
+                if (positionalCount >= 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.OrderedDict([mapping], **kwargs) expects at most one positional argument.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                positionalCount++;
+                continue;
+            }
+
+            if (argument.Name is "mapping" or "iterable")
+            {
+                if (hasSource)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.OrderedDict(...) got multiple values for mapping.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                continue;
+            }
+
+            keywordItems.Add(new(argument.Name, argument.Value));
+        }
+
+        var dict = new PyDict(context.MemoryGovernor, span);
+        if (hasSource)
+        {
+            PopulateDict(dict, source!, "collections.OrderedDict([mapping], **kwargs)", span, context);
+        }
+
+        foreach (var pair in keywordItems)
+        {
+            dict.SetItem(PyString.FromString(pair.Key), RuntimeValue(pair.Value));
+            context.ObserveCollectionCount(dict.Count, span);
+        }
+
+        return dict;
+    }
+
+    private static object ChainMap(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var maps = new List<object>();
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is not null)
+            {
+                throw new LythonRuntimeException("TypeError", "collections.ChainMap(*maps) does not accept keyword arguments.", span);
+            }
+
+            maps.Add(argument.Value);
+        }
+
+        return maps.Count == 0
+            ? new PyChainMap([new PyDict(context.MemoryGovernor, span)])
+            : new PyChainMap(PyChainMap.NormalizeMaps(maps, span));
     }
 
     private static void PopulateDefaultDict(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
@@ -104,6 +517,42 @@ internal sealed partial class LythonRuntime
             if (item is not PyTuple tuple || tuple.Count != 2)
             {
                 throw new LythonRuntimeException("TypeError", "collections.defaultdict(..., iterable) expects key/value pairs.", span);
+            }
+
+            dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
+            context.ObserveCollectionCount(dict.Count, span);
+        }
+    }
+
+    private static void PopulateDict(PyDict dict, object source, string signature, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (source is PyDict pyDict)
+        {
+            foreach (var pair in pyDict)
+            {
+                dict.SetItem(pair.Key, pair.Value);
+                context.ObserveCollectionCount(dict.Count, span);
+            }
+
+            return;
+        }
+
+        if (source is PyDefaultDict defaultDict)
+        {
+            foreach (var pair in defaultDict)
+            {
+                dict.SetItem(pair.Key, pair.Value);
+                context.ObserveCollectionCount(dict.Count, span);
+            }
+
+            return;
+        }
+
+        foreach (var item in ToSequence(source, span))
+        {
+            if (item is not PyTuple tuple || tuple.Count != 2)
+            {
+                throw new LythonRuntimeException("TypeError", $"{signature} expects key/value pairs.", span);
             }
 
             dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
@@ -144,6 +593,21 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static void PopulateCounterKeywords(
+        PyCounter counter,
+        IEnumerable<KeyValuePair<string, object>> keywordItems,
+        LythonSourceSpan span,
+        ExecutionContext context,
+        bool subtract)
+    {
+        foreach (var pair in keywordItems)
+        {
+            var delta = ExpectCounterCount(pair.Value, span);
+            counter.Increment(PyString.FromString(pair.Key), subtract ? -delta : delta);
+            context.ObserveCollectionCount(counter.Count, span);
+        }
+    }
+
     private static BigInteger ExpectCounterCount(object value, LythonSourceSpan span)
     {
         if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
@@ -153,4 +617,145 @@ internal sealed partial class LythonRuntime
 
         return integer;
     }
+
+    private static int? ExpectDequeMaxLength(object value, LythonSourceSpan span)
+    {
+        if (value is PyNone)
+        {
+            return null;
+        }
+
+        var integer = ExpectInteger(value, "collections.deque(..., maxlen=...) expects an integer or None.", span);
+        if (integer < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "maxlen must be non-negative.", span);
+        }
+
+        if (integer > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "deque maxlen is too large.", span);
+        }
+
+        return (int)integer;
+    }
+
+    private static bool TryGetArgument(CallArgumentValue[] arguments, int position, string keyword, LythonSourceSpan span, out object value)
+    {
+        value = PyNone.Instance;
+        var positionalIndex = 0;
+        var found = false;
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is null)
+            {
+                if (positionalIndex == position)
+                {
+                    if (found)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) got multiple values for argument '{keyword}'.", span);
+                    }
+
+                    value = argument.Value;
+                    found = true;
+                }
+
+                positionalIndex++;
+                continue;
+            }
+
+            if (argument.Name == keyword)
+            {
+                if (found)
+                {
+                    throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) got multiple values for argument '{keyword}'.", span);
+                }
+
+                value = argument.Value;
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
+    private static IReadOnlyList<string> ParseNamedTupleFieldNames(object value, LythonSourceSpan span)
+    {
+        if (PyStringOps.TryAsString(value, out var text))
+        {
+            return text.AsString()
+                .Split([',', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .ToArray();
+        }
+
+        var names = new List<string>();
+        foreach (var item in ToSequence(value, span))
+        {
+            if (!PyStringOps.TryAsString(item, out var name))
+            {
+                throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., field_names) expects strings.", span);
+            }
+
+            names.Add(name.AsString());
+        }
+
+        return names;
+    }
+
+    private static IReadOnlyList<string> NormalizeNamedTupleFields(IReadOnlyList<string> fields, bool rename, LythonSourceSpan span)
+    {
+        var normalized = new List<string>(fields.Count);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var i = 0; i < fields.Count; i++)
+        {
+            var field = fields[i];
+            if (!IsValidIdentifier(field) ||
+                IsPythonKeyword(field) ||
+                field.StartsWith('_') ||
+                !seen.Add(field))
+            {
+                if (!rename)
+                {
+                    throw new LythonRuntimeException("ValueError", $"Encountered invalid or duplicate field name '{field}'.", span);
+                }
+
+                field = $"_{i}";
+                while (seen.Contains(field))
+                {
+                    field = $"_{i}_{seen.Count}";
+                }
+
+                seen.Add(field);
+            }
+
+            normalized.Add(field);
+        }
+
+        return normalized;
+    }
+
+    private static bool IsValidIdentifier(string value)
+    {
+        if (value.Length == 0 || !(char.IsLetter(value[0]) || value[0] == '_'))
+        {
+            return false;
+        }
+
+        for (var i = 1; i < value.Length; i++)
+        {
+            if (!(char.IsLetterOrDigit(value[i]) || value[i] == '_'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsPythonKeyword(string value)
+        => value is
+            "False" or "None" or "True" or "and" or "as" or "assert" or "async" or "await" or
+            "break" or "class" or "continue" or "def" or "del" or "elif" or "else" or "except" or
+            "finally" or "for" or "from" or "global" or "if" or "import" or "in" or "is" or
+            "lambda" or "nonlocal" or "not" or "or" or "pass" or "raise" or "return" or "try" or
+            "while" or "with" or "yield";
 }

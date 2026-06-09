@@ -790,6 +790,7 @@ internal sealed partial class LythonRuntime
         return typeSpec switch
         {
             PyType => true,
+            PyNamedTupleType => true,
             BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => true,
             PyBuiltinRuntimeType builtinType when IsBuiltinTypeName(builtinType.Name) => true,
             INamedRuntimeCallable namedCallable when IsBuiltinTypeName(namedCallable.Name) => true,
@@ -807,6 +808,7 @@ internal sealed partial class LythonRuntime
                 PyType typeValue => typeValue.MetaType is not null && typeValue.MetaType.IsSubtypeOf(runtimeType),
                 _ => false
             },
+            PyNamedTupleType namedTupleType => value is PyNamedTupleObject namedTuple && ReferenceEquals(namedTuple.Type, namedTupleType),
             BuiltinCallable builtin => DoesObjectMatchBuiltinType(builtin.Name, value),
             PyBuiltinRuntimeType builtinType => DoesObjectMatchBuiltinType(builtinType.Name, value),
             INamedRuntimeCallable namedCallable => DoesObjectMatchBuiltinType(namedCallable.Name, value),
@@ -854,7 +856,7 @@ internal sealed partial class LythonRuntime
             "int" => value is BigInteger or int or bool,
             "float" => value is double,
             "list" => value is PyList,
-            "tuple" => value is PyTuple,
+            "tuple" => value is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject,
             "dict" => value is PyDict,
             "set" => value is PySet,
             "str" => value is PyString or string,

@@ -271,6 +271,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
             double => GetBuiltinTypeObject(context, "float", span),
             PyList => GetBuiltinTypeObject(context, "list", span),
             PyTuple => GetBuiltinTypeObject(context, "tuple", span),
+            PyNamedTupleObject namedTuple => namedTuple.Type,
             PyDict => GetBuiltinTypeObject(context, "dict", span),
             PySet => GetBuiltinTypeObject(context, "set", span),
             PyString or string => GetBuiltinTypeObject(context, "str", span),

@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
         {
             items[index++] = deep ? CopyValue(item, deep: true, context, span, memo) : item;
         }
-        var clone = new PyDeque(items);
+        var clone = new PyDeque(items, deque.MaxLength);
         memo[deque] = clone;
         context.ObserveCollectionCount(clone.Count, span);
         return clone;

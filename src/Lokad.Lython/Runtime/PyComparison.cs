@@ -32,7 +32,7 @@ internal static class PyComparison
             return CompareSequences(leftList, rightList, span);
         }
 
-        if (left is PyTuple leftTuple && right is PyTuple rightTuple)
+        if (TryAsTupleLike(left, out var leftTuple) && TryAsTupleLike(right, out var rightTuple))
         {
             return CompareSequences(leftTuple, rightTuple, span);
         }
@@ -67,5 +67,24 @@ internal static class PyComparison
         }
 
         return left.Count.CompareTo(right.Count);
+    }
+
+    private static bool TryAsTupleLike(object value, out IReadOnlyList<object> sequence)
+    {
+        switch (value)
+        {
+            case PyTuple tuple:
+                sequence = tuple;
+                return true;
+            case PyNamedTupleObject namedTuple:
+                sequence = namedTuple;
+                return true;
+            case PyTypingNamedTupleObject typingNamedTuple:
+                sequence = typingNamedTuple;
+                return true;
+            default:
+                sequence = Array.Empty<object>();
+                return false;
+        }
     }
 }
