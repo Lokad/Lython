@@ -34,6 +34,10 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictReader or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.DifflibDiffer or
+            AbstractValueKind.DifflibHtmlDiff or
+            AbstractValueKind.DifflibMatch or
+            AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -106,6 +110,9 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.DifflibDiffer or
+            AbstractValueKind.DifflibHtmlDiff or
+            AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -161,6 +168,9 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.DifflibDiffer or
+            AbstractValueKind.DifflibHtmlDiff or
+            AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -205,6 +215,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
+            AbstractValueKind.DifflibMatch or
             AbstractValueKind.Dict or
             AbstractValueKind.Set;
 
@@ -229,6 +240,9 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.DifflibDiffer or
+            AbstractValueKind.DifflibHtmlDiff or
+            AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlCell or
@@ -272,7 +286,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.BytesType or
             AbstractValueKind.List or
             AbstractValueKind.ListType or
-            AbstractValueKind.Tuple;
+            AbstractValueKind.Tuple or
+            AbstractValueKind.DifflibMatch;
 
     public static bool IsDefinitelyNonIntegerLike(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
@@ -451,6 +466,10 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CsvDictReader => "csv.DictReader",
             AbstractValueKind.CsvWriter => "csv.writer",
             AbstractValueKind.CsvDictWriter => "csv.DictWriter",
+            AbstractValueKind.DifflibDiffer => "difflib.Differ",
+            AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
+            AbstractValueKind.DifflibMatch => "difflib.Match",
+            AbstractValueKind.DifflibSequenceMatcher => "difflib.SequenceMatcher",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.Function => "function",

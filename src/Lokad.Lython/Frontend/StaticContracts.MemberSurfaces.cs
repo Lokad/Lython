@@ -59,6 +59,45 @@ internal static partial class StaticContracts
         "writerows",
     };
 
+    private static readonly HashSet<string> DifflibDifferMembers = new(StringComparer.Ordinal)
+    {
+        "linejunk",
+        "charjunk",
+        "compare",
+    };
+
+    private static readonly HashSet<string> DifflibHtmlDiffMembers = new(StringComparer.Ordinal)
+    {
+        "make_table",
+        "make_file",
+    };
+
+    private static readonly HashSet<string> DifflibMatchMembers = new(StringComparer.Ordinal)
+    {
+        "a",
+        "b",
+        "size",
+    };
+
+    private static readonly HashSet<string> DifflibSequenceMatcherMembers = new(StringComparer.Ordinal)
+    {
+        "a",
+        "b",
+        "b2j",
+        "bjunk",
+        "bpopular",
+        "set_seqs",
+        "set_seq1",
+        "set_seq2",
+        "find_longest_match",
+        "get_matching_blocks",
+        "get_opcodes",
+        "get_grouped_opcodes",
+        "ratio",
+        "quick_ratio",
+        "real_quick_ratio",
+    };
+
     private static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
     {
         "args",
@@ -653,6 +692,10 @@ internal static partial class StaticContracts
             AbstractValueKind.CsvDictReader or
             AbstractValueKind.CsvWriter or
             AbstractValueKind.CsvDictWriter or
+            AbstractValueKind.DifflibDiffer or
+            AbstractValueKind.DifflibHtmlDiff or
+            AbstractValueKind.DifflibMatch or
+            AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -723,6 +766,10 @@ internal static partial class StaticContracts
             AbstractValueKind.CsvDictReader => CsvDictReaderMembers.Contains(memberName),
             AbstractValueKind.CsvWriter => CsvWriterMembers.Contains(memberName),
             AbstractValueKind.CsvDictWriter => CsvDictWriterMembers.Contains(memberName),
+            AbstractValueKind.DifflibDiffer => DifflibDifferMembers.Contains(memberName),
+            AbstractValueKind.DifflibHtmlDiff => DifflibHtmlDiffMembers.Contains(memberName),
+            AbstractValueKind.DifflibMatch => DifflibMatchMembers.Contains(memberName),
+            AbstractValueKind.DifflibSequenceMatcher => DifflibSequenceMatcherMembers.Contains(memberName),
             AbstractValueKind.SubprocessCompletedProcess => CompletedProcessMembers.Contains(memberName),
             AbstractValueKind.DataclassField => DataclassFieldMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlWorkbook => OpenPyxlWorkbookMembers.Contains(memberName),

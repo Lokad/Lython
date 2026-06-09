@@ -34,6 +34,10 @@ internal enum AbstractValueKind
     CsvDictReader,
     CsvWriter,
     CsvDictWriter,
+    DifflibDiffer,
+    DifflibHtmlDiff,
+    DifflibMatch,
+    DifflibSequenceMatcher,
     SubprocessCompletedProcess,
     DataclassField,
     OpenPyxlWorkbook,
@@ -177,6 +181,10 @@ internal readonly record struct AbstractValue(
     public static AbstractValue CsvDictReader(LythonSourceSpan span) => new(AbstractValueKind.CsvDictReader, "csv.DictReader", span);
     public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
     public static AbstractValue CsvDictWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvDictWriter, "csv.DictWriter", span);
+    public static AbstractValue DifflibDiffer(LythonSourceSpan span) => new(AbstractValueKind.DifflibDiffer, "difflib.Differ", span);
+    public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => new(AbstractValueKind.DifflibHtmlDiff, "difflib.HtmlDiff", span);
+    public static AbstractValue DifflibMatch(LythonSourceSpan span) => new(AbstractValueKind.DifflibMatch, "difflib.Match", span);
+    public static AbstractValue DifflibSequenceMatcher(LythonSourceSpan span) => new(AbstractValueKind.DifflibSequenceMatcher, "difflib.SequenceMatcher", span);
     public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
     public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
     public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbook, "openpyxl.Workbook", span);

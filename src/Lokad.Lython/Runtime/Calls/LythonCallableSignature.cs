@@ -130,11 +130,16 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature FnMatch = new("fnmatch.fnmatch", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = new("fnmatch.filter", ["names", "pattern"]);
 
+    public static readonly LythonCallableSignature DifflibIsLineJunk = new("difflib.IS_LINE_JUNK", ["line"]);
+    public static readonly LythonCallableSignature DifflibIsCharacterJunk = new("difflib.IS_CHARACTER_JUNK", ["ch"]);
     public static readonly LythonCallableSignature DifflibUnifiedDiff = new("difflib.unified_diff", ["a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], RequiredCount: 2);
     public static readonly LythonCallableSignature DifflibContextDiff = new("difflib.context_diff", ["a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], RequiredCount: 2);
-    public static readonly LythonCallableSignature DifflibNdiff = new("difflib.ndiff", ["a", "b"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibNdiff = new("difflib.ndiff", ["a", "b", "linejunk", "charjunk"], RequiredCount: 2);
     public static readonly LythonCallableSignature DifflibRestore = new("difflib.restore", ["delta", "which"]);
     public static readonly LythonCallableSignature DifflibGetCloseMatches = new("difflib.get_close_matches", ["word", "possibilities", "n", "cutoff"], RequiredCount: 2);
+    public static readonly LythonCallableSignature DifflibDiffBytes = new("difflib.diff_bytes", ["dfunc", "a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], RequiredCount: 3);
+    public static readonly LythonCallableSignature DifflibDiffer = new("difflib.Differ", ["linejunk", "charjunk"], RequiredCount: 0);
+    public static readonly LythonCallableSignature DifflibHtmlDiff = new("difflib.HtmlDiff", ["tabsize", "wrapcolumn", "linejunk", "charjunk"], RequiredCount: 0);
     public static readonly LythonCallableSignature DifflibSequenceMatcher = new("difflib.SequenceMatcher", ["isjunk", "a", "b", "autojunk"], RequiredCount: 0);
 
     public static readonly LythonCallableSignature PkgutilIterModules = new("pkgutil.iter_modules", ["path", "prefix"], RequiredCount: 0);

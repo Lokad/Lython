@@ -1090,6 +1090,38 @@ The subprocess request sent to the host must carry the command arguments, option
 
 The supported subprocess surface does not include `Popen`, background processes, unmanaged pipes, or ambient shell authority.
 
+### 11.13 Line Diffs
+
+Line-oriented diffing is part of the standard runtime.
+
+The runtime must support the statement:
+
+- `import difflib`
+
+The imported module must expose:
+
+- `difflib.unified_diff(...)`
+- `difflib.context_diff(...)`
+- `difflib.ndiff(...)`
+- `difflib.restore(...)`
+- `difflib.get_close_matches(...)`
+- `difflib.diff_bytes(...)`
+- `difflib.Differ`
+- `difflib.HtmlDiff`
+- `difflib.SequenceMatcher`
+- `difflib.IS_LINE_JUNK`
+- `difflib.IS_CHARACTER_JUNK`
+
+The supported `difflib` surface must follow Python semantics for ordinary
+line-diff scripts, including junk predicates, grouped opcodes, `Match`-shaped
+matching blocks, close-match ranking, intraline `? ` hints, byte-preserving
+`diff_bytes(...)`, and simple HTML table/file generation.
+
+Diff helpers may return materialized lists rather than lazy generators. This is
+an intentional containment and resource-accounting choice; scripts that iterate,
+join, or wrap the result in `list(...)` must continue to behave like ordinary
+Python for the supported subset.
+
 ---
 
 ## 12. Host Capability Interface
