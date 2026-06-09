@@ -18,15 +18,17 @@ public sealed class GlobModuleFunctionTests
 import glob
 
 vals = []
-vals.append(str(sorted(item.as_posix() for item in glob.glob("/repo/docs/*.md"))))
-vals.append(str(sorted(item.as_posix() for item in glob.iglob("/repo/docs/**/*.md", recursive=True))))
+vals.append(str(sorted(glob.glob("/repo/docs/*.md"))))
+vals.append(str(sorted(glob.iglob("/repo/docs/**/*.md", recursive=True))))
 vals.append(glob.escape("/repo/docs/[draft]*.md"))
+vals.append(str([glob.has_magic("*.md"), glob.has_magic("docs/a.md")]))
+vals.append(glob.translate("*.md"))
 write_text("/out.txt", "|".join(vals))
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[/repo/docs/a.md]|[/repo/docs/a.md, /repo/docs/sub/c.md]|/repo/docs/[[]draft][*].md", host.ReadText("/out.txt"));
+        Assert.Equal("[/repo/docs/a.md]|[/repo/docs/a.md, /repo/docs/sub/c.md]|/repo/docs/[[]draft][*].md|[True, False]|^(?!\\.)[^/]*\\.md$", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -39,13 +41,39 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 import glob
-vals = sorted(item.as_posix() for item in glob.glob("**/*.py", recursive=True))
+vals = sorted(glob.glob("**/*.py", recursive=True))
 write_text("/out.txt", str(vals))
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[/repo/a.py, /repo/sub/b.py]", host.ReadText("/out.txt"));
+        Assert.Equal("[a.py, sub/b.py]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void GlobModule_RootDirAndPathLikePatterns_ReturnStrings()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/pkg/a.py", "a");
+        host.SeedFile("/repo/pkg/b.txt", "b");
+        host.SeedFile("/repo/other/c.py", "c");
+
+        var result = new LythonEngine().Run(
+            """
+import glob
+from pathlib import Path
+
+vals = []
+vals.append(str(sorted(glob.glob("*.py", root_dir="/repo/pkg"))))
+vals.append(str(sorted(glob.glob(Path("*.py"), root_dir=Path("/repo/pkg")))))
+vals.append(str(sorted(glob.glob("/repo/pkg/*.py", root_dir="/repo/other"))))
+vals.append(glob.glob("pkg/*.py")[0].replace("pkg/", ""))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[a.py]|[a.py]|[/repo/pkg/a.py]|a.py", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -53,6 +81,7 @@ write_text("/out.txt", str(vals))
     {
         var host = new MockLythonHost("/repo");
         host.SeedFile("/repo/.top.py", "top");
+        host.SeedFile("/repo/.hiddendir/c.py", "hidden dir");
         host.SeedFile("/repo/sub/.hidden.py", "hidden");
         host.SeedFile("/repo/sub/vis.py", "visible");
 
@@ -61,14 +90,57 @@ write_text("/out.txt", str(vals))
 import glob
 
 vals = []
-vals.append(str(sorted(item.as_posix() for item in glob.glob("*.py"))))
-vals.append(str(sorted(item.as_posix() for item in glob.glob("**/*.py", recursive=True))))
+vals.append(str(sorted(glob.glob("*.py"))))
+vals.append(str(sorted(glob.glob("*.py", include_hidden=True))))
+vals.append(str(sorted(glob.glob(".*.py"))))
+vals.append(str(sorted(glob.glob("**/*.py", recursive=True))))
+vals.append(str(sorted(glob.glob("**/*.py", recursive=True, include_hidden=True))))
 write_text("/out.txt", "|".join(vals))
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[]|[/repo/sub/vis.py]", host.ReadText("/out.txt"));
+        Assert.Equal("[]|[.top.py]|[.top.py]|[sub/vis.py]|[.hiddendir/c.py, .top.py, sub/.hidden.py, sub/vis.py]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void GlobModule_RecursiveDoubleStar_PreservesDuplicateMatches()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/a.py", "a");
+        host.SeedFile("/repo/sub/b.py", "b");
+
+        var result = new LythonEngine().Run(
+            """
+import glob
+write_text("/out.txt", str(sorted(glob.glob("**/**/*.py", recursive=True))))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[a.py, sub/b.py, sub/b.py]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void GlobModule_IGlob_ReturnsOneShotIterator()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/a.py", "a");
+        host.SeedFile("/repo/b.py", "b");
+
+        var result = new LythonEngine().Run(
+            """
+import glob
+
+it = glob.iglob("*.py")
+first = list(it)
+second = list(it)
+write_text("/out.txt", str(first) + "|" + str(second))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[a.py, b.py]|[]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -85,8 +157,8 @@ write_text("/out.txt", "|".join(vals))
 import glob
 
 vals = []
-vals.append(str(sorted(item.as_posix() for item in glob.glob("/repo/docs/*.md"))))
-vals.append(str(sorted(item.as_posix() for item in glob.iglob("/repo/docs/**/*.md", recursive=True))))
+vals.append(str(sorted(glob.glob("/repo/docs/*.md"))))
+vals.append(str(sorted(glob.iglob("/repo/docs/**/*.md", recursive=True))))
 write_text("/out.txt", "|".join(vals))
 """,
             host);
@@ -107,17 +179,31 @@ glob.glob("**/*.py", recursive="yes")
     [InlineData(
         """
 import glob
-glob.glob("*.py", root_dir="/repo")
+glob.glob("*.py", root_dir=1)
 """,
         "compile",
-        "glob.glob(pathname[, recursive]) expects one or two arguments.")]
+        "root_dir to be path-like or None")]
     [InlineData(
         """
 import glob
-glob.iglob("*.py", include_hidden=True)
+glob.iglob("*.py", include_hidden=1)
 """,
         "compile",
-        "glob.iglob(pathname[, recursive]) expects one or two arguments.")]
+        "include_hidden to be a bool")]
+    [InlineData(
+        """
+import glob
+glob.glob("*.py", dir_fd=1)
+""",
+        "compile",
+        "dir_fd=...) is not supported")]
+    [InlineData(
+        """
+import glob
+glob.glob("*.py", True)
+""",
+        "compile",
+        "expects one path-like argument plus supported keyword options")]
     public void GlobModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost("/repo"));

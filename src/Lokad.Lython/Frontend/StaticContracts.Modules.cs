@@ -205,7 +205,7 @@ internal static partial class StaticContracts
             "ismount",
             "islink",
             "supports_unicode_filenames"),
-        ["glob"] = Members("glob", "iglob", "escape"),
+        ["glob"] = Members("glob", "iglob", "escape", "has_magic", "translate", "glob0", "glob1"),
         ["decimal"] = Members("Decimal", "InvalidOperation", "DivisionByZero", "ROUND_HALF_EVEN", "ROUND_DOWN", "ROUND_UP"),
         ["math"] = Members("pi", "e", "tau", "inf", "nan", "sqrt", "exp", "log", "log10", "log2", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", "floor", "ceil", "fabs", "trunc", "degrees", "radians", "isfinite", "isinf", "isnan", "pow", "hypot", "fmod", "copysign", "isclose", "prod", "fsum"),
         ["datetime"] = Members("MINYEAR", "MAXYEAR", "timedelta", "date", "time", "datetime", "timezone"),

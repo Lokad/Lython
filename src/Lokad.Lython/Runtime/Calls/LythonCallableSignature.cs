@@ -191,9 +191,13 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OsPathSplitRoot = new("os.path.splitroot", ["path"]);
     public static readonly LythonCallableSignature OsPathIsMount = new("os.path.ismount", ["path"]);
 
-    public static readonly LythonCallableSignature Glob = new("glob.glob", ["pathname", "recursive"], RequiredCount: 1);
-    public static readonly LythonCallableSignature IGlob = new("glob.iglob", ["pathname", "recursive"], RequiredCount: 1);
+    public static readonly LythonCallableSignature Glob = new("glob.glob", ["pathname", "root_dir", "dir_fd", "recursive", "include_hidden"], RequiredCount: 1, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature IGlob = new("glob.iglob", ["pathname", "root_dir", "dir_fd", "recursive", "include_hidden"], RequiredCount: 1, MaxPositionalCount: 1);
     public static readonly LythonCallableSignature GlobEscape = new("glob.escape", ["pathname"]);
+    public static readonly LythonCallableSignature GlobHasMagic = new("glob.has_magic", ["s"]);
+    public static readonly LythonCallableSignature GlobTranslate = new("glob.translate", ["pathname", "recursive", "include_hidden", "seps"], RequiredCount: 1, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature Glob0 = new("glob.glob0", ["dirname", "basename", "dir_fd", "dironly", "include_hidden"], RequiredCount: 2);
+    public static readonly LythonCallableSignature Glob1 = new("glob.glob1", ["dirname", "pattern"], RequiredCount: 2);
 
     public static readonly LythonCallableSignature FnMatch = new("fnmatch.fnmatch", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = new("fnmatch.filter", ["names", "pattern"]);

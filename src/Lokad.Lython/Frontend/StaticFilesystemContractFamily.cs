@@ -150,18 +150,51 @@ internal static class StaticFilesystemContractFamily
     {
         if (!string.Equals(targetName, LythonKnownCallableSignatures.Glob.Name, StringComparison.Ordinal) &&
             !string.Equals(targetName, LythonKnownCallableSignatures.IGlob.Name, StringComparison.Ordinal) &&
-            !string.Equals(targetName, LythonKnownCallableSignatures.GlobEscape.Name, StringComparison.Ordinal))
+            !string.Equals(targetName, LythonKnownCallableSignatures.GlobEscape.Name, StringComparison.Ordinal) &&
+            !string.Equals(targetName, LythonKnownCallableSignatures.GlobHasMagic.Name, StringComparison.Ordinal) &&
+            !string.Equals(targetName, LythonKnownCallableSignatures.GlobTranslate.Name, StringComparison.Ordinal))
         {
             return false;
         }
 
-        var emitted = AnalyzeStringArgument(arguments, 0, "pathname", $"{targetName}(pathname[, recursive]) expects pathname to be a string.", diagnostics, bindings);
-        if (!string.Equals(targetName, LythonKnownCallableSignatures.GlobEscape.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.Glob.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.IGlob.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeBooleanArgument(arguments, 1, "recursive", $"{targetName}(pathname[, recursive]) expects recursive to be a bool.", diagnostics, bindings);
+            var emitted = AnalyzePathLikeArgument(arguments, 0, "pathname", $"{targetName}(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False) expects pathname to be path-like.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeOrNoneArgument(arguments, 1, "root_dir", $"{targetName}(..., root_dir=...) expects root_dir to be path-like or None.", diagnostics, bindings);
+            emitted |= AnalyzeUnsupportedDirFd(arguments, targetName, diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 3, "recursive", $"{targetName}(..., recursive=...) expects recursive to be a bool.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 4, "include_hidden", $"{targetName}(..., include_hidden=...) expects include_hidden to be a bool.", diagnostics, bindings);
+            return emitted;
         }
 
-        return emitted;
+        if (string.Equals(targetName, LythonKnownCallableSignatures.GlobTranslate.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzePathLikeArgument(arguments, 0, "pathname", "glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None) expects pathname to be path-like.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 1, "recursive", "glob.translate(..., recursive=...) expects recursive to be a bool.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 2, "include_hidden", "glob.translate(..., include_hidden=...) expects include_hidden to be a bool.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "seps", "glob.translate(..., seps=...) expects seps to be a string or None.", diagnostics, bindings);
+            return emitted;
+        }
+
+        return AnalyzePathLikeArgument(arguments, 0, "pathname", $"{targetName}(pathname) expects pathname to be path-like.", diagnostics, bindings);
+    }
+
+    private static bool AnalyzeUnsupportedDirFd(
+        ConcreteCallArguments arguments,
+        string targetName,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, 2, "dir_fd", bindings, out var expression, out var value) ||
+            IsUnknown(value) ||
+            value.Kind == AbstractValueKind.None)
+        {
+            return false;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", $"{targetName}(..., dir_fd=...) is not supported by Lython; raw file descriptors are outside the host path model.", expression.Span);
+        return true;
     }
 
     private static bool AnalyzeFnmatchKnownCallArgumentTypes(

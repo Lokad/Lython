@@ -292,18 +292,15 @@ The initial subset does not support:
 
 ### 8.2 Supported Import Surface
 
-The initial subset must support the following import statements:
+The runtime supports an explicit allowlist of built-in modules and host-allowed
+local script modules. The built-in allowlist includes the standard-library
+subsets specified in this document, including `argparse`, `collections`, `csv`,
+`difflib`, `fnmatch`, `glob`, `itertools`, `json`, `os`, `pathlib`, `pkgutil`,
+`re`, `subprocess` when host-enabled, `sys`, and related contained helpers.
 
-- `import re`
-- `import json`
-- `import csv`
-- `import fnmatch`
-
-The initial subset must reject:
-
-- any `from ... import ...` form
-- any `import ... as ...` form
-- any import of a module other than `re`, `json`, `csv`, or `fnmatch`
+`import ...`, `import ... as ...`, and `from ... import ...` are supported for
+allowlisted modules and members. The runtime must reject imports outside the
+allowlist and local imports not explicitly permitted by the embedder.
 
 ### 8.3 Supported Literal Surface
 
@@ -746,6 +743,10 @@ Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF
 `Path.cwd()` resolves through the host current working directory. `Path.home()` and `Path.expanduser()` must fail explicitly unless a future host capability exposes a contained home-directory source; the runtime must not read the ambient process home directory.
 
 `Path.iterdir()`, `Path.glob(...)`, and `Path.rglob(...)` may materialize eager path lists. Case-insensitive globbing, symlink traversal, rich inode/device/user/mode stat metadata, permission APIs, symlink APIs, and path byte helpers remain outside the text-first host boundary unless separately specified.
+
+The `glob` module follows the same contained path model. `glob.glob(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False)` returns a materialized list of Python strings. `glob.iglob(...)` returns a one-shot iterator over the same materialized string results. Relative patterns produce relative strings, absolute patterns produce absolute strings, and `root_dir` changes the contained matching root without exposing ambient filesystem authority. Recursive `**` preserves duplicate matches consistently with CPython. Hidden names match only when the pattern segment starts with `.` or `include_hidden=True`.
+
+`glob.escape(pathname)`, `glob.has_magic(s)`, and `glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None)` are supported for common agent-authored scripts. `glob.glob0`, `glob.glob1`, and any non-`None` `dir_fd` must fail explicitly because raw file descriptors and CPython internal traversal helpers are outside the host path model.
 
 The `os` module follows the same contained path model. It may expose Python-shaped constants such as `name`, `sep`, `linesep`, `pathsep`, `extsep`, `devnull`, and access-mode constants using documented contained values. Supported file-tree operations must remain host-mediated through `ILythonHost`.
 
@@ -1475,6 +1476,7 @@ The intended direction is stronger than a UTF-8-aware core plus string-shaped do
 - `json`
 - `csv`
 - `fnmatch`
+- `glob`
 - formatting and interpolation
 - file/text-handle behavior
 

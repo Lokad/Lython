@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime;
+using static Lokad.Lython.Frontend.StaticKnownCallArgumentChecks;
 
 namespace Lokad.Lython.Frontend;
 
@@ -561,25 +562,39 @@ internal static class StaticContractEngine
     private static void AnalyzeGlobCollectorCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         var memberName = ((MemberExpressionSyntax)call.Target).MemberName;
-        if (arguments.TryGetValue(0, "pathname", out var pathnameExpression) &&
-            !StaticAbstractValueResolver.TryResolveKnownString(pathnameExpression, bindings, out _) &&
-            StaticAbstractValueResolver.IsDefinitelyKnownLiteral(pathnameExpression, bindings))
+        AnalyzePathLikeOrNoneArgument(arguments, 1, "root_dir", $"glob.{memberName}(..., root_dir=...) expects root_dir to be path-like or None.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, 4, "include_hidden", $"glob.{memberName}(..., include_hidden=...) expects include_hidden to be a bool.", diagnostics, bindings);
+
+        if (TryGetArgument(arguments, 0, "pathname", bindings, out var pathnameExpression, out var pathnameValue) &&
+            !IsUnknown(pathnameValue) &&
+            !IsPathLike(pathnameValue))
         {
-            AddDiagnostic(diagnostics, "LA3089", $"glob.{memberName}(pathname[, recursive]) expects a string pattern.", pathnameExpression.Span);
+            AddDiagnostic(diagnostics, "LA3089", $"glob.{memberName}(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False) expects pathname to be path-like.", pathnameExpression.Span);
         }
 
-        if (arguments.TryGetValue(1, "recursive", out var recursiveExpression) &&
-            recursiveExpression is not NoneLiteralExpressionSyntax &&
-            recursiveExpression is not BooleanLiteralExpressionSyntax &&
-            StaticAbstractValueResolver.IsDefinitelyKnownLiteral(recursiveExpression, bindings))
+        if (TryGetArgument(arguments, 3, "recursive", bindings, out var recursiveExpression, out var recursiveValue) &&
+            !IsUnknown(recursiveValue) &&
+            !IsBooleanLike(recursiveValue))
         {
-            AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(pathname, recursive) expects recursive to be a bool.", recursiveExpression.Span);
+            AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(..., recursive=...) expects recursive to be a bool.", recursiveExpression.Span);
+        }
+
+        if (TryGetArgument(arguments, 2, "dir_fd", bindings, out var dirFdExpression, out var dirFdValue) &&
+            !IsUnknown(dirFdValue) &&
+            dirFdValue.Kind != AbstractValueKind.None)
+        {
+            AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(..., dir_fd=...) is not supported by Lython; raw file descriptors are outside the host path model.", dirFdExpression.Span);
         }
     }
 
     private static void AnalyzeGlobEscapeCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "pathname", "LA3096", "glob.escape(pathname) expects one string argument.", diagnostics, bindings);
+        if (TryGetArgument(arguments, 0, "pathname", bindings, out var pathnameExpression, out var pathnameValue) &&
+            !IsUnknown(pathnameValue) &&
+            !IsPathLike(pathnameValue))
+        {
+            AddDiagnostic(diagnostics, "LA3096", "glob.escape(pathname) expects one path-like argument.", pathnameExpression.Span);
+        }
     }
 
     private static void AnalyzeSysStreamWriteCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
