@@ -910,6 +910,32 @@ internal static partial class StaticContracts
         "dst",
     };
 
+    private static readonly HashSet<string> StatisticsLinearRegressionMembers = new(StringComparer.Ordinal)
+    {
+        "slope",
+        "intercept",
+        "_fields",
+        "_asdict",
+        "_replace",
+        "count",
+        "index",
+    };
+
+    private static readonly HashSet<string> StatisticsNormalDistMembers = new(StringComparer.Ordinal)
+    {
+        "mean",
+        "median",
+        "mode",
+        "stdev",
+        "variance",
+        "pdf",
+        "cdf",
+        "inv_cdf",
+        "overlap",
+        "quantiles",
+        "samples",
+    };
+
     public static bool IsKnownSealedMemberSurface(AbstractValue value)
         => value.Kind is AbstractValueKind.Module && ModuleMembers.ContainsKey((string)value.Value) ||
            value.Kind is AbstractValueKind.Path or
@@ -942,6 +968,8 @@ internal static partial class StaticContracts
             AbstractValueKind.DateTimeTime or
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
+            AbstractValueKind.StatisticsLinearRegression or
+            AbstractValueKind.StatisticsNormalDist or
             AbstractValueKind.RegexPattern or
             AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
@@ -1029,6 +1057,8 @@ internal static partial class StaticContracts
             AbstractValueKind.DateTimeTime => DateTimeTimeMembers.Contains(memberName),
             AbstractValueKind.DateTimeDateTime => DateTimeDateTimeMembers.Contains(memberName),
             AbstractValueKind.DateTimeTimezone => DateTimeTimezoneMembers.Contains(memberName),
+            AbstractValueKind.StatisticsLinearRegression => StatisticsLinearRegressionMembers.Contains(memberName),
+            AbstractValueKind.StatisticsNormalDist => StatisticsNormalDistMembers.Contains(memberName),
             AbstractValueKind.RegexPattern => RegexPatternMembers.Contains(memberName),
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),

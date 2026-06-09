@@ -282,6 +282,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
             PyTime => PyDateTimeOps.TimeType,
             PyDateTime => PyDateTimeOps.DateTimeType,
             PyTimezone => PyDateTimeOps.TimezoneType,
+            LythonRuntime.StatisticsModule.PyNormalDist => LythonRuntime.StatisticsModule.NormalDistType,
             _ => throw new LythonRuntimeException("TypeError", $"type(value) does not support values of type '{value.GetType().Name}' in Lython.", span)
         };
     }

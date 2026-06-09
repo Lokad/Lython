@@ -51,6 +51,14 @@ internal static partial class StaticContracts
         new(AbstractValueKind.DateTimeDateTime, "microsecond", StaticReturnShape.Integer),
         new(AbstractValueKind.DateTimeDateTime, "tzinfo", StaticReturnShape.Unknown),
         new(AbstractValueKind.DateTimeDateTime, "fold", StaticReturnShape.Integer),
+        new(AbstractValueKind.StatisticsLinearRegression, "slope", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsLinearRegression, "intercept", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsLinearRegression, "_fields", StaticReturnShape.ListOfString),
+        new(AbstractValueKind.StatisticsNormalDist, "mean", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsNormalDist, "median", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsNormalDist, "mode", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsNormalDist, "stdev", StaticReturnShape.Float),
+        new(AbstractValueKind.StatisticsNormalDist, "variance", StaticReturnShape.Float),
         new(AbstractValueKind.SubprocessCompletedProcess, "args", StaticReturnShape.ListOfString),
         new(AbstractValueKind.SubprocessCompletedProcess, "returncode", StaticReturnShape.Integer),
         new(AbstractValueKind.SubprocessCompletedProcess, "stdout", StaticReturnShape.String),
@@ -385,6 +393,11 @@ internal static partial class StaticContracts
             "datetime.timedelta" => memberName switch
             {
                 "min" or "max" or "resolution" => AbstractValue.DateTimeTimedelta(span),
+                _ => default
+            },
+            "statistics.NormalDist" => memberName switch
+            {
+                "from_samples" => AbstractValue.KnownCallable(LythonKnownCallableSignatures.StatisticsNormalDistFromSamples.Name, span),
                 _ => default
             },
             _ => default

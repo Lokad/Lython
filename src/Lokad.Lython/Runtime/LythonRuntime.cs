@@ -1368,6 +1368,7 @@ internal sealed partial class LythonRuntime
             "datetime.time" => subject is PyTime,
             "datetime.datetime" => subject is PyDateTime,
             "datetime.timezone" => subject is PyTimezone,
+            "statistics.NormalDist" => subject is StatisticsModule.PyNormalDist,
             "re.Match" => subject is ReMatchObject,
             "re.Pattern" => subject is RePatternObject,
             _ => false
@@ -1492,6 +1493,11 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Add(left, right, span);
         }
 
+        if (StatisticsModule.TryAddNormalDist(left, right, span, out var normalDistSum))
+        {
+            return normalDistSum;
+        }
+
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span);
@@ -1529,6 +1535,11 @@ internal sealed partial class LythonRuntime
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
             return PyDateTimeOps.Subtract(left, right, span);
+        }
+
+        if (StatisticsModule.TrySubtractNormalDist(left, right, span, out var normalDistDifference))
+        {
+            return normalDistDifference;
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -1571,6 +1582,11 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Multiply(left, right, span);
         }
 
+        if (StatisticsModule.TryMultiplyNormalDist(left, right, span, out var normalDistProduct))
+        {
+            return normalDistProduct;
+        }
+
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '*'.", span);
@@ -1602,6 +1618,11 @@ internal sealed partial class LythonRuntime
         if (left is PyTimedelta || right is PyTimedelta)
         {
             return PyDateTimeOps.Divide(left, right, span);
+        }
+
+        if (StatisticsModule.TryDivideNormalDist(left, right, span, out var normalDistQuotient))
+        {
+            return normalDistQuotient;
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -1933,6 +1954,11 @@ internal sealed partial class LythonRuntime
             return operand;
         }
 
+        if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, out var positiveNormalDist))
+        {
+            return positiveNormalDist;
+        }
+
         if (!PyNumberOps.TryAsNumber(operand, out _))
         {
             throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
@@ -1956,6 +1982,11 @@ internal sealed partial class LythonRuntime
         if (operand is PyDecimal decimalValue)
         {
             return new PyDecimal(-decimalValue.Value);
+        }
+
+        if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
+        {
+            return negativeNormalDist;
         }
 
         if (!PyNumberOps.TryAsNumber(operand, out var numeric))

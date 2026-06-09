@@ -245,7 +245,8 @@ internal static class StaticStructuralDiagnostics
         if (unary.Operator is UnaryOperatorSyntax.Plus or UnaryOperatorSyntax.Minus)
         {
             if (!StaticAbstractFacts.IsNumericLike(operand) &&
-                operand.Kind != AbstractValueKind.DateTimeTimedelta)
+                operand.Kind != AbstractValueKind.DateTimeTimedelta &&
+                operand.Kind != AbstractValueKind.StatisticsNormalDist)
             {
                 AddDiagnostic(diagnostics, "LA3144", "Operand is not numeric.", unary.Span);
             }
@@ -379,15 +380,18 @@ internal static class StaticStructuralDiagnostics
             BinaryOperatorSyntax.Add => CanApplyAdd(left, right),
             BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 CanApplyDateTimeSubtract(left, right) ||
+                CanApplyNormalDistSubtract(left, right) ||
                 IsSetLike(left) && IsSetLike(right),
             BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 IsTimedeltaNumericPair(left, right) ||
+                IsNormalDistNumericPair(left, right) ||
                 left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
                 IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && IsListLike(right),
             BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)) ||
+                left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
             BinaryOperatorSyntax.FloorDivide or
             BinaryOperatorSyntax.Modulo => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
@@ -405,6 +409,7 @@ internal static class StaticStructuralDiagnostics
     private static bool CanApplyAdd(AbstractValue left, AbstractValue right)
         => left.IsStringLike && right.IsStringLike ||
            StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+           CanApplyNormalDistAdd(left, right) ||
            left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
            IsDateOrDateTime(left) && right.Kind == AbstractValueKind.DateTimeTimedelta ||
            left.Kind == AbstractValueKind.DateTimeTimedelta && IsDateOrDateTime(right) ||
@@ -432,6 +437,18 @@ internal static class StaticStructuralDiagnostics
         => left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) ||
            StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
 
+    private static bool CanApplyNormalDistAdd(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && (right.Kind == AbstractValueKind.StatisticsNormalDist || StaticAbstractFacts.IsNumericLike(right)) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
+    private static bool CanApplyNormalDistSubtract(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && (right.Kind == AbstractValueKind.StatisticsNormalDist || StaticAbstractFacts.IsNumericLike(right)) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
+    private static bool IsNormalDistNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
     private static bool IsDateOrDateTime(AbstractValue value)
         => value.Kind is AbstractValueKind.DateTimeDate or AbstractValueKind.DateTimeDateTime;
 
@@ -445,6 +462,7 @@ internal static class StaticStructuralDiagnostics
         return container.Kind is AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
+            AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.Dict or
             AbstractValueKind.Set;
     }
@@ -605,6 +623,8 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.DateTimeTime => "datetime.time",
             AbstractValueKind.DateTimeDateTime => "datetime.datetime",
             AbstractValueKind.DateTimeTimezone => "datetime.timezone",
+            AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
+            AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

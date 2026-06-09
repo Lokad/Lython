@@ -81,6 +81,30 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DateTimeTimezone = new("datetime.timezone", ["offset", "name"], RequiredCount: 1);
     public static readonly LythonCallableSignature DateTimeTzInfo = new("datetime.tzinfo", []);
 
+    public static readonly LythonCallableSignature StatisticsMean = new("statistics.mean", ["data"]);
+    public static readonly LythonCallableSignature StatisticsFMean = new("statistics.fmean", ["data"]);
+    public static readonly LythonCallableSignature StatisticsGeometricMean = new("statistics.geometric_mean", ["data"]);
+    public static readonly LythonCallableSignature StatisticsHarmonicMean = new("statistics.harmonic_mean", ["data", "weights"], RequiredCount: 1);
+    public static readonly LythonCallableSignature StatisticsMedian = new("statistics.median", ["data"]);
+    public static readonly LythonCallableSignature StatisticsMedianLow = new("statistics.median_low", ["data"]);
+    public static readonly LythonCallableSignature StatisticsMedianHigh = new("statistics.median_high", ["data"]);
+    public static readonly LythonCallableSignature StatisticsMedianGrouped = new("statistics.median_grouped", ["data", "interval"], RequiredCount: 1);
+    public static readonly LythonCallableSignature StatisticsMode = new("statistics.mode", ["data"]);
+    public static readonly LythonCallableSignature StatisticsMultiMode = new("statistics.multimode", ["data"]);
+    public static readonly LythonCallableSignature StatisticsPStdev = new("statistics.pstdev", ["data"]);
+    public static readonly LythonCallableSignature StatisticsStdev = new("statistics.stdev", ["data"]);
+    public static readonly LythonCallableSignature StatisticsPVariance = new("statistics.pvariance", ["data"]);
+    public static readonly LythonCallableSignature StatisticsVariance = new("statistics.variance", ["data"]);
+    public static readonly LythonCallableSignature StatisticsQuantiles = new("statistics.quantiles", ["data", "n", "method"], RequiredCount: 1, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature StatisticsCovariance = new("statistics.covariance", ["x", "y"]);
+    public static readonly LythonCallableSignature StatisticsCorrelation = new("statistics.correlation", ["x", "y"]);
+    public static readonly LythonCallableSignature StatisticsLinearRegression = new("statistics.linear_regression", ["x", "y", "proportional"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature StatisticsLinearRegressionResult = new("statistics.LinearRegression", ["slope", "intercept"]);
+    public static readonly LythonCallableSignature StatisticsNormalDist = new("statistics.NormalDist", ["mu", "sigma"], RequiredCount: 0);
+    public static readonly LythonCallableSignature StatisticsNormalDistFromSamples = new("statistics.NormalDist.from_samples", ["data"]);
+    public static readonly LythonCallableSignature StatisticsKde = new("statistics.kde", RequiredCount: 0);
+    public static readonly LythonCallableSignature StatisticsKdeRandom = new("statistics.kde_random", RequiredCount: 0);
+
     public static readonly LythonCallableSignature MathSqrt = new("math.sqrt", ["x"]);
     public static readonly LythonCallableSignature MathExp = new("math.exp", ["x"]);
     public static readonly LythonCallableSignature MathLog = new("math.log", ["x", "base"], RequiredCount: 1);

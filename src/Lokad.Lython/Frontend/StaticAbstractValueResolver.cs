@@ -298,6 +298,11 @@ internal static class StaticAbstractValueResolver
             return true;
         }
 
+        if (TryResolveStatisticsBinaryAbstractValue(binary.Operator, left, right, binary.Span, out value))
+        {
+            return true;
+        }
+
         if (binary.Operator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Multiply))
         {
             value = default;
@@ -406,6 +411,33 @@ internal static class StaticAbstractValueResolver
         => left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) ||
            StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
 
+    private static bool TryResolveStatisticsBinaryAbstractValue(
+        BinaryOperatorSyntax op,
+        AbstractValue left,
+        AbstractValue right,
+        LythonSourceSpan span,
+        out AbstractValue value)
+    {
+        value = op switch
+        {
+            BinaryOperatorSyntax.Add when IsNormalDistNumericOrDistributionPair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Subtract when IsNormalDistNumericOrDistributionPair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Multiply when IsNormalDistNumericPair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.StatisticsNormalDist(span),
+            _ => default
+        };
+
+        return value.Kind != default;
+    }
+
+    private static bool IsNormalDistNumericOrDistributionPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && (right.Kind == AbstractValueKind.StatisticsNormalDist || StaticAbstractFacts.IsNumericLike(right)) ||
+           (StaticAbstractFacts.IsNumericLike(left) || left.Kind == AbstractValueKind.StatisticsNormalDist) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
+    private static bool IsNormalDistNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
+           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
     private static bool TryResolveUnaryAbstractValue(UnaryExpressionSyntax unary, AbstractState bindings, out AbstractValue value)
     {
         if (unary.Operator == UnaryOperatorSyntax.Not)
@@ -436,6 +468,12 @@ internal static class StaticAbstractValueResolver
         if (operand.Kind == AbstractValueKind.DateTimeTimedelta)
         {
             value = AbstractValue.DateTimeTimedelta(unary.Span);
+            return true;
+        }
+
+        if (operand.Kind == AbstractValueKind.StatisticsNormalDist)
+        {
+            value = AbstractValue.StatisticsNormalDist(unary.Span);
             return true;
         }
 

@@ -42,6 +42,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime or
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
+            AbstractValueKind.StatisticsLinearRegression or
+            AbstractValueKind.StatisticsNormalDist or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
@@ -127,6 +129,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime or
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
+            AbstractValueKind.StatisticsNormalDist or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -193,6 +196,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime or
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
+            AbstractValueKind.StatisticsNormalDist or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -241,6 +245,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
+            AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.Dict or
@@ -274,6 +279,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime or
             AbstractValueKind.DateTimeDateTime or
             AbstractValueKind.DateTimeTimezone or
+            AbstractValueKind.StatisticsNormalDist or
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
@@ -323,6 +329,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
             AbstractValueKind.DecimalTuple or
+            AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo;
 
@@ -515,6 +522,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime => "datetime.time",
             AbstractValueKind.DateTimeDateTime => "datetime.datetime",
             AbstractValueKind.DateTimeTimezone => "datetime.timezone",
+            AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
+            AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",

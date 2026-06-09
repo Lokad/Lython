@@ -311,6 +311,16 @@ Clock- and local-offset-sensitive operations such as `today()`, `now()`,
 the configured host rather than the ambient process. IANA timezone databases and
 ambient locale/timezone discovery are outside the supported surface.
 
+The `statistics` subset includes common averages, medians, modes, variance,
+standard deviation, quantiles, covariance, correlation, linear regression, and
+`NormalDist`. Supported real inputs may be coerced to `double` for aggregate
+helpers, including inputs from the contained `decimal.Decimal` subset. Empty
+data, insufficient sample data, invalid quantile parameters, degenerate
+correlation/regression inputs, and zero-sigma distribution operations must fail
+explicitly with CPython-shaped exceptions. `NormalDist.samples(...)` is
+deterministic when no seed is supplied; KDE helpers are outside the contained
+surface and must fail explicitly.
+
 ### 8.3 Supported Literal Surface
 
 The initial subset must support exactly the following literal forms:

@@ -232,6 +232,16 @@ internal static partial class StaticContracts
             new(AbstractValueKind.DateTimeTimezone, "utcoffset", StaticReturnShape.DateTimeTimedelta),
             new(AbstractValueKind.DateTimeTimezone, "tzname", StaticReturnShape.String),
             new(AbstractValueKind.DateTimeTimezone, "dst", StaticReturnShape.None),
+            new(AbstractValueKind.StatisticsLinearRegression, "_asdict", StaticReturnShape.Dict),
+            new(AbstractValueKind.StatisticsLinearRegression, "_replace", StaticReturnShape.StatisticsLinearRegression),
+            new(AbstractValueKind.StatisticsLinearRegression, "count", StaticReturnShape.Integer),
+            new(AbstractValueKind.StatisticsLinearRegression, "index", StaticReturnShape.Integer),
+            new(AbstractValueKind.StatisticsNormalDist, "pdf", StaticReturnShape.Float),
+            new(AbstractValueKind.StatisticsNormalDist, "cdf", StaticReturnShape.Float),
+            new(AbstractValueKind.StatisticsNormalDist, "inv_cdf", StaticReturnShape.Float),
+            new(AbstractValueKind.StatisticsNormalDist, "overlap", StaticReturnShape.Float),
+            new(AbstractValueKind.StatisticsNormalDist, "quantiles", StaticReturnShape.ListOfFloat),
+            new(AbstractValueKind.StatisticsNormalDist, "samples", StaticReturnShape.ListOfFloat),
         };
 
         foreach (var (memberName, returnShape) in StringMemberReturnShapes)
