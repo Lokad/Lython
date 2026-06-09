@@ -47,7 +47,7 @@ internal static partial class StaticContracts
         ["fnmatch"] = Members("fnmatch", "filter"),
         ["difflib"] = Members("unified_diff", "context_diff", "ndiff", "restore", "get_close_matches", "SequenceMatcher"),
         ["json"] = Members("loads", "dumps"),
-        ["csv"] = Members("reader", "writer"),
+        ["csv"] = Members("reader", "writer", "DictReader", "DictWriter", "Error", "QUOTE_MINIMAL", "QUOTE_ALL", "QUOTE_NONE", "QUOTE_NONNUMERIC"),
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "PIPE", "STDOUT", "DEVNULL"),
     };
 
@@ -262,6 +262,7 @@ internal static partial class StaticContracts
             ("datetime", "MINYEAR") or ("datetime", "MAXYEAR") => AbstractValue.IntegerType(span),
             ("decimal", "ROUND_HALF_EVEN") or ("decimal", "ROUND_DOWN") or ("decimal", "ROUND_UP") => AbstractValue.StringType(span),
             ("re", "IGNORECASE") or ("re", "I") or ("re", "UNICODE") or ("re", "U") or ("re", "MULTILINE") or ("re", "M") or ("re", "DOTALL") or ("re", "S") or ("re", "VERBOSE") or ("re", "X") => AbstractValue.IntegerType(span),
+            ("csv", "QUOTE_MINIMAL") or ("csv", "QUOTE_ALL") or ("csv", "QUOTE_NONE") or ("csv", "QUOTE_NONNUMERIC") => AbstractValue.IntegerType(span),
             ("subprocess", "PIPE") or ("subprocess", "STDOUT") or ("subprocess", "DEVNULL") => AbstractValue.IntegerType(span),
             _ => default
         };

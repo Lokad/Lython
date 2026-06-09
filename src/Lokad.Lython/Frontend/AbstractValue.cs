@@ -30,7 +30,10 @@ internal enum AbstractValueKind
     ArgparseParser,
     ArgparseMutuallyExclusiveGroup,
     ArgparseNamespace,
+    CsvReader,
+    CsvDictReader,
     CsvWriter,
+    CsvDictWriter,
     SubprocessCompletedProcess,
     DataclassField,
     OpenPyxlWorkbook,
@@ -170,7 +173,10 @@ internal readonly record struct AbstractValue(
     public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new AbstractArgparseGroupSummary(parserName), span);
     public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => ArgparseNamespace(new AbstractArgparseNamespaceSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: false), span);
     public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, summary, span);
+    public static AbstractValue CsvReader(LythonSourceSpan span) => new(AbstractValueKind.CsvReader, "csv.reader", span);
+    public static AbstractValue CsvDictReader(LythonSourceSpan span) => new(AbstractValueKind.CsvDictReader, "csv.DictReader", span);
     public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
+    public static AbstractValue CsvDictWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvDictWriter, "csv.DictWriter", span);
     public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
     public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
     public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbook, "openpyxl.Workbook", span);

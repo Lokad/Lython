@@ -28,7 +28,7 @@ public sealed class CsvTransposeScenarioTests
     }
 
     [Fact]
-    public void InvalidQuotedRow_FailsWithValueError()
+    public void InvalidQuotedRow_FailsWithCsvError()
     {
         var result = new LythonEngine().Run(
             """
@@ -39,7 +39,7 @@ rows = csv.reader(["\"broken"])
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("Error", result.Failure!.ExceptionType);
         Assert.Contains("Invalid csv input", result.Failure.Message, StringComparison.Ordinal);
     }
 

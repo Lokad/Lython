@@ -34,11 +34,29 @@ internal static partial class StaticContracts
         "add_argument",
     };
 
+    private static readonly HashSet<string> CsvReaderMembers = new(StringComparer.Ordinal)
+    {
+        "line_num",
+    };
+
+    private static readonly HashSet<string> CsvDictReaderMembers = new(StringComparer.Ordinal)
+    {
+        "fieldnames",
+        "line_num",
+    };
+
     private static readonly HashSet<string> CsvWriterMembers = new(StringComparer.Ordinal)
     {
         "writerow",
         "writerows",
         "getvalue",
+    };
+
+    private static readonly HashSet<string> CsvDictWriterMembers = new(StringComparer.Ordinal)
+    {
+        "writeheader",
+        "writerow",
+        "writerows",
     };
 
     private static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
@@ -631,7 +649,10 @@ internal static partial class StaticContracts
             AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
+            AbstractValueKind.CsvReader or
+            AbstractValueKind.CsvDictReader or
             AbstractValueKind.CsvWriter or
+            AbstractValueKind.CsvDictWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -698,7 +719,10 @@ internal static partial class StaticContracts
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),
             AbstractValueKind.ArgparseMutuallyExclusiveGroup => ArgparseGroupMembers.Contains(memberName),
             AbstractValueKind.ArgparseNamespace => ((AbstractArgparseNamespaceSummary)value.Value).Members.ContainsKey(memberName),
+            AbstractValueKind.CsvReader => CsvReaderMembers.Contains(memberName),
+            AbstractValueKind.CsvDictReader => CsvDictReaderMembers.Contains(memberName),
             AbstractValueKind.CsvWriter => CsvWriterMembers.Contains(memberName),
+            AbstractValueKind.CsvDictWriter => CsvDictWriterMembers.Contains(memberName),
             AbstractValueKind.SubprocessCompletedProcess => CompletedProcessMembers.Contains(memberName),
             AbstractValueKind.DataclassField => DataclassFieldMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlWorkbook => OpenPyxlWorkbookMembers.Contains(memberName),

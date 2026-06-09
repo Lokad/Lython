@@ -23,8 +23,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s"]);
     public static readonly LythonCallableSignature JsonDumps = new("json.dumps", ["obj"]);
 
-    public static readonly LythonCallableSignature CsvReader = new("csv.reader", ["lines", "delimiter"], RequiredCount: 1);
-    public static readonly LythonCallableSignature CsvWriter = new("csv.writer", ["delimiter"], RequiredCount: 0);
+    public static readonly LythonCallableSignature CsvReader = new("csv.reader", ["csvfile", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 1, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature CsvWriter = new("csv.writer", ["fileobj", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 0, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature CsvDictReader = new("csv.DictReader", ["f", "fieldnames", "restkey", "restval", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 1, MaxPositionalCount: 5);
+    public static readonly LythonCallableSignature CsvDictWriter = new("csv.DictWriter", ["f", "fieldnames", "restval", "extrasaction", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 2, MaxPositionalCount: 5);
 
     public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value"]);
 

@@ -194,6 +194,14 @@ internal static class StaticBindingEngine
                 itemValue = default;
                 return false;
 
+            case AbstractValueKind.CsvReader:
+                itemValue = AbstractValue.ListOf(AbstractValue.StringType(expression.Span), expression.Span);
+                return true;
+
+            case AbstractValueKind.CsvDictReader:
+                itemValue = AbstractValue.Unknown(expression.Span);
+                return true;
+
             default:
                 itemValue = default;
                 return false;

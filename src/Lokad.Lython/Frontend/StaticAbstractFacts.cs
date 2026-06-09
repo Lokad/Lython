@@ -30,7 +30,10 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseParser or
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
             AbstractValueKind.ArgparseNamespace or
+            AbstractValueKind.CsvReader or
+            AbstractValueKind.CsvDictReader or
             AbstractValueKind.CsvWriter or
+            AbstractValueKind.CsvDictWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -102,6 +105,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
+            AbstractValueKind.CsvDictWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -156,6 +160,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
+            AbstractValueKind.CsvDictWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -223,6 +228,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
             AbstractValueKind.ArgparseNamespace or
             AbstractValueKind.CsvWriter or
+            AbstractValueKind.CsvDictWriter or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlCell or
@@ -441,7 +447,10 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ArgparseParser => "argparse.ArgumentParser",
             AbstractValueKind.ArgparseMutuallyExclusiveGroup => "argparse._MutuallyExclusiveGroup",
             AbstractValueKind.ArgparseNamespace => "argparse.Namespace",
+            AbstractValueKind.CsvReader => "csv.reader",
+            AbstractValueKind.CsvDictReader => "csv.DictReader",
             AbstractValueKind.CsvWriter => "csv.writer",
+            AbstractValueKind.CsvDictWriter => "csv.DictWriter",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.Function => "function",

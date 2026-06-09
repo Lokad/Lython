@@ -1548,13 +1548,12 @@ internal sealed class Parser
                     ReadToken();
                     while (true)
                     {
-                        if (!TryRead(Token.Identifier, out var typeToken))
+                        if (!TryReadExceptionTypeName("LA1045", "Expected exception type in except tuple.", out var typeName))
                         {
-                            AddDiagnostic("LA1045", "Expected exception type in except tuple.", _position);
                             return null;
                         }
 
-                        parsedTypes.Add(_tokens.GetString(typeToken));
+                        parsedTypes.Add(typeName);
                         if (CurrentToken != Token.Comma)
                         {
                             break;
@@ -1571,8 +1570,12 @@ internal sealed class Parser
                 }
                 else if (IsNameToken(CurrentToken))
                 {
-                    var typeToken = ReadToken();
-                    parsedTypes.Add(_tokens.GetString(typeToken));
+                    if (!TryReadExceptionTypeName("LA1045", "Expected exception type after 'except'.", out var typeName))
+                    {
+                        return null;
+                    }
+
+                    parsedTypes.Add(typeName);
                 }
                 else
                 {
@@ -1653,6 +1656,31 @@ internal sealed class Parser
         }
 
         return new TryStatementSyntax(tryBody, exceptionTypes, exceptionVariable, exceptBody, elseBody, finallyBody, span);
+    }
+
+    private bool TryReadExceptionTypeName(string diagnosticCode, string diagnosticMessage, out string typeName)
+    {
+        typeName = string.Empty;
+        if (!TryReadNameToken(out var typeToken))
+        {
+            AddDiagnostic(diagnosticCode, diagnosticMessage, _position);
+            return false;
+        }
+
+        typeName = _tokens.GetString(typeToken);
+        while (CurrentToken == Token.Dot)
+        {
+            ReadToken();
+            if (!TryReadNameToken(out var partToken))
+            {
+                AddDiagnostic(diagnosticCode, "Expected exception type name after '.'.", _position);
+                return false;
+            }
+
+            typeName = _tokens.GetString(partToken);
+        }
+
+        return true;
     }
 
     private StatementSyntax? ParseImportStatement()

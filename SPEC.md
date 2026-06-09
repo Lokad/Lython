@@ -587,7 +587,7 @@ The initial subset must raise the following exception types for the following ru
 - invalid floating-point conversion through `float(...)`: `ValueError`
 - invalid regex pattern or unsupported regex syntax inside `re`: `ValueError`
 - invalid JSON text: `ValueError`
-- invalid structured-delimited-text input accepted by the `csv` subset: `ValueError`
+- invalid structured-delimited-text input accepted by the `csv` subset: `csv.Error`
 - missing dictionary key through indexing: `KeyError`
 - out-of-range string, list, or tuple index: `IndexError`
 - host path/resource failures and unsupported host operations: `RuntimeError`
@@ -948,36 +948,54 @@ The runtime must support the statement:
 
 - `import csv`
 
-The imported module must expose exactly the following functions:
+The imported module must expose:
 
-- `csv.reader(lines)`
-- `csv.writer()`
+- `csv.reader(csvfile[, dialect][, ...])`
+- `csv.writer([fileobj][, dialect][, ...])`
+- `csv.DictReader(f[, fieldnames][, restkey][, restval][, ...])`
+- `csv.DictWriter(fileobj, fieldnames[, restval][, extrasaction][, ...])`
+- `csv.Error`
+- `csv.QUOTE_MINIMAL`
+- `csv.QUOTE_ALL`
+- `csv.QUOTE_NONE`
+- `csv.QUOTE_NONNUMERIC`
 
-The object returned by `csv.reader(...)` must be iterable and must yield rows as ordered lists of strings.
+The object returned by `csv.reader(...)` must be iterable and subscript-compatible with the historical Lython helper. It must yield rows as ordered lists of strings and expose `line_num`.
 
-The object returned by `csv.writer()` must support exactly:
+The object returned by `csv.DictReader(...)` must be iterable and must yield dictionaries keyed by field name. It must expose `fieldnames` and `line_num`. If `fieldnames` is omitted, the first row supplies the field names. `restkey` and `restval` must handle extra and missing fields.
+
+The object returned by `csv.writer()` without a file object accumulates output in memory. It must support:
 
 - `writer.writerow(row)`
 - `writer.writerows(rows)`
 - `writer.getvalue()`
 
-The writer accumulates output in memory. `writer.getvalue()` must return the accumulated text as a string.
+The object returned by `csv.writer(fileobj, ...)` must write rows to a Lython writable text file handle. It may also retain the in-memory helper methods for compatibility.
 
-The initial subset does not support:
+The object returned by `csv.DictWriter(fileobj, fieldnames, ...)` must support:
 
-- dialect registration
-- sniffer behavior
-- dictionary readers or writers
-- quoting customization
-- escape customization
-- custom delimiters
-- custom line terminators
+- `writer.writeheader()`
+- `writer.writerow(rowdict)`
+- `writer.writerows(rowdicts)`
 
-The initial subset supports exactly one default dialect:
+The CSV subset must support ordinary scripts using:
+
+- delimiter, quotechar, quoting, doublequote, escapechar, skipinitialspace, lineterminator, and strict options
+- text file handles opened with `open(...)` or `Path.open(...)`
+- multiline quoted records across physical input lines
+- scalar writer conversion for strings, integers, floats, booleans, and `None`
+
+The CSV subset does not support:
+
+- `register_dialect`, `get_dialect`, `list_dialects`, or `unregister_dialect`
+- `field_size_limit`
+- `Sniffer`
+
+The default dialect is:
 
 - delimiter `,`
 - quote character `"`
-- newline `\n`
+- line terminator `\n`
 
 If a script requests structured-text behavior outside the supported subset, the runtime must fail explicitly.
 
