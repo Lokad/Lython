@@ -53,6 +53,11 @@ internal static class StaticDataModuleContractFamily
             return true;
         }
 
+        if (AnalyzePkgutilKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -155,6 +160,18 @@ internal static class StaticDataModuleContractFamily
             if (receiver.Kind == AbstractValueKind.DifflibSequenceMatcher)
             {
                 AnalyzeSequenceMatcherMemberCall(memberName, arguments, diagnostics, bindings);
+                return true;
+            }
+
+            if (receiver.Kind == AbstractValueKind.PkgutilModuleInfo)
+            {
+                AnalyzePkgutilModuleInfoMemberCall(memberName, arguments, diagnostics, bindings);
+                return true;
+            }
+
+            if (receiver.Kind == AbstractValueKind.PkgutilLoader)
+            {
+                AnalyzePkgutilLoaderMemberCall(memberName, arguments, diagnostics, bindings);
                 return true;
             }
         }
@@ -599,6 +616,170 @@ internal static class StaticDataModuleContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
         => AnalyzeIterableOfStringsArgument(arguments, position, keyword, message, diagnostics, bindings);
+
+    private static bool AnalyzePkgutilKnownCallArgumentTypes(
+        string targetName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilModuleInfo.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzeStringArgument(arguments, 1, "name", "pkgutil.ModuleInfo(..., name, ...) expects a string name.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 2, "ispkg", "pkgutil.ModuleInfo(..., ispkg) expects a bool.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterModules.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.iter_modules(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.iter_modules(..., prefix=...) expects a string.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilWalkPackages.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.walk_packages(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.walk_packages(..., prefix=...) expects a string.", diagnostics, bindings);
+            emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "onerror", "pkgutil.walk_packages(..., onerror=...) expects a callable or None.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilFindLoader.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.PkgutilResolveName.Name, StringComparison.Ordinal))
+        {
+            var owner = targetName.EndsWith("resolve_name", StringComparison.Ordinal) ? "pkgutil.resolve_name" : "pkgutil.find_loader";
+            return AnalyzeStringArgument(arguments, 0, targetName.EndsWith("resolve_name", StringComparison.Ordinal) ? "name" : "fullname", $"{owner}(...) expects a module name string.", diagnostics, bindings);
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilGetLoader.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeArgument(
+                arguments,
+                0,
+                "module_or_name",
+                "pkgutil.get_loader(module_or_name) expects a module object or module name string.",
+                diagnostics,
+                bindings,
+                static value => value.IsStringLike || value.Kind == AbstractValueKind.Module);
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilExtendPath.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.extend_path(path, name) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "name", "pkgutil.extend_path(path, name) expects a package name string.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilGetData.Name, StringComparison.Ordinal))
+        {
+            var emitted = AnalyzeStringArgument(arguments, 0, "package", "pkgutil.get_data(package, resource) expects a string package name.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "resource", "pkgutil.get_data(package, resource) expects a string resource name.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterImporters.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeStringArgument(arguments, 0, "fullname", "pkgutil.iter_importers([fullname]) expects a module name string.", diagnostics, bindings);
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterImporterModules.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterZipimportModules.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil importer helpers expect prefix to be a string.", diagnostics, bindings);
+        }
+
+        return false;
+    }
+
+    private static bool AnalyzePkgutilPathArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
+        {
+            return false;
+        }
+
+        if (IsUnknown(value) || value.Kind == AbstractValueKind.None || IsPathLike(value))
+        {
+            return false;
+        }
+
+        if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
+        {
+            foreach (var item in (IReadOnlyList<AbstractValue>)value.Value)
+            {
+                if (!IsPathLike(item) && !IsUnknown(item))
+                {
+                    AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.ListType)
+        {
+            var item = (AbstractValue)value.Value;
+            if (!IsPathLike(item) && !IsUnknown(item))
+            {
+                AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (StaticAbstractFacts.IsDefinitelyNonIterable(value))
+        {
+            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void AnalyzePkgutilModuleInfoMemberCall(
+        string memberName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        switch (memberName)
+        {
+            case "_replace":
+                AnalyzeStringArgument(arguments, 1, "name", "ModuleInfo._replace(..., name=...) expects a string.", diagnostics, bindings);
+                AnalyzeBooleanArgument(arguments, 2, "ispkg", "ModuleInfo._replace(..., ispkg=...) expects a bool.", diagnostics, bindings);
+                break;
+            case "index":
+                AnalyzeIntegerArgument(arguments, 1, "start", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                AnalyzeIntegerArgument(arguments, 2, "stop", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                break;
+        }
+    }
+
+    private static void AnalyzePkgutilLoaderMemberCall(
+        string memberName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        switch (memberName)
+        {
+            case "is_package":
+                AnalyzeStringOrNoneArgument(arguments, 0, "fullname", "loader.is_package([fullname]) expects a string or None.", diagnostics, bindings);
+                break;
+            case "get_source":
+                AnalyzeStringOrNoneArgument(arguments, 0, "fullname", "loader.get_source([fullname]) expects a string or None.", diagnostics, bindings);
+                break;
+        }
+    }
 
     private static bool AnalyzeIterableOfBytesArgument(
         ConcreteCallArguments arguments,

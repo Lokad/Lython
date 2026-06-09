@@ -94,6 +94,8 @@ The builtin module surface is explicitly allowlisted:
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
 
+`pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
+
 Intentionally unsupported or constrained:
 
 - arbitrary package loading

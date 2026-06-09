@@ -98,6 +98,27 @@ internal static partial class StaticContracts
         "real_quick_ratio",
     };
 
+    private static readonly HashSet<string> PkgutilModuleInfoMembers = new(StringComparer.Ordinal)
+    {
+        "module_finder",
+        "name",
+        "ispkg",
+        "_fields",
+        "_asdict",
+        "_replace",
+        "count",
+        "index",
+    };
+
+    private static readonly HashSet<string> PkgutilLoaderMembers = new(StringComparer.Ordinal)
+    {
+        "name",
+        "fullname",
+        "ispkg",
+        "is_package",
+        "get_source",
+    };
+
     private static readonly HashSet<string> CompletedProcessMembers = new(StringComparer.Ordinal)
     {
         "args",
@@ -696,6 +717,8 @@ internal static partial class StaticContracts
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.DifflibSequenceMatcher or
+            AbstractValueKind.PkgutilModuleInfo or
+            AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -770,6 +793,8 @@ internal static partial class StaticContracts
             AbstractValueKind.DifflibHtmlDiff => DifflibHtmlDiffMembers.Contains(memberName),
             AbstractValueKind.DifflibMatch => DifflibMatchMembers.Contains(memberName),
             AbstractValueKind.DifflibSequenceMatcher => DifflibSequenceMatcherMembers.Contains(memberName),
+            AbstractValueKind.PkgutilModuleInfo => PkgutilModuleInfoMembers.Contains(memberName),
+            AbstractValueKind.PkgutilLoader => PkgutilLoaderMembers.Contains(memberName),
             AbstractValueKind.SubprocessCompletedProcess => CompletedProcessMembers.Contains(memberName),
             AbstractValueKind.DataclassField => DataclassFieldMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlWorkbook => OpenPyxlWorkbookMembers.Contains(memberName),

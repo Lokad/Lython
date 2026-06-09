@@ -1122,6 +1122,36 @@ an intentional containment and resource-accounting choice; scripts that iterate,
 join, or wrap the result in `list(...)` must continue to behave like ordinary
 Python for the supported subset.
 
+### 11.14 Module Discovery
+
+Contained module discovery is available through `pkgutil`.
+
+The runtime must support:
+
+- `pkgutil.ModuleInfo`
+- `pkgutil.iter_modules(...)`
+- `pkgutil.walk_packages(...)`
+- `pkgutil.find_loader(...)`
+- `pkgutil.get_loader(...)`
+- `pkgutil.extend_path(...)`
+- `pkgutil.resolve_name(...)`
+
+Default discovery is limited to built-in modules and explicitly allowed local
+modules. Explicit path discovery is host-mediated through text-shaped file and
+directory primitives; `.py` files and package directories with `__init__.py`
+are discoverable only when the local module allowlist permits the resulting
+module name or source path.
+
+`ModuleInfo` must behave like Python's tuple-shaped record for ordinary agent
+scripts: attribute access, unpacking, indexing, equality, `_fields`, `_asdict`,
+`_replace`, `count`, and `index` are supported. Discovery helpers may return
+materialized lists instead of lazy generators.
+
+Importer and resource helpers that would expose ambient import machinery or
+binary resource reads remain unsupported by Lython: `get_importer`,
+`iter_importers`, `iter_importer_modules`, `iter_zipimport_modules`,
+`get_data`, and `read_code`.
+
 ---
 
 ## 12. Host Capability Interface

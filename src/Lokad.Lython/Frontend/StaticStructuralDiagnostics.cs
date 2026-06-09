@@ -572,6 +572,8 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",
             AbstractValueKind.DifflibSequenceMatcher => "difflib.SequenceMatcher",
+            AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
+            AbstractValueKind.PkgutilLoader => "pkgutil.Loader",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.OpenPyxlWorkbook => "openpyxl.Workbook",

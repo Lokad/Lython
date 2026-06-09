@@ -114,10 +114,19 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.DifflibDiffer, "LA3151", "difflib.Differ([linejunk][, charjunk]) expects zero to two arguments.", StaticReturnShape.DifflibDiffer),
         new(LythonKnownCallableSignatures.DifflibHtmlDiff, "LA3151", "difflib.HtmlDiff([tabsize][, wrapcolumn][, linejunk][, charjunk]) expects zero to four arguments.", StaticReturnShape.DifflibHtmlDiff),
         new(LythonKnownCallableSignatures.DifflibSequenceMatcher, "LA3151", "difflib.SequenceMatcher([isjunk][, a][, b][, autojunk]) expects zero to four arguments.", StaticReturnShape.DifflibSequenceMatcher),
-        new(LythonKnownCallableSignatures.PkgutilIterModules, "LA3151", "pkgutil.iter_modules([path][, prefix]) expects zero to two arguments.", StaticReturnShape.ListOfUnknown),
-        new(LythonKnownCallableSignatures.PkgutilWalkPackages, "LA3151", "pkgutil.walk_packages([path][, prefix][, onerror]) expects zero to three arguments.", StaticReturnShape.ListOfUnknown),
-        new(LythonKnownCallableSignatures.PkgutilFindLoader, "LA3151", "pkgutil.find_loader(fullname) expects one argument."),
-        new(LythonKnownCallableSignatures.PkgutilGetLoader, "LA3151", "pkgutil.get_loader(module_or_name) expects one argument."),
+        new(LythonKnownCallableSignatures.PkgutilModuleInfo, "LA3151", "pkgutil.ModuleInfo(module_finder, name, ispkg) expects three arguments.", StaticReturnShape.PkgutilModuleInfo),
+        new(LythonKnownCallableSignatures.PkgutilIterModules, "LA3151", "pkgutil.iter_modules([path][, prefix]) expects zero to two arguments.", StaticReturnShape.ListOfPkgutilModuleInfo),
+        new(LythonKnownCallableSignatures.PkgutilWalkPackages, "LA3151", "pkgutil.walk_packages([path][, prefix][, onerror]) expects zero to three arguments.", StaticReturnShape.ListOfPkgutilModuleInfo),
+        new(LythonKnownCallableSignatures.PkgutilFindLoader, "LA3151", "pkgutil.find_loader(fullname) expects one argument.", StaticReturnShape.PkgutilLoader),
+        new(LythonKnownCallableSignatures.PkgutilGetLoader, "LA3151", "pkgutil.get_loader(module_or_name) expects one argument.", StaticReturnShape.PkgutilLoader),
+        new(LythonKnownCallableSignatures.PkgutilExtendPath, "LA3151", "pkgutil.extend_path(path, name) expects two arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.PkgutilResolveName, "LA3151", "pkgutil.resolve_name(name) expects one argument."),
+        new(LythonKnownCallableSignatures.PkgutilGetImporter, "LA3151", "pkgutil.get_importer(path_item) expects one argument."),
+        new(LythonKnownCallableSignatures.PkgutilIterImporters, "LA3151", "pkgutil.iter_importers([fullname]) expects zero or one argument.", StaticReturnShape.ListOfUnknown),
+        new(LythonKnownCallableSignatures.PkgutilIterImporterModules, "LA3151", "pkgutil.iter_importer_modules(importer[, prefix]) expects one or two arguments.", StaticReturnShape.ListOfPkgutilModuleInfo),
+        new(LythonKnownCallableSignatures.PkgutilIterZipimportModules, "LA3151", "pkgutil.iter_zipimport_modules(importer[, prefix]) expects one or two arguments.", StaticReturnShape.ListOfPkgutilModuleInfo),
+        new(LythonKnownCallableSignatures.PkgutilGetData, "LA3151", "pkgutil.get_data(package, resource) expects two arguments."),
+        new(LythonKnownCallableSignatures.PkgutilReadCode, "LA3151", "pkgutil.read_code(stream) expects one argument."),
     ];
 
     public static bool TryGetKnownCallContract(string targetName, out StaticKnownCallContract contract)

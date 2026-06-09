@@ -38,6 +38,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.DifflibSequenceMatcher or
+            AbstractValueKind.PkgutilModuleInfo or
+            AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -113,6 +115,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
+            AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -171,6 +174,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
+            AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
@@ -216,6 +220,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
             AbstractValueKind.DifflibMatch or
+            AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.Dict or
             AbstractValueKind.Set;
 
@@ -243,6 +248,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibDiffer or
             AbstractValueKind.DifflibHtmlDiff or
             AbstractValueKind.DifflibSequenceMatcher or
+            AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlCell or
@@ -287,7 +293,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
-            AbstractValueKind.DifflibMatch;
+            AbstractValueKind.DifflibMatch or
+            AbstractValueKind.PkgutilModuleInfo;
 
     public static bool IsDefinitelyNonIntegerLike(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
@@ -376,6 +383,10 @@ internal static class StaticAbstractFacts
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
                 count = ((IReadOnlyList<AbstractValue>)value.Value).Count;
+                return true;
+            case AbstractValueKind.DifflibMatch:
+            case AbstractValueKind.PkgutilModuleInfo:
+                count = 3;
                 return true;
             default:
                 count = 0;
@@ -470,6 +481,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
             AbstractValueKind.DifflibMatch => "difflib.Match",
             AbstractValueKind.DifflibSequenceMatcher => "difflib.SequenceMatcher",
+            AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
+            AbstractValueKind.PkgutilLoader => "pkgutil.Loader",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.Function => "function",

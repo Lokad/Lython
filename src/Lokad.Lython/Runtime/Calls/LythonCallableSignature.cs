@@ -142,8 +142,17 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DifflibHtmlDiff = new("difflib.HtmlDiff", ["tabsize", "wrapcolumn", "linejunk", "charjunk"], RequiredCount: 0);
     public static readonly LythonCallableSignature DifflibSequenceMatcher = new("difflib.SequenceMatcher", ["isjunk", "a", "b", "autojunk"], RequiredCount: 0);
 
+    public static readonly LythonCallableSignature PkgutilModuleInfo = new("pkgutil.ModuleInfo", ["module_finder", "name", "ispkg"]);
     public static readonly LythonCallableSignature PkgutilIterModules = new("pkgutil.iter_modules", ["path", "prefix"], RequiredCount: 0);
     public static readonly LythonCallableSignature PkgutilWalkPackages = new("pkgutil.walk_packages", ["path", "prefix", "onerror"], RequiredCount: 0);
     public static readonly LythonCallableSignature PkgutilFindLoader = new("pkgutil.find_loader", ["fullname"]);
     public static readonly LythonCallableSignature PkgutilGetLoader = new("pkgutil.get_loader", ["module_or_name"]);
+    public static readonly LythonCallableSignature PkgutilExtendPath = new("pkgutil.extend_path", ["path", "name"]);
+    public static readonly LythonCallableSignature PkgutilResolveName = new("pkgutil.resolve_name", ["name"]);
+    public static readonly LythonCallableSignature PkgutilGetImporter = new("pkgutil.get_importer", ["path_item"]);
+    public static readonly LythonCallableSignature PkgutilIterImporters = new("pkgutil.iter_importers", ["fullname"], RequiredCount: 0);
+    public static readonly LythonCallableSignature PkgutilIterImporterModules = new("pkgutil.iter_importer_modules", ["importer", "prefix"], RequiredCount: 1);
+    public static readonly LythonCallableSignature PkgutilIterZipimportModules = new("pkgutil.iter_zipimport_modules", ["importer", "prefix"], RequiredCount: 1);
+    public static readonly LythonCallableSignature PkgutilGetData = new("pkgutil.get_data", ["package", "resource"]);
+    public static readonly LythonCallableSignature PkgutilReadCode = new("pkgutil.read_code", ["stream"]);
 }

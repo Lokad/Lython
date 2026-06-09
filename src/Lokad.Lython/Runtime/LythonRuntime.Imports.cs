@@ -34,6 +34,8 @@ internal sealed partial class LythonRuntime
         "openpyxl.cell.cell",
         "openpyxl.styles",
         "openpyxl.styles.colors",
+        "openpyxl.comments",
+        "openpyxl.chart",
         "openpyxl.worksheet",
         "openpyxl.worksheet.worksheet",
         "openpyxl.worksheet.table",
@@ -116,9 +118,7 @@ internal sealed partial class LythonRuntime
             return cached;
         }
 
-        var path = ResolveLocalModulePath(moduleName, context);
-        var allowlistPath = ResolveLocalModuleAllowlistPath(path, context);
-        if (!IsLocalModuleImportAllowed(moduleName, path, allowlistPath, context))
+        if (!TryResolveLocalImportPath(moduleName, context, span, out var path, out _))
         {
             throw RuntimeErrors.NoModuleNamed(moduleName, span);
         }
@@ -130,12 +130,6 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            context.RegisterHostCall(span);
-            if (!context.HostExists(path, span))
-            {
-                throw RuntimeErrors.NoModuleNamed(moduleName, span);
-            }
-
             var source = ReadGovernedHostText(path, context, span);
             var frontend = LythonFrontend.Compile(source.AsString());
             if (frontend.Script is null || frontend.Diagnostics.Count != 0)
@@ -190,12 +184,13 @@ internal sealed partial class LythonRuntime
             return cached;
         }
 
-        var path = ResolveLocalModulePath(moduleName, context);
-        var allowlistPath = ResolveLocalModuleAllowlistPath(path, context);
-        if (!IsLocalModuleImportAllowed(moduleName, path, allowlistPath, context))
+        var localImport = await TryResolveLocalImportPathAsync(moduleName, context, span).ConfigureAwait(false);
+        if (localImport is null)
         {
             throw RuntimeErrors.NoModuleNamed(moduleName, span);
         }
+
+        var path = localImport.Value.Path;
 
         if (!context.State.LoadingModules.Add(moduleName))
         {
@@ -204,12 +199,6 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            context.RegisterHostCall(span);
-            if (!await context.HostExistsAsync(path, span).ConfigureAwait(false))
-            {
-                throw RuntimeErrors.NoModuleNamed(moduleName, span);
-            }
-
             var source = await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false);
             var frontend = LythonFrontend.Compile(source.AsString());
             if (frontend.Script is null || frontend.Diagnostics.Count != 0)
@@ -292,6 +281,76 @@ internal sealed partial class LythonRuntime
 
         return PathOps.Normalize(fileName, baseDirectory);
     }
+
+    private static bool TryResolveLocalImportPath(
+        string moduleName,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out string path,
+        out bool isPackage)
+    {
+        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
+        {
+            var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
+            if (IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context) &&
+                context.HostExists(candidate.Path, span))
+            {
+                path = candidate.Path;
+                isPackage = candidate.IsPackage;
+                return true;
+            }
+        }
+
+        path = string.Empty;
+        isPackage = false;
+        return false;
+    }
+
+    private static async ValueTask<LocalImportCandidate?> TryResolveLocalImportPathAsync(
+        string moduleName,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
+        {
+            var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
+            if (IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context) &&
+                await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<LocalImportCandidate> EnumerateLocalImportCandidates(string moduleName, ExecutionContext context)
+    {
+        var yielded = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var candidate in CreateLocalImportCandidates(moduleName, context))
+        {
+            if (yielded.Add(candidate.Path))
+            {
+                yield return candidate;
+            }
+        }
+    }
+
+    private static IEnumerable<LocalImportCandidate> CreateLocalImportCandidates(string moduleName, ExecutionContext context)
+    {
+        yield return new LocalImportCandidate(ResolveLocalModulePath(moduleName, context), IsPackage: false);
+
+        var baseDirectory = context.SourcePath is null
+            ? context.Host.Cwd
+            : PathOps.Parent(context.SourcePath);
+        var packageModulePath = PathOps.Normalize(moduleName.Replace('.', '/') + ".py", baseDirectory);
+        yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
+
+        var packageInitPath = PathOps.Normalize(moduleName.Replace('.', '/') + "/__init__.py", baseDirectory);
+        yield return new LocalImportCandidate(packageInitPath, IsPackage: true);
+    }
+
+    private readonly record struct LocalImportCandidate(string Path, bool IsPackage);
 
     private static string ResolveLocalModuleAllowlistPath(string modulePath, ExecutionContext context)
     {
