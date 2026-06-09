@@ -141,6 +141,7 @@ internal static partial class StaticContracts
     private static readonly HashSet<string> DataclassFieldMembers = new(StringComparer.Ordinal)
     {
         "name",
+        "type",
         "default",
         "default_factory",
         "init",

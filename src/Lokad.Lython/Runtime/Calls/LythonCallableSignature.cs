@@ -103,6 +103,9 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature ArgparseNamespace = new("argparse.Namespace", [], RequiredCount: 0, MaxPositionalCount: 0, AllowsExtraKeywords: true);
     public static readonly LythonCallableSignature ArgparseFileType = new("argparse.FileType", ["mode", "bufsize", "encoding", "errors"], RequiredCount: 0);
 
+    public static readonly LythonCallableSignature DataclassesDataclass = new("dataclasses.dataclass", ["cls", "init", "repr", "eq", "order", "unsafe_hash", "frozen", "match_args", "kw_only", "slots", "weakref_slot"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature DataclassesField = new("dataclasses.field", ["default", "default_factory", "init", "repr", "hash", "compare", "metadata", "kw_only"], RequiredCount: 0, MaxPositionalCount: 0);
+    public static readonly LythonCallableSignature DataclassesMakeDataclass = new("dataclasses.make_dataclass", ["cls_name", "fields", "bases", "namespace", "init", "repr", "eq", "order", "unsafe_hash", "frozen", "match_args", "kw_only", "slots", "weakref_slot"], RequiredCount: 2, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature DataclassesIsDataclass = new("dataclasses.is_dataclass", ["value"]);
     public static readonly LythonCallableSignature DataclassesFields = new("dataclasses.fields", ["class_or_instance"]);
     public static readonly LythonCallableSignature DataclassesAsDict = new("dataclasses.asdict", ["obj", "dict_factory"], RequiredCount: 1);

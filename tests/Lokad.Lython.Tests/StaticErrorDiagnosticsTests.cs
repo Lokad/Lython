@@ -2268,6 +2268,25 @@ replace(row, hidden="y")
     }
 
     [Fact]
+    public void DataclassExpandedHelperSurface_IsAcceptedAtCompileTime()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+from dataclasses import Field, dataclass, field, fields, make_dataclass
+
+@dataclass
+class Row:
+    name: str = field(default="alpha")
+
+field_type = fields(Row)[0].type
+field_class = Field
+Dynamic = make_dataclass("Dynamic", [("x", int)])
+""");
+
+        Assert.True(compiled.IsValid, string.Join(Environment.NewLine, compiled.Diagnostics.Select(d => d.ToString())));
+    }
+
+    [Fact]
     public void SealedPrimitiveDataclassAndDictSurfaces_ReportProvableTyposAtCompileTime()
     {
         var compiled = new LythonEngine().Compile(

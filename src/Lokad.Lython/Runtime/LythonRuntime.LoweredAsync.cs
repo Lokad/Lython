@@ -146,6 +146,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
             }
 
+            StoreClassAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
+
             PyType type;
             try
             {
@@ -164,7 +166,7 @@ internal sealed partial class LythonRuntime
                 type.SetMetaType(metaType);
             }
 
-            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, context, classDefinition.Span);
+            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
             type.InitializeClassMembers(context, classDefinition.Span);
             await InvokeInitSubclassAsync(type, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
             StoreName(

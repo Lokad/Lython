@@ -65,6 +65,8 @@ The example elides the host implementation on purpose. In practice, `host` is yo
 
 Lython supports a broad, practical subset of Python. Ordinary control flow, functions, exceptions, collections, comprehensions, strings, regex, classes and dataclasses, structural pattern matching, and host-mediated file/path work are expected to work.
 
+Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
+
 The builtin module surface is explicitly allowlisted:
 
 - `argparse`

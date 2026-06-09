@@ -49,7 +49,7 @@ internal static partial class StaticContracts
             "ONE_OR_MORE",
             "PARSER",
             "REMAINDER"),
-        ["dataclasses"] = Members("dataclass", "field", "is_dataclass", "fields", "asdict", "astuple", "replace", "MISSING", "KW_ONLY", "InitVar", "FrozenInstanceError"),
+        ["dataclasses"] = Members("dataclass", "Field", "field", "make_dataclass", "is_dataclass", "fields", "asdict", "astuple", "replace", "MISSING", "KW_ONLY", "InitVar", "FrozenInstanceError"),
         ["typing"] = Members("ClassVar"),
         ["pathlib"] = Members("Path"),
         ["pkgutil"] = Members(

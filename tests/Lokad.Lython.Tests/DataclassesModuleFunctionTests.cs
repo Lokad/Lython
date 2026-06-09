@@ -76,4 +76,116 @@ write_text("/out.txt", "|".join(vals))
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("[x, y]|id|True|True|True", host.ReadText("/out.txt"));
     }
+
+    [Fact]
+    public void DataclassesModule_RuntimeDataclassCallable_WrapsClasses()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import dataclasses
+from dataclasses import Field, fields, is_dataclass
+
+class Box:
+    x: int
+    y: int = 2
+
+Box = dataclasses.dataclass(Box)
+ordered = dataclasses.dataclass(order=True)
+
+@ordered
+class Ordered:
+    x: int
+
+box = Box(1)
+first = fields(Box)[0]
+parts = []
+parts.append(str(is_dataclass(Box)))
+parts.append(str(box))
+parts.append(first.name)
+parts.append(str(first.type))
+parts.append(str(Field))
+parts.append(str(Ordered(1) < Ordered(2)))
+parts.append(str(Box.__annotations__["x"]))
+write_text("/out.txt", "|".join(parts))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|Box(x=1, y=2)|x|int|<class 'dataclasses.Field'>|True|int", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DataclassesModule_MakeDataclassAndInheritedFields_WorkTogether()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass, field, fields, make_dataclass
+
+@dataclass
+class Base:
+    a: int
+    b: int = 2
+
+Child = make_dataclass("Child", [("c", int, field(default=3)), ("d", list, field(default_factory=list))], bases=(Base,))
+
+child = Child(1)
+names = [f.name for f in fields(Child)]
+parts = []
+parts.append(str(child))
+parts.append(str(names))
+parts.append(str(child.d))
+parts.append(str(Child.__dataclass_fields__["a"].default))
+parts.append(str(Child.__dataclass_fields__["c"].type is int))
+write_text("/out.txt", "|".join(parts))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Child(a=1, b=2, c=3, d=[])|[a, b, c, d]|[]|MISSING|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DataclassesModule_InheritedDefaultOrdering_IsRejected()
+    {
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass
+
+@dataclass
+class Base:
+    x: int = 1
+
+@dataclass
+class Bad(Base):
+    y: int
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Contains("without a default cannot follow", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DataclassesModule_SlotsOptions_AreExplicitlyUnsupported()
+    {
+        var result = new LythonEngine().Run(
+            """
+import dataclasses
+
+class Box:
+    x: int
+
+Box = dataclasses.dataclass(Box, slots=True)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
+        Assert.Contains("slots=True", result.Failure.Message, StringComparison.Ordinal);
+    }
 }

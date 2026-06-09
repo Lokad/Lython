@@ -34,6 +34,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.PkgutilLoader, "fullname", StaticReturnShape.String),
         new(AbstractValueKind.PkgutilLoader, "ispkg", StaticReturnShape.Boolean),
         new(AbstractValueKind.DataclassField, "name", StaticReturnShape.String),
+        new(AbstractValueKind.DataclassField, "type", StaticReturnShape.Unknown),
         new(AbstractValueKind.DataclassField, "default", StaticReturnShape.Unknown),
         new(AbstractValueKind.DataclassField, "default_factory", StaticReturnShape.Unknown),
         new(AbstractValueKind.DataclassField, "init", StaticReturnShape.Boolean),

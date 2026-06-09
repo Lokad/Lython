@@ -1255,20 +1255,25 @@ internal sealed partial class LythonRuntime
         {
             if (name == "dataclass")
             {
-                value = new BuiltinCallable(
-                    "dataclasses.dataclass",
-                    static (_, span, _) => throw new LythonRuntimeException(
-                        "TypeError",
-                        "@dataclass in Lython is compile-time only. Apply it directly as a class decorator.",
-                        span),
-                    ["cls"],
-                    requiredCount: 1);
+                value = PyDataclass.DataclassCallable;
+                return true;
+            }
+
+            if (name == "Field")
+            {
+                value = PyDataclass.FieldType;
                 return true;
             }
 
             if (name == "field")
             {
                 value = PyDataclass.FieldCallable;
+                return true;
+            }
+
+            if (name == "make_dataclass")
+            {
+                value = PyDataclass.MakeDataclassCallable;
                 return true;
             }
 

@@ -147,6 +147,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
             }
 
+            StoreClassAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
+
             PyType type;
             try
             {
@@ -165,7 +167,7 @@ internal sealed partial class LythonRuntime
                 type.SetMetaType(metaType);
             }
 
-            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, context, classDefinition.Span);
+            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
             type.InitializeClassMembers(context, classDefinition.Span);
             InvokeInitSubclass(type, classKeywordArguments, classDefinition.Span, context);
             StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context), context, classDefinition.Span);
@@ -173,6 +175,21 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveInterpreterFrame();
+        }
+    }
+
+    private static void StoreClassAnnotations(ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, ExecutionContext context)
+    {
+        PyDict? annotations = null;
+        foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
+        {
+            annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
+            annotations.SetItem(PyString.FromString(statement.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
+        }
+
+        if (annotations is not null)
+        {
+            members["__annotations__"] = annotations;
         }
     }
 

@@ -21,7 +21,7 @@ internal enum DataclassHashMode
 
 internal sealed record DataclassFieldSpec(
     string Name,
-    ExpressionSyntax Annotation,
+    object Annotation,
     DataclassFieldKind Kind,
     bool HasDefault,
     object DefaultValue,
@@ -76,7 +76,7 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
 
     public string Name { get; }
 
-    public ExpressionSyntax Annotation { get; }
+    public object Annotation { get; }
 
     public object Default { get; }
 
@@ -100,6 +100,9 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
         {
             case "name":
                 value = PyString.FromString(Name);
+                return true;
+            case "type":
+                value = Annotation;
                 return true;
             case "default":
                 value = Default;
@@ -135,6 +138,37 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
         => PyString.FromString($"Field(name='{Name}')");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+}
+
+internal sealed class PyDataclassAnnotationValue(ExpressionSyntax expression) : IPyRenderableValue
+{
+    public ExpressionSyntax Expression { get; } = expression;
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        _ = context;
+        return PyString.FromString(Format(Expression));
+    }
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public override string ToString() => Format(Expression);
+
+    private static string Format(ExpressionSyntax expression)
+        => expression switch
+        {
+            IdentifierExpressionSyntax identifier => identifier.Name,
+            MemberExpressionSyntax member => $"{Format(member.Target)}.{member.MemberName}",
+            SubscriptExpressionSyntax subscript => $"{Format(subscript.Target)}[{Format(subscript.Index)}]",
+            TupleLiteralExpressionSyntax tuple => string.Join(", ", tuple.Items.Select(Format)),
+            StringLiteralExpressionSyntax text => $"'{text.Value}'",
+            IntegerLiteralExpressionSyntax integer => integer.ValueText,
+            FloatLiteralExpressionSyntax floating => floating.ValueText,
+            BooleanLiteralExpressionSyntax boolean => boolean.Value ? "True" : "False",
+            NoneLiteralExpressionSyntax => "None",
+            ParenthesizedExpressionSyntax parenthesized => $"({Format(parenthesized.Inner)})",
+            _ => "<annotation>"
+        };
 }
 
 internal sealed class PyDataclassParamsObject : IPyRenderableValue
@@ -232,8 +266,14 @@ internal sealed class PyDataclassInitVarMarker : IPyRenderableValue
 internal static class PyDataclass
 {
     private static readonly object DefaultFactorySentinel = new();
+    public static readonly LythonRuntime.ICallable DataclassCallable = new DataclassCallableImpl();
     public static readonly LythonRuntime.ICallable FieldCallable = new DataclassFieldCallable();
+    public static readonly LythonRuntime.ICallable FieldType = new DataclassFieldType();
+    public static readonly LythonRuntime.ICallable MakeDataclassCallable = new DataclassMakeDataclassCallable();
     public static readonly LythonRuntime.ICallable ReplaceCallable = new DataclassReplaceCallable();
+
+    public static PyDataclassAnnotationValue CreateAnnotationValue(ExpressionSyntax annotation)
+        => new(annotation);
 
     public static void Apply(PyType type, ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -243,9 +283,21 @@ internal static class PyDataclass
             return;
         }
 
-        var fields = CollectFields(type, syntax, members, context, span);
+        var fields = MergeInheritedFields(type, CollectFields(type, syntax, members, context, span));
         ValidateFieldOrdering(fields, span);
+        ApplyCore(type, decorator, fields, context, span);
+    }
 
+    public static PyType ApplyRuntime(PyType type, DataclassDecoratorSyntax decorator, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var fields = MergeInheritedFields(type, CollectRuntimeFields(type, decorator.KwOnly, context, span));
+        ValidateFieldOrdering(fields, span);
+        ApplyCore(type, decorator, fields, context, span);
+        return type;
+    }
+
+    private static void ApplyCore(PyType type, DataclassDecoratorSyntax decorator, IReadOnlyList<DataclassFieldSpec> fields, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
         ValidateDataclassOptions(type, decorator, span);
 
         type.SetDataclassMetadata(fields, decorator.Repr, decorator.Eq, decorator.Order, DetermineHashMode(type, decorator));
@@ -374,6 +426,374 @@ internal static class PyDataclass
             KwOnly = kwOnly,
             Metadata = metadata
         };
+    }
+
+    private sealed record DataclassOptions(
+        bool Init = true,
+        bool Repr = true,
+        bool Eq = true,
+        bool Order = false,
+        bool UnsafeHash = false,
+        bool Frozen = false,
+        bool KwOnly = false,
+        bool MatchArgs = true);
+
+    private static DataclassDecoratorSyntax ToDecorator(DataclassOptions options, LythonSourceSpan span)
+        => new(options.Init, options.Repr, options.Eq, options.Order, options.UnsafeHash, options.Frozen, options.KwOnly, options.MatchArgs, span);
+
+    private sealed class DataclassCallableImpl : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var options = new DataclassOptions();
+            PyType? cls = null;
+            var seenCls = false;
+            var seenOptions = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (seenCls)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dataclasses.dataclass() accepts at most one positional class argument.", span);
+                    }
+
+                    seenCls = true;
+                    if (!ReferenceEquals(argument.Value, PyNone.Instance))
+                    {
+                        cls = argument.Value as PyType ??
+                            throw new LythonRuntimeException("TypeError", "dataclasses.dataclass(cls=...) expects a class or None.", span);
+                    }
+
+                    continue;
+                }
+
+                if (argument.Name == "cls")
+                {
+                    if (seenCls)
+                    {
+                        throw CallErrors.MultipleValues("Builtin", "dataclasses.dataclass", "cls", span);
+                    }
+
+                    seenCls = true;
+                    if (!ReferenceEquals(argument.Value, PyNone.Instance))
+                    {
+                        cls = argument.Value as PyType ??
+                            throw new LythonRuntimeException("TypeError", "dataclasses.dataclass(cls=...) expects a class or None.", span);
+                    }
+
+                    continue;
+                }
+
+                options = ApplyDataclassOption(options, argument.Name, argument.Value, seenOptions, "dataclasses.dataclass", span);
+            }
+
+            var decorator = ToDecorator(options, span);
+            return cls is null
+                ? new DataclassRuntimeDecorator(decorator)
+                : ApplyRuntime(cls, decorator, context, span);
+        }
+    }
+
+    private sealed class DataclassRuntimeDecorator(DataclassDecoratorSyntax decorator) : LythonRuntime.ICallable, IPyRenderableValue
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyType type)
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.dataclass(...) decorator expects one class argument.", span);
+            }
+
+            return ApplyRuntime(type, decorator, context, span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<function dataclasses.dataclass.<locals>.wrap>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class DataclassFieldType : LythonRuntime.ICallable, IPyRenderableValue
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            _ = arguments;
+            _ = context;
+            throw new LythonRuntimeException("TypeError", "dataclasses.Field objects are created by dataclasses.fields().", span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class 'dataclasses.Field'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class DataclassMakeDataclassCallable : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+
+            object? clsName = null;
+            object? fieldsArgument = null;
+            object? basesArgument = null;
+            object? namespaceArgument = null;
+            var options = new DataclassOptions();
+            var positionalCount = 0;
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var seenOptions = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    positionalCount++;
+                    switch (positionalCount)
+                    {
+                        case 1:
+                            clsName = argument.Value;
+                            break;
+                        case 2:
+                            fieldsArgument = argument.Value;
+                            break;
+                        default:
+                            throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(cls_name, fields, ...) accepts exactly two positional arguments.", span);
+                    }
+
+                    continue;
+                }
+
+                switch (argument.Name)
+                {
+                    case "cls_name":
+                        SetSingle(ref clsName, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        break;
+                    case "fields":
+                        SetSingle(ref fieldsArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        break;
+                    case "bases":
+                        SetSingle(ref basesArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        break;
+                    case "namespace":
+                        SetSingle(ref namespaceArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        break;
+                    case "module":
+                    case "decorator":
+                        throw new LythonRuntimeException("NotImplementedError", $"dataclasses.make_dataclass({argument.Name}=...) is not supported by Lython.", span);
+                    default:
+                        options = ApplyDataclassOption(options, argument.Name, argument.Value, seenOptions, "dataclasses.make_dataclass", span);
+                        break;
+                }
+            }
+
+            if (clsName is null || fieldsArgument is null)
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(cls_name, fields, ...) expects cls_name and fields.", span);
+            }
+
+            var name = ExpectIdentifierString(clsName, "dataclasses.make_dataclass(cls_name=...)", span);
+            var bases = ParseBases(basesArgument, span);
+            var members = new Dictionary<string, object>(StringComparer.Ordinal);
+            if (namespaceArgument is not null && !ReferenceEquals(namespaceArgument, PyNone.Instance))
+            {
+                if (namespaceArgument is not PyDict namespaceDict)
+                {
+                    throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(namespace=...) expects a dict or None.", span);
+                }
+
+                foreach (var pair in namespaceDict)
+                {
+                    var memberName = ExpectIdentifierString(pair.Key, "dataclasses.make_dataclass(namespace=...) key", span);
+                    members[memberName] = pair.Value;
+                }
+            }
+
+            var annotations = new PyDict(context.MemoryGovernor, span);
+            foreach (var field in ParseMakeDataclassFields(fieldsArgument, context, span))
+            {
+                annotations.SetItem(PyString.FromString(field.Name), field.Annotation);
+                if (field.Default is PyDataclassFieldDefinition definition)
+                {
+                    members[field.Name] = definition;
+                }
+                else if (!ReferenceEquals(field.Default, PyDataclassMissing.Instance))
+                {
+                    members[field.Name] = field.Default;
+                }
+            }
+
+            members["__annotations__"] = annotations;
+
+            PyType type;
+            try
+            {
+                type = new PyType(name, bases, members);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new LythonRuntimeException("TypeError", ex.Message, span);
+            }
+
+            if (context.TryGetBuiltinType("type", out var metaType))
+            {
+                type.SetMetaType(metaType);
+            }
+
+            ApplyRuntime(type, ToDecorator(options, span), context, span);
+            type.InitializeClassMembers(context, span);
+            return type;
+        }
+    }
+
+    private sealed record MakeDataclassField(string Name, object Annotation, object Default);
+
+    private static IEnumerable<MakeDataclassField> ParseMakeDataclassFields(object fieldsArgument, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in LythonRuntime.ToSequence(fieldsArgument, span))
+        {
+            string name;
+            object annotation = PyString.FromString("typing.Any");
+            object defaultValue = PyDataclassMissing.Instance;
+
+            if (PyStringOps.TryAsString(item, out var text))
+            {
+                name = text.AsString();
+            }
+            else if (item is PyTuple tuple)
+            {
+                if (tuple.Count is not 2 and not 3)
+                {
+                    throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass() field tuples must have 2 or 3 items.", span);
+                }
+
+                name = ExpectIdentifierString(tuple[0], "dataclasses.make_dataclass() field name", span);
+                annotation = tuple[1];
+                if (tuple.Count == 3)
+                {
+                    defaultValue = tuple[2];
+                }
+            }
+            else
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass() fields must contain names or field tuples.", span);
+            }
+
+            if (!IsIdentifierName(name))
+            {
+                throw new LythonRuntimeException("TypeError", $"Field name '{name}' is not a valid identifier.", span);
+            }
+
+            if (!seenNames.Add(name))
+            {
+                throw new LythonRuntimeException("TypeError", $"Field name '{name}' is duplicated.", span);
+            }
+
+            context.CheckExecutionBudget(span);
+            yield return new MakeDataclassField(name, annotation, defaultValue);
+        }
+    }
+
+    private static IReadOnlyList<PyType> ParseBases(object? basesArgument, LythonSourceSpan span)
+    {
+        if (basesArgument is null || ReferenceEquals(basesArgument, PyNone.Instance))
+        {
+            return [];
+        }
+
+        var bases = new List<PyType>();
+        foreach (var item in LythonRuntime.ToSequence(basesArgument, span))
+        {
+            if (item is not PyType type)
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(bases=...) expects classes.", span);
+            }
+
+            bases.Add(type);
+        }
+
+        return bases;
+    }
+
+    private static string ExpectIdentifierString(object value, string owner, LythonSourceSpan span)
+    {
+        if (!PyStringOps.TryAsString(value, out var text))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner} expects a string.", span);
+        }
+
+        return text.AsString();
+    }
+
+    private static void SetSingle(ref object? target, object value, HashSet<string> seen, string name, string owner, LythonSourceSpan span)
+    {
+        if (!seen.Add(name) || target is not null)
+        {
+            throw CallErrors.MultipleValues("Builtin", owner, name, span);
+        }
+
+        target = value;
+    }
+
+    private static DataclassOptions ApplyDataclassOption(DataclassOptions options, string name, object value, HashSet<string> seen, string owner, LythonSourceSpan span)
+    {
+        if (!seen.Add(name))
+        {
+            throw CallErrors.MultipleValues("Builtin", owner, name, span);
+        }
+
+        return name switch
+        {
+            "init" => options with { Init = ExpectBool(value, $"{owner}(init=...)", span) },
+            "repr" => options with { Repr = ExpectBool(value, $"{owner}(repr=...)", span) },
+            "eq" => options with { Eq = ExpectBool(value, $"{owner}(eq=...)", span) },
+            "order" => options with { Order = ExpectBool(value, $"{owner}(order=...)", span) },
+            "unsafe_hash" => options with { UnsafeHash = ExpectBool(value, $"{owner}(unsafe_hash=...)", span) },
+            "frozen" => options with { Frozen = ExpectBool(value, $"{owner}(frozen=...)", span) },
+            "kw_only" => options with { KwOnly = ExpectBool(value, $"{owner}(kw_only=...)", span) },
+            "match_args" => options with { MatchArgs = ExpectBool(value, $"{owner}(match_args=...)", span) },
+            "slots" => RejectUnsupportedDataclassSlotOption(options, value, owner, "slots", span),
+            "weakref_slot" => RejectUnsupportedDataclassSlotOption(options, value, owner, "weakref_slot", span),
+            _ => throw CallErrors.UnexpectedKeyword("Builtin", owner, name, span)
+        };
+    }
+
+    private static DataclassOptions RejectUnsupportedDataclassSlotOption(DataclassOptions options, object value, string owner, string name, LythonSourceSpan span)
+    {
+        if (!ExpectBool(value, $"{owner}({name}=...)", span))
+        {
+            return options;
+        }
+
+        throw new LythonRuntimeException("NotImplementedError", $"{owner}({name}=True) is not supported by Lython.", span);
+    }
+
+    private static bool IsIdentifierName(string value)
+    {
+        if (value.Length == 0 || !(value[0] == '_' || char.IsLetter(value[0])))
+        {
+            return false;
+        }
+
+        for (var i = 1; i < value.Length; i++)
+        {
+            var c = value[i];
+            if (c != '_' && !char.IsLetterOrDigit(c))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private sealed class DataclassFieldCallable : LythonRuntime.ICallable
@@ -864,6 +1284,7 @@ internal static class PyDataclass
     {
         var fields = new List<DataclassFieldSpec>();
         var defaultKwOnly = syntax.DataclassDecorator!.KwOnly;
+        var annotations = TryGetAnnotations(members, span);
 
         foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
         {
@@ -919,7 +1340,7 @@ internal static class PyDataclass
 
             fields.Add(new DataclassFieldSpec(
                 statement.Name,
-                statement.Annotation,
+                GetAnnotationValue(annotations, statement.Name, statement.Annotation),
                 kind,
                 hasDefault,
                 defaultValue,
@@ -949,6 +1370,173 @@ internal static class PyDataclass
         }
 
         return fields.ToArray();
+    }
+
+    private static DataclassFieldSpec[] CollectRuntimeFields(PyType type, bool decoratorKwOnly, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var fields = new List<DataclassFieldSpec>();
+        var defaultKwOnly = decoratorKwOnly;
+
+        if (!type.TryGetOwnMember("__annotations__", out var rawAnnotations) ||
+            ReferenceEquals(rawAnnotations, PyNone.Instance))
+        {
+            return [];
+        }
+
+        if (rawAnnotations is not PyDict annotations)
+        {
+            throw new LythonRuntimeException("TypeError", "dataclasses.dataclass() expects __annotations__ to be a dict when present.", span);
+        }
+
+        foreach (var pair in annotations)
+        {
+            if (!PyStringOps.TryAsString(pair.Key, out var nameText))
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.dataclass() expects string keys in __annotations__.", span);
+            }
+
+            var name = nameText.AsString();
+            var annotation = pair.Value;
+            if (IsKwOnlyAnnotation(annotation))
+            {
+                defaultKwOnly = true;
+                type.RemoveOwnMember(name);
+                continue;
+            }
+
+            var kind = ClassifyFieldKind(annotation);
+            var fieldDefinition = type.TryGetOwnMember(name, out var rawMember) && rawMember is PyDataclassFieldDefinition definition
+                ? definition
+                : null;
+
+            var hasDefault = fieldDefinition?.HasDefault ?? type.TryGetOwnMember(name, out rawMember);
+            var classMemberValue = fieldDefinition?.DefaultValue ?? (hasDefault ? rawMember : PyNone.Instance);
+            var defaultValue = classMemberValue;
+            var hasDefaultFactory = fieldDefinition?.HasDefaultFactory ?? false;
+            var defaultFactory = fieldDefinition?.DefaultFactory ?? PyNone.Instance;
+            var init = fieldDefinition?.Init ?? true;
+            var repr = fieldDefinition?.Repr ?? true;
+            var compare = fieldDefinition?.Compare ?? true;
+            var hash = fieldDefinition?.Hash;
+            var kwOnly = fieldDefinition?.KwOnly ?? defaultKwOnly;
+            var metadata = fieldDefinition?.Metadata ?? new PyDict(context.MemoryGovernor, span);
+
+            if (kind == DataclassFieldKind.ClassVar)
+            {
+                if (fieldDefinition?.KwOnly is not null)
+                {
+                    throw new LythonRuntimeException("TypeError", $"field '{name}' is a ClassVar but specifies kw_only.", span);
+                }
+
+                init = false;
+                repr = false;
+                compare = false;
+                hash = false;
+                kwOnly = false;
+            }
+            else if (kind == DataclassFieldKind.InitVar)
+            {
+                repr = false;
+                compare = false;
+                hash = false;
+            }
+
+            if (hasDefault && kind != DataclassFieldKind.ClassVar)
+            {
+                defaultValue = ResolveDescriptorBackedDefault(type, defaultValue, context, span);
+            }
+
+            fields.Add(new DataclassFieldSpec(
+                name,
+                annotation,
+                kind,
+                hasDefault,
+                defaultValue,
+                hasDefaultFactory,
+                defaultFactory,
+                init,
+                repr,
+                compare,
+                hash,
+                kwOnly,
+                metadata,
+                Store: kind == DataclassFieldKind.Normal));
+
+            if (fieldDefinition is null)
+            {
+                continue;
+            }
+
+            if (hasDefault)
+            {
+                type.TrySetMember(name, classMemberValue);
+            }
+            else
+            {
+                type.RemoveOwnMember(name);
+            }
+        }
+
+        return fields.ToArray();
+    }
+
+    private static DataclassFieldSpec[] MergeInheritedFields(PyType type, IReadOnlyList<DataclassFieldSpec> ownFields)
+    {
+        var merged = new List<DataclassFieldSpec>();
+        var positions = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var baseType in type.Mro.Skip(1).Reverse())
+        {
+            if (baseType.DataclassFields is null)
+            {
+                continue;
+            }
+
+            foreach (var field in baseType.DataclassFields)
+            {
+                AddOrReplace(field);
+            }
+        }
+
+        foreach (var field in ownFields)
+        {
+            AddOrReplace(field);
+        }
+
+        return [.. merged];
+
+        void AddOrReplace(DataclassFieldSpec field)
+        {
+            if (positions.TryGetValue(field.Name, out var index))
+            {
+                merged[index] = field;
+                return;
+            }
+
+            positions[field.Name] = merged.Count;
+            merged.Add(field);
+        }
+    }
+
+    private static PyDict? TryGetAnnotations(Dictionary<string, object> members, LythonSourceSpan span)
+    {
+        if (!members.TryGetValue("__annotations__", out var raw) || ReferenceEquals(raw, PyNone.Instance))
+        {
+            return null;
+        }
+
+        return raw as PyDict ??
+            throw new LythonRuntimeException("TypeError", "Class __annotations__ must be a dict.", span);
+    }
+
+    private static object GetAnnotationValue(PyDict? annotations, string name, ExpressionSyntax fallback)
+    {
+        if (annotations is not null && annotations.TryGetValue(PyString.FromString(name), out var value))
+        {
+            return value;
+        }
+
+        return new PyDataclassAnnotationValue(fallback);
     }
 
     private static void ValidateFieldOrdering(IReadOnlyList<DataclassFieldSpec> fields, LythonSourceSpan span)
@@ -1009,6 +1597,16 @@ internal static class PyDataclass
         };
     }
 
+    private static bool IsKwOnlyAnnotation(object annotation)
+        => annotation switch
+        {
+            PyDataclassKwOnlyMarker => true,
+            PyDataclassAnnotationValue syntax => IsKwOnlyMarker(syntax.Expression),
+            PyString text when text.AsString() == "KW_ONLY" || text.AsString() == "dataclasses.KW_ONLY" => true,
+            string text when text == "KW_ONLY" || text == "dataclasses.KW_ONLY" => true,
+            _ => false
+        };
+
     private static DataclassFieldKind ClassifyFieldKind(ExpressionSyntax annotation)
     {
         if (IsInitVarAnnotation(annotation))
@@ -1023,6 +1621,18 @@ internal static class PyDataclass
 
         return DataclassFieldKind.Normal;
     }
+
+    private static DataclassFieldKind ClassifyFieldKind(object annotation)
+        => annotation switch
+        {
+            PyDataclassInitVarMarker => DataclassFieldKind.InitVar,
+            PyDataclassAnnotationValue syntax => ClassifyFieldKind(syntax.Expression),
+            PyString text when IsClassVarText(text.AsString()) => DataclassFieldKind.ClassVar,
+            PyString text when IsInitVarText(text.AsString()) => DataclassFieldKind.InitVar,
+            string text when IsClassVarText(text) => DataclassFieldKind.ClassVar,
+            string text when IsInitVarText(text) => DataclassFieldKind.InitVar,
+            _ => DataclassFieldKind.Normal
+        };
 
     private static bool IsInitVarAnnotation(ExpressionSyntax annotation)
         => annotation switch
@@ -1061,6 +1671,18 @@ internal static class PyDataclass
             } => true,
             _ => false
         };
+
+    private static bool IsClassVarText(string text)
+        => text == "ClassVar" ||
+           text == "typing.ClassVar" ||
+           text.StartsWith("ClassVar[", StringComparison.Ordinal) ||
+           text.StartsWith("typing.ClassVar[", StringComparison.Ordinal);
+
+    private static bool IsInitVarText(string text)
+        => text == "InitVar" ||
+           text == "dataclasses.InitVar" ||
+           text.StartsWith("InitVar[", StringComparison.Ordinal) ||
+           text.StartsWith("dataclasses.InitVar[", StringComparison.Ordinal);
 
     private static object NormalizeFieldMetadata(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {

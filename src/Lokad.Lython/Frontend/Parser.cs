@@ -1214,6 +1214,16 @@ internal sealed class Parser
                         case "match_args":
                             matchArgs = boolean.Value;
                             break;
+                        case "slots":
+                        case "weakref_slot":
+                            if (boolean.Value)
+                            {
+                                AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.Name}=True'; Lython dataclasses do not implement slots.", argument.Expression.Span);
+                                decorator = null;
+                                return true;
+                            }
+
+                            break;
                         default:
                             AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.Name}'.", argument.Expression.Span);
                             decorator = null;
