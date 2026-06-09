@@ -639,8 +639,10 @@ The initial builtin environment must include exactly the following builtins and 
 - `all`
 - `min`
 - `max`
+- `sum`
 - `bool`
 - `str`
+- `repr`
 - `int`
 - `float`
 - `list`
@@ -651,6 +653,8 @@ The initial builtin environment must include exactly the following builtins and 
 - `KeyError`
 - `IndexError`
 - `RuntimeError`
+- `print`
+- `input`
 
 No builtin outside this set is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
 
@@ -673,6 +677,8 @@ For path and text-resource manipulation, the initial subset exposes the followin
 No other path or text-resource builtin is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
 
 The initial subset does not support Python's `open(...)` surface.
+
+`pathlib.Path.read_text(...)` is supported for host-mediated text resources. It accepts the Python-shaped forms `read_text()`, `read_text("utf-8")`, `read_text(encoding="utf-8")`, and `read_text(encoding="utf-8-sig", errors="strict")`. Other encodings, other error modes, and extra arguments must fail explicitly.
 
 Lython scripts must not be able to:
 
