@@ -210,8 +210,8 @@ from pathlib import Path
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--flag", action="count")
-parser.add_argument("--count", nargs=2)
+parser.add_argument("--flag", action="explode")
+parser.add_argument("--count", nargs=0)
 Path("/repo/output.txt").write_text("alpha", encoding="latin-1", newline="\r\n")
 """);
 

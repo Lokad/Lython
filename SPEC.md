@@ -1177,6 +1177,34 @@ Global process mutation and debugging hooks such as `settrace`, `setprofile`,
 `setrecursionlimit`, `addaudithook`, and `audit` remain unsupported and must
 fail explicitly.
 
+### 11.16 CLI Argument Parsing
+
+Contained command-line parsing is available through `argparse`.
+
+The runtime must support ordinary agent-authored CLI parsers, including:
+
+- `ArgumentParser(prog=None, usage=None, description=None, epilog=None, formatter_class=None, add_help=True, allow_abbrev=True, exit_on_error=True)`
+- `Namespace(**kwargs)`
+- text-only, host-mediated `FileType`
+- `HelpFormatter`, `RawDescriptionHelpFormatter`, `RawTextHelpFormatter`, and `ArgumentDefaultsHelpFormatter`
+- `SUPPRESS`, `OPTIONAL`, `ZERO_OR_MORE`, `ONE_OR_MORE`, `PARSER`, and `REMAINDER`
+- `add_argument(...)`, `add_mutually_exclusive_group(...)`, `parse_args(...)`, `parse_known_args(...)`, `format_usage()`, `format_help()`, `print_usage(...)`, `print_help(...)`, `error(...)`, `exit(...)`, `set_defaults(...)`, and `get_default(...)`
+- short options, long options, multiple aliases, `--option=value`, compact short no-value flags, dashed-name destination normalization, `choices`, `required`, `default`, `metavar`, `help`, and `default=SUPPRESS`
+- `nargs` values `None`, `"?"`, `"*"`, `"+"`, and fixed positive integers for supported value-taking actions
+- actions `store`, `store_true`, `store_false`, `append`, `store_const`, `count`, and `version`
+
+Type converters must accept ordinary callables, including `int`, `float`,
+`str`, `pathlib.Path`, and callables that raise `ArgumentTypeError`.
+
+Parser failures use Python-shaped `SystemExit` with status code `2` by default.
+When `exit_on_error=False`, parse failures raise `ArgumentError` for the
+supported subset.
+
+Advanced parser composition and ambient file expansion remain unsupported and
+must fail explicitly: `fromfile_prefix_chars`, parent parsers, subparsers,
+conflict handlers, non-default prefix character models, parser-wide
+`argument_default`, and custom `Action` subclasses.
+
 ---
 
 ## 12. Host Capability Interface

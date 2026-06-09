@@ -81,7 +81,27 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature ReSplit = new("re.split", ["pattern", "string", "maxsplit", "flags"], RequiredCount: 2);
     public static readonly LythonCallableSignature ReEscape = new("re.escape", ["string"]);
 
-    public static readonly LythonCallableSignature ArgparseArgumentParser = new("argparse.ArgumentParser", ["description"], RequiredCount: 0);
+    public static readonly LythonCallableSignature ArgparseArgumentParser = new(
+        "argparse.ArgumentParser",
+        [
+            "prog",
+            "usage",
+            "description",
+            "epilog",
+            "formatter_class",
+            "add_help",
+            "allow_abbrev",
+            "exit_on_error",
+            "fromfile_prefix_chars",
+            "parents",
+            "conflict_handler",
+            "prefix_chars",
+            "argument_default",
+        ],
+        RequiredCount: 0,
+        MaxPositionalCount: 8);
+    public static readonly LythonCallableSignature ArgparseNamespace = new("argparse.Namespace", [], RequiredCount: 0, MaxPositionalCount: 0, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature ArgparseFileType = new("argparse.FileType", ["mode", "bufsize", "encoding", "errors"], RequiredCount: 0);
 
     public static readonly LythonCallableSignature DataclassesIsDataclass = new("dataclasses.is_dataclass", ["value"]);
     public static readonly LythonCallableSignature DataclassesFields = new("dataclasses.fields", ["class_or_instance"]);

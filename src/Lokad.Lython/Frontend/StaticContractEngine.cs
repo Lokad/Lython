@@ -532,7 +532,13 @@ internal static class StaticContractEngine
 
     private static void AnalyzeArgumentParserConstructorCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "description", "LA3088", "argparse.ArgumentParser([description]) expects description to be a string when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(arguments, 0, "prog", "LA3088", "argparse.ArgumentParser(..., prog=...) expects prog to be a string or None when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(arguments, 1, "usage", "LA3088", "argparse.ArgumentParser(..., usage=...) expects usage to be a string or None when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(arguments, 2, "description", "LA3088", "argparse.ArgumentParser(..., description=...) expects description to be a string or None when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(arguments, 3, "epilog", "LA3088", "argparse.ArgumentParser(..., epilog=...) expects epilog to be a string or None when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownBooleanArgument(arguments, 5, "add_help", "LA3088", "argparse.ArgumentParser(..., add_help=...) expects add_help to be a bool when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownBooleanArgument(arguments, 6, "allow_abbrev", "LA3088", "argparse.ArgumentParser(..., allow_abbrev=...) expects allow_abbrev to be a bool when it is statically known.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeKnownBooleanArgument(arguments, 7, "exit_on_error", "LA3088", "argparse.ArgumentParser(..., exit_on_error=...) expects exit_on_error to be a bool when it is statically known.", diagnostics, bindings);
     }
 
     private static void AnalyzeFunctoolsPartialCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

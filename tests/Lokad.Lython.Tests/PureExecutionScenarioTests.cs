@@ -490,7 +490,7 @@ parser.parse_args()
             });
 
         Assert.False(result.Success);
-        Assert.Equal(1, result.ExitCode);
+        Assert.Equal(2, result.ExitCode);
         Assert.NotNull(result.Failure);
         Assert.Equal("SystemExit", result.Failure!.ExceptionType);
         Assert.Contains("invalid choice", result.Failure.Message, StringComparison.Ordinal);

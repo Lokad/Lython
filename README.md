@@ -98,6 +98,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `sys` is also contained: metadata, `path`, `modules`, builtin module names, `exc_info()`, `getsizeof(...)`, and std streams describe Lython and host-mediated handles rather than the host process or an ambient CPython installation.
 
+`argparse` covers ordinary agent-authored CLI scripts: `ArgumentParser`, `Namespace`, text-only `FileType`, common formatter classes and constants, `parse_args`, `parse_known_args`, defaults, help/error formatting, short and long options, `--name=value`, compact short flags, choices, required options, typed values, and the usual `store`, `append`, `store_const`, `store_true`, `store_false`, `count`, and `version` actions. Advanced parser composition features such as from-file expansion, parent parsers, subparsers, conflict handlers, and custom `Action` subclasses are rejected explicitly.
+
 Intentionally unsupported or constrained:
 
 - arbitrary package loading

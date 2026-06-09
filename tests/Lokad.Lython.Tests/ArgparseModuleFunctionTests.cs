@@ -107,7 +107,137 @@ write_text("/out.txt", str(args.files))
 """,
             host);
 
-        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal("[a.txt, b.txt]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ArgparseModule_ParseKnownNamespaceAndNargsFinePrint_ArePythonShaped()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+parser = argparse.ArgumentParser(prog="tool", description="demo")
+parser.add_argument("-v", "--verbose", action="count", default=0)
+parser.add_argument("-o", "--output", default=argparse.SUPPRESS)
+parser.add_argument("--limit", nargs="?", const="auto", default="none")
+parser.add_argument("--pair", nargs=2, action="append", metavar="PAIR")
+parser.add_argument("source", nargs="?")
+parser.set_defaults(mode="scan")
+seed = argparse.Namespace(existing="keep")
+args, rest = parser.parse_known_args(["-vv", "--limit", "--pair", "a", "b", "input.txt", "--extra"], namespace=seed)
+missing = "present"
+try:
+    args.output
+except AttributeError:
+    missing = "absent"
+vals = []
+vals.append(str(args.verbose))
+vals.append(args.limit)
+vals.append(str(args.pair))
+vals.append(args.source)
+vals.append(args.mode)
+vals.append(args.existing)
+vals.append(str(rest))
+vals.append(str(parser.get_default("mode")))
+vals.append(missing)
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("2|auto|[[a, b]]|input.txt|scan|keep|[--extra]|scan|absent", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ArgparseModule_OptionAliasesInlineValuesAndFormatterSurface_Work()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+parser = argparse.ArgumentParser(prog="tool", formatter_class=argparse.ArgumentDefaultsHelpFormatter, epilog="done")
+parser.add_argument("-o", "--output", default="out.txt", help="destination")
+parser.add_argument("--lang", choices=("fr", "de"), default="fr")
+parser.add_argument("--quiet", action="store_true", help=argparse.SUPPRESS)
+args = parser.parse_args(["-oreport.txt", "--lang=de"])
+help_text = parser.format_help()
+vals = []
+vals.append(args.output)
+vals.append(args.lang)
+vals.append(str(args.quiet))
+vals.append(str("destination" in help_text))
+vals.append(str("--quiet" in help_text))
+vals.append(str(argparse.OPTIONAL + argparse.ZERO_OR_MORE + argparse.ONE_OR_MORE))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("report.txt|de|False|True|False|?*+", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ArgparseModule_FileType_UsesHostMediatedTextOpen()
+    {
+        var host = new MockLythonHost();
+        host.WriteText("/in.txt", "hello");
+
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+reader = argparse.FileType("r")
+handle = reader("/in.txt")
+write_text("/out.txt", handle.read())
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("hello", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ArgparseModule_ExitOnErrorFalse_RaisesArgumentError()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+parser = argparse.ArgumentParser(exit_on_error=False)
+parser.add_argument("--lang", choices=("fr", "de"))
+try:
+    parser.parse_args(["--lang", "es"])
+except argparse.ArgumentError as ex:
+    write_text("/out.txt", ex.type + ":" + ex.message)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Contains("ArgumentError:argument --lang: invalid choice", host.ReadText("/out.txt"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArgparseModule_UnsupportedAdvancedFeatures_AreExplicit()
+    {
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+argparse.ArgumentParser(fromfile_prefix_chars="@")
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
+        Assert.Contains("fromfile_prefix_chars", result.Failure.Message, StringComparison.Ordinal);
     }
 }

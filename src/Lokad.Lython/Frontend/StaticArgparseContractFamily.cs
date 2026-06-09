@@ -10,8 +10,31 @@ internal static class StaticArgparseContractFamily
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => string.Equals(targetName, LythonKnownCallableSignatures.ArgparseArgumentParser.Name, StringComparison.Ordinal) &&
-           AnalyzeStringArgument(arguments, 0, "description", "argparse.ArgumentParser([description]) expects description to be a string.", diagnostics, bindings);
+    {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.ArgparseArgumentParser.Name, StringComparison.Ordinal))
+        {
+            var emitted = false;
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 0, "prog", "argparse.ArgumentParser(..., prog=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 1, "usage", "argparse.ArgumentParser(..., usage=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "description", "argparse.ArgumentParser(..., description=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "epilog", "argparse.ArgumentParser(..., epilog=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 5, "add_help", "argparse.ArgumentParser(..., add_help=...) expects a bool.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 6, "allow_abbrev", "argparse.ArgumentParser(..., allow_abbrev=...) expects a bool.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 7, "exit_on_error", "argparse.ArgumentParser(..., exit_on_error=...) expects a bool.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.ArgparseFileType.Name, StringComparison.Ordinal))
+        {
+            var emitted = false;
+            emitted |= AnalyzeStringArgument(arguments, 0, "mode", "argparse.FileType(..., mode=...) expects a string.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "encoding", "argparse.FileType(..., encoding=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "errors", "argparse.FileType(..., errors=...) expects a string or None.", diagnostics, bindings);
+            return emitted;
+        }
+
+        return false;
+    }
 
     public static bool TryAnalyze(
         CallExpressionSyntax call,
@@ -33,6 +56,9 @@ internal static class StaticArgparseContractFamily
                 AnalyzeArgparseMutuallyExclusiveGroupCall(arguments, diagnostics, bindings);
                 return true;
             case "parse_args":
+                AnalyzeArgparseParseArgsCall(arguments, diagnostics, bindings);
+                return true;
+            case "parse_known_args":
                 AnalyzeArgparseParseArgsCall(arguments, diagnostics, bindings);
                 return true;
             default:
@@ -86,9 +112,9 @@ internal static class StaticArgparseContractFamily
             }
             else if (actionExpression is not NoneLiteralExpressionSyntax &&
                      StaticAbstractValueResolver.TryResolveKnownString(actionExpression, bindings, out var actionText) &&
-                     actionText is not ("store" or "store_true" or "store_false" or "append" or "store_const"))
+                     actionText is not ("store" or "store_true" or "store_false" or "append" or "store_const" or "count" or "version"))
             {
-                AddDiagnostic(diagnostics, "LA3051", "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', or 'store_const'.", actionExpression.Span);
+                AddDiagnostic(diagnostics, "LA3051", "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', 'store_const', 'count', or 'version'.", actionExpression.Span);
             }
         }
 
@@ -110,18 +136,19 @@ internal static class StaticArgparseContractFamily
         if (arguments.Keywords.TryGetValue("nargs", out var nargsExpression))
         {
             if (nargsExpression is not NoneLiteralExpressionSyntax &&
-                !StaticAbstractValueResolver.TryResolveKnownString(nargsExpression, bindings, out _))
+                !StaticAbstractValueResolver.TryResolveKnownString(nargsExpression, bindings, out _) &&
+                !IsKnownPositiveInteger(nargsExpression, bindings))
             {
                 if (StaticAbstractFacts.IsDefinitelyKnownLiteral(nargsExpression, bindings))
                 {
-                    AddDiagnostic(diagnostics, "LA3052", "argparse.ArgumentParser.add_argument(..., nargs=...) only supports positional nargs='*' or '+'.", nargsExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3052", "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.", nargsExpression.Span);
                 }
             }
             else if (nargsExpression is not NoneLiteralExpressionSyntax &&
                      StaticAbstractValueResolver.TryResolveKnownString(nargsExpression, bindings, out var nargsText) &&
-                     nargsText is not ("*" or "+"))
+                     !IsSupportedNargsText(nargsText))
             {
-                AddDiagnostic(diagnostics, "LA3052", "argparse.ArgumentParser.add_argument(..., nargs=...) only supports positional nargs='*' or '+'.", nargsExpression.Span);
+                AddDiagnostic(diagnostics, "LA3052", "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.", nargsExpression.Span);
             }
         }
 
@@ -180,5 +207,22 @@ internal static class StaticArgparseContractFamily
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
     {
         StaticDiagnosticSink.AddError(diagnostics, code, message, span);
+    }
+
+    private static bool IsSupportedNargsText(string text)
+        => text is "?" or "*" or "+" ||
+           (int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var count) && count > 0);
+
+    private static bool IsKnownPositiveInteger(ExpressionSyntax expression, AbstractState bindings)
+    {
+        if (!StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) ||
+            !StaticAbstractFacts.IsIntegerLike(value))
+        {
+            return false;
+        }
+
+        return value.Kind != AbstractValueKind.Integer ||
+               !int.TryParse((string)value.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var literal) ||
+               literal > 0;
     }
 }

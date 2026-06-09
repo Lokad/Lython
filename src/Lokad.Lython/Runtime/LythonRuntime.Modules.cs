@@ -1495,6 +1495,15 @@ internal sealed partial class LythonRuntime
     {
         public static readonly ArgparseModule Instance = new();
 
+        private static readonly IReadOnlyDictionary<string, ArgparseFormatterClass> FormatterClasses =
+            new Dictionary<string, ArgparseFormatterClass>(StringComparer.Ordinal)
+            {
+                ["HelpFormatter"] = new("HelpFormatter"),
+                ["RawDescriptionHelpFormatter"] = new("RawDescriptionHelpFormatter"),
+                ["RawTextHelpFormatter"] = new("RawTextHelpFormatter"),
+                ["ArgumentDefaultsHelpFormatter"] = new("ArgumentDefaultsHelpFormatter"),
+            };
+
         private ArgparseModule() : base("argparse")
         {
         }
@@ -1503,47 +1512,268 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "ArgumentParser" => new BuiltinCallable(LythonKnownCallableSignatures.ArgparseArgumentParser, CreateParser),
-                "SUPPRESS" => PyString.FromString("SUPPRESS"),
+                "ArgumentParser" => new ArgumentParserFactory(),
+                "Namespace" => new ArgparseNamespaceFactory(),
+                "FileType" => new BuiltinCallable(LythonKnownCallableSignatures.ArgparseFileType, CreateFileType),
+                "ArgumentError" => new ExceptionTypeValue("ArgumentError"),
+                "ArgumentTypeError" => new ExceptionTypeValue("ArgumentTypeError"),
+                "SUPPRESS" => ArgparseSuppressValue.Instance,
+                "OPTIONAL" => PyString.FromString("?"),
+                "ZERO_OR_MORE" => PyString.FromString("*"),
+                "ONE_OR_MORE" => PyString.FromString("+"),
+                "PARSER" => PyString.FromString("A..."),
+                "REMAINDER" => PyString.FromString("..."),
+                "HelpFormatter" => FormatterClasses["HelpFormatter"],
+                "RawDescriptionHelpFormatter" => FormatterClasses["RawDescriptionHelpFormatter"],
+                "RawTextHelpFormatter" => FormatterClasses["RawTextHelpFormatter"],
+                "ArgumentDefaultsHelpFormatter" => FormatterClasses["ArgumentDefaultsHelpFormatter"],
                 _ => null!
             };
 
             return value is not null;
         }
 
-        private object CreateParser(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object CreateParser(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var options = new ArgparseParserOptions(DefaultProgramName(context));
+            var positionalIndex = 0;
+            var assigned = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (positionalIndex >= ArgparseParserOptions.SupportedConstructorParameters.Length)
+                    {
+                        throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser(...) received too many positional arguments.", span);
+                    }
+
+                    AssignParserOption(options, ArgparseParserOptions.SupportedConstructorParameters[positionalIndex++], argument.Value, assigned, span);
+                    continue;
+                }
+
+                if (argument.Name is "fromfile_prefix_chars" or "parents" or "conflict_handler" or "prefix_chars" or "argument_default")
+                {
+                    throw new LythonRuntimeException(
+                        "NotImplementedError",
+                        $"argparse.ArgumentParser(..., {argument.Name}=...) is not supported by Lython.",
+                        span);
+                }
+
+                if (!ArgparseParserOptions.SupportedConstructorParameters.Contains(argument.Name, StringComparer.Ordinal))
+                {
+                    throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                }
+
+                AssignParserOption(options, argument.Name, argument.Value, assigned, span);
+            }
+
+            return new ArgumentParserObject(options);
+        }
+
+        private static void AssignParserOption(
+            ArgparseParserOptions options,
+            string name,
+            object value,
+            HashSet<string> assigned,
+            LythonSourceSpan span)
+        {
+            if (!assigned.Add(name))
+            {
+                throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser(...) got multiple values for argument '{name}'.", span);
+            }
+
+            switch (name)
+            {
+                case "prog":
+                    options.Prog = OptionalString(value, "prog", "argparse.ArgumentParser", span) ?? options.Prog;
+                    break;
+                case "usage":
+                    options.Usage = OptionalString(value, "usage", "argparse.ArgumentParser", span);
+                    break;
+                case "description":
+                    options.Description = OptionalString(value, "description", "argparse.ArgumentParser", span);
+                    break;
+                case "epilog":
+                    options.Epilog = OptionalString(value, "epilog", "argparse.ArgumentParser", span);
+                    break;
+                case "formatter_class":
+                    options.FormatterClass = ReferenceEquals(value, PyNone.Instance) ? null : value;
+                    break;
+                case "add_help":
+                    options.AddHelp = RequireBool(value, "add_help", "argparse.ArgumentParser", span);
+                    break;
+                case "allow_abbrev":
+                    options.AllowAbbrev = RequireBool(value, "allow_abbrev", "argparse.ArgumentParser", span);
+                    break;
+                case "exit_on_error":
+                    options.ExitOnError = RequireBool(value, "exit_on_error", "argparse.ArgumentParser", span);
+                    break;
+            }
+        }
+
+        private static object CreateFileType(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length > 1)
+            var mode = arguments.Length >= 1 && !ReferenceEquals(arguments[0], PyNone.Instance)
+                ? RequireStringValue(arguments[0], "mode", "argparse.FileType", span).AsString()
+                : "r";
+            if (mode.Contains('b'))
             {
-                throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser([description]) expects zero or one argument.", span);
+                throw new LythonRuntimeException("ValueError", "argparse.FileType only supports host-mediated UTF-8 text modes.", span);
             }
 
-            PyString? description = null;
-            if (arguments.Length == 1)
+            if (mode is not ("r" or "w" or "a"))
             {
-                if (!PyStringOps.TryAsString(arguments[0], out description))
-                {
-                    throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser(description) expects description to be a string.", span);
-                }
+                throw new LythonRuntimeException("ValueError", "argparse.FileType only supports modes 'r', 'w', and 'a'.", span);
             }
 
-            return new ArgumentParserObject(description);
+            var encoding = arguments.Length >= 3 ? OptionalString(arguments[2], "encoding", "argparse.FileType", span) : null;
+            var errors = arguments.Length >= 4 ? OptionalString(arguments[3], "errors", "argparse.FileType", span) : null;
+            return new ArgparseFileTypeObject(mode, encoding, errors);
         }
+
+        private static PyString RequireStringValue(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(value, out var text))
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a string.", span);
+            }
+
+            return text;
+        }
+
+        private static string? OptionalString(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (ReferenceEquals(value, PyNone.Instance))
+            {
+                return null;
+            }
+
+            return RequireStringValue(value, name, owner, span).AsString();
+        }
+
+        private static bool RequireBool(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (value is bool boolean)
+            {
+                return boolean;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
+        }
+
+        private static string DefaultProgramName(ExecutionContext context)
+        {
+            if (context.SourcePath is not null)
+            {
+                var normalized = context.SourcePath.Replace('\\', '/');
+                var slash = normalized.LastIndexOf('/');
+                return slash >= 0 ? normalized[(slash + 1)..] : normalized;
+            }
+
+            return "lython";
+        }
+
+        private sealed class ArgumentParserFactory : ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                return CreateParser(arguments, span, context);
+            }
+        }
+
+        private sealed class ArgparseNamespaceFactory : ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                var members = new Dictionary<string, object>(StringComparer.Ordinal);
+                foreach (var argument in arguments)
+                {
+                    if (argument.Name is null)
+                    {
+                        throw new LythonRuntimeException("TypeError", "argparse.Namespace(...) accepts keyword arguments only.", span);
+                    }
+
+                    members[argument.Name] = argument.Value;
+                }
+
+                return new ArgparseNamespaceObject(members);
+            }
+        }
+    }
+
+    internal sealed class ArgparseParserOptions
+    {
+        public static readonly string[] SupportedConstructorParameters =
+        [
+            "prog",
+            "usage",
+            "description",
+            "epilog",
+            "formatter_class",
+            "add_help",
+            "allow_abbrev",
+            "exit_on_error",
+        ];
+
+        public ArgparseParserOptions(string prog)
+        {
+            Prog = prog;
+        }
+
+        public string Prog { get; set; }
+
+        public string? Usage { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? Epilog { get; set; }
+
+        public object? FormatterClass { get; set; }
+
+        public bool AddHelp { get; set; } = true;
+
+        public bool AllowAbbrev { get; set; } = true;
+
+        public bool ExitOnError { get; set; } = true;
     }
 
     internal sealed class ArgumentParserObject
     {
         private readonly List<ArgumentSpec> _arguments = [];
         private readonly List<ArgparseMutuallyExclusiveGroupObject> _groups = [];
+        private readonly Dictionary<string, object> _defaults = new(StringComparer.Ordinal);
+        private readonly ArgparseParserOptions _options;
         private int _nextGroupId;
 
-        public ArgumentParserObject(PyString? description)
+        public ArgumentParserObject(ArgparseParserOptions options)
         {
-            Description = description;
+            _options = options;
+            if (_options.AddHelp)
+            {
+                _arguments.Add(new ArgumentSpec(
+                    ["-h", "--help"],
+                    "help",
+                    "help",
+                    Required: false,
+                    DefaultValue: ArgparseSuppressValue.Instance,
+                    Choices: null,
+                    Converter: null,
+                    IsPositional: false,
+                    Nargs: null,
+                    GroupId: null,
+                    ConstValue: PyNone.Instance,
+                    HelpText: "show this help message and exit",
+                    Metavar: null,
+                    VersionText: null,
+                    SuppressHelp: false));
+            }
         }
 
-        public PyString? Description { get; }
+        public PyString? Description => _options.Description is null ? null : PyString.FromString(_options.Description);
 
         public bool TryGetMember(string name, out object value)
         {
@@ -1552,6 +1782,16 @@ internal sealed partial class LythonRuntime
                 "add_argument" => new CustomMethodCallable("argparse.ArgumentParser.add_argument", AddArgument),
                 "add_mutually_exclusive_group" => new CustomMethodCallable("argparse.ArgumentParser.add_mutually_exclusive_group", AddMutuallyExclusiveGroup),
                 "parse_args" => new CustomMethodCallable("argparse.ArgumentParser.parse_args", ParseArgs),
+                "parse_known_args" => new CustomMethodCallable("argparse.ArgumentParser.parse_known_args", ParseKnownArgs),
+                "format_usage" => new CustomMethodCallable("argparse.ArgumentParser.format_usage", FormatUsage),
+                "format_help" => new CustomMethodCallable("argparse.ArgumentParser.format_help", FormatHelp),
+                "print_usage" => new CustomMethodCallable("argparse.ArgumentParser.print_usage", PrintUsage),
+                "print_help" => new CustomMethodCallable("argparse.ArgumentParser.print_help", PrintHelp),
+                "error" => new CustomMethodCallable("argparse.ArgumentParser.error", Error),
+                "exit" => new CustomMethodCallable("argparse.ArgumentParser.exit", Exit),
+                "set_defaults" => new CustomMethodCallable("argparse.ArgumentParser.set_defaults", SetDefaults),
+                "get_default" => new CustomMethodCallable("argparse.ArgumentParser.get_default", GetDefault),
+                "add_subparsers" => new CustomMethodCallable("argparse.ArgumentParser.add_subparsers", AddSubparsers),
                 _ => null!
             };
 
@@ -1590,46 +1830,42 @@ internal sealed partial class LythonRuntime
 
         private object ParseArgs(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            ValidateSupportedKeywords(arguments, ["args"], "argparse.ArgumentParser.parse_args", span);
-
-            List<string> argv;
-            switch (arguments.Length)
+            var result = ParseArguments(arguments, "argparse.ArgumentParser.parse_args", collectUnknown: false, span, context);
+            if (result.Unknown.Count != 0)
             {
-                case 0:
-                {
-                    argv = new List<string>(context.State.Args.Count);
-                    foreach (var item in context.State.Args)
-                    {
-                        argv.Add(item.AsString());
-                    }
-
-                    break;
-                }
-                case 1:
-                {
-                    argv = [];
-                    foreach (var item in ToSequence(arguments[0].Value, span))
-                    {
-                        if (!PyStringOps.TryAsString(item, out var text))
-                        {
-                            throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.parse_args(args) expects an iterable of strings.", span);
-                        }
-
-                        argv.Add(text.AsString());
-                    }
-
-                    break;
-                }
-                default:
-                    throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.parse_args([args]) expects zero or one argument.", span);
+                throw CreateParseFailure($"unrecognized arguments: {JoinUnknownArguments(result.Unknown)}", span);
             }
 
-            var values = new Dictionary<string, object>(StringComparer.Ordinal);
+            return result.Namespace;
+        }
+
+        private object ParseKnownArgs(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var result = ParseArguments(arguments, "argparse.ArgumentParser.parse_known_args", collectUnknown: true, span, context);
+            return new PyTuple(
+                [
+                    result.Namespace,
+                    new PyList(result.Unknown.Select(static item => (object)PyString.FromString(item)), context.MemoryGovernor, span)
+                ],
+                context.MemoryGovernor,
+                span);
+        }
+
+        private ParseResult ParseArguments(
+            CallArgumentValue[] arguments,
+            string methodName,
+            bool collectUnknown,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var (argv, namespaceObject) = ResolveParseInvocation(arguments, methodName, span, context);
+            var values = namespaceObject is null
+                ? new Dictionary<string, object>(StringComparer.Ordinal)
+                : new Dictionary<string, object>(namespaceObject.Members, StringComparer.Ordinal);
             var seenSpecs = new HashSet<ArgumentSpec>();
-            foreach (var spec in _arguments)
-            {
-                values[spec.Destination] = CloneDefault(spec.DefaultValue, context, span);
-            }
+            var unknown = new List<string>();
+
+            ApplyDefaults(values, context, span);
 
             var positionalSpecs = new List<ArgumentSpec>(_arguments.Count);
             foreach (var argument in _arguments)
@@ -1645,143 +1881,468 @@ internal sealed partial class LythonRuntime
             for (var index = 0; index < argv.Count; index++)
             {
                 var token = argv[index];
-                var spec = FindOptionalArgument(token);
-                if (spec is null)
+                if (token == "--")
                 {
-                    if (token.StartsWith("-", StringComparison.Ordinal))
+                    index++;
+                    while (index < argv.Count)
                     {
-                        throw CreateSystemExit($"unrecognized arguments: {token}", span);
+                        ConsumePositional(argv, ref index, positionalSpecs, ref positionalIndex, seenSpecs, values, unknown, collectUnknown, span, context);
                     }
 
-                    if (positionalIndex >= positionalSpecs.Count)
+                    break;
+                }
+
+                if (TryExpandShortFlagCluster(token, out var clusterSpecs))
+                {
+                    foreach (var clusterSpec in clusterSpecs)
                     {
-                        throw CreateSystemExit($"unrecognized arguments: {token}", span);
+                        ApplyNoValueOptional(clusterSpec, token, seenSpecs, values, span, context);
                     }
 
-                    var positionalSpec = positionalSpecs[positionalIndex];
-                    if (positionalSpec.Nargs is "*" or "+")
+                    continue;
+                }
+
+                var optionalSpec = FindOptionalArgument(token, out var inlineValue, out var optionError);
+                if (optionError is not null)
+                {
+                    throw CreateParseFailure(optionError, span);
+                }
+
+                if (optionalSpec is not null)
+                {
+                    ApplyOptional(optionalSpec, token, inlineValue, argv, ref index, seenSpecs, values, span, context);
+                    continue;
+                }
+
+                if (LooksLikeOptionalToken(token))
+                {
+                    if (collectUnknown)
                     {
-                        var list = values[positionalSpec.Destination] as PyList ?? new PyList([], context.MemoryGovernor, span);
-                        while (true)
-                        {
-                            list.Add(ConvertArgumentValue(positionalSpec, positionalSpec.Destination, token, span, context));
-                            seenSpecs.Add(positionalSpec);
-                            values[positionalSpec.Destination] = list;
-                            if (index + 1 >= argv.Count)
-                            {
-                                break;
-                            }
-
-                            var nextToken = argv[index + 1];
-                            if (nextToken.StartsWith("-", StringComparison.Ordinal) &&
-                                HasOptionalArgumentNamed(nextToken))
-                            {
-                                break;
-                            }
-
-                            index++;
-                            token = argv[index];
-                        }
-
-                        positionalIndex++;
+                        unknown.Add(token);
                         continue;
                     }
 
-                    values[positionalSpec.Destination] = ConvertArgumentValue(positionalSpec, positionalSpec.Destination, token, span, context);
-                    seenSpecs.Add(positionalSpec);
+                    throw CreateParseFailure($"unrecognized arguments: {token}", span);
+                }
+
+                ConsumePositional(argv, ref index, positionalSpecs, ref positionalIndex, seenSpecs, values, unknown, collectUnknown, span, context);
+            }
+
+            ValidateRequiredArguments(seenSpecs, values, span);
+            ValidateMutuallyExclusiveGroups(seenSpecs, span);
+            var resultNamespace = namespaceObject ?? new ArgparseNamespaceObject(new Dictionary<string, object>(StringComparer.Ordinal));
+            resultNamespace.ReplaceMembers(values);
+            return new ParseResult(resultNamespace, unknown);
+        }
+
+        private (List<string> Argv, ArgparseNamespaceObject? Namespace) ResolveParseInvocation(
+            CallArgumentValue[] arguments,
+            string methodName,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            object? argsValue = ArgparseUnspecifiedValue.Instance;
+            object? namespaceValue = ArgparseUnspecifiedValue.Instance;
+            var positionalIndex = 0;
+            var assignedArgs = false;
+            var assignedNamespace = false;
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (positionalIndex == 0)
+                    {
+                        if (assignedArgs)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument 'args'.", span);
+                        }
+
+                        argsValue = argument.Value;
+                        assignedArgs = true;
+                    }
+                    else if (positionalIndex == 1)
+                    {
+                        if (assignedNamespace)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument 'namespace'.", span);
+                        }
+
+                        namespaceValue = argument.Value;
+                        assignedNamespace = true;
+                    }
+                    else
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{methodName}([args][, namespace]) expects zero to two arguments.", span);
+                    }
+
                     positionalIndex++;
                     continue;
                 }
 
-                if (spec.Action == "store_true")
+                switch (argument.Name)
                 {
-                    values[spec.Destination] = true;
-                    seenSpecs.Add(spec);
-                    continue;
-                }
+                    case "args":
+                        if (assignedArgs)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument 'args'.", span);
+                        }
 
-                if (spec.Action == "store_false")
-                {
-                    values[spec.Destination] = false;
-                    seenSpecs.Add(spec);
-                    continue;
-                }
+                        argsValue = argument.Value;
+                        assignedArgs = true;
+                        break;
+                    case "namespace":
+                        if (assignedNamespace)
+                        {
+                            throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument 'namespace'.", span);
+                        }
 
-                if (spec.Action == "store_const")
-                {
-                    values[spec.Destination] = spec.ConstValue;
-                    seenSpecs.Add(spec);
-                    continue;
-                }
-
-                if (index + 1 >= argv.Count)
-                {
-                    throw CreateSystemExit($"argument {token}: expected one argument", span);
-                }
-
-                index++;
-                var converted = ConvertArgumentValue(spec, token, argv[index], span, context);
-                if (spec.Action == "append")
-                {
-                    var list = values[spec.Destination] as PyList ?? new PyList([], context.MemoryGovernor, span);
-                    list.Add(converted);
-                    values[spec.Destination] = list;
-                    seenSpecs.Add(spec);
-                }
-                else
-                {
-                    values[spec.Destination] = converted;
-                    seenSpecs.Add(spec);
+                        namespaceValue = argument.Value;
+                        assignedNamespace = true;
+                        break;
+                    default:
+                        throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
                 }
             }
 
+            var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)
+                ? context.State.Args.Select(static item => item.AsString()).ToList()
+                : ToStringList(argsValue!, $"{methodName}(args) expects an iterable of strings.", span);
+
+            var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)
+                ? null
+                : namespaceValue as ArgparseNamespaceObject ??
+                  throw new LythonRuntimeException("TypeError", $"{methodName}(namespace) expects an argparse.Namespace instance.", span);
+
+            return (argv, namespaceObject);
+        }
+
+        private void ApplyDefaults(Dictionary<string, object> values, ExecutionContext context, LythonSourceSpan span)
+        {
             foreach (var spec in _arguments)
             {
-                if (spec.IsPositional && spec.Nargs == "+" && !seenSpecs.Contains(spec))
+                var defaultValue = _defaults.TryGetValue(spec.Destination, out var parserDefault)
+                    ? parserDefault
+                    : spec.DefaultValue;
+                if (IsSuppress(defaultValue) || values.ContainsKey(spec.Destination))
                 {
-                    var display = spec.OptionNames.FirstOrDefault() ?? spec.Destination;
-                    throw CreateSystemExit($"the following arguments are required: {display}", span);
+                    continue;
                 }
 
-                var current = values[spec.Destination];
-                if (spec.Required && IsMissingValue(current, spec.Action))
-                {
-                    var display = spec.OptionNames.FirstOrDefault() ?? spec.Destination;
-                    throw CreateSystemExit($"the following arguments are required: {display}", span);
-                }
+                values[spec.Destination] = CloneDefault(defaultValue, context, span);
             }
 
-            foreach (var group in _groups)
+            foreach (var pair in _defaults)
             {
-                var present = 0;
-                foreach (var spec in seenSpecs)
+                if (!values.ContainsKey(pair.Key) && !IsSuppress(pair.Value))
                 {
-                    if (spec.GroupId == group.Id)
+                    values[pair.Key] = CloneDefault(pair.Value, context, span);
+                }
+            }
+        }
+
+        private void ConsumePositional(
+            List<string> argv,
+            ref int index,
+            IReadOnlyList<ArgumentSpec> positionalSpecs,
+            ref int positionalIndex,
+            HashSet<ArgumentSpec> seenSpecs,
+            Dictionary<string, object> values,
+            List<string> unknown,
+            bool collectUnknown,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (positionalIndex >= positionalSpecs.Count)
+            {
+                if (collectUnknown)
+                {
+                    unknown.Add(argv[index]);
+                    return;
+                }
+
+                throw CreateParseFailure($"unrecognized arguments: {argv[index]}", span);
+            }
+
+            var spec = positionalSpecs[positionalIndex];
+            var tokens = CollectPositionalTokens(spec, argv, ref index, positionalSpecs, positionalIndex, span);
+            if (tokens.Count == 0)
+            {
+                return;
+            }
+
+            StoreParsedValue(spec, CreateParsedValue(spec, tokens, spec.Destination, span, context), seenSpecs, values, context, span);
+            positionalIndex++;
+        }
+
+        private List<string> CollectPositionalTokens(
+            ArgumentSpec spec,
+            IReadOnlyList<string> argv,
+            ref int index,
+            IReadOnlyList<ArgumentSpec> positionalSpecs,
+            int positionalIndex,
+            LythonSourceSpan span)
+        {
+            var tokens = new List<string>();
+            var fixedCount = FixedNargsCount(spec.Nargs);
+            if (fixedCount is not null)
+            {
+                for (var i = 0; i < fixedCount.Value; i++)
+                {
+                    if (index >= argv.Count || HasOptionalArgumentNamed(argv[index]))
                     {
-                        present++;
+                        throw CreateParseFailure($"argument {spec.Destination}: expected {fixedCount.Value} arguments", span);
+                    }
+
+                    tokens.Add(argv[index]);
+                    if (i + 1 < fixedCount.Value)
+                    {
+                        index++;
                     }
                 }
 
-                if (present > 1)
-                {
-                    throw CreateSystemExit("mutually exclusive arguments must not be used together", span);
-                }
-
-                if (group.Required && present == 0)
-                {
-                    throw CreateSystemExit("one of the mutually exclusive arguments is required", span);
-                }
+                return tokens;
             }
 
-            return new ArgparseNamespaceObject(values);
+            switch (spec.Nargs)
+            {
+                case null:
+                case "?":
+                    tokens.Add(argv[index]);
+                    return tokens;
+                case "*" or "+":
+                    var requiredAfter = RequiredPositionalSlotsAfter(positionalSpecs, positionalIndex);
+                    while (index < argv.Count &&
+                           !HasOptionalArgumentNamed(argv[index]) &&
+                           CountRemainingPositionalCandidates(argv, index) > requiredAfter)
+                    {
+                        tokens.Add(argv[index]);
+                        if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
+                        {
+                            break;
+                        }
+
+                        index++;
+                    }
+
+                    if (spec.Nargs == "+" && tokens.Count == 0)
+                    {
+                        throw CreateParseFailure($"the following arguments are required: {spec.Destination}", span);
+                    }
+
+                    return tokens;
+                default:
+                    throw new InvalidOperationException("Unsupported argparse nargs shape.");
+            }
         }
 
-        private static object ConvertArgumentValue(ArgumentSpec spec, string optionName, string token, LythonSourceSpan span, ExecutionContext context)
+        private void ApplyOptional(
+            ArgumentSpec spec,
+            string optionToken,
+            string? inlineValue,
+            IReadOnlyList<string> argv,
+            ref int index,
+            HashSet<ArgumentSpec> seenSpecs,
+            Dictionary<string, object> values,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (IsNoValueAction(spec.Action))
+            {
+                if (inlineValue is not null)
+                {
+                    throw CreateParseFailure($"argument {optionToken}: ignored explicit argument '{inlineValue}'", span);
+                }
+
+                ApplyNoValueOptional(spec, optionToken, seenSpecs, values, span, context);
+                return;
+            }
+
+            var tokens = CollectOptionalTokens(spec, optionToken, inlineValue, argv, ref index, span);
+            StoreParsedValue(spec, CreateParsedValue(spec, tokens, optionToken, span, context), seenSpecs, values, context, span);
+        }
+
+        private void ApplyNoValueOptional(
+            ArgumentSpec spec,
+            string optionToken,
+            HashSet<ArgumentSpec> seenSpecs,
+            Dictionary<string, object> values,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            switch (spec.Action)
+            {
+                case "store_true":
+                    values[spec.Destination] = true;
+                    break;
+                case "store_false":
+                    values[spec.Destination] = false;
+                    break;
+                case "store_const":
+                    values[spec.Destination] = CloneDefault(spec.ConstValue, context, span);
+                    break;
+                case "count":
+                    values[spec.Destination] = IncrementCount(values.TryGetValue(spec.Destination, out var current) ? current : PyNone.Instance);
+                    break;
+                case "help":
+                    WriteToTarget(FormatHelpText(context), context.State.Stdout, span);
+                    throw CreateSystemExit(string.Empty, span, status: 0);
+                case "version":
+                    var versionText = spec.VersionText ?? string.Empty;
+                    if (!versionText.EndsWith('\n'))
+                    {
+                        versionText += "\n";
+                    }
+
+                    WriteToTarget(PyString.FromString(ApplyFormatSubstitutions(versionText, spec, context)), context.State.Stdout, span);
+                    throw CreateSystemExit(string.Empty, span, status: 0);
+                default:
+                    throw new InvalidOperationException("Unsupported no-value argparse action.");
+            }
+
+            seenSpecs.Add(spec);
+        }
+
+        private List<string> CollectOptionalTokens(
+            ArgumentSpec spec,
+            string optionToken,
+            string? inlineValue,
+            IReadOnlyList<string> argv,
+            ref int index,
+            LythonSourceSpan span)
+        {
+            var tokens = new List<string>();
+            if (inlineValue is not null)
+            {
+                tokens.Add(inlineValue);
+            }
+
+            var fixedCount = FixedNargsCount(spec.Nargs);
+            if (fixedCount is not null)
+            {
+                while (tokens.Count < fixedCount.Value)
+                {
+                    if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
+                    {
+                        throw CreateParseFailure($"argument {optionToken}: expected {fixedCount.Value} arguments", span);
+                    }
+
+                    index++;
+                    tokens.Add(argv[index]);
+                }
+
+                return tokens;
+            }
+
+            switch (spec.Nargs)
+            {
+                case null:
+                    if (tokens.Count == 0)
+                    {
+                        if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
+                        {
+                            throw CreateParseFailure($"argument {optionToken}: expected one argument", span);
+                        }
+
+                        index++;
+                        tokens.Add(argv[index]);
+                    }
+
+                    return tokens;
+                case "?":
+                    if (tokens.Count == 0)
+                    {
+                        if (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
+                        {
+                            index++;
+                            tokens.Add(argv[index]);
+                        }
+                    }
+
+                    return tokens;
+                case "*" or "+":
+                    while (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
+                    {
+                        index++;
+                        tokens.Add(argv[index]);
+                    }
+
+                    if (spec.Nargs == "+" && tokens.Count == 0)
+                    {
+                        throw CreateParseFailure($"argument {optionToken}: expected at least one argument", span);
+                    }
+
+                    return tokens;
+                default:
+                    throw new InvalidOperationException("Unsupported argparse nargs shape.");
+            }
+        }
+
+        private object CreateParsedValue(ArgumentSpec spec, IReadOnlyList<string> tokens, string displayName, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (spec.Nargs == "?" && tokens.Count == 0)
+            {
+                return ReferenceEquals(spec.ConstValue, PyNone.Instance)
+                    ? CloneDefault(spec.DefaultValue, context, span)
+                    : CloneDefault(spec.ConstValue, context, span);
+            }
+
+            if (ProducesListValue(spec))
+            {
+                var values = new PyList([], context.MemoryGovernor, span);
+                foreach (var token in tokens)
+                {
+                    values.Add(ConvertArgumentValue(spec, displayName, token, span, context));
+                }
+
+                return values;
+            }
+
+            if (tokens.Count == 0)
+            {
+                return PyNone.Instance;
+            }
+
+            return ConvertArgumentValue(spec, displayName, tokens[0], span, context);
+        }
+
+        private void StoreParsedValue(
+            ArgumentSpec spec,
+            object parsed,
+            HashSet<ArgumentSpec> seenSpecs,
+            Dictionary<string, object> values,
+            ExecutionContext context,
+            LythonSourceSpan span)
+        {
+            if (spec.Action == "append")
+            {
+                var list = values.TryGetValue(spec.Destination, out var existing) && existing is PyList existingList
+                    ? existingList
+                    : new PyList([], context.MemoryGovernor, span);
+                list.Add(parsed);
+                values[spec.Destination] = list;
+            }
+            else
+            {
+                values[spec.Destination] = parsed;
+            }
+
+            seenSpecs.Add(spec);
+        }
+
+        private object ConvertArgumentValue(ArgumentSpec spec, string optionName, string token, LythonSourceSpan span, ExecutionContext context)
         {
             object converted = PyString.FromString(token);
             if (spec.Converter is ICallable callable)
             {
-                converted = RuntimeValue(callable.Invoke([new CallArgumentValue(null, converted)], span, context));
+                try
+                {
+                    converted = RuntimeValue(callable.Invoke([new CallArgumentValue(null, converted)], span, context));
+                }
+                catch (LythonRuntimeException ex) when (ex.ExceptionType is "ArgumentTypeError" or "ValueError" or "TypeError")
+                {
+                    throw CreateParseFailure($"argument {optionName}: {ex.Message}", span);
+                }
             }
 
             if (spec.Choices is not null)
@@ -1798,11 +2359,73 @@ internal sealed partial class LythonRuntime
 
                 if (!matched)
                 {
-                    throw CreateSystemExit($"argument {optionName}: invalid choice: '{token}'", span);
+                    throw CreateParseFailure($"argument {optionName}: invalid choice: '{token}'", span);
                 }
             }
 
             return converted;
+        }
+
+        private void ValidateRequiredArguments(HashSet<ArgumentSpec> seenSpecs, Dictionary<string, object> values, LythonSourceSpan span)
+        {
+            var missing = new List<string>();
+            foreach (var spec in _arguments)
+            {
+                if (spec.Action is "help" or "version")
+                {
+                    continue;
+                }
+
+                if (spec.IsPositional)
+                {
+                    if (spec.Nargs is "*" or "?")
+                    {
+                        continue;
+                    }
+
+                    if (!seenSpecs.Contains(spec))
+                    {
+                        missing.Add(spec.Destination);
+                    }
+
+                    continue;
+                }
+
+                if (spec.Required && !seenSpecs.Contains(spec))
+                {
+                    missing.Add(spec.OptionNames.FirstOrDefault() ?? spec.Destination);
+                }
+            }
+
+            if (missing.Count != 0)
+            {
+                throw CreateParseFailure($"the following arguments are required: {string.Join(", ", missing)}", span);
+            }
+        }
+
+        private void ValidateMutuallyExclusiveGroups(HashSet<ArgumentSpec> seenSpecs, LythonSourceSpan span)
+        {
+            foreach (var group in _groups)
+            {
+                var present = 0;
+                foreach (var spec in seenSpecs)
+                {
+                    if (spec.GroupId == group.Id)
+                    {
+                        present++;
+                    }
+                }
+
+                if (present > 1)
+                {
+                    throw CreateParseFailure("mutually exclusive arguments must not be used together", span);
+                }
+
+                if (group.Required && present == 0)
+                {
+                    throw CreateParseFailure("one of the mutually exclusive arguments is required", span);
+                }
+            }
         }
 
         private static object CloneDefault(object value, ExecutionContext context, LythonSourceSpan span)
@@ -1816,18 +2439,6 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static bool IsMissingValue(object value, string action)
-        {
-            return action switch
-            {
-                "append" => value is PyList list && list.Count == 0,
-                "store_true" => value is bool boolean && boolean == false,
-                "store_false" => value is bool boolean && boolean == true,
-                "store_const" => value is PyNone,
-                _ => value is PyNone
-            };
-        }
-
         private static object DefaultForAction(string action, ExecutionContext context, LythonSourceSpan span)
         {
             return action switch
@@ -1836,20 +2447,22 @@ internal sealed partial class LythonRuntime
                 "store_false" => true,
                 "append" => new PyList([], context.MemoryGovernor, span),
                 "store_const" => PyNone.Instance,
+                "count" => PyNone.Instance,
+                "help" or "version" => ArgparseSuppressValue.Instance,
                 _ => PyNone.Instance
             };
         }
 
         private static void ValidateAction(string action, LythonSourceSpan span)
         {
-            if (action is "store" or "store_true" or "store_false" or "append" or "store_const")
+            if (action is "store" or "store_true" or "store_false" or "append" or "store_const" or "count" or "version")
             {
                 return;
             }
 
             throw new LythonRuntimeException(
                 "ValueError",
-                "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', or 'store_const'.",
+                "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', 'store_const', 'count', or 'version'.",
                 span);
         }
 
@@ -1871,25 +2484,51 @@ internal sealed partial class LythonRuntime
                 span);
         }
 
-        private static string? ValidateNargs(object value, bool isPositional, LythonSourceSpan span)
+        private static string? ValidateNargs(object value, string action, LythonSourceSpan span)
         {
-            if (!isPositional || !PyStringOps.TryAsString(value, out var text))
+            if (IsNoValueAction(action))
             {
                 throw new LythonRuntimeException(
                     "TypeError",
-                    "argparse.ArgumentParser.add_argument(..., nargs=...) only supports positional nargs='*' or '+'.",
+                    "argparse.ArgumentParser.add_argument(..., nargs=...) is not supported for no-value actions.",
+                    span);
+            }
+
+            if (value is BigInteger integer)
+            {
+                if (integer > BigInteger.Zero && integer <= int.MaxValue)
+                {
+                    return integer.ToString(CultureInfo.InvariantCulture);
+                }
+
+                throw new LythonRuntimeException(
+                    "TypeError",
+                    "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.",
+                    span);
+            }
+
+            if (!PyStringOps.TryAsString(value, out var text))
+            {
+                throw new LythonRuntimeException(
+                    "TypeError",
+                    "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.",
                     span);
             }
 
             var nargs = text.AsString();
-            if (nargs is "*" or "+")
+            if (nargs is "?" or "*" or "+")
+            {
+                return nargs;
+            }
+
+            if (int.TryParse(nargs, NumberStyles.None, CultureInfo.InvariantCulture, out var fixedCount) && fixedCount > 0)
             {
                 return nargs;
             }
 
             throw new LythonRuntimeException(
                 "TypeError",
-                "argparse.ArgumentParser.add_argument(..., nargs=...) only supports positional nargs='*' or '+'.",
+                "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.",
                 span);
         }
 
@@ -1914,7 +2553,11 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            ValidateSupportedKeywords(keyword.Keys, ["dest", "action", "required", "default", "choices", "type", "nargs", "help", "const"], "argparse.ArgumentParser.add_argument", span);
+            ValidateSupportedKeywords(
+                keyword.Keys,
+                ["dest", "action", "required", "default", "choices", "type", "nargs", "help", "const", "metavar", "version"],
+                "argparse.ArgumentParser.add_argument",
+                span);
             if (positional.Count == 0)
             {
                 throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.add_argument(...) expects at least one argument name.", span);
@@ -1940,8 +2583,13 @@ internal sealed partial class LythonRuntime
                 : "store";
             ValidateAction(action, span);
             var isPositional = optionNames[0].Length != 0 && !optionNames[0].StartsWith("-", StringComparison.Ordinal);
+            if (isPositional && keyword.ContainsKey("required"))
+            {
+                throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.add_argument(..., required=...) is not valid for positional arguments.", span);
+            }
+
             var nargs = keyword.TryGetValue("nargs", out var nargsValue)
-                ? ValidateNargs(nargsValue, isPositional, span)
+                ? ValidateNargs(nargsValue, action, span)
                 : null;
             var required = keyword.TryGetValue("required", out var requiredValue) && IsTruthy(requiredValue);
             var defaultValue = keyword.TryGetValue("default", out var maybeDefault)
@@ -1953,11 +2601,23 @@ internal sealed partial class LythonRuntime
                 ? [.. ToSequence(choicesValue, span)]
                 : null;
             var converter = keyword.TryGetValue("type", out var typeValue) ? ValidateConverter(typeValue, span) : null;
-            var constValue = action == "store_const" && keyword.TryGetValue("const", out var constant)
+            var constValue = (action == "store_const" || nargs == "?") && keyword.TryGetValue("const", out var constant)
                 ? constant
                 : PyNone.Instance;
+            var suppressHelp = keyword.TryGetValue("help", out var helpValue) && IsSuppress(helpValue);
+            var helpText = keyword.TryGetValue("help", out helpValue)
+                ? suppressHelp
+                    ? null
+                    : OptionalString(helpValue, "help", "argparse.ArgumentParser.add_argument", span)
+                : null;
+            var metavar = keyword.TryGetValue("metavar", out var metavarValue)
+                ? OptionalString(metavarValue, "metavar", "argparse.ArgumentParser.add_argument", span)
+                : null;
+            var versionText = keyword.TryGetValue("version", out var versionValue)
+                ? OptionalString(versionValue, "version", "argparse.ArgumentParser.add_argument", span)
+                : null;
 
-            return new ArgumentSpec(optionNames, dest, action, required, defaultValue, choices, converter, isPositional, nargs, groupId, constValue);
+            return new ArgumentSpec(optionNames, dest, action, required, defaultValue, choices, converter, isPositional, nargs, groupId, constValue, helpText, metavar, versionText, suppressHelp);
         }
 
         private static void ValidateSupportedKeywords(IEnumerable<string> providedNames, IReadOnlyCollection<string> supportedNames, string signature, LythonSourceSpan span)
@@ -1984,19 +2644,77 @@ internal sealed partial class LythonRuntime
         }
 
         private bool HasOptionalArgumentNamed(string token)
+            => FindOptionalArgument(token, out _, out _) is not null;
+
+        private ArgumentSpec? FindOptionalArgument(string token, out string? inlineValue, out string? error)
         {
-            foreach (var candidate in _arguments)
+            inlineValue = null;
+            error = null;
+            if (!LooksLikeOptionalToken(token))
             {
-                if (!candidate.IsPositional && candidate.OptionNames.Contains(token, StringComparer.Ordinal))
+                return null;
+            }
+
+            var optionToken = token;
+            var equalsIndex = token.IndexOf('=');
+            if (equalsIndex > 0)
+            {
+                optionToken = token[..equalsIndex];
+                inlineValue = token[(equalsIndex + 1)..];
+            }
+
+            var exact = FindExactOptionalArgument(optionToken);
+            if (exact is not null)
+            {
+                return exact;
+            }
+
+            if (!optionToken.StartsWith("--", StringComparison.Ordinal) &&
+                optionToken.Length > 2 &&
+                FindExactOptionalArgument(optionToken[..2]) is { } shortWithInline &&
+                !IsNoValueAction(shortWithInline.Action))
+            {
+                inlineValue = optionToken[2..] + (inlineValue is null ? string.Empty : "=" + inlineValue);
+                return shortWithInline;
+            }
+
+            if (_options.AllowAbbrev && optionToken.StartsWith("--", StringComparison.Ordinal))
+            {
+                var matches = new List<ArgumentSpec>();
+                foreach (var candidate in _arguments)
                 {
-                    return true;
+                    if (candidate.IsPositional)
+                    {
+                        continue;
+                    }
+
+                    foreach (var name in candidate.OptionNames)
+                    {
+                        if (name.StartsWith("--", StringComparison.Ordinal) &&
+                            name.StartsWith(optionToken, StringComparison.Ordinal))
+                        {
+                            matches.Add(candidate);
+                            break;
+                        }
+                    }
+                }
+
+                if (matches.Count == 1)
+                {
+                    return matches[0];
+                }
+
+                if (matches.Count > 1)
+                {
+                    error = $"ambiguous option: {optionToken}";
+                    return null;
                 }
             }
 
-            return false;
+            return null;
         }
 
-        private ArgumentSpec? FindOptionalArgument(string token)
+        private ArgumentSpec? FindExactOptionalArgument(string token)
         {
             foreach (var candidate in _arguments)
             {
@@ -2009,20 +2727,41 @@ internal sealed partial class LythonRuntime
             return null;
         }
 
-        private static PyString RequireString(string name, object value, LythonSourceSpan span)
+        private bool TryExpandShortFlagCluster(string token, out List<ArgumentSpec> specs)
         {
-            if (!PyStringOps.TryAsString(value, out var text))
+            specs = [];
+            if (!LooksLikeOptionalToken(token) ||
+                token.StartsWith("--", StringComparison.Ordinal) ||
+                token.Length <= 2 ||
+                FindExactOptionalArgument(token) is not null)
             {
-                throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser.add_argument(..., {name}=...) expects a string.", span);
+                return false;
             }
 
-            return text;
+            for (var i = 1; i < token.Length; i++)
+            {
+                var spec = FindExactOptionalArgument("-" + token[i]);
+                if (spec is null || !IsNoValueAction(spec.Action))
+                {
+                    specs.Clear();
+                    return false;
+                }
+
+                specs.Add(spec);
+            }
+
+            return specs.Count != 0;
+        }
+
+        private static PyString RequireString(string name, object value, LythonSourceSpan span)
+        {
+            return RequireStringValue(value, name, "argparse.ArgumentParser.add_argument", span);
         }
 
         private static string InferDestination(IReadOnlyList<string> optionNames, LythonSourceSpan span)
         {
             string? preferred = null;
-            for (var i = optionNames.Count - 1; i >= 0; i--)
+            for (var i = 0; i < optionNames.Count; i++)
             {
                 var candidate = optionNames[i];
                 if (candidate.StartsWith("--", StringComparison.Ordinal))
@@ -2042,11 +2781,537 @@ internal sealed partial class LythonRuntime
             return preferred.TrimStart('-').Replace('-', '_');
         }
 
-        private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span)
-            => new("SystemExit", message, span, payload: BigInteger.One);
+        private object FormatUsage(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            RequireNoArguments(arguments, "argparse.ArgumentParser.format_usage", span);
+            return FormatUsageText();
+        }
+
+        private object FormatHelp(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            RequireNoArguments(arguments, "argparse.ArgumentParser.format_help", span);
+            return FormatHelpText(context);
+        }
+
+        private object PrintUsage(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var target = ResolveOptionalFile(arguments, "argparse.ArgumentParser.print_usage", span);
+            WriteToTarget(FormatUsageText(), target ?? context.State.Stdout, span);
+            return PyNone.Instance;
+        }
+
+        private object PrintHelp(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var target = ResolveOptionalFile(arguments, "argparse.ArgumentParser.print_help", span);
+            WriteToTarget(FormatHelpText(context), target ?? context.State.Stdout, span);
+            return PyNone.Instance;
+        }
+
+        private object Error(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var message = RequireSingleStringArgument(arguments, "argparse.ArgumentParser.error", "message", span);
+            WriteParserError(message.AsString(), context, span);
+            throw CreateSystemExit(message.AsString(), span, status: 2);
+        }
+
+        private object Exit(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var status = BigInteger.Zero;
+            object message = PyNone.Instance;
+            BindExitArguments(arguments, ref status, ref message, span);
+            if (!ReferenceEquals(message, PyNone.Instance))
+            {
+                if (!PyStringOps.TryAsString(message, out var text))
+                {
+                    throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit(..., message=...) expects a string or None.", span);
+                }
+
+                WriteToTarget(text, context.State.Stderr, span);
+            }
+
+            throw CreateSystemExit(string.Empty, span, status);
+        }
+
+        private object SetDefaults(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.set_defaults(...) accepts keyword arguments only.", span);
+                }
+
+                _defaults[argument.Name] = argument.Value;
+            }
+
+            return PyNone.Instance;
+        }
+
+        private object GetDefault(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            var destination = RequireSingleStringArgument(arguments, "argparse.ArgumentParser.get_default", "dest", span).AsString();
+            if (_defaults.TryGetValue(destination, out var parserDefault))
+            {
+                return parserDefault;
+            }
+
+            foreach (var argument in _arguments)
+            {
+                if (string.Equals(argument.Destination, destination, StringComparison.Ordinal))
+                {
+                    return argument.DefaultValue;
+                }
+            }
+
+            return PyNone.Instance;
+        }
+
+        private object AddSubparsers(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            _ = context;
+            throw new LythonRuntimeException("NotImplementedError", "argparse.ArgumentParser.add_subparsers(...) is not supported by Lython.", span);
+        }
+
+        private PyString FormatUsageText()
+        {
+            var usage = _options.Usage;
+            if (usage is not null)
+            {
+                return PyString.FromString(usage.StartsWith("usage:", StringComparison.Ordinal) ? EnsureTrailingNewline(usage) : "usage: " + EnsureTrailingNewline(usage));
+            }
+
+            var parts = new List<string> { "usage:", _options.Prog };
+            foreach (var argument in _arguments)
+            {
+                if (argument.Action == "help" && !_options.AddHelp || argument.SuppressHelp)
+                {
+                    continue;
+                }
+
+                parts.Add(RenderUsagePart(argument));
+            }
+
+            return PyString.FromString(string.Join(" ", parts) + "\n");
+        }
+
+        private PyString FormatHelpText(ExecutionContext context)
+        {
+            var builder = new StringBuilder();
+            builder.Append(FormatUsageText().AsString());
+            if (_options.Description is not null)
+            {
+                builder.Append('\n');
+                builder.AppendLine(_options.Description);
+            }
+
+            AppendHelpGroup(builder, "positional arguments", _arguments.Where(static argument => argument.IsPositional), context);
+            AppendHelpGroup(builder, "options", _arguments.Where(static argument => !argument.IsPositional), context);
+
+            if (_options.Epilog is not null)
+            {
+                builder.Append('\n');
+                builder.AppendLine(_options.Epilog);
+            }
+
+            return PyString.FromString(builder.ToString());
+        }
+
+        private void AppendHelpGroup(StringBuilder builder, string title, IEnumerable<ArgumentSpec> arguments, ExecutionContext context)
+        {
+            var visible = arguments.Where(static argument => !argument.SuppressHelp).ToArray();
+            if (visible.Length == 0)
+            {
+                return;
+            }
+
+            builder.Append('\n');
+            builder.Append(title);
+            builder.AppendLine(":");
+            foreach (var argument in visible)
+            {
+                builder.Append("  ");
+                builder.Append(RenderHelpInvocation(argument));
+                if (argument.HelpText is not null)
+                {
+                    builder.Append("  ");
+                    builder.Append(ApplyFormatSubstitutions(argument.HelpText, argument, context));
+                }
+
+                if (ShowsArgumentDefaults() && !IsSuppress(argument.DefaultValue) && argument.DefaultValue is not PyNone)
+                {
+                    builder.Append(" (default: ");
+                    builder.Append(PyRendering.ToPythonString(argument.DefaultValue, new PyRenderingContext(context)));
+                    builder.Append(')');
+                }
+
+                builder.Append('\n');
+            }
+        }
+
+        private bool ShowsArgumentDefaults()
+            => _options.FormatterClass is ArgparseFormatterClass { Name: "ArgumentDefaultsHelpFormatter" };
+
+        private string RenderUsagePart(ArgumentSpec argument)
+        {
+            if (argument.IsPositional)
+            {
+                return argument.Nargs switch
+                {
+                    "?" => $"[{argument.DisplayMetavar}]",
+                    "*" => $"[{argument.DisplayMetavar} ...]",
+                    "+" => $"{argument.DisplayMetavar} [{argument.DisplayMetavar} ...]",
+                    _ when FixedNargsCount(argument.Nargs) is int count => string.Join(" ", Enumerable.Repeat(argument.DisplayMetavar, count)),
+                    _ => argument.DisplayMetavar
+                };
+            }
+
+            var name = argument.OptionNames.FirstOrDefault(static item => item.StartsWith("--", StringComparison.Ordinal)) ??
+                       argument.OptionNames.FirstOrDefault() ??
+                       argument.Destination;
+            var invocation = IsNoValueAction(argument.Action)
+                ? name
+                : $"{name} {argument.DisplayMetavar}";
+            return argument.Required ? invocation : $"[{invocation}]";
+        }
+
+        private string RenderHelpInvocation(ArgumentSpec argument)
+        {
+            if (argument.IsPositional)
+            {
+                return argument.DisplayMetavar;
+            }
+
+            var names = string.Join(", ", argument.OptionNames);
+            return IsNoValueAction(argument.Action) ? names : $"{names} {argument.DisplayMetavar}";
+        }
+
+        private string ApplyFormatSubstitutions(string text, ArgumentSpec argument, ExecutionContext context)
+            => text
+                .Replace("%(prog)s", _options.Prog, StringComparison.Ordinal)
+                .Replace("%(default)s", PyRendering.ToPythonString(argument.DefaultValue, new PyRenderingContext(context)), StringComparison.Ordinal);
+
+        private void WriteParserError(string message, ExecutionContext context, LythonSourceSpan span)
+        {
+            WriteToTarget(FormatUsageText(), context.State.Stderr, span);
+            WriteToTarget(PyString.FromString($"{_options.Prog}: error: {message}\n"), context.State.Stderr, span);
+        }
+
+        private LythonRuntimeException CreateParseFailure(string message, LythonSourceSpan span)
+            => _options.ExitOnError
+                ? CreateSystemExit(message, span, status: 2)
+                : new LythonRuntimeException("ArgumentError", message, span);
+
+        private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, BigInteger status)
+            => new("SystemExit", message, span, payload: status);
+
+        private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, int status)
+            => CreateSystemExit(message, span, new BigInteger(status));
+
+        private static bool LooksLikeOptionalToken(string token)
+            => token.Length > 1 && token[0] == '-' && token != "-";
+
+        private static bool IsNoValueAction(string action)
+            => action is "store_true" or "store_false" or "store_const" or "count" or "help" or "version";
+
+        private static bool ProducesListValue(ArgumentSpec spec)
+            => spec.Nargs is "*" or "+" || FixedNargsCount(spec.Nargs) is not null;
+
+        private static int? FixedNargsCount(string? nargs)
+            => nargs is not null && int.TryParse(nargs, NumberStyles.None, CultureInfo.InvariantCulture, out var count)
+                ? count
+                : null;
+
+        private static BigInteger IncrementCount(object current)
+            => current switch
+            {
+                BigInteger integer => integer + BigInteger.One,
+                int integer => new BigInteger(integer + 1),
+                PyNone => BigInteger.One,
+                _ => BigInteger.One
+            };
+
+        private static int RequiredPositionalSlotsAfter(IReadOnlyList<ArgumentSpec> positionals, int index)
+        {
+            var count = 0;
+            for (var i = index + 1; i < positionals.Count; i++)
+            {
+                var spec = positionals[i];
+                count += spec.Nargs switch
+                {
+                    null => 1,
+                    "+" => 1,
+                    _ when FixedNargsCount(spec.Nargs) is int fixedCount => fixedCount,
+                    _ => 0
+                };
+            }
+
+            return count;
+        }
+
+        private bool HasOptionalArgumentNamed(string token, bool exactOnly)
+        {
+            _ = exactOnly;
+            return HasOptionalArgumentNamed(token);
+        }
+
+        private int CountRemainingPositionalCandidates(IReadOnlyList<string> argv, int index)
+        {
+            var count = 0;
+            for (var i = index; i < argv.Count; i++)
+            {
+                if (HasOptionalArgumentNamed(argv[i]))
+                {
+                    break;
+                }
+
+                count++;
+            }
+
+            return count;
+        }
+
+        private static string JoinUnknownArguments(IEnumerable<string> unknown)
+            => string.Join(" ", unknown);
+
+        private static List<string> ToStringList(object value, string message, LythonSourceSpan span)
+        {
+            if (PyStringOps.TryAsString(value, out _))
+            {
+                throw new LythonRuntimeException("TypeError", message, span);
+            }
+
+            var result = new List<string>();
+            foreach (var item in ToSequence(value, span))
+            {
+                if (!PyStringOps.TryAsString(item, out var text))
+                {
+                    throw new LythonRuntimeException("TypeError", message, span);
+                }
+
+                result.Add(text.AsString());
+            }
+
+            return result;
+        }
+
+        private static PyString RequireSingleStringArgument(CallArgumentValue[] arguments, string methodName, string parameterName, LythonSourceSpan span)
+        {
+            object? value = ArgparseUnspecifiedValue.Instance;
+            var assigned = false;
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (assigned)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument '{parameterName}'.", span);
+                    }
+
+                    value = argument.Value;
+                    assigned = true;
+                    continue;
+                }
+
+                if (argument.Name != parameterName)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                }
+
+                if (assigned)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument '{parameterName}'.", span);
+                }
+
+                value = argument.Value;
+                assigned = true;
+            }
+
+            if (!assigned)
+            {
+                throw new LythonRuntimeException("TypeError", $"{methodName}({parameterName}) expects one argument.", span);
+            }
+
+            return RequireStringValue(value!, parameterName, methodName, span);
+        }
+
+        private static void RequireNoArguments(CallArgumentValue[] arguments, string methodName, LythonSourceSpan span)
+        {
+            if (arguments.Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", $"{methodName}() expects no arguments.", span);
+            }
+        }
+
+        private static object? ResolveOptionalFile(CallArgumentValue[] arguments, string methodName, LythonSourceSpan span)
+        {
+            object? target = null;
+            var assigned = false;
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (assigned)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{methodName}([file]) expects zero or one argument.", span);
+                    }
+
+                    target = ReferenceEquals(argument.Value, PyNone.Instance) ? null : argument.Value;
+                    assigned = true;
+                    continue;
+                }
+
+                if (argument.Name != "file")
+                {
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                }
+
+                if (assigned)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got multiple values for argument 'file'.", span);
+                }
+
+                target = ReferenceEquals(argument.Value, PyNone.Instance) ? null : argument.Value;
+                assigned = true;
+            }
+
+            return target;
+        }
+
+        private static void BindExitArguments(CallArgumentValue[] arguments, ref BigInteger status, ref object message, LythonSourceSpan span)
+        {
+            var positionalIndex = 0;
+            var assignedStatus = false;
+            var assignedMessage = false;
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (positionalIndex == 0)
+                    {
+                        if (assignedStatus)
+                        {
+                            throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit(...) got multiple values for argument 'status'.", span);
+                        }
+
+                        status = RequireInteger(argument.Value, "status", "argparse.ArgumentParser.exit", span);
+                        assignedStatus = true;
+                    }
+                    else if (positionalIndex == 1)
+                    {
+                        if (assignedMessage)
+                        {
+                            throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit(...) got multiple values for argument 'message'.", span);
+                        }
+
+                        message = argument.Value;
+                        assignedMessage = true;
+                    }
+                    else
+                    {
+                        throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit([status][, message]) expects zero to two arguments.", span);
+                    }
+
+                    positionalIndex++;
+                    continue;
+                }
+
+                switch (argument.Name)
+                {
+                    case "status":
+                        if (assignedStatus)
+                        {
+                            throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit(...) got multiple values for argument 'status'.", span);
+                        }
+
+                        status = RequireInteger(argument.Value, "status", "argparse.ArgumentParser.exit", span);
+                        assignedStatus = true;
+                        break;
+                    case "message":
+                        if (assignedMessage)
+                        {
+                            throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.exit(...) got multiple values for argument 'message'.", span);
+                        }
+
+                        message = argument.Value;
+                        assignedMessage = true;
+                        break;
+                    default:
+                        throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser.exit(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                }
+            }
+        }
+
+        private static void WriteToTarget(PyString text, object target, LythonSourceSpan span)
+        {
+            switch (target)
+            {
+                case HostTextOutputHandle output:
+                    _ = output.Write(text, span);
+                    break;
+                case ExecutionContext.TextFileHandle file:
+                    _ = file.Write(text);
+                    break;
+                default:
+                    throw new LythonRuntimeException("TypeError", "argparse print methods expect a writable Lython text stream or file handle.", span);
+            }
+        }
+
+        private static string EnsureTrailingNewline(string text)
+            => text.EndsWith('\n') ? text : text + "\n";
+
+        private static PyString RequireStringValue(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(value, out var text))
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a string.", span);
+            }
+
+            return text;
+        }
+
+        private static string? OptionalString(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (ReferenceEquals(value, PyNone.Instance))
+            {
+                return null;
+            }
+
+            return RequireStringValue(value, name, owner, span).AsString();
+        }
+
+        private static bool RequireBool(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (value is bool boolean)
+            {
+                return boolean;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
+        }
+
+        private static BigInteger RequireInteger(object value, string name, string owner, LythonSourceSpan span)
+        {
+            if (value is BigInteger integer)
+            {
+                return integer;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects an integer.", span);
+        }
+
+        private static bool IsSuppress(object? value)
+            => ReferenceEquals(value, ArgparseSuppressValue.Instance) ||
+               value is ArgparseSuppressValue ||
+               (PyStringOps.TryAsString(value ?? PyNone.Instance, out var text) &&
+                text.AsString() is "SUPPRESS" or "==SUPPRESS==");
     }
 
     internal sealed class ArgparseNamespaceObject
+        : IPyDynamicAttributes, IPyRenderableValue
     {
         private readonly Dictionary<string, object> _members;
 
@@ -2055,7 +3320,34 @@ internal sealed partial class LythonRuntime
             _members = members;
         }
 
+        public IReadOnlyDictionary<string, object> Members => _members;
+
         public bool TryGetMember(string name, out object value) => _members.TryGetValue(name, out value!);
+
+        public bool TrySetMember(string name, object value)
+        {
+            _members[name] = value;
+            return true;
+        }
+
+        public void ReplaceMembers(Dictionary<string, object> members)
+        {
+            _members.Clear();
+            foreach (var pair in members)
+            {
+                _members[pair.Key] = pair.Value;
+            }
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            var parts = _members
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .Select(pair => pair.Key + "=" + PyRendering.ToReprPyString(pair.Value, context).AsString());
+            return PyString.FromString("Namespace(" + string.Join(", ", parts) + ")");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     internal sealed class ArgparseMutuallyExclusiveGroupObject
@@ -2102,7 +3394,85 @@ internal sealed partial class LythonRuntime
         bool IsPositional,
         string? Nargs,
         int? GroupId,
-        object ConstValue);
+        object ConstValue,
+        string? HelpText,
+        string? Metavar,
+        string? VersionText,
+        bool SuppressHelp)
+    {
+        public string DisplayMetavar => Metavar ?? Destination.ToUpperInvariant();
+    }
+
+    private sealed record ParseResult(ArgparseNamespaceObject Namespace, List<string> Unknown);
+
+    private sealed class ArgparseFormatterClass(string name) : IPyRenderableValue
+    {
+        public string Name { get; } = name;
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class 'argparse." + Name + "'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class ArgparseSuppressValue : IPyRenderableValue
+    {
+        public static readonly ArgparseSuppressValue Instance = new();
+
+        private ArgparseSuppressValue()
+        {
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("==SUPPRESS==");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class ArgparseUnspecifiedValue
+    {
+        public static readonly ArgparseUnspecifiedValue Instance = new();
+
+        private ArgparseUnspecifiedValue()
+        {
+        }
+    }
+
+    private sealed class ArgparseFileTypeObject(string mode, string? encoding, string? errors) : ICallable, IPyRenderableValue
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 1 || arguments[0].Name is not null || !PyStringOps.TryAsString(arguments[0].Value, out var filename))
+            {
+                throw new LythonRuntimeException("TypeError", "argparse.FileType callable expects one filename argument.", span);
+            }
+
+            var values = new List<object> { filename, PyString.FromString(mode) };
+            if (encoding is not null || errors is not null)
+            {
+                values.Add(encoding is null ? PyNone.Instance : PyString.FromString(encoding));
+                values.Add(PyString.Empty);
+                values.Add(errors is null ? PyNone.Instance : PyString.FromString(errors));
+            }
+
+            return Open(values.ToArray(), span, context);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("FileType('" + mode + "')");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
 
     private sealed class CustomMethodCallable : ICallable
     {

@@ -452,10 +452,10 @@ re.compile("a", "bad")
         """
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--flag", action="count")
+parser.add_argument("--flag", action="explode")
 """,
         "compile",
-        "only supports 'store', 'store_true', 'store_false', 'append', or 'store_const'")]
+        "only supports 'store', 'store_true', 'store_false'")]
     [InlineData(
         """
 import argparse
@@ -468,10 +468,10 @@ parser.add_argument("--count", type="int")
         """
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--count", nargs=2)
+parser.add_argument("--count", nargs=0)
 """,
         "compile",
-        "only supports positional nargs='*' or '+'")]
+        "expects '?', '*', '+', or a positive integer")]
     [InlineData(
         """
 import argparse
@@ -488,7 +488,7 @@ parser = argparse.ArgumentParser()
 parser.parse_args(values=["--lang", "fr"])
 """,
         "compile",
-        "argparse.ArgumentParser.parse_args([args]) expects zero or one argument.")]
+        "argparse.ArgumentParser.parse_args([args][, namespace]) expects")]
     [InlineData(
         """
 import argparse

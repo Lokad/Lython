@@ -27,6 +27,16 @@ internal static partial class StaticContracts
         "add_argument",
         "add_mutually_exclusive_group",
         "parse_args",
+        "parse_known_args",
+        "format_usage",
+        "format_help",
+        "print_usage",
+        "print_help",
+        "error",
+        "exit",
+        "set_defaults",
+        "get_default",
+        "add_subparsers",
     };
 
     private static readonly HashSet<string> ArgparseGroupMembers = new(StringComparer.Ordinal)
