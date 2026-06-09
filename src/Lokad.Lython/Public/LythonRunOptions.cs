@@ -28,6 +28,8 @@ public sealed class LythonRunOptions
 
     public IReadOnlyList<string>? Args { get; init; }
 
+    public IReadOnlyDictionary<string, string>? Environment { get; init; }
+
     public string? SourcePath { get; init; }
 
     public CancellationToken CancellationToken { get; init; }

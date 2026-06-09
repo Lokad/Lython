@@ -1,30 +1,110 @@
 using System.Globalization;
+using System.Linq;
+using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class OsModule : PyModule
+    private sealed class OsModule : PyModule, IPyContextualDynamicAttributes
     {
         public static readonly OsModule Instance = new();
+        private static readonly string[] Names =
+        [
+            "path",
+            "name",
+            "sep",
+            "curdir",
+            "pardir",
+            "linesep",
+            "pathsep",
+            "altsep",
+            "extsep",
+            "devnull",
+            "F_OK",
+            "R_OK",
+            "W_OK",
+            "X_OK",
+            "environ",
+            "listdir",
+            "walk",
+            "getcwd",
+            "fspath",
+            "fsencode",
+            "fsdecode",
+            "getenv",
+            "putenv",
+            "unsetenv",
+            "get_exec_path",
+            "stat",
+            "lstat",
+            "scandir",
+            "mkdir",
+            "makedirs",
+            "remove",
+            "unlink",
+            "rename",
+            "replace",
+            "rmdir",
+            "removedirs",
+            "access",
+            "chdir",
+            "system",
+            "popen",
+            "open",
+            "read",
+            "write",
+            "close",
+            "dup",
+            "fork",
+            "execv",
+            "execve",
+            "spawnv",
+            "spawnve",
+            "chmod",
+            "chown",
+            "symlink",
+            "link",
+            "getpid",
+            "kill",
+        ];
 
         private OsModule() : base("os")
         {
         }
+
+        public override IReadOnlyList<string> ExportedNames => Names;
 
         public override bool TryGetMember(string name, out object value)
         {
             value = name switch
             {
                 "path" => OsPathModule.Instance,
+                "name" => PyString.FromString("posix"),
                 "sep" => PyStringOps.SlashLiteral,
                 "curdir" => PyStringOps.DotLiteral,
                 "pardir" => PyString.FromString(".."),
+                "linesep" => PyString.FromString("\n"),
+                "pathsep" => PyString.FromString(":"),
+                "altsep" => PyNone.Instance,
+                "extsep" => PyString.FromString("."),
+                "devnull" => PyString.FromString("/dev/null"),
+                "F_OK" => BigInteger.Zero,
+                "R_OK" => new BigInteger(4),
+                "W_OK" => new BigInteger(2),
+                "X_OK" => BigInteger.One,
                 "listdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsListDir, OsListDir, OsListDirAsync),
                 "walk" => new BuiltinCallable(LythonKnownCallableSignatures.OsWalk, OsWalk),
                 "getcwd" => new BuiltinCallable(LythonKnownCallableSignatures.OsGetCwd, OsGetCwd),
                 "fspath" => new BuiltinCallable(LythonKnownCallableSignatures.OsFspath, OsFspath),
+                "fsencode" => new BuiltinCallable(LythonKnownCallableSignatures.OsFsEncode, OsFsEncode),
+                "fsdecode" => new BuiltinCallable(LythonKnownCallableSignatures.OsFsDecode, OsFsDecode),
+                "getenv" => new BuiltinCallable(LythonKnownCallableSignatures.OsGetEnv, OsGetEnv),
+                "putenv" => new BuiltinCallable(LythonKnownCallableSignatures.OsPutEnv, OsPutEnv),
+                "unsetenv" => new BuiltinCallable(LythonKnownCallableSignatures.OsUnsetEnv, OsUnsetEnv),
+                "get_exec_path" => new BuiltinCallable(LythonKnownCallableSignatures.OsGetExecPath, OsGetExecPath),
                 "stat" => new BuiltinCallable(LythonKnownCallableSignatures.OsStat, OsStat, OsStatAsync),
                 "lstat" => new BuiltinCallable(LythonKnownCallableSignatures.OsLstat, OsStat, OsStatAsync),
                 "scandir" => new BuiltinCallable(LythonKnownCallableSignatures.OsScandir, OsScandir, OsScandirAsync),
@@ -36,20 +116,86 @@ internal sealed partial class LythonRuntime
                 "replace" => new BuiltinCallable(LythonKnownCallableSignatures.OsReplace, OsReplace, OsReplaceAsync),
                 "rmdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsRmdir, OsRmDir, OsRmDirAsync),
                 "removedirs" => new BuiltinCallable(LythonKnownCallableSignatures.OsRemovedirs, OsRmDirs, OsRmDirsAsync),
+                "access" => UnsupportedOsCallable("os.access", "os.access() is not supported because Lython's host path model does not expose permissions."),
+                "chdir" => UnsupportedOsCallable("os.chdir", "os.chdir() is not supported because Lython keeps the host-provided cwd immutable for a run."),
+                "system" => UnsupportedOsCallable("os.system", "os.system() is not supported; use the host-mediated subprocess module where available."),
+                "popen" => UnsupportedOsCallable("os.popen", "os.popen() is not supported; streaming process handles are outside Lython's contained host surface."),
+                "open" => UnsupportedOsCallable("os.open", "os.open() is not supported because raw file descriptors are outside Lython's contained host surface."),
+                "read" => UnsupportedOsCallable("os.read", "os.read() is not supported because raw file descriptors are outside Lython's contained host surface."),
+                "write" => UnsupportedOsCallable("os.write", "os.write() is not supported because raw file descriptors are outside Lython's contained host surface."),
+                "close" => UnsupportedOsCallable("os.close", "os.close() is not supported because raw file descriptors are outside Lython's contained host surface."),
+                "dup" => UnsupportedOsCallable("os.dup", "os.dup() is not supported because raw file descriptors are outside Lython's contained host surface."),
+                "fork" => UnsupportedOsCallable("os.fork", "os.fork() is not supported by Lython."),
+                "execv" => UnsupportedOsCallable("os.execv", "os.execv() is not supported by Lython."),
+                "execve" => UnsupportedOsCallable("os.execve", "os.execve() is not supported by Lython."),
+                "spawnv" => UnsupportedOsCallable("os.spawnv", "os.spawnv() is not supported by Lython."),
+                "spawnve" => UnsupportedOsCallable("os.spawnve", "os.spawnve() is not supported by Lython."),
+                "chmod" => UnsupportedOsCallable("os.chmod", "os.chmod() is not supported because Lython's host path model does not expose permissions."),
+                "chown" => UnsupportedOsCallable("os.chown", "os.chown() is not supported because Lython's host path model does not expose ownership."),
+                "symlink" => UnsupportedOsCallable("os.symlink", "os.symlink() is not supported because Lython's host path model does not expose symlinks."),
+                "link" => UnsupportedOsCallable("os.link", "os.link() is not supported because Lython's host path model does not expose hard links."),
+                "getpid" => UnsupportedOsCallable("os.getpid", "os.getpid() is not supported because process identity is outside Lython's contained host surface."),
+                "kill" => UnsupportedOsCallable("os.kill", "os.kill() is not supported because signals are outside Lython's contained host surface."),
                 _ => null!,
             };
 
             return value is not null;
+        }
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        {
+            _ = span;
+            if (name == "environ")
+            {
+                value = new PyEnvironmentMapping(context.State.Environment);
+                return true;
+            }
+
+            return TryGetMember(name, out value);
         }
     }
 
     private sealed class OsPathModule : PyModule
     {
         public static readonly OsPathModule Instance = new();
+        private static readonly string[] Names =
+        [
+            "join",
+            "split",
+            "splitext",
+            "basename",
+            "dirname",
+            "isabs",
+            "normpath",
+            "normcase",
+            "abspath",
+            "relpath",
+            "commonpath",
+            "commonprefix",
+            "exists",
+            "lexists",
+            "isfile",
+            "isdir",
+            "getsize",
+            "getmtime",
+            "getatime",
+            "getctime",
+            "samefile",
+            "realpath",
+            "expandvars",
+            "expanduser",
+            "splitdrive",
+            "splitroot",
+            "ismount",
+            "islink",
+            "supports_unicode_filenames",
+        ];
 
         private OsPathModule() : base("os.path")
         {
         }
+
+        public override IReadOnlyList<string> ExportedNames => Names;
 
         public override bool TryGetMember(string name, out object value)
         {
@@ -62,17 +208,28 @@ internal sealed partial class LythonRuntime
                 "dirname" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathDirname, OsPathDirName),
                 "isabs" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsAbs, OsPathIsAbs),
                 "normpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathNormPath, OsPathNormPath),
+                "normcase" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathNormCase, OsPathNormCase),
                 "abspath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathAbsPath, OsPathAbsPath),
                 "relpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathRelPath, OsPathRelPath),
                 "commonpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathCommonPath, OsPathCommonPath),
+                "commonprefix" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathCommonPrefix, OsPathCommonPrefix),
                 "exists" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathExists, OsPathExists, OsPathExistsAsync),
                 "lexists" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathLexists, OsPathExists, OsPathExistsAsync),
                 "isfile" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsFile, OsPathIsFile, OsPathIsFileAsync),
                 "isdir" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsDir, OsPathIsDir, OsPathIsDirAsync),
                 "getsize" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathGetSize, OsPathGetSize, OsPathGetSizeAsync),
                 "getmtime" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathGetMTime, OsPathGetMTime, OsPathGetMTimeAsync),
+                "getatime" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathGetATime, OsPathGetMTime, OsPathGetMTimeAsync),
+                "getctime" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathGetCTime, OsPathGetMTime, OsPathGetMTimeAsync),
                 "samefile" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathSameFile, OsPathSameFile),
                 "realpath" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathRealPath, OsPathRealPath),
+                "expandvars" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathExpandVars, OsPathExpandVars),
+                "expanduser" => UnsupportedOsCallable("os.path.expanduser", "os.path.expanduser() is not supported because Lython has no ambient home directory."),
+                "splitdrive" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathSplitDrive, OsPathSplitDrive),
+                "splitroot" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathSplitRoot, OsPathSplitRoot),
+                "ismount" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsMount, OsPathIsMount),
+                "islink" => UnsupportedOsCallable("os.path.islink", "os.path.islink() is not supported because Lython's host path model does not expose symlinks."),
+                "supports_unicode_filenames" => true,
                 _ => null!,
             };
 
@@ -170,6 +327,94 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(GetPath(arguments[0], "os.fspath", span));
     }
 
+    private static object OsFsEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "os.fsencode(filename) expects one path-like argument.", span);
+        }
+
+        if (arguments[0] is PyBytes bytes)
+        {
+            return bytes;
+        }
+
+        var path = GetPath(arguments[0], "os.fsencode", span);
+        return CreateBytes(Encoding.UTF8.GetBytes(path), context, span);
+    }
+
+    private static object OsFsDecode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "os.fsdecode(filename) expects one path-like argument.", span);
+        }
+
+        if (arguments[0] is PyBytes bytes)
+        {
+            return PyString.FromUtf8(bytes.ToArray(), context.MemoryGovernor, span);
+        }
+
+        return PyString.FromString(GetPath(arguments[0], "os.fsdecode", span), context.MemoryGovernor, span);
+    }
+
+    private static object OsGetEnv(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "os.getenv(key, default=None) expects one or two string arguments.", span);
+        }
+
+        var key = GetEnvironmentKey(arguments[0], "os.getenv", span);
+        return context.State.Environment.TryGetValue(key, out var value)
+            ? PyString.FromString(value)
+            : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+    }
+
+    private static object OsPutEnv(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "os.putenv(key, value) expects two string arguments.", span);
+        }
+
+        var key = GetEnvironmentKey(arguments[0], "os.putenv", span);
+        var value = GetEnvironmentValue(arguments[1], "os.putenv", span);
+        context.State.Environment[key] = value;
+        return PyNone.Instance;
+    }
+
+    private static object OsUnsetEnv(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "os.unsetenv(key) expects one string argument.", span);
+        }
+
+        var key = GetEnvironmentKey(arguments[0], "os.unsetenv", span);
+        _ = context.State.Environment.Remove(key);
+        return PyNone.Instance;
+    }
+
+    private static object OsGetExecPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 0 or > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "os.get_exec_path(env=None) expects zero or one argument.", span);
+        }
+
+        var path = arguments.Length == 0 || arguments[0] is PyNone
+            ? context.State.Environment.GetValueOrDefault("PATH")
+            : GetEnvironmentMappingValue(arguments[0], "PATH", span);
+
+        var items = path is null
+            ? Array.Empty<object>()
+            : path.Split(':').Select<string, object>(PyString.FromString);
+        var result = new PyList(items, context.MemoryGovernor, span);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
     private static object OsStat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.stat", span);
@@ -188,8 +433,10 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.RegisterHostCall(span);
         var entries = context.HostListDir(normalized, span)
-            .Select<string, object>(name => new PyDirEntryObject(name, JoinChild(normalized, name)));
-        return new PyList(entries, context.MemoryGovernor, span);
+            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
+            .ToArray();
+        context.ObserveCollectionCount(entries.Length, span);
+        return new PyScandirIterator(entries);
     }
 
     private static async ValueTask<object> OsScandirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -198,8 +445,11 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.RegisterHostCall(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
-        var entries = names.Select<string, object>(name => new PyDirEntryObject(name, JoinChild(normalized, name)));
-        return new PyList(entries, context.MemoryGovernor, span);
+        var entries = names
+            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
+            .ToArray();
+        context.ObserveCollectionCount(entries.Length, span);
+        return new PyScandirIterator(entries);
     }
 
     private static object OsMkDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -561,6 +811,13 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(path.Length == 0 ? "." : PathOps.Normalize(path));
     }
 
+    private static object OsPathNormCase(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        var path = GetSinglePath(arguments, "os.path.normcase", span);
+        return PyString.FromString(path);
+    }
+
     private static object OsPathAbsPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.abspath", span);
@@ -605,6 +862,42 @@ internal sealed partial class LythonRuntime
         }
 
         return PyString.FromString(CommonPath(paths));
+    }
+
+    private static object OsPathCommonPrefix(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "os.path.commonprefix(list) expects one iterable argument.", span);
+        }
+
+        var paths = new List<string>();
+        foreach (var item in ToSequence(arguments[0], span))
+        {
+            paths.Add(GetPath(item, "os.path.commonprefix", span));
+        }
+
+        if (paths.Count == 0)
+        {
+            return PyString.Empty;
+        }
+
+        var prefix = paths[0];
+        for (var i = 1; i < paths.Count && prefix.Length != 0; i++)
+        {
+            var candidate = paths[i];
+            var length = Math.Min(prefix.Length, candidate.Length);
+            var index = 0;
+            while (index < length && prefix[index] == candidate[index])
+            {
+                index++;
+            }
+
+            prefix = prefix[..index];
+        }
+
+        return PyString.FromString(prefix);
     }
 
     private static object OsPathExists(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -693,6 +986,53 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(PathOps.Normalize(path, context.Host.Cwd));
     }
 
+    private static object OsPathExpandVars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.expandvars", span);
+        return PyString.FromString(ExpandVars(path, context.State.Environment), context.MemoryGovernor, span);
+    }
+
+    private static object OsPathSplitDrive(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.splitdrive", span);
+        return new PyTuple([PyString.Empty, PyString.FromString(path)], context.MemoryGovernor, span);
+    }
+
+    private static object OsPathSplitRoot(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.splitroot", span);
+        string root;
+        string tail;
+        if (!path.StartsWith("/", StringComparison.Ordinal))
+        {
+            root = string.Empty;
+            tail = path;
+        }
+        else if (path.Length >= 2 &&
+                 path[1] == '/' &&
+                 (path.Length == 2 || path[2] != '/'))
+        {
+            root = "//";
+            tail = path[2..];
+        }
+        else
+        {
+            root = "/";
+            tail = path[1..];
+        }
+
+        return new PyTuple(
+            [PyString.Empty, PyString.FromString(root), PyString.FromString(tail)],
+            context.MemoryGovernor,
+            span);
+    }
+
+    private static object OsPathIsMount(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var path = GetSinglePath(arguments, "os.path.ismount", span);
+        return PathOps.Normalize(path, context.Host.Cwd) == "/";
+    }
+
     private static string GetSinglePath(object[] arguments, string owner, LythonSourceSpan span)
     {
         if (arguments.Length != 1)
@@ -718,6 +1058,11 @@ internal sealed partial class LythonRuntime
         if (value is PyPath pyPath)
         {
             return pyPath.Value.AsString();
+        }
+
+        if (value is PyDirEntryObject dirEntry)
+        {
+            return dirEntry.Path;
         }
 
         if (!PyStringOps.TryAsString(value, out var path))
@@ -944,10 +1289,401 @@ internal sealed partial class LythonRuntime
 
     private static string JoinChild(string directory, string name) => directory == "/" ? "/" + name : directory + "/" + name;
 
+    private static ICallable UnsupportedOsCallable(string name, string message)
+        => new UnsupportedOsCallableObject(name, message);
+
+    private sealed class UnsupportedOsCallableObject : ICallable, INamedRuntimeCallable, IPyRenderableValue
+    {
+        private readonly string _message;
+
+        public UnsupportedOsCallableObject(string name, string message)
+        {
+            Name = name;
+            _message = message;
+        }
+
+        public string Name { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            _ = context;
+            throw new LythonRuntimeException("NotImplementedError", _message, span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private static string GetEnvironmentKey(object value, string owner, LythonSourceSpan span)
+    {
+        if (!PyStringOps.TryAsString(value, out var key))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(...) expects environment keys to be strings.", span);
+        }
+
+        return key.AsString();
+    }
+
+    private static string GetEnvironmentValue(object value, string owner, LythonSourceSpan span)
+    {
+        if (!PyStringOps.TryAsString(value, out var text))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(...) expects environment values to be strings.", span);
+        }
+
+        return text.AsString();
+    }
+
+    private static string? GetEnvironmentMappingValue(object mapping, string key, LythonSourceSpan span)
+    {
+        if (mapping is PyEnvironmentMapping environment)
+        {
+            return environment.TryGetString(key, out var value) ? value : null;
+        }
+
+        if (mapping is PyDict dict)
+        {
+            return dict.TryGetValue(PyString.FromString(key), out var value)
+                ? GetEnvironmentValue(value, "os.get_exec_path", span)
+                : null;
+        }
+
+        throw new LythonRuntimeException("TypeError", "os.get_exec_path(env) expects a mapping or None.", span);
+    }
+
+    private static string ExpandVars(string path, IReadOnlyDictionary<string, string> environment)
+    {
+        if (path.Length == 0)
+        {
+            return path;
+        }
+
+        var builder = new StringBuilder(path.Length);
+        for (var i = 0; i < path.Length; i++)
+        {
+            var ch = path[i];
+            if (ch == '$')
+            {
+                if (i + 1 < path.Length && path[i + 1] == '{')
+                {
+                    var end = path.IndexOf('}', i + 2);
+                    if (end >= 0)
+                    {
+                        var name = path[(i + 2)..end];
+                        builder.Append(environment.TryGetValue(name, out var value) ? value : path[i..(end + 1)]);
+                        i = end;
+                        continue;
+                    }
+                }
+                else
+                {
+                    var start = i + 1;
+                    var end = start;
+                    while (end < path.Length && IsEnvironmentNameChar(path[end]))
+                    {
+                        end++;
+                    }
+
+                    if (end > start)
+                    {
+                        var name = path[start..end];
+                        builder.Append(environment.TryGetValue(name, out var value) ? value : path[i..end]);
+                        i = end - 1;
+                        continue;
+                    }
+                }
+            }
+            else if (ch == '%')
+            {
+                var end = path.IndexOf('%', i + 1);
+                if (end > i + 1)
+                {
+                    var name = path[(i + 1)..end];
+                    builder.Append(environment.TryGetValue(name, out var value) ? value : path[i..(end + 1)]);
+                    i = end;
+                    continue;
+                }
+            }
+
+            builder.Append(ch);
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool IsEnvironmentNameChar(char ch)
+        => char.IsAsciiLetterOrDigit(ch) || ch == '_';
+
+    private sealed class PyEnvironmentMapping :
+        IMutablePySubscriptableValue,
+        IDeletablePySubscriptableValue,
+        IPyTruthyValue,
+        IPyIterableValue,
+        IPyRenderableValue,
+        IPyDynamicAttributes,
+        IEnumerable<object>
+    {
+        private readonly Dictionary<string, string> _items;
+
+        public PyEnvironmentMapping(Dictionary<string, string> items)
+        {
+            _items = items;
+        }
+
+        public bool TryGetString(string key, out string value) => _items.TryGetValue(key, out value!);
+
+        public object GetSubscript(object index, LythonSourceSpan span)
+        {
+            var key = GetEnvironmentKey(index, "os.environ.__getitem__", span);
+            if (!_items.TryGetValue(key, out var value))
+            {
+                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span);
+            }
+
+            return PyString.FromString(value);
+        }
+
+        public void SetSubscript(object index, object value, LythonSourceSpan span)
+        {
+            var key = GetEnvironmentKey(index, "os.environ.__setitem__", span);
+            _items[key] = GetEnvironmentValue(value, "os.environ.__setitem__", span);
+        }
+
+        public void DeleteSubscript(object index, LythonSourceSpan span)
+        {
+            var key = GetEnvironmentKey(index, "os.environ.__delitem__", span);
+            if (!_items.Remove(key))
+            {
+                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span);
+            }
+        }
+
+        public bool IsTruthy() => _items.Count != 0;
+
+        public IEnumerable<object> Iterate() => _items.Keys.Select<string, object>(PyString.FromString);
+
+        public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "get" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length is < 1 or > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.get(key[, default]) expects one key and an optional default.", span);
+                    }
+
+                    var key = GetEnvironmentKey(arguments[0], "os.environ.get", span);
+                    return _items.TryGetValue(key, out var found)
+                        ? PyString.FromString(found)
+                        : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+                }, "os.environ.get", ["key", "default"], 1),
+                "keys" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.keys() expects no arguments.", span);
+                    }
+
+                    var result = new PyList(_items.Keys.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
+                    context.ObserveCollectionCount(result.Count, span);
+                    return result;
+                }, "os.environ.keys", []),
+                "values" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.values() expects no arguments.", span);
+                    }
+
+                    var result = new PyList(_items.Values.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
+                    context.ObserveCollectionCount(result.Count, span);
+                    return result;
+                }, "os.environ.values", []),
+                "items" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.items() expects no arguments.", span);
+                    }
+
+                    var result = new PyList(
+                        _items.Select(pair => (object)new PyTuple(
+                            [PyString.FromString(pair.Key), PyString.FromString(pair.Value)],
+                            context.MemoryGovernor,
+                            span)),
+                        context.MemoryGovernor,
+                        span);
+                    context.ObserveCollectionCount(result.Count, span);
+                    return result;
+                }, "os.environ.items", []),
+                "copy" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.copy() expects no arguments.", span);
+                    }
+
+                    var result = ToPyDict(context, span);
+                    context.ObserveCollectionCount(result.Count, span);
+                    return result;
+                }, "os.environ.copy", []),
+                "clear" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.clear() expects no arguments.", span);
+                    }
+
+                    _items.Clear();
+                    return PyNone.Instance;
+                }, "os.environ.clear", []),
+                "update" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1 || arguments[0] is not PyDict source)
+                    {
+                        throw new LythonRuntimeException("TypeError", "os.environ.update(mapping) expects one dictionary argument.", span);
+                    }
+
+                    foreach (var pair in source)
+                    {
+                        var key = GetEnvironmentKey(pair.Key, "os.environ.update", span);
+                        _items[key] = GetEnvironmentValue(pair.Value, "os.environ.update", span);
+                    }
+
+                    return PyNone.Instance;
+                }, "os.environ.update", ["mapping"]),
+                _ => null!,
+            };
+
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public PyString RenderPython(PyRenderingContext context) => ToPyDict(context.Context, null).RenderPython(context);
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        private PyDict ToPyDict(ExecutionContext context, LythonSourceSpan? span)
+        {
+            var result = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in _items)
+            {
+                result.SetItem(PyString.FromString(pair.Key), PyString.FromString(pair.Value));
+            }
+
+            return result;
+        }
+    }
+
+    private sealed class PyScandirIterator : PyIteratorBase, IPyContextManager, IPyDynamicAttributes
+    {
+        private readonly PyDirEntryObject[] _entries;
+        private int _index;
+        private bool _closed;
+
+        public PyScandirIterator(PyDirEntryObject[] entries)
+        {
+            _entries = entries;
+        }
+
+        public override bool TryMoveNext(out object value)
+        {
+            if (_closed || _index >= _entries.Length)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = _entries[_index++];
+            return true;
+        }
+
+        public object Enter() => this;
+
+        public bool Exit(object exceptionType, object exceptionValue, object traceback)
+        {
+            _ = exceptionType;
+            _ = exceptionValue;
+            _ = traceback;
+            _closed = true;
+            return false;
+        }
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "close" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ScandirIterator.close() expects no arguments.", span);
+                    }
+
+                    _closed = true;
+                    return PyNone.Instance;
+                }, "ScandirIterator.close", []),
+                "__enter__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ScandirIterator.__enter__() expects no arguments.", span);
+                    }
+
+                    return this;
+                }, "ScandirIterator.__enter__", []),
+                "__exit__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 3)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ScandirIterator.__exit__(exc_type, exc, tb) expects three arguments.", span);
+                    }
+
+                    _closed = true;
+                    return false;
+                }, "ScandirIterator.__exit__", ["exc_type", "exc", "tb"]),
+                _ => null!,
+            };
+
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public override PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<ScandirIterator>");
+        }
+    }
+
     internal sealed class PyDirEntryObject : IPyDynamicAttributes, IPyRenderableValue
     {
         private readonly string _name;
         private readonly string _path;
+        private LythonPathStat? _stat;
 
         public PyDirEntryObject(string name, string path)
         {
@@ -955,12 +1691,23 @@ internal sealed partial class LythonRuntime
             _path = path;
         }
 
+        public string Path => _path;
+
         public bool TryGetMember(string name, out object value)
         {
             value = name switch
             {
                 "name" => PyString.FromString(_name),
                 "path" => PyString.FromString(_path),
+                "__fspath__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.__fspath__() expects no arguments.", span);
+                    }
+
+                    return PyString.FromString(_path);
+                }, "DirEntry.__fspath__", []),
                 "is_file" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -968,8 +1715,19 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "DirEntry.is_file() expects no arguments.", span);
                     }
 
-                    return HostStat(_path, context, span).IsFile;
-                }),
+                    return GetCachedStat(context, span).IsFile;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.is_file() expects no arguments.", span);
+                    }
+
+                    return (await GetCachedStatAsync(context, span).ConfigureAwait(false)).IsFile;
+                },
+                "DirEntry.is_file",
+                []),
                 "is_dir" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -977,8 +1735,19 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "DirEntry.is_dir() expects no arguments.", span);
                     }
 
-                    return HostStat(_path, context, span).IsDir;
-                }),
+                    return GetCachedStat(context, span).IsDir;
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.is_dir() expects no arguments.", span);
+                    }
+
+                    return (await GetCachedStatAsync(context, span).ConfigureAwait(false)).IsDir;
+                },
+                "DirEntry.is_dir",
+                []),
                 "stat" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -986,8 +1755,37 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "DirEntry.stat() expects no arguments.", span);
                     }
 
-                    return HostStat(_path, context, span);
-                }),
+                    return GetCachedStat(context, span);
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.stat() expects no arguments.", span);
+                    }
+
+                    return await GetCachedStatAsync(context, span).ConfigureAwait(false);
+                },
+                "DirEntry.stat",
+                []),
+                "inode" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.inode() expects no arguments.", span);
+                    }
+
+                    throw new LythonRuntimeException("NotImplementedError", "DirEntry.inode() is not supported because Lython's host path model does not expose inode metadata.", span);
+                }, "DirEntry.inode", []),
+                "is_symlink" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "DirEntry.is_symlink() expects no arguments.", span);
+                    }
+
+                    throw new LythonRuntimeException("NotImplementedError", "DirEntry.is_symlink() is not supported because Lython's host path model does not expose symlinks.", span);
+                }, "DirEntry.is_symlink", []),
                 _ => null!,
             };
 
@@ -1008,6 +1806,12 @@ internal sealed partial class LythonRuntime
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        private LythonPathStat GetCachedStat(ExecutionContext context, LythonSourceSpan span)
+            => _stat ??= HostStat(_path, context, span);
+
+        private async ValueTask<LythonPathStat> GetCachedStatAsync(ExecutionContext context, LythonSourceSpan span)
+            => _stat ??= await OsHostStatAsync(_path, context, span).ConfigureAwait(false);
     }
 
     private sealed class PyWalkIterator : PyIteratorBase

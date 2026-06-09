@@ -747,6 +747,16 @@ Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF
 
 `Path.iterdir()`, `Path.glob(...)`, and `Path.rglob(...)` may materialize eager path lists. Case-insensitive globbing, symlink traversal, rich inode/device/user/mode stat metadata, permission APIs, symlink APIs, and path byte helpers remain outside the text-first host boundary unless separately specified.
 
+The `os` module follows the same contained path model. It may expose Python-shaped constants such as `name`, `sep`, `linesep`, `pathsep`, `extsep`, `devnull`, and access-mode constants using documented contained values. Supported file-tree operations must remain host-mediated through `ILythonHost`.
+
+`os.environ` is a live mapping backed only by an explicit contained environment supplied by the embedder. `os.getenv`, `os.putenv`, `os.unsetenv`, `os.get_exec_path`, and `os.path.expandvars` must use that contained mapping. The runtime must not read or mutate the ambient process environment by default.
+
+`os.scandir(path)` returns an iterator/context manager of `DirEntry`-shaped objects exposing `name`, `path`, `__fspath__()`, `is_file()`, `is_dir()`, and cached basic `stat()` metadata. `DirEntry.inode()` and `DirEntry.is_symlink()` must fail explicitly unless the host path model grows corresponding metadata.
+
+`os.path` may expose CPython-shaped pure helpers over the contained POSIX-like path model, including `commonprefix`, `normcase`, `splitdrive`, `splitroot`, `expandvars`, `getatime`, `getctime`, and `ismount`. `expanduser` and `islink` must fail explicitly unless a future host capability exposes a contained home directory or symlink source.
+
+The `os` surface must not expose ambient process or filesystem authority. File descriptors, `chdir`, permission/owner mutation, symlink/link creation, process identity, signals, `system`, `popen`, `exec*`, `spawn*`, and similar raw OS APIs must fail explicitly or remain absent.
+
 Lython scripts must not be able to:
 
 - bypass host-mediated subprocess policy to spawn shell commands
@@ -1265,6 +1275,8 @@ For text resources, the host boundary must be UTF-8-explicit. Lython should not 
 Lython string values remain Unicode text values at the language level, but the runtime must not let raw `.NET string` behavior become the language contract for Python-like strings.
 
 The UTF-8 requirement applies both to script text and to text-resource interchange at the host boundary. Internally, the runtime should model Python-like string values through a dedicated text subsystem rather than treating host-language `string` operations as the semantic definition of `str`.
+
+Run options may include a contained environment mapping. That mapping is script-visible through `os.environ` and related helpers, is mutable for the duration of the run, and must be initialized from embedder-provided values rather than from the ambient process environment.
 
 ### 12.2 Optional Capabilities
 

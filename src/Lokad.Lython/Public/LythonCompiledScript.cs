@@ -106,6 +106,7 @@ public sealed class LythonCompiledScript
         {
             Globals = options?.Globals,
             Args = options?.Args,
+            Environment = options?.Environment,
             SourcePath = options?.SourcePath,
             CancellationToken = effectiveCancellation,
             DisableDefaultLimits = options?.DisableDefaultLimits ?? false,

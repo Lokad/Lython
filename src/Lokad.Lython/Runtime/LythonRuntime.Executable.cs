@@ -929,7 +929,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var name in importedModule.ExportedNames)
             {
-                if (!importedModule.TryGetMember(name, out var value))
+                if (!TryResolveImportedMember(importedModule, name, context, importBinding.Span, out var value))
                 {
                     throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, name, importBinding.Span);
                 }
@@ -942,7 +942,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var importedMember in importBinding.ImportedMembers)
         {
-            if (!importedModule.TryGetMember(importedMember.Name, out var value))
+            if (!TryResolveImportedMember(importedModule, importedMember.Name, context, importBinding.Span, out var value))
             {
                 throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, importedMember.Name, importBinding.Span);
             }

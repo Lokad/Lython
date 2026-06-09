@@ -39,6 +39,138 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
+    public void OsPathModule_ExpandedHelpers_FollowContainedPosixModel()
+    {
+        var host = new MockLythonHost("/repo/work");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+from os import path
+
+vals = []
+vals.append(path.normcase("/Repo/File.TXT"))
+vals.append(path.commonprefix(["/usr/lib", "/usr/local"]))
+vals.append(path.expandvars("$ROOT/${NAME}/%NAME%/$MISSING/%MISSING%"))
+vals.append(str(path.splitdrive("/repo/docs")))
+vals.append(str(path.splitroot("relative/docs")))
+vals.append(str(path.splitroot("/repo/docs")))
+vals.append(str(path.splitroot("//server/share")))
+vals.append(str(path.splitroot("///server/share")))
+vals.append(str(path.ismount("/")))
+vals.append(str(path.ismount("/repo")))
+vals.append(str(path.getatime("/repo/docs/a.txt")))
+vals.append(str(path.getctime("/repo/docs/a.txt")))
+vals.append(str(path.supports_unicode_filenames))
+vals.append(os.fsdecode(os.fsencode("/repo/unicode-é.txt")))
+write_text("/out.txt", "|".join(vals))
+""",
+            host,
+            new LythonRunOptions
+            {
+                Environment = new Dictionary<string, string>
+                {
+                    ["ROOT"] = "/repo",
+                    ["NAME"] = "docs"
+                }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("/Repo/File.TXT|/usr/l|/repo/docs/docs/$MISSING/%MISSING%|(, /repo/docs)|(, , relative/docs)|(, /, repo/docs)|(, //, server/share)|(, /, //server/share)|True|False|0|0|True|/repo/unicode-é.txt", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OsModule_Environment_IsContainedAndMutableWithinRun()
+    {
+        var host = new MockLythonHost("/repo");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+from os import environ
+
+vals = []
+vals.append(os.name)
+vals.append(os.linesep == "\n")
+vals.append(os.pathsep)
+vals.append(str(os.altsep))
+vals.append(os.extsep)
+vals.append(os.devnull)
+vals.append(str(os.F_OK) + str(os.R_OK) + str(os.W_OK) + str(os.X_OK))
+vals.append(os.getenv("PATH", "missing"))
+vals.append(str(os.get_exec_path()))
+environ["NEW"] = "value"
+vals.append(os.getenv("NEW"))
+os.putenv("PUT", "ok")
+vals.append(environ["PUT"])
+vals.append(str("PUT" in environ))
+vals.append(str(sorted(environ.keys())))
+vals.append(str(sorted(environ.items())))
+environ.update({"EXTRA": "yes"})
+vals.append(os.environ.get("EXTRA"))
+del environ["NEW"]
+vals.append(str(os.getenv("NEW") is None))
+os.unsetenv("PUT")
+vals.append(str(os.getenv("PUT") is None))
+vals.append(str(sorted(os.get_exec_path({"PATH": "/custom:/bin"}))))
+write_text("/out.txt", "|".join([str(v) for v in vals]))
+""",
+            host,
+            new LythonRunOptions
+            {
+                Environment = new Dictionary<string, string>
+                {
+                    ["PATH"] = "/bin:/tools",
+                    ["KEEP"] = "seed"
+                }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("posix|True|:|None|.|/dev/null|0421|/bin:/tools|[/bin, /tools]|value|ok|True|[KEEP, NEW, PATH, PUT]|[(KEEP, seed), (NEW, value), (PATH, /bin:/tools), (PUT, ok)]|yes|True|True|[/bin, /custom]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OsModule_Environment_DoesNotReadAmbientProcessEnvironmentByDefault()
+    {
+        var host = new MockLythonHost("/repo");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+write_text("/out.txt", os.getenv("PATH", "missing") + "|" + str(os.get_exec_path()))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("missing|[]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public async Task OsModule_RunAsync_PreservesEnvironmentWhenMergingCancellation()
+    {
+        var host = new MockLythonHost("/repo");
+        using var cancellation = new CancellationTokenSource();
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import os
+write_text("/out.txt", os.getenv("TOKEN"))
+""",
+            host,
+            new LythonRunOptions
+            {
+                Environment = new Dictionary<string, string>
+                {
+                    ["TOKEN"] = "kept"
+                }
+            },
+            cancellation.Token);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("kept", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OsModule_HostMediatedFileTreeHelpers_HaveDirectCoverage()
     {
         var host = new MockLythonHost("/repo");
@@ -81,6 +213,30 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
+    public void OsScandir_ReturnsContextManagedIteratorAndPathLikeEntries()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/docs/a.txt", "alpha");
+        host.SeedFile("/repo/docs/sub/b.txt", "beta");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+
+rows = []
+with os.scandir("/repo/docs") as entries:
+    for entry in entries:
+        rows.append(os.fspath(entry) + ":" + entry.__fspath__() + ":" + str(os.path.getsize(entry)))
+
+write_text("/out.txt", "\n".join(sorted(rows)))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("/repo/docs/a.txt:/repo/docs/a.txt:5\n/repo/docs/sub:/repo/docs/sub:0", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OsListDir_DefaultsToCurrentDirectory()
     {
         var host = new MockLythonHost("/repo");
@@ -119,6 +275,31 @@ write_text("/out.txt", "|".join(vals))
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("True|False", host.ReadText("/out.txt"));
+    }
+
+    [Theory]
+    [InlineData("os.access('/repo', os.F_OK)", "os.access() is not supported")]
+    [InlineData("os.chdir('/repo')", "os.chdir() is not supported")]
+    [InlineData("os.path.expanduser('~/x')", "os.path.expanduser() is not supported")]
+    [InlineData("os.path.islink('/repo')", "os.path.islink() is not supported")]
+    [InlineData("next(os.scandir('/repo')).is_symlink()", "DirEntry.is_symlink() is not supported")]
+    [InlineData("next(os.scandir('/repo')).inode()", "DirEntry.inode() is not supported")]
+    public void OsModule_UnsupportedHostSurface_FailsExplicitly(string expression, string messageFragment)
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/a.txt", "a");
+
+        var result = new LythonEngine().Run(
+            $"""
+import os
+{expression}
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
+        Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]

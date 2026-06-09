@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var importedMember in statement.ImportedMembers)
         {
-            if (!module.TryGetMember(importedMember.Name, out var value))
+            if (!TryResolveImportedMember(module, importedMember.Name, context, statement.Span, out var value))
             {
                 throw RuntimeErrors.CannotImportMember(statement.ModuleName, importedMember.Name, statement.Span);
             }
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var importedMember in statement.ImportedMembers)
         {
-            if (!module.TryGetMember(importedMember.Name, out var value))
+            if (!TryResolveImportedMember(module, importedMember.Name, context, statement.Span, out var value))
             {
                 throw RuntimeErrors.CannotImportMember(statement.ModuleName, importedMember.Name, statement.Span);
             }
@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
     {
         foreach (var name in module.ExportedNames)
         {
-            if (!module.TryGetMember(name, out var value))
+            if (!TryResolveImportedMember(module, name, context, span, out var value))
             {
                 throw RuntimeErrors.CannotImportMember(module.Name, name, span);
             }
@@ -300,6 +300,14 @@ internal sealed partial class LythonRuntime
             StoreName(name, value, context, span);
         }
     }
+
+    private static bool TryResolveImportedMember(
+        PyModule module,
+        string name,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object value)
+        => TryResolveRuntimeMember(module, name, context, span, out value);
 
     private static string ResolveLocalModulePath(string moduleName, ExecutionContext context)
     {

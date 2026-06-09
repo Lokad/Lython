@@ -25,6 +25,9 @@ internal sealed class ExecutionState
         Args = (options?.Args ?? Array.Empty<string>())
             .Select(Text.PyString.FromString)
             .ToArray();
+        Environment = options?.Environment is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(options.Environment, StringComparer.Ordinal);
         ImportedModules = new Dictionary<string, PyModule>(StringComparer.Ordinal);
         LoadingModules = new HashSet<string>(StringComparer.Ordinal);
         StandardOutput = new Text.Utf8ValueBuilder(
@@ -55,6 +58,8 @@ internal sealed class ExecutionState
     public IReadOnlySet<string>? AllowedLocalModules { get; }
 
     public IReadOnlyList<Text.PyString> Args { get; }
+
+    public Dictionary<string, string> Environment { get; }
 
     public Dictionary<string, PyModule> ImportedModules { get; }
 

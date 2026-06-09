@@ -107,6 +107,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; functions that must cache inputs or buffers are still subject to Lython's execution limits.
 
+`os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.
+
 `pathlib` uses Lython's normalized `/`-separated path model over host-mediated files and directories. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, globbing APIs materialize lists eagerly, and file handles are UTF-8 text-only with explicit unsupported diagnostics for binary, symlink, permission, and random-access operations.
 
 `argparse` covers ordinary agent-authored CLI scripts: `ArgumentParser`, `Namespace`, text-only `FileType`, common formatter classes and constants, `parse_args`, `parse_known_args`, defaults, help/error formatting, short and long options, `--name=value`, compact short flags, choices, required options, typed values, and the usual `store`, `append`, `store_const`, `store_true`, `store_false`, `count`, and `version` actions. Advanced parser composition features such as from-file expansion, parent parsers, subparsers, conflict handlers, and custom `Action` subclasses are rejected explicitly.
@@ -137,7 +139,7 @@ The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs
 - `Run(...)` and `RunAsync(...)` return a `LythonExecutionResult`
 - failures are reported as structured `LythonRuntimeFailure`
 - file and path effects are mediated through `ILythonHost`
-- CLI-style arguments and script origin can be passed through `LythonRunOptions`
+- CLI-style arguments, script origin, and a contained environment map can be passed through `LythonRunOptions`
 - `print(...)` is captured deterministically through `LythonExecutionResult.StandardOutput`
 - `stderr` is captured through `LythonExecutionResult.StandardError`
 - projected return values stay CLR-friendly, including `byte[]` for Python bytes values
