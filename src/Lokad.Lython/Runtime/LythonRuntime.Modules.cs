@@ -1007,13 +1007,21 @@ internal sealed partial class LythonRuntime
 
     private sealed class SysModule : PyModule
     {
+        private const int VersionMajor = 3;
+        private const int VersionMinor = 11;
+        private const int VersionMicro = 0;
+        private const int HexVersion = (VersionMajor << 24) | (VersionMinor << 16) | (VersionMicro << 8) | 0xF0;
+
+        private readonly ExecutionContext _context;
         private readonly PyList _argv;
         private readonly HostTextInputHandle _stdin;
         private readonly HostTextOutputHandle _stdout;
         private readonly HostTextOutputHandle _stderr;
 
-        public SysModule(ExecutionState state) : base("sys")
+        public SysModule(ExecutionContext context) : base("sys")
         {
+            _context = context;
+            var state = context.State;
             var args = new object[state.Args.Count];
             for (var i = 0; i < args.Length; i++)
             {
@@ -1034,7 +1042,29 @@ internal sealed partial class LythonRuntime
                 "stdin" => _stdin,
                 "stdout" => _stdout,
                 "stderr" => _stderr,
+                "version" => PyString.FromString("3.11.0 (Lython)"),
+                "version_info" => VersionInfo(_context),
+                "hexversion" => new BigInteger(HexVersion),
+                "implementation" => new SysImplementationObject(VersionInfo(_context), new BigInteger(HexVersion)),
+                "platform" => PyString.FromString("lython"),
+                "maxsize" => new BigInteger(long.MaxValue),
+                "byteorder" => PyString.FromString("little"),
+                "prefix" => PyString.FromString(_context.Host.Cwd),
+                "base_prefix" => PyString.FromString(_context.Host.Cwd),
+                "executable" => PyString.FromString("lython"),
+                "path" => new PyList([PyString.FromString(ContainedImportBaseDirectory(_context))], _context.MemoryGovernor),
+                "modules" => CreateModulesSnapshot(_context),
+                "builtin_module_names" => CreateBuiltinModuleNames(_context),
+                "stdlib_module_names" => new PySet(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString), _context.MemoryGovernor),
                 "exit" => new BuiltinCallable(LythonKnownCallableSignatures.SysExit, Exit),
+                "getdefaultencoding" => new BuiltinCallable(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
+                "exc_info" => new BuiltinCallable(LythonKnownCallableSignatures.SysExcInfo, ExcInfo),
+                "getsizeof" => new BuiltinCallable(LythonKnownCallableSignatures.SysGetSizeOf, GetSizeOf),
+                "settrace" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetTrace, "sys.settrace(...) is not supported by Lython."),
+                "setprofile" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetProfile, "sys.setprofile(...) is not supported by Lython."),
+                "setrecursionlimit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetRecursionLimit, "sys.setrecursionlimit(...) is not supported by Lython; use LythonRunOptions.MaxRecursionDepth."),
+                "addaudithook" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAddAuditHook, "sys.addaudithook(...) is not supported by Lython."),
+                "audit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAudit, "sys.audit(...) is not supported by Lython."),
                 _ => null!
             };
 
@@ -1052,6 +1082,164 @@ internal sealed partial class LythonRuntime
             var value = arguments.Length == 0 ? PyNone.Instance : arguments[0];
             throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, payload: value);
         }
+
+        private static PyTuple VersionInfo(ExecutionContext context)
+            => new(
+                [
+                    new BigInteger(VersionMajor),
+                    new BigInteger(VersionMinor),
+                    new BigInteger(VersionMicro),
+                    PyString.FromString("final"),
+                    BigInteger.Zero
+                ],
+                context.MemoryGovernor);
+
+        private static object GetDefaultEncoding(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            if (arguments.Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", "sys.getdefaultencoding() expects no arguments.", span);
+            }
+
+            return PyString.FromString("utf-8");
+        }
+
+        private static object ExcInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", "sys.exc_info() expects no arguments.", span);
+            }
+
+            return context.Services.CurrentException is { } exception
+                ? new PyTuple(
+                    [
+                        new ExceptionTypeValue(exception.TypeName),
+                        exception,
+                        PyNone.Instance
+                    ],
+                    context.MemoryGovernor,
+                    span)
+                : new PyTuple([PyNone.Instance, PyNone.Instance, PyNone.Instance], context.MemoryGovernor, span);
+        }
+
+        private static object GetSizeOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = span;
+            _ = context;
+            if (arguments.Length is < 1 or > 2)
+            {
+                throw new LythonRuntimeException("TypeError", "sys.getsizeof(object[, default]) expects one or two arguments.", span);
+            }
+
+            if (TryEstimateSize(arguments[0], out var size))
+            {
+                return new BigInteger(size);
+            }
+
+            return arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
+        }
+
+        private static bool TryEstimateSize(object value, out long size)
+        {
+            size = value switch
+            {
+                PyNone => 16,
+                bool => 16,
+                BigInteger integer => RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer),
+                double => 24,
+                PyString text => 40 + text.Utf8Bytes.Length,
+                string text => 40 + global::System.Text.Encoding.UTF8.GetByteCount(text),
+                PyBytes bytes => 40 + bytes.Length,
+                PyPath path => 40 + path.Value.Utf8Bytes.Length,
+                PyList list => 32 + (16L * list.Count),
+                PyTuple tuple => PyTuple.EstimateApproximateBytes(tuple.Count),
+                PyDict dict => 64 + (32L * dict.Count),
+                PySet set => 80 + (24L * set.Count),
+                PyException => 64,
+                PyModule => 64,
+                HostTextInputHandle or HostTextOutputHandle => 32,
+                _ => 0
+            };
+
+            return size > 0;
+        }
+
+        private static BuiltinCallable UnsupportedSysCallable(LythonCallableSignature signature, string message)
+            => new(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
+
+        private static string ContainedImportBaseDirectory(ExecutionContext context)
+            => context.SourcePath is null ? context.Host.Cwd : PathOps.Parent(context.SourcePath);
+
+        private static PyTuple CreateBuiltinModuleNames(ExecutionContext context)
+            => new(
+                EnumerateDiscoverableBuiltinModuleNames(context)
+                    .Order(StringComparer.Ordinal)
+                    .Select(PyString.FromString)
+                    .ToArray(),
+                context.MemoryGovernor);
+
+        private static PyDict CreateModulesSnapshot(ExecutionContext context)
+        {
+            var modules = new PyDict(context.MemoryGovernor);
+            foreach (var name in EnumerateDiscoverableBuiltinModuleNames(context).Order(StringComparer.Ordinal))
+            {
+                var module = ResolveBuiltinModule(name, context);
+                if (module is not null)
+                {
+                    modules.SetItem(PyString.FromString(name), module);
+                }
+            }
+
+            foreach (var pair in context.State.ImportedModules.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            {
+                modules.SetItem(PyString.FromString(pair.Key), pair.Value);
+            }
+
+            return modules;
+        }
+    }
+
+    private sealed class SysImplementationObject : IPyDynamicAttributes, IPyRenderableValue
+    {
+        private readonly PyTuple _version;
+        private readonly BigInteger _hexversion;
+
+        public SysImplementationObject(PyTuple version, BigInteger hexversion)
+        {
+            _version = version;
+            _hexversion = hexversion;
+        }
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "name" => PyString.FromString("lython"),
+                "version" => _version,
+                "hexversion" => _hexversion,
+                "cache_tag" => PyString.FromString("lython-3.11"),
+                _ => null!
+            };
+
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("namespace(name='lython', cache_tag='lython-3.11')");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     private sealed class DataclassesModule : PyModule

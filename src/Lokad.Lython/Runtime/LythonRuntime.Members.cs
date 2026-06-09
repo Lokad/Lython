@@ -1013,12 +1013,30 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "type" => exception.TypeName,
-                "message" => exception.Message,
+                "type" => PyString.FromString(exception.TypeName),
+                "message" => PyString.FromString(exception.Message),
+                "args" => CreateExceptionArgs(exception),
+                "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
                 _ => null!,
             };
 
             return value is not null;
+        }
+
+        private static PyTuple CreateExceptionArgs(PyException exception)
+        {
+            if (string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal))
+            {
+                return ReferenceEquals(exception.Value, PyNone.Instance)
+                    ? PyTuple.Empty
+                    : new PyTuple([exception.Value]);
+            }
+
+            return exception.Value switch
+            {
+                PyNone => PyTuple.Empty,
+                _ => new PyTuple([exception.Value])
+            };
         }
     }
 

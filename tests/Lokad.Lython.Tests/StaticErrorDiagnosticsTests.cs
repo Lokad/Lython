@@ -2361,4 +2361,50 @@ re.search(*args)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3148");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158");
     }
+
+    [Fact]
+    public void ExpandedSysContracts_RecognizeMetadataAndReportBadCalls()
+    {
+        var valid = new LythonEngine().Compile(
+            """
+import sys
+
+parts = [
+    sys.version,
+    sys.platform,
+    sys.byteorder,
+    sys.prefix,
+    sys.base_prefix,
+    sys.executable,
+    sys.path[0],
+    sys.implementation.name,
+]
+sys.getdefaultencoding()
+sys.exc_info()
+sys.getsizeof(parts)
+sys.settrace(None)
+sys.setprofile(None)
+sys.setrecursionlimit(1000)
+sys.addaudithook(None)
+sys.audit("event", 1)
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+import sys
+
+sys.missing
+sys.getdefaultencoding("utf-8")
+sys.exc_info(1)
+sys.getsizeof()
+sys.settrace()
+sys.audit()
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113");
+        Assert.True(invalid.Diagnostics.Count(d => d.Code == "LA3151") >= 5);
+    }
 }

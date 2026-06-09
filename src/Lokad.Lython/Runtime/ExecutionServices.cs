@@ -17,6 +17,8 @@ internal sealed class ExecutionServices
 
     public ExecutionValueObservation ValueObservation { get; }
 
+    public PyException? CurrentException { get; private set; }
+
     public ILythonHost Host => State.Host;
 
     public LythonRuntime.ExecutionLimits Limits => State.Limits;
@@ -36,6 +38,13 @@ internal sealed class ExecutionServices
     public void EnterInterpreterFrame(LythonSourceSpan? span) => BudgetGuards.EnterInterpreterFrame(span);
 
     public void LeaveInterpreterFrame() => BudgetGuards.LeaveInterpreterFrame();
+
+    public PyException? SetCurrentException(PyException? exception)
+    {
+        var previous = CurrentException;
+        CurrentException = exception;
+        return previous;
+    }
 
     public void ObserveString(PyString text, LythonSourceSpan? span)
     {

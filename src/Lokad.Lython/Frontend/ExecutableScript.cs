@@ -42,6 +42,7 @@ internal enum ExecutableOpCode
     Unary,
     Jump,
     JumpIfFalse,
+    ClearException,
     EndFinally,
     Return,
     ReturnNone,
@@ -215,6 +216,9 @@ internal readonly record struct ExecutableInstruction(
 
     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.JumpIfFalse, span, A: targetBlockIndex);
+
+    public static ExecutableInstruction ClearException(LythonSourceSpan span)
+        => new(ExecutableOpCode.ClearException, span);
 
     public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.EndFinally, span, A: targetBlockIndex);
@@ -918,6 +922,7 @@ internal sealed class ExecutableScript
 
                 if (exceptExit is int exceptBlockExit && !IsTerminated(exceptBlockExit))
                 {
+                    AddInstruction(exceptBlockExit, ExecutableInstruction.ClearException(statement.Span));
                     AddInstruction(exceptBlockExit, ExecutableInstruction.Jump(statement.FinallyBody is not null ? finallyBlock : afterBlock, statement.Span));
                 }
             }

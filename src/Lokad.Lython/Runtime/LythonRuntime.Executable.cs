@@ -634,6 +634,10 @@ internal sealed partial class LythonRuntime
                                 jumped = true;
                                 break;
 
+                            case ExecutableOpCode.ClearException:
+                                context.Services.SetCurrentException(null);
+                                break;
+
                             case ExecutableOpCode.EndFinally:
                                 if (pendingAbrupt is not null)
                                 {
@@ -814,16 +818,16 @@ internal sealed partial class LythonRuntime
             MatchesExecutableExceptionType(region.ExceptionTypeNames, abrupt.Exception.ExceptionType))
         {
             pendingAbrupt = null;
+            var pyException = new PyException(
+                abrupt.Exception.ExceptionType,
+                abrupt.Exception.Message,
+                abrupt.Exception.Payload ?? PyNone.Instance);
             if (region.ExceptionVariableName is not null)
             {
-                StoreName(region.ExceptionVariableName, new PyException(
-                    abrupt.Exception.ExceptionType,
-                    abrupt.Exception.Message,
-                    abrupt.Exception.Payload ?? PyNone.Instance),
-                    context,
-                    span);
+                StoreName(region.ExceptionVariableName, pyException, context, span);
             }
 
+            context.Services.SetCurrentException(pyException);
             nextBlockIndex = exceptBlock;
             return true;
         }

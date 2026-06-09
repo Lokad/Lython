@@ -387,7 +387,7 @@ internal sealed partial class LythonRuntime
         return moduleName switch
         {
             "__future__" => FutureModule.Instance,
-            "sys" => new SysModule(context.State),
+            "sys" => new SysModule(context),
             "argparse" => ArgparseModule.Instance,
             "dataclasses" => DataclassesModule.Instance,
             "typing" => TypingModule.Instance,

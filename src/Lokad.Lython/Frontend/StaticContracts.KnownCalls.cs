@@ -7,6 +7,14 @@ internal static partial class StaticContracts
     private static readonly StaticKnownCallContract[] KnownCallContracts =
     [
         new(LythonKnownCallableSignatures.SysExit, "LA3151", "sys.exit([code]) expects zero or one argument.", StaticReturnShape.None),
+        new(LythonKnownCallableSignatures.SysGetDefaultEncoding, "LA3151", "sys.getdefaultencoding() expects no arguments.", StaticReturnShape.String),
+        new(LythonKnownCallableSignatures.SysExcInfo, "LA3151", "sys.exc_info() expects no arguments."),
+        new(LythonKnownCallableSignatures.SysGetSizeOf, "LA3151", "sys.getsizeof(object[, default]) expects one or two arguments.", StaticReturnShape.Integer),
+        new(LythonKnownCallableSignatures.SysSetTrace, "LA3151", "sys.settrace(function) expects one argument.", StaticReturnShape.None),
+        new(LythonKnownCallableSignatures.SysSetProfile, "LA3151", "sys.setprofile(function) expects one argument.", StaticReturnShape.None),
+        new(LythonKnownCallableSignatures.SysSetRecursionLimit, "LA3151", "sys.setrecursionlimit(limit) expects one argument.", StaticReturnShape.None),
+        new(LythonKnownCallableSignatures.SysAddAuditHook, "LA3151", "sys.addaudithook(hook) expects one argument.", StaticReturnShape.None),
+        new(LythonKnownCallableSignatures.SysAudit, "LA3151", "sys.audit(event[, args]) expects one or two arguments.", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.PathlibPath, "LA3151", "pathlib.Path([path][, ...]) expects string or Path path arguments.", StaticReturnShape.Path),
         new(LythonKnownCallableSignatures.JsonLoads, "LA3151", "json.loads(s) expects one argument."),
         new(LythonKnownCallableSignatures.JsonDumps, "LA3151", "json.dumps(obj) expects one argument.", StaticReturnShape.String),

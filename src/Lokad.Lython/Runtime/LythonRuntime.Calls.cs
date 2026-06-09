@@ -647,7 +647,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ExceptionTypeValue : ICallable
+    private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IEquatable<ExceptionTypeValue>
     {
         public ExceptionTypeValue(string typeName)
         {
@@ -655,6 +655,40 @@ internal sealed partial class LythonRuntime
         }
 
         public string TypeName { get; }
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "__name__" => PyString.FromString(TypeName),
+                "type" => PyString.FromString(TypeName),
+                _ => null!
+            };
+
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class '" + TypeName + "'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public bool Equals(ExceptionTypeValue? other)
+            => other is not null && string.Equals(TypeName, other.TypeName, StringComparison.Ordinal);
+
+        public override bool Equals(object? obj) => obj is ExceptionTypeValue other && Equals(other);
+
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(TypeName);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

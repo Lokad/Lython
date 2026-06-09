@@ -242,12 +242,21 @@ internal sealed partial class LythonRuntime
                 (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => string.Equals(name, ex.ExceptionType, StringComparison.Ordinal))))
             {
                 var exceptContext = new ExecutionContext(context);
+                var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
                 if (statement.Syntax.ExceptionVariableName is not null)
                 {
-                    StoreName(statement.Syntax.ExceptionVariableName, new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance), exceptContext, statement.Syntax.Span);
+                    StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Syntax.Span);
                 }
 
-                pendingControl = ExecuteStatements(statement.ExceptBody, exceptContext);
+                var previousException = context.Services.SetCurrentException(pyException);
+                try
+                {
+                    pendingControl = ExecuteStatements(statement.ExceptBody, exceptContext);
+                }
+                finally
+                {
+                    context.Services.SetCurrentException(previousException);
+                }
             }
             else
             {

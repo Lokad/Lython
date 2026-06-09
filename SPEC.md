@@ -1152,6 +1152,31 @@ binary resource reads remain unsupported by Lython: `get_importer`,
 `iter_importers`, `iter_importer_modules`, `iter_zipimport_modules`,
 `get_data`, and `read_code`.
 
+### 11.15 Runtime Metadata
+
+Lython exposes a contained `sys` view for ordinary runtime feature checks.
+
+Supported metadata includes `sys.version`, `sys.version_info`,
+`sys.hexversion`, `sys.implementation`, `sys.platform`, `sys.maxsize`,
+`sys.byteorder`, `sys.prefix`, `sys.base_prefix`, `sys.executable`,
+`sys.getdefaultencoding()`, `sys.path`, `sys.modules`,
+`sys.builtin_module_names`, and `sys.stdlib_module_names`.
+
+These values describe the Lython runtime and its contained import surface, not
+the host process, host executable path, host `PATH`, or ambient CPython
+installation. `sys.path` is the Lython local import base derived from
+`SourcePath` or host cwd. `sys.modules` is an inspection snapshot of Lython
+builtins and imported local modules.
+
+`sys.exc_info()` reports the active handled exception inside an `except` block
+and `(None, None, None)` outside exception handling. `sys.exit(...)` raises a
+catchable `SystemExit` value whose `code` and `args` payload follow Python's
+ordinary shape for the supported subset.
+
+Global process mutation and debugging hooks such as `settrace`, `setprofile`,
+`setrecursionlimit`, `addaudithook`, and `audit` remain unsupported and must
+fail explicitly.
+
 ---
 
 ## 12. Host Capability Interface
