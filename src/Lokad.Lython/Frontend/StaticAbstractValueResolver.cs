@@ -776,11 +776,11 @@ internal static class StaticAbstractValueResolver
             expression = parenthesized.Inner;
         }
 
-        return expression is IdentifierExpressionSyntax { Name: "Path" } or
+        return expression is IdentifierExpressionSyntax { Name: "Path" or "PurePath" or "PurePosixPath" or "PosixPath" } or
             MemberExpressionSyntax
             {
                 Target: IdentifierExpressionSyntax { Name: "pathlib" },
-                MemberName: "Path"
+                MemberName: "Path" or "PurePath" or "PurePosixPath" or "PosixPath"
             };
     }
 

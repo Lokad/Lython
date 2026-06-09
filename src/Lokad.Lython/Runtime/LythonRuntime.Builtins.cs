@@ -792,6 +792,7 @@ internal sealed partial class LythonRuntime
             PyType => true,
             BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => true,
             PyBuiltinRuntimeType builtinType when IsBuiltinTypeName(builtinType.Name) => true,
+            INamedRuntimeCallable namedCallable when IsBuiltinTypeName(namedCallable.Name) => true,
             _ => false
         };
     }
@@ -808,6 +809,7 @@ internal sealed partial class LythonRuntime
             },
             BuiltinCallable builtin => DoesObjectMatchBuiltinType(builtin.Name, value),
             PyBuiltinRuntimeType builtinType => DoesObjectMatchBuiltinType(builtinType.Name, value),
+            INamedRuntimeCallable namedCallable => DoesObjectMatchBuiltinType(namedCallable.Name, value),
             _ => false
         };
     }
@@ -834,6 +836,9 @@ internal sealed partial class LythonRuntime
             "str" or
             "bytes" or
             "pathlib.Path" or
+            "pathlib.PurePath" or
+            "pathlib.PurePosixPath" or
+            "pathlib.PosixPath" or
             "datetime.timedelta" or
             "datetime.date" or
             "datetime.time" or
@@ -854,7 +859,7 @@ internal sealed partial class LythonRuntime
             "set" => value is PySet,
             "str" => value is PyString or string,
             "bytes" => value is PyBytes,
-            "pathlib.Path" => value is PyPath,
+            "pathlib.Path" or "pathlib.PurePath" or "pathlib.PurePosixPath" or "pathlib.PosixPath" => value is PyPath,
             "datetime.timedelta" => value is PyTimedelta,
             "datetime.date" => value is PyDate,
             "datetime.time" => value is PyTime,
@@ -1659,6 +1664,39 @@ internal sealed partial class LythonRuntime
             public string Mode { get; }
 
             public bool IsClosed { get; private set; }
+
+            public bool IsReadable()
+            {
+                EnsureOpen();
+                return Mode == "r";
+            }
+
+            public bool IsWritable()
+            {
+                EnsureOpen();
+                return Mode is "w" or "a";
+            }
+
+            public bool IsSeekable()
+            {
+                EnsureOpen();
+                return false;
+            }
+
+            public BigInteger Tell()
+            {
+                EnsureOpen();
+                return Mode == "r" ? BigInteger.Zero : new BigInteger(_text.Length);
+            }
+
+            public object Flush()
+            {
+                EnsureOpen();
+                return PyNone.Instance;
+            }
+
+            public object Seek(LythonSourceSpan span)
+                => throw new LythonRuntimeException("NotImplementedError", "file.seek(...) is not supported by Lython text handles.", span);
 
             public static TextFileHandle ForRead(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
             {

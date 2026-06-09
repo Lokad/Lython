@@ -711,11 +711,17 @@ For path and text-resource manipulation, the initial subset exposes the followin
 - `stat(path)`
 - `cwd()`
 
-No other path or text-resource builtin is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
-
-The initial subset does not support Python's `open(...)` surface.
+No other path or text-resource builtin is part of the supported subset unless it is explicitly added elsewhere in this specification.
 
 `pathlib.Path.read_text(...)` is supported for host-mediated text resources. It accepts the Python-shaped forms `read_text()`, `read_text("utf-8")`, `read_text(encoding="utf-8")`, and `read_text(encoding="utf-8-sig", errors="strict")`. Other encodings, other error modes, and extra arguments must fail explicitly.
+
+Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF-8 text-handle helpers. They expose ordinary text-handle inspection such as `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, and iteration. Binary modes and random access must fail explicitly.
+
+`pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
+
+`Path.cwd()` resolves through the host current working directory. `Path.home()` and `Path.expanduser()` must fail explicitly unless a future host capability exposes a contained home-directory source; the runtime must not read the ambient process home directory.
+
+`Path.iterdir()`, `Path.glob(...)`, and `Path.rglob(...)` may materialize eager path lists. Case-insensitive globbing, symlink traversal, rich inode/device/user/mode stat metadata, permission APIs, symlink APIs, and path byte helpers remain outside the text-first host boundary unless separately specified.
 
 Lython scripts must not be able to:
 

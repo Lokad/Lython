@@ -574,7 +574,7 @@ with open("/repo/input.txt", "r") as reader:
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Equal(4, compiled.Diagnostics.Count(d => d.Code == "LA3113"));
+        Assert.Equal(3, compiled.Diagnostics.Count(d => d.Code == "LA3113"));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3047");
     }
 

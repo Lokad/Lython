@@ -1000,6 +1000,8 @@ internal sealed partial class LythonRuntime
                 "st_mtime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
                 "st_ctime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
                 "st_atime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
+                "st_mode" or "st_ino" or "st_dev" or "st_nlink" or "st_uid" or "st_gid"
+                    => throw new LythonRuntimeException("NotImplementedError", "Rich stat_result metadata is not supported by Lython because the host path model only exposes existence, kind, size, and modified time.", null),
                 _ => null!,
             };
 
@@ -1089,6 +1091,15 @@ internal sealed partial class LythonRuntime
                 "drive" => PyString.Empty,
                 "root" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
                 "anchor" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
+                "__fspath__" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.__fspath__() expects no arguments.", span);
+                    }
+
+                    return path.Value;
+                }, "Path.__fspath__", []),
                 "is_absolute" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1098,6 +1109,24 @@ internal sealed partial class LythonRuntime
 
                     return PathOps.IsAbsolute(path.Value.AsString());
                 }),
+                "is_mount" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.is_mount() expects no arguments.", span);
+                    }
+
+                    return string.Equals(PathOps.Normalize(path.Value.AsString()), "/", StringComparison.Ordinal);
+                }, "Path.is_mount", []),
+                "is_reserved" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.is_reserved() expects no arguments.", span);
+                    }
+
+                    return false;
+                }, "Path.is_reserved", []),
                 "joinpath" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length == 0)
@@ -1108,9 +1137,16 @@ internal sealed partial class LythonRuntime
                     var current = path.Value;
                     foreach (var argument in arguments)
                     {
-                        if (!PyStringOps.TryAsString(argument, out var part))
+                        var part = argument switch
                         {
-                            throw new LythonRuntimeException("TypeError", "Path.joinpath(*other) expects string arguments.", span);
+                            PyPath pathArgument => pathArgument.Value,
+                            _ when PyStringOps.TryAsString(argument, out var text) => text,
+                            _ => throw new LythonRuntimeException("TypeError", "Path.joinpath(*other) expects Path or string arguments.", span)
+                        };
+
+                        if (part.Length == 0)
+                        {
+                            continue;
                         }
 
                         current = PathOps.Join(current, part);
@@ -1118,6 +1154,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyPath(current);
                 }),
+                "expanduser" => UnsupportedPathMember("Path.expanduser", "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
                 "match" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
@@ -1257,6 +1294,26 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
                 }),
+                "lstat" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return context.HostStat(path.Value.AsString(), span);
+                },
+                async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
+                    }
+
+                    context.RegisterHostCall(span);
+                    return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                }, "Path.lstat", []),
                 "exists" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1472,6 +1529,14 @@ internal sealed partial class LythonRuntime
                     await PathTouchAsync(path.Value.AsString(), arguments, span, context).ConfigureAwait(false);
                     return PyNone.Instance;
                 }, "Path.touch", ["mode", "exist_ok"], 0),
+                "read_bytes" => UnsupportedPathMember("Path.read_bytes", "Path.read_bytes() is not supported by Lython under the text-only host boundary."),
+                "write_bytes" => UnsupportedPathMember("Path.write_bytes", "Path.write_bytes(data) is not supported by Lython under the text-only host boundary."),
+                "readlink" => UnsupportedPathMember("Path.readlink", "Path.readlink() is not supported by Lython because symlink targets are not exposed by the host path model."),
+                "symlink_to" => UnsupportedPathMember("Path.symlink_to", "Path.symlink_to(target, target_is_directory=False) is not supported by Lython because symlink mutation is outside the host path model."),
+                "hardlink_to" => UnsupportedPathMember("Path.hardlink_to", "Path.hardlink_to(target) is not supported by Lython because hardlink mutation is outside the host path model."),
+                "chmod" => UnsupportedPathMember("Path.chmod", "Path.chmod(mode) is not supported by Lython because permissions are not exposed by the host path model."),
+                "owner" => UnsupportedPathMember("Path.owner", "Path.owner() is not supported by Lython because user ownership is not exposed by the host path model."),
+                "group" => UnsupportedPathMember("Path.group", "Path.group() is not supported by Lython because group ownership is not exposed by the host path model."),
                 "open" => new BoundCallable((arguments, span, context) =>
                 {
                     var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
@@ -1498,10 +1563,7 @@ internal sealed partial class LythonRuntime
                 }, "Path.open", ["mode", "encoding", "errors", "newline"], 0),
                 "glob" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.glob(pattern) expects one string argument.", span);
-                    }
+                    var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
 
                     var results = new PyList([], context.MemoryGovernor, span);
                     context.RegisterHostCall(span);
@@ -1519,10 +1581,7 @@ internal sealed partial class LythonRuntime
                 },
                 async (arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.glob(pattern) expects one string argument.", span);
-                    }
+                    var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
 
                     var results = new PyList([], context.MemoryGovernor, span);
                     context.RegisterHostCall(span);
@@ -1538,7 +1597,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return results;
-                }, "Path.glob", ["pattern"]),
+                }, "Path.glob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
                 "iterdir" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1591,10 +1650,7 @@ internal sealed partial class LythonRuntime
                 }, "Path.write_text", ["text", "encoding", "errors", "newline"], 1),
                 "rglob" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.rglob(pattern) expects one string argument.", span);
-                    }
+                    var pattern = ParsePathGlobArguments(arguments, "Path.rglob", span);
 
                     var results = new PyList([], context.MemoryGovernor, span);
                     foreach (var item in EnumerateRecursive(path.Value, pattern, context, span))
@@ -1607,15 +1663,12 @@ internal sealed partial class LythonRuntime
                 },
                 async (arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Path.rglob(pattern) expects one string argument.", span);
-                    }
+                    var pattern = ParsePathGlobArguments(arguments, "Path.rglob", span);
 
                     var results = new PyList([], context.MemoryGovernor, span);
                     await EnumerateRecursiveAsync(path.Value, pattern, context, span, results).ConfigureAwait(false);
                     return results;
-                }, "Path.rglob", ["pattern"]),
+                }, "Path.rglob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
                 "samefile" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -1653,6 +1706,37 @@ internal sealed partial class LythonRuntime
             };
 
             return value is not null;
+        }
+
+        private static BoundCallable UnsupportedPathMember(string name, string message)
+            => new((object[] arguments, LythonSourceSpan span, ExecutionContext context) =>
+            {
+                _ = arguments;
+                _ = context;
+                throw new LythonRuntimeException("NotImplementedError", message, span);
+            }, name: name);
+
+        private static PyString ParsePathGlobArguments(object[] arguments, string owner, LythonSourceSpan span)
+        {
+            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(pattern[, case_sensitive][, recurse_symlinks]) expects a string pattern.", span);
+            }
+
+            if (arguments.Length >= 2 &&
+                arguments[1] is not PyNone &&
+                arguments[1] is not true)
+            {
+                throw new LythonRuntimeException("NotImplementedError", $"{owner}(..., case_sensitive=False) is not supported by Lython's normalized path matcher.", span);
+            }
+
+            if (arguments.Length >= 3 &&
+                arguments[2] is not PyNone and not false)
+            {
+                throw new LythonRuntimeException("NotImplementedError", $"{owner}(..., recurse_symlinks=True) is not supported by Lython because symlink traversal is outside the host path model.", span);
+            }
+
+            return pattern;
         }
 
         private static PyPath RequirePath(object value, string signature, LythonSourceSpan span)
@@ -2104,6 +2188,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "closed" => handle.IsClosed,
                 "__enter__" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -2151,6 +2236,51 @@ internal sealed partial class LythonRuntime
                     await handle.ExitAsync().ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
+                "readable" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.readable() expects no arguments.", span);
+                    }
+
+                    return handle.IsReadable();
+                }, "file.readable", []),
+                "writable" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.writable() expects no arguments.", span);
+                    }
+
+                    return handle.IsWritable();
+                }, "file.writable", []),
+                "seekable" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.seekable() expects no arguments.", span);
+                    }
+
+                    return handle.IsSeekable();
+                }, "file.seekable", []),
+                "tell" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.tell() expects no arguments.", span);
+                    }
+
+                    return handle.Tell();
+                }, "file.tell", []),
+                "seek" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length is < 1 or > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.seek(offset[, whence]) expects one or two arguments.", span);
+                    }
+
+                    return handle.Seek(span);
+                }, "file.seek", ["offset", "whence"], 1),
                 "read" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -2196,6 +2326,15 @@ internal sealed partial class LythonRuntime
 
                     return handle.WriteLines(arguments[0], span);
                 }, "file.writelines", ["lines"]),
+                "flush" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.flush() expects no arguments.", span);
+                    }
+
+                    return handle.Flush();
+                }, "file.flush", []),
                 _ => null!
             };
 

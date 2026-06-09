@@ -12,11 +12,11 @@ internal static class StaticFilesystemContractFamily
         AbstractState bindings)
     {
         var emitted = false;
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PathlibPath.Name, StringComparison.Ordinal))
+        if (IsPathlibPathConstructor(targetName))
         {
             for (var i = 0; i < arguments.Positional.Count; i++)
             {
-                emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, "pathlib.Path([path][, ...]) expects string or Path path segments.", diagnostics, bindings);
+                emitted |= AnalyzePathLikeArgument(arguments, i, string.Empty, $"{targetName}([path][, ...]) expects string or Path path segments.", diagnostics, bindings);
             }
 
             return emitted;
@@ -56,6 +56,14 @@ internal static class StaticFilesystemContractFamily
 
         return false;
     }
+
+    private static bool IsPathlibPathConstructor(string targetName)
+        => string.Equals(targetName, LythonKnownCallableSignatures.PathlibPath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.PathlibPurePath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.PathlibPurePosixPath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.PathlibPosixPath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.PathlibPureWindowsPath.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.PathlibWindowsPath.Name, StringComparison.Ordinal);
 
     private static bool AnalyzeOsKnownCallArgumentTypes(
         string targetName,

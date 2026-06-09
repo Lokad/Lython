@@ -27,6 +27,11 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature SysAudit = new("sys.audit", ["event", "args"], RequiredCount: 1, AllowsExtraKeywords: true);
 
     public static readonly LythonCallableSignature PathlibPath = new("pathlib.Path", RequiredCount: 0);
+    public static readonly LythonCallableSignature PathlibPurePath = new("pathlib.PurePath", RequiredCount: 0);
+    public static readonly LythonCallableSignature PathlibPurePosixPath = new("pathlib.PurePosixPath", RequiredCount: 0);
+    public static readonly LythonCallableSignature PathlibPosixPath = new("pathlib.PosixPath", RequiredCount: 0);
+    public static readonly LythonCallableSignature PathlibPureWindowsPath = new("pathlib.PureWindowsPath", RequiredCount: 0);
+    public static readonly LythonCallableSignature PathlibWindowsPath = new("pathlib.WindowsPath", RequiredCount: 0);
 
     public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s"]);
     public static readonly LythonCallableSignature JsonDumps = new("json.dumps", ["obj"]);

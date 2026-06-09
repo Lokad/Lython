@@ -5,6 +5,37 @@ namespace Lokad.Lython.Tests;
 public sealed class PathlibModuleFunctionTests
 {
     [Fact]
+    public void PathlibModule_AliasesClassHelpersAndPathProtocol_HaveDirectCoverage()
+    {
+        var host = new MockLythonHost("/repo");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+from pathlib import Path, PosixPath, PurePath, PurePosixPath
+
+cwd = Path.cwd()
+relative = PurePath("src") / PurePosixPath("docs") / PosixPath("guide.md")
+full = cwd / relative
+vals = []
+vals.append(cwd.as_posix())
+vals.append(relative.as_posix())
+vals.append(full.__fspath__())
+vals.append(os.fspath(full))
+vals.append(str(Path("/").is_mount()))
+vals.append(str(Path("src").is_mount()))
+vals.append(str(Path("nul").is_reserved()))
+vals.append(str(full.is_relative_to(cwd)))
+vals.append(str(PurePath("src").joinpath(PosixPath("docs"), "page.md")))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("/repo|src/docs/guide.md|/repo/src/docs/guide.md|/repo/src/docs/guide.md|True|False|False|True|src/docs/page.md", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void PathlibModule_PurePathHelpers_HaveDirectCoverage()
     {
         var host = new MockLythonHost("/repo");
@@ -92,6 +123,137 @@ write_text("/out.txt", "|".join(vals))
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal("alpha|[a.md, c.txt, out.md, sub]|[a.md, out.md]|[a.md, out.md, sub/b.md]|11|0|False|replaced.txt|False|True|final.md|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void PathlibModule_TextHandleCapabilitiesAndUnsupportedSeek_AreExplicit()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/input.txt", "alpha\nbeta\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+vals = []
+with Path("input.txt").open("r") as reader:
+    vals.append(str(reader.closed))
+    vals.append(str(reader.readable()))
+    vals.append(str(reader.writable()))
+    vals.append(str(reader.seekable()))
+    vals.append(str(reader.tell()))
+    vals.append(str([line.rstrip() for line in reader]))
+vals.append(str(reader.closed))
+
+with Path("output.txt").open("w") as writer:
+    vals.append(str(writer.readable()))
+    vals.append(str(writer.writable()))
+    vals.append(str(writer.seekable()))
+    vals.append(str(writer.tell()))
+    vals.append(str(writer.write("xyz")))
+    vals.append(str(writer.tell()))
+    vals.append(str(writer.flush()))
+    vals.append(str(writer.closed))
+vals.append(str(writer.closed))
+
+try:
+    Path("input.txt").open("r").seek(0)
+except NotImplementedError as ex:
+    vals.append(ex.type + ":" + ex.message)
+
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("False|True|False|False|0|[alpha, beta]|True|False|True|False|0|3|3|None|False|True|NotImplementedError:file.seek(...) is not supported by Lython text handles.", host.ReadText("/out.txt"));
+        Assert.Equal("xyz", host.ReadText("/repo/output.txt"));
+    }
+
+    [Fact]
+    public void PathlibModule_GlobFinePrintAndUnsupportedPathApis_AreExplicit()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/docs/a.md", "a");
+        host.SeedFile("/repo/docs/b.txt", "b");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path, WindowsPath
+
+vals = []
+vals.append(str([item.name for item in Path("docs").glob("*.md", case_sensitive=True)]))
+try:
+    Path.home()
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("~").expanduser()
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs").glob("*.md", case_sensitive=False)
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs").rglob("*.md", recurse_symlinks=True)
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs/a.md").read_bytes()
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs/a.md").readlink()
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs/a.md").chmod(0)
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    Path("docs/a.md").stat().st_mode
+except NotImplementedError as ex:
+    vals.append(ex.type)
+try:
+    WindowsPath("C:/tmp")
+except NotImplementedError as ex:
+    vals.append(ex.type)
+
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("[a.md]|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void PathlibModule_StaticContractsAcceptExpandedSurface()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+from pathlib import Path, PosixPath, PurePath, PurePosixPath
+import os
+
+root = Path("repo")
+path = PurePath("src") / PurePosixPath("docs") / PosixPath("guide.md")
+text_path = root.joinpath(path)
+name = os.fspath(text_path)
+items = text_path.parent.glob("*.md", case_sensitive=True)
+more = text_path.parent.rglob("*.md", case_sensitive=True, recurse_symlinks=False)
+is_root = Path("/").is_mount()
+reserved = text_path.is_reserved()
+stat = text_path.lstat()
+with text_path.open("w") as handle:
+    handle.write("x")
+    handle.flush()
+    writable = handle.writable()
+    where = handle.tell()
+closed = handle.closed
+""");
+
+        Assert.Empty(compiled.Diagnostics);
     }
 
     [Fact]

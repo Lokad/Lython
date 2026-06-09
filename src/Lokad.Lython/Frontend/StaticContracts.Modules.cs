@@ -80,7 +80,7 @@ internal static partial class StaticContracts
             "cast",
             "get_origin",
             "get_args"),
-        ["pathlib"] = Members("Path"),
+        ["pathlib"] = Members("Path", "PurePath", "PurePosixPath", "PosixPath", "PureWindowsPath", "WindowsPath"),
         ["pkgutil"] = Members(
             "ModuleInfo",
             "iter_modules",
