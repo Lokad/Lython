@@ -2868,7 +2868,7 @@ write_text("/out.txt", str(items) + "|" + str(alias))
 
     [Theory]
     [InlineData("missing += 1\n", "NameError", "is not defined")]
-    [InlineData("items = [1]\nitems += \"eggs\"\n", "TypeError", "Operands are not compatible with '+'")]
+    [InlineData("items = [1]\nitems -= [1]\n", "TypeError", "Operands are not compatible with '-'")]
     public void AugmentedAssignment_FailureCasesArePinned(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

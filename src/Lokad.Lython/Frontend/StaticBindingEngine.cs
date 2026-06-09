@@ -67,7 +67,7 @@ internal static class StaticBindingEngine
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
-                bindings.Remove(augmented.Name);
+                RemoveAugmentedAssignmentBindings(augmented.Target, bindings);
                 break;
 
             case DeleteStatementSyntax { Target: IdentifierExpressionSyntax identifier }:
@@ -116,6 +116,28 @@ internal static class StaticBindingEngine
         foreach (var receiver in mutatedReceivers)
         {
             bindings.Remove(receiver);
+        }
+    }
+
+    private static void RemoveAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
+    {
+        switch (target)
+        {
+            case NameAssignmentTargetSyntax name:
+                bindings.Remove(name.Name);
+                break;
+
+            case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
+                bindings.Remove(subscriptIdentifier.Name);
+                break;
+
+            case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
+                bindings.Remove(sliceIdentifier.Name);
+                break;
+
+            case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
+                bindings.Remove(memberIdentifier.Name);
+                break;
         }
     }
 
@@ -807,6 +829,7 @@ internal static class StaticBindingEngine
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
+                CollectMutatedReceiverNames(augmented.Target, bindings, names);
                 CollectMutatedReceiverNames(augmented.Expression, bindings, names);
                 break;
 
@@ -893,6 +916,28 @@ internal static class StaticBindingEngine
         }
 
         return names;
+    }
+
+    private static void CollectMutatedReceiverNames(AssignmentTargetSyntax target, AbstractState bindings, HashSet<string> names)
+    {
+        switch (target)
+        {
+            case SubscriptAssignmentTargetSyntax subscript:
+                CollectMutatedReceiverNames(subscript.Target, bindings, names);
+                CollectMutatedReceiverNames(subscript.Index, bindings, names);
+                break;
+
+            case SliceAssignmentTargetSyntax slice:
+                CollectMutatedReceiverNames(slice.Target, bindings, names);
+                CollectMutatedReceiverNames(slice.Start, bindings, names);
+                CollectMutatedReceiverNames(slice.End, bindings, names);
+                CollectMutatedReceiverNames(slice.Step, bindings, names);
+                break;
+
+            case MemberAssignmentTargetSyntax member:
+                CollectMutatedReceiverNames(member.Target, bindings, names);
+                break;
+        }
     }
 
     private static void CollectMutatedReceiverNames(ExpressionSyntax? expression, AbstractState bindings, HashSet<string> names)

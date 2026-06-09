@@ -91,7 +91,29 @@ internal sealed class LoweredScript
             AugmentedAssignmentStatementSyntax augmentedAssignment
                 => new LoweredAssignmentStatement(
                     augmentedAssignment,
-                    LowerExpression(augmentedAssignment.Expression)),
+                    LowerExpression(augmentedAssignment.Expression),
+                    Target: augmentedAssignment.Target switch
+                    {
+                        SubscriptAssignmentTargetSyntax subscript => LowerExpression(subscript.Target),
+                        SliceAssignmentTargetSyntax slice => LowerExpression(slice.Target),
+                        MemberAssignmentTargetSyntax member => LowerExpression(member.Target),
+                        _ => null
+                    },
+                    Index: augmentedAssignment.Target is SubscriptAssignmentTargetSyntax subscriptTarget
+                        ? LowerExpression(subscriptTarget.Index)
+                        : null,
+                    Start: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTarget && sliceTarget.Start is not null
+                        ? LowerExpression(sliceTarget.Start)
+                        : null,
+                    End: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTargetForEnd && sliceTargetForEnd.End is not null
+                        ? LowerExpression(sliceTargetForEnd.End)
+                        : null,
+                    Step: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTargetForStep && sliceTargetForStep.Step is not null
+                        ? LowerExpression(sliceTargetForStep.Step)
+                        : null,
+                    MemberName: augmentedAssignment.Target is MemberAssignmentTargetSyntax memberTarget
+                        ? memberTarget.MemberName
+                        : null),
             UnpackingAssignmentStatementSyntax unpackingAssignment
                 => new LoweredAssignmentStatement(
                     unpackingAssignment,

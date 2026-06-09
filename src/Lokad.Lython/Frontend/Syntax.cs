@@ -92,10 +92,16 @@ internal enum AugmentedAssignmentOperatorSyntax
     Divide,
     FloorDivide,
     Modulo,
+    Power,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseAnd,
+    LeftShift,
+    RightShift,
 }
 
 internal sealed record AugmentedAssignmentStatementSyntax(
-    string Name,
+    AssignmentTargetSyntax Target,
     AugmentedAssignmentOperatorSyntax Operator,
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);

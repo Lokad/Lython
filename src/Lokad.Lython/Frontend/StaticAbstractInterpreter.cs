@@ -61,6 +61,7 @@ internal static class StaticAbstractInterpreter
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
+                AnalyzeAssignmentTarget(augmented.Target, diagnostics, bindings);
                 AnalyzeExpression(augmented.Expression, diagnostics, bindings);
                 break;
 

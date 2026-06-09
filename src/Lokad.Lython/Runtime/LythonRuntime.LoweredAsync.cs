@@ -430,17 +430,13 @@ internal sealed partial class LythonRuntime
                     }
                     return;
                 case AugmentedAssignmentStatementSyntax augmented:
-                    if (!context.Variables.TryGetValue(augmented.Name, out var currentValue))
-                    {
-                        throw new LythonRuntimeException("NameError", $"Name '{augmented.Name}' is not defined.", augmented.Span);
-                    }
-
-                    context.Variables[augmented.Name] = EvaluateAugmentedAssignment(
-                        currentValue,
+                    var augmentedTarget = await ResolveLoweredAugmentedAssignmentTargetAsync(augmented, assignment, context).ConfigureAwait(false);
+                    augmentedTarget.Store(EvaluateAugmentedAssignment(
+                        augmentedTarget.CurrentValue,
                         await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
                         augmented.Operator,
                         context,
-                        augmented.Span);
+                        augmented.Span));
                     return;
                 case UnpackingAssignmentStatementSyntax unpacking:
                     AssignTargets(
@@ -484,6 +480,56 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveInterpreterFrame();
+        }
+    }
+
+    private static async ValueTask<AugmentedAssignmentTargetReference> ResolveLoweredAugmentedAssignmentTargetAsync(
+        AugmentedAssignmentStatementSyntax statement,
+        LoweredAssignmentStatement assignment,
+        ExecutionContext context)
+    {
+        switch (statement.Target)
+        {
+            case NameAssignmentTargetSyntax:
+                return ResolveAugmentedAssignmentTarget(statement.Target, context);
+
+            case SubscriptAssignmentTargetSyntax subscript:
+                var subscriptTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
+                var index = await EvaluateLoweredExpressionAsync(assignment.Index!, context).ConfigureAwait(false);
+                var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
+                return new AugmentedAssignmentTargetReference(
+                    subscriptValue,
+                    value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
+
+            case SliceAssignmentTargetSyntax slice:
+                var sliceTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
+                var start = assignment.Start is null
+                    ? null
+                    : await EvaluateLoweredExpressionAsync(assignment.Start, context).ConfigureAwait(false);
+                var end = assignment.End is null
+                    ? null
+                    : await EvaluateLoweredExpressionAsync(assignment.End, context).ConfigureAwait(false);
+                var step = assignment.Step is null
+                    ? null
+                    : await EvaluateLoweredExpressionAsync(assignment.Step, context).ConfigureAwait(false);
+                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span);
+                return new AugmentedAssignmentTargetReference(
+                    sliceValue,
+                    value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
+
+            case MemberAssignmentTargetSyntax member:
+                var memberTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
+                if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
+                {
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span);
+                }
+
+                return new AugmentedAssignmentTargetReference(
+                    memberValue,
+                    value => SetMemberValue(memberTarget, member.MemberName, value, member.Span, context));
+
+            default:
+                throw new LythonRuntimeException("TypeError", "Unsupported augmented assignment target.", statement.Target.Span);
         }
     }
 

@@ -166,9 +166,14 @@ internal sealed class Parser
             return ParseRaiseStatement();
         }
 
-        if (IsNameToken(CurrentToken) && IsAugmentedAssignmentToken(PeekToken(1)))
+        if (IsNameToken(CurrentToken))
         {
-            return ParseAugmentedAssignmentStatement();
+            var startDiagnosticCount = _diagnostics.Count;
+            var augmentedAssignment = TryParseAugmentedAssignmentStatement();
+            if (augmentedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return augmentedAssignment;
+            }
         }
 
         if (CurrentToken == Token.Star || (IsNameToken(CurrentToken) && PeekToken(1) == Token.Comma))
@@ -193,6 +198,15 @@ internal sealed class Parser
             if (targetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
             {
                 return targetAssignment;
+            }
+        }
+
+        {
+            var startDiagnosticCount = _diagnostics.Count;
+            var unsupportedTargetAssignment = TryParseUnsupportedAssignmentTargetStatement();
+            if (unsupportedTargetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return unsupportedTargetAssignment;
             }
         }
 
@@ -1954,6 +1968,26 @@ internal sealed class Parser
         };
     }
 
+    private StatementSyntax? TryParseUnsupportedAssignmentTargetStatement()
+    {
+        var startPosition = _position;
+        var startDiagnosticCount = _diagnostics.Count;
+
+        var target = ParsePostfixExpression();
+        if (target is not null && CurrentToken is Token.Assign or Token.Colon)
+        {
+            return AddUnsupportedAssignmentTarget(target);
+        }
+
+        _position = startPosition;
+        if (_diagnostics.Count > startDiagnosticCount)
+        {
+            _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
+        }
+
+        return null;
+    }
+
     private StatementSyntax? AddUnsupportedAssignmentTarget(ExpressionSyntax target)
     {
         AddDiagnostic("LA1068", "Unsupported assignment target.", target.Span);
@@ -2199,9 +2233,30 @@ internal sealed class Parser
         return true;
     }
 
-    private StatementSyntax? ParseAugmentedAssignmentStatement()
+    private StatementSyntax? TryParseAugmentedAssignmentStatement()
     {
-        var nameToken = ReadToken();
+        var startPosition = _position;
+        var startDiagnosticCount = _diagnostics.Count;
+
+        var targetExpression = ParsePostfixExpression();
+        if (targetExpression is null || !IsAugmentedAssignmentToken(CurrentToken))
+        {
+            _position = startPosition;
+            if (_diagnostics.Count > startDiagnosticCount)
+            {
+                _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
+            }
+
+            return null;
+        }
+
+        if (!TryConvertExpressionToAssignmentTarget(targetExpression, out var target) ||
+            target is UnpackingAssignmentTargetGroupSyntax)
+        {
+            AddUnsupportedAssignmentTarget(targetExpression);
+            return null;
+        }
+
         var operatorToken = ReadToken();
         if (!TryMapAugmentedAssignmentOperator(_tokens.Tokens[operatorToken].Token, out var op))
         {
@@ -2212,15 +2267,15 @@ internal sealed class Parser
         var expression = ParseExpression();
         if (expression is null)
         {
-            AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", nameToken);
+            AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", operatorToken);
             return null;
         }
 
         return new AugmentedAssignmentStatementSyntax(
-            _tokens.GetString(nameToken),
+            target!,
             op,
             expression,
-            Merge(nameToken, expression.Span));
+            Merge(targetExpression.Span, expression.Span));
     }
 
     private ExpressionSyntax? ParseExpression()
@@ -3892,6 +3947,24 @@ internal sealed class Parser
                 return true;
             case Token.PercentEqual:
                 op = AugmentedAssignmentOperatorSyntax.Modulo;
+                return true;
+            case Token.StarStarEqual:
+                op = AugmentedAssignmentOperatorSyntax.Power;
+                return true;
+            case Token.PipeEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseOr;
+                return true;
+            case Token.CaretEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseXor;
+                return true;
+            case Token.AmpersandEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseAnd;
+                return true;
+            case Token.LessLessEqual:
+                op = AugmentedAssignmentOperatorSyntax.LeftShift;
+                return true;
+            case Token.GreaterGreaterEqual:
+                op = AugmentedAssignmentOperatorSyntax.RightShift;
                 return true;
             default:
                 op = default;

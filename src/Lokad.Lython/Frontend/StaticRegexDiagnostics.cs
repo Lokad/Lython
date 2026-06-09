@@ -70,6 +70,7 @@ internal static class StaticRegexDiagnostics
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
+                AnalyzeRegexStaticAssignmentTarget(augmented.Target, diagnostics, stringBindings, localeFlagBindings);
                 AnalyzeRegexStaticExpression(augmented.Expression, diagnostics, stringBindings, localeFlagBindings);
                 break;
 
@@ -276,6 +277,32 @@ internal static class StaticRegexDiagnostics
         if (expression is not null)
         {
             AnalyzeRegexStaticExpression(expression, diagnostics, stringBindings, localeFlagBindings);
+        }
+    }
+
+    private static void AnalyzeRegexStaticAssignmentTarget(
+        AssignmentTargetSyntax target,
+        List<LythonDiagnostic> diagnostics,
+        Dictionary<string, string> stringBindings,
+        HashSet<string> localeFlagBindings)
+    {
+        switch (target)
+        {
+            case SubscriptAssignmentTargetSyntax subscript:
+                AnalyzeRegexStaticExpression(subscript.Target, diagnostics, stringBindings, localeFlagBindings);
+                AnalyzeRegexStaticExpression(subscript.Index, diagnostics, stringBindings, localeFlagBindings);
+                break;
+
+            case SliceAssignmentTargetSyntax slice:
+                AnalyzeRegexStaticExpression(slice.Target, diagnostics, stringBindings, localeFlagBindings);
+                AnalyzeRegexStaticExpressionIfPresent(slice.Start, diagnostics, stringBindings, localeFlagBindings);
+                AnalyzeRegexStaticExpressionIfPresent(slice.End, diagnostics, stringBindings, localeFlagBindings);
+                AnalyzeRegexStaticExpressionIfPresent(slice.Step, diagnostics, stringBindings, localeFlagBindings);
+                break;
+
+            case MemberAssignmentTargetSyntax member:
+                AnalyzeRegexStaticExpression(member.Target, diagnostics, stringBindings, localeFlagBindings);
+                break;
         }
     }
 

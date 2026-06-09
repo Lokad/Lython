@@ -27,8 +27,6 @@ public sealed class UnsupportedFeatureScenarioTests
     }
 
     [Theory]
-    [InlineData("values[0] += 1\n", "augmented assignment")]
-    [InlineData("box.value += 1\n", "augmented assignment")]
     [InlineData("yield 1\n", "yield")]
     [InlineData("async def f():\n    pass\n", "async")]
     [InlineData("value = await work()\n", "await")]

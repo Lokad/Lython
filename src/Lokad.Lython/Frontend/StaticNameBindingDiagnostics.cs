@@ -152,9 +152,12 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
-                AnalyzeLocalRead(augmented.Name, statement.Span, context, localNames, maybeAssigned);
+                AnalyzeAugmentedAssignmentTarget(augmented.Target, context, localNames, maybeAssigned);
                 AnalyzeExpression(augmented.Expression, context, localNames, maybeAssigned);
-                maybeAssigned.Add(augmented.Name);
+                if (augmented.Target is NameAssignmentTargetSyntax augmentedName)
+                {
+                    maybeAssigned.Add(augmentedName.Name);
+                }
                 break;
 
             case UnpackingAssignmentStatementSyntax unpacking:
@@ -507,6 +510,36 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
+    private static void AnalyzeAugmentedAssignmentTarget(
+        AssignmentTargetSyntax target,
+        StaticAnalysisContext context,
+        HashSet<string> localNames,
+        HashSet<string> maybeAssigned)
+    {
+        switch (target)
+        {
+            case NameAssignmentTargetSyntax nameTarget:
+                AnalyzeLocalRead(nameTarget.Name, target.Span, context, localNames, maybeAssigned);
+                break;
+
+            case SubscriptAssignmentTargetSyntax subscript:
+                AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
+                AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
+                break;
+
+            case SliceAssignmentTargetSyntax slice:
+                AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
+                break;
+
+            case MemberAssignmentTargetSyntax member:
+                AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
+                break;
+        }
+    }
+
     private static void CollectLocalAssignments(IReadOnlyList<StatementSyntax> statements, HashSet<string> localNames)
     {
         foreach (var statement in statements)
@@ -542,7 +575,11 @@ internal static class StaticNameBindingDiagnostics
                 if (annotated.Expression is not null) CollectLocalAssignments(annotated.Expression, localNames);
                 break;
             case AugmentedAssignmentStatementSyntax augmented:
-                localNames.Add(augmented.Name);
+                if (augmented.Target is NameAssignmentTargetSyntax augmentedName)
+                {
+                    localNames.Add(augmentedName.Name);
+                }
+                CollectLocalAssignments(augmented.Target, localNames);
                 CollectLocalAssignments(augmented.Expression, localNames);
                 break;
             case UnpackingAssignmentStatementSyntax unpacking:
@@ -621,6 +658,28 @@ internal static class StaticNameBindingDiagnostics
                 if (tryStatement.ExceptBody is not null) CollectLocalAssignments(tryStatement.ExceptBody, localNames);
                 if (tryStatement.ElseBody is not null) CollectLocalAssignments(tryStatement.ElseBody, localNames);
                 if (tryStatement.FinallyBody is not null) CollectLocalAssignments(tryStatement.FinallyBody, localNames);
+                break;
+        }
+    }
+
+    private static void CollectLocalAssignments(AssignmentTargetSyntax target, HashSet<string> localNames)
+    {
+        switch (target)
+        {
+            case SubscriptAssignmentTargetSyntax subscript:
+                CollectLocalAssignments(subscript.Target, localNames);
+                CollectLocalAssignments(subscript.Index, localNames);
+                break;
+
+            case SliceAssignmentTargetSyntax slice:
+                CollectLocalAssignments(slice.Target, localNames);
+                if (slice.Start is not null) CollectLocalAssignments(slice.Start, localNames);
+                if (slice.End is not null) CollectLocalAssignments(slice.End, localNames);
+                if (slice.Step is not null) CollectLocalAssignments(slice.Step, localNames);
+                break;
+
+            case MemberAssignmentTargetSyntax member:
+                CollectLocalAssignments(member.Target, localNames);
                 break;
         }
     }

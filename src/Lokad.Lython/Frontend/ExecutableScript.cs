@@ -88,6 +88,12 @@ internal enum ExecutableAugmentedOperator
     Divide,
     FloorDivide,
     Modulo,
+    Power,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseAnd,
+    LeftShift,
+    RightShift,
 }
 
 internal readonly record struct ExecutableInstruction(
@@ -565,8 +571,8 @@ internal sealed class ExecutableScript
                 case AnnotatedAssignmentStatementSyntax annotated:
                     InternLocal(annotated.Name);
                     break;
-                case AugmentedAssignmentStatementSyntax augmented:
-                    InternLocal(augmented.Name);
+                case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
+                    InternLocal(nameTarget.Name);
                     break;
                 case ChainedAssignmentStatementSyntax chained:
                     foreach (var target in chained.Targets)
@@ -731,10 +737,16 @@ internal sealed class ExecutableScript
                     return currentBlock;
 
                 case AugmentedAssignmentStatementSyntax augmented:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(InternLocal(augmented.Name), assignment.Span));
+                    if (augmented.Target is not NameAssignmentTargetSyntax augmentedName)
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
+                        return currentBlock;
+                    }
+
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(InternLocal(augmentedName.Name), assignment.Span));
                     CompileExpression(assignment.Expression!, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Operator), assignment.Span));
-                    AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(augmented.Name), assignment.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(InternLocal(augmentedName.Name), assignment.Span));
                     return currentBlock;
 
                 case ChainedAssignmentStatementSyntax chained:
@@ -1292,6 +1304,12 @@ internal sealed class ExecutableScript
                 AugmentedAssignmentOperatorSyntax.Divide => ExecutableAugmentedOperator.Divide,
                 AugmentedAssignmentOperatorSyntax.FloorDivide => ExecutableAugmentedOperator.FloorDivide,
                 AugmentedAssignmentOperatorSyntax.Modulo => ExecutableAugmentedOperator.Modulo,
+                AugmentedAssignmentOperatorSyntax.Power => ExecutableAugmentedOperator.Power,
+                AugmentedAssignmentOperatorSyntax.BitwiseOr => ExecutableAugmentedOperator.BitwiseOr,
+                AugmentedAssignmentOperatorSyntax.BitwiseXor => ExecutableAugmentedOperator.BitwiseXor,
+                AugmentedAssignmentOperatorSyntax.BitwiseAnd => ExecutableAugmentedOperator.BitwiseAnd,
+                AugmentedAssignmentOperatorSyntax.LeftShift => ExecutableAugmentedOperator.LeftShift,
+                AugmentedAssignmentOperatorSyntax.RightShift => ExecutableAugmentedOperator.RightShift,
                 _ => throw new NotSupportedException($"Executable IR lowering does not support augmented assignment operator {op}."),
             };
 

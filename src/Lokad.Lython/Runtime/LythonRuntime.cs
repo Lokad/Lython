@@ -563,15 +563,13 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteAugmentedAssignment(AugmentedAssignmentStatementSyntax statement, ExecutionContext context)
     {
-        if (!context.Variables.TryGetValue(statement.Name, out var currentValue))
-        {
-            throw new LythonRuntimeException("NameError", $"Name '{statement.Name}' is not defined.", statement.Span);
-        }
-
+        var target = ResolveAugmentedAssignmentTarget(statement.Target, context);
         var right = EvaluateExpression(statement.Expression, context);
-        var updated = EvaluateAugmentedAssignment(currentValue, right, statement.Operator, context, statement.Span);
-        context.Variables[statement.Name] = updated;
+        var updated = EvaluateAugmentedAssignment(target.CurrentValue, right, statement.Operator, context, statement.Span);
+        target.Store(updated);
     }
+
+    private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store);
 
     private static void ExecuteAnnotatedAssignment(AnnotatedAssignmentStatementSyntax statement, ExecutionContext context)
     {
@@ -683,34 +681,38 @@ internal sealed partial class LythonRuntime
     {
         var target = EvaluateExpression(subscript.Target, context);
         var index = EvaluateExpression(subscript.Index, context);
+        SetSubscriptValue(target, index, value, subscript.Span, context);
+    }
 
+    private static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
+    {
         switch (target)
         {
             case IMutablePySubscriptableValue subscriptable:
-                subscriptable.SetSubscript(index, value, subscript.Span);
+                subscriptable.SetSubscript(index, value, span);
                 return;
 
             case IMutablePySequenceValue sequence:
-                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, subscript.Span), value);
+                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, span), value);
                 return;
             case PyDict dict:
-                dict.AttachMemoryGovernor(context.MemoryGovernor, subscript.Span);
-                dict.SetItem(index, value);
+                dict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                dict.SetItem(ValidateDictionaryKey(index, span), value);
                 return;
             case PyDefaultDict defaultDict:
-                defaultDict.AttachMemoryGovernor(context.MemoryGovernor, subscript.Span);
-                defaultDict.SetItem(ValidateDictionaryKey(index, subscript.Span), value);
+                defaultDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                defaultDict.SetItem(ValidateDictionaryKey(index, span), value);
                 return;
             case PyCounter counter:
-                counter.AttachMemoryGovernor(context.MemoryGovernor, subscript.Span);
-                counter.SetItem(ValidateDictionaryKey(index, subscript.Span), value);
+                counter.AttachMemoryGovernor(context.MemoryGovernor, span);
+                counter.SetItem(ValidateDictionaryKey(index, span), value);
                 return;
             case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", subscript.Span);
+                throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
             case string:
-                throw new LythonRuntimeException("TypeError", "String does not support item assignment.", subscript.Span);
+                throw new LythonRuntimeException("TypeError", "String does not support item assignment.", span);
             default:
-                throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", subscript.Span);
+                throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);
         }
     }
 
@@ -729,10 +731,73 @@ internal sealed partial class LythonRuntime
     private static void AssignMemberTarget(MemberAssignmentTargetSyntax member, object value, ExecutionContext context)
     {
         var target = EvaluateExpression(member.Target, context);
-        if (!PyMemberAccess.TryAssign(target, member.MemberName, value, context, member.Span))
+        SetMemberValue(target, member.MemberName, value, member.Span, context);
+    }
+
+    private static void SetMemberValue(object target, string memberName, object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (!PyMemberAccess.TryAssign(target, memberName, value, context, span))
         {
-            throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.Span);
+            throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", span);
         }
+    }
+
+    private static AugmentedAssignmentTargetReference ResolveAugmentedAssignmentTarget(AssignmentTargetSyntax target, ExecutionContext context)
+    {
+        switch (target)
+        {
+            case NameAssignmentTargetSyntax name:
+                if (!context.Variables.TryGetValue(name.Name, out var currentValue))
+                {
+                    throw new LythonRuntimeException("NameError", $"Name '{name.Name}' is not defined.", name.Span);
+                }
+
+                return new AugmentedAssignmentTargetReference(
+                    currentValue,
+                    value => context.Variables[name.Name] = value);
+
+            case SubscriptAssignmentTargetSyntax subscript:
+                var subscriptTarget = EvaluateExpression(subscript.Target, context);
+                var index = EvaluateExpression(subscript.Index, context);
+                var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
+                return new AugmentedAssignmentTargetReference(
+                    subscriptValue,
+                    value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
+
+            case SliceAssignmentTargetSyntax slice:
+                var sliceTarget = EvaluateExpression(slice.Target, context);
+                var start = slice.Start is null ? null : EvaluateExpression(slice.Start, context);
+                var end = slice.End is null ? null : EvaluateExpression(slice.End, context);
+                var step = slice.Step is null ? null : EvaluateExpression(slice.Step, context);
+                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span);
+                return new AugmentedAssignmentTargetReference(
+                    sliceValue,
+                    value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
+
+            case MemberAssignmentTargetSyntax member:
+                var memberTarget = EvaluateExpression(member.Target, context);
+                if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
+                {
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span);
+                }
+
+                return new AugmentedAssignmentTargetReference(
+                    memberValue,
+                    value => SetMemberValue(memberTarget, member.MemberName, value, member.Span, context));
+
+            default:
+                throw new LythonRuntimeException("TypeError", "Unsupported augmented assignment target.", target.Span);
+        }
+    }
+
+    private static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (target is PyDefaultDict defaultDict)
+        {
+            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
+        }
+
+        return PyIndexing.ReadIndex(target, index, span);
     }
 
     private static void ExecuteSliceAssignment(
@@ -840,10 +905,9 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
-            currentValue is PyList currentList &&
-            right is PyList rightList)
+            currentValue is PyList currentList)
         {
-            currentList.AddRange(rightList);
+            currentList.AddRange(ToSequence(right, span));
             return currentList;
         }
 
@@ -856,6 +920,22 @@ internal sealed partial class LythonRuntime
             return multipliedList;
         }
 
+        if (currentValue is PySet currentSet && right is PySet rightSet)
+        {
+            switch (op)
+            {
+                case AugmentedAssignmentOperatorSyntax.BitwiseOr:
+                    currentSet.UnionWith(rightSet);
+                    return currentSet;
+                case AugmentedAssignmentOperatorSyntax.BitwiseAnd:
+                    currentSet.IntersectWith(rightSet);
+                    return currentSet;
+                case AugmentedAssignmentOperatorSyntax.BitwiseXor:
+                    currentSet.SymmetricExceptWith(rightSet);
+                    return currentSet;
+            }
+        }
+
         return op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => EvaluateAdd(currentValue, right, context, span),
@@ -864,6 +944,12 @@ internal sealed partial class LythonRuntime
             AugmentedAssignmentOperatorSyntax.Divide => EvaluateDivide(currentValue, right, span),
             AugmentedAssignmentOperatorSyntax.FloorDivide => EvaluateFloorDivide(currentValue, right, span),
             AugmentedAssignmentOperatorSyntax.Modulo => EvaluateModulo(currentValue, right, span),
+            AugmentedAssignmentOperatorSyntax.Power => EvaluatePower(currentValue, right, context, span),
+            AugmentedAssignmentOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(currentValue, right, span),
+            AugmentedAssignmentOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(currentValue, right, span),
+            AugmentedAssignmentOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(currentValue, right, span),
+            AugmentedAssignmentOperatorSyntax.LeftShift => EvaluateLeftShift(currentValue, right, context, span),
+            AugmentedAssignmentOperatorSyntax.RightShift => EvaluateRightShift(currentValue, right, span),
             _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
         };
     }

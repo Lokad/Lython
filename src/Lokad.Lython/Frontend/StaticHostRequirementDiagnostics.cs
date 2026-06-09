@@ -60,6 +60,7 @@ internal static class StaticHostRequirementDiagnostics
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
+                AnalyzeHostExecutableAssignmentTarget(augmented.Target, context, host);
                 AnalyzeHostExecutableExpression(augmented.Expression, context, host);
                 break;
 
@@ -130,6 +131,28 @@ internal static class StaticHostRequirementDiagnostics
         if (expression is not null)
         {
             AnalyzeHostExecutableExpression(expression, context, host);
+        }
+    }
+
+    private static void AnalyzeHostExecutableAssignmentTarget(AssignmentTargetSyntax target, StaticAnalysisContext context, ILythonHost host)
+    {
+        switch (target)
+        {
+            case SubscriptAssignmentTargetSyntax subscript:
+                AnalyzeHostExecutableExpression(subscript.Target, context, host);
+                AnalyzeHostExecutableExpression(subscript.Index, context, host);
+                break;
+
+            case SliceAssignmentTargetSyntax slice:
+                AnalyzeHostExecutableExpression(slice.Target, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.Start, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.End, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.Step, context, host);
+                break;
+
+            case MemberAssignmentTargetSyntax member:
+                AnalyzeHostExecutableExpression(member.Target, context, host);
+                break;
         }
     }
 

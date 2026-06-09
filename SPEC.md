@@ -352,15 +352,7 @@ The following Python features are outside the initial subset and must be rejecte
 - keyword arguments
 - default parameter values
 - variadic parameters
-- chained assignment
-- unpacking assignment
-- annotated assignment
-- augmented assignment
-- slicing
-- exponentiation
-- bitwise operators
 - conditional expressions
-- assignment expressions
 
 These features are unsupported in the initial subset. If any of them are added later, they must not be half-supported.
 
@@ -438,6 +430,42 @@ The initial subset must support indexing with Python semantics for the supported
 Negative indices for strings, lists, and tuples must behave as in Python.
 
 The initial subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
+
+### 9.3.1 Assignment Semantics
+
+Assignment behavior for supported target forms must follow Python semantics.
+
+The supported ordinary assignment targets are:
+
+- simple names
+- list, tuple, and dictionary subscripts
+- mutable list slices
+- object attributes
+
+Chained assignment may assign to any supported ordinary assignment target. The right-hand expression must be evaluated once, then stored into each target from left to right.
+
+Flat unpacking assignment with identifier targets is supported, including at most one starred identifier target. Parenthesized and list-shaped assignment targets such as `(a, b) = row`, `[a, b] = row`, and `(target) = value` are not supported. Nested destructuring such as `(a, (b, c)) = row` is not supported.
+
+Annotated assignment is supported for simple names only. Annotated attribute and subscript targets such as `obj.value: T = x` and `items[0]: T = x` are not supported.
+
+Augmented assignment is supported for simple names, subscript targets, mutable list slice targets, and object attribute targets. The supported operators are:
+
+- `+=`
+- `-=`
+- `*=`
+- `/=`
+- `//=`
+- `%=`
+- `**=`
+- `|=`
+- `&=`
+- `^=`
+- `<<=`
+- `>>=`
+
+Augmented assignment must evaluate target receivers, indexes, slice bounds, and member bases once, read the current target value before evaluating the right-hand expression, apply the corresponding operation, and store the result back to the original target. Mutable values may preserve Python-like in-place behavior where Lython supports that value type, including list `+=` alias behavior and set update behavior for `|=`, `&=`, and `^=`.
+
+Assignment expressions using `:=` are supported for simple-name targets only. They must assign the evaluated right-hand value to the name and produce that same value as the expression result. Non-name assignment-expression targets must be rejected explicitly.
 
 ### 9.4 Numeric Semantics
 
