@@ -379,6 +379,16 @@ internal sealed partial class LythonRuntime
                         EvaluateLoweredExpression(assignment.Expression!, context),
                         context);
                     return;
+                case SliceAssignmentStatementSyntax slice:
+                    ExecuteLoweredSliceAssignment(
+                        slice,
+                        assignment.Target!,
+                        assignment.Start,
+                        assignment.End,
+                        assignment.Step,
+                        EvaluateLoweredExpression(assignment.Expression!, context),
+                        context);
+                    return;
                 case MemberAssignmentStatementSyntax memberAssignment:
                     var target = EvaluateLoweredExpression(assignment.Target!, context);
                     var value = EvaluateLoweredExpression(assignment.Expression!, context);
@@ -395,6 +405,25 @@ internal sealed partial class LythonRuntime
         {
             context.LeaveInterpreterFrame();
         }
+    }
+
+    private static void ExecuteLoweredSliceAssignment(
+        SliceAssignmentStatementSyntax statement,
+        LoweredExpression targetExpression,
+        LoweredExpression? startExpression,
+        LoweredExpression? endExpression,
+        LoweredExpression? stepExpression,
+        object value,
+        ExecutionContext context)
+    {
+        ExecuteSliceAssignment(
+            EvaluateLoweredExpression(targetExpression, context),
+            startExpression is null ? null : EvaluateLoweredExpression(startExpression, context),
+            endExpression is null ? null : EvaluateLoweredExpression(endExpression, context),
+            stepExpression is null ? null : EvaluateLoweredExpression(stepExpression, context),
+            value,
+            statement.Span,
+            context);
     }
 
     private static void ExecuteLoweredSubscriptAssignment(
@@ -812,6 +841,20 @@ internal sealed partial class LythonRuntime
                     default:
                         throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
                 }
+
+            case SliceExpressionSyntax:
+                if (statement.Target is not LoweredSliceExpression slice)
+                {
+                    break;
+                }
+
+                ExecuteSliceDeletion(
+                    EvaluateLoweredExpression(slice.Target, context),
+                    slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context),
+                    slice.End is null ? null : EvaluateLoweredExpression(slice.End, context),
+                    slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context),
+                    statement.Span);
+                return;
 
             case MemberExpressionSyntax memberSyntax:
                 if (statement.Target is not LoweredMemberExpression member)

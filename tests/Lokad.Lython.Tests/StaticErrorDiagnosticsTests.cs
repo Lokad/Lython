@@ -693,7 +693,7 @@ pair.not_a_tuple_member
 items = ["alpha"]
 items.append()
 items.extend()
-items.pop(1)
+items.pop(1, 2)
 items.copy(1)
 items.clear(1)
 

@@ -37,6 +37,13 @@ internal sealed record SubscriptAssignmentTargetSyntax(
     ExpressionSyntax Index,
     LythonSourceSpan Span) : AssignmentTargetSyntax(Span);
 
+internal sealed record SliceAssignmentTargetSyntax(
+    ExpressionSyntax Target,
+    ExpressionSyntax? Start,
+    ExpressionSyntax? End,
+    ExpressionSyntax? Step,
+    LythonSourceSpan Span) : AssignmentTargetSyntax(Span);
+
 internal sealed record MemberAssignmentTargetSyntax(
     ExpressionSyntax Target,
     string MemberName,
@@ -60,6 +67,14 @@ internal sealed record AnnotatedAssignmentStatementSyntax(
 internal sealed record SubscriptAssignmentStatementSyntax(
     ExpressionSyntax Target,
     ExpressionSyntax Index,
+    ExpressionSyntax Expression,
+    LythonSourceSpan Span) : StatementSyntax(Span);
+
+internal sealed record SliceAssignmentStatementSyntax(
+    ExpressionSyntax Target,
+    ExpressionSyntax? Start,
+    ExpressionSyntax? End,
+    ExpressionSyntax? Step,
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 

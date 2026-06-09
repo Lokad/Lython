@@ -142,6 +142,86 @@ internal static class StaticStructuralDiagnostics
         }
     }
 
+    public static void AnalyzeSliceAssignment(SliceAssignmentStatementSyntax slice, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!StaticAbstractValueResolver.TryResolve(slice.Target, bindings, out var target))
+        {
+            return;
+        }
+
+        if (StaticAbstractFacts.IsDefinitelyNonSliceable(target))
+        {
+            AddDiagnostic(diagnostics, "LA3118", "Object does not support slicing.", slice.Target.Span);
+            return;
+        }
+
+        if (!IsListLike(target))
+        {
+            AddDiagnostic(diagnostics, "LA3158", "Object does not support slice assignment.", slice.Target.Span);
+            return;
+        }
+
+        AnalyzeSliceBound(slice.Start, diagnostics, bindings);
+        AnalyzeSliceBound(slice.End, diagnostics, bindings);
+        if (slice.Step is null)
+        {
+            return;
+        }
+
+        if (!StaticAbstractValueResolver.TryResolve(slice.Step, bindings, out var step))
+        {
+            return;
+        }
+
+        if (step.Kind == AbstractValueKind.None)
+        {
+            return;
+        }
+
+        if (StaticAbstractFacts.IsDefinitelyNonIntegerLike(step))
+        {
+            AddDiagnostic(diagnostics, "LA3119", "Slice indices must be integers or None.", slice.Step.Span);
+            return;
+        }
+
+        if (!TryGetSliceBoundObject(slice.Step, bindings, out var stepValue) ||
+            stepValue is not System.Numerics.BigInteger stepInteger)
+        {
+            return;
+        }
+
+        if (stepInteger.IsZero)
+        {
+            AddDiagnostic(diagnostics, "LA3120", "slice step cannot be zero", slice.Step.Span);
+            return;
+        }
+
+        if (stepInteger.IsOne)
+        {
+            return;
+        }
+
+        if (!TryGetExactSequenceLength(target, out var targetLength) ||
+            !StaticAbstractValueResolver.TryResolve(slice.Expression, bindings, out var replacement) ||
+            !TryGetExactSequenceLength(replacement, out var replacementLength) ||
+            !TryGetSliceBoundObject(slice.Start, bindings, out var startValue) ||
+            !TryGetSliceBoundObject(slice.End, bindings, out var endValue))
+        {
+            return;
+        }
+
+        var bounds = Lokad.Lython.Runtime.PyIndexing.NormalizeSliceBounds(targetLength, startValue, endValue, stepValue, slice.Span);
+        var selectedLength = bounds.Indices().Count();
+        if (selectedLength != replacementLength)
+        {
+            AddDiagnostic(
+                diagnostics,
+                "LA3158",
+                $"Extended slice assignment expects {selectedLength} replacement items, got {replacementLength}.",
+                slice.Expression.Span);
+        }
+    }
+
     public static void AnalyzeBinaryOperation(BinaryExpressionSyntax binary, List<LythonDiagnostic> diagnostics, AbstractState bindings)
         => AnalyzeBinaryOperation(binary.Operator, binary.Left, binary.Right, binary.Span, diagnostics, bindings);
 
@@ -194,6 +274,43 @@ internal static class StaticStructuralDiagnostics
         {
             AddDiagnostic(diagnostics, "LA3119", "Slice indices must be integers or None.", bound.Span);
         }
+    }
+
+    private static bool TryGetSliceBoundObject(ExpressionSyntax? expression, AbstractState bindings, out object? value)
+    {
+        if (expression is null)
+        {
+            value = null;
+            return true;
+        }
+
+        if (!StaticAbstractValueResolver.TryResolve(expression, bindings, out var resolved))
+        {
+            value = null;
+            return false;
+        }
+
+        switch (resolved.Kind)
+        {
+            case AbstractValueKind.None:
+                value = null;
+                return true;
+            case AbstractValueKind.Boolean:
+                value = (bool)resolved.Value ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
+                return true;
+            case AbstractValueKind.Integer:
+                if (System.Numerics.BigInteger.TryParse(
+                    ((string)resolved.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                    out var integer))
+                {
+                    value = integer;
+                    return true;
+                }
+                break;
+        }
+
+        value = null;
+        return false;
     }
 
     private static void AnalyzeBinaryOperation(
@@ -262,7 +379,9 @@ internal static class StaticStructuralDiagnostics
             BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) || IsSetLike(left) && IsSetLike(right),
             BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
-                StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike,
+                StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
+                IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && IsListLike(right),
             BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
             BinaryOperatorSyntax.FloorDivide or
@@ -287,7 +406,9 @@ internal static class StaticStructuralDiagnostics
     private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)
         => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
            left.IsStringLike && right.IsStringLike ||
-           left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path;
+           left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
+           IsListLike(left) && IsListLike(right) ||
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
 
     private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)
     {

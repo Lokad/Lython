@@ -47,12 +47,12 @@ internal static class StaticCollectionContractFamily
         if (call.Target is MemberExpressionSyntax
             {
                 Target: var listReceiver,
-                MemberName: "extend"
+                MemberName: var listMember
             } &&
             StaticAbstractValueResolver.TryResolve(listReceiver, bindings, out var listValue) &&
             listValue.Kind is AbstractValueKind.List or AbstractValueKind.ListType)
         {
-            AnalyzeListExtendCall(arguments, diagnostics, bindings);
+            AnalyzeListMemberCall(listMember, arguments, diagnostics, bindings);
             return true;
         }
 
@@ -194,6 +194,29 @@ internal static class StaticCollectionContractFamily
         }
     }
 
+    private static void AnalyzeListMemberCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        switch (memberName)
+        {
+            case "extend":
+                AnalyzeListExtendCall(arguments, diagnostics, bindings);
+                break;
+            case "index":
+                AnalyzeOptionalIntegerArgument(arguments, 1, "start", "list.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                AnalyzeOptionalIntegerArgument(arguments, 2, "stop", "list.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                break;
+            case "insert":
+                AnalyzeOptionalIntegerArgument(arguments, 0, "index", "list.insert(index, value) expects an integer index.", diagnostics, bindings);
+                break;
+            case "pop":
+                AnalyzeOptionalIntegerArgument(arguments, 0, "index", "list.pop([index]) expects an integer index.", diagnostics, bindings);
+                break;
+            case "sort":
+                AnalyzeListSortCall(arguments, diagnostics, bindings);
+                break;
+        }
+    }
+
     private static void AnalyzeListExtendCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         if (!arguments.TryGetValue(0, "iterable", out var iterableExpression))
@@ -211,6 +234,50 @@ internal static class StaticCollectionContractFamily
             mode is AbstractTextFileMode.Write or AbstractTextFileMode.Append)
         {
             AddDiagnostic(diagnostics, "LA3109", "file is not open for reading.", iterableExpression.Span);
+        }
+    }
+
+    private static void AnalyzeListSortCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (arguments.Positional.Count > 0)
+        {
+            AddDiagnostic(diagnostics, "LA3123", "list.sort(*, key=None, reverse=False) expects keyword-only arguments.", arguments.Positional[0].Span);
+        }
+
+        if (arguments.TryGetValue(0, "key", out var keyExpression) &&
+            keyExpression is not NoneLiteralExpressionSyntax &&
+            StaticAbstractFacts.IsDefinitelyKnownNonCallableLiteral(keyExpression, bindings))
+        {
+            AddDiagnostic(diagnostics, "LA3034", "list.sort(..., key=...) expects a callable or None.", keyExpression.Span);
+        }
+
+        if (arguments.TryGetValue(1, "reverse", out var reverseExpression) &&
+            reverseExpression is not BooleanLiteralExpressionSyntax &&
+            StaticAbstractFacts.IsDefinitelyKnownLiteral(reverseExpression, bindings))
+        {
+            AddDiagnostic(diagnostics, "LA3035", "list.sort(..., reverse=...) expects a bool.", reverseExpression.Span);
+        }
+    }
+
+    private static void AnalyzeOptionalIntegerArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression))
+        {
+            return;
+        }
+
+        if (StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) &&
+            value.Kind != AbstractValueKind.Unknown &&
+            !StaticAbstractFacts.IsIntegerLike(value))
+        {
+            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+            return;
         }
     }
 

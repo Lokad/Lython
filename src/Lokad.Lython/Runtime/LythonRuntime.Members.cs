@@ -38,11 +38,79 @@ internal sealed partial class LythonRuntime
                     }
                     return PyNone.Instance;
                 }, "list.extend", ["iterable"]),
+                "index" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length is < 1 or > 3)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.index(value[, start[, stop]]) expects one to three arguments.", span);
+                    }
+
+                    var start = NormalizeListSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, span);
+                    var stop = NormalizeListSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, span);
+                    for (var i = start; i < stop; i++)
+                    {
+                        if (AreEqual(list[i], arguments[0]))
+                        {
+                            return new BigInteger(i);
+                        }
+                    }
+
+                    throw new LythonRuntimeException("ValueError", "list.index(value): value is not in list", span);
+                }, "list.index", ["value", "start", "stop"], 1),
+                "count" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.count(value) expects one argument.", span);
+                    }
+
+                    var count = 0;
+                    foreach (var item in list)
+                    {
+                        if (AreEqual(item, arguments[0]))
+                        {
+                            count++;
+                        }
+                    }
+
+                    return new BigInteger(count);
+                }, "list.count", ["value"]),
+                "insert" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.insert(index, value) expects two arguments.", span);
+                    }
+
+                    var index = ExpectListInsertIndex(arguments[0], span);
+                    list.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    list.Insert(index, arguments[1]);
+                    context.ObserveCollectionCount(list.Count, span);
+                    return PyNone.Instance;
+                }, "list.insert", ["index", "value"]),
+                "remove" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.remove(value) expects one argument.", span);
+                    }
+
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        if (AreEqual(list[i], arguments[0]))
+                        {
+                            list.RemoveAt(i);
+                            return PyNone.Instance;
+                        }
+                    }
+
+                    throw new LythonRuntimeException("ValueError", "list.remove(value): value is not in list", span);
+                }, "list.remove", ["value"]),
                 "pop" => new BoundCallable((arguments, span, _) =>
                 {
-                    if (arguments.Length != 0)
+                    if (arguments.Length > 1)
                     {
-                        throw new LythonRuntimeException("TypeError", "list.pop() expects no arguments.", span);
+                        throw new LythonRuntimeException("TypeError", "list.pop([index]) expects zero or one argument.", span);
                     }
 
                     if (list.Count == 0)
@@ -50,10 +118,27 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("IndexError", "pop from empty list", span);
                     }
 
-                    var last = list[^1];
-                    list.RemoveAt(list.Count - 1);
-                    return last;
+                    var index = arguments.Length == 0
+                        ? list.Count - 1
+                        : PyIndexing.NormalizeIndex(arguments[0], list.Count, span);
+                    var item = list[index];
+                    list.RemoveAt(index);
+                    return item;
+                }, "list.pop", ["index"], 0),
+                "reverse" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.reverse() expects no arguments.", span);
+                    }
+
+                    list.Reverse();
+                    return PyNone.Instance;
                 }),
+                "sort" => new BoundCallable(
+                    (arguments, span, context) => SortList(list, arguments, span, context),
+                    new LythonCallableSignature("list.sort", ["key", "reverse"], RequiredCount: 0, MaxPositionalCount: 0),
+                    (arguments, span, context) => SortListAsync(list, arguments, span, context)),
                 "copy" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -77,6 +162,185 @@ internal sealed partial class LythonRuntime
             };
 
             return value is not null;
+        }
+
+        private static object SortList(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var keyCallable = arguments.Length >= 1 ? arguments[0] : null;
+            if (keyCallable is not null &&
+                !ReferenceEquals(keyCallable, PyNone.Instance) &&
+                keyCallable is not ICallable)
+            {
+                throw new LythonRuntimeException("TypeError", "list.sort(..., key=...) expects a callable or None.", span);
+            }
+
+            var reverse = false;
+            if (arguments.Length >= 2)
+            {
+                if (arguments[1] is not bool reverseFlag)
+                {
+                    throw new LythonRuntimeException("TypeError", "list.sort(..., reverse=...) expects a bool.", span);
+                }
+
+                reverse = reverseFlag;
+            }
+
+            var sorted = SortListItems([.. list], keyCallable, reverse, span, context);
+            list.ReplaceAll(sorted);
+            return PyNone.Instance;
+        }
+
+        private static async ValueTask<object> SortListAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var keyCallable = arguments.Length >= 1 ? arguments[0] : null;
+            if (keyCallable is not null &&
+                !ReferenceEquals(keyCallable, PyNone.Instance) &&
+                keyCallable is not ICallable)
+            {
+                throw new LythonRuntimeException("TypeError", "list.sort(..., key=...) expects a callable or None.", span);
+            }
+
+            var reverse = false;
+            if (arguments.Length >= 2)
+            {
+                if (arguments[1] is not bool reverseFlag)
+                {
+                    throw new LythonRuntimeException("TypeError", "list.sort(..., reverse=...) expects a bool.", span);
+                }
+
+                reverse = reverseFlag;
+            }
+
+            var sorted = await SortListItemsAsync([.. list], keyCallable, reverse, span, context).ConfigureAwait(false);
+            list.ReplaceAll(sorted);
+            return PyNone.Instance;
+        }
+
+        private static object[] SortListItems(
+            object[] values,
+            object? keyCallable,
+            bool reverse,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var keyed = new List<SortKeyValue>(values.Length);
+            foreach (var item in values)
+            {
+                keyed.Add(new SortKeyValue(
+                    item,
+                    keyCallable is ICallable callable
+                        ? callable.Invoke([new CallArgumentValue(null, item)], span, context)
+                        : item));
+            }
+
+            SortKeyedItems(keyed, span, context);
+            if (reverse)
+            {
+                keyed.Reverse();
+            }
+
+            return keyed.Select(item => item.Value).ToArray();
+        }
+
+        private static async ValueTask<object[]> SortListItemsAsync(
+            object[] values,
+            object? keyCallable,
+            bool reverse,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var keyed = new List<SortKeyValue>(values.Length);
+            foreach (var item in values)
+            {
+                keyed.Add(new SortKeyValue(
+                    item,
+                    keyCallable is ICallable callable
+                        ? await callable.InvokeAsync([new CallArgumentValue(null, item)], span, context).ConfigureAwait(false)
+                        : item));
+            }
+
+            await SortKeyedItemsAsync(keyed, span, context).ConfigureAwait(false);
+            if (reverse)
+            {
+                keyed.Reverse();
+            }
+
+            return keyed.Select(item => item.Value).ToArray();
+        }
+
+        private static void SortKeyedItems(List<SortKeyValue> keyed, LythonSourceSpan span, ExecutionContext context)
+        {
+            for (var i = 1; i < keyed.Count; i++)
+            {
+                var current = keyed[i];
+                var j = i - 1;
+                while (j >= 0 && CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0)
+                {
+                    keyed[j + 1] = keyed[j];
+                    j--;
+                }
+
+                keyed[j + 1] = current;
+            }
+        }
+
+        private static async ValueTask SortKeyedItemsAsync(List<SortKeyValue> keyed, LythonSourceSpan span, ExecutionContext context)
+        {
+            for (var i = 1; i < keyed.Count; i++)
+            {
+                var current = keyed[i];
+                var j = i - 1;
+                while (j >= 0 && await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0)
+                {
+                    keyed[j + 1] = keyed[j];
+                    j--;
+                }
+
+                keyed[j + 1] = current;
+            }
+        }
+
+        private static int NormalizeListSearchBound(object? value, int length, int defaultValue, LythonSourceSpan span)
+        {
+            if (value is null)
+            {
+                return defaultValue;
+            }
+
+            var integer = ExpectInteger(value, "list.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+            if (integer < int.MinValue)
+            {
+                return 0;
+            }
+
+            if (integer > int.MaxValue)
+            {
+                return length;
+            }
+
+            var index = (int)integer;
+            if (index < 0)
+            {
+                index += length;
+            }
+
+            return Math.Clamp(index, 0, length);
+        }
+
+        private static int ExpectListInsertIndex(object value, LythonSourceSpan span)
+        {
+            var integer = ExpectInteger(value, "list.insert(index, value) expects an integer index.", span);
+            if (integer < int.MinValue)
+            {
+                return int.MinValue;
+            }
+
+            if (integer > int.MaxValue)
+            {
+                return int.MaxValue;
+            }
+
+            return (int)integer;
         }
     }
 

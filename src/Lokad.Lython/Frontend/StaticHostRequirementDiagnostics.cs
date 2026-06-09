@@ -46,6 +46,14 @@ internal static class StaticHostRequirementDiagnostics
                 AnalyzeHostExecutableExpression(subscript.Expression, context, host);
                 break;
 
+            case SliceAssignmentStatementSyntax slice:
+                AnalyzeHostExecutableExpression(slice.Target, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.Start, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.End, context, host);
+                AnalyzeHostExecutableExpressionIfPresent(slice.Step, context, host);
+                AnalyzeHostExecutableExpression(slice.Expression, context, host);
+                break;
+
             case MemberAssignmentStatementSyntax member:
                 AnalyzeHostExecutableExpression(member.Target, context, host);
                 AnalyzeHostExecutableExpression(member.Expression, context, host);
@@ -114,6 +122,14 @@ internal static class StaticHostRequirementDiagnostics
         if (StaticContracts.TryGetHostImportRequirement(statement, out var requirement))
         {
             StaticContractEngine.TryAddUnsatisfiedHostRequirement(context, requirement, host);
+        }
+    }
+
+    private static void AnalyzeHostExecutableExpressionIfPresent(ExpressionSyntax? expression, StaticAnalysisContext context, ILythonHost host)
+    {
+        if (expression is not null)
+        {
+            AnalyzeHostExecutableExpression(expression, context, host);
         }
     }
 

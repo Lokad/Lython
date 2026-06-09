@@ -46,6 +46,15 @@ internal static class StaticAbstractInterpreter
                 AnalyzeExpression(subscript.Expression, diagnostics, bindings);
                 break;
 
+            case SliceAssignmentStatementSyntax slice:
+                AnalyzeExpression(slice.Target, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                AnalyzeExpression(slice.Expression, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeSliceAssignment(slice, diagnostics, bindings);
+                break;
+
             case MemberAssignmentStatementSyntax member:
                 AnalyzeExpression(member.Target, diagnostics, bindings);
                 AnalyzeExpression(member.Expression, diagnostics, bindings);
@@ -295,9 +304,24 @@ internal static class StaticAbstractInterpreter
                 AnalyzeExpression(subscript.Index, diagnostics, bindings);
                 break;
 
+            case SliceAssignmentTargetSyntax slice:
+                AnalyzeExpression(slice.Target, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                break;
+
             case MemberAssignmentTargetSyntax member:
                 AnalyzeExpression(member.Target, diagnostics, bindings);
                 break;
+        }
+    }
+
+    private static void AnalyzeExpressionIfPresent(ExpressionSyntax? expression, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (expression is not null)
+        {
+            AnalyzeExpression(expression, diagnostics, bindings);
         }
     }
 

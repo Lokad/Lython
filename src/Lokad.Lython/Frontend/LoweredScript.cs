@@ -102,6 +102,14 @@ internal sealed class LoweredScript
                     LowerExpression(subscriptAssignment.Expression),
                     Target: LowerExpression(subscriptAssignment.Target),
                     Index: LowerExpression(subscriptAssignment.Index)),
+            SliceAssignmentStatementSyntax sliceAssignment
+                => new LoweredAssignmentStatement(
+                    sliceAssignment,
+                    LowerExpression(sliceAssignment.Expression),
+                    Target: LowerExpression(sliceAssignment.Target),
+                    Start: sliceAssignment.Start is null ? null : LowerExpression(sliceAssignment.Start),
+                    End: sliceAssignment.End is null ? null : LowerExpression(sliceAssignment.End),
+                    Step: sliceAssignment.Step is null ? null : LowerExpression(sliceAssignment.Step)),
             MemberAssignmentStatementSyntax memberAssignment
                 => new LoweredAssignmentStatement(
                     memberAssignment,

@@ -487,6 +487,15 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
                 }
 
+            case SliceExpressionSyntax slice:
+                ExecuteSliceDeletion(
+                    EvaluateExpression(slice.Target, context),
+                    slice.Start is null ? null : EvaluateExpression(slice.Start, context),
+                    slice.End is null ? null : EvaluateExpression(slice.End, context),
+                    slice.Step is null ? null : EvaluateExpression(slice.Step, context),
+                    statement.Span);
+                return;
+
             case MemberExpressionSyntax member:
                 var memberTarget = EvaluateExpression(member.Target, context);
                 if (!PyMemberAccess.TryDelete(memberTarget, member.MemberName, context, statement.Span))
@@ -626,6 +635,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static void ExecuteSliceAssignment(SliceAssignmentStatementSyntax statement, ExecutionContext context)
+    {
+        var target = EvaluateExpression(statement.Target, context);
+        var start = statement.Start is null ? null : EvaluateExpression(statement.Start, context);
+        var end = statement.End is null ? null : EvaluateExpression(statement.End, context);
+        var step = statement.Step is null ? null : EvaluateExpression(statement.Step, context);
+        var value = EvaluateExpression(statement.Expression, context);
+        ExecuteSliceAssignment(target, start, end, step, value, statement.Span, context);
+    }
+
     private static void ExecuteMemberAssignment(MemberAssignmentStatementSyntax statement, ExecutionContext context)
     {
         var target = EvaluateExpression(statement.Target, context);
@@ -648,6 +667,9 @@ internal sealed partial class LythonRuntime
                 return;
             case SubscriptAssignmentTargetSyntax subscript:
                 AssignSubscriptTarget(subscript, value, context);
+                return;
+            case SliceAssignmentTargetSyntax slice:
+                AssignSliceTarget(slice, value, context);
                 return;
             case MemberAssignmentTargetSyntax member:
                 AssignMemberTarget(member, value, context);
@@ -692,6 +714,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static void AssignSliceTarget(SliceAssignmentTargetSyntax slice, object value, ExecutionContext context)
+    {
+        ExecuteSliceAssignment(
+            EvaluateExpression(slice.Target, context),
+            slice.Start is null ? null : EvaluateExpression(slice.Start, context),
+            slice.End is null ? null : EvaluateExpression(slice.End, context),
+            slice.Step is null ? null : EvaluateExpression(slice.Step, context),
+            value,
+            slice.Span,
+            context);
+    }
+
     private static void AssignMemberTarget(MemberAssignmentTargetSyntax member, object value, ExecutionContext context)
     {
         var target = EvaluateExpression(member.Target, context);
@@ -699,6 +733,65 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.Span);
         }
+    }
+
+    private static void ExecuteSliceAssignment(
+        object target,
+        object? start,
+        object? end,
+        object? step,
+        object value,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        if (target is PyList list)
+        {
+            list.AttachMemoryGovernor(context.MemoryGovernor, span);
+            var values = ToSequence(value, span).ToArray();
+            var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
+            list.SetSlice(bounds, values, span);
+            context.ObserveCollectionCount(list.Count, span);
+            return;
+        }
+
+        if (target is PyTuple)
+        {
+            throw new LythonRuntimeException("TypeError", "Tuple does not support slice assignment.", span);
+        }
+
+        if (PyStringOps.TryAsString(target, out _))
+        {
+            throw new LythonRuntimeException("TypeError", "String does not support slice assignment.", span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "Object does not support slice assignment.", span);
+    }
+
+    private static void ExecuteSliceDeletion(
+        object target,
+        object? start,
+        object? end,
+        object? step,
+        LythonSourceSpan span)
+    {
+        if (target is PyList list)
+        {
+            var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
+            list.DeleteSlice(bounds);
+            return;
+        }
+
+        if (target is PyTuple)
+        {
+            throw new LythonRuntimeException("TypeError", "Tuple does not support slice deletion.", span);
+        }
+
+        if (PyStringOps.TryAsString(target, out _))
+        {
+            throw new LythonRuntimeException("TypeError", "String does not support slice deletion.", span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "Object does not support slice deletion.", span);
     }
 
     private static void ExecuteUnpackingAssignment(UnpackingAssignmentStatementSyntax statement, ExecutionContext context)
@@ -752,6 +845,15 @@ internal sealed partial class LythonRuntime
         {
             currentList.AddRange(rightList);
             return currentList;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.Multiply &&
+            currentValue is PyList multipliedList &&
+            right is BigInteger repeatCount)
+        {
+            multipliedList.RepeatInPlace(ToListRepeatCount(repeatCount, span), span);
+            context.ObserveCollectionCount(multipliedList.Count, span);
+            return multipliedList;
         }
 
         return op switch
@@ -1346,6 +1448,16 @@ internal sealed partial class LythonRuntime
             return RepeatString(rightText, leftCount, context, span);
         }
 
+        if (left is PyList leftList && right is BigInteger rightRepeatCount)
+        {
+            return RepeatList(leftList, rightRepeatCount, context, span);
+        }
+
+        if (right is PyList rightList && left is BigInteger leftRepeatCount)
+        {
+            return RepeatList(rightList, leftRepeatCount, context, span);
+        }
+
         if (left is PyTimedelta || right is PyTimedelta)
         {
             return PyDateTimeOps.Multiply(left, right, span);
@@ -1785,6 +1897,45 @@ internal sealed partial class LythonRuntime
         }
 
         return text.Repeat((int)count);
+    }
+
+    private static PyList RepeatList(PyList list, BigInteger count, ExecutionContext context, LythonSourceSpan span)
+    {
+        var repeatCount = ToListRepeatCount(count, span);
+        if (repeatCount == 0 || list.Count == 0)
+        {
+            return new PyList([], context.MemoryGovernor, span);
+        }
+
+        var totalLength = (long)list.Count * repeatCount;
+        if (totalLength > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
+        }
+
+        var result = new PyList([], context.MemoryGovernor, span);
+        for (var i = 0; i < repeatCount; i++)
+        {
+            result.AddRange(list);
+            context.ObserveCollectionCount(result.Count, span);
+        }
+
+        return result;
+    }
+
+    private static int ToListRepeatCount(BigInteger count, LythonSourceSpan span)
+    {
+        if (count <= BigInteger.Zero)
+        {
+            return 0;
+        }
+
+        if (count > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
+        }
+
+        return (int)count;
     }
 
     private static object EvaluateDictLiteral(DictLiteralExpressionSyntax dict, ExecutionContext context)

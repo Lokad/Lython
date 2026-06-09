@@ -249,7 +249,7 @@ write_text("/out.txt", str(same) + "|" + str(pair) + "|" + str(missing) + "|" + 
     [Theory]
     [InlineData("items = []\nitems.append()\n", "list.append(value) expects one argument.")]
     [InlineData("items = []\nitems.extend()\n", "list.extend(iterable) expects one argument.")]
-    [InlineData("items = []\nitems.pop(0)\n", "list.pop() expects no arguments.")]
+    [InlineData("items = []\nitems.pop(0, 1)\n", "list.pop([index]) expects zero or one argument.")]
     [InlineData("d = {}\nd.get()\n", "dict.get(key[, default]) expects one key and an optional default.")]
     [InlineData("d = {}\nd.get(\"a\", 1, 2)\n", "dict.get(key[, default]) expects one key and an optional default.")]
     [InlineData("d = {}\nd.keys(1)\n", "dict.keys() expects no arguments.")]

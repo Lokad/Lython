@@ -54,6 +54,9 @@ internal sealed record LoweredAssignmentStatement(
     LoweredExpression? Annotation = null,
     LoweredExpression? Target = null,
     LoweredExpression? Index = null,
+    LoweredExpression? Start = null,
+    LoweredExpression? End = null,
+    LoweredExpression? Step = null,
     string? MemberName = null) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.Assignment;

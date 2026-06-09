@@ -138,6 +138,14 @@ internal static class StaticNameBindingDiagnostics
                 AnalyzeExpression(subscript.Expression, context, localNames, maybeAssigned);
                 break;
 
+            case SliceAssignmentStatementSyntax slice:
+                AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
+                AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
+                AnalyzeExpression(slice.Expression, context, localNames, maybeAssigned);
+                break;
+
             case MemberAssignmentStatementSyntax member:
                 AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
                 AnalyzeExpression(member.Expression, context, localNames, maybeAssigned);
@@ -313,6 +321,18 @@ internal static class StaticNameBindingDiagnostics
                 }
                 break;
             }
+        }
+    }
+
+    private static void AnalyzeExpressionIfPresent(
+        ExpressionSyntax? expression,
+        StaticAnalysisContext context,
+        HashSet<string> localNames,
+        HashSet<string> maybeAssigned)
+    {
+        if (expression is not null)
+        {
+            AnalyzeExpression(expression, context, localNames, maybeAssigned);
         }
     }
 
@@ -563,6 +583,13 @@ internal static class StaticNameBindingDiagnostics
                 CollectLocalAssignments(subscript.Target, localNames);
                 CollectLocalAssignments(subscript.Index, localNames);
                 CollectLocalAssignments(subscript.Expression, localNames);
+                break;
+            case SliceAssignmentStatementSyntax slice:
+                CollectLocalAssignments(slice.Target, localNames);
+                if (slice.Start is not null) CollectLocalAssignments(slice.Start, localNames);
+                if (slice.End is not null) CollectLocalAssignments(slice.End, localNames);
+                if (slice.Step is not null) CollectLocalAssignments(slice.Step, localNames);
+                CollectLocalAssignments(slice.Expression, localNames);
                 break;
             case MemberAssignmentStatementSyntax member:
                 CollectLocalAssignments(member.Target, localNames);

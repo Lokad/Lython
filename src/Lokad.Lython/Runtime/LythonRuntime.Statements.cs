@@ -39,6 +39,10 @@ internal sealed partial class LythonRuntime
                     ExecuteSubscriptAssignment(subscriptAssignmentStatement, context);
                     return;
 
+                case SliceAssignmentStatementSyntax sliceAssignmentStatement:
+                    ExecuteSliceAssignment(sliceAssignmentStatement, context);
+                    return;
+
                 case MemberAssignmentStatementSyntax memberAssignmentStatement:
                     ExecuteMemberAssignment(memberAssignmentStatement, context);
                     return;

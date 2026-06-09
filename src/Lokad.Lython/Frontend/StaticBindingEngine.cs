@@ -100,6 +100,10 @@ internal static class StaticBindingEngine
                 bindings.Remove(subscriptIdentifier.Name);
                 break;
 
+            case SliceAssignmentStatementSyntax slice when slice.Target is IdentifierExpressionSyntax sliceIdentifier:
+                bindings.Remove(sliceIdentifier.Name);
+                break;
+
             case MemberAssignmentStatementSyntax member when member.Target is IdentifierExpressionSyntax memberIdentifier:
                 bindings.Remove(memberIdentifier.Name);
                 break;
@@ -779,6 +783,14 @@ internal static class StaticBindingEngine
                 CollectMutatedReceiverNames(subscript.Target, bindings, names);
                 CollectMutatedReceiverNames(subscript.Index, bindings, names);
                 CollectMutatedReceiverNames(subscript.Expression, bindings, names);
+                break;
+
+            case SliceAssignmentStatementSyntax slice:
+                CollectMutatedReceiverNames(slice.Target, bindings, names);
+                CollectMutatedReceiverNames(slice.Start, bindings, names);
+                CollectMutatedReceiverNames(slice.End, bindings, names);
+                CollectMutatedReceiverNames(slice.Step, bindings, names);
+                CollectMutatedReceiverNames(slice.Expression, bindings, names);
                 break;
 
             case MemberAssignmentStatementSyntax member:

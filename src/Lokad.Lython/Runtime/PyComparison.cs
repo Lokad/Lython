@@ -27,6 +27,16 @@ internal static class PyComparison
             return PyString.CompareOrdinal(leftPath.Value, rightPath.Value);
         }
 
+        if (left is PyList leftList && right is PyList rightList)
+        {
+            return CompareSequences(leftList, rightList, span);
+        }
+
+        if (left is PyTuple leftTuple && right is PyTuple rightTuple)
+        {
+            return CompareSequences(leftTuple, rightTuple, span);
+        }
+
         if (left is PyTimedelta or PyDate or PyTime or PyDateTime)
         {
             return PyDateTimeOps.Compare(left, right, span);
@@ -41,5 +51,21 @@ internal static class PyComparison
         }
 
         throw new LythonRuntimeException("TypeError", "Values are not comparable.", span);
+    }
+
+    private static int CompareSequences(IReadOnlyList<object> left, IReadOnlyList<object> right, LythonSourceSpan span)
+    {
+        var common = Math.Min(left.Count, right.Count);
+        for (var i = 0; i < common; i++)
+        {
+            if (PyEquality.AreEqual(left[i], right[i]))
+            {
+                continue;
+            }
+
+            return Compare(left[i], right[i], span);
+        }
+
+        return left.Count.CompareTo(right.Count);
     }
 }

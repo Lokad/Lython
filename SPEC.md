@@ -435,9 +435,9 @@ The initial subset must support indexing with Python semantics for the supported
 - tuple indexing
 - dictionary indexing by key
 
-Negative indices for strings and lists must behave as in Python.
+Negative indices for strings, lists, and tuples must behave as in Python.
 
-The initial subset does not support slicing.
+The initial subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
 ### 9.4 Numeric Semantics
 
@@ -781,7 +781,21 @@ The initial subset must support the following list methods:
 
 - `append`
 - `extend`
+- `index`
+- `count`
+- `insert`
+- `remove`
 - `pop`
+- `reverse`
+- `sort`
+- `copy`
+- `clear`
+
+Lists must support Python-style repetition with `list * int`, `int * list`, and plain-name `list *= int`.
+
+Lists must support Python-style slice assignment and deletion for ordinary contiguous and stepped slices. Extended-slice assignment must reject replacement sequences whose length does not match the selected slice length.
+
+Lists and tuples must support lexicographic ordering when their corresponding elements are comparable.
 
 The initial subset must support the following dictionary methods:
 

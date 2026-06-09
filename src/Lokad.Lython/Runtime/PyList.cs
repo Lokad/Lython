@@ -62,6 +62,60 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         _items.AddRange(materialized);
     }
 
+    public void Insert(int index, object value)
+    {
+        var items = ToArray();
+        var normalized = index;
+        if (normalized < 0)
+        {
+            normalized += items.Length;
+        }
+
+        normalized = Math.Clamp(normalized, 0, items.Length);
+        var updated = new object[items.Length + 1];
+        Array.Copy(items, 0, updated, 0, normalized);
+        updated[normalized] = value;
+        Array.Copy(items, normalized, updated, normalized + 1, items.Length - normalized);
+        ReplaceStorage(updated);
+    }
+
+    public void Reverse()
+    {
+        var items = ToArray();
+        Array.Reverse(items);
+        ReplaceStorage(items);
+    }
+
+    public void ReplaceAll(IEnumerable<object> values)
+    {
+        ReplaceStorage(values as object[] ?? values.ToArray());
+    }
+
+    public void RepeatInPlace(int count, LythonSourceSpan span)
+    {
+        var items = ToArray();
+        if (count <= 0 || items.Length == 0)
+        {
+            ReplaceStorage([]);
+            return;
+        }
+
+        var totalLength = (long)items.Length * count;
+        if (totalLength > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
+        }
+
+        var total = (int)totalLength;
+        var repeated = new object[total];
+        for (var offset = 0; offset < repeated.Length; offset += items.Length)
+        {
+            Array.Copy(items, 0, repeated, offset, items.Length);
+        }
+
+        ReplaceStorage(repeated);
+    }
+
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
     {
         ArgumentNullException.ThrowIfNull(governor);
@@ -70,6 +124,76 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     }
 
     public void RemoveAt(int index) => _items.RemoveAt(index);
+
+    public void RemoveRange(int index, int count)
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        var items = ToArray();
+        var updated = new object[items.Length - count];
+        Array.Copy(items, 0, updated, 0, index);
+        Array.Copy(items, index + count, updated, index, items.Length - index - count);
+        ReplaceStorage(updated);
+    }
+
+    public void DeleteSlice(PyIndexing.SliceBounds bounds)
+    {
+        if (bounds.Step == 1)
+        {
+            RemoveRange(bounds.Start, Math.Max(bounds.End - bounds.Start, 0));
+            return;
+        }
+
+        var remove = bounds.Indices().ToArray();
+        if (remove.Length == 0)
+        {
+            return;
+        }
+
+        Array.Sort(remove);
+        for (var i = remove.Length - 1; i >= 0; i--)
+        {
+            RemoveAt(remove[i]);
+        }
+    }
+
+    public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)
+    {
+        if (bounds.Step == 1)
+        {
+            var items = ToArray();
+            var removeCount = Math.Max(bounds.End - bounds.Start, 0);
+            var updated = new object[items.Length - removeCount + values.Count];
+            Array.Copy(items, 0, updated, 0, bounds.Start);
+            for (var i = 0; i < values.Count; i++)
+            {
+                updated[bounds.Start + i] = values[i];
+            }
+
+            Array.Copy(
+                items,
+                bounds.Start + removeCount,
+                updated,
+                bounds.Start + values.Count,
+                items.Length - bounds.Start - removeCount);
+            ReplaceStorage(updated);
+            return;
+        }
+
+        var indices = bounds.Indices().ToArray();
+        if (indices.Length != values.Count)
+        {
+            throw new LythonRuntimeException("ValueError", "attempt to assign sequence of size " + values.Count + " to extended slice of size " + indices.Length, span);
+        }
+
+        for (var i = 0; i < indices.Length; i++)
+        {
+            _items[indices[i]] = values[i];
+        }
+    }
 
     public void Clear()
     {
@@ -154,6 +278,23 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         }
 
         return [.. values];
+    }
+
+    private void ReplaceStorage(object[] values)
+    {
+        if (_memoryGovernor is not null)
+        {
+            var released = _items.ReleaseCommittedBytes();
+            if (released > 0)
+            {
+                _memoryGovernor.Release(released);
+            }
+
+            _items = PyListStorage.Create(values, _memoryGovernor, _allocationSpan);
+            return;
+        }
+
+        _items = PyListStorage.Create(values);
     }
 
     private static long EstimateArrayBytes(int count) => 32L + (16L * count);

@@ -1504,7 +1504,7 @@ internal sealed class Parser
 
         return target switch
         {
-            IdentifierExpressionSyntax or SubscriptExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
+            IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
             _ => AddUnsupportedDeleteTarget(target, "delete target")
         };
     }
@@ -1916,6 +1916,9 @@ internal sealed class Parser
             SubscriptExpressionSyntax subscript => ParseAssignmentAfterFirstTarget(
                 new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
                 startPosition),
+            SliceExpressionSyntax slice => ParseAssignmentAfterFirstTarget(
+                new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
+                startPosition),
             MemberExpressionSyntax member => ParseAssignmentAfterFirstTarget(
                 new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
                 startPosition),
@@ -2098,6 +2101,13 @@ internal sealed class Parser
                 subscript.Index,
                 expression,
                 Merge(subscript.Span, expression.Span)),
+            SliceAssignmentTargetSyntax slice => new SliceAssignmentStatementSyntax(
+                slice.Target,
+                slice.Start,
+                slice.End,
+                slice.Step,
+                expression,
+                Merge(slice.Span, expression.Span)),
             MemberAssignmentTargetSyntax member => new MemberAssignmentStatementSyntax(
                 member.Target,
                 member.MemberName,
@@ -2116,6 +2126,9 @@ internal sealed class Parser
                 return true;
             case SubscriptExpressionSyntax subscript:
                 target = new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span);
+                return true;
+            case SliceExpressionSyntax slice:
+                target = new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span);
                 return true;
             case MemberExpressionSyntax member:
                 target = new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span);

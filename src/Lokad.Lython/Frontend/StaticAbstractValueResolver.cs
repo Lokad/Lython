@@ -279,10 +279,28 @@ internal static class StaticAbstractValueResolver
             return true;
         }
 
-        if (binary.Operator != BinaryOperatorSyntax.Add ||
+        if (binary.Operator is not (BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Multiply) ||
             !TryResolve(binary.Left, bindings, out var left) ||
             !TryResolve(binary.Right, bindings, out var right))
         {
+            value = default;
+            return false;
+        }
+
+        if (binary.Operator == BinaryOperatorSyntax.Multiply)
+        {
+            if (TryGetListElementAbstractValue(left, out var repeatedLeftItem) && StaticAbstractFacts.IsIntegerLike(right))
+            {
+                value = AbstractValue.ListOf(repeatedLeftItem.WithSpan(binary.Span), binary.Span);
+                return true;
+            }
+
+            if (StaticAbstractFacts.IsIntegerLike(left) && TryGetListElementAbstractValue(right, out var repeatedRightItem))
+            {
+                value = AbstractValue.ListOf(repeatedRightItem.WithSpan(binary.Span), binary.Span);
+                return true;
+            }
+
             value = default;
             return false;
         }

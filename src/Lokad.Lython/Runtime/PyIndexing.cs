@@ -5,6 +5,27 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyIndexing
 {
+    public readonly record struct SliceBounds(int Start, int End, int Step)
+    {
+        public IEnumerable<int> Indices()
+        {
+            if (Step > 0)
+            {
+                for (var i = Start; i < End; i += Step)
+                {
+                    yield return i;
+                }
+            }
+            else
+            {
+                for (var i = Start; i > End; i += Step)
+                {
+                    yield return i;
+                }
+            }
+        }
+    }
+
     public static object ReadIndex(object target, object index, LythonSourceSpan span)
     {
         return target switch
@@ -56,6 +77,9 @@ internal static class PyIndexing
     }
 
     public static IEnumerable<int> SliceIndices(int length, object? start, object? end, object? step, LythonSourceSpan span)
+        => NormalizeSliceBounds(length, start, end, step, span).Indices();
+
+    public static SliceBounds NormalizeSliceBounds(int length, object? start, object? end, object? step, LythonSourceSpan span)
     {
         var stepValue = NormalizeSliceBound(step, span) ?? BigInteger.One;
         if (stepValue.IsZero)
@@ -65,27 +89,13 @@ internal static class PyIndexing
 
         if (stepValue < int.MinValue || stepValue > int.MaxValue)
         {
-            yield break;
+            return new SliceBounds(0, 0, 1);
         }
 
         var stepInt = (int)stepValue;
         var startInt = NormalizeSliceStart(length, NormalizeSliceBound(start, span), stepInt);
         var endInt = NormalizeSliceEnd(length, NormalizeSliceBound(end, span), stepInt);
-
-        if (stepInt > 0)
-        {
-            for (var i = startInt; i < endInt; i += stepInt)
-            {
-                yield return i;
-            }
-        }
-        else
-        {
-            for (var i = startInt; i > endInt; i += stepInt)
-            {
-                yield return i;
-            }
-        }
+        return new SliceBounds(startInt, endInt, stepInt);
     }
 
     private static object ReadDictIndex(PyDict dict, object index, LythonSourceSpan span)

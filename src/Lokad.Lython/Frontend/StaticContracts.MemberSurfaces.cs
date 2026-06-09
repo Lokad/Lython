@@ -574,7 +574,13 @@ internal static partial class StaticContracts
     {
         "append",
         "extend",
+        "index",
+        "count",
+        "insert",
+        "remove",
         "pop",
+        "reverse",
+        "sort",
         "copy",
         "clear",
     };

@@ -458,6 +458,17 @@ internal sealed partial class LythonRuntime
                             context)
                         .ConfigureAwait(false);
                     return;
+                case SliceAssignmentStatementSyntax slice:
+                    await ExecuteLoweredSliceAssignmentAsync(
+                            slice,
+                            assignment.Target!,
+                            assignment.Start,
+                            assignment.End,
+                            assignment.Step,
+                            await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
+                            context)
+                        .ConfigureAwait(false);
+                    return;
                 case MemberAssignmentStatementSyntax memberAssignment:
                     var target = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
                     var value = await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false);
@@ -474,6 +485,25 @@ internal sealed partial class LythonRuntime
         {
             context.LeaveInterpreterFrame();
         }
+    }
+
+    private static async ValueTask ExecuteLoweredSliceAssignmentAsync(
+        SliceAssignmentStatementSyntax statement,
+        LoweredExpression targetExpression,
+        LoweredExpression? startExpression,
+        LoweredExpression? endExpression,
+        LoweredExpression? stepExpression,
+        object value,
+        ExecutionContext context)
+    {
+        ExecuteSliceAssignment(
+            await EvaluateLoweredExpressionAsync(targetExpression, context).ConfigureAwait(false),
+            startExpression is null ? null : await EvaluateLoweredExpressionAsync(startExpression, context).ConfigureAwait(false),
+            endExpression is null ? null : await EvaluateLoweredExpressionAsync(endExpression, context).ConfigureAwait(false),
+            stepExpression is null ? null : await EvaluateLoweredExpressionAsync(stepExpression, context).ConfigureAwait(false),
+            value,
+            statement.Span,
+            context);
     }
 
     private static async ValueTask ExecuteLoweredSubscriptAssignmentAsync(
@@ -887,6 +917,20 @@ internal sealed partial class LythonRuntime
                     default:
                         throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
                 }
+
+            case SliceExpressionSyntax:
+                if (statement.Target is not LoweredSliceExpression slice)
+                {
+                    break;
+                }
+
+                ExecuteSliceDeletion(
+                    await EvaluateLoweredExpressionAsync(slice.Target, context).ConfigureAwait(false),
+                    slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false),
+                    slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false),
+                    slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false),
+                    statement.Span);
+                return;
 
             case MemberExpressionSyntax memberSyntax:
                 if (statement.Target is not LoweredMemberExpression member)
