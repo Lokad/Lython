@@ -1174,6 +1174,13 @@ internal sealed partial class LythonRuntime
                 _ => null!,
             };
 
+            if (value is null &&
+                exception.Value is PyDict payload &&
+                payload.TryGetValue(PyString.FromString(name), out var payloadValue))
+            {
+                value = payloadValue;
+            }
+
             return value is not null;
         }
 
@@ -1184,6 +1191,23 @@ internal sealed partial class LythonRuntime
                 return ReferenceEquals(exception.Value, PyNone.Instance)
                     ? PyTuple.Empty
                     : new PyTuple([exception.Value]);
+            }
+
+            if (string.Equals(exception.TypeName, "JSONDecodeError", StringComparison.Ordinal) &&
+                exception.Value is PyDict payload &&
+                payload.TryGetValue(PyString.FromString("msg"), out var msg) &&
+                payload.TryGetValue(PyString.FromString("doc"), out var doc) &&
+                payload.TryGetValue(PyString.FromString("pos"), out var pos))
+            {
+                return new PyTuple([msg, doc, pos]);
+            }
+
+            if (string.Equals(exception.TypeName, "CalledProcessError", StringComparison.Ordinal) &&
+                exception.Value is PyDict subprocessPayload &&
+                subprocessPayload.TryGetValue(PyString.FromString("returncode"), out var returnCode) &&
+                subprocessPayload.TryGetValue(PyString.FromString("cmd"), out var command))
+            {
+                return new PyTuple([returnCode, command]);
             }
 
             return exception.Value switch

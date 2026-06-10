@@ -34,8 +34,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature PathlibPureWindowsPath = new("pathlib.PureWindowsPath", RequiredCount: 0);
     public static readonly LythonCallableSignature PathlibWindowsPath = new("pathlib.WindowsPath", RequiredCount: 0);
 
-    public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s"]);
-    public static readonly LythonCallableSignature JsonDumps = new("json.dumps", ["obj"]);
+    public static readonly LythonCallableSignature JsonLoad = new("json.load", ["fp", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook"], RequiredCount: 1, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature JsonLoads = new("json.loads", ["s", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook"], RequiredCount: 1, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature JsonDump = new("json.dump", ["obj", "fp", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature JsonDumps = new("json.dumps", ["obj", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], RequiredCount: 1, MaxPositionalCount: 1);
 
     public static readonly LythonCallableSignature CsvReader = new("csv.reader", ["csvfile", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 1, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature CsvWriter = new("csv.writer", ["fileobj", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 0, MaxPositionalCount: 2);

@@ -1036,28 +1036,23 @@ The runtime must support the statement:
 
 - `import json`
 
-The imported module must expose exactly the following functions:
+The imported module must expose the following JSON helpers:
 
-- `json.loads(string)`
-- `json.dumps(obj)`
+- `json.load(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None)`
+- `json.loads(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None)`
+- `json.dump(obj, fp, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False)`
+- `json.dumps(obj, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False)`
+- `json.JSONDecodeError`
+- `json.JSONEncoder`
+- `json.JSONDecoder`
 
-The initial subset supports only the single-argument forms:
+`load` and `dump` are text-only and must operate on Lython text file handles. Binary file handles are outside the public file boundary.
 
-- `json.loads(string)`
-- `json.dumps(obj)`
+`loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and root-level `parse_constant` callbacks. Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields.
 
-The initial subset does not support:
+`dumps` and `dump` must support indentation, separators, key sorting, `ensure_ascii`, `skipkeys`, callable `default`, `allow_nan`, and circular-reference checks. Supported output values include `None`, booleans, strings, integers, floats, decimals, lists, tuples, and dictionaries. Dictionary keys may be strings, integers, finite floats, booleans, or `None`; unsupported keys fail unless `skipkeys=True`.
 
-- file-oriented helpers such as `json.load(...)` and `json.dump(...)`
-- custom encoders
-- custom decoders
-- object hooks
-- parse hooks
-- formatting options beyond the default behavior
-
-`json.loads(...)` and `json.dumps(...)` must support the subset of values naturally representable through the supported Lython runtime types.
-
-For `json.dumps(...)`, dictionary keys must be strings.
+`JSONEncoder` and `JSONDecoder` are exposed only as explicit unsupported custom-class stubs. Passing non-`None` `cls=...` must fail explicitly.
 
 If a script requests JSON behavior outside the supported subset, the runtime must fail explicitly.
 

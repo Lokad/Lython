@@ -12,9 +12,31 @@ internal static class StaticDataModuleContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoad.Name, StringComparison.Ordinal))
+        {
+            AnalyzeJsonReadableFileArgument(arguments, 0, "fp", diagnostics, bindings);
+            AnalyzeJsonLoadOptions(arguments, diagnostics, bindings, optionOffset: 1);
+            return true;
+        }
+
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoads.Name, StringComparison.Ordinal))
         {
-            return AnalyzeStringArgument(arguments, 0, "s", "json.loads(s) expects a string argument.", diagnostics, bindings);
+            var emitted = AnalyzeStringArgument(arguments, 0, "s", "json.loads(s, *, ...) expects a string argument.", diagnostics, bindings);
+            AnalyzeJsonLoadOptions(arguments, diagnostics, bindings, optionOffset: 1);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDump.Name, StringComparison.Ordinal))
+        {
+            AnalyzeJsonWritableFileArgument(arguments, 1, "fp", diagnostics, bindings);
+            AnalyzeJsonDumpOptions(arguments, diagnostics, bindings, optionOffset: 2);
+            return true;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDumps.Name, StringComparison.Ordinal))
+        {
+            AnalyzeJsonDumpOptions(arguments, diagnostics, bindings, optionOffset: 1);
+            return false;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvReader.Name, StringComparison.Ordinal))
@@ -214,6 +236,138 @@ internal static class StaticDataModuleContractFamily
         AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
         AnalyzeDictWriterExtrasAction(arguments, diagnostics, bindings);
         AnalyzeCsvOptions(arguments, dialectPosition: 4, delimiterPosition: 5, quotecharPosition: 6, quotingPosition: 7, doublequotePosition: 8, escapecharPosition: 9, skipinitialspacePosition: 10, lineterminatorPosition: 11, strictPosition: 12, diagnostics, bindings);
+    }
+
+    private static void AnalyzeJsonLoadOptions(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        int optionOffset)
+    {
+        AnalyzeJsonClsNone(arguments, optionOffset, "cls", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 1, "object_hook", "json load option object_hook=... expects a callable or None.", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 2, "parse_float", "json load option parse_float=... expects a callable or None.", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 3, "parse_int", "json load option parse_int=... expects a callable or None.", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 4, "parse_constant", "json load option parse_constant=... expects a callable or None.", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 5, "object_pairs_hook", "json load option object_pairs_hook=... expects a callable or None.", diagnostics, bindings);
+    }
+
+    private static void AnalyzeJsonDumpOptions(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        int optionOffset)
+    {
+        AnalyzeBooleanArgument(arguments, optionOffset, "skipkeys", "json.dumps(skipkeys=...) expects a bool.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, optionOffset + 1, "ensure_ascii", "json.dumps(ensure_ascii=...) expects a bool.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, optionOffset + 2, "check_circular", "json.dumps(check_circular=...) expects a bool.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, optionOffset + 3, "allow_nan", "json.dumps(allow_nan=...) expects a bool.", diagnostics, bindings);
+        AnalyzeJsonClsNone(arguments, optionOffset + 4, "cls", diagnostics, bindings);
+        AnalyzeJsonIndent(arguments, optionOffset + 5, "indent", diagnostics, bindings);
+        AnalyzeJsonSeparators(arguments, optionOffset + 6, "separators", diagnostics, bindings);
+        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 7, "default", "json.dumps(default=...) expects a callable or None.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, optionOffset + 8, "sort_keys", "json.dumps(sort_keys=...) expects a bool.", diagnostics, bindings);
+    }
+
+    private static bool AnalyzeJsonReadableFileArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
+        {
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.Unknown)
+        {
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.TextFileHandle)
+        {
+            var mode = (AbstractTextFileMode)value.Value;
+            if (mode is AbstractTextFileMode.Write or AbstractTextFileMode.Append)
+            {
+                AddDiagnostic(diagnostics, "LA3109", "file is not open for reading.", expression.Span);
+                return true;
+            }
+
+            return false;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "json.load(fp, *, ...) expects a readable text file handle.", expression.Span);
+        return true;
+    }
+
+    private static bool AnalyzeJsonWritableFileArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
+        {
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.Unknown)
+        {
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.TextFileHandle)
+        {
+            var mode = (AbstractTextFileMode)value.Value;
+            if (mode == AbstractTextFileMode.Read)
+            {
+                AddDiagnostic(diagnostics, "LA3111", "file is not open for writing.", expression.Span);
+                return true;
+            }
+
+            return false;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "json.dump(obj, fp, *, ...) expects a writable text file handle.", expression.Span);
+        return true;
+    }
+
+    private static void AnalyzeJsonClsNone(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
+            value.Kind is AbstractValueKind.Unknown or AbstractValueKind.None)
+        {
+            return;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "json cls=... custom encoder/decoder classes are not supported by Lython.", expression.Span);
+    }
+
+    private static void AnalyzeJsonIndent(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
+            value.Kind == AbstractValueKind.Unknown ||
+            value.Kind == AbstractValueKind.None ||
+            value.IsStringLike ||
+            StaticKnownCallArgumentChecks.IsRuntimeIntegerLike(value))
+        {
+            return;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "json.dumps(indent=...) expects an integer, string, or None.", expression.Span);
+    }
+
+    private static void AnalyzeJsonSeparators(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
+            value.Kind is AbstractValueKind.Unknown or AbstractValueKind.None)
+        {
+            return;
+        }
+
+        if (value.Kind is AbstractValueKind.Tuple or AbstractValueKind.List)
+        {
+            var items = (IReadOnlyList<AbstractValue>)value.Value;
+            if (items.Count == 2 && items.All(static item => item.IsStringLike || StaticKnownCallArgumentChecks.IsUnknown(item)))
+            {
+                return;
+            }
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "json.dumps(separators=...) expects a two-item tuple/list of strings or None.", expression.Span);
     }
 
     private static bool AnalyzeCsvInputArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
