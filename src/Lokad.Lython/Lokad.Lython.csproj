@@ -6,13 +6,13 @@
     <Description>Embeddable, contained-by-design Python runtime for .NET, implemented in managed C# with host-mediated file and process capabilities.</Description>
     <Authors>Lokad</Authors>
     <Company>Lokad</Company>
-    <Version>0.4.1</Version>
-    <AssemblyVersion>0.4.1</AssemblyVersion>
-    <FileVersion>0.4.1</FileVersion>
+    <Version>0.5.0</Version>
+    <AssemblyVersion>0.5.0</AssemblyVersion>
+    <FileVersion>0.5.0</FileVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>0.4.1 adds a host-side subprocess completion helper for applying Lython subprocess stream modes to buffered stdout and stderr, including inherited streams, pipes, DEVNULL, STDOUT redirection, and output bounds.</PackageReleaseNotes>
+    <PackageReleaseNotes>0.5.0 expands compatibility since 0.4.1 with built-in openpyxl support, broader language/runtime behavior, expanded standard-library subsets, contained environment injection via LythonRunOptions.Environment, optional host-mediated binary file hooks, and matching static contracts while preserving containment boundaries.</PackageReleaseNotes>
     <PackageTags>python;runtime;interpreter;scripting;embedding;sandbox</PackageTags>
     <PackageProjectUrl>https://github.com/Lokad/Lython</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Lokad/Lython.git</RepositoryUrl>
