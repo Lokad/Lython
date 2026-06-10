@@ -407,7 +407,9 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature Glob1 = new("glob.glob1", ["dirname", "pattern"], RequiredCount: 2);
 
     public static readonly LythonCallableSignature FnMatch = new("fnmatch.fnmatch", ["name", "pattern"]);
+    public static readonly LythonCallableSignature FnMatchCase = new("fnmatch.fnmatchcase", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = new("fnmatch.filter", ["names", "pattern"]);
+    public static readonly LythonCallableSignature FnMatchTranslate = new("fnmatch.translate", ["pattern"]);
 
     public static readonly LythonCallableSignature DifflibIsLineJunk = new("difflib.IS_LINE_JUNK", ["line"]);
     public static readonly LythonCallableSignature DifflibIsCharacterJunk = new("difflib.IS_CHARACTER_JUNK", ["ch"]);

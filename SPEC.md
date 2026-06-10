@@ -1135,13 +1135,15 @@ The runtime must support the statement:
 The imported module must expose exactly the following functions:
 
 - `fnmatch.fnmatch(name, pattern)`
+- `fnmatch.fnmatchcase(name, pattern)`
 - `fnmatch.filter(names, pattern)`
+- `fnmatch.translate(pattern)`
 
-The initial subset does not support:
+Both `fnmatch` and `fnmatchcase` use deterministic POSIX-like case-sensitive matching. Lython does not apply `os.path.normcase` or host-platform case folding.
 
-- case-normalization behavior tied to a host platform
-- translation to regex objects
-- caching controls
+Patterns must support `*`, `?`, bracket character classes, negated `[!...]` classes, ranges such as `[a-z]`, literal leading `]` inside a class, and malformed or unterminated classes as literal text. `filter(names, pattern)` must preserve input order and return the matching names as strings.
+
+`fnmatch.translate(pattern)` returns an anchored regex string compatible with Lython `re`. The exact regex spelling is Lython-defined and need not match CPython's internal translation text.
 
 Filename-pattern behavior must follow Python semantics for the supported subset in a deterministic, platform-independent way.
 

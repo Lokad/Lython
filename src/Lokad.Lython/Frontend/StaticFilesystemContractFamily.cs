@@ -204,10 +204,14 @@ internal static class StaticFilesystemContractFamily
         AbstractState bindings)
     {
         var emitted = false;
-        if (string.Equals(targetName, LythonKnownCallableSignatures.FnMatch.Name, StringComparison.Ordinal))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.FnMatch.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.FnMatchCase.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "name", "fnmatch.fnmatch(name, pattern) expects two string arguments.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "pattern", "fnmatch.fnmatch(name, pattern) expects two string arguments.", diagnostics, bindings);
+            var signature = string.Equals(targetName, LythonKnownCallableSignatures.FnMatchCase.Name, StringComparison.Ordinal)
+                ? "fnmatch.fnmatchcase(name, pattern)"
+                : "fnmatch.fnmatch(name, pattern)";
+            emitted |= AnalyzeStringArgument(arguments, 0, "name", $"{signature} expects two string arguments.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "pattern", $"{signature} expects two string arguments.", diagnostics, bindings);
             return emitted;
         }
 
@@ -215,6 +219,12 @@ internal static class StaticFilesystemContractFamily
         {
             emitted |= AnalyzeIterableOfStringsArgument(arguments, 0, "names", "fnmatch.filter(names, pattern) expects an iterable of strings.", diagnostics, bindings);
             emitted |= AnalyzeStringArgument(arguments, 1, "pattern", "fnmatch.filter(names, pattern) expects a string pattern.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.FnMatchTranslate.Name, StringComparison.Ordinal))
+        {
+            emitted |= AnalyzeStringArgument(arguments, 0, "pattern", "fnmatch.translate(pattern) expects a string pattern.", diagnostics, bindings);
             return emitted;
         }
 

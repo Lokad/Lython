@@ -105,4 +105,60 @@ write_text("/out.txt", "|".join(vals))
         Assert.Null(result.Failure);
         Assert.Equal("True|[é😀.txt]", host.ReadText("/out.txt"));
     }
+
+    [Fact]
+    public void Fnmatch_ExpandedSurfaceSupportsCaseTranslateAndBrackets()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import fnmatch
+import re
+
+vals = []
+vals.append(str(fnmatch.fnmatchcase("alpha.TXT", "*.txt")))
+vals.append(str(fnmatch.fnmatch("alpha.TXT", "*.txt")))
+vals.append(str(fnmatch.fnmatch("beta.md", "[ab]*.m[!x]")))
+vals.append(str(fnmatch.fnmatch("gamma.py", "[!ab]*.py")))
+vals.append(str(fnmatch.fnmatch("b", "[a-c]")))
+vals.append(str(fnmatch.fnmatch("[abc", "[abc")))
+vals.append(str(fnmatch.fnmatch("]", "[]]")))
+vals.append(str(fnmatch.fnmatch("-", "[-]")))
+vals.append(str(fnmatch.fnmatch("q", "[z-aq]")))
+vals.append(str(fnmatch.fnmatch("z", "[z-aq]")))
+vals.append(str(fnmatch.filter(["a.py", "b.txt", "c.py", "A.py"], "[a-c].py")))
+translated = fnmatch.translate("file[0-9]?.txt")
+vals.append(translated)
+vals.append(str(re.fullmatch(translated, "file7a.txt") is not None))
+invalid_range = fnmatch.translate("[z-a]")
+vals.append(invalid_range)
+vals.append(str(re.fullmatch(invalid_range, "z") is None))
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("False|False|True|True|True|True|True|True|True|False|[a.py, c.py]|^file[0-9].\\.txt$|True|^(?!)$|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void FnmatchExpandedSurface_WithInvalidArguments_FailsAtCompileTime()
+    {
+        var result = new LythonEngine().Run(
+            """
+import fnmatch
+fnmatch.fnmatchcase("alpha.txt", 1)
+fnmatch.translate(1)
+fnmatch.translate("*.txt", 1)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Null(result.Failure);
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("fnmatch.fnmatchcase(name, pattern) expects two string arguments.", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("fnmatch.translate(pattern) expects a string pattern.", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("fnmatch.translate(pattern) expects one argument.", StringComparison.Ordinal));
+    }
 }

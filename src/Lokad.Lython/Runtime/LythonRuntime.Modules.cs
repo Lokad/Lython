@@ -5076,7 +5076,9 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "fnmatch" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatch, Match),
+                "fnmatchcase" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchCase, MatchCase),
                 "filter" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchFilter, Filter),
+                "translate" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchTranslate, Translate),
                 _ => null!,
             };
 
@@ -5091,6 +5093,19 @@ internal sealed partial class LythonRuntime
                 !PyStringOps.TryAsString(arguments[1], out var pattern))
             {
                 throw new LythonRuntimeException("TypeError", "fnmatch.fnmatch(name, pattern) expects two string arguments.", span);
+            }
+
+            return MatchSimple(name, pattern);
+        }
+
+        private object MatchCase(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            if (arguments.Length != 2 ||
+                !PyStringOps.TryAsString(arguments[0], out var name) ||
+                !PyStringOps.TryAsString(arguments[1], out var pattern))
+            {
+                throw new LythonRuntimeException("TypeError", "fnmatch.fnmatchcase(name, pattern) expects two string arguments.", span);
             }
 
             return MatchSimple(name, pattern);
@@ -5119,6 +5134,16 @@ internal sealed partial class LythonRuntime
             }
 
             return result;
+        }
+
+        private object Translate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+            {
+                throw new LythonRuntimeException("TypeError", "fnmatch.translate(pattern) expects a string pattern.", span);
+            }
+
+            return CreateString(TranslatePattern(pattern.AsString()), context, span);
         }
 
         internal static bool MatchSimple(PyString name, PyString pattern)
@@ -5173,6 +5198,12 @@ internal sealed partial class LythonRuntime
                 {
                     result = nameIndex < name.Count && MatchSimple(name, nameIndex + 1, pattern, patternIndex + 1, memo);
                 }
+                else if (IsAsciiRune(token, '[') &&
+                         nameIndex < name.Count &&
+                         TryMatchCharacterClass(name[nameIndex], pattern, patternIndex, out var classCloseIndex, out var classMatches))
+                {
+                    result = classMatches && MatchSimple(name, nameIndex + 1, pattern, classCloseIndex + 1, memo);
+                }
                 else
                 {
                     result = nameIndex < name.Count &&
@@ -5183,6 +5214,211 @@ internal sealed partial class LythonRuntime
 
             memo[(nameIndex, patternIndex)] = result;
             return result;
+        }
+
+        private static bool TryMatchCharacterClass(
+            PyString value,
+            IReadOnlyList<PyString> pattern,
+            int openIndex,
+            out int closeIndex,
+            out bool matches)
+        {
+            closeIndex = -1;
+            matches = false;
+
+            var contentStart = openIndex + 1;
+            if (contentStart >= pattern.Count)
+            {
+                return false;
+            }
+
+            var negated = IsAsciiRune(pattern[contentStart], '!');
+            if (negated)
+            {
+                contentStart++;
+            }
+
+            if (contentStart >= pattern.Count)
+            {
+                return false;
+            }
+
+            var searchStart = contentStart;
+            if (IsAsciiRune(pattern[searchStart], ']'))
+            {
+                searchStart++;
+            }
+
+            for (var index = searchStart; index < pattern.Count; index++)
+            {
+                if (IsAsciiRune(pattern[index], ']'))
+                {
+                    closeIndex = index;
+                    break;
+                }
+            }
+
+            if (closeIndex < 0)
+            {
+                return false;
+            }
+
+            var valueScalar = RuneScalarValue(value);
+            var included = CharacterClassIncludes(valueScalar, pattern, contentStart, closeIndex);
+            matches = negated ? !included : included;
+            return true;
+        }
+
+        private static bool CharacterClassIncludes(int valueScalar, IReadOnlyList<PyString> pattern, int start, int closeIndex)
+        {
+            for (var index = start; index < closeIndex; index++)
+            {
+                if (index + 2 < closeIndex && IsAsciiRune(pattern[index + 1], '-'))
+                {
+                    var rangeStart = RuneScalarValue(pattern[index]);
+                    var rangeEnd = RuneScalarValue(pattern[index + 2]);
+                    if (rangeStart <= rangeEnd && valueScalar >= rangeStart && valueScalar <= rangeEnd)
+                    {
+                        return true;
+                    }
+
+                    index += 2;
+                    continue;
+                }
+
+                if (RuneScalarValue(pattern[index]) == valueScalar)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string TranslatePattern(string pattern)
+        {
+            var builder = new StringBuilder(pattern.Length + 2);
+            builder.Append('^');
+            for (var index = 0; index < pattern.Length; index++)
+            {
+                var ch = pattern[index];
+                switch (ch)
+                {
+                    case '*':
+                        builder.Append(".*");
+                        break;
+                    case '?':
+                        builder.Append('.');
+                        break;
+                    case '[':
+                        index = AppendTranslatedCharacterClass(builder, pattern, index);
+                        break;
+                    default:
+                        AppendEscapedRegexLiteral(builder, ch);
+                        break;
+                }
+            }
+
+            builder.Append('$');
+            return builder.ToString();
+        }
+
+        private static int AppendTranslatedCharacterClass(StringBuilder builder, string pattern, int openIndex)
+        {
+            var contentStart = openIndex + 1;
+            if (contentStart >= pattern.Length)
+            {
+                builder.Append("\\[");
+                return openIndex;
+            }
+
+            var negated = pattern[contentStart] == '!';
+            if (negated)
+            {
+                contentStart++;
+            }
+
+            if (contentStart >= pattern.Length)
+            {
+                builder.Append("\\[");
+                return openIndex;
+            }
+
+            var searchStart = contentStart;
+            if (pattern[searchStart] == ']')
+            {
+                searchStart++;
+            }
+
+            var closeIndex = -1;
+            for (var index = searchStart; index < pattern.Length; index++)
+            {
+                if (pattern[index] == ']')
+                {
+                    closeIndex = index;
+                    break;
+                }
+            }
+
+            if (closeIndex < 0)
+            {
+                builder.Append("\\[");
+                return openIndex;
+            }
+
+            var classBuilder = new StringBuilder(closeIndex - contentStart);
+            for (var index = contentStart; index < closeIndex; index++)
+            {
+                if (index + 2 < closeIndex && pattern[index + 1] == '-')
+                {
+                    if (char.ConvertToUtf32(pattern, index) <= char.ConvertToUtf32(pattern, index + 2))
+                    {
+                        AppendEscapedRegexClassCharacter(classBuilder, pattern[index], allowRangeHyphen: true);
+                        classBuilder.Append('-');
+                        AppendEscapedRegexClassCharacter(classBuilder, pattern[index + 2], allowRangeHyphen: true);
+                    }
+
+                    index += 2;
+                    continue;
+                }
+
+                AppendEscapedRegexClassCharacter(classBuilder, pattern[index], allowRangeHyphen: false);
+            }
+
+            if (classBuilder.Length == 0)
+            {
+                builder.Append(negated ? "." : "(?!)");
+                return closeIndex;
+            }
+
+            builder.Append('[');
+            if (negated)
+            {
+                builder.Append('^');
+            }
+
+            builder.Append(classBuilder);
+            builder.Append(']');
+            return closeIndex;
+        }
+
+        private static void AppendEscapedRegexClassCharacter(StringBuilder builder, char ch, bool allowRangeHyphen)
+        {
+            if (ch is '\\' or ']' or '^' || ch == '-' && !allowRangeHyphen)
+            {
+                builder.Append('\\');
+            }
+
+            builder.Append(ch);
+        }
+
+        private static bool IsAsciiRune(PyString value, char ch)
+            => value.Utf8Bytes.Length == 1 && value.Utf8Bytes.Span[0] == (byte)ch;
+
+        private static int RuneScalarValue(PyString value)
+        {
+            var text = value.AsString();
+            return char.ConvertToUtf32(text, 0);
         }
     }
 
