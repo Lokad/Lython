@@ -292,15 +292,16 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OpenPyxlDrawingImage = new("openpyxl.drawing.image.Image", ["img"]);
 
     public static readonly LythonCallableSignature ReCompile = new("re.compile", ["pattern", "flags"], RequiredCount: 1);
-    public static readonly LythonCallableSignature ReSearch = new("re.search", ["pattern", "string", "flags"], RequiredCount: 2);
-    public static readonly LythonCallableSignature ReMatch = new("re.match", ["pattern", "string", "flags"], RequiredCount: 2);
-    public static readonly LythonCallableSignature ReFullMatch = new("re.fullmatch", ["pattern", "string", "flags"], RequiredCount: 2);
-    public static readonly LythonCallableSignature ReFindAll = new("re.findall", ["pattern", "string", "flags"], RequiredCount: 2);
-    public static readonly LythonCallableSignature ReFindIter = new("re.finditer", ["pattern", "string", "flags"], RequiredCount: 2);
-    public static readonly LythonCallableSignature ReSub = new("re.sub", ["pattern", "repl", "string", "count", "flags"], RequiredCount: 3);
-    public static readonly LythonCallableSignature ReSubn = new("re.subn", ["pattern", "repl", "string", "count", "flags"], RequiredCount: 3);
-    public static readonly LythonCallableSignature ReSplit = new("re.split", ["pattern", "string", "maxsplit", "flags"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReSearch = new("re.search", ["pattern", "string", "flags", "pos", "endpos"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReMatch = new("re.match", ["pattern", "string", "flags", "pos", "endpos"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReFullMatch = new("re.fullmatch", ["pattern", "string", "flags", "pos", "endpos"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReFindAll = new("re.findall", ["pattern", "string", "flags", "pos", "endpos"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReFindIter = new("re.finditer", ["pattern", "string", "flags", "pos", "endpos"], RequiredCount: 2);
+    public static readonly LythonCallableSignature ReSub = new("re.sub", ["pattern", "repl", "string", "count", "flags", "pos", "endpos"], RequiredCount: 3);
+    public static readonly LythonCallableSignature ReSubn = new("re.subn", ["pattern", "repl", "string", "count", "flags", "pos", "endpos"], RequiredCount: 3);
+    public static readonly LythonCallableSignature ReSplit = new("re.split", ["pattern", "string", "maxsplit", "flags", "pos", "endpos"], RequiredCount: 2);
     public static readonly LythonCallableSignature ReEscape = new("re.escape", ["string"]);
+    public static readonly LythonCallableSignature RePurge = new("re.purge", []);
 
     public static readonly LythonCallableSignature ArgparseArgumentParser = new(
         "argparse.ArgumentParser",

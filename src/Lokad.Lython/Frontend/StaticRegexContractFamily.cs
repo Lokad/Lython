@@ -17,6 +17,13 @@ internal static class StaticRegexContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.ReCompile.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeStringArgument(arguments, 0, "pattern", "re.compile(pattern[, flags]) expects pattern to be a string.", diagnostics, bindings);
+            if (TryGetArgument(arguments, 1, "flags", bindings, out var flagsExpression, out _) &&
+                ContainsRegexDebugFlag(flagsExpression))
+            {
+                AddDiagnostic(diagnostics, "LA3045", "re.DEBUG is unsupported.", flagsExpression.Span);
+                emitted = true;
+            }
+
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "flags", "re.compile(pattern[, flags]) expects flags to be an integer or None.", diagnostics, bindings);
             return emitted;
         }
@@ -27,29 +34,35 @@ internal static class StaticRegexContractFamily
             string.Equals(targetName, LythonKnownCallableSignatures.ReFindAll.Name, StringComparison.Ordinal) ||
             string.Equals(targetName, LythonKnownCallableSignatures.ReFindIter.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", $"{targetName}(pattern, string[, flags]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "string", $"{targetName}(pattern, string[, flags]) expects string to be a string.", diagnostics, bindings);
-            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 2, "flags", $"{targetName}(pattern, string[, flags]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", $"{targetName}(pattern, string[, flags][, pos][, endpos]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "string", $"{targetName}(pattern, string[, flags][, pos][, endpos]) expects string to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 2, "flags", $"{targetName}(pattern, string[, flags][, pos][, endpos]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 3, "pos", $"{targetName}(pattern, string[, flags][, pos][, endpos]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 4, "endpos", $"{targetName}(pattern, string[, flags][, pos][, endpos]) expects endpos to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.ReSub.Name, StringComparison.Ordinal) ||
             string.Equals(targetName, LythonKnownCallableSignatures.ReSubn.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", $"{targetName}(pattern, repl, string[, count][, flags]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
-            emitted |= AnalyzeStringOrCallableArgument(arguments, 1, "repl", $"{targetName}(pattern, repl, string[, count][, flags]) expects repl to be a string or callable.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 2, "string", $"{targetName}(pattern, repl, string[, count][, flags]) expects string to be a string.", diagnostics, bindings);
-            emitted |= AnalyzeIntegerArgument(arguments, 3, "count", $"{targetName}(pattern, repl, string[, count][, flags]) expects count to be an integer.", diagnostics, bindings);
-            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 4, "flags", $"{targetName}(pattern, repl, string[, count][, flags]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrCallableArgument(arguments, 1, "repl", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects repl to be a string or callable.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 2, "string", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects string to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 3, "count", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects count to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 4, "flags", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 5, "pos", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 6, "endpos", $"{targetName}(pattern, repl, string[, count][, flags][, pos][, endpos]) expects endpos to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.ReSplit.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", "re.split(pattern, string[, maxsplit][, flags]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "string", "re.split(pattern, string[, maxsplit][, flags]) expects string to be a string.", diagnostics, bindings);
-            emitted |= AnalyzeIntegerArgument(arguments, 2, "maxsplit", "re.split(pattern, string[, maxsplit][, flags]) expects maxsplit to be an integer.", diagnostics, bindings);
-            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 3, "flags", "re.split(pattern, string[, maxsplit][, flags]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "string", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects string to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 2, "maxsplit", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects maxsplit to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeRegexFlagsArgument(arguments, 0, "pattern", 3, "flags", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects integer flags and no flags when pattern is compiled.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 4, "pos", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 5, "endpos", "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos]) expects endpos to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
@@ -74,6 +87,18 @@ internal static class StaticRegexContractFamily
             string.Equals(memberName, "group", StringComparison.Ordinal))
         {
             emitted |= AnalyzeRegexMatchGroupContract(arguments, diagnostics, bindings, receiver);
+        }
+
+        if (receiver.Kind == AbstractValueKind.RegexMatch &&
+            memberName is "start" or "end" or "span")
+        {
+            emitted |= AnalyzeRegexMatchSingleGroupContract(memberName, arguments, diagnostics, bindings, receiver);
+        }
+
+        if (receiver.Kind == AbstractValueKind.RegexMatch &&
+            string.Equals(memberName, "expand", StringComparison.Ordinal))
+        {
+            emitted |= AnalyzeStringArgument(arguments, 0, "template", "match.expand(template) expects template to be a string.", diagnostics, bindings);
         }
 
         if (receiver.Kind == AbstractValueKind.RegexPattern)
@@ -179,6 +204,9 @@ internal static class StaticRegexContractFamily
         {
             "group" when arguments.Positional.Count == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
             "group" => AbstractValue.Unknown(call.Span),
+            "groups" => new AbstractValue(AbstractValueKind.Tuple, Array.Empty<AbstractValue>(), call.Span),
+            "groupdict" => AbstractValue.Unknown(call.Span),
+            "expand" => AbstractValue.StringType(call.Span),
             "start" or "end" => AbstractValue.IntegerType(call.Span),
             "span" => new AbstractValue(
                 AbstractValueKind.Tuple,
@@ -205,6 +233,12 @@ internal static class StaticRegexContractFamily
             return false;
         }
 
+        if (ContainsRegexDebugFlag(flagsExpression))
+        {
+            AddDiagnostic(diagnostics, "LA3045", "re.DEBUG is unsupported.", flagsExpression.Span);
+            return true;
+        }
+
         if (TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue) &&
             patternValue.Kind == AbstractValueKind.RegexPattern)
         {
@@ -213,6 +247,17 @@ internal static class StaticRegexContractFamily
         }
 
         return AnalyzeKnownArgumentValue(flagsExpression, flagsValue, message, diagnostics, static value => value.Kind == AbstractValueKind.None || IsRuntimeIntegerLike(value));
+    }
+
+    private static bool ContainsRegexDebugFlag(ExpressionSyntax expression)
+    {
+        return expression switch
+        {
+            ParenthesizedExpressionSyntax parenthesized => ContainsRegexDebugFlag(parenthesized.Inner),
+            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "DEBUG" } => true,
+            BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.BitwiseOr } binary => ContainsRegexDebugFlag(binary.Left) || ContainsRegexDebugFlag(binary.Right),
+            _ => false
+        };
     }
 
     private static bool AnalyzeRegexPatternMemberArgumentTypes(
@@ -224,21 +269,28 @@ internal static class StaticRegexContractFamily
         var emitted = false;
         if (memberName is "search" or "match" or "fullmatch" or "findall" or "finditer")
         {
-            return AnalyzeStringArgument(arguments, 0, "string", $"pattern.{memberName}(string) expects a string argument.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 0, "string", $"pattern.{memberName}(string[, pos[, endpos]]) expects a string argument.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 1, "pos", $"pattern.{memberName}(string[, pos[, endpos]]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 2, "endpos", $"pattern.{memberName}(string[, pos[, endpos]]) expects endpos to be an integer.", diagnostics, bindings);
+            return emitted;
         }
 
         if (memberName is "sub" or "subn")
         {
-            emitted |= AnalyzeStringOrCallableArgument(arguments, 0, "repl", $"pattern.{memberName}(repl, string[, count]) expects repl to be a string or callable.", diagnostics, bindings);
-            emitted |= AnalyzeStringArgument(arguments, 1, "string", $"pattern.{memberName}(repl, string[, count]) expects string to be a string.", diagnostics, bindings);
-            emitted |= AnalyzeIntegerArgument(arguments, 2, "count", $"pattern.{memberName}(repl, string[, count]) expects count to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeStringOrCallableArgument(arguments, 0, "repl", $"pattern.{memberName}(repl, string[, count[, pos[, endpos]]]) expects repl to be a string or callable.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 1, "string", $"pattern.{memberName}(repl, string[, count[, pos[, endpos]]]) expects string to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 2, "count", $"pattern.{memberName}(repl, string[, count[, pos[, endpos]]]) expects count to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 3, "pos", $"pattern.{memberName}(repl, string[, count[, pos[, endpos]]]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 4, "endpos", $"pattern.{memberName}(repl, string[, count[, pos[, endpos]]]) expects endpos to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
         if (memberName == "split")
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "string", "pattern.split(string[, maxsplit]) expects string to be a string.", diagnostics, bindings);
-            emitted |= AnalyzeIntegerArgument(arguments, 1, "maxsplit", "pattern.split(string[, maxsplit]) expects maxsplit to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeStringArgument(arguments, 0, "string", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects string to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 1, "maxsplit", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects maxsplit to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 2, "pos", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects pos to be an integer.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerArgument(arguments, 3, "endpos", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects endpos to be an integer.", diagnostics, bindings);
             return emitted;
         }
 
@@ -302,6 +354,74 @@ internal static class StaticRegexContractFamily
         }
 
         return emitted;
+    }
+
+    private static bool AnalyzeRegexMatchSingleGroupContract(
+        string memberName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        AbstractValue receiver)
+    {
+        ExpressionSyntax expression;
+        AbstractValue value;
+        if (arguments.Positional.Count > 0)
+        {
+            expression = arguments.Positional[0];
+            value = arguments.ResolvePositionalValue(0, bindings);
+        }
+        else if (arguments.Keywords.TryGetValue("group", out expression!))
+        {
+            value = arguments.ResolveKeywordValue("group", bindings);
+        }
+        else
+        {
+            return false;
+        }
+
+        if (IsUnknown(value))
+        {
+            return false;
+        }
+
+        var summary = (AbstractRegexMatchSummary)receiver.Value;
+        if (TryGetInt32(value, out var index))
+        {
+            if (summary.CaptureSlotCount.HasValue &&
+                (index < 0 || index >= summary.CaptureSlotCount.Value))
+            {
+                AddDiagnostic(diagnostics, "LA3159", "Regex group index is out of range.", DiagnosticSpan(expression, value));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.IntegerType)
+        {
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.String)
+        {
+            var name = (string)value.Value;
+            if (summary.CaptureSlotCount.HasValue &&
+                !summary.NamedGroups.ContainsKey(name))
+            {
+                AddDiagnostic(diagnostics, "LA3159", $"Regex group '{name}' is not defined.", DiagnosticSpan(expression, value));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (value.Kind == AbstractValueKind.StringType)
+        {
+            return false;
+        }
+
+        AddDiagnostic(diagnostics, "LA3159", $"match.{memberName}(group=0) expects an integer or group name.", DiagnosticSpan(expression, value));
+        return true;
     }
 
     private enum RegexMatchOperation

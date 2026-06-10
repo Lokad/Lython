@@ -2327,7 +2327,7 @@ import re
 
 m = re.search("a", "abc")
 assert m is not None
-m.start(1)
+m.start(1, 2)
 m.not_real
 m.group().find(1)
 
@@ -2344,6 +2344,46 @@ first("abc").find(1)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3152");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113");
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3075") >= 2);
+    }
+
+    [Fact]
+    public void RegexExpandedContracts_ReportKnownMembersAndShapeErrorsAtCompileTime()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+import re
+
+pat = re.compile(r"(?P<word>a)(b)?", re.NOFLAG | re.ASCII)
+m = pat.search("xa", pos=1, endpos=2)
+if m is not None:
+    pat.pattern.find("a")
+    pat.flags + 1
+    pat.groups + 1
+    pat.groupindex
+    m.re.pattern.find("a")
+    m.string.find("x")
+    m.pos + m.endpos
+    m.groups(default="")
+    m.groupdict(default="")
+    m.expand(r"\g<word>")
+    m.start("word")
+    m.end(group="word")
+    m.span("missing")
+    m.expand(1)
+
+pat.search("x", pos="bad")
+re.search("a", "a", pos="bad")
+re.sub("a", "x", "a", pos="bad")
+re.split("a", "a", endpos="bad")
+re.compile("a", re.DEBUG)
+re.purge(1)
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3159" && d.Message.Contains("missing", StringComparison.Ordinal));
+        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3158") >= 5);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3045" && d.Message.Contains("DEBUG", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3151" && d.Message.Contains("re.purge", StringComparison.Ordinal));
     }
 
     [Fact]

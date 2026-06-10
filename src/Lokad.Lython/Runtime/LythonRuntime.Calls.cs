@@ -107,6 +107,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static bool MatchesExceptionTypeName(string caughtTypeName, string thrownTypeName)
+        => string.Equals(caughtTypeName, thrownTypeName, StringComparison.Ordinal) ||
+           (IsRegexPatternErrorName(caughtTypeName) && IsRegexPatternErrorName(thrownTypeName)) ||
+           (string.Equals(caughtTypeName, "SubprocessError", StringComparison.Ordinal) &&
+            string.Equals(thrownTypeName, "CalledProcessError", StringComparison.Ordinal));
+
+    private static bool IsRegexPatternErrorName(string typeName)
+        => string.Equals(typeName, "error", StringComparison.Ordinal) ||
+           string.Equals(typeName, "PatternError", StringComparison.Ordinal);
+
     private static object InvokeCallableTarget(
         object target,
         LythonSourceSpan targetSpan,

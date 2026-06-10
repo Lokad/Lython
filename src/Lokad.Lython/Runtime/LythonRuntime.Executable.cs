@@ -865,7 +865,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool MatchesExecutableExceptionType(IReadOnlyList<string>? exceptionTypes, string exceptionType)
-        => exceptionTypes is null || exceptionTypes.Any(name => string.Equals(name, exceptionType, StringComparison.Ordinal));
+        => exceptionTypes is null || exceptionTypes.Any(name => MatchesExceptionTypeName(name, exceptionType));
 
     private static bool TryExecuteExecutableMatchCase(
         ExecutableMatchCaseBinding matchCase,

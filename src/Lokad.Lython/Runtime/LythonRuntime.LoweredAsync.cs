@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
         catch (LythonRuntimeException ex)
         {
             if (statement.Syntax.ExceptBody is not null &&
-                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => string.Equals(name, ex.ExceptionType, StringComparison.Ordinal))))
+                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
             {
                 var exceptContext = new ExecutionContext(context);
                 var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);

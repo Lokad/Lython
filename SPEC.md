@@ -681,8 +681,8 @@ The initial subset must raise the following exception types for the following ru
 - division or remainder by zero: `ValueError`
 - invalid integer conversion through `int(...)`: `ValueError`
 - invalid floating-point conversion through `float(...)`: `ValueError`
-- invalid regex pattern or unsupported regex syntax inside `re`: `ValueError`
-- invalid JSON text: `ValueError`
+- invalid regex pattern or unsupported regex syntax inside `re`: `re.error`
+- invalid JSON text: `json.JSONDecodeError`
 - invalid structured-delimited-text input accepted by the `csv` subset: `csv.Error`
 - missing dictionary key through indexing: `KeyError`
 - out-of-range string, list, or tuple index: `IndexError`
@@ -959,30 +959,27 @@ The runtime must support the statement:
 
 - `import re`
 
-The imported module must expose exactly the following functions:
+The imported module must expose the common Python-shaped regex helpers:
 
-- `re.search(pattern, string)`
-- `re.match(pattern, string)`
-- `re.fullmatch(pattern, string)`
-- `re.findall(pattern, string)`
-- `re.sub(pattern, repl, string)`
-- `re.split(pattern, string)`
+- `re.compile(pattern, flags=0)`
+- `re.search(pattern, string, flags=0, pos=0, endpos=len(string))`
+- `re.match(pattern, string, flags=0, pos=0, endpos=len(string))`
+- `re.fullmatch(pattern, string, flags=0, pos=0, endpos=len(string))`
+- `re.findall(pattern, string, flags=0, pos=0, endpos=len(string))`
+- `re.finditer(pattern, string, flags=0, pos=0, endpos=len(string))`
+- `re.sub(pattern, repl, string, count=0, flags=0, pos=0, endpos=len(string))`
+- `re.subn(pattern, repl, string, count=0, flags=0, pos=0, endpos=len(string))`
+- `re.split(pattern, string, maxsplit=0, flags=0, pos=0, endpos=len(string))`
 - `re.escape(string)`
+- `re.purge()`
 
-The initial subset does not support:
+Compiled pattern objects must expose `search`, `match`, `fullmatch`, `findall`, `finditer`, `sub`, `subn`, and `split` with corresponding `pos` and `endpos` range arguments where applicable. They must also expose `pattern`, `flags`, `groups`, and `groupindex`.
 
-- `re.compile(pattern)`
-- regex flags
-- match objects beyond what is strictly needed to support the required functions
-- named groups
-- backreferences
-- lookahead
-- lookbehind
-- conditional expressions
-- verbose mode
-- locale-dependent behavior
+Match objects must expose `re`, `string`, `pos`, `endpos`, `lastindex`, `lastgroup`, `group`, `groups(default=None)`, `groupdict(default=None)`, `expand(template)`, and group-aware `start(group=0)`, `end(group=0)`, and `span(group=0)`.
 
-If unsupported regex features are used, the runtime must fail explicitly.
+The module must expose `re.error`, `re.PatternError`, `re.RegexFlag`, `re.NOFLAG`, `re.ASCII`/`re.A`, `re.IGNORECASE`/`re.I`, `re.UNICODE`/`re.U`, `re.MULTILINE`/`re.M`, `re.DOTALL`/`re.S`, and `re.VERBOSE`/`re.X`. `re.LOCALE`/`re.L` and `re.DEBUG` must fail explicitly under Lython's Unicode-only regex subset.
+
+Bytes patterns and subjects are outside the supported regex surface unless the public bytes model is explicitly expanded. If unsupported regex features are used, the runtime must fail explicitly.
 
 ### 11.7.1 Supported Pattern Surface
 
@@ -1004,14 +1001,7 @@ The initial regex pattern surface must support exactly:
 
 ### 11.7.2 Replacement Surface
 
-For `re.sub(...)`, the initial subset must support:
-
-- plain replacement strings
-
-The initial subset does not support:
-
-- callable replacements
-- replacement backreferences
+For `re.sub(...)`, `re.subn(...)`, compiled-pattern replacement methods, and `Match.expand(...)`, the runtime must support Python-shaped replacement templates, numeric and named group references, and callable replacements whose return value is a string.
 
 ### 11.7.3 Regex Semantics
 

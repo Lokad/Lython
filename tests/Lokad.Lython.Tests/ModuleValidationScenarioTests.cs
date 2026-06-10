@@ -174,8 +174,8 @@ write_text("/out.txt", str(helper.bump(2)) + "|" + str(again.bump(2)) + "|" + st
     [InlineData("import re\nre.escape(1)\n", "compile", "re.escape(string) expects a string argument")]
     [InlineData("import re\nre.findall(1, \"alpha\")\n", "compile", "expects pattern to be a string or compiled regex pattern")]
     [InlineData("import re\nre.sub(\"a\", 1, \"alpha\")\n", "compile", "expects repl to be a string or callable")]
-    [InlineData("import re\nre.search(text = \"alpha\", pattern = \"a\")\n", "compile", "re.search(pattern, string[, flags]) expects two or three arguments.")]
-    [InlineData("import re\nre.sub(pattern = \"a\", string = \"alpha\")\n", "compile", "re.sub(pattern, repl, string[, count][, flags]) expects three to five arguments.")]
+    [InlineData("import re\nre.search(text = \"alpha\", pattern = \"a\")\n", "compile", "re.search(pattern, string[, flags][, pos][, endpos]) expects two to five arguments.")]
+    [InlineData("import re\nre.sub(pattern = \"a\", string = \"alpha\")\n", "compile", "re.sub(pattern, repl, string[, count][, flags][, pos][, endpos]) expects three to seven arguments.")]
     [InlineData("import fnmatch\nfnmatch.fnmatch(\"a.txt\", 1)\n", "compile", "expects two string arguments")]
     [InlineData("import fnmatch\nfnmatch.filter([\"a.txt\"], 1)\n", "compile", "expects an iterable and a string pattern")]
     [InlineData("import fnmatch\nfnmatch.filter(1, \"*.txt\")\n", "compile", "expects an iterable of strings")]
@@ -262,9 +262,9 @@ write_text("/out.txt", str(re.fullmatch("abc", "abc\n") is None))
     [InlineData("import csv\nwriter = csv.writer()\nwriter.writerow()\n", "csv.writerow(row) expects one argument.")]
     [InlineData("import csv\nwriter = csv.writer()\nwriter.writerows()\n", "csv.writerows(rows) expects one argument.")]
     [InlineData("import csv\nwriter = csv.writer()\nwriter.getvalue(1)\n", "csv.getvalue() expects no arguments.")]
-    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.start(1)\n", "match.start() expects no arguments.")]
-    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.end(1)\n", "match.end() expects no arguments.")]
-    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.span(1)\n", "match.span() expects no arguments.")]
+    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.start(1, 2)\n", "match.start(group=0) expects zero or one group identifier.")]
+    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.end(1, 2)\n", "match.end(group=0) expects zero or one group identifier.")]
+    [InlineData("import re\nm = re.search(\"a\", \"a\")\nm.span(1, 2)\n", "match.span(group=0) expects zero or one group identifier.")]
     public void ModuleMemberContractFailure_ReportsTypeError(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

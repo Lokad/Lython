@@ -419,6 +419,62 @@ write_text("/out.txt", str(len(matches)) + "|" + "".join(parts))
     }
 
     [Fact]
+    public void ExpandedRegexSurface_ExposesMetadataRangesLazyIteratorsAndErrors()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import re
+
+pat = re.compile(r"(?P<word>a)(?P<opt>b)?", re.I | re.NOFLAG)
+m = pat.search("zzA zzab", pos=2, endpos=5)
+groupdict = m.groupdict("-")
+vals = []
+vals.append(pat.pattern)
+vals.append(str(pat.flags == re.I))
+vals.append(str(pat.groups))
+vals.append(str(pat.groupindex["word"]) + ":" + str(pat.groupindex["opt"]))
+vals.append(m.group(0) + ":" + str(m.pos) + ":" + str(m.endpos))
+vals.append(str(m.start("word")) + ":" + str(m.end("opt")) + ":" + str(m.span("opt")))
+vals.append(str(m.groups("-")))
+vals.append(groupdict["word"] + ":" + groupdict["opt"])
+vals.append(m.expand(r"<\g<word>-\2>"))
+vals.append(str(m.lastindex) + ":" + str(m.lastgroup))
+vals.append(str(m.re is pat) + ":" + m.string)
+
+it = pat.finditer("ab a")
+vals.append(next(it).group(0))
+vals.append(str([item.group(0) for item in it]))
+vals.append(next(it, "done"))
+
+vals.append(re.search("a", "xxa", pos=2).group())
+vals.append(str(re.findall("a", "a a a", pos=2, endpos=4)))
+vals.append(re.sub("a", "x", "a a a", pos=2, endpos=4))
+subn_text, subn_count = pat.subn("z", "ab a", count=1, pos=1)
+vals.append(subn_text + ":" + str(subn_count))
+vals.append(str(pat.split("xaayaa", maxsplit=1, pos=1, endpos=4)))
+re.purge()
+
+try:
+    re.compile("(")
+except re.error as ex:
+    vals.append("error:" + ex.type)
+
+try:
+    re.compile("[")
+except re.PatternError as ex:
+    vals.append("pattern:" + ex.type)
+
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("(?P<word>a)(?P<opt>b)?|True|2|1:2|A:2:5|2:-1:(-1, -1)|(A, -)|A:-|<A->|1:word|True:zzA zzab|ab|[a]|done|a|[a]|a x a|ab z:1|[, a, None, ay]|error:error|pattern:error", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void MatchGroup_SupportsTupleShapedOrdinaryPythonAccess()
     {
         var host = new MockLythonHost();

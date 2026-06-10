@@ -4,6 +4,10 @@ internal static partial class StaticContracts
 {
     private static readonly HashSet<string> RegexPatternMembers = new(StringComparer.Ordinal)
     {
+        "pattern",
+        "flags",
+        "groups",
+        "groupindex",
         "search",
         "match",
         "fullmatch",
@@ -16,7 +20,16 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> RegexMatchMembers = new(StringComparer.Ordinal)
     {
+        "re",
+        "string",
+        "pos",
+        "endpos",
+        "lastindex",
+        "lastgroup",
         "group",
+        "groups",
+        "groupdict",
+        "expand",
         "start",
         "end",
         "span",

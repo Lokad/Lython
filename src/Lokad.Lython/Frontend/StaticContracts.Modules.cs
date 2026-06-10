@@ -701,7 +701,7 @@ internal static partial class StaticContracts
             ("decimal", "ROUND_DOWN") or
             ("decimal", "ROUND_UP") or
             ("decimal", "ROUND_05UP") => AbstractValue.StringType(span),
-            ("re", "IGNORECASE") or ("re", "I") or ("re", "UNICODE") or ("re", "U") or ("re", "MULTILINE") or ("re", "M") or ("re", "DOTALL") or ("re", "S") or ("re", "VERBOSE") or ("re", "X") => AbstractValue.IntegerType(span),
+            ("re", "NOFLAG") or ("re", "IGNORECASE") or ("re", "I") or ("re", "UNICODE") or ("re", "U") or ("re", "MULTILINE") or ("re", "M") or ("re", "DOTALL") or ("re", "S") or ("re", "VERBOSE") or ("re", "X") or ("re", "ASCII") or ("re", "A") or ("re", "LOCALE") or ("re", "L") or ("re", "DEBUG") => AbstractValue.IntegerType(span),
             ("csv", "QUOTE_MINIMAL") or ("csv", "QUOTE_ALL") or ("csv", "QUOTE_NONE") or ("csv", "QUOTE_NONNUMERIC") => AbstractValue.IntegerType(span),
             ("subprocess", "PIPE") or ("subprocess", "STDOUT") or ("subprocess", "DEVNULL") => AbstractValue.IntegerType(span),
             _ => default

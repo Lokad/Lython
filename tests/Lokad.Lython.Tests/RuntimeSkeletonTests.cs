@@ -66,7 +66,7 @@ write_text("/output.txt", re.sub("(", "x", text))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("error", result.Failure!.ExceptionType);
         Assert.Empty(result.Diagnostics);
     }
 }
