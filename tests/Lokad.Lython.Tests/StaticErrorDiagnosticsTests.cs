@@ -1677,6 +1677,54 @@ items2 = items1
     }
 
     [Fact]
+    public void FunctoolsExpandedContracts_ReportKnownMembersAndShapeErrors()
+    {
+        var valid = new LythonEngine().Compile(
+            """
+import functools
+
+def f(x):
+    return x
+
+functools.WRAPPER_ASSIGNMENTS
+functools.WRAPPER_UPDATES
+functools.Placeholder
+functools.update_wrapper(f, f, assigned=("__name__",), updated=())
+functools.wraps(f, assigned=("__name__",), updated=())(f)
+functools.lru_cache(f)
+functools.lru_cache(maxsize=2, typed=True)(f)
+functools.cache(f)
+functools.cached_property(f)
+functools.partialmethod(f, 1)
+functools.singledispatch(f)
+functools.singledispatchmethod(f)
+functools.recursive_repr(fillvalue="...")(f)
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+import functools
+
+functools.missing
+functools.cache()
+functools.cached_property(1)
+functools.singledispatch(1)
+functools.singledispatchmethod(1)
+functools.lru_cache(maxsize="many")
+functools.lru_cache(typed="yes")
+functools.recursive_repr(fillvalue=1)
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113");
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3151");
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3085");
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3158");
+    }
+
+    [Fact]
     public void Run_DoesNotStartExecutionWhenLiteralLoopShapeErrorsExist()
     {
         var host = new MockLythonHost("/repo");

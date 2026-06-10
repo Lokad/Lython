@@ -1,8 +1,9 @@
 using Lokad.Lython.Runtime.Text;
+using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRenderableValue
+internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRenderableValue, IPyHashableValue
 {
     private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _constructor;
     private readonly Func<string, object?>? _memberFactory;
@@ -51,6 +52,8 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     public override string ToString() => $"<class '{Name}'>";
 }

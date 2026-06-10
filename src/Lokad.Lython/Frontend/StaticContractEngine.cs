@@ -455,7 +455,15 @@ internal static class StaticContractEngine
         => call.Target is MemberExpressionSyntax
         {
             Target: IdentifierExpressionSyntax { Name: "functools" },
-            MemberName: "partial"
+            MemberName: "partial" or
+                "partialmethod" or
+                "cmp_to_key" or
+                "cache" or
+                "cached_property" or
+                "singledispatch" or
+                "singledispatchmethod" or
+                "lru_cache" or
+                "recursive_repr"
         };
 
     private static bool IsPropertyCall(CallExpressionSyntax call)
@@ -551,7 +559,43 @@ internal static class StaticContractEngine
 
     private static void AnalyzeFunctoolsPartialCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.partial(func, ...) expects the first argument to be callable.", diagnostics, bindings);
+        var name = ((MemberExpressionSyntax)call.Target).MemberName;
+        switch (name)
+        {
+            case "partial":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.partial(func, ...) expects the first argument to be callable.", diagnostics, bindings);
+                break;
+            case "partialmethod":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.partialmethod(func, ...) expects the first argument to be callable.", diagnostics, bindings);
+                break;
+            case "cmp_to_key":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "mycmp", "LA3085", "functools.cmp_to_key(mycmp) expects one callable argument.", diagnostics, bindings);
+                break;
+            case "cache":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "user_function", "LA3085", "functools.cache(user_function) expects one callable argument.", diagnostics, bindings);
+                break;
+            case "cached_property":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.cached_property(func) expects one callable argument.", diagnostics, bindings);
+                break;
+            case "singledispatch":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.singledispatch(func) expects one callable argument.", diagnostics, bindings);
+                break;
+            case "singledispatchmethod":
+                StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "func", "LA3085", "functools.singledispatchmethod(func) expects one callable argument.", diagnostics, bindings);
+                break;
+            case "lru_cache":
+                if (!TryGetArgument(arguments, 0, "maxsize", bindings, out _, out var maxSizeValue) ||
+                    StaticAbstractFacts.IsDefinitelyNonCallable(maxSizeValue))
+                {
+                    AnalyzeIntegerOrNoneArgument(arguments, 0, "maxsize", "functools.lru_cache(maxsize=...) expects an integer or None.", diagnostics, bindings);
+                }
+
+                AnalyzeBooleanArgument(arguments, 1, "typed", "functools.lru_cache(..., typed=...) expects a bool.", diagnostics, bindings);
+                break;
+            case "recursive_repr":
+                StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "fillvalue", "LA3085", "functools.recursive_repr(fillvalue=...) expects a string fill value.", diagnostics, bindings);
+                break;
+        }
     }
 
     private static void AnalyzePropertyCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

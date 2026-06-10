@@ -2,6 +2,7 @@ using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using System.Text.RegularExpressions;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -122,7 +123,7 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
-    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue
+    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
@@ -168,6 +169,8 @@ internal sealed partial class LythonRuntime
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

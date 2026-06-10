@@ -294,10 +294,11 @@ The initial subset does not support:
 
 The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
-subsets specified in this document, including `argparse`, `collections`, `csv`,
-`datetime`, `decimal`, `difflib`, `fnmatch`, `glob`, `itertools`, `json`,
-`math`, `os`, `pathlib`, `pkgutil`, `random`, `re`, `subprocess` when
-host-enabled, `sys`, and related contained helpers.
+subsets specified in this document, including `argparse`, `collections`,
+`copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `fnmatch`,
+`functools`, `glob`, `itertools`, `json`, `math`, `operator`, `os`,
+`pathlib`, `pkgutil`, `random`, `re`, `statistics`, `subprocess` when
+host-enabled, `sys`, `typing`, and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members. The runtime must reject imports outside the
@@ -339,6 +340,16 @@ instances, namedtuple-like values, and objects exposing `__replace__`.
 `__copy__` and `__deepcopy__(memo)` hooks are supported; pickle-oriented
 `__reduce__`, `__reduce_ex__`, `__getstate__`, and `__setstate__` protocols
 must fail explicitly unless a direct copy hook handles the object.
+
+The `functools` subset includes `WRAPPER_ASSIGNMENTS`, `WRAPPER_UPDATES`,
+`update_wrapper`, `wraps`, `total_ordering`, `reduce`, `partial`,
+`partialmethod`, `cmp_to_key`, `lru_cache`, `cache`, `cached_property`, simple
+`singledispatch` and `singledispatchmethod` registration, and
+`recursive_repr`. Wrapper helpers copy supported dynamic metadata and preserve
+`__wrapped__`; cache decorators expose `cache_info`, `cache_clear`, and
+`cache_parameters`. Cache keys follow Lython's hashable-value rules. Dispatch
+helpers support explicit class/type registration; annotation-only registration
+and placeholder partial application must fail explicitly.
 
 ### 8.3 Supported Literal Surface
 

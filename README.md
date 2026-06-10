@@ -113,6 +113,14 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `copy` supports `copy`, `deepcopy(x, memo=None)`, `copy.replace(obj, **changes)`, `Error`/`error`, and a compatibility `dispatch_table`. Deep copies preserve cycles and explicit memo dictionaries, `replace` works for dataclasses, namedtuple-like values, and `__replace__` hooks, and pickle-style reduce/state protocols fail explicitly unless a direct copy hook is provided.
 
+`functools` covers wrapper metadata helpers, `total_ordering`, `reduce`, `partial`, `partialmethod`, `cmp_to_key`, `lru_cache`, `cache`, `cached_property`, simple `singledispatch` and `singledispatchmethod` registration, and `recursive_repr`. Cache keys use Lython's hashable-value rules; `functools.Placeholder` is exposed only to fail explicitly because placeholder partial application is outside the supported subset.
+
+`re` is Unicode text-only and backed by `Utf8Regex.PythonRe`. It exposes common module helpers, compiled patterns, lazy `finditer`, Python-shaped `Pattern` and `Match` metadata, named and optional group helpers, callable and template replacements, catchable `re.error`/`PatternError`, and the usual integer flags. `re.LOCALE` and `re.DEBUG` fail explicitly; bytes patterns and subjects remain outside the public bytes boundary.
+
+`fnmatch` is deterministic and platform-independent. `fnmatch.fnmatch`, `fnmatch.fnmatchcase`, and `filter` use POSIX-like case-sensitive matching with `*`, `?`, bracket classes, negated classes, and ranges; `translate` returns an anchored regex string compatible with Lython `re`.
+
+`json` covers text-only `load`/`dump` for Lython file handles, `loads`/`dumps`, catchable `JSONDecodeError` fields, parse/object hooks, formatting controls, key sorting/conversion, `skipkeys`, `default`, `allow_nan`, and circular-reference checks. `JSONEncoder` and `JSONDecoder` are exposed as explicit unsupported custom-class stubs.
+
 `itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; functions that must cache inputs or buffers are still subject to Lython's execution limits.
 
 `os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.

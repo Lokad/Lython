@@ -8,7 +8,7 @@ internal interface IPyDeletableDescriptor
     void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span);
 }
 
-internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor, IPyDeletableDescriptor, IClassOwnedMember
+internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor, IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember
 {
     private readonly LythonRuntime.ICallable? _getter;
     private readonly LythonRuntime.ICallable? _setter;

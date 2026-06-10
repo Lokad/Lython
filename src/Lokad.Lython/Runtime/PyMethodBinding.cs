@@ -10,6 +10,11 @@ internal interface IClassOwnedMember
     void BindOwner(PyType owner);
 }
 
+internal interface IClassNamedMember
+{
+    void BindName(string name);
+}
+
 internal interface IPySettableDescriptor
 {
     void Set(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span);

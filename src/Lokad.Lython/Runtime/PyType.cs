@@ -1,9 +1,10 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
+internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
     private readonly Dictionary<string, object> _members;
 
@@ -73,9 +74,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
 
     public bool TrySetMember(string name, object value)
     {
-        if (value is PyProperty property)
+        if (value is IClassNamedMember named)
         {
-            property.BindName(name);
+            named.BindName(name);
         }
 
         if (value is IClassOwnedMember owned)
@@ -245,6 +246,8 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
+    public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+
     public override string ToString() => $"<class '{Name}'>";
 
     private object InvokeBuiltInType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -377,9 +380,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable
     {
         foreach (var pair in _members)
         {
-            if (pair.Value is PyProperty property)
+            if (pair.Value is IClassNamedMember named)
             {
-                property.BindName(pair.Key);
+                named.BindName(pair.Key);
             }
 
             if (pair.Value is IClassOwnedMember owned)
