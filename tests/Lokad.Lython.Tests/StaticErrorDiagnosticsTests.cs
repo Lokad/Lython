@@ -2029,6 +2029,64 @@ Path(1)
     }
 
     [Fact]
+    public void OperatorExpandedContracts_ReportKnownMembersAndShapeErrors()
+    {
+        var valid = new LythonEngine().Compile(
+            """
+import operator
+
+operator.truth(1)
+operator.not_([])
+operator.is_(None, None)
+operator.is_not([], [])
+operator.abs(-1)
+operator.neg(1)
+operator.pos(1)
+operator.invert(1)
+operator.index(True)
+operator.floordiv(7, 2)
+operator.mod(7, 2)
+operator.pow(2, 3)
+operator.lshift(1, 2)
+operator.rshift(4, 1)
+operator.and_(6, 3)
+operator.or_(4, 1)
+operator.xor(6, 3)
+operator.concat([1], [2])
+operator.length_hint([1, 2], default=0)
+operator.countOf([1, 1], 1)
+operator.indexOf([1, 2], 2)
+operator.call(operator.add, 1, 2)
+operator.itemgetter(0, 1)
+operator.attrgetter("name", "child.value")
+operator.methodcaller("strip")
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+import operator
+
+operator.not_real
+operator.truth()
+operator.add(1)
+operator.setitem([], 0)
+operator.itemgetter()
+operator.itemgetter(item=0)
+operator.attrgetter()
+operator.length_hint([], default=0, extra=1)
+operator.call()
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113");
+        Assert.True(
+            invalid.Diagnostics.Count(d => d.Code == "LA3151") >= 7,
+            string.Join(" | ", invalid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+    }
+
+    [Fact]
     public void KnownRuntimeObjectContracts_FlowThroughReturnValues()
     {
         var compiled = new LythonEngine().Compile(

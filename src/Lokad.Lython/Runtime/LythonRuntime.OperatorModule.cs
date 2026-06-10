@@ -1,4 +1,6 @@
 using System.Numerics;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -17,19 +19,56 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "add" => new BuiltinCallable("operator.add", (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan)), ["a", "b"]),
-                "sub" => new BuiltinCallable("operator.sub", (arguments, span, _) => Binary(arguments, span, EvaluateSubtract), ["a", "b"]),
-                "mul" => new BuiltinCallable("operator.mul", (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan)), ["a", "b"]),
-                "truediv" => new BuiltinCallable("operator.truediv", (arguments, span, _) => Binary(arguments, span, EvaluateDivide), ["a", "b"]),
-                "eq" => new BuiltinCallable("operator.eq", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => AreEqual(left, right)), ["a", "b"]),
-                "ne" => new BuiltinCallable("operator.ne", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => !AreEqual(left, right)), ["a", "b"]),
-                "lt" => new BuiltinCallable("operator.lt", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) < 0), ["a", "b"]),
-                "le" => new BuiltinCallable("operator.le", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) <= 0), ["a", "b"]),
-                "gt" => new BuiltinCallable("operator.gt", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) > 0), ["a", "b"]),
-                "ge" => new BuiltinCallable("operator.ge", (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) >= 0), ["a", "b"]),
-                "getitem" => new BuiltinCallable("operator.getitem", GetItem, ["obj", "key"]),
-                "setitem" => new BuiltinCallable("operator.setitem", SetItem, ["obj", "key", "value"]),
-                "contains" => new BuiltinCallable("operator.contains", ContainsValue, ["obj", "value"]),
+                "truth" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorTruth, (arguments, span, _) => Unary(arguments, span, static (value, _) => IsTruthy(value))),
+                "not_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
+                "is_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => ReferenceEquals(left, right))),
+                "is_not" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !ReferenceEquals(left, right))),
+                "abs" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, _) => Unary(arguments, span, EvaluateAbsolute)),
+                "neg" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryMinus)),
+                "pos" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorPos, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryPlus)),
+                "invert" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, _) => Unary(arguments, span, EvaluateBitwiseNot)),
+                "index" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, _) => Unary(arguments, span, EvaluateIndex)),
+                "add" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
+                "sub" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorSub, (arguments, span, _) => Binary(arguments, span, EvaluateSubtract)),
+                "mul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
+                "truediv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, _) => Binary(arguments, span, EvaluateDivide)),
+                "floordiv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, _) => Binary(arguments, span, EvaluateFloorDivide)),
+                "mod" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMod, (arguments, span, _) => Binary(arguments, span, EvaluateModulo)),
+                "pow" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorPow, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluatePower(left, right, context, innerSpan))),
+                "matmul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMatMul, (arguments, span, _) => Binary(arguments, span, UnsupportedMatMul)),
+                "lshift" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorLShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateLeftShift(left, right, context, innerSpan))),
+                "rshift" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorRShift, (arguments, span, _) => Binary(arguments, span, EvaluateRightShift)),
+                "and_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorAnd, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseAnd)),
+                "or_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorOr, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseOr)),
+                "xor" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorXor, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseXor)),
+                "concat" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorConcat, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateConcat(left, right, context, innerSpan))),
+                "eq" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorEq, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreEqual(left, right))),
+                "ne" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreEqual(left, right))),
+                "lt" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorLt, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) < 0)),
+                "le" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorLe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) <= 0)),
+                "gt" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorGt, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) > 0)),
+                "ge" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorGe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => Compare(left, right, innerSpan) >= 0)),
+                "getitem" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorGetItem, GetItem),
+                "setitem" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorSetItem, SetItem),
+                "delitem" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorDelItem, DelItem),
+                "contains" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorContains, ContainsValue),
+                "length_hint" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorLengthHint, LengthHint),
+                "countOf" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorCountOf, CountOf),
+                "indexOf" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIndexOf, IndexOf),
+                "iadd" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIAdd, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Add)),
+                "isub" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorISub, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Subtract)),
+                "imul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIMul, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Multiply)),
+                "itruediv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorITrueDiv, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Divide)),
+                "ifloordiv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIFloorDiv, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.FloorDivide)),
+                "imod" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIMod, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Modulo)),
+                "ipow" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIPow, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Power)),
+                "ilshift" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorILShift, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.LeftShift)),
+                "irshift" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIRShift, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.RightShift)),
+                "iand" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIAnd, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.BitwiseAnd)),
+                "ior" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIOr, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.BitwiseOr)),
+                "ixor" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIXor, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.BitwiseXor)),
+                "iconcat" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIConcat, InPlaceConcat),
+                "call" => new OperatorFactoryCallable("operator.call", CallTarget),
                 "itemgetter" => new OperatorFactoryCallable("operator.itemgetter", CreateItemGetter),
                 "attrgetter" => new OperatorFactoryCallable("operator.attrgetter", CreateAttrGetter),
                 "methodcaller" => new OperatorFactoryCallable("operator.methodcaller", CreateMethodCaller),
@@ -40,7 +79,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class OperatorFactoryCallable : ICallable
+    private sealed class OperatorFactoryCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         private readonly string _name;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
@@ -56,6 +95,16 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             return _implementation(arguments, span, context);
         }
+
+        public string Name => _name;
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(_name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public override string ToString() => _name;
     }
@@ -91,7 +140,11 @@ internal sealed partial class LythonRuntime
             return new PyTuple(values, context.MemoryGovernor, span);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<operator.itemgetter>");
+        public PyString RenderPython(PyRenderingContext context)
+            => PyRendering.JoinRenderedSequence(
+                "operator.itemgetter(",
+                _items.Select(item => PyRendering.ToReprPyString(item, context)),
+                ")");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
@@ -127,7 +180,12 @@ internal sealed partial class LythonRuntime
             return new PyTuple(values, context.MemoryGovernor, span);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<operator.attrgetter>");
+        public PyString RenderPython(PyRenderingContext context)
+            => PyRendering.JoinRenderedSequence(
+                "operator.attrgetter(",
+                _paths.Select(path => PyRendering.ToReprPyString(PyString.FromString(string.Join(".", path)), context)),
+                ")",
+                context);
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
@@ -172,9 +230,34 @@ internal sealed partial class LythonRuntime
             return InvokeCallableTarget(member, span, span, context, () => _arguments);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<operator.methodcaller>");
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            var rendered = new List<PyString> { PyRendering.ToReprPyString(PyString.FromString(_name), context) };
+            foreach (var argument in _arguments)
+            {
+                if (argument.Name is null)
+                {
+                    rendered.Add(PyRendering.ToReprPyString(argument.Value, context));
+                    continue;
+                }
+
+                rendered.Add(PyString.FromString(argument.Name + "=" + PyRendering.ToReprPyString(argument.Value, context).AsString()));
+            }
+
+            return PyRendering.JoinRenderedSequence("operator.methodcaller(", rendered, ")", context);
+        }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private static object Unary(object[] arguments, LythonSourceSpan span, Func<object, LythonSourceSpan, object> operation)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "operator unary function expects one argument.", span);
+        }
+
+        return operation(arguments[0], span);
     }
 
     private static object Binary(object[] arguments, LythonSourceSpan span, Func<object, object, LythonSourceSpan, object> operation)
@@ -185,6 +268,50 @@ internal sealed partial class LythonRuntime
         }
 
         return operation(arguments[0], arguments[1], span);
+    }
+
+    private static object EvaluateAbsolute(object value, LythonSourceSpan span)
+    {
+        if (value is PyDecimal decimalValue)
+        {
+            return new PyDecimal(decimal.Abs(decimalValue.Value));
+        }
+
+        if (!PyNumberOps.TryAsNumber(value, out var number))
+        {
+            throw new LythonRuntimeException("TypeError", "operator.abs(obj) expects a numeric value.", span);
+        }
+
+        return number.IsFloat ? Math.Abs(number.Floating) : BigInteger.Abs(number.Integer);
+    }
+
+    private static object EvaluateIndex(object value, LythonSourceSpan span)
+    {
+        if (!PyNumberOps.TryAsInteger(value, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", "operator.index(obj) expects an integer-compatible value.", span);
+        }
+
+        return integer;
+    }
+
+    private static object UnsupportedMatMul(object left, object right, LythonSourceSpan span)
+    {
+        _ = left;
+        _ = right;
+        throw new LythonRuntimeException("TypeError", "operator.matmul(a, b) is unsupported because Lython has no matrix multiplication operator.", span);
+    }
+
+    private static object EvaluateConcat(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) ||
+            left is PyList && right is PyList ||
+            left is PyTuple && right is PyTuple)
+        {
+            return EvaluateAdd(left, right, context, span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "operator.concat(a, b) expects two compatible sequence values.", span);
     }
 
     private static object CompareBool(object[] arguments, LythonSourceSpan span, Func<object, object, LythonSourceSpan, bool> operation)
@@ -215,6 +342,52 @@ internal sealed partial class LythonRuntime
         }
 
         return PyIndexing.ReadIndex(target, index, span);
+    }
+
+    private static object DelItem(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "operator.delitem(obj, key) expects two arguments.", span);
+        }
+
+        var target = arguments[0];
+        var index = arguments[1];
+        switch (target)
+        {
+            case IDeletablePySubscriptableValue subscriptable:
+                subscriptable.DeleteSubscript(index, span);
+                return PyNone.Instance;
+            case IMutablePySequenceValue sequence:
+                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span));
+                return PyNone.Instance;
+            case PyDict dict:
+                if (!dict.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor)))
+                {
+                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                }
+
+                return PyNone.Instance;
+            case PyDefaultDict defaultDict:
+                if (!defaultDict.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor)))
+                {
+                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                }
+
+                return PyNone.Instance;
+            case PyCounter counter:
+                _ = counter.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor));
+                return PyNone.Instance;
+            case PyTuple:
+                throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", span);
+            default:
+                if (PyStringOps.TryAsString(target, out _))
+                {
+                    throw new LythonRuntimeException("TypeError", "String does not support item deletion.", span);
+                }
+
+                throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
+        }
     }
 
     private static object SetItem(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -266,6 +439,149 @@ internal sealed partial class LythonRuntime
         return Contains(arguments[0], arguments[1], span);
     }
 
+    private static object LengthHint(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "operator.length_hint(obj, default=0) expects one or two arguments.", span);
+        }
+
+        if (TryGetLength(arguments[0], out var length))
+        {
+            return length;
+        }
+
+        if (arguments.Length == 1)
+        {
+            return BigInteger.Zero;
+        }
+
+        var defaultValue = ExpectInteger(arguments[1], "operator.length_hint(obj, default=0) expects an integer default.", span);
+        if (defaultValue < BigInteger.Zero)
+        {
+            throw new LythonRuntimeException("ValueError", "operator.length_hint default must be non-negative.", span);
+        }
+
+        return defaultValue;
+    }
+
+    private static object CountOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "operator.countOf(a, b) expects two arguments.", span);
+        }
+
+        var count = BigInteger.Zero;
+        foreach (var item in ToSequence(arguments[0], span))
+        {
+            if (AreEqual(item, arguments[1]))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static object IndexOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "operator.indexOf(a, b) expects two arguments.", span);
+        }
+
+        var index = BigInteger.Zero;
+        foreach (var item in ToSequence(arguments[0], span))
+        {
+            if (AreEqual(item, arguments[1]))
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        throw new LythonRuntimeException("ValueError", "sequence.index(x): x not in sequence", span);
+    }
+
+    private static object InPlaceBinary(
+        object[] arguments,
+        LythonSourceSpan span,
+        ExecutionContext context,
+        AugmentedAssignmentOperatorSyntax op)
+        => Binary(arguments, span, (left, right, innerSpan) => EvaluateAugmentedAssignment(left, right, op, context, innerSpan));
+
+    private static object InPlaceConcat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => Binary(arguments, span, (left, right, innerSpan) =>
+        {
+            if (left is PyList || PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) || left is PyTuple && right is PyTuple)
+            {
+                return EvaluateAugmentedAssignment(left, right, AugmentedAssignmentOperatorSyntax.Add, context, innerSpan);
+            }
+
+            throw new LythonRuntimeException("TypeError", "operator.iconcat(a, b) expects sequence-compatible values.", innerSpan);
+        });
+
+    private static object CallTarget(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 0 || arguments[0].Name is not null)
+        {
+            throw new LythonRuntimeException("TypeError", "operator.call(obj, /, *args, **kwargs) expects a callable first positional argument.", span);
+        }
+
+        return InvokeCallableTarget(arguments[0].Value, span, span, context, () => arguments[1..]);
+    }
+
+    private static bool TryGetLength(object value, out BigInteger length)
+    {
+        switch (value)
+        {
+            case PyString text:
+                length = text.Length;
+                return true;
+            case PyBytes bytes:
+                length = bytes.Length;
+                return true;
+            case string text:
+                length = PyString.FromString(text).Length;
+                return true;
+            case ReFindAllResult matches:
+                length = matches.Items.Count;
+                return true;
+            case PyDict dict:
+                length = dict.Count;
+                return true;
+            case PyDefaultDict defaultDict:
+                length = defaultDict.Count;
+                return true;
+            case PyCounter counter:
+                length = counter.Count;
+                return true;
+            case PyDeque deque:
+                length = deque.Count;
+                return true;
+            case PySet set:
+                length = set.Count;
+                return true;
+            case IPyIndexableValue indexable:
+                length = indexable.Length;
+                return true;
+            case IReadOnlyCollection<object> collection:
+                length = collection.Count;
+                return true;
+            case System.Collections.ICollection collection:
+                length = collection.Count;
+                return true;
+            default:
+                length = BigInteger.Zero;
+                return false;
+        }
+    }
+
     private static object CreateItemGetter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -310,7 +626,13 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "operator.attrgetter(attr[, ...]) expects string arguments.", span);
             }
 
-            paths[i] = text.AsString().Split('.', StringSplitOptions.RemoveEmptyEntries);
+            var parts = text.AsString().Split('.');
+            if (parts.Length == 0 || parts.Any(static part => part.Length == 0))
+            {
+                throw new LythonRuntimeException("TypeError", "operator.attrgetter(attr[, ...]) expects non-empty dotted attribute names.", span);
+            }
+
+            paths[i] = parts;
         }
 
         return new PyAttrGetter(paths);

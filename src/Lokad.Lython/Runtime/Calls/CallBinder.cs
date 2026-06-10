@@ -37,7 +37,8 @@ internal static class CallBinder
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
-            signature.AllowsExtraKeywords);
+            signature.AllowsExtraKeywords,
+            signature.AllowsExtraPositional);
     }
 
     public static object[] BindNamedArguments(
@@ -48,7 +49,7 @@ internal static class CallBinder
         string[]? parameterNames,
         IReadOnlyDictionary<string, int>? parameterIndices,
         int requiredCount)
-        => BindNamedArguments(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false);
+        => BindNamedArguments(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false);
 
     private static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
@@ -60,7 +61,8 @@ internal static class CallBinder
         int requiredCount,
         int? maxArgumentCount,
         int? maxPositionalCount,
-        bool allowsExtraKeywords)
+        bool allowsExtraKeywords,
+        bool allowsExtraPositional)
     {
         if (parameterNames is null)
         {
@@ -84,6 +86,7 @@ internal static class CallBinder
         var bound = new object[parameterNames.Length];
         Array.Fill(bound, PyNone.Instance);
         var assigned = new bool[parameterNames.Length];
+        List<object>? extraPositional = null;
         var positionalIndex = 0;
 
         foreach (var argument in arguments)
@@ -102,7 +105,14 @@ internal static class CallBinder
 
                 if (positionalIndex >= bound.Length)
                 {
-                    throw CallErrors.TooManyPositional(callableKind, callableName, span);
+                    if (!allowsExtraPositional)
+                    {
+                        throw CallErrors.TooManyPositional(callableKind, callableName, span);
+                    }
+
+                    extraPositional ??= [];
+                    extraPositional.Add(argument.Value);
+                    continue;
                 }
 
                 bound[positionalIndex] = argument.Value;
@@ -149,7 +159,19 @@ internal static class CallBinder
             throw CallErrors.TooManyPositional(callableKind, callableName, span);
         }
 
-        return bound[..count];
+        if (extraPositional is null || extraPositional.Count == 0)
+        {
+            return bound[..count];
+        }
+
+        var result = new object[count + extraPositional.Count];
+        Array.Copy(bound, result, count);
+        for (var i = 0; i < extraPositional.Count; i++)
+        {
+            result[count + i] = extraPositional[i];
+        }
+
+        return result;
     }
 
     private static Dictionary<string, int> CreateParameterIndices(string[] parameterNames)

@@ -115,15 +115,17 @@ internal readonly record struct StaticCallShapeContract(
     int? MaxArgumentCount,
     string[]? ParameterNames = null,
     int? MaxPositionalCount = null,
-    bool AllowsExtraKeywords = false)
+    bool AllowsExtraKeywords = false,
+    bool AllowsExtraPositional = false)
 {
     public StaticCallShapeContract(LythonCallableSignature signature)
         : this(
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.ParameterNames,
-            signature.MaxPositionalCount ?? signature.ParameterNames?.Length,
-            signature.AllowsExtraKeywords)
+            signature.AllowsExtraPositional ? null : signature.MaxPositionalCount ?? signature.ParameterNames?.Length,
+            signature.AllowsExtraKeywords,
+            signature.AllowsExtraPositional)
     {
     }
 
@@ -146,7 +148,7 @@ internal readonly record struct StaticCallShapeContract(
             return true;
         }
 
-        if (MaxPositionalCount.HasValue && arguments.Positional.Count > MaxPositionalCount.Value)
+        if (!AllowsExtraPositional && MaxPositionalCount.HasValue && arguments.Positional.Count > MaxPositionalCount.Value)
         {
             reason = "callable argument contract rejected too many positional arguments";
             offendingExpression = null;
@@ -167,7 +169,7 @@ internal readonly record struct StaticCallShapeContract(
             return false;
         }
 
-        if (arguments.Positional.Count > ParameterNames.Length)
+        if (!AllowsExtraPositional && arguments.Positional.Count > ParameterNames.Length)
         {
             reason = "callable argument contract rejected too many positional arguments";
             offendingExpression = null;
@@ -175,7 +177,7 @@ internal readonly record struct StaticCallShapeContract(
         }
 
         var assigned = new bool[ParameterNames.Length];
-        for (var i = 0; i < arguments.Positional.Count; i++)
+        for (var i = 0; i < Math.Min(arguments.Positional.Count, ParameterNames.Length); i++)
         {
             assigned[i] = true;
         }

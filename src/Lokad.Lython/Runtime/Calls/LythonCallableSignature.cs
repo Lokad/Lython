@@ -5,11 +5,12 @@ internal readonly record struct LythonCallableSignature(
     string[]? ParameterNames = null,
     int? RequiredCount = null,
     int? MaxPositionalCount = null,
-    bool AllowsExtraKeywords = false)
+    bool AllowsExtraKeywords = false,
+    bool AllowsExtraPositional = false)
 {
     public int MinimumArgumentCount => RequiredCount ?? ParameterNames?.Length ?? 0;
 
-    public int? MaximumArgumentCount => AllowsExtraKeywords
+    public int? MaximumArgumentCount => AllowsExtraKeywords || AllowsExtraPositional
         ? null
         : ParameterNames?.Length;
 }
@@ -54,6 +55,74 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CopyCopy = new("copy.copy", ["x"]);
     public static readonly LythonCallableSignature CopyDeepCopy = new("copy.deepcopy", ["x", "memo"], RequiredCount: 1);
     public static readonly LythonCallableSignature CopyReplace = new("copy.replace", ["__object"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+
+    public static readonly LythonCallableSignature FunctoolsUpdateWrapper = new("functools.update_wrapper", ["wrapper", "wrapped", "assigned", "updated"], RequiredCount: 2);
+    public static readonly LythonCallableSignature FunctoolsWraps = new("functools.wraps", ["wrapped", "assigned", "updated"], RequiredCount: 1);
+    public static readonly LythonCallableSignature FunctoolsTotalOrdering = new("functools.total_ordering", ["cls"]);
+    public static readonly LythonCallableSignature FunctoolsReduce = new("functools.reduce", ["function", "iterable", "initializer"], RequiredCount: 2);
+    public static readonly LythonCallableSignature FunctoolsPartial = new("functools.partial", ["func"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature FunctoolsPartialMethod = new("functools.partialmethod", ["func"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature FunctoolsCmpToKey = new("functools.cmp_to_key", ["mycmp"]);
+    public static readonly LythonCallableSignature FunctoolsLruCache = new("functools.lru_cache", ["maxsize", "typed"], RequiredCount: 0);
+    public static readonly LythonCallableSignature FunctoolsCache = new("functools.cache", ["user_function"]);
+    public static readonly LythonCallableSignature FunctoolsCachedProperty = new("functools.cached_property", ["func"]);
+    public static readonly LythonCallableSignature FunctoolsSingleDispatch = new("functools.singledispatch", ["func"]);
+    public static readonly LythonCallableSignature FunctoolsSingleDispatchMethod = new("functools.singledispatchmethod", ["func"]);
+    public static readonly LythonCallableSignature FunctoolsRecursiveRepr = new("functools.recursive_repr", ["fillvalue"], RequiredCount: 0);
+
+    public static readonly LythonCallableSignature OperatorTruth = new("operator.truth", ["obj"]);
+    public static readonly LythonCallableSignature OperatorNot = new("operator.not_", ["obj"]);
+    public static readonly LythonCallableSignature OperatorIs = new("operator.is_", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIsNot = new("operator.is_not", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorAbs = new("operator.abs", ["obj"]);
+    public static readonly LythonCallableSignature OperatorNeg = new("operator.neg", ["obj"]);
+    public static readonly LythonCallableSignature OperatorPos = new("operator.pos", ["obj"]);
+    public static readonly LythonCallableSignature OperatorInvert = new("operator.invert", ["obj"]);
+    public static readonly LythonCallableSignature OperatorIndex = new("operator.index", ["obj"]);
+    public static readonly LythonCallableSignature OperatorAdd = new("operator.add", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorSub = new("operator.sub", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorMul = new("operator.mul", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorTrueDiv = new("operator.truediv", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorFloorDiv = new("operator.floordiv", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorMod = new("operator.mod", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorPow = new("operator.pow", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorMatMul = new("operator.matmul", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorLShift = new("operator.lshift", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorRShift = new("operator.rshift", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorAnd = new("operator.and_", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorOr = new("operator.or_", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorXor = new("operator.xor", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorConcat = new("operator.concat", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorEq = new("operator.eq", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorNe = new("operator.ne", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorLt = new("operator.lt", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorLe = new("operator.le", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorGt = new("operator.gt", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorGe = new("operator.ge", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorGetItem = new("operator.getitem", ["obj", "key"]);
+    public static readonly LythonCallableSignature OperatorSetItem = new("operator.setitem", ["obj", "key", "value"]);
+    public static readonly LythonCallableSignature OperatorDelItem = new("operator.delitem", ["obj", "key"]);
+    public static readonly LythonCallableSignature OperatorContains = new("operator.contains", ["obj", "value"]);
+    public static readonly LythonCallableSignature OperatorLengthHint = new("operator.length_hint", ["obj", "default"], RequiredCount: 1);
+    public static readonly LythonCallableSignature OperatorCountOf = new("operator.countOf", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIndexOf = new("operator.indexOf", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIAdd = new("operator.iadd", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorISub = new("operator.isub", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIMul = new("operator.imul", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorITrueDiv = new("operator.itruediv", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIFloorDiv = new("operator.ifloordiv", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIMod = new("operator.imod", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIPow = new("operator.ipow", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorILShift = new("operator.ilshift", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIRShift = new("operator.irshift", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIAnd = new("operator.iand", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIOr = new("operator.ior", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIXor = new("operator.ixor", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIConcat = new("operator.iconcat", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorCall = new("operator.call", ["obj"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature OperatorItemGetter = new("operator.itemgetter", RequiredCount: 1);
+    public static readonly LythonCallableSignature OperatorAttrGetter = new("operator.attrgetter", RequiredCount: 1);
+    public static readonly LythonCallableSignature OperatorMethodCaller = new("operator.methodcaller", ["name"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
 
     public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value", "context"], RequiredCount: 0);
     public static readonly LythonCallableSignature DecimalTuple = new("decimal.DecimalTuple", ["sign", "digits", "exponent"]);
