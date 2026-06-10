@@ -1165,13 +1165,19 @@ When the host provides a subprocess capability, Lython may expose a contained su
 - `subprocess.call(...)`
 - `subprocess.check_call(...)`
 - `subprocess.check_output(...)`
+- `subprocess.CompletedProcess(args, returncode, stdout=None, stderr=None)`
+- `subprocess.CalledProcessError`
+- `subprocess.SubprocessError`
+- `subprocess.list2cmdline(seq)`
 - `subprocess.PIPE`
 - `subprocess.STDOUT`
 - `subprocess.DEVNULL`
 
 The subprocess request sent to the host must carry the command arguments, optional cwd, optional environment, stdin bytes, stream modes, shell/text-mode flags, encoding and error-mode requests, timeout, and output bounds. The host remains authoritative over whether a command may run, how streams are connected, whether shell execution is allowed, and what process environment is used.
 
-The supported subprocess surface does not include `Popen`, background processes, unmanaged pipes, or ambient shell authority.
+Checked failures must raise catchable `CalledProcessError` with `returncode`, `cmd`, `output`, `stdout`, and `stderr` fields. `CompletedProcess.check_returncode()` must raise the same exception type for non-zero return codes. `SubprocessError` catches subprocess-specific checked failures.
+
+The supported subprocess surface does not include `Popen`, `TimeoutExpired`, `getoutput`, `getstatusoutput`, background processes, unmanaged pipes, or ambient shell authority. Unsupported helpers must fail explicitly without broadening shell integration.
 
 ### 11.13 Line Diffs
 

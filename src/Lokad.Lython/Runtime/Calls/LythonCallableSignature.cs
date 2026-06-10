@@ -350,6 +350,9 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature SubprocessCall = new("subprocess.call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
     public static readonly LythonCallableSignature SubprocessCheckCall = new("subprocess.check_call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
     public static readonly LythonCallableSignature SubprocessCheckOutput = new("subprocess.check_output", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
+    public static readonly LythonCallableSignature SubprocessCompletedProcess = new("subprocess.CompletedProcess", ["args", "returncode", "stdout", "stderr"], RequiredCount: 2);
+    public static readonly LythonCallableSignature SubprocessList2Cmdline = new("subprocess.list2cmdline", ["seq"]);
+    public static readonly LythonCallableSignature SubprocessUnsupported = new("subprocess.unsupported", RequiredCount: 0, AllowsExtraKeywords: true, AllowsExtraPositional: true);
 
     public static readonly LythonCallableSignature OsListDir = new("os.listdir", ["path"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsWalk = new("os.walk", ["top", "topdown", "onerror", "followlinks"], RequiredCount: 0);

@@ -221,11 +221,13 @@ and returns a [`LythonSubprocessResult`](src/Lokad.Lython/Host/LythonSubprocessR
 The subprocess contract remains host-mediated:
 
 - `subprocess.run(...)`, `subprocess.call(...)`, `subprocess.check_call(...)`, and `subprocess.check_output(...)`
+- `subprocess.CompletedProcess`, `subprocess.CalledProcessError`, and `subprocess.SubprocessError`
 - `subprocess.PIPE`, `subprocess.STDOUT`, and `subprocess.DEVNULL`
+- `subprocess.list2cmdline(...)`
 - string and `pathlib.Path` command parts
 - `shell=True` as an explicit host request, not ambient shell authority
 - text-oriented captured I/O
-- no `Popen`
+- no `Popen`, `TimeoutExpired`, `getoutput`, or `getstatusoutput`
 - no background or async process model
 
 This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.

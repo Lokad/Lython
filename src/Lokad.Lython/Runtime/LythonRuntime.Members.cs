@@ -2685,7 +2685,7 @@ internal sealed partial class LythonRuntime
                 "returncode" => process.ReturnCode,
                 "stdout" => process.Stdout,
                 "stderr" => process.Stderr,
-                "check_returncode" => new BoundCallable((arguments, span, _) =>
+                "check_returncode" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -2694,7 +2694,14 @@ internal sealed partial class LythonRuntime
 
                     if (process.ReturnCode != BigInteger.Zero)
                     {
-                        throw new LythonRuntimeException("RuntimeError", $"subprocess.CompletedProcess failed with return code {process.ReturnCode}.", span, payload: process);
+                        throw CreateCalledProcessError(
+                            process.ReturnCode,
+                            process.Args,
+                            process.Stdout,
+                            process.Stderr,
+                            $"subprocess.CompletedProcess failed with return code {process.ReturnCode}.",
+                            context,
+                            span);
                     }
 
                     return PyNone.Instance;

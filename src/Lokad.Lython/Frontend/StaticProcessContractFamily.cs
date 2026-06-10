@@ -27,6 +27,17 @@ internal static class StaticProcessContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCompletedProcess.Name, StringComparison.Ordinal))
+        {
+            var completedProcessEmitted = AnalyzeIntegerArgument(arguments, 1, "returncode", "subprocess.CompletedProcess(..., returncode=...) expects an integer.", diagnostics, bindings);
+            return completedProcessEmitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessList2Cmdline.Name, StringComparison.Ordinal))
+        {
+            return AnalyzeIterableOfStringsArgument(arguments, 0, "seq", "subprocess.list2cmdline(seq) expects an iterable of strings.", diagnostics, bindings, rejectSingleString: true);
+        }
+
         if (!IsSubprocessKnownCall(targetName))
         {
             return false;

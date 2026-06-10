@@ -41,6 +41,14 @@ internal sealed partial class LythonRuntime
                 "call" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessCall, Call, CallAsync),
                 "check_call" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessCheckCall, CheckCall, CheckCallAsync),
                 "check_output" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessCheckOutput, CheckOutput, CheckOutputAsync),
+                "CompletedProcess" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessCompletedProcess, CompletedProcess),
+                "CalledProcessError" => SubprocessCalledProcessErrorType.Instance,
+                "SubprocessError" => new ExceptionTypeValue("SubprocessError"),
+                "TimeoutExpired" => new UnsupportedSubprocessCallable("subprocess.TimeoutExpired", "subprocess.TimeoutExpired is not supported by Lython; host timeout results are reported as RuntimeError."),
+                "Popen" => new UnsupportedSubprocessCallable("subprocess.Popen", "subprocess.Popen is not supported by Lython; use host-mediated subprocess.run()."),
+                "list2cmdline" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline),
+                "getoutput" => new UnsupportedSubprocessCallable("subprocess.getoutput", "subprocess.getoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
+                "getstatusoutput" => new UnsupportedSubprocessCallable("subprocess.getstatusoutput", "subprocess.getstatusoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "PIPE" => new BigInteger(SubprocessPipe),
                 "STDOUT" => new BigInteger(SubprocessStdout),
                 "DEVNULL" => new BigInteger(SubprocessDevNull),
@@ -74,6 +82,50 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> CheckOutputAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => await InvokeSubprocessAsync(arguments, span, context, "subprocess.check_output", SubprocessCompletionKind.Stdout, forcedCheck: true, forceStdoutPipe: true).ConfigureAwait(false);
+
+    private static object CompletedProcess(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.CheckExecutionBudget(span);
+        if (arguments.Length < 2)
+        {
+            throw new LythonRuntimeException("TypeError", "subprocess.CompletedProcess(args, returncode, stdout=None, stderr=None) expects args and returncode.", span);
+        }
+
+        var returnCode = arguments[1] switch
+        {
+            BigInteger integer => integer,
+            int integer => new BigInteger(integer),
+            _ => throw new LythonRuntimeException("TypeError", "subprocess.CompletedProcess(..., returncode=...) expects an integer.", span)
+        };
+
+        return new PyCompletedProcess(
+            arguments[0],
+            returnCode,
+            GetArgument(arguments, 2),
+            GetArgument(arguments, 3));
+    }
+
+    private static object List2Cmdline(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.CheckExecutionBudget(span);
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "subprocess.list2cmdline(seq) expects one iterable of strings.", span);
+        }
+
+        var items = new List<string>();
+        foreach (var item in ToSequence(arguments[0], span))
+        {
+            if (!PyStringOps.TryAsString(item, out var text))
+            {
+                throw new LythonRuntimeException("TypeError", "subprocess.list2cmdline(seq) expects an iterable of strings.", span);
+            }
+
+            items.Add(text.AsString());
+        }
+
+        return PyString.FromString(RenderWindowsCommandLine(items));
+    }
 
     private static object InvokeSubprocess(
         object[] arguments,
@@ -227,7 +279,14 @@ internal sealed partial class LythonRuntime
         var completed = new PyCompletedProcess(args, new BigInteger(result.ReturnCode), stdout, stderr);
         if (invocation.Check && result.ReturnCode != 0)
         {
-            throw new LythonRuntimeException("RuntimeError", $"{invocation.Owner}(...) failed with return code {result.ReturnCode}.", span, payload: completed);
+            throw CreateCalledProcessError(
+                new BigInteger(result.ReturnCode),
+                args,
+                stdout,
+                stderr,
+                $"{invocation.Owner}(...) failed with return code {result.ReturnCode}.",
+                context,
+                span);
         }
 
         return invocation.CompletionKind switch
@@ -246,6 +305,168 @@ internal sealed partial class LythonRuntime
             : PyString.FromUtf8(utf8, context.MemoryGovernor, span);
         context.ObserveString(text, span);
         return text;
+    }
+
+    private static LythonRuntimeException CreateCalledProcessError(
+        BigInteger returnCode,
+        object command,
+        object output,
+        object stderr,
+        string message,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var payload = CreateCalledProcessErrorPayload(returnCode, command, output, stderr, context, span);
+        return new LythonRuntimeException("CalledProcessError", message, span, payload: payload);
+    }
+
+    private static PyDict CreateCalledProcessErrorPayload(
+        BigInteger returnCode,
+        object command,
+        object output,
+        object stderr,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var payload = new PyDict(context.MemoryGovernor, span);
+        payload.SetItem(PyString.FromString("returncode"), returnCode);
+        payload.SetItem(PyString.FromString("cmd"), command);
+        payload.SetItem(PyString.FromString("output"), output);
+        payload.SetItem(PyString.FromString("stdout"), output);
+        payload.SetItem(PyString.FromString("stderr"), stderr);
+        return payload;
+    }
+
+    private static string RenderWindowsCommandLine(IReadOnlyList<string> arguments)
+    {
+        var builder = new System.Text.StringBuilder();
+        for (var index = 0; index < arguments.Count; index++)
+        {
+            if (index > 0)
+            {
+                builder.Append(' ');
+            }
+
+            AppendWindowsCommandLineArgument(builder, arguments[index]);
+        }
+
+        return builder.ToString();
+    }
+
+    private static void AppendWindowsCommandLineArgument(System.Text.StringBuilder builder, string argument)
+    {
+        var needsQuotes = argument.Length == 0 || argument.Any(static ch => char.IsWhiteSpace(ch) || ch == '"');
+        if (!needsQuotes)
+        {
+            builder.Append(argument);
+            return;
+        }
+
+        builder.Append('"');
+        var backslashes = 0;
+        foreach (var ch in argument)
+        {
+            if (ch == '\\')
+            {
+                backslashes++;
+                continue;
+            }
+
+            if (ch == '"')
+            {
+                builder.Append('\\', backslashes * 2 + 1);
+                builder.Append('"');
+                backslashes = 0;
+                continue;
+            }
+
+            builder.Append('\\', backslashes);
+            backslashes = 0;
+            builder.Append(ch);
+        }
+
+        builder.Append('\\', backslashes * 2);
+        builder.Append('"');
+    }
+
+    private sealed class UnsupportedSubprocessCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue
+    {
+        private readonly string _message;
+
+        public UnsupportedSubprocessCallable(string name, string message)
+        {
+            Name = name;
+            _message = message;
+        }
+
+        public string Name { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            context.CheckExecutionBudget(span);
+            throw new LythonRuntimeException("NotImplementedError", _message, span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class SubprocessCalledProcessErrorType : ICallable, IPyDynamicAttributes, IPyRenderableValue
+    {
+        public static readonly SubprocessCalledProcessErrorType Instance = new();
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "__name__" => PyString.FromString("CalledProcessError"),
+                "type" => PyString.FromString("CalledProcessError"),
+                _ => null!
+            };
+
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var bound = CallBinder.BindNamedArguments(
+                arguments,
+                span,
+                new LythonCallableSignature("subprocess.CalledProcessError", ["returncode", "cmd", "output", "stderr"], RequiredCount: 2),
+                "Builtin");
+            var returnCode = bound[0] switch
+            {
+                BigInteger integer => integer,
+                int integer => new BigInteger(integer),
+                _ => throw new LythonRuntimeException("TypeError", "subprocess.CalledProcessError(returncode, cmd, ...) expects integer returncode.", span)
+            };
+            var output = GetArgument(bound, 2);
+            var stderr = GetArgument(bound, 3);
+            var payload = CreateCalledProcessErrorPayload(returnCode, bound[1], output, stderr, context, span);
+            return new PyException("CalledProcessError", $"Command failed with return code {returnCode}.", payload);
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class 'subprocess.CalledProcessError'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     private readonly record struct SubprocessInvocation(

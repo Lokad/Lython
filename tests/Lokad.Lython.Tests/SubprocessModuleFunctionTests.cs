@@ -151,18 +151,20 @@ write_text("/out.txt", str(proc.stdout) + "|" + str(proc.stderr) + "|" + proc.ar
     {
         var host = new MockLythonHost();
         host.EnableSubprocess();
-        host.SeedSubprocessResult(["fail"], 7, "", "bad");
+        host.SeedSubprocessResult(["fail"], 7, "out", "bad");
 
         var result = new LythonEngine().Run(
             """
 import subprocess
-subprocess.run(["fail"], check=True)
+try:
+    subprocess.run(["fail"], check=True, capture_output=True)
+except subprocess.CalledProcessError as err:
+    write_text("/out.txt", err.type + "|" + str(err.returncode) + "|" + err.cmd[0] + "|" + err.output + "|" + err.stderr + "|" + str(len(err.args)))
 """,
             host);
 
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
-        Assert.Contains("return code 7", result.Failure.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("CalledProcessError|7|fail|out|bad|2", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -175,14 +177,51 @@ subprocess.run(["fail"], check=True)
         var result = new LythonEngine().Run(
             """
 import subprocess
-proc = subprocess.run(["fail"])
-proc.check_returncode()
+proc = subprocess.run(["fail"], capture_output=True)
+try:
+    proc.check_returncode()
+except subprocess.SubprocessError as err:
+    write_text("/out.txt", err.type + "|" + str(err.returncode) + "|" + err.cmd[0])
 """,
             host);
 
-        Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
-        Assert.Contains("return code 8", result.Failure.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("CalledProcessError|8|fail", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void SubprocessObjects_ConstructorsList2CmdlineAndUnsupportedHelpersAreExposed()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+
+manual = subprocess.CompletedProcess(["cmd"], 4, stdout="o", stderr="e")
+made = subprocess.CalledProcessError(5, ["cmd"], output="out", stderr="err")
+vals = []
+try:
+    manual.check_returncode()
+except subprocess.CalledProcessError as err:
+    vals.append(err.type + ":" + str(err.returncode) + ":" + err.stdout + ":" + err.stderr)
+vals.append(made.type + ":" + str(made.returncode) + ":" + made.output + ":" + made.stderr)
+vals.append(subprocess.list2cmdline(["a b", "c\"d", "tail\\"]))
+try:
+    subprocess.Popen(["cmd"])
+except NotImplementedError as err:
+    vals.append(err.type)
+try:
+    subprocess.getoutput("cmd")
+except NotImplementedError as err:
+    vals.append(err.type)
+write_text("/out.txt", "|".join(vals))
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("CalledProcessError:4:o:e|CalledProcessError:5:out:err|\"a b\" \"c\\\"d\" tail\\|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Theory]
@@ -203,6 +242,27 @@ import subprocess
 
         Assert.False(result.Success);
         Assert.Equal("ValueError", result.Failure!.ExceptionType);
+    }
+
+    [Fact]
+    public void SubprocessExpandedSurface_InvalidStaticContractsFailAtCompileTime()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+
+        var result = new LythonEngine().Run(
+            """
+import subprocess
+
+subprocess.CompletedProcess(["cmd"], "bad")
+subprocess.list2cmdline(["ok", 1])
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.Null(result.Failure);
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("returncode", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("iterable of strings", StringComparison.Ordinal));
     }
 
     [Fact]
