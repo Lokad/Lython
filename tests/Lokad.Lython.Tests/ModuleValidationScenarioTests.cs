@@ -158,8 +158,8 @@ __lython_file.close()
     [Theory]
     [InlineData("from re import missing\n", "ImportError", "Cannot import name 'missing' from 're'")]
     [InlineData("from csv import nope as writer\n", "ImportError", "Cannot import name 'nope' from 'csv'")]
-    [InlineData("import missing\n", "ImportError", "No module named 'missing'")]
-    [InlineData("from missing import value\n", "ImportError", "No module named 'missing'")]
+    [InlineData("import missing\n", "ModuleNotFoundError", "No module named 'missing'")]
+    [InlineData("from missing import value\n", "ModuleNotFoundError", "No module named 'missing'")]
     public void FromImport_UnknownMember_FailsWithImportError(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

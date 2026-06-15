@@ -6,7 +6,7 @@ internal static class RuntimeErrors
         => new("ImportError", $"Cannot import name '{memberName}' from '{moduleName}'.", span);
 
     public static LythonRuntimeException NoModuleNamed(string moduleName, LythonSourceSpan? span)
-        => new("ImportError", $"No module named '{moduleName}'.", span);
+        => new("ModuleNotFoundError", $"No module named '{moduleName}'.", span);
 
     public static LythonRuntimeException CircularImport(string moduleName, LythonSourceSpan? span)
         => new("ImportError", $"Circular import of '{moduleName}'.", span);
@@ -22,6 +22,12 @@ internal static class RuntimeErrors
 
     public static LythonRuntimeException Runtime(string message, LythonSourceSpan? span)
         => new("RuntimeError", message, span);
+
+    public static LythonRuntimeException Recursion(string message, LythonSourceSpan? span)
+        => new("RecursionError", message, span);
+
+    public static LythonRuntimeException Memory(string message, LythonSourceSpan? span)
+        => new("MemoryError", message, span);
 
     public static LythonRuntimeException Host(string operation, Exception exception, LythonSourceSpan? span)
         => new("RuntimeError", $"Host {operation} failed: {exception.Message}", span, exception);

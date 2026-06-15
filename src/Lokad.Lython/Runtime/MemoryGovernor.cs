@@ -32,7 +32,7 @@ internal sealed class MemoryGovernor
         var nextLive = AddChecked(nextReserved, CurrentCommittedBytes, span);
         if (MaxReservedBytes is { } maxReservedBytes && nextLive > maxReservedBytes)
         {
-            throw RuntimeErrors.Runtime($"execution memory budget exceeded ({maxReservedBytes})", span);
+            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxReservedBytes})", span);
         }
     }
 
@@ -89,7 +89,7 @@ internal sealed class MemoryGovernor
     {
         if (right > 0 && left > long.MaxValue - right)
         {
-            throw RuntimeErrors.Runtime("execution memory budget exceeded", span);
+            throw RuntimeErrors.Memory("execution memory budget exceeded", span);
         }
 
         return left + right;

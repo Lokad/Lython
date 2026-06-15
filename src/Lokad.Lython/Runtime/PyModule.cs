@@ -11,6 +11,8 @@ internal abstract class PyModule
 
     public virtual IReadOnlyList<string> ExportedNames => [];
 
+    public virtual IReadOnlyList<string> MemberNames => ExportedNames;
+
     public abstract bool TryGetMember(string name, out object value);
 
     public virtual bool TrySetMember(string name, object value)
@@ -35,6 +37,8 @@ internal sealed class ScriptPyModule : PyModule
 
     public override IReadOnlyList<string> ExportedNames
         => _members.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();
+
+    public override IReadOnlyList<string> MemberNames => _members.Keys.ToArray();
 
     public override bool TrySetMember(string name, object value)
     {

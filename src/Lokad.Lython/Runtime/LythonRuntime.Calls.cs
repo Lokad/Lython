@@ -107,11 +107,85 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static readonly IReadOnlyDictionary<string, string[]> ExceptionBaseNames =
+        new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["Exception"] = ["BaseException"],
+            ["SystemExit"] = ["BaseException"],
+            ["ArithmeticError"] = ["Exception"],
+            ["AssertionError"] = ["Exception"],
+            ["AttributeError"] = ["Exception"],
+            ["ImportError"] = ["Exception"],
+            ["LookupError"] = ["Exception"],
+            ["MemoryError"] = ["Exception"],
+            ["NameError"] = ["Exception"],
+            ["OSError"] = ["Exception", "IOError", "EnvironmentError"],
+            ["RuntimeError"] = ["Exception"],
+            ["StopIteration"] = ["Exception"],
+            ["SyntaxError"] = ["Exception"],
+            ["TypeError"] = ["Exception"],
+            ["ValueError"] = ["Exception"],
+            ["Warning"] = ["Exception"],
+            ["ZeroDivisionError"] = ["ArithmeticError"],
+            ["OverflowError"] = ["ArithmeticError"],
+            ["KeyError"] = ["LookupError"],
+            ["IndexError"] = ["LookupError"],
+            ["ModuleNotFoundError"] = ["ImportError"],
+            ["FileNotFoundError"] = ["OSError"],
+            ["FileExistsError"] = ["OSError"],
+            ["IsADirectoryError"] = ["OSError"],
+            ["NotADirectoryError"] = ["OSError"],
+            ["PermissionError"] = ["OSError"],
+            ["TimeoutError"] = ["OSError"],
+            ["IOError"] = ["OSError", "EnvironmentError"],
+            ["EnvironmentError"] = ["OSError", "IOError"],
+            ["NotImplementedError"] = ["RuntimeError"],
+            ["RecursionError"] = ["RuntimeError"],
+            ["UnicodeError"] = ["ValueError"],
+            ["UnicodeEncodeError"] = ["UnicodeError"],
+            ["UnicodeDecodeError"] = ["UnicodeError"],
+            ["UnicodeTranslateError"] = ["UnicodeError"],
+            ["JSONDecodeError"] = ["ValueError"],
+            ["SubprocessError"] = ["Exception"],
+            ["CalledProcessError"] = ["SubprocessError"],
+        };
+
     private static bool MatchesExceptionTypeName(string caughtTypeName, string thrownTypeName)
         => string.Equals(caughtTypeName, thrownTypeName, StringComparison.Ordinal) ||
-           (IsRegexPatternErrorName(caughtTypeName) && IsRegexPatternErrorName(thrownTypeName)) ||
-           (string.Equals(caughtTypeName, "SubprocessError", StringComparison.Ordinal) &&
-            string.Equals(thrownTypeName, "CalledProcessError", StringComparison.Ordinal));
+           IsExceptionSubtype(thrownTypeName, caughtTypeName) ||
+           (IsRegexPatternErrorName(caughtTypeName) && IsRegexPatternErrorName(thrownTypeName));
+
+    private static bool IsExceptionSubtype(string thrownTypeName, string caughtTypeName)
+    {
+        var pending = new Stack<string>();
+        pending.Push(thrownTypeName);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        while (pending.Count > 0)
+        {
+            var current = pending.Pop();
+            if (!seen.Add(current))
+            {
+                continue;
+            }
+
+            if (!ExceptionBaseNames.TryGetValue(current, out var bases))
+            {
+                continue;
+            }
+
+            foreach (var baseName in bases)
+            {
+                if (string.Equals(baseName, caughtTypeName, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                pending.Push(baseName);
+            }
+        }
+
+        return false;
+    }
 
     private static bool IsRegexPatternErrorName(string typeName)
         => string.Equals(typeName, "error", StringComparison.Ordinal) ||

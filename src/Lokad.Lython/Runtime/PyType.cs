@@ -37,6 +37,23 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public bool TryGetOwnMember(string name, out object value) => _members.TryGetValue(name, out value!);
 
+    public IEnumerable<KeyValuePair<string, object>> EnumerateOwnMembers() => _members;
+
+    public IEnumerable<string> EnumerateMemberNames()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var type in Mro)
+        {
+            foreach (var name in type._members.Keys)
+            {
+                if (seen.Add(name))
+                {
+                    yield return name;
+                }
+            }
+        }
+    }
+
     public bool TryGetMember(string name, out object value)
         => PyAttributeLookup.TryResolveTypeMember(this, name, out value);
 

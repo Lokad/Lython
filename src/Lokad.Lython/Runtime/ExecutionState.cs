@@ -8,10 +8,17 @@ internal sealed class ExecutionState
         "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
         "bin", "oct", "hex", "chr", "ord", "callable", "hash",
         "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
-        "Exception", "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
-        "AssertionError", "ImportError", "NameError", "AttributeError", "FileNotFoundError", "OSError", "StopIteration",
-        "ZeroDivisionError", "NotImplementedError", "OverflowError", "SystemExit", "bool", "int", "float", "bytes",
-        "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass", "list", "tuple", "dict", "set"
+        "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning",
+        "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
+        "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "AttributeError", "SyntaxError",
+        "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
+        "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
+        "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",
+        "UnicodeEncodeError", "UnicodeDecodeError", "UnicodeTranslateError", "OverflowError", "SystemExit",
+        "bool", "int", "float", "bytes",
+        "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
+        "getattr", "hasattr", "setattr", "delattr", "dir", "vars",
+        "list", "tuple", "dict", "set"
     ];
 
     public ExecutionState(ILythonHost host, LythonRunOptions? options)

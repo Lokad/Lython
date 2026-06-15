@@ -1637,7 +1637,7 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ValueError", "division by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "division by zero", span);
         }
     }
 
@@ -1659,7 +1659,7 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ValueError", "integer division or modulo by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
         }
     }
 
@@ -1686,7 +1686,7 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ValueError", "integer division or modulo by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
         }
     }
 
@@ -1823,7 +1823,7 @@ internal sealed partial class LythonRuntime
         var current = context.Services.LegacyApproximateMemoryDiagnostics.CurrentBytes;
         if (RuntimeMemoryEstimates.SaturatingAdd(current, estimatedBytes) > maxBytes)
         {
-            throw RuntimeErrors.Runtime($"execution memory budget exceeded ({maxBytes})", span);
+            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxBytes})", span);
         }
     }
 
@@ -3479,7 +3479,12 @@ internal sealed partial class LythonRuntime
                 ["map"] = new BuiltinCallable("map", Map),
                 ["filter"] = new BuiltinCallable("filter", Filter, ["function", "iterable"]),
                 ["slice"] = new BuiltinCallable("slice", Slice),
+                ["BaseException"] = new ExceptionTypeValue("BaseException"),
                 ["Exception"] = new ExceptionTypeValue("Exception"),
+                ["ArithmeticError"] = new ExceptionTypeValue("ArithmeticError"),
+                ["LookupError"] = new ExceptionTypeValue("LookupError"),
+                ["UnicodeError"] = new ExceptionTypeValue("UnicodeError"),
+                ["Warning"] = new ExceptionTypeValue("Warning"),
                 ["TypeError"] = new ExceptionTypeValue("TypeError"),
                 ["ValueError"] = new ExceptionTypeValue("ValueError"),
                 ["KeyError"] = new ExceptionTypeValue("KeyError"),
@@ -3487,13 +3492,27 @@ internal sealed partial class LythonRuntime
                 ["RuntimeError"] = new ExceptionTypeValue("RuntimeError"),
                 ["AssertionError"] = new ExceptionTypeValue("AssertionError"),
                 ["ImportError"] = new ExceptionTypeValue("ImportError"),
+                ["ModuleNotFoundError"] = new ExceptionTypeValue("ModuleNotFoundError"),
                 ["NameError"] = new ExceptionTypeValue("NameError"),
                 ["AttributeError"] = new ExceptionTypeValue("AttributeError"),
+                ["SyntaxError"] = new ExceptionTypeValue("SyntaxError"),
                 ["FileNotFoundError"] = new ExceptionTypeValue("FileNotFoundError"),
+                ["FileExistsError"] = new ExceptionTypeValue("FileExistsError"),
+                ["IsADirectoryError"] = new ExceptionTypeValue("IsADirectoryError"),
+                ["NotADirectoryError"] = new ExceptionTypeValue("NotADirectoryError"),
+                ["PermissionError"] = new ExceptionTypeValue("PermissionError"),
+                ["TimeoutError"] = new ExceptionTypeValue("TimeoutError"),
+                ["IOError"] = new ExceptionTypeValue("IOError"),
+                ["EnvironmentError"] = new ExceptionTypeValue("EnvironmentError"),
                 ["OSError"] = new ExceptionTypeValue("OSError"),
                 ["StopIteration"] = new ExceptionTypeValue("StopIteration"),
                 ["ZeroDivisionError"] = new ExceptionTypeValue("ZeroDivisionError"),
                 ["NotImplementedError"] = new ExceptionTypeValue("NotImplementedError"),
+                ["RecursionError"] = new ExceptionTypeValue("RecursionError"),
+                ["MemoryError"] = new ExceptionTypeValue("MemoryError"),
+                ["UnicodeEncodeError"] = new ExceptionTypeValue("UnicodeEncodeError"),
+                ["UnicodeDecodeError"] = new ExceptionTypeValue("UnicodeDecodeError"),
+                ["UnicodeTranslateError"] = new ExceptionTypeValue("UnicodeTranslateError"),
                 ["OverflowError"] = new ExceptionTypeValue("OverflowError"),
                 ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
                 ["bool"] = new BuiltinCallable("bool", Bool, ["value"]),
@@ -3506,6 +3525,12 @@ internal sealed partial class LythonRuntime
                 ["super"] = new BuiltinCallable("super", Super),
                 ["isinstance"] = new BuiltinCallable("isinstance", IsInstance, ["value", "type"], requiredCount: 2),
                 ["issubclass"] = new BuiltinCallable("issubclass", IsSubclass, ["type", "base"], requiredCount: 2),
+                ["getattr"] = new BuiltinCallable("getattr", GetAttr, ["object", "name", "default"], requiredCount: 2),
+                ["hasattr"] = new BuiltinCallable("hasattr", HasAttr, ["object", "name"], requiredCount: 2),
+                ["setattr"] = new BuiltinCallable("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3),
+                ["delattr"] = new BuiltinCallable("delattr", DelAttr, ["object", "name"], requiredCount: 2),
+                ["dir"] = new BuiltinCallable("dir", Dir, ["object"], requiredCount: 0),
+                ["vars"] = new BuiltinCallable("vars", Vars, ["object"], requiredCount: 0),
                 ["callable"] = new BuiltinCallable("callable", Callable, ["object"]),
                 ["hash"] = new BuiltinCallable("hash", Hash, ["object"]),
                 ["list"] = new BuiltinCallable("list", List, ["iterable"], requiredCount: 0),

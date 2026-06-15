@@ -141,7 +141,7 @@ return helper.value
             });
 
         Assert.False(result.Success);
-        Assert.Equal("ImportError", result.Failure?.ExceptionType);
+        Assert.Equal("ModuleNotFoundError", result.Failure?.ExceptionType);
         Assert.Contains("No module named 'other'", result.Failure?.Message);
         Assert.Empty(host.ExistsCalls);
         Assert.Empty(host.ReadCalls);
@@ -225,7 +225,7 @@ fail()
             });
 
         Assert.False(local.Success);
-        Assert.Equal("ImportError", local.Failure?.ExceptionType);
+        Assert.Equal("ModuleNotFoundError", local.Failure?.ExceptionType);
         Assert.Contains("No module named 'helper'", local.Failure?.Message);
         Assert.Empty(host.ExistsCalls);
         Assert.Empty(host.ReadCalls);
@@ -236,7 +236,7 @@ fail()
     {
         var missingModule = new LythonEngine().Run("import missing", new MockLythonHost());
         Assert.False(missingModule.Success);
-        Assert.Equal("ImportError", missingModule.Failure?.ExceptionType);
+        Assert.Equal("ModuleNotFoundError", missingModule.Failure?.ExceptionType);
         Assert.Contains("No module named 'missing'", missingModule.Failure?.Message);
 
         var host = new CountingHost();

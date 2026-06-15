@@ -23,7 +23,7 @@ internal sealed class LegacyApproximateMemoryDiagnostics
         var next = checked(CurrentBytes + bytes);
         if (MaxBytes is { } maxBytes && next > maxBytes)
         {
-            throw RuntimeErrors.Runtime($"execution memory budget exceeded ({maxBytes})", span);
+            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxBytes})", span);
         }
 
         CurrentBytes = next;

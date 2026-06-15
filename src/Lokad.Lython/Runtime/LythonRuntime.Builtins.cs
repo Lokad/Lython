@@ -1151,6 +1151,236 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    private static object GetAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 2 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "getattr(object, name[, default]) expects two or three arguments.", span);
+        }
+
+        var name = ExpectAttributeName(arguments[1], "getattr(object, name[, default])", span);
+        try
+        {
+            if (PyMemberAccess.TryResolve(arguments[0], name, context, span, out var value))
+            {
+                return value;
+            }
+        }
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError" && arguments.Length == 3)
+        {
+            return arguments[2];
+        }
+
+        if (arguments.Length == 3)
+        {
+            return arguments[2];
+        }
+
+        throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span);
+    }
+
+    private static object HasAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "hasattr(object, name) expects two arguments.", span);
+        }
+
+        var name = ExpectAttributeName(arguments[1], "hasattr(object, name)", span);
+        try
+        {
+            return PyMemberAccess.TryResolve(arguments[0], name, context, span, out _);
+        }
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
+        {
+            return false;
+        }
+    }
+
+    private static object SetAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 3)
+        {
+            throw new LythonRuntimeException("TypeError", "setattr(object, name, value) expects three arguments.", span);
+        }
+
+        var name = ExpectAttributeName(arguments[1], "setattr(object, name, value)", span);
+        if (!PyMemberAccess.TryAssign(arguments[0], name, arguments[2], context, span))
+        {
+            throw new LythonRuntimeException("AttributeError", $"Object has no writable attribute '{name}'.", span);
+        }
+
+        return PyNone.Instance;
+    }
+
+    private static object DelAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "delattr(object, name) expects two arguments.", span);
+        }
+
+        var name = ExpectAttributeName(arguments[1], "delattr(object, name)", span);
+        if (!PyMemberAccess.TryDelete(arguments[0], name, context, span))
+        {
+            throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{name}'.", span);
+        }
+
+        return PyNone.Instance;
+    }
+
+    private static object Dir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 0)
+        {
+            throw new LythonRuntimeException("TypeError", "dir() without an object is not supported by Lython.", span);
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dir([object]) expects zero or one arguments.", span);
+        }
+
+        var names = EnumerateDirNames(arguments[0]);
+        if (names is null)
+        {
+            throw new LythonRuntimeException("TypeError", "dir(object) is not supported for this object.", span);
+        }
+
+        var sortedNames = names
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(name => PyString.FromString(name, context.MemoryGovernor, span));
+        return new PyList(sortedNames, context.MemoryGovernor, span);
+    }
+
+    private static object Vars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 0)
+        {
+            throw new LythonRuntimeException("TypeError", "vars() without an object is not supported by Lython.", span);
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "vars([object]) expects zero or one arguments.", span);
+        }
+
+        var result = new PyDict(context.MemoryGovernor, span);
+        switch (arguments[0])
+        {
+            case PyInstance instance:
+                foreach (var pair in instance.EnumerateOwnAttributes())
+                {
+                    result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+                    context.ObserveCollectionCount(result.Count, span);
+                }
+
+                return result;
+
+            case PyType type:
+                foreach (var pair in type.EnumerateOwnMembers())
+                {
+                    result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+                    context.ObserveCollectionCount(result.Count, span);
+                }
+
+                return result;
+
+            case PyModule module:
+                foreach (var name in module.MemberNames)
+                {
+                    if (module.TryGetMember(name, out var value))
+                    {
+                        result.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
+                        context.ObserveCollectionCount(result.Count, span);
+                    }
+                }
+
+                return result;
+
+            default:
+                throw new LythonRuntimeException("TypeError", "vars(object) expects an object with a Python-shaped attribute dictionary.", span);
+        }
+    }
+
+    private static string ExpectAttributeName(object value, string owner, LythonSourceSpan span)
+    {
+        if (!PyStringOps.TryAsString(value, out var name))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner} expects name to be a string.", span);
+        }
+
+        return name.AsString();
+    }
+
+    private static List<string>? EnumerateDirNames(object value)
+    {
+        var names = new List<string>();
+        switch (value)
+        {
+            case PyInstance instance:
+                foreach (var pair in instance.EnumerateOwnAttributes())
+                {
+                    names.Add(pair.Key);
+                }
+
+                names.Add("__class__");
+                foreach (var name in instance.Type.EnumerateMemberNames())
+                {
+                    names.Add(name);
+                }
+
+                return names;
+
+            case PyType type:
+                foreach (var name in BuiltinTypeMemberNames)
+                {
+                    names.Add(name);
+                }
+
+                foreach (var name in type.EnumerateMemberNames())
+                {
+                    names.Add(name);
+                }
+
+                return names;
+
+            case PyModule module:
+                foreach (var name in module.MemberNames)
+                {
+                    names.Add(name);
+                }
+
+                return names;
+
+            case PySlice:
+                names.Add("start");
+                names.Add("stop");
+                names.Add("step");
+                return names;
+
+            case PyException:
+                names.Add("args");
+                names.Add("message");
+                names.Add("type");
+                return names;
+
+            default:
+                return null;
+        }
+    }
+
+    private static readonly string[] BuiltinTypeMemberNames =
+    [
+        "__base__",
+        "__bases__",
+        "__class__",
+        "__mro__",
+        "__name__",
+        "__qualname__"
+    ];
+
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;

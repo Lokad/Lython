@@ -45,7 +45,7 @@ internal sealed class ExecutionBudgetGuards
             Limits.CurrentRecursionDepth > maxRecursionDepth)
         {
             Limits.CurrentRecursionDepth--;
-            throw RuntimeErrors.Runtime("maximum recursion depth exceeded", span);
+            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
         }
     }
 

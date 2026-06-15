@@ -41,7 +41,7 @@ public sealed class RuntimeStorageSubsystemTests
 
         var ex = Assert.Throws<LythonRuntimeException>(() => list.Add(new BigInteger(99)));
 
-        Assert.Equal("RuntimeError", ex.ExceptionType);
+        Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
@@ -52,7 +52,7 @@ public sealed class RuntimeStorageSubsystemTests
 
         var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(64), null));
 
-        Assert.Equal("RuntimeError", ex.ExceptionType);
+        Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
@@ -68,7 +68,7 @@ public sealed class RuntimeStorageSubsystemTests
 
         var ex = Assert.Throws<LythonRuntimeException>(() => dict.SetItem(new BigInteger(99), new BigInteger(99)));
 
-        Assert.Equal("RuntimeError", ex.ExceptionType);
+        Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
@@ -86,7 +86,7 @@ public sealed class RuntimeStorageSubsystemTests
             }
         });
 
-        Assert.Equal("RuntimeError", ex.ExceptionType);
+        Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
@@ -101,7 +101,7 @@ public sealed class RuntimeStorageSubsystemTests
 
         var ex = Assert.Throws<LythonRuntimeException>(() => new PyDict(source, new MemoryGovernor(64), null));
 
-        Assert.Equal("RuntimeError", ex.ExceptionType);
+        Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
