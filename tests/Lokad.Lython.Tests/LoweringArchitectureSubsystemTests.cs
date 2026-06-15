@@ -678,7 +678,7 @@ finally:
 with open("/sample.txt", "w") as handle:
     handle.write("alpha")
 
-return read_text("/sample.txt")
+return open("/sample.txt").read()
 """);
 
         var lowered = LoweredScript.Lower(frontend.Script!);

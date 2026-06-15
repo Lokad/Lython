@@ -27,7 +27,9 @@ vals.append(str(Path("src").is_mount()))
 vals.append(str(Path("nul").is_reserved()))
 vals.append(str(full.is_relative_to(cwd)))
 vals.append(str(PurePath("src").joinpath(PosixPath("docs"), "page.md")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -66,7 +68,9 @@ vals.append(str(base.is_relative_to("/other")))
 vals.append(Path("docs/page.md").absolute().as_posix())
 vals.append(base.anchor + ":" + base.root + ":" + base.drive)
 vals.append(str(base.match("*.md")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -117,7 +121,9 @@ vals.append(str(src.is_symlink()))
 vals.append(str(src.samefile(Path("/repo/docs/a.md"))))
 vals.append(str(renamed.name))
 vals.append(str(Path("/repo/newdir").is_dir()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -161,7 +167,9 @@ try:
 except NotImplementedError as ex:
     vals.append(ex.type + ":" + ex.message)
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -220,7 +228,9 @@ try:
 except NotImplementedError as ex:
     vals.append(ex.type)
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -296,7 +306,9 @@ vals.append(str([item.name for item in sorted(Path("/repo/async/new").iterdir())
 touched.unlink(missing_ok=True)
 Path("/repo/async/new").rmdir()
 vals.append(str(Path("/repo/async/new").exists()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

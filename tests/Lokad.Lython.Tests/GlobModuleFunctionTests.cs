@@ -23,7 +23,9 @@ vals.append(str(sorted(glob.iglob("/repo/docs/**/*.md", recursive=True))))
 vals.append(glob.escape("/repo/docs/[draft]*.md"))
 vals.append(str([glob.has_magic("*.md"), glob.has_magic("docs/a.md")]))
 vals.append(glob.translate("*.md"))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -42,7 +44,9 @@ write_text("/out.txt", "|".join(vals))
             """
 import glob
 vals = sorted(glob.glob("**/*.py", recursive=True))
-write_text("/out.txt", str(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(vals))
+__lython_file.close()
 """,
             host);
 
@@ -68,7 +72,9 @@ vals.append(str(sorted(glob.glob("*.py", root_dir="/repo/pkg"))))
 vals.append(str(sorted(glob.glob(Path("*.py"), root_dir=Path("/repo/pkg")))))
 vals.append(str(sorted(glob.glob("/repo/pkg/*.py", root_dir="/repo/other"))))
 vals.append(glob.glob("pkg/*.py")[0].replace("pkg/", ""))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -95,7 +101,9 @@ vals.append(str(sorted(glob.glob("*.py", include_hidden=True))))
 vals.append(str(sorted(glob.glob(".*.py"))))
 vals.append(str(sorted(glob.glob("**/*.py", recursive=True))))
 vals.append(str(sorted(glob.glob("**/*.py", recursive=True, include_hidden=True))))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -113,7 +121,9 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 import glob
-write_text("/out.txt", str(sorted(glob.glob("**/**/*.py", recursive=True))))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(sorted(glob.glob("**/**/*.py", recursive=True))))
+__lython_file.close()
 """,
             host);
 
@@ -135,7 +145,9 @@ import glob
 it = glob.iglob("*.py")
 first = list(it)
 second = list(it)
-write_text("/out.txt", str(first) + "|" + str(second))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(first) + "|" + str(second))
+__lython_file.close()
 """,
             host);
 
@@ -159,7 +171,9 @@ import glob
 vals = []
 vals.append(str(sorted(glob.glob("/repo/docs/*.md"))))
 vals.append(str(sorted(glob.iglob("/repo/docs/**/*.md", recursive=True))))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

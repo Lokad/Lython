@@ -42,7 +42,9 @@ vals.append(str(operator.contains([1, 2, 3], 2)))
 vals.append(str(operator.itemgetter(1, 0)(["x", "y"])))
 vals.append(str(operator.attrgetter("inner.value")(box)))
 vals.append(str(operator.methodcaller("bump", 5)(box)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -110,7 +112,9 @@ vals.append(str(operator.call(operator.add, 4, 5)))
 vals.append(str(operator.itemgetter("a", "b")({"a": 1, "b": 2})))
 vals.append(str(operator.attrgetter("inner.value", "inner.value")(box)))
 vals.append(str(operator.methodcaller("bump", delta=6)(box)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

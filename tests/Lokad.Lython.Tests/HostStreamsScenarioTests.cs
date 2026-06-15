@@ -17,7 +17,9 @@ value = input("prompt> ")
 sys.stdout.write("|tail")
 sys.stdout.flush()
 sys.stderr.write("warn")
-write_text("/out.txt", value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """,
             host);
 

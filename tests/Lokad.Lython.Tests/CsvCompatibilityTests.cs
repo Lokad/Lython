@@ -25,7 +25,9 @@ for row in explicit:
 
 empty = csv.DictReader([])
 vals.append(str(empty.fieldnames))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -52,7 +54,9 @@ with open("/input.csv", newline="") as handle:
     rows = list(csv.reader(handle))
 
 manual = list(csv.reader(["name,note", "alpha,\"hello", "world\"", "beta,z"]))
-write_text("/out.txt", str(len(physical)) + "|" + rows[1][1] + "|" + manual[1][1] + "|" + str(rows[0]) + "|" + str(rows[2]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(len(physical)) + "|" + rows[1][1] + "|" + manual[1][1] + "|" + str(rows[0]) + "|" + str(rows[2]))
+__lython_file.close()
 """,
             host);
 
@@ -78,7 +82,9 @@ with open("/out.csv", "w", newline="") as handle:
     writer.writerow(["name", "qty"])
     writer.writerow(["alpha", 2])
 
-write_text("/memory.csv", memory.getvalue())
+__lython_file = open("/memory.csv", "w")
+__lython_file.write(memory.getvalue())
+__lython_file.close()
 """,
             host);
 
@@ -110,7 +116,9 @@ with open("/ignored.csv", "w", newline="") as handle:
     writer = csv.DictWriter(handle, ["name"], extrasaction="ignore")
     writer.writerow({"name": "gamma", "extra": 1})
 
-write_text("/status.txt", status)
+__lython_file = open("/status.txt", "w")
+__lython_file.write(status)
+__lython_file.close()
 """,
             host);
 
@@ -134,7 +142,9 @@ try:
     list(csv.reader(["\"broken"]))
 except csv.Error as ex:
     status = "caught:" + str(ex)
-write_text("/out.txt", status)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(status)
+__lython_file.close()
 """,
             host);
 

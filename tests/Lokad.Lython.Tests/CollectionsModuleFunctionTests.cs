@@ -22,7 +22,9 @@ vals.append(str(grouped["a"]))
 vals.append(str(grouped.get("missing")))
 vals.append(str(grouped.setdefault("c", [4])))
 vals.append(str(sorted(grouped.keys())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -50,7 +52,9 @@ vals.append(str(list(d.items())))
 vals.append(str(list(copy.values())))
 d.clear()
 vals.append(str(list(d.items())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -75,7 +79,9 @@ vals.append(str(counter["a"]))
 vals.append(str(counter["z"]))
 vals.append(str(counter.most_common(2)))
 vals.append(str(sorted(counter.elements())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -101,7 +107,9 @@ vals.append(str(list(counter.items())))
 vals.append(str(list(copy.items())))
 counter.clear()
 vals.append(str(list(counter.items())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -131,7 +139,9 @@ vals.append(str(left))
 vals.append(str(right))
 vals.append(str(items))
 vals.append(str(items.count(4)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -155,7 +165,9 @@ vals.append(str(items))
 vals.append(str(copy))
 items.clear()
 vals.append(str(items))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -192,7 +204,9 @@ vals.append(str(isinstance(p, Point)))
 vals.append(type(p).__name__)
 vals.append(str(p == (1, 10)))
 vals.append(str(r))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -232,7 +246,9 @@ try:
     UserDict()
 except NotImplementedError as ex:
     vals.append(ex.type)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -261,7 +277,9 @@ except KeyError as ex:
 d.default_factory = list
 d["c"].append(3)
 vals.append(str(list(d.items())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -291,7 +309,9 @@ vals.append(str(left - right))
 vals.append(str(left & right))
 vals.append(str(left | right))
 vals.append(str(Counter(a=1) == Counter({"a": 1, "b": 0})))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -326,7 +346,9 @@ except IndexError as ex:
 vals.append(str(bounded))
 vals.append(str(bounded.maxlen))
 vals.append(str(deque([8, 3, 4], maxlen=3) == bounded))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

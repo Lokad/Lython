@@ -40,7 +40,9 @@ vals.append(str(deep[0]))
 vals.append(str(cycle_copy[0] is cycle_copy))
 vals.append(str(box_copy.value))
 vals.append(str(box_deep.value))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -133,7 +135,9 @@ vals.append(str(copy.deepcopy(Row) is Row))
 vals.append(str(copy.copy(pair) is pair))
 vals.append(str(copy.deepcopy(path) is path))
 vals.append(str(copy.deepcopy(decimal) is decimal))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

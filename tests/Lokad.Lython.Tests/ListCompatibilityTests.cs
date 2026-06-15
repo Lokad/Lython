@@ -33,7 +33,9 @@ values.append(str(sort_result))
 words = ["bbb", "a", "cc"]
 words.sort(key=len, reverse=True)
 values.append(str(words))
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -65,7 +67,9 @@ try:
     [1].pop(3)
 except IndexError as err:
     values.append(err.message)
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -87,7 +91,9 @@ negative = [9] * -2
 alias = ["x"]
 same = alias
 alias *= 3
-write_text("/out.txt", str(items) + "|" + str(left) + "|" + str(empty) + "|" + str(negative) + "|" + str(alias) + "|" + str(same is alias))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(left) + "|" + str(empty) + "|" + str(negative) + "|" + str(alias) + "|" + str(same is alias))
+__lython_file.close()
 """,
             host);
 
@@ -117,7 +123,9 @@ items = [1, 2, 3]
 items[10:1] = [9]
 third = str(items)
 
-write_text("/out.txt", first + "|" + second + "|" + third)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first + "|" + second + "|" + third)
+__lython_file.close()
 """,
             host);
 
@@ -156,7 +164,9 @@ values.append(str([1, 2] < [1, 3]))
 values.append(str([1, 2, 0] > [1, 2]))
 values.append(str((1, "a") < (2, "a")))
 values.append(str(sorted(rows)))
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -185,7 +195,9 @@ f = [3, 1, 2]
 f.sort(1)
 g = [0, 1, 2, 3]
 g[::2] = [9]
-write_text("/out.txt", "side effect")
+__lython_file = open("/out.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 

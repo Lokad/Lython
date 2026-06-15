@@ -1,5 +1,8 @@
-mkdir("/out")
-for name in listdir("/src"):
+import os
+from pathlib import Path
+
+Path("/out").mkdir()
+for name in os.listdir("/src"):
     if name != "skip.txt":
-        text = read_text(join_path("/src", name))
-        write_text(join_path("/out", basename(name)), text)
+        text = Path("/src", name).read_text()
+        Path("/out", name).write_text(text)

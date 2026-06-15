@@ -120,7 +120,7 @@ while True:
 
         var runTask = new LythonEngine().RunAsync(
             """
-value = read_text("/input.txt")
+value = open("/input.txt").read()
 """,
             new BlockingReadHost(),
             cancellationToken: cts.Token);
@@ -167,8 +167,8 @@ loop()
 
         var result = new LythonEngine().Run(
             """
-left = read_text("/a.txt")
-right = read_text("/b.txt")
+left = open("/a.txt").read()
+right = open("/b.txt").read()
 """,
             host,
             new LythonRunOptions
@@ -467,7 +467,7 @@ value = bytes(range(64))
 
         var result = new LythonEngine().Run(
             """
-text = read_text("/input.txt")
+text = open("/input.txt").read()
 """,
             host,
             new LythonRunOptions
@@ -730,7 +730,7 @@ value = 2 ** 4096
 
         var result = new LythonEngine().Run(
             """
-text = read_text("/input.txt")
+text = open("/input.txt").read()
 """,
             host,
             new LythonRunOptions
@@ -771,7 +771,7 @@ print("abcdefghij")
 
         var result = await new LythonEngine().RunAsync(
             """
-return read_text("/input.txt")
+return open("/input.txt").read()
 """,
             host,
             new LythonRunOptions());
@@ -791,7 +791,7 @@ return read_text("/input.txt")
             """
 class Reader:
     def read(self):
-        return read_text("/input.txt")
+        return open("/input.txt").read()
 
 reader = Reader()
 return reader.read()
@@ -812,7 +812,7 @@ return reader.read()
 
         var result = new LythonEngine().Run(
             """
-return read_text("/input.txt")
+return open("/input.txt").read()
 """,
             host,
             new LythonRunOptions());

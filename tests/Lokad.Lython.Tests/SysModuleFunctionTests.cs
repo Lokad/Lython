@@ -28,7 +28,9 @@ parts = [
     sys.getdefaultencoding(),
     sys.path[0],
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions { SourcePath = "/repo/main.py" });
@@ -50,7 +52,9 @@ parts = [
     str("subprocess" in sys.builtin_module_names),
     str("subprocess" in sys.stdlib_module_names),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             noProcessHost);
 
@@ -62,7 +66,9 @@ write_text("/out.txt", "|".join(parts))
         var process = new LythonEngine().Run(
             """
 import sys
-write_text("/out.txt", str("subprocess" in sys.builtin_module_names) + "|" + str("subprocess" in sys.stdlib_module_names))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str("subprocess" in sys.builtin_module_names) + "|" + str("subprocess" in sys.stdlib_module_names))
+__lython_file.close()
 """,
             processHost);
 
@@ -90,7 +96,9 @@ parts = [
     str(after),
     str(sys.modules["helper"].value),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -126,7 +134,9 @@ except ValueError as ex:
     ]
 
 after = sys.exc_info()
-write_text("/out.txt", "|".join(inside) + "||" + str(after[0] is None))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(inside) + "||" + str(after[0] is None))
+__lython_file.close()
 """,
             host);
 
@@ -156,7 +166,9 @@ except SystemExit as ex:
     parts.append(str(ex.code is None))
     parts.append(str(ex.args))
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -178,7 +190,9 @@ parts = [
     str(sys.getsizeof([1, 2, 3]) > sys.getsizeof([])),
     str(sys.getsizeof(sys.implementation, 123)),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -202,7 +216,9 @@ sys.stdout.write(first)
 sys.stdout.flush()
 sys.stderr.write(rest)
 sys.stderr.flush()
-write_text("/out.txt", first + "|" + rest)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first + "|" + rest)
+__lython_file.close()
 """,
             host);
 

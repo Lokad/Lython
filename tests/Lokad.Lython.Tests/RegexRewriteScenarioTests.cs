@@ -95,7 +95,9 @@ public sealed class RegexRewriteScenarioTests
             """
 import re
 m = re.search("beta", "alpha beta gamma")
-write_text("/out.txt", m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "|" + str(m.span()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "|" + str(m.span()))
+__lython_file.close()
 """,
             host);
 
@@ -112,7 +114,9 @@ write_text("/out.txt", m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "
         var result = new LythonEngine().Run(
             """
 import re
-write_text("/out.txt", str(re.split("z+", "alpha")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(re.split("z+", "alpha")))
+__lython_file.close()
 """,
             host);
 
@@ -131,7 +135,9 @@ write_text("/out.txt", str(re.split("z+", "alpha")))
 import re
 pat = re.compile("(?P<word>beta)")
 m = pat.search("alpha beta")
-write_text("/out.txt", m.group(0) + "|" + m.group(1) + "|" + m.group("word"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(m.group(0) + "|" + m.group(1) + "|" + m.group("word"))
+__lython_file.close()
 """,
             host);
 
@@ -163,7 +169,9 @@ re.split(1, "alpha")
             """
 import re
 parts = re.split(":+", ":a::b:")
-write_text("/out.txt", parts[0] + "<>" + parts[1] + "<>" + parts[2] + "<>" + parts[3])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(parts[0] + "<>" + parts[1] + "<>" + parts[2] + "<>" + parts[3])
+__lython_file.close()
 """,
             host);
 
@@ -183,7 +191,9 @@ import re
 vals = []
 vals.append(str(re.split("(:+)", ":a::b:")))
 vals.append(str(re.split("(a)?b", "b ab")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -203,7 +213,9 @@ import re
 vals = []
 vals.append(str(re.match("abc", "zabc") is None))
 vals.append(str(re.search("abc", "zabc").start()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -224,7 +236,9 @@ import re
 parts = []
 for match in re.finditer("x*", "ab"):
     parts.append(str(match.span()))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -241,7 +255,9 @@ write_text("/out.txt", "|".join(parts))
             """
 import re
 m = re.search("😀", "a😀b")
-write_text("/out.txt", m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "|" + str(m.span()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "|" + str(m.span()))
+__lython_file.close()
 """,
             host);
 
@@ -259,7 +275,9 @@ write_text("/out.txt", m.group() + "|" + str(m.start()) + "|" + str(m.end()) + "
             """
 import re
 m = re.search(".", "𝒜")
-write_text("/out.txt", m.group() + "|" + str(m.span()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(m.group() + "|" + str(m.span()))
+__lython_file.close()
 """,
             host);
 
@@ -279,7 +297,9 @@ import re
 vals = []
 vals.append(re.sub("z+", "x", "alpha"))
 vals.append(re.escape("a.b[c]?"))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -350,7 +370,9 @@ items = []
 for m in pat.finditer("Alpha alpha ALPHA"):
     items.append(m.group())
 text, count = pat.subn("x", "Alpha alpha ALPHA")
-write_text("/out.txt", str(items) + "|" + text + "|" + str(count))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + text + "|" + str(count))
+__lython_file.close()
 """,
             host);
 
@@ -380,7 +402,9 @@ def replacer(match):
 
 replaced, count = ATTR_RE.subn(replacer, line, count=1)
 stripped = re.compile(r"(?<!\!)\[(?P<label>[^\]]+)\]\((?P<url>[^)]+)\)").sub(lambda match: match.group("label"), "[a](u) [b](v)")
-write_text("/out.txt", str(keys) + "|" + replaced + "|" + str(count) + "|" + stripped)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(keys) + "|" + replaced + "|" + str(count) + "|" + stripped)
+__lython_file.close()
 """,
             host);
 
@@ -410,7 +434,9 @@ for idx, match in enumerate(matches):
         parts.append(match.group("label"))
     cursor = match.end()
 parts.append(text[cursor:])
-write_text("/out.txt", str(len(matches)) + "|" + "".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(len(matches)) + "|" + "".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -466,7 +492,9 @@ try:
 except re.PatternError as ex:
     vals.append("pattern:" + ex.type)
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -485,7 +513,9 @@ import re
 
 m = re.match("((a)|(b))(c)?", "ac")
 named = re.match("(?:(?P<a1>a)|(?P<b2>b))(?P<c3>c)?", "ac")
-write_text("/out.txt", str(m.group(2, 1)) + "|" + str(named.group("a1", "b2", "c3")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(m.group(2, 1)) + "|" + str(named.group("a1", "b2", "c3")))
+__lython_file.close()
 """,
             host);
 

@@ -14,4 +14,6 @@ parts = re.split(" ", text)
 vals.append(parts[1])
 vals.append(re.escape("a.b"))
 
-write_text("/out.txt", "\n".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(vals))
+__lython_file.close()

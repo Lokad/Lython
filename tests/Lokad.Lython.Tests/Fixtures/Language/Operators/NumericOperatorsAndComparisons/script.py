@@ -10,4 +10,6 @@ vals.append(str(2.0 == 2))
 vals.append(str(2.5 > 2))
 vals.append(str(list(enumerate(range(3, 6), 10))))
 
-write_text("/out.txt", "\n".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(vals))
+__lython_file.close()

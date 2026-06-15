@@ -31,7 +31,9 @@ random.seed(123)
 first = snapshot()
 random.seed(123)
 second = snapshot()
-write_text("/out.txt", str(first == second) + "|" + first)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(first == second) + "|" + first)
+__lython_file.close()
 """,
             host);
 
@@ -123,7 +125,9 @@ vals.append(str(logn > 0))
 vals.append(str(pareto >= 1))
 vals.append(str(0 <= vm <= math.tau))
 vals.append(str(weibull >= 0))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

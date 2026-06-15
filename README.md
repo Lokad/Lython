@@ -27,7 +27,8 @@ import csv
 import re
 from json import dumps
 
-rows = csv.reader(read_text("inventory.tsv").splitlines(), delimiter="\t")
+with open("inventory.tsv") as handle:
+    rows = csv.reader(handle.read().splitlines(), delimiter="\t")
 
 def clean_name(text, *, pattern=r"\s+"):
     return re.sub(pattern=pattern, repl=" ", string=text.strip())
@@ -43,8 +44,11 @@ writer = csv.writer(delimiter="\t")
 writer.writerow(["sku", "name", "qty"])
 writer.writerows([[item["sku"], item["name"], item["qty"]] for item in selected])
 
-write_text("available.tsv", writer.getvalue())
-write_text("available.json", dumps(obj=selected))
+with open("available.tsv", "w") as handle:
+    handle.write(writer.getvalue())
+
+with open("available.json", "w") as handle:
+    handle.write(dumps(obj=selected))
 ```
 
 On the host side, the plumbing is deliberately small:

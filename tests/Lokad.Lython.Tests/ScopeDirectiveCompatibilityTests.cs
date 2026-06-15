@@ -31,7 +31,9 @@ try:
 except NameError:
     status = "missing"
 
-write_text("/out.txt", str(first) + "|" + status)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(first) + "|" + status)
+__lython_file.close()
 """,
             host);
 
@@ -58,7 +60,9 @@ def outer():
         return value
     return inner() + "|" + str(seed) + "|" + value
 
-write_text("/out.txt", outer())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(outer())
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -93,7 +97,9 @@ def outer():
         return first + "|" + x
     return middle() + "|" + x
 
-write_text("/out.txt", outer())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(outer())
+__lython_file.close()
 """,
             host);
 
@@ -135,7 +141,9 @@ def outer():
         status = "missing"
     return str(first) + "|" + str(second) + "|" + status
 
-write_text("/out.txt", outer())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(outer())
+__lython_file.close()
 """,
             host);
 
@@ -231,7 +239,9 @@ global_parts = (
     + "|" + str(g_match)
     + "|" + str(g_walrus)
 )
-write_text("/out.txt", global_parts + "\n" + nonlocal_parts)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(global_parts + "\n" + nonlocal_parts)
+__lython_file.close()
 """,
             host);
 
@@ -261,7 +271,9 @@ def outer():
     inner()
     return x
 
-write_text("/out.txt", str(outer()) + "|" + str(value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(outer()) + "|" + str(value))
+__lython_file.close()
 """,
             host);
 

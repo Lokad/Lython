@@ -39,7 +39,9 @@ parts = [
 ]
 loaded["Inventory"]["D2"] = "resaved"
 loaded.save("/roundtrip.xlsx")
-write_text("/result.txt", "|".join(parts))
+__lython_file = open("/result.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -74,7 +76,9 @@ parts = [
     str(cached),
     wb["Second"]["B2"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -110,7 +114,9 @@ parts = [
     target.coordinate,
     ws["A3"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -137,7 +143,9 @@ loaded = load_workbook("/formula.xlsx", data_only=False)
 first = loaded.active["B1"].value
 loaded.save("/resaved.xlsx")
 again = load_workbook("/resaved.xlsx", data_only=False).active["B1"].value
-write_text("/out.txt", first + "|" + again)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first + "|" + again)
+__lython_file.close()
 """,
             host);
 
@@ -162,7 +170,9 @@ wb = load_workbook("/cached.xlsx", data_only=False)
 text = wb.active["B1"].value
 wb.save("/copy.xlsx")
 cached = load_workbook("/copy.xlsx", data_only=True).active["B1"].value
-write_text("/out.txt", text + "|" + str(cached))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "|" + str(cached))
+__lython_file.close()
 """,
             host);
 
@@ -186,7 +196,9 @@ import openpyxl
 wb = openpyxl.load_workbook("/formulas.xlsx", data_only=False)
 wb.active["D1"] = "touched"
 wb.save("/copy.xlsx")
-write_text("/out.txt", wb.active["B1"].value + "|" + wb.active["B2"].value + "|" + wb.active["C1"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(wb.active["B1"].value + "|" + wb.active["B2"].value + "|" + wb.active["C1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -247,7 +259,9 @@ ws["A2"] = "line1\nline2"
 wb.save("/strings.xlsx")
 
 loaded = load_workbook("/strings.xlsx")
-write_text("/out.txt", loaded.active["A1"].value + "|" + loaded.active["A2"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded.active["A1"].value + "|" + loaded.active["A2"].value)
+__lython_file.close()
 """,
             host);
 
@@ -266,7 +280,9 @@ write_text("/out.txt", loaded.active["A1"].value + "|" + loaded.active["A2"].val
 from openpyxl import load_workbook
 
 wb = load_workbook("/rich.xlsx")
-write_text("/out.txt", wb.active["A1"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(wb.active["A1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -278,7 +294,9 @@ write_text("/out.txt", wb.active["A1"].value)
 from openpyxl import load_workbook
 
 wb = load_workbook("/rich.xlsx", rich_text=True)
-write_text("/rich.txt", wb.active["A1"].value)
+__lython_file = open("/rich.txt", "w")
+__lython_file.write(wb.active["A1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -302,7 +320,9 @@ wb.active["A1"] = before + " saved"
 wb.save("/copy.xlsx")
 
 loaded = openpyxl.load_workbook("/copy.xlsx")
-write_text("/out.txt", loaded.active["A1"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded.active["A1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -331,7 +351,9 @@ ws["A2"] = Decimal("2")
 wb.save("/decimal.xlsx")
 
 loaded = load_workbook("/decimal.xlsx")
-write_text("/out.txt", f"{loaded.active['A1'].value}|{loaded.active['A2'].value}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{loaded.active['A1'].value}|{loaded.active['A2'].value}")
+__lython_file.close()
 """,
             host);
 
@@ -365,7 +387,9 @@ values = [
     out["C1"].value.isoformat(), out["C1"].data_type, str(out["C1"].is_date), out["C1"].number_format,
     str(int(out["D1"].value.total_seconds())), out["D1"].data_type, str(out["D1"].is_date), out["D1"].number_format,
 ]
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -390,7 +414,9 @@ from openpyxl import load_workbook
 
 wb = load_workbook("/date1904.xlsx")
 cell = wb.active["A1"]
-write_text("/out.txt", f"{wb.epoch}|{cell.base_date}|{cell.value.isoformat()}|{cell.data_type}|{cell.is_date}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{wb.epoch}|{cell.base_date}|{cell.value.isoformat()}|{cell.data_type}|{cell.is_date}")
+__lython_file.close()
 wb.save("/copy.xlsx")
 """,
             host);
@@ -427,7 +453,9 @@ wb.save("/formats.xlsx")
 loaded = load_workbook("/formats.xlsx")
 out = loaded.active
 text = f"{out['A1'].number_format}|{out['B1'].number_format}|{out['C1'].number_format}|{out['D1'].number_format}|{out['A1'].style_id}|{out['B1'].style_id}|{out['A1'].value}|{out['B1'].value}|{out['C1'].value}|{out['D1'].value}"
-write_text("/out.txt", text)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """,
             host);
 
@@ -460,7 +488,9 @@ parts = [
     cell.alignment.horizontal, str(cell.alignment.wrap_text),
     str(cell.protection.locked), str(cell.protection.hidden),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -510,7 +540,9 @@ parts = [
     named_copy.name,
     ws["A1"].style,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -552,7 +584,9 @@ parts = [
     out.alignment.horizontal, str(out.alignment.wrap_text),
     str(out.protection.locked), str(out.protection.hidden),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -604,7 +638,9 @@ after = [
     out.border.left.color.type, str(out.border.left.color.theme), str(out.border.left.color.tint),
     str(out.font.color == "FF00FF00"),
 ]
-write_text("/out.txt", "|".join(before) + "\n" + "|".join(after))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(before) + "\n" + "|".join(after))
+__lython_file.close()
 """,
             host);
 
@@ -663,7 +699,9 @@ parts = [
     str(ws["A2"].font.bold),
     ws["A2"].fill.fgColor,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -709,7 +747,9 @@ parts = [
     str(ws["C1"].font.bold),
     ws["C1"].fill.fgColor,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -734,7 +774,9 @@ wb.save("/errors.xlsx")
 
 loaded = load_workbook("/errors.xlsx")
 out = loaded.active
-write_text("/out.txt", f"{out['A1'].value}|{out['A1'].data_type}|{out['A2'].value}|{out['A2'].data_type}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{out['A1'].value}|{out['A1'].data_type}|{out['A2'].value}|{out['A2'].data_type}")
+__lython_file.close()
 """,
             host);
 
@@ -763,7 +805,9 @@ wb.save("/links.xlsx")
 
 loaded = load_workbook("/links.xlsx")
 cell = loaded.active["A1"]
-write_text("/out.txt", f"{cell.value}|{cell.hyperlink.target}|{cell.hyperlink.ref}|{cell.hyperlink.display}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{cell.value}|{cell.hyperlink.target}|{cell.hyperlink.ref}|{cell.hyperlink.display}")
+__lython_file.close()
 loaded.save("/copy.xlsx")
 """,
             host);
@@ -794,7 +838,9 @@ ws = wb.active
 ws["A1"].comment = Comment("review", "Analyst")
 ws["A1"].comment.text = "approved"
 copy = wb.copy_worksheet(ws)
-write_text("/out.txt", ws["A1"].comment.text + "|" + ws["A1"].comment.author + "|" + copy["A1"].comment.text)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(ws["A1"].comment.text + "|" + ws["A1"].comment.author + "|" + copy["A1"].comment.text)
+__lython_file.close()
 """,
             host);
 
@@ -821,7 +867,9 @@ ws["B1"] = column_index_from_string("AZ")
 wb.save("/aliases.xlsx")
 
 loaded = load_workbook("/aliases.xlsx")
-write_text("/out.txt", loaded["Aliases"]["A1"].value + "|" + str(loaded["Aliases"]["B1"].value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded["Aliases"]["A1"].value + "|" + str(loaded["Aliases"]["B1"].value))
+__lython_file.close()
 """,
             host);
 
@@ -877,7 +925,9 @@ parts = [
     ",".join(row_parts),
     ",".join(col_parts),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -982,7 +1032,9 @@ table.tableStyleInfo = TableStyleInfo(name="TableStyleMedium2", showRowStripes=T
 data.add_table(table)
 metadata_summary = data.auto_filter.ref + ":" + data["A2"].comment.text + ":" + data.tables["Inventory"].tableStyleInfo.name
 
-write_text("/out.txt", "|".join([version, ",".join(available), cell_summary, format_summary, metadata_summary]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([version, ",".join(available), cell_summary, format_summary, metadata_summary]))
+__lython_file.close()
 """,
             host);
 
@@ -1003,7 +1055,9 @@ from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Pr
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.worksheet.datavalidation import DataValidation
 
-write_text("/out.txt", "ok")
+__lython_file = open("/out.txt", "w")
+__lython_file.write("ok")
+__lython_file.close()
 """,
             host);
 
@@ -1025,7 +1079,9 @@ chart.title = "Sales"
 chart.y_axis.title = "Qty"
 data = Reference(ws, min_col=2, min_row=1, max_row=2)
 chart.add_data(data, titles_from_data=True)
-write_text("/out.txt", chart.type + "|" + chart.title + "|" + chart.y_axis.title + "|" + str(len(chart.series)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(chart.type + "|" + chart.title + "|" + chart.y_axis.title + "|" + str(len(chart.series)))
+__lython_file.close()
 """,
             setupHost);
 
@@ -1080,7 +1136,9 @@ try:
 except InvalidFileException as ex:
     caught.append(ex.type)
 
-write_text("/out.txt", BLACK + "," + WHITE + "," + BLUE + "|" + "|".join(caught))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(BLACK + "," + WHITE + "," + BLUE + "|" + "|".join(caught))
+__lython_file.close()
 """,
             host);
 
@@ -1093,7 +1151,9 @@ write_text("/out.txt", BLACK + "," + WHITE + "," + BLUE + "|" + "|".join(caught)
 from openpyxl.drawing.image import Image
 
 image = Image("/image.png")
-write_text("/image.txt", image.ref + "|" + image.format)
+__lython_file = open("/image.txt", "w")
+__lython_file.write(image.ref + "|" + image.format)
+__lython_file.close()
 """,
             imageSetupHost);
 
@@ -1133,7 +1193,9 @@ table = Table(displayName="Sales", ref="A1:B2")
 table.tableStyleInfo = TableStyleInfo(name="TableStyleMedium9", showRowStripes=True)
 ws.add_table(table)
 found = ws.tables["Sales"]
-write_text("/out.txt", found.displayName + "|" + found.ref + "|" + found.tableStyleInfo.name + "|" + str(found.tableStyleInfo.showRowStripes) + "|" + ",".join(ws.tables.keys()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(found.displayName + "|" + found.ref + "|" + found.tableStyleInfo.name + "|" + str(found.tableStyleInfo.showRowStripes) + "|" + ",".join(ws.tables.keys()))
+__lython_file.close()
 """,
             host);
 
@@ -1164,7 +1226,9 @@ copied_value = copy["A1"].value
 wb.remove_sheet(inserted)
 names_after_remove = str(wb.sheetnames)
 del wb["Data Copy"]
-write_text("/out.txt", names_before + "|" + indexes + "|" + copied_value + "|" + names_after_remove + "|" + str(wb.sheetnames))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(names_before + "|" + indexes + "|" + copied_value + "|" + names_after_remove + "|" + str(wb.sheetnames))
+__lython_file.close()
 """,
             host);
 
@@ -1211,7 +1275,9 @@ loaded = load_workbook("/active.xlsx")
 loaded_active = loaded.active.title
 wb.move_sheet(third, offset=-2)
 after_move = wb.active.title + ":" + str(wb.index(wb.active))
-write_text("/out.txt", by_sheet + "|" + by_index + "|" + loaded_active + "|" + after_move)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(by_sheet + "|" + by_index + "|" + loaded_active + "|" + after_move)
+__lython_file.close()
 """,
             host);
 
@@ -1239,7 +1305,9 @@ before = [
 ]
 wb.template = True
 after = [str(wb.template), wb.mime_type]
-write_text("/out.txt", "|".join(before + after))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(before + after))
+__lython_file.close()
 """,
             host);
 
@@ -1281,7 +1349,9 @@ parts = [
     occupied_column,
     occupied_value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1319,7 +1389,9 @@ parts = [
     cell_range[0][0].coordinate + ":" + str(cell_range[0][0].value),
     cell_range[1][2].coordinate + ":" + str(cell_range[1][2].value),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1348,7 +1420,9 @@ parts = [
     str(ws["C2"].value),
     str(ws.max_column),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1376,7 +1450,9 @@ after = str(ws.merged_cell_ranges)
 wb.save("/merged.xlsx")
 
 loaded = load_workbook("/merged.xlsx")
-write_text("/out.txt", before + "|" + after + "|" + str(loaded.active.merged_cells.ranges))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(before + "|" + after + "|" + str(loaded.active.merged_cells.ranges))
+__lython_file.close()
 """,
             host);
 
@@ -1415,7 +1491,9 @@ parts = [
     str(ws.max_row),
     str(ws.max_column),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1442,7 +1520,9 @@ before = ws.freeze_panes + "|" + ws.auto_filter.ref
 wb.save("/view.xlsx")
 
 loaded = load_workbook("/view.xlsx")
-write_text("/out.txt", before + "|" + loaded.active.freeze_panes + "|" + loaded.active.auto_filter.ref)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(before + "|" + loaded.active.freeze_panes + "|" + loaded.active.auto_filter.ref)
+__lython_file.close()
 """,
             host);
 
@@ -1479,7 +1559,9 @@ parts = [
     view.selection[0].sqref,
     loaded.active["C3"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1507,7 +1589,9 @@ parts = [
     ws.sheet_view.selection[0].sqref,
     ws["C3"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1562,7 +1646,9 @@ parts = [
     str(setup.fitToHeight),
     str(setup.scale),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1596,7 +1682,9 @@ parts = [
     str(ws.page_setup.paperSize),
     ws["C5"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1631,7 +1719,9 @@ parts = [
     ws.freeze_panes,
     ws["A3"].hyperlink.target,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 wb.save("/copy.xlsx")
 """,
             host);
@@ -1696,7 +1786,9 @@ parts = [
     ws.column_dimensions["B"].style,
     ws.row_dimensions[2].style,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1724,7 +1816,9 @@ parts = [
     str(ws.row_dimensions[3].hidden),
     ws["A2"].value,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1766,7 +1860,9 @@ wb["Inventory"]["A2"] = "A999"
 wb.save("/copy.xlsx")
 
 loaded = openpyxl.load_workbook("/copy.xlsx")
-write_text("/out.txt", loaded["Inventory"]["A2"].value + "|" + loaded.active.title)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded["Inventory"]["A2"].value + "|" + loaded.active.title)
+__lython_file.close()
 """,
             host);
 
@@ -1800,7 +1896,9 @@ wb.active["A1"] = "changed"
 wb.save("/copy.xlsx")
 
 loaded = openpyxl.load_workbook("/copy.xlsx")
-write_text("/out.txt", loaded.active["A1"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded.active["A1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -1851,7 +1949,9 @@ wb.active["A1"] = "changed"
 wb.save("/copy.xlsx")
 
 loaded = openpyxl.load_workbook("/copy.xlsx")
-write_text("/out.txt", before + "|" + str(loaded.active["A1"].style_id) + "|" + loaded.active["A1"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(before + "|" + str(loaded.active["A1"].style_id) + "|" + loaded.active["A1"].value)
+__lython_file.close()
 """,
             host);
 
@@ -1882,7 +1982,9 @@ wb.active["A1"] = "changed"
 wb.save("/copy.xlsx")
 
 loaded = openpyxl.load_workbook("/copy.xlsx")
-write_text("/out.txt", loaded.active["A1"].value + "|" + loaded.active.auto_filter.ref)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded.active["A1"].value + "|" + loaded.active.auto_filter.ref)
+__lython_file.close()
 """,
             host);
 
@@ -1932,7 +2034,8 @@ ws = wb.active
 drawing = ws._drawing
 chart = ws._charts[0]
 image = ws._images[0]
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(len(ws._drawings)),
     str(len(ws.drawings)),
     drawing.path,
@@ -1947,6 +2050,7 @@ write_text("/out.txt", "|".join([
     image.format,
     str(image.width is None),
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -1975,7 +2079,9 @@ after_move = ws["B2"].comment.author + "|" + str(ws["A2"].comment is None)
 ws.delete_cols(2)
 after_delete = str(ws["B2"].comment is None)
 
-write_text("/out.txt", "|".join([loaded, after_insert, after_move, after_delete]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([loaded, after_insert, after_move, after_delete]))
+__lython_file.close()
 """,
             host);
 
@@ -2008,7 +2114,9 @@ parts = [
     first_value.displayName,
     first_item[0] + ":" + first_item[1].ref,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -2041,7 +2149,8 @@ after_delete_col = table.ref
 wb.save("/copy.xlsx")
 
 again = load_workbook("/copy.xlsx")
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     loaded,
     after_insert_row,
     after_insert_col,
@@ -2049,6 +2158,7 @@ write_text("/out.txt", "|".join([
     after_delete_col,
     again.active.tables["Sales"].ref,
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2125,7 +2235,8 @@ comment = "none"
 for ref in ["A1", "A2", "B1", "B2", "B3", "C2", "C3"]:
     if ws[ref].comment is not None:
         comment = ref + ":" + ws[ref].comment.text + ":" + ws[ref].comment.author
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     ws.tables["Sales"].ref,
     ws.data_validations.dataValidation[0].sqref,
     ws.conditional_formatting.ranges[0],
@@ -2134,6 +2245,7 @@ write_text("/out.txt", "|".join([
     str(len(ws._charts)),
     str(len(ws._images)),
 ]))
+__lython_file.close()
 """,
                 host);
 
@@ -2182,7 +2294,8 @@ iterated = ""
 for item in validations:
     iterated = item.type + ":" + item.sqref
 
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(validations.count),
     validation.type,
     validation.sqref,
@@ -2190,6 +2303,7 @@ write_text("/out.txt", "|".join([
     validation.formula2,
     iterated,
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2219,7 +2333,9 @@ parts = [
     rules[0].formula[0],
     first_item[0] + ":" + first_item[1][0].type,
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -2252,12 +2368,14 @@ import openpyxl
 
 wb = openpyxl.load_workbook("/features.xlsx")
 protection = wb.active.protection
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(protection.sheet),
     str(protection.objects),
     str(protection.scenarios),
     str(protection.password is None),
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2277,7 +2395,8 @@ import openpyxl
 
 wb = openpyxl.load_workbook("/features.xlsx")
 security = wb.security
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(security.lockStructure),
     str(security.lockWindows),
     str(security.lockRevision),
@@ -2293,6 +2412,7 @@ write_text("/out.txt", "|".join([
     security.revisionsHashValue,
     security.revisionsSaltValue,
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2321,13 +2441,15 @@ wb.save("/protected.xlsx")
 
 loaded = load_workbook("/protected.xlsx")
 protection = loaded.active.protection
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(protection.sheet),
     str(protection.objects),
     str(protection.scenarios),
     protection.password,
     str(protection.spinCount),
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2364,7 +2486,8 @@ wb.save("/protected.xlsx")
 
 loaded = load_workbook("/protected.xlsx")
 security = loaded.security
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     str(security.lockStructure),
     str(security.lockWindows),
     str(security.lockRevision),
@@ -2377,6 +2500,7 @@ write_text("/out.txt", "|".join([
     security.revisionsSaltValue,
     str(security.revisionsSpinCount),
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2410,13 +2534,15 @@ wb.save("/validation.xlsx")
 
 loaded = load_workbook("/validation.xlsx")
 loaded_validation = loaded.active.data_validations.dataValidation[0]
-write_text("/out.txt", "|".join([
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([
     loaded_validation.type,
     loaded_validation.formula1,
     loaded_validation.sqref,
     str(loaded_validation.allow_blank),
     loaded_validation.errorTitle,
 ]))
+__lython_file.close()
 """,
             host);
 
@@ -2455,7 +2581,9 @@ edited = ws.data_validations.dataValidation[0].sqref
 loaded.save("/copy.xlsx")
 
 again = load_workbook("/copy.xlsx")
-write_text("/out.txt", edited + "|" + again.active.data_validations.dataValidation[0].sqref)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(edited + "|" + again.active.data_validations.dataValidation[0].sqref)
+__lython_file.close()
 """,
             host);
 
@@ -2517,7 +2645,9 @@ wb.save("/copy.xlsx")
 import openpyxl
 
 wb = openpyxl.load_workbook("/input.xlsx", keep_links=False)
-write_text("/out.txt", wb["Inventory"]["A2"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(wb["Inventory"]["A2"].value)
+__lython_file.close()
 """,
             host);
 
@@ -2556,7 +2686,9 @@ openpyxl.load_workbook("/linked.xlsx", keep_links=False)
 import openpyxl
 
 wb = openpyxl.load_workbook("/input.xlsx", keep_vba=True)
-write_text("/out.txt", wb["Inventory"]["A2"].value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(wb["Inventory"]["A2"].value)
+__lython_file.close()
 """,
             host);
 
@@ -2603,7 +2735,9 @@ wb.active["A1"] = "changed"
 wb.save("/copy.xlsm")
 
 loaded = openpyxl.load_workbook("/copy.xlsm", keep_vba=True)
-write_text("/out.txt", loaded.active["A1"].value + "|" + loaded.mime_type)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(loaded.active["A1"].value + "|" + loaded.mime_type)
+__lython_file.close()
 """,
             host);
 
@@ -2689,7 +2823,9 @@ import openpyxl
 
 wb = openpyxl.load_workbook("/input.xlsx", read_only=True)
 ws = wb["Inventory"]
-write_text("/out.txt", str(wb.read_only) + "|" + ws["A2"].value + "|" + str(ws["C2"].value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(wb.read_only) + "|" + ws["A2"].value + "|" + str(ws["C2"].value))
+__lython_file.close()
 """,
             host);
 
@@ -2826,12 +2962,15 @@ wb.save("/copy.xlsx")
 
         var result = new LythonEngine().Run(
             """
+import os
 import openpyxl
 
 wb = openpyxl.Workbook(write_only=True)
 wb.active.append(["sku", "qty"])
 wb.save("/first.xlsx")
-write_text("/out.txt", str(wb.write_only) + "|" + str(exists("/first.xlsx")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(wb.write_only) + "|" + str(os.path.exists("/first.xlsx")))
+__lython_file.close()
 wb.save("/second.xlsx")
 """,
             host);

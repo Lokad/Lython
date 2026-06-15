@@ -25,7 +25,9 @@ vals.append(str(int(statistics.pvariance([2, 4, 4, 4, 5, 5, 7, 9]) * 1000)))
 vals.append(str(int(statistics.variance([2, 4, 4, 4, 5, 5, 7, 9]) * 1000)))
 vals.append(str(int(statistics.pstdev([2, 4, 4, 4, 5, 5, 7, 9]) * 1000)))
 vals.append(str(int(statistics.stdev([2, 4, 4, 4, 5, 5, 7, 9]) * 1000)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -83,7 +85,9 @@ vals.append(str(int(scaled.mean * 1000)) + ":" + str(int(scaled.stdev * 1000)))
 vals.append(str(isinstance(normal, statistics.NormalDist)))
 vals.append(str(statistics.NormalDist(1, 2).samples(2, seed=123) == statistics.NormalDist(1, 2).samples(2, seed=123)))
 vals.append(str(int(statistics.geometric_mean([Decimal("2"), Decimal("8")]) * 1000)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

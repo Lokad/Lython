@@ -36,9 +36,11 @@ public sealed class RuntimeSkeletonTests
 
         const string script = """
 import re
-text = read_text("/input.txt")
+text = open("/input.txt").read()
 text = re.sub("alpha", "omega", text)
-write_text("/output.txt", text)
+__lython_file = open("/output.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """;
 
         var result = engine.Run(script, host);
@@ -58,8 +60,10 @@ write_text("/output.txt", text)
 
         const string script = """
 import re
-text = read_text("/input.txt")
-write_text("/output.txt", re.sub("(", "x", text))
+text = open("/input.txt").read()
+__lython_file = open("/output.txt", "w")
+__lython_file.write(re.sub("(", "x", text))
+__lython_file.close()
 """;
 
         var result = engine.Run(script, host);

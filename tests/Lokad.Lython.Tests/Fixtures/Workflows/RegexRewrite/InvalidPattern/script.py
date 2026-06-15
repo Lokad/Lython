@@ -1,3 +1,5 @@
 import re
-text = read_text("/input.txt")
-write_text("/output.txt", re.sub("(", "x", text))
+text = open("/input.txt").read()
+__lython_file = open("/output.txt", "w")
+__lython_file.write(re.sub("(", "x", text))
+__lython_file.close()

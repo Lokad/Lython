@@ -744,7 +744,7 @@ internal static class StaticAbstractValueResolver
 
     private static bool TryResolveCallAbstractValue(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
     {
-        if (call.Target is IdentifierExpressionSyntax { Name: "str" or "read_text" })
+        if (call.Target is IdentifierExpressionSyntax { Name: "str" })
         {
             value = AbstractValue.StringType(call.Span);
             return true;

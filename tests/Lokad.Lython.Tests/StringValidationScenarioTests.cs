@@ -131,7 +131,9 @@ vals.append("banana".replace("na", "X"))
 vals.append(str("banana".find("zz")))
 vals.append(str("".split(",")))
 vals.append(str("a\n".splitlines()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -154,7 +156,9 @@ vals.append(str("".endswith("")))
 vals.append(str("   \t\n".split()))
 vals.append("-".join("ab"))
 vals.append(str(" \t\nabc \r".strip()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -176,7 +180,9 @@ vals.append(str("Alpha".islower()))
 vals.append(str("alpha42".islower()))
 vals.append(str("42!?".islower()))
 vals.append(str("a😀".islower()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

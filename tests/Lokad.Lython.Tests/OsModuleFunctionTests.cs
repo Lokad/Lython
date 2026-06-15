@@ -30,7 +30,9 @@ vals.append(path.abspath("../docs/guide.md"))
 vals.append(path.realpath("../docs/guide.md"))
 vals.append(path.relpath("/repo/docs/guide.md", "/repo"))
 vals.append(path.commonpath(["/repo/docs/a.md", "/repo/docs/b.txt"]))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -63,7 +65,9 @@ vals.append(str(path.getatime("/repo/docs/a.txt")))
 vals.append(str(path.getctime("/repo/docs/a.txt")))
 vals.append(str(path.supports_unicode_filenames))
 vals.append(os.fsdecode(os.fsencode("/repo/unicode-é.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -113,7 +117,9 @@ vals.append(str(os.getenv("NEW") is None))
 os.unsetenv("PUT")
 vals.append(str(os.getenv("PUT") is None))
 vals.append(str(sorted(os.get_exec_path({"PATH": "/custom:/bin"}))))
-write_text("/out.txt", "|".join([str(v) for v in vals]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join([str(v) for v in vals]))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -137,7 +143,9 @@ write_text("/out.txt", "|".join([str(v) for v in vals]))
         var result = new LythonEngine().Run(
             """
 import os
-write_text("/out.txt", os.getenv("PATH", "missing") + "|" + str(os.get_exec_path()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(os.getenv("PATH", "missing") + "|" + str(os.get_exec_path()))
+__lython_file.close()
 """,
             host);
 
@@ -154,7 +162,9 @@ write_text("/out.txt", os.getenv("PATH", "missing") + "|" + str(os.get_exec_path
         var result = await new LythonEngine().RunAsync(
             """
 import os
-write_text("/out.txt", os.getenv("TOKEN"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(os.getenv("TOKEN"))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -204,7 +214,9 @@ os.unlink("/repo/docs/sub/b.txt")
 vals.append(str(os.path.isdir("/repo/out/nested")))
 vals.append(str(os.path.exists("/repo/docs/c.txt")))
 vals.append(str(os.path.exists("/repo/docs/sub/b.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -228,7 +240,9 @@ with os.scandir("/repo/docs") as entries:
     for entry in entries:
         rows.append(os.fspath(entry) + ":" + entry.__fspath__() + ":" + str(os.path.getsize(entry)))
 
-write_text("/out.txt", "\n".join(sorted(rows)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(sorted(rows)))
+__lython_file.close()
 """,
             host);
 
@@ -246,7 +260,9 @@ write_text("/out.txt", "\n".join(sorted(rows)))
         var result = new LythonEngine().Run(
             """
 import os
-write_text("/out.txt", str(sorted(os.listdir())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(sorted(os.listdir())))
+__lython_file.close()
 """,
             host);
 
@@ -269,7 +285,9 @@ vals = []
 vals.append(str(os.path.isdir("/repo/sub")))
 os.remove("/repo/tmp.txt")
 vals.append(str(os.path.exists("/repo/tmp.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -317,7 +335,9 @@ import os
 rows = []
 for root, dirs, files in os.walk("/repo/docs"):
     rows.append(root + "|" + str(dirs) + "|" + str(files))
-write_text("/out.txt", "\n".join(rows))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(rows))
+__lython_file.close()
 """,
             host);
 
@@ -349,7 +369,9 @@ bottom_rows = []
 for root, dirs, files in os.walk("/repo/docs", topdown=False, followlinks=False):
     bottom_rows.append(root + "|" + str(dirs) + "|" + str(files))
 
-write_text("/out.txt", "\n".join(top_rows) + "\n---\n" + "\n".join(bottom_rows))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(top_rows) + "\n---\n" + "\n".join(bottom_rows))
+__lython_file.close()
 """,
             host);
 
@@ -379,7 +401,9 @@ rows = []
 for root, dirs, files in os.walk("/repo/docs", onerror=onerror):
     rows.append(root + "|" + str(dirs) + "|" + str(files))
 
-write_text("/out.txt", "\n".join(rows) + "\n---\n" + "\n".join(events))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(rows) + "\n---\n" + "\n".join(events))
+__lython_file.close()
 """,
             host);
 
@@ -409,12 +433,14 @@ os.mkdir("/repo/empty")
 os.rmdir("/repo/empty")
 
 vals = []
-vals.append(read_text("/repo/docs/b.txt"))
+vals.append(open("/repo/docs/b.txt").read())
 vals.append(str(os.path.exists("/repo/docs/a.txt")))
 vals.append(str(os.path.exists("/repo/tmp/sub")))
 vals.append(str(os.path.exists("/repo/tmp")))
 vals.append(str(os.path.exists("/repo/empty")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -450,13 +476,15 @@ os.remove("/repo/tmp/sub/leaf.txt")
 os.removedirs("/repo/tmp/sub")
 os.mkdir("/repo/empty")
 os.rmdir("/repo/empty")
-vals.append(read_text("/repo/docs/b.txt"))
+vals.append(open("/repo/docs/b.txt").read())
 vals.append(str(os.path.isdir("/repo/out/nested")))
 vals.append(str(os.path.exists("/repo/docs/a.txt")))
 vals.append(str(os.path.exists("/repo/tmp/sub")))
 vals.append(str(os.path.exists("/repo/tmp")))
 vals.append(str(os.path.exists("/repo/empty")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

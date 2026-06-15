@@ -40,7 +40,9 @@ vals.append(str(fnmatch.fnmatch("alpha.txt", "*.txt")))
 vals.append(str(fnmatch.fnmatch("alpha.txt", "a?pha.*")))
 vals.append(str(fnmatch.fnmatch("alpha.txt", "*.md")))
 vals.append(str(fnmatch.filter(["alpha.txt", "beta.md", "alps.txt"], "a*.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -77,7 +79,9 @@ vals.append(str(fnmatch.fnmatch("ab", "a")))
 vals.append(str(fnmatch.fnmatch("ab", "??")))
 vals.append(str(fnmatch.fnmatch("abc", "a?c")))
 vals.append(str(fnmatch.filter(["ab", "abc", "axc"], "a?c")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -97,7 +101,9 @@ import fnmatch
 vals = []
 vals.append(str(fnmatch.fnmatch("é😀.txt", "é?.txt")))
 vals.append(str(fnmatch.filter(["é😀.txt", "éab.txt"], "é?.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -134,7 +140,9 @@ vals.append(str(re.fullmatch(translated, "file7a.txt") is not None))
 invalid_range = fnmatch.translate("[z-a]")
 vals.append(invalid_range)
 vals.append(str(re.fullmatch(invalid_range, "z") is None))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

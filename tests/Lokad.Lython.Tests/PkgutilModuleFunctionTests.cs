@@ -18,7 +18,9 @@ names = [m.name for m in pkgutil.iter_modules()]
 selected = []
 for name in ["difflib", "json", "pathlib", "pkgutil", "helper", "subprocess"]:
     selected.append(name + "=" + str(name in names))
-write_text("/out.txt", "|".join(selected))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(selected))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -58,7 +60,9 @@ checks = [
     str(manual.index("manual")),
     str(repr(manual).startswith("ModuleInfo(")),
 ]
-write_text("/out.txt", "|".join(sorted(items)) + "||" + "|".join(checks))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(sorted(items)) + "||" + "|".join(checks))
+__lython_file.close()
 """,
             host);
 
@@ -80,7 +84,9 @@ packages = []
 for _, name, ispkg in pkgutil.walk_packages():
     if name in ["openpyxl", "openpyxl.reader", "json"]:
         packages.append(name + ":" + str(ispkg))
-write_text("/out.txt", str("json" in names) + "|" + str("pkgutil" in names) + "|" + "|".join(sorted(packages)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str("json" in names) + "|" + str("pkgutil" in names) + "|" + "|".join(sorted(packages)))
+__lython_file.close()
 """,
             host);
 
@@ -109,7 +115,9 @@ for _, name, ispkg in pkgutil.iter_modules("/repo", "p."):
 walked = []
 for _, name, ispkg in pkgutil.walk_packages(["/repo"], "p."):
     walked.append(name + ":" + str(ispkg))
-write_text("/out.txt", "|".join(sorted(direct)) + "||" + "|".join(sorted(walked)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(sorted(direct)) + "||" + "|".join(sorted(walked)))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -147,7 +155,9 @@ def onerror(name):
     errors.append(name)
 
 items = [name for _, name, _ in pkgutil.walk_packages(["/repo"], "", onerror)]
-write_text("/out.txt", ",".join(items) + "|" + ",".join(errors))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(",".join(items) + "|" + ",".join(errors))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -182,7 +192,9 @@ parts.append(str(pkgutil.get_loader("helper").get_source().startswith("value = 4
 parts.append(str(pkgutil.get_loader("pkg").is_package()))
 parts.append(str(pkgutil.get_loader("pkg").get_source().startswith("kind = ")))
 parts.append(str(pkgutil.find_loader("subprocess") is not None))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -212,7 +224,9 @@ import pkgutil
 dumps = pkgutil.resolve_name("json.dumps")
 colon = pkgutil.resolve_name("json:dumps")
 extended = pkgutil.extend_path(["/a"], "pkg")
-write_text("/out.txt", dumps({"ok": True}) + "|" + colon({"ok": False}) + "|" + str(extended))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(dumps({"ok": True}) + "|" + colon({"ok": False}) + "|" + str(extended))
+__lython_file.close()
 """,
             host);
 

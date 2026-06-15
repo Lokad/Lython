@@ -15,7 +15,9 @@ public sealed class SubprocessModuleFunctionTests
             """
 import subprocess
 proc = subprocess.run(["rg", "Lython", "."], capture_output=True)
-write_text("/out.txt", str(proc.returncode) + "|" + proc.stdout + "|" + proc.stderr)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(proc.returncode) + "|" + proc.stdout + "|" + proc.stderr)
+__lython_file.close()
 """,
             host);
 
@@ -58,7 +60,9 @@ import subprocess
 
 env = {"NAME": "VALUE"}
 proc = subprocess.run(["tool", Path("/repo/input.txt")], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=Path("/repo/work"), text=True, encoding="utf-8", errors="strict", env=env)
-write_text("/out.txt", proc.stdout + "|" + str(proc.stderr))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(proc.stdout + "|" + str(proc.stderr))
+__lython_file.close()
 """,
             host);
 
@@ -92,7 +96,9 @@ from pathlib import Path
 import subprocess
 first = subprocess.run("echo hi", shell=True, stdout=subprocess.PIPE)
 second = subprocess.run(Path("/repo/script.sh"), shell=True, stdout=subprocess.PIPE)
-write_text("/out.txt", first.stdout + "|" + first.args[0] + "|" + second.stdout + "|" + second.args[0])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first.stdout + "|" + first.args[0] + "|" + second.stdout + "|" + second.args[0])
+__lython_file.close()
 """,
             host);
 
@@ -118,7 +124,9 @@ import subprocess
 out = subprocess.check_output(["out"])
 code = subprocess.call(["call"])
 checked = subprocess.check_call(["check"])
-write_text("/out.txt", out + "|" + str(code) + "|" + str(checked))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(out + "|" + str(code) + "|" + str(checked))
+__lython_file.close()
 """,
             host);
 
@@ -138,7 +146,9 @@ write_text("/out.txt", out + "|" + str(code) + "|" + str(checked))
 import subprocess
 proc = subprocess.run(["quiet"])
 proc.check_returncode()
-write_text("/out.txt", str(proc.stdout) + "|" + str(proc.stderr) + "|" + proc.args[0])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(proc.stdout) + "|" + str(proc.stderr) + "|" + proc.args[0])
+__lython_file.close()
 """,
             host);
 
@@ -159,7 +169,9 @@ import subprocess
 try:
     subprocess.run(["fail"], check=True, capture_output=True)
 except subprocess.CalledProcessError as err:
-    write_text("/out.txt", err.type + "|" + str(err.returncode) + "|" + err.cmd[0] + "|" + err.output + "|" + err.stderr + "|" + str(len(err.args)))
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(err.type + "|" + str(err.returncode) + "|" + err.cmd[0] + "|" + err.output + "|" + err.stderr + "|" + str(len(err.args)))
+    __lython_file.close()
 """,
             host);
 
@@ -181,7 +193,9 @@ proc = subprocess.run(["fail"], capture_output=True)
 try:
     proc.check_returncode()
 except subprocess.SubprocessError as err:
-    write_text("/out.txt", err.type + "|" + str(err.returncode) + "|" + err.cmd[0])
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(err.type + "|" + str(err.returncode) + "|" + err.cmd[0])
+    __lython_file.close()
 """,
             host);
 
@@ -216,7 +230,9 @@ try:
     subprocess.getoutput("cmd")
 except NotImplementedError as err:
     vals.append(err.type)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -277,7 +293,9 @@ subprocess.list2cmdline(["ok", 1])
             """
 import subprocess
 proc = subprocess.run(["tool"], capture_output=True)
-write_text("/out.txt", str(proc.returncode) + "|" + proc.stdout)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(proc.returncode) + "|" + proc.stdout)
+__lython_file.close()
 """,
             host);
 

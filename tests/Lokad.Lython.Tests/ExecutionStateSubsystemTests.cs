@@ -23,6 +23,26 @@ public sealed class ExecutionStateSubsystemTests
         Assert.Contains("TypeError", ExecutionState.BuiltinNames);
     }
 
+    [Theory]
+    [InlineData("append_text")]
+    [InlineData("basename")]
+    [InlineData("copy")]
+    [InlineData("cwd")]
+    [InlineData("dirname")]
+    [InlineData("exists")]
+    [InlineData("join_path")]
+    [InlineData("listdir")]
+    [InlineData("mkdir")]
+    [InlineData("move")]
+    [InlineData("read_text")]
+    [InlineData("remove")]
+    [InlineData("stat")]
+    [InlineData("write_text")]
+    public void ExecutionState_BuiltinInventoryExcludesNonPythonHostHelpers(string name)
+    {
+        Assert.DoesNotContain(name, ExecutionState.BuiltinNames);
+    }
+
     [Fact]
     public void ExecutionState_BuiltinInventoryMatchesRuntimeInitialVariables()
     {

@@ -22,25 +22,31 @@ public class BridgeScriptBenchmarks
 
         _jsonScript = engine.Compile("""
 import json
-data = json.loads(read_text("/input.json"))
+data = json.loads(open("/input.json").read())
 data["items"] = [data["items"][0], data["items"][2]]
-write_text("/output.json", json.dumps(data))
+__lython_file = open("/output.json", "w")
+__lython_file.write(json.dumps(data))
+__lython_file.close()
 """);
 
         _csvScript = engine.Compile("""
 import csv
-rows = csv.reader(read_text("/input.csv").splitlines())
+rows = csv.reader(open("/input.csv").read().splitlines())
 writer = csv.writer()
 for row in rows:
     writer.writerow(row)
-write_text("/output.csv", writer.getvalue())
+__lython_file = open("/output.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """);
 
         _regexScript = engine.Compile("""
 import re
-text = read_text("/input.txt")
+text = open("/input.txt").read()
 parts = re.split(" +", text)
-write_text("/output.txt", re.sub("alpha", "omega", parts[0] + " " + parts[1] + " " + parts[2] + " " + parts[3]))
+__lython_file = open("/output.txt", "w")
+__lython_file.write(re.sub("alpha", "omega", parts[0] + " " + parts[1] + " " + parts[2] + " " + parts[3]))
+__lython_file.close()
 """);
     }
 

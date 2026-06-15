@@ -1,8 +1,12 @@
-mkdir("/work")
-write_text("/work/log.txt", cwd())
-append_text("/work/log.txt", "\n")
-copy("/seed.txt", "/work/copy.txt")
-move("/work/copy.txt", "/work/moved.txt")
-if exists("/work/moved.txt") == True:
-    append_text("/work/log.txt", basename(dirname("/work/moved.txt")))
-remove("/empty.txt")
+import os
+import shutil
+from pathlib import Path
+
+Path("/work").mkdir()
+log = os.getcwd() + "\n"
+shutil.copyfile("/seed.txt", "/work/copy.txt")
+shutil.move("/work/copy.txt", "/work/moved.txt")
+if os.path.exists("/work/moved.txt") == True:
+    log = log + os.path.basename(os.path.dirname("/work/moved.txt"))
+Path("/work/log.txt").write_text(log)
+os.remove("/empty.txt")

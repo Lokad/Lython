@@ -1,7 +1,9 @@
 import csv
-lines = read_text("/input.csv").splitlines()
+lines = open("/input.csv").read().splitlines()
 rows = csv.reader(lines)
 writer = csv.writer()
 for row in rows:
     writer.writerow([row[1], row[0]])
-write_text("/output.csv", writer.getvalue())
+__lython_file = open("/output.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()

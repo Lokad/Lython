@@ -67,7 +67,9 @@ vals.append(str(sorted([1, 3, 2], key=cmp_to_key(reverse_cmp))))
 vals.append(str(low.__le__(high)))
 vals.append(str(high.__gt__(low)))
 vals.append(str(high.__ge__(high)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -207,7 +209,9 @@ def show(value):
     return show(value)
 vals.append(show(object()))
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

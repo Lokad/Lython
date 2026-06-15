@@ -15,7 +15,9 @@ import re
 pat = re.compile("a+", re.IGNORECASE)
 parts = pat.split("xAaYaa", maxsplit=1)
 text, count = pat.subn(repl="x", string="Aa aa", count=1)
-write_text("/out.txt", str(parts) + "|" + text + "|" + str(count))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(parts) + "|" + text + "|" + str(count))
+__lython_file.close()
 """,
             host);
 
@@ -34,7 +36,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--lang", required=True)
 args = parser.parse_args(args=["--lang", "fr"])
-write_text("/out.txt", args.lang)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(args.lang)
+__lython_file.close()
 """,
             host);
 
@@ -53,7 +57,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--repo-root", dest="root_path", default=None)
 args = parser.parse_args(["--repo-root", "/repo"])
-write_text("/out.txt", str(args.root_path))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.root_path))
+__lython_file.close()
 """,
             host);
 
@@ -73,7 +79,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", action="store_true", help=argparse.SUPPRESS)
 parser.add_argument("filenames", nargs="*", help="Filenames to fix")
 args = parser.parse_args(["--verbose", "a.py", "b.py"])
-write_text("/out.txt", str(args.verbose) + "|" + str(args.filenames))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.verbose) + "|" + str(args.filenames))
+__lython_file.close()
 """,
             host);
 
@@ -92,7 +100,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("filenames", nargs="+", help="Files to sort")
 args = parser.parse_args(["a.txt", "b.txt"])
-write_text("/out.txt", str(args.filenames))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.filenames))
+__lython_file.close()
 """,
             host);
 
@@ -114,7 +124,9 @@ mutex = parser.add_mutually_exclusive_group()
 mutex.add_argument("--pytest", dest="pattern", action="store_const", const=".*_test\\.py", default=".*_test\\.py")
 mutex.add_argument("--django", dest="pattern", action="store_const", const="test.*\\.py")
 args = parser.parse_args(["--django", "a.py", "b.py"])
-write_text("/out.txt", args.pattern + "|" + str(args.filenames))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(args.pattern + "|" + str(args.filenames))
+__lython_file.close()
 """,
             host);
 
@@ -135,7 +147,9 @@ mutex = parser.add_mutually_exclusive_group(required=False)
 mutex.add_argument("--pytest", dest="pattern", action="store_const", const=".*_test\\.py", default=".*_test\\.py")
 mutex.add_argument("--django", "--unittest", dest="pattern", action="store_const", const="test.*\\.py")
 args = parser.parse_args(["--unittest"])
-write_text("/out.txt", args.pattern)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(args.pattern)
+__lython_file.close()
 """,
             host);
 
@@ -156,7 +170,9 @@ mutex = parser.add_mutually_exclusive_group(required=False)
 mutex.add_argument("--allow-dict-kwargs", action="store_true")
 mutex.add_argument("--no-allow-dict-kwargs", dest="allow_dict_kwargs", action="store_false")
 args = parser.parse_args(["--no-allow-dict-kwargs"])
-write_text("/out.txt", str(args.allow_dict_kwargs))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.allow_dict_kwargs))
+__lython_file.close()
 """,
             host);
 
@@ -188,7 +204,9 @@ vals.append(str(sys.argv))
 vals.append(str(rows))
 vals.append(str(filtered))
 vals.append(str(payload["count"]))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -212,7 +230,9 @@ vals = []
 vals.append(str(re.search("^a", "x\na", re.MULTILINE).start()))
 vals.append(str(re.fullmatch("a.b", "a\nb", re.DOTALL).span()))
 vals.append(str(re.split(":+", ":a::b:", 1)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -229,7 +249,9 @@ write_text("/out.txt", "|".join(vals))
             """
 import re
 m = re.search(r"\d+ (\.\d+)+", "release 1.2.3", re.X | re.I)
-write_text("/out.txt", m.group(0))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(m.group(0))
+__lython_file.close()
 """,
             host);
 
@@ -249,7 +271,9 @@ import re
 
 target = Path(__file__).with_suffix(".svg")
 ok = re.fullmatch("a.b", "a\nb", re.UNICODE | re.DOTALL) is not None
-write_text("/out.txt", target.as_posix() + "|" + str(ok))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(target.as_posix() + "|" + str(ok))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -270,7 +294,9 @@ write_text("/out.txt", target.as_posix() + "|" + str(ok))
             """
 from pathlib import Path
 value = Path("/repo/docs/page.md").relative_to("/repo").as_posix()
-write_text("/out.txt", value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """,
             host);
 
@@ -287,7 +313,9 @@ write_text("/out.txt", value)
             """
 from pathlib import Path
 target = Path("/repo", "docs", "guide", "intro.md")
-write_text("/out.txt", target.parent.as_posix() + "|" + target.name)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(target.parent.as_posix() + "|" + target.name)
+__lython_file.close()
 """,
             host);
 
@@ -312,7 +340,9 @@ vals.append(renamed.as_posix())
 vals.append(str(Path("/repo/site/aaa").exists()))
 vals.append(str(Path("/repo/site/bbb").exists()))
 vals.append(str(Path("/repo/site/foo.site").exists()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -329,7 +359,9 @@ write_text("/out.txt", "|".join(vals))
             """
 from pathlib import Path
 Path("/repo/subdir").mkdir()
-write_text("/out.txt", str(Path("/repo/subdir").is_dir()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(Path("/repo/subdir").is_dir()))
+__lython_file.close()
 """,
             host);
 
@@ -351,7 +383,9 @@ from pathlib import Path
 items = sorted(Path("/repo/docs").glob("*.po"))
 with items[0].open(encoding="utf-8") as f:
     line = f.readline().rstrip()
-write_text("/out.txt", items[0].name + "|" + line)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(items[0].name + "|" + line)
+__lython_file.close()
 """,
             host);
 
@@ -408,7 +442,9 @@ with open("/repo/out.txt", "w", encoding="utf-8-sig", errors="strict") as writer
             """
 from pathlib import Path
 value = Path("/repo/docs/page.md").parent.parts
-write_text("/out.txt", str(value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(value))
+__lython_file.close()
 """,
             host);
 
@@ -432,7 +468,9 @@ vals = []
 vals.append(str(base.is_absolute()))
 vals.append(str(joined.match("*.txt")))
 vals.append(renamed.as_posix())
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

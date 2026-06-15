@@ -27,7 +27,9 @@ vals.append(str(os.path.exists("/repo/out/b.txt")))
 vals.append(Path("/repo/out/a-copy.txt").read_text())
 vals.append(Path("/repo/out/b.txt").read_text())
 vals.append(Path("/repo/src/existing.txt").read_text())
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -49,7 +51,9 @@ import shutil
 from pathlib import Path
 
 target = shutil.move("/repo/src/a.txt", "/repo/out")
-write_text("/out.txt", target + "|" + str(os.path.exists("/repo/src/a.txt")) + "|" + Path("/repo/out/a.txt").read_text())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(target + "|" + str(os.path.exists("/repo/src/a.txt")) + "|" + Path("/repo/out/a.txt").read_text())
+__lython_file.close()
 """,
             host);
 
@@ -72,7 +76,9 @@ with open("/repo/src/a.txt") as src:
     with open("/repo/out.txt", "w") as dst:
         shutil.copyfileobj(src, dst)
 
-write_text("/check.txt", Path("/repo/out.txt").read_text())
+__lython_file = open("/check.txt", "w")
+__lython_file.write(Path("/repo/out.txt").read_text())
+__lython_file.close()
 """,
             host);
 
@@ -93,7 +99,9 @@ import shutil
 try:
     shutil.copyfile("/repo/a.txt", "/repo/./a.txt")
 except shutil.SameFileError as ex:
-    write_text("/out.txt", ex.type)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(ex.type)
+    __lython_file.close()
 """,
             host);
 

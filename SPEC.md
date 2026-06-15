@@ -345,7 +345,7 @@ The `shutil` subset includes host-mediated `copyfile(src, dst, *,
 follow_symlinks=True)`, `copy(src, dst, *, follow_symlinks=True)`,
 `move(src, dst, copy_function=copy)`, text-only `copyfileobj(fsrc, fdst,
 length=0)`, `Error`, and `SameFileError`. `copy` and `move` must treat an
-existing directory destination as `dst / basename(src)`. `copyfile` and `copy`
+existing directory destination as `dst / os.path.basename(src)`. `copyfile` and `copy`
 may overwrite an existing file destination through host-mediated remove plus
 copy. `copy2` must fail explicitly because the current host contract cannot
 preserve file metadata. Symlink behavior, custom move copy functions, recursive
@@ -777,23 +777,12 @@ The initial builtin environment must include exactly the following builtins and 
 
 No builtin outside this set is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
 
-### 11.2 Contained File Builtins
+### 11.2 Contained File And Path Surface
 
-For path and text-resource manipulation, the initial subset exposes the following builtin functions:
-
-- `read_text(path)`
-- `write_text(path, text)`
-- `append_text(path, text)`
-- `exists(path)`
-- `listdir(path)`
-- `mkdir(path)`
-- `remove(path)`
-- `copy(path, destination)`
-- `move(path, destination)`
-- `stat(path)`
-- `cwd()`
-
-No other path or text-resource builtin is part of the supported subset unless it is explicitly added elsewhere in this specification.
+For path and text-resource manipulation, scripts must use Python-shaped APIs:
+`open`, `pathlib`, `os`, `os.path`, `glob`, and `shutil`. These APIs remain
+host-mediated through `ILythonHost`; Lython-specific global filesystem helper
+names are not part of the supported script surface.
 
 `pathlib.Path.read_text(...)` is supported for host-mediated text resources. It accepts the Python-shaped forms `read_text()`, `read_text("utf-8")`, `read_text(encoding="utf-8")`, and `read_text(encoding="utf-8-sig", errors="strict")`. Other encodings, other error modes, and extra arguments must fail explicitly.
 
@@ -844,65 +833,58 @@ The initial subset must support:
 - absolute paths
 - relative paths
 - normalization of `.` and `..`
-- a current working directory visible through `cwd()`
+- a current working directory visible through `os.getcwd()` and `Path.cwd()`
 
 Relative-path resolution and `.` / `..` normalization must be performed by the runtime before host path operations are issued.
 
 The host remains authoritative for path existence, path kinds, and resource contents.
 
-`mkdir(path)` must fail with `RuntimeError` if the parent path does not exist.
+`os.mkdir(path)` and `Path(path).mkdir()` must fail with `RuntimeError` if the parent path does not exist.
 
-`mkdir(path)` must fail with `RuntimeError` if the path already exists.
+`os.mkdir(path)` and `Path(path).mkdir()` must fail with `RuntimeError` if the path already exists.
 
-`remove(path)` must fail with `RuntimeError` if the path does not exist.
+`os.remove(path)`, `os.unlink(path)`, `os.rmdir(path)`, `Path(path).unlink()`, and `Path(path).rmdir()` must fail with `RuntimeError` if the path does not exist.
 
-`remove(path)` must remove files and empty directories.
+Removal APIs must remove files and empty directories only.
 
-`remove(path)` must fail with `RuntimeError` on non-empty directories.
+Removal APIs must fail with `RuntimeError` on non-empty directories.
 
-`copy(path, destination)` must fail with `RuntimeError` if the source path does not exist.
+`shutil.copyfile(src, dst)` and `shutil.copy(src, dst)` must fail with `RuntimeError` if the source path does not exist.
 
-`copy(path, destination)` must fail with `RuntimeError` if the destination path already exists.
+`shutil.copyfile(src, dst)` and `shutil.copy(src, dst)` may overwrite an existing file destination through host-mediated remove plus copy.
 
-`move(path, destination)` must fail with `RuntimeError` if the source path does not exist.
+`shutil.move(src, dst)`, `os.rename(src, dst)`, `os.replace(src, dst)`, `Path.rename(dst)`, and `Path.replace(dst)` must fail with `RuntimeError` if the source path does not exist.
 
-`move(path, destination)` must fail with `RuntimeError` if the destination path already exists.
+Move/rename APIs must fail with `RuntimeError` if the destination path already exists, except where a Python-shaped replace API explicitly overwrites.
 
-`listdir(path)` must return a lexicographically sorted list of entry names as strings.
+`os.listdir(path)` must return a lexicographically sorted list of entry names as strings.
 
 The returned names are relative entry names, not absolute paths.
 
 The returned order must use ordinal string comparison.
 
-### 11.4 `stat(path)`
+### 11.4 Stat Surface
 
-`stat(path)` must return an object exposing at least the following attributes:
+`os.stat(path)` and `Path(path).stat()` must return an object exposing at least the following attributes:
 
-- `exists`
-- `is_file`
-- `is_dir`
-- `size`
-- `modified_at`
+- `st_size`
+- `st_mtime`
 
 The attribute types are:
 
-- `exists`: `bool`
-- `is_file`: `bool`
-- `is_dir`: `bool`
-- `size`: `int`
-- `modified_at`: `str`
+- `st_size`: `int`
+- `st_mtime`: `int`
 
-`modified_at` must use a stable ISO-8601 UTC representation.
+Path existence and kind checks must be exposed through Python-shaped predicates
+such as `os.path.exists`, `os.path.isfile`, `os.path.isdir`, `Path.exists()`,
+`Path.is_file()`, and `Path.is_dir()`.
 
-### 11.5 Path Helpers
+### 11.5 Path Helper Surface
 
-The initial subset must support the following path helper builtins:
-
-- `join_path(*parts)`
-- `dirname(path)`
-- `basename(path)`
-
-These helpers must operate on the language-level path model defined by this specification.
+The initial subset must support Python-shaped path helpers such as
+`os.path.join`, `os.path.dirname`, `os.path.basename`, `Path` composition with
+`/`, `Path.parent`, and `Path.name`. These helpers must operate on the
+language-level path model defined by this specification.
 
 ### 11.6 Supported String, List, and Dictionary Surface
 

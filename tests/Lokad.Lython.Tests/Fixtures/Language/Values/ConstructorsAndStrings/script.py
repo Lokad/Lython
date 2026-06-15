@@ -19,4 +19,6 @@ vals.append("{0}-{1}".format("A", 3))
 vals.append(raw)
 vals.append(triple.splitlines()[1])
 
-write_text("/out.txt", "\n".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(vals))
+__lython_file.close()

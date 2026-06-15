@@ -7,4 +7,6 @@ elif value == 2:
 else:
     result = "other"
 
-write_text("/out.txt", result)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(result)
+__lython_file.close()

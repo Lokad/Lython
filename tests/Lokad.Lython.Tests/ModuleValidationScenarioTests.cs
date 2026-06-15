@@ -18,7 +18,9 @@ vals = []
 vals.append(str(regex.search("a+", "caaab").span()))
 vals.append(dumps({"ok": True}))
 vals.append(str(matches("a.txt", "*.txt")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -35,7 +37,9 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 import json as js, re
-write_text("/out.txt", js.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(js.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span()))
+__lython_file.close()
 """,
             host);
 
@@ -55,7 +59,9 @@ from json import (
     dumps,
     loads,
 )
-write_text("/out.txt", dumps(loads("{\"ok\": true}")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(dumps(loads("{\"ok\": true}")))
+__lython_file.close()
 """,
             host);
 
@@ -72,7 +78,9 @@ write_text("/out.txt", dumps(loads("{\"ok\": true}")))
         var result = new LythonEngine().Run(
             """
 from os.path import basename, join
-write_text("/out.txt", join("/repo", "docs", basename("/repo/source/guide.md")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(join("/repo", "docs", basename("/repo/source/guide.md")))
+__lython_file.close()
 """,
             host);
 
@@ -97,7 +105,9 @@ vals.append(str(list(re.findall(pattern = "(a)?b", string = "b ab b"))))
 vals.append(str(list(re.findall(pattern = "(a)|(x)", string = "axa"))))
 vals.append(re.sub(pattern = "a+", repl = "x", string = "caaab a"))
 vals.append(json.dumps(obj = json.loads(s = "{\"ok\": true}")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -130,7 +140,9 @@ def bump(value):
 import helper
 import helper as again
 from helper import bump
-write_text("/out.txt", str(helper.bump(2)) + "|" + str(again.bump(2)) + "|" + str(bump(2)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(helper.bump(2)) + "|" + str(again.bump(2)) + "|" + str(bump(2)))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -208,7 +220,9 @@ write_text("/out.txt", str(helper.bump(2)) + "|" + str(again.bump(2)) + "|" + st
             """
 import re
 vals = list(re.findall("a+", "caaab a"))
-write_text("/out.txt", str(vals) + "|" + str(len(vals)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(vals) + "|" + str(len(vals)))
+__lython_file.close()
 """,
             host);
 
@@ -232,7 +246,9 @@ import re
 left = str(list(re.findall("(a)?b", "b ab b")))
 mid = str(list(re.findall("(a)|(x)", "axa")))
 right = str(list(re.compile("(a)|(x)").findall("axa")))
-write_text("/out.txt", left + "|" + mid + "|" + right)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(left + "|" + mid + "|" + right)
+__lython_file.close()
 """,
             host);
 
@@ -249,7 +265,9 @@ write_text("/out.txt", left + "|" + mid + "|" + right)
         var result = new LythonEngine().Run(
             """
 import re
-write_text("/out.txt", str(re.fullmatch("abc", "abc\n") is None))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(re.fullmatch("abc", "abc\n") is None))
+__lython_file.close()
 """,
             host);
 
@@ -309,7 +327,9 @@ import re
 vals = []
 vals.append(str(re.search("x*", "axx").span()))
 vals.append(str(re.match("a*", "xxx").span()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

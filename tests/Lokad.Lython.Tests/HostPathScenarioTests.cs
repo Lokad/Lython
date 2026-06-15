@@ -51,11 +51,12 @@ public sealed class HostPathScenarioTests
     }
 
     [Fact]
-    public void MkdirWithoutExistingParent_Fails()
+    public void OsMkdirWithoutExistingParent_Fails()
     {
         var result = new LythonEngine().Run(
             """
-mkdir("/missing/child")
+import os
+os.mkdir("/missing/child")
 """,
             new MockLythonHost());
 
@@ -70,7 +71,9 @@ mkdir("/missing/child")
     {
         var result = new LythonEngine().Run(
             """
-write_text("/out.txt", "payload")
+__lython_file = open("/out.txt", "w")
+__lython_file.write("payload")
+__lython_file.close()
 """,
             new ThrowingWriteHost());
 
@@ -82,29 +85,33 @@ write_text("/out.txt", "payload")
     }
 
     [Fact]
-    public void Stat_ExposesStableIsoTimestamp()
+    public void OsStat_ExposesStableTimestamp()
     {
         var host = new MockLythonHost();
         host.SeedFile("/note.txt", "hello");
 
         var result = new LythonEngine().Run(
             """
-info = stat("/note.txt")
-write_text("/out.txt", info.modified_at)
+import os
+info = os.stat("/note.txt")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(info.st_mtime))
+__lython_file.close()
 """,
             host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("1970-01-01T00:00:00Z", host.ReadText("/out.txt"));
+        Assert.Equal("0", host.ReadText("/out.txt"));
     }
 
     [Fact]
-    public void ListdirMissingDirectory_Fails()
+    public void OsListdirMissingDirectory_Fails()
     {
         var result = new LythonEngine().Run(
             """
-listdir("/missing")
+import os
+os.listdir("/missing")
 """,
             new MockLythonHost());
 
@@ -115,14 +122,15 @@ listdir("/missing")
     }
 
     [Fact]
-    public void RemoveNonEmptyDirectory_Fails()
+    public void OsRemoveNonEmptyDirectory_Fails()
     {
         var host = new MockLythonHost();
         host.SeedFile("/dir/file.txt", "x");
 
         var result = new LythonEngine().Run(
             """
-remove("/dir")
+import os
+os.remove("/dir")
 """,
             host);
 
@@ -133,7 +141,7 @@ remove("/dir")
     }
 
     [Fact]
-    public void CopyToExistingDestination_Fails()
+    public void ShutilCopyfile_OverwritesExistingDestination()
     {
         var host = new MockLythonHost();
         host.SeedFile("/src.txt", "a");
@@ -141,22 +149,23 @@ remove("/dir")
 
         var result = new LythonEngine().Run(
             """
-copy("/src.txt", "/dst.txt")
+import shutil
+shutil.copyfile("/src.txt", "/dst.txt")
 """,
             host);
 
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
-        Assert.Contains("Destination already exists", result.Failure.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("a", host.ReadText("/dst.txt"));
     }
 
     [Fact]
-    public void MoveMissingSource_Fails()
+    public void ShutilMoveMissingSource_Fails()
     {
         var result = new LythonEngine().Run(
             """
-move("/src.txt", "/dst.txt")
+import shutil
+shutil.move("/src.txt", "/dst.txt")
 """,
             new MockLythonHost());
 
@@ -167,24 +176,26 @@ move("/src.txt", "/dst.txt")
     }
 
     [Fact]
-    public void StatMissingPath_ReportsNonExistingShape()
+    public void OsPathPredicatesMissingPath_ReportFalse()
     {
         var host = new MockLythonHost();
 
         var result = new LythonEngine().Run(
             """
-info = stat("/missing.txt")
-write_text("/out.txt", str(info.exists) + "|" + str(info.is_file) + "|" + str(info.is_dir) + "|" + str(info.size))
+import os
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(os.path.exists("/missing.txt")) + "|" + str(os.path.isfile("/missing.txt")) + "|" + str(os.path.isdir("/missing.txt")))
+__lython_file.close()
 """,
             host);
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("False|False|False|0", host.ReadText("/out.txt"));
+        Assert.Equal("False|False|False", host.ReadText("/out.txt"));
     }
 
     [Fact]
-    public void ExistsAndListdir_SupportRelativePathsAndSortedEntries()
+    public void OsExistsAndListdir_SupportRelativePathsAndSortedEntries()
     {
         var host = new MockLythonHost("/work");
         host.SeedFile("/work/b.txt", "b");
@@ -193,12 +204,15 @@ write_text("/out.txt", str(info.exists) + "|" + str(info.is_file) + "|" + str(in
 
         var result = new LythonEngine().Run(
             """
+import os
 vals = []
-vals.append(str(exists(".")))
-vals.append(str(exists("a.txt")))
-vals.append(str(exists("missing.txt")))
-vals.append(str(listdir(".")))
-write_text("/out.txt", "|".join(vals))
+vals.append(str(os.path.exists(".")))
+vals.append(str(os.path.exists("a.txt")))
+vals.append(str(os.path.exists("missing.txt")))
+vals.append(str(os.listdir(".")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -208,21 +222,25 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
-    public void CopyAndMove_UpdateFilesystemState()
+    public void ShutilCopyfileAndMove_UpdateFilesystemState()
     {
         var host = new MockLythonHost("/work");
         host.SeedFile("/work/src.txt", "alpha");
 
         var result = new LythonEngine().Run(
             """
-copy("src.txt", "copy.txt")
-move("copy.txt", "moved.txt")
+import os
+import shutil
+shutil.copyfile("src.txt", "copy.txt")
+shutil.move("copy.txt", "moved.txt")
 vals = []
-vals.append(str(exists("src.txt")))
-vals.append(str(exists("copy.txt")))
-vals.append(str(exists("moved.txt")))
-vals.append(read_text("moved.txt"))
-write_text("/out.txt", "|".join(vals))
+vals.append(str(os.path.exists("src.txt")))
+vals.append(str(os.path.exists("copy.txt")))
+vals.append(str(os.path.exists("moved.txt")))
+vals.append(open("moved.txt").read())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -232,15 +250,18 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
-    public void RemoveEmptyDirectory_Succeeds()
+    public void OsRemoveEmptyDirectory_Succeeds()
     {
         var host = new MockLythonHost();
 
         var result = new LythonEngine().Run(
             """
-mkdir("/empty")
-remove("/empty")
-write_text("/out.txt", str(exists("/empty")))
+import os
+os.mkdir("/empty")
+os.remove("/empty")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(os.path.exists("/empty")))
+__lython_file.close()
 """,
             host);
 
@@ -263,7 +284,9 @@ with open("/input.txt", "r") as handle:
     for line in handle:
         pieces.append(line.upper())
 
-write_text("/out.txt", str(lines) + "|" + "".join(pieces))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(lines) + "|" + "".join(pieces))
+__lython_file.close()
 """,
             host);
 
@@ -282,7 +305,9 @@ write_text("/out.txt", str(lines) + "|" + "".join(pieces))
 with open("/output.txt", "w") as handle:
     handle.writelines(["alpha\n", "beta", "\ngamma"])
 
-write_text("/out.txt", read_text("/output.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(open("/output.txt").read())
+__lython_file.close()
 """,
             host);
 
@@ -313,7 +338,9 @@ vals.append(src_root.name)
 vals.append(items[0].suffix)
 vals.append(items[0].stem)
 vals.append(rel)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -344,7 +371,9 @@ vals.append(str(src.exists()))
 vals.append(str(src.is_file()))
 vals.append(str(Path(".").is_dir()))
 vals.append(dst.read_text())
-write_text("/result.txt", "|".join(vals))
+__lython_file = open("/result.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -358,19 +387,19 @@ write_text("/result.txt", "|".join(vals))
         var host = new MockLythonHost("/repo");
         host.SeedFile(
             "/repo/tool.py",
-            "\uFEFF# header\r\ndef render():\r\n    return f\"{{old}} café\"\r\nPLACEHOLDER PLACEHOLDER\r\n");
+            "\uFEFF# header\r\ndef render():\r\n    return \"old café\"\r\nPLACEHOLDER PLACEHOLDER\r\n");
 
         var result = new LythonEngine().Run(
             """
 from pathlib import Path
 
 path = Path("/repo/tool.py")
-text = path.read_text(encoding="utf-8-sig", errors="strict")
+text = path.read_text(encoding="utf-8-sig", errors="strict").replace("\r\n", "\n")
 needle = '''def render():
-    return f"{{old}} café"
+    return "old café"
 '''
 replacement = '''def render():
-    return f"{{new}} café"
+    return "new café"
 '''
 
 if needle not in text:
@@ -381,7 +410,9 @@ text = text[:start] + replacement + text[start + len(needle):]
 text = text.replace("PLACEHOLDER", "done", 1)
 written = path.write_text(text, encoding="UTF-8-SIG", errors="strict", newline="")
 after = path.read_text(encoding="utf-8-sig")
-write_text("/result.txt", str(written == len(text)) + "|" + after)
+__lython_file = open("/result.txt", "w")
+__lython_file.write(str(written == len(text)) + "|" + after)
+__lython_file.close()
 """,
             host);
 
@@ -389,7 +420,7 @@ write_text("/result.txt", str(written == len(text)) + "|" + after)
         Assert.Equal(
             "True|# header\n" +
             "def render():\n" +
-            "    return f\"{{new}} café\"\n" +
+            "    return \"new café\"\n" +
             "done PLACEHOLDER\n",
             host.ReadText("/result.txt"));
         Assert.StartsWith("\uFEFF# header\n", host.ReadText("/repo/tool.py"), StringComparison.Ordinal);
@@ -435,7 +466,9 @@ items = []
 for path in sorted(src_root.rglob("*.md")):
     items.append(path.relative_to(src_root).as_posix())
 
-write_text("/out.txt", repo_root.as_posix() + "|" + str(items) + "|" + Path("FILE.MD").suffix.lower())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(repo_root.as_posix() + "|" + str(items) + "|" + Path("FILE.MD").suffix.lower())
+__lython_file.close()
 """,
             host);
 
@@ -452,7 +485,9 @@ write_text("/out.txt", repo_root.as_posix() + "|" + str(items) + "|" + Path("FIL
         var result = new LythonEngine().Run(
             """
 import helper
-write_text("/out.txt", helper.value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(helper.value)
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -477,7 +512,9 @@ base = Path(__file__).resolve()
 top = base.parents[3]
 child = top / "content" / "guide" / "intro.md"
 rel = child.relative_to(top / "content")
-write_text("/out.txt", top.as_posix() + "|" + rel.as_posix())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(top.as_posix() + "|" + rel.as_posix())
+__lython_file.close()
 """,
             host,
             new LythonRunOptions

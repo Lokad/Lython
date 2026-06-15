@@ -45,7 +45,9 @@ parts.append(str(payload["name"]))
 parts.append(str(Box))
 parts.append(str(Shape))
 parts.append(str(Row))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -73,7 +75,9 @@ parts = []
 parts.append(str([field.name for field in fields(Box)]))
 parts.append(str(Box.__annotations__["values"]))
 parts.append(str(box))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 

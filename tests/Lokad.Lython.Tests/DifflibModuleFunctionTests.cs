@@ -17,7 +17,9 @@ left = "one\ntwo\nthree\n".splitlines(True)
 right = "one\n2\nthree\nfour\n".splitlines(True)
 unified = "".join(difflib.unified_diff(left, right, fromfile="old.py", tofile="new.py", n=1))
 context = "".join(difflib.context_diff(left, right, fromfile="old.py", tofile="new.py", n=1))
-write_text("/out.txt", unified + "\n--\n" + context)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(unified + "\n--\n" + context)
+__lython_file.close()
 """,
             host);
 
@@ -60,7 +62,9 @@ delta = list(ndiff(["alpha\n", "bravo\n"], ["alpha\n", "charlie\n"]))
 left = "".join(restore(delta, 1))
 right = "".join(restore(delta, 2))
 matches = get_close_matches("appel", ["ape", "apple", "apply", "maple"], n=2, cutoff=0.5)
-write_text("/out.txt", str(delta) + "|" + left + "|" + right + "|" + str(matches))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(delta) + "|" + left + "|" + right + "|" + str(matches))
+__lython_file.close()
 """,
             host);
 
@@ -90,7 +94,9 @@ parts.append(str(matcher.quick_ratio()))
 parts.append(str(matcher.real_quick_ratio()))
 matcher.set_seq1(["zero"])
 parts.append(str(matcher.ratio()))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -134,7 +140,9 @@ parts = [
     str("a&nbsp;b" in html),
     str("<table class=\"diff\"" in table and "diff_chg" in table),
 ]
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -152,7 +160,9 @@ write_text("/out.txt", "|".join(parts))
 import difflib
 
 delta = list(difflib.diff_bytes(difflib.unified_diff, [b"alpha\n"], [b"beta\n"], b"old", b"new", None, None, 0, b"\n"))
-write_text("/out.txt", str(delta))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(delta))
+__lython_file.close()
 """,
             host);
 

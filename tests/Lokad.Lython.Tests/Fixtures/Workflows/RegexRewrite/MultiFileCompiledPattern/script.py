@@ -8,4 +8,6 @@ out_dir.mkdir()
 
 for path in sorted(Path("/docs").glob("*.txt")):
     updated = WORD_RE.sub(lambda match: "omega" if match.group(0).islower() else "OMEGA", path.read_text())
-    write_text((out_dir / path.name).as_posix(), updated)
+    __lython_file = open((out_dir / path.name).as_posix(), "w")
+    __lython_file.write(updated)
+    __lython_file.close()

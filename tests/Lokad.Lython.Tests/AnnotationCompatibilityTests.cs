@@ -15,7 +15,9 @@ def choose(values: list[str], fallback: tuple[str, str] | None = None) -> dict[s
     result: dict[str, int] = {"count": len(values)}
     return result
 
-write_text("/out.txt", str(choose(["a", "b"])))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(choose(["a", "b"])))
+__lython_file.close()
 """;
 
         var compiled = new LythonEngine().Compile(source);
@@ -50,7 +52,9 @@ def build_root(raw: Path | None) -> Path:
 
 args = parse_args()
 root = build_root(args.repo_root)
-write_text("/out.txt", root.as_posix())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(root.as_posix())
+__lython_file.close()
 """;
 
         var compiled = new LythonEngine().Compile(source);
@@ -83,7 +87,9 @@ def replacer(match: re.Match[str]) -> str:
     return match.group("label")
 
 pat = re.compile(r"(?P<label>[a-z]+)")
-write_text("/out.txt", pat.sub(replacer, "ab cd"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(pat.sub(replacer, "ab cd"))
+__lython_file.close()
 """;
 
         var compiled = new LythonEngine().Compile(source);

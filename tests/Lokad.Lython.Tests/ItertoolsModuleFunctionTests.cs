@@ -21,7 +21,9 @@ vals.append(str(next(it)))
 vals.append(str(list(it)))
 vals.append(str(list(itertools.product([1, 2], repeat=2))))
 vals.append(str(list(itertools.zip_longest([1], [2, 3], fillvalue=0))))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -47,7 +49,9 @@ vals.append(str(next(it)))
 vals.append(str(next(it)))
 vals.append(str(next(it, "done")))
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -89,7 +93,9 @@ vals.append(str(list(itertools.starmap(add, [(2, 3), (4, 5)]))))
 vals.append(str(list(itertools.pairwise([1, 2, 3, 4]))))
 vals.append(str(list(itertools.batched([1, 2, 3, 4, 5], 2))))
 vals.append(str(list(itertools.batched([1, 2, 3, 4], n=2, strict=True))))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -131,7 +137,9 @@ vals.append(str(list(first_group)))
 vals.append(str(second_key))
 vals.append(str(list(second_group)))
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

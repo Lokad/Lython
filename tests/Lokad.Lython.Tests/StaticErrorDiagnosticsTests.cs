@@ -56,7 +56,9 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
         var result = new LythonEngine().Run(
             """
 open("/repo/out.txt", "rb")
-write_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
@@ -167,8 +169,12 @@ re.search("a", "a", FLAGS)
 from pathlib import Path
 import sys
 
-write_text("/repo/out.txt", b"abc")
-append_text("/repo/out.txt", b"abc")
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write(b"abc")
+__lython_file.close()
+__lython_file = open("/repo/out.txt", "a")
+__lython_file.write(b"abc")
+__lython_file.close()
 Path("/repo/out.txt").write_text(b"abc")
 sys.stdout.write(b"abc")
 Path("/repo/out.bin").write_bytes(b"abc")
@@ -1509,7 +1515,9 @@ Path("/repo/in.txt").read_text(encoding=enc2)
 
 data1 = b"abc"
 data2 = data1
-write_text("/repo/out.txt", data2)
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write(data2)
+__lython_file.close()
 
 names1 = ["a.txt", 1]
 names2 = names1
@@ -1524,7 +1532,7 @@ text2.find(needle2)
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3049");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3046");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3111");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3070");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3075");
     }
@@ -1553,6 +1561,8 @@ Path("/repo/out.txt").open("w", encoding="utf-8-sig", errors="strict", newline="
 import argparse
 import functools
 import glob
+import os
+from pathlib import Path
 
 desc1 = 1
 desc2 = desc1
@@ -1572,11 +1582,11 @@ glob.iglob(pattern2)
 
 path1 = 1
 path2 = path1
-read_text(path2)
+Path(path2).read_text()
 
 name1 = 1
 name2 = name1
-join_path("/repo", name2)
+os.path.join("/repo", name2)
 
 prompt1 = 1
 prompt2 = prompt1
@@ -1608,8 +1618,8 @@ replace_count2 = replace_count1
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3085");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3090");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3089");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3082");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3087");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pathlib.Path", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("os.path.join", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3086");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3091");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3092");
@@ -1732,7 +1742,9 @@ functools.recursive_repr(fillvalue=1)
         var result = new LythonEngine().Run(
             """
 for left, right in [1, 2]:
-    write_text("/repo/created.txt", "side effect")
+    __lython_file = open("/repo/created.txt", "w")
+    __lython_file.write("side effect")
+    __lython_file.close()
 """,
             host);
 
@@ -1749,7 +1761,9 @@ for left, right in [1, 2]:
         var compiled = new LythonEngine().Compile(
             """
 value = input()
-write_text("/repo/created.txt", value)
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """);
 
         Assert.True(compiled.IsValid);
@@ -1770,7 +1784,9 @@ write_text("/repo/created.txt", value)
             """
 import subprocess
 proc = subprocess.run(["rg", "x"], capture_output=True)
-write_text("/repo/created.txt", proc.stdout)
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write(proc.stdout)
+__lython_file.close()
 """);
 
         Assert.True(compiled.IsValid);
@@ -1790,7 +1806,9 @@ write_text("/repo/created.txt", proc.stdout)
         var compiled = new LythonEngine().Compile(
             """
 import subprocess
-write_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """);
 
         Assert.True(compiled.IsValid);
@@ -1814,7 +1832,9 @@ import re
 PATTERN = r"\N{LATIN SMALL LETTER A}"
 FLAGS = re.LOCALE
 re.search(PATTERN, "a", FLAGS)
-write_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
@@ -1835,7 +1855,9 @@ write_text("/repo/created.txt", "side effect")
 import argparse
 parser = argparse.ArgumentParser()
 parser.parse_args(["--lang", 1])
-write_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
@@ -1853,15 +1875,19 @@ write_text("/repo/created.txt", "side effect")
         var result = new LythonEngine().Run(
             """
 from pathlib import Path
-write_text("/repo/out.txt", b"abc")
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write(b"abc")
+__lython_file.close()
 Path("/repo/out.bin").write_bytes(b"abc")
-append_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "a")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3046");
+        Assert.Contains(result.Diagnostics, d => d.Code == "LA3111");
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3047");
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
@@ -1878,7 +1904,9 @@ from pathlib import Path
 enc1 = "latin-1"
 enc2 = enc1
 Path("/repo/in.txt").read_text(encoding=enc2)
-write_text("/repo/created.txt", "side effect")
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
@@ -1901,7 +1929,9 @@ def ask():
 if False:
     ask()
 
-write_text("/repo/out.txt", "ok")
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write("ok")
+__lython_file.close()
 """,
             host);
 

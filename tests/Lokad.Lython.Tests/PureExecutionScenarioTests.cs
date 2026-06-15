@@ -103,8 +103,10 @@ public sealed class PureExecutionScenarioTests
 
         var result = new LythonEngine().Run(
             """
-text = read_text("/input.txt")
-write_text("/output.txt", text)
+text = open("/input.txt").read()
+__lython_file = open("/output.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """,
             host);
 
@@ -125,7 +127,9 @@ ks = d.keys()
 vs = d.values()
 its = d.items()
 d.update({"b": 2})
-write_text("/out.txt", str(len(list(ks))) + "," + str(len(list(vs))) + "," + str(len(list(its))) + "," + str(list(its)[1][0]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(len(list(ks))) + "," + str(len(list(vs))) + "," + str(len(list(its))) + "," + str(list(its)[1][0]))
+__lython_file.close()
 """,
             host);
 
@@ -147,7 +151,9 @@ if (n := 3):
 text = (word := "alpha")
 vals.append(word)
 vals.append(text)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -170,7 +176,9 @@ values = (x * factor for x in [1, 2, 3] if x > 1)
 factor = 4
 items = list(values)
 flag = any(x == 8 for x in items)
-write_text("/out.txt", str(items) + "|" + str(flag))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(flag))
+__lython_file.close()
 """,
             host);
 
@@ -199,7 +207,9 @@ vals.append(str(math.prod([2, 3, 4])))
 vals.append(str(math.fsum([0.1, 0.2, 0.3])))
 vals.append(str(math.isfinite(math.inf)))
 vals.append(str(math.isnan(math.nan)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -245,7 +255,9 @@ vals.append(dt.time().isoformat())
 vals.append(t.isoformat())
 vals.append(str(isinstance(dt, datetime.datetime)))
 vals.append(str(type(delta).__name__))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -263,7 +275,9 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 import sys
-write_text("/out.txt", str(sys.argv))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(sys.argv))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -285,7 +299,9 @@ write_text("/out.txt", str(sys.argv))
 pairs = list(zip(["a", "b"], [1, 2, 3]))
 first = next((x for x in [1, 2, 3] if x > 1), None)
 missing = next((x for x in [1] if x > 4), None)
-write_text("/out.txt", str(pairs) + "|" + str(first) + "|" + str(missing))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(pairs) + "|" + str(first) + "|" + str(missing))
+__lython_file.close()
 """,
             host);
 
@@ -309,7 +325,9 @@ for idx, (src_line, dst_line) in enumerate(zip(src_lines, dst_lines)):
 lines = ["alpha", "type: talk-about-video-slider", "omega"]
 insert_at = next((idx for idx, line in enumerate(lines) if "type: talk-about-video-slider" in line), None)
 
-write_text("/out.txt", str(items) + "|" + str(insert_at))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(insert_at))
+__lython_file.close()
 """,
             host);
 
@@ -333,7 +351,9 @@ class Box:
         return self._value + 1
 
 box = Box(4)
-write_text("/out.txt", str(box.value) + "|" + str(Box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value) + "|" + str(Box.value))
+__lython_file.close()
 """,
             host);
 
@@ -362,7 +382,9 @@ class Box:
 
 box = Box(3)
 box.value = 5
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -428,7 +450,9 @@ parser.add_argument("--apply", action="store_true")
 parser.add_argument("--max-rounds", type=int, default=12)
 args = parser.parse_args()
 
-write_text("/out.txt", args.lang + "|" + str(args.include) + "|" + str(args.apply) + "|" + str(args.max_rounds))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(args.lang + "|" + str(args.include) + "|" + str(args.apply) + "|" + str(args.max_rounds))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -460,7 +484,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 args = parse_args()
-write_text("/out.txt", str(args.repo_root) + "|" + str(args.include) + "|" + str(args.exclude) + "|" + str(args.apply) + "|" + str(args.verbose))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.repo_root) + "|" + str(args.include) + "|" + str(args.exclude) + "|" + str(args.apply) + "|" + str(args.verbose))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -507,7 +533,9 @@ grouped = {}
 grouped.setdefault("a.md", []).append((12, "bad link"))
 grouped.setdefault("a.md", []).append((15, "extra link"))
 grouped.setdefault("b.md", []).append((None, "front matter"))
-write_text("/out.txt", str(grouped))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(grouped))
+__lython_file.close()
 """,
             host);
 
@@ -607,7 +635,9 @@ raise SystemExit(10 ** 100)
 try:
     raise SystemExit(5)
 except Exception:
-    write_text("/out.txt", "caught")
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write("caught")
+    __lython_file.close()
 """,
             new MockLythonHost());
 
@@ -626,7 +656,9 @@ except Exception:
 try:
     raise SystemExit(5)
 except:
-    write_text("/out.txt", "caught")
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write("caught")
+    __lython_file.close()
 """,
             host);
 
@@ -648,7 +680,9 @@ def outer():
     factor = 4
     return inner()
 
-write_text("/out.txt", str(outer()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(outer()))
+__lython_file.close()
 """,
             host);
 
@@ -668,7 +702,9 @@ def build(*parts, sep="|", suffix):
 
 f = lambda *parts, tail, sep="-": sep.join(parts) + tail
 
-write_text("/out.txt", build("a", "b", suffix="!") + "|" + f("x", "y", tail="?", sep=":"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(build("a", "b", suffix="!") + "|" + f("x", "y", tail="?", sep=":"))
+__lython_file.close()
 """,
             host);
 
@@ -689,7 +725,9 @@ parts.append(str(len(value)))
 parts.append(str(value == b"ab\x00"))
 parts.append(str(value[1]))
 parts.append(str(value))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -707,7 +745,9 @@ write_text("/out.txt", "|".join(parts))
             """
 import helper
 helper.value = 3
-write_text("/out.txt", str(helper.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(helper.value))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -737,7 +777,9 @@ class Box:
 
 box = Box("ok")
 Box.kind = "crate"
-write_text("/out.txt", box.render() + "|" + Box.kind)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box.render() + "|" + Box.kind)
+__lython_file.close()
 """,
             host);
 
@@ -759,7 +801,9 @@ class Base:
 class Child(Base):
     pass
 
-write_text("/out.txt", Child().value())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Child().value())
+__lython_file.close()
 """,
             host);
 
@@ -784,9 +828,13 @@ class Point:
 value = Point(1, 2)
 match value:
     case Point(1, y):
-        write_text("/out.txt", str(y))
+        __lython_file = open("/out.txt", "w")
+        __lython_file.write(str(y))
+        __lython_file.close()
     case _:
-        write_text("/out.txt", "miss")
+        __lython_file = open("/out.txt", "w")
+        __lython_file.write("miss")
+        __lython_file.close()
 """,
             host);
 
@@ -816,7 +864,9 @@ class C(A):
 class D(B, C):
     pass
 
-write_text("/out.txt", D().order() + "|" + str(issubclass(D, C)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(D().order() + "|" + str(issubclass(D, C)))
+__lython_file.close()
 """,
             host);
 
@@ -878,7 +928,9 @@ match point:
     case _:
         parts.append("miss")
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -910,7 +962,9 @@ match box:
     case _:
         parts.append("miss")
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -967,7 +1021,9 @@ match opt:
     case _:
         parts.append("miss")
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1006,7 +1062,9 @@ try:
 except FrozenInstanceError:
     parts.append("delete")
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1045,7 +1103,9 @@ parts.append(str(items[2].default_factory is list))
 parts.append(str(asdict(box)))
 parts.append(str(astuple(box)))
 parts.append(clone.name + ":" + str(clone.tags) + ":" + str(clone.hidden))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1092,7 +1152,9 @@ try:
 except AttributeError:
     parts.append("missing")
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1123,7 +1185,9 @@ parts = []
 parts.append(unsafe_dict[Unsafe(1)])
 parts.append(frozen_dict[Frozen(2)])
 parts.append(str(Unsafe.__dataclass_params__.unsafe_hash))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1172,7 +1236,9 @@ parts = []
 parts.append(str(events))
 parts.append(str(plain.x))
 parts.append(str(wrapped.x))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1207,7 +1273,9 @@ parts.append(str(isinstance(value, Child)))
 parts.append(str(isinstance(value, Base)))
 parts.append(str(isinstance(value, (Base, int))))
 parts.append(str(issubclass(Child, Base)))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1232,7 +1300,9 @@ parts.append(str(isinstance({1, 2}, set)))
 parts.append(str(isinstance("x", str)))
 parts.append(str(isinstance(b"x", bytes)))
 parts.append(str(isinstance(Path("/tmp"), Path)))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1272,7 +1342,9 @@ parts.append(str(isinstance(type, type)))
 parts.append(str(isinstance(object, type)))
 parts.append(type(item).__name__)
 parts.append(type(Child).__name__)
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1291,7 +1363,9 @@ parts = []
 parts.append(str(bytes()))
 parts.append(str(bytes([65, 66, 67])))
 parts.append(str(bytes(b"xy")))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -1331,7 +1405,9 @@ class Child(Base):
         return super(Child, cls).kind()
 
 item = Child("ok")
-write_text("/out.txt", item.render() + "|" + Child.kind2())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(item.render() + "|" + Child.kind2())
+__lython_file.close()
 """,
             host);
 
@@ -1366,7 +1442,9 @@ class Child(Base):
     def kind2(cls):
         return super().kind()
 
-write_text("/out.txt", Child().render() + "|" + Child.kind2())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Child().render() + "|" + Child.kind2())
+__lython_file.close()
 """,
             host);
 
@@ -1419,7 +1497,9 @@ box = Box(3)
 before = box.score
 box.score = 5
 after = box.score
-write_text("/out.txt", str(before) + "|" + str(after) + "|" + str(Box.score))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(before) + "|" + str(after) + "|" + str(Box.score))
+__lython_file.close()
 """,
             host);
 
@@ -1445,7 +1525,9 @@ box = Box()
 before = box.value
 box.value = "instance"
 after = box.value
-write_text("/out.txt", before + "|" + after)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(before + "|" + after)
+__lython_file.close()
 """,
             host);
 
@@ -1474,7 +1556,9 @@ class Box:
 
 box = Box(1)
 box.value = 5
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -1503,7 +1587,9 @@ class Box:
 
 box = Box(4)
 del box.value
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -1530,7 +1616,9 @@ class Box:
     def value(self):
         return self._value * 3
 
-write_text("/out.txt", str(Box(4).value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(Box(4).value))
+__lython_file.close()
 """,
             host);
 
@@ -1558,7 +1646,9 @@ class Child(Base):
     def value(self):
         return self._value * 4
 
-write_text("/out.txt", str(Child(3).value) + "|" + str(Base(3).value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(Child(3).value) + "|" + str(Base(3).value))
+__lython_file.close()
 """,
             host);
 
@@ -1592,7 +1682,9 @@ class Child(Base):
 
 box = Child(3)
 del box.value
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -1612,7 +1704,9 @@ class Dynamic:
         return "missing:" + name
 
 item = Dynamic()
-write_text("/out.txt", item.value + "|" + item.other)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(item.value + "|" + item.other)
+__lython_file.close()
 """,
             host);
 
@@ -1637,7 +1731,9 @@ class Box:
         return object.__getattribute__(self, name)
 
 box = Box()
-write_text("/out.txt", box.value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box.value)
+__lython_file.close()
 """,
             host);
 
@@ -1655,7 +1751,9 @@ class Box:
         return "missing:" + name
 
 box = Box()
-write_text("/out.txt", object.__getattribute__(box, "value"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(object.__getattribute__(box, "value"))
+__lython_file.close()
 """,
             new MockLythonHost());
 
@@ -1680,7 +1778,9 @@ class Box:
         return "fallback:" + name
 
 box = Box()
-write_text("/out.txt", box.value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box.value)
+__lython_file.close()
 """,
             host);
 
@@ -1711,7 +1811,9 @@ class Box:
     def __getattribute__(self, name):
         return object.__getattribute__(self, name)
 
-write_text("/out.txt", Box().value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Box().value)
+__lython_file.close()
 """,
             host);
 
@@ -1732,7 +1834,9 @@ class Box:
 
 box = Box()
 box.value = 3
-write_text("/out.txt", box.value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box.value)
+__lython_file.close()
 """,
             host);
 
@@ -1757,7 +1861,9 @@ class Box:
 
 box = Box()
 del box.value
-write_text("/out.txt", box.deleted)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box.deleted)
+__lython_file.close()
 """,
             host);
 
@@ -1786,7 +1892,9 @@ class Box:
 
 box = Box()
 object.__setattr__(box, "value", 4)
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -1816,7 +1924,9 @@ class Box:
 
 box = Box()
 del box.value
-write_text("/out.txt", box._deleted)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(box._deleted)
+__lython_file.close()
 """,
             host);
 
@@ -1845,7 +1955,9 @@ class Box:
 
 box = Box(4)
 Box.value.__delete__(box)
-write_text("/out.txt", str(box.value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.value))
+__lython_file.close()
 """,
             host);
 
@@ -1871,7 +1983,9 @@ class Named:
 class Box:
     value = Named()
 
-write_text("/out.txt", Box().value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Box().value)
+__lython_file.close()
 """,
             host);
 
@@ -1893,7 +2007,9 @@ class Marker:
 class Box:
     token = Marker()
 
-write_text("/out.txt", str(Box.token))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(Box.token))
+__lython_file.close()
 """,
             host);
 
@@ -1937,7 +2053,9 @@ class Base:
 class Child(Base):
     pass
 
-write_text("/out.txt", Base.initialized + "|" + Child.initialized)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Base.initialized + "|" + Child.initialized)
+__lython_file.close()
 """,
             host);
 
@@ -1960,7 +2078,9 @@ class Base:
 class Child(Base, label="demo"):
     pass
 
-write_text("/out.txt", Child.label)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Child.label)
+__lython_file.close()
 """,
             host);
 
@@ -1989,7 +2109,9 @@ class Base:
 class Child(Base):
     token = Descriptor()
 
-write_text("/out.txt", Child.owner_name + ":" + Child.token_name)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Child.owner_name + ":" + Child.token_name)
+__lython_file.close()
 """,
             host);
 
@@ -2028,7 +2150,9 @@ class Marker:
 class Box:
     token = Marker()
 
-write_text("/out.txt", Box.token.owner_name + ":" + Box.token.field_name)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Box.token.owner_name + ":" + Box.token.field_name)
+__lython_file.close()
 """,
             host);
 
@@ -2053,7 +2177,9 @@ class Box:
         object.__setattr__(self, "from_init", value + 1)
 
 box = Box(4)
-write_text("/out.txt", str(box.from_new) + "|" + str(box.from_init) + "|" + str(isinstance(box, object)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(box.from_new) + "|" + str(box.from_init) + "|" + str(isinstance(box, object)))
+__lython_file.close()
 """,
             host);
 
@@ -2073,10 +2199,14 @@ class Token:
         return "token:" + str(value)
 
     def __init__(self, value):
-        write_text("/init.txt", "ran")
+        __lython_file = open("/init.txt", "w")
+        __lython_file.write("ran")
+        __lython_file.close()
 
 item = Token(7)
-write_text("/out.txt", item + "|" + str(isinstance(item, str)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(item + "|" + str(isinstance(item, str)))
+__lython_file.close()
 """,
             host);
 
@@ -2096,7 +2226,9 @@ class Token:
     __new__ = str
 
 item = Token()
-write_text("/out.txt", str(isinstance(item, str)) + "|" + str(item == str(Token)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(isinstance(item, str)) + "|" + str(item == str(Token)))
+__lython_file.close()
 """,
             host);
 
@@ -2122,7 +2254,9 @@ class Child(Base):
 
         return super().render() + "|" + str(nested() is self)
 
-write_text("/out.txt", Child().render())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Child().render())
+__lython_file.close()
 """,
             host);
 
@@ -2151,7 +2285,9 @@ class C(B):
 class D(C):
     render = B.render
 
-write_text("/out.txt", D().render())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(D().render())
+__lython_file.close()
 """,
             host);
 
@@ -2173,7 +2309,9 @@ class Box:
     def render(self):
         return super().msg
 
-write_text("/out.txt", Box().render())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Box().render())
+__lython_file.close()
 """,
             host);
 
@@ -2238,7 +2376,9 @@ def twice(fn):
 def plus_one(value):
     return value + 1
 
-write_text("/out.txt", str(plus_one(5)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(plus_one(5)))
+__lython_file.close()
 """,
             host);
 
@@ -2261,7 +2401,9 @@ def named(cls):
 class Box:
     pass
 
-write_text("/out.txt", Box.label)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(Box.label)
+__lython_file.close()
 """,
             host);
 
@@ -2275,7 +2417,7 @@ write_text("/out.txt", Box.label)
         var host = new MockLythonHost();
 
         var result = new LythonEngine().Run(
-            "value = 1 + \\\n    2 + \\\n    3\nwrite_text(\"/out.txt\", str(value))\n",
+            "value = 1 + \\\n    2 + \\\n    3\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(value))\n__lython_file.close()\n",
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -2295,7 +2437,9 @@ values.append(str(-7 % 3))
 values.append(str(7 // -3))
 values.append(str(7 % -3))
 values.append(str(list(range(5, -1, -2))))
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -2324,7 +2468,9 @@ vals.append(str("a,,b".split(",")))
 vals.append(str("x\ny\r\nz".splitlines()))
 vals.append(str("x\ny\r\nz".splitlines(keepends=True)))
 vals.append("{1}:{0}".format("left", "right"))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2350,7 +2496,9 @@ vals.append(text[1:2])
 vals.append(str(text.find("😀")))
 vals.append(str(text.count("😀")))
 vals.append(str(list(text)))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2370,7 +2518,9 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 template = "😀 {1} {0}"
-write_text("/out.txt", template.format("café", "élan"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(template.format("café", "élan"))
+__lython_file.close()
 """,
             host);
 
@@ -2396,7 +2546,9 @@ vals.append(str(text.count("é")))
 vals.append(text.replace("😀", "x"))
 vals.append(str("  é\t😀 \n".split()))
 vals.append(str("é😀é".split("😀")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2406,17 +2558,20 @@ write_text("/out.txt", "|".join(vals))
     }
 
     [Fact]
-    public void Utf8NativePathHelpers_HandleUnicodeSegments()
+    public void OsPathHelpers_HandleUnicodeSegments()
     {
         var host = new MockLythonHost();
 
         var result = new LythonEngine().Run(
             """
+import os
 vals = []
-vals.append(join_path("/src", "é😀.txt"))
-vals.append(dirname("/src/é😀.txt"))
-vals.append(basename("/src/é😀.txt"))
-write_text("/out.txt", "|".join(vals))
+vals.append(os.path.join("/src", "é😀.txt"))
+vals.append(os.path.dirname("/src/é😀.txt"))
+vals.append(os.path.basename("/src/é😀.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2432,7 +2587,10 @@ write_text("/out.txt", "|".join(vals))
 
         var result = new LythonEngine().Run(
             """
-write_text("/out.txt", value.replace("é", "x") + "|" + str("😀" in value) + "|" + basename(path))
+import os
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value.replace("é", "x") + "|" + str("😀" in value) + "|" + os.path.basename(path))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -2461,7 +2619,9 @@ vals.append(" \t😀 é \n".strip())
 vals.append(" \t😀 é \n".lstrip())
 vals.append(" \t😀 é \n".rstrip())
 vals.append(str("a\r\nb\rc\n".splitlines()))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2478,7 +2638,9 @@ write_text("/out.txt", "|".join(vals))
         var result = new LythonEngine().Run(
             """
 value = {"name": "é😀", "items": ["α", "β"], "pair": ("x", 2)}
-write_text("/out.txt", str(value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(value))
+__lython_file.close()
 """,
             host);
 
@@ -2494,7 +2656,9 @@ write_text("/out.txt", str(value))
 
         var result = new LythonEngine().Run(
             """
-write_text("/out.txt", values[0].replace("é", "x") + "|" + data["path"] + "|" + str("é" in items))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(values[0].replace("é", "x") + "|" + data["path"] + "|" + str("é" in items))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -2543,7 +2707,9 @@ d = {"a": 1}
 missing = d.get("z", 99)
 d.update({"b": 2})
 popped = d.pop("a")
-write_text("/out.txt", str(items) + "|" + str(last) + "|" + str(missing) + "|" + str(popped) + "|" + str(list(d.items())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(last) + "|" + str(missing) + "|" + str(popped) + "|" + str(list(d.items())))
+__lython_file.close()
 """,
             host);
 
@@ -2568,7 +2734,9 @@ copy = dict(d)
 equal = copy == d
 contains_int = 1 in d
 contains_tuple = (2, 3) in d
-write_text("/out.txt", str(same) + "|" + str(pair) + "|" + str(keys) + "|" + str(items) + "|" + str(equal) + "|" + str(contains_int) + "|" + str(contains_tuple))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(same) + "|" + str(pair) + "|" + str(keys) + "|" + str(items) + "|" + str(equal) + "|" + str(contains_int) + "|" + str(contains_tuple))
+__lython_file.close()
 """,
             host);
 
@@ -2587,7 +2755,9 @@ write_text("/out.txt", str(same) + "|" + str(pair) + "|" + str(keys) + "|" + str
 base = {(n, n + 1): n for n in [1, 2]}
 extra = {0: "zero"}
 base.update(extra)
-write_text("/out.txt", str(base[(1, 2)]) + "|" + str(base[(2, 3)]) + "|" + str(base[0]) + "|" + str(list(base.keys())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(base[(1, 2)]) + "|" + str(base[(2, 3)]) + "|" + str(base[0]) + "|" + str(list(base.keys())))
+__lython_file.close()
 """,
             host);
 
@@ -2645,7 +2815,9 @@ vals.append(str("banana".count("na")))
 vals.append("spam".removeprefix("sp"))
 vals.append("spam".removesuffix("am"))
 vals.append(str("key=value".partition("=")))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2671,7 +2843,9 @@ vals.append(str(all([1, 0, True])))
 vals.append(str(min([3, 1, 2])))
 vals.append(str(max(["b", "a", "c"])))
 vals.append(str(list(enumerate(["a", "b"], -2))))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2699,7 +2873,9 @@ vals.append(str(sum([1, 2, 3])))
 vals.append(str(sum((1, 2), 10)))
 vals.append(str(sum(x for x in range(4))))
 vals.append(str(sum([1.5, 2])))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2761,7 +2937,9 @@ try:
 except RuntimeError as err:
     vals.append(err.type + ":" + err.message)
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2787,7 +2965,9 @@ vals.append(str(copy.get("missing")))
 vals.append(str(len(list(copy.keys()))))
 vals.append(str(list(copy.values())))
 vals.append(str(list(copy.items())))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -2814,7 +2994,9 @@ text += "b"
 items = [1]
 alias = items
 items += [2, 3]
-write_text("/out.txt", str(total) + "|" + text + "|" + str(items) + "|" + str(alias))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(total) + "|" + text + "|" + str(items) + "|" + str(alias))
+__lython_file.close()
 """,
             host);
 
@@ -2828,7 +3010,9 @@ write_text("/out.txt", str(total) + "|" + text + "|" + str(items) + "|" + str(al
         """
 text = "ha"
 text *= 3
-write_text("/out.txt", text)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """,
         "hahaha")]
     [InlineData(
@@ -2836,7 +3020,9 @@ write_text("/out.txt", text)
 count = 10
 count += 5
 count -= 3
-write_text("/out.txt", str(count))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(count))
+__lython_file.close()
 """,
         "12")]
     [InlineData(
@@ -2844,7 +3030,9 @@ write_text("/out.txt", str(count))
 count = 17
 count //= 3
 count %= 4
-write_text("/out.txt", str(count))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(count))
+__lython_file.close()
 """,
         "1")]
     [InlineData(
@@ -2852,7 +3040,9 @@ write_text("/out.txt", str(count))
 items = [1, 2]
 alias = items
 items += [3]
-write_text("/out.txt", str(items) + "|" + str(alias))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(alias))
+__lython_file.close()
 """,
         "[1, 2, 3]|[1, 2, 3]")]
     public void AugmentedAssignment_CoversAdditionalSupportedCases(string source, string expected)
@@ -2889,7 +3079,9 @@ write_text("/out.txt", str(items) + "|" + str(alias))
 x = "outer"
 values = [n * 2 for n in range(6) if n % 2 == 1]
 pairs = {"k" + str(n): n * n for n in range(5) if n < 3}
-write_text("/out.txt", str(values) + "|" + str(pairs) + "|" + x)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(values) + "|" + str(pairs) + "|" + x)
+__lython_file.close()
 """,
             host);
 
@@ -2902,38 +3094,50 @@ write_text("/out.txt", str(values) + "|" + str(pairs) + "|" + x)
     [InlineData(
         """
 values = [n + 1 for n in [1, 2, 3]]
-write_text("/out.txt", str(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(values))
+__lython_file.close()
 """,
         "[2, 3, 4]")]
     [InlineData(
         """
 mapping = {ch: ch.upper() for ch in "ab"}
-write_text("/out.txt", str(mapping))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(mapping))
+__lython_file.close()
 """,
         "{'a': A, 'b': B}")]
     [InlineData(
         """
 letters = [ch for ch in "egg"]
-write_text("/out.txt", str(letters))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(letters))
+__lython_file.close()
 """,
         "[e, g, g]")]
     [InlineData(
         """
 mapping = {"k" + str(n % 2): n for n in [1, 2, 3, 4]}
-write_text("/out.txt", str(mapping))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(mapping))
+__lython_file.close()
 """,
         "{'k1': 3, 'k0': 4}")]
     [InlineData(
         """
 outer = "kept"
 values = [n for n in [0, 1, 2] if n]
-write_text("/out.txt", str(values) + "|" + outer)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(values) + "|" + outer)
+__lython_file.close()
 """,
         "[1, 2]|kept")]
     [InlineData(
         """
 values = [n for n in ["", "x", 0, 3] if n]
-write_text("/out.txt", str(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(values))
+__lython_file.close()
 """,
         "[x, 3]")]
     public void Comprehensions_CoverAdditionalPortableShapes(string source, string expected)
@@ -2964,7 +3168,9 @@ values.append(str(items[1:4]))
 values.append(str(items[::-1]))
 values.append(str(parts[:3]))
 values.append(str(parts[3:0:-2]))
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -2977,55 +3183,73 @@ write_text("/out.txt", "|".join(values))
     [InlineData(
         """
 text = "alpha"
-write_text("/out.txt", text[:])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text[:])
+__lython_file.close()
 """,
         "alpha")]
     [InlineData(
         """
 text = "alpha"
-write_text("/out.txt", text[:0])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text[:0])
+__lython_file.close()
 """,
         "")]
     [InlineData(
         """
 text = "alpha"
-write_text("/out.txt", text[100:-100])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text[100:-100])
+__lython_file.close()
 """,
         "")]
     [InlineData(
         """
 text = "alpha"
-write_text("/out.txt", text[-100:100])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text[-100:100])
+__lython_file.close()
 """,
         "alpha")]
     [InlineData(
         """
 items = [0, 1, 2, 3, 4, 5]
-write_text("/out.txt", str(items[::2]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items[::2]))
+__lython_file.close()
 """,
         "[0, 2, 4]")]
     [InlineData(
         """
 items = [0, 1, 2, 3, 4, 5]
-write_text("/out.txt", str(items[1::2]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items[1::2]))
+__lython_file.close()
 """,
         "[1, 3, 5]")]
     [InlineData(
         """
 items = [0, 1, 2, 3]
-write_text("/out.txt", str(items[::-1]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items[::-1]))
+__lython_file.close()
 """,
         "[3, 2, 1, 0]")]
     [InlineData(
         """
 items = [0, 1, 2, 3]
-write_text("/out.txt", str(items[::-100]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items[::-100]))
+__lython_file.close()
 """,
         "[3]")]
     [InlineData(
         """
 parts = ("a", "b", "c", "d")
-write_text("/out.txt", str(parts[3:3:-2]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(parts[3:3:-2]))
+__lython_file.close()
 """,
         "()")]
     public void Slicing_CoversBoundaryNormalizationAndStepShapes(string source, string expected)
@@ -3065,7 +3289,9 @@ def render(name, suffix = "!", loud = False):
 first, second = ["Alpha", "Beta"]
 text = render(first)
 text = text + "|" + render(second, loud = True, suffix = "?")
-write_text("/out.txt", text + "|" + first + "|" + second)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "|" + first + "|" + second)
+__lython_file.close()
 """,
             host);
 
@@ -3078,25 +3304,33 @@ write_text("/out.txt", text + "|" + first + "|" + second)
     [InlineData(
         """
 value = "left" if True else "right"
-write_text("/out.txt", value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """,
         "left")]
     [InlineData(
         """
 value = "left" if 0 else "right"
-write_text("/out.txt", value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """,
         "right")]
     [InlineData(
         """
 value = "one" if False else "two" if True else "three"
-write_text("/out.txt", value)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(value)
+__lython_file.close()
 """,
         "two")]
     [InlineData(
         """
 values = [("odd" if n % 2 else "even") for n in [1, 2, 3]]
-write_text("/out.txt", str(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(values))
+__lython_file.close()
 """,
         "[odd, even, odd]")]
     public void ConditionalExpressions_CoverCommonCompositions(string source, string expected)
@@ -3116,7 +3350,9 @@ write_text("/out.txt", str(values))
 def render(name, suffix = "!"):
     return name + suffix
 
-write_text("/out.txt", render("a"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(render("a"))
+__lython_file.close()
 """,
         "a!")]
     [InlineData(
@@ -3124,7 +3360,9 @@ write_text("/out.txt", render("a"))
 def render(name, suffix = "!", loud = False):
     return name.upper() if loud else name.lower()
 
-write_text("/out.txt", render("AbC", loud = True))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(render("AbC", loud = True))
+__lython_file.close()
 """,
         "ABC")]
     [InlineData(
@@ -3133,7 +3371,9 @@ def render(name, suffix = "!", loud = False):
     base = name.upper() if loud else name.lower()
     return base + suffix
 
-write_text("/out.txt", render("AbC", "?", loud = False))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(render("AbC", "?", loud = False))
+__lython_file.close()
 """,
         "abc?")]
     [InlineData(
@@ -3142,7 +3382,9 @@ def render(name, suffix = "!", loud = False):
     base = name.upper() if loud else name.lower()
     return base + suffix
 
-write_text("/out.txt", render(name = "AbC", suffix = "?", loud = True))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(render(name = "AbC", suffix = "?", loud = True))
+__lython_file.close()
 """,
         "ABC?")]
     public void DefaultParametersAndKeywordArguments_CoverPortableCallShapes(string source, string expected)
@@ -3201,19 +3443,25 @@ render("x", name = "y")
     [InlineData(
         """
 a, b = (1, 2)
-write_text("/out.txt", str(a) + "|" + str(b))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(a) + "|" + str(b))
+__lython_file.close()
 """,
         "1|2")]
     [InlineData(
         """
 a, b = ["x", "y"]
-write_text("/out.txt", a + "|" + b)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(a + "|" + b)
+__lython_file.close()
 """,
         "x|y")]
     [InlineData(
         """
 a, b, c = "egg"
-write_text("/out.txt", a + "|" + b + "|" + c)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(a + "|" + b + "|" + c)
+__lython_file.close()
 """,
         "e|g|g")]
     public void UnpackingAssignment_SupportsPortableIterables(string source, string expected)
@@ -3240,7 +3488,9 @@ for key, value in pairs:
     parts.append(key + str(value))
 
 mapping = {key: value for key, value in pairs}
-write_text("/out.txt", str(parts) + "|" + str(mapping))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(parts) + "|" + str(mapping))
+__lython_file.close()
 """,
             host);
 
@@ -3289,25 +3539,35 @@ with open("/output.txt", "w") as writer:
 with open("/output.txt", "w") as writer:
     count = writer.write("alpha")
 
-write_text("/out.txt", str(count) + "|" + read_text("/output.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(count) + "|" + open("/output.txt").read())
+__lython_file.close()
 """,
         "5|alpha")]
     [InlineData(
         """
-write_text("/append.txt", "base")
+__lython_file = open("/append.txt", "w")
+__lython_file.write("base")
+__lython_file.close()
 with open("/append.txt", "a") as handle:
     handle.write("-extra")
 
-write_text("/out.txt", read_text("/append.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(open("/append.txt").read())
+__lython_file.close()
 """,
         "base-extra")]
     [InlineData(
         """
-write_text("/seed.txt", "hello")
+__lython_file = open("/seed.txt", "w")
+__lython_file.write("hello")
+__lython_file.close()
 with open("/seed.txt") as handle:
     text = handle.read()
 
-write_text("/out.txt", text)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """,
         "hello")]
     [InlineData(
@@ -3318,7 +3578,9 @@ with open("/sample.txt", "w") as handle:
 try:
     handle.write("y")
 except ValueError as err:
-    write_text("/out.txt", err.message)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(err.message)
+    __lython_file.close()
 """,
         "I/O operation on closed file")]
     [InlineData(
@@ -3328,7 +3590,9 @@ try:
         handle.write("alpha")
         raise ValueError("boom")
 except ValueError as err:
-    write_text("/out.txt", read_text("/sample.txt") + "|" + err.message)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(open("/sample.txt").read() + "|" + err.message)
+    __lython_file.close()
 """,
         "alpha|boom")]
     public void WithStatement_CoversHandleLifecycleModesAndFlushBehavior(string source, string expected)
@@ -3348,28 +3612,38 @@ except ValueError as err:
 handle = open("/output.txt", "w")
 handle.write("alpha")
 closed = handle.close()
-write_text("/out.txt", str(closed) + "|" + read_text("/output.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(closed) + "|" + open("/output.txt").read())
+__lython_file.close()
 """,
         "None|alpha")]
     [InlineData(
         """
-write_text("/append.txt", "base")
+__lython_file = open("/append.txt", "w")
+__lython_file.write("base")
+__lython_file.close()
 handle = open("/append.txt", "a")
 handle.write("-extra")
 handle.close()
 handle.close()
-write_text("/out.txt", read_text("/append.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(open("/append.txt").read())
+__lython_file.close()
 """,
         "base-extra")]
     [InlineData(
         """
-write_text("/input.txt", "alpha")
+__lython_file = open("/input.txt", "w")
+__lython_file.write("alpha")
+__lython_file.close()
 handle = open("/input.txt", "r")
 handle.close()
 try:
     handle.read()
 except ValueError as err:
-    write_text("/out.txt", err.message)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(err.message)
+    __lython_file.close()
 """,
         "I/O operation on closed file")]
     [InlineData(
@@ -3379,7 +3653,9 @@ handle.close()
 try:
     handle.write("alpha")
 except ValueError as err:
-    write_text("/out.txt", err.message)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(err.message)
+    __lython_file.close()
 """,
         "I/O operation on closed file")]
     public void FileClose_CoversManualLifecycleModesAndClosedHandleErrors(string source, string expected)
@@ -3402,7 +3678,9 @@ except ValueError as err:
             """
 name = "alpha"
 count = 3
-write_text("/out.txt", f"{name}-{count}-{{ok}}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{name}-{count}-{{ok}}")
+__lython_file.close()
 """,
             host);
 
@@ -3416,42 +3694,56 @@ write_text("/out.txt", f"{name}-{count}-{{ok}}")
         """
 name = "alpha"
 count = 3
-write_text("/out.txt", f"{name}-{count}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{name}-{count}")
+__lython_file.close()
 """,
         "alpha-3")]
     [InlineData(
         """
 name = "alpha"
 count = 3
-write_text("/out.txt", f"{name}-{count}-{name.upper()}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{name}-{count}-{name.upper()}")
+__lython_file.close()
 """,
         "alpha-3-ALPHA")]
     [InlineData(
         """
 value = 2
-write_text("/out.txt", f"{value + 5}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{value + 5}")
+__lython_file.close()
 """,
         "7")]
     [InlineData(
         """
 flag = True
-write_text("/out.txt", f"{'yes' if flag else 'no'}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{'yes' if flag else 'no'}")
+__lython_file.close()
 """,
         "yes")]
     [InlineData(
         """
 values = [10, 20, 30]
-write_text("/out.txt", f"{values[1:3]}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{values[1:3]}")
+__lython_file.close()
 """,
         "[20, 30]")]
     [InlineData(
         """
-write_text("/out.txt", f"{ {'answer': 42}['answer'] }")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{ {'answer': 42}['answer'] }")
+__lython_file.close()
 """,
         "42")]
     [InlineData(
         """
-write_text("/out.txt", f"{{left}}-{1 + 1}-{{right}}")
+__lython_file = open("/out.txt", "w")
+__lython_file.write(f"{{left}}-{1 + 1}-{{right}}")
+__lython_file.close()
 """,
         "{left}-2-{right}")]
     public void FormattedStrings_CoverMultipleExpressionsAndEmbeddedSubsetSyntax(string source, string expected)
@@ -3507,7 +3799,9 @@ parts.append(f"{'x':05}")
 parts.append(f"{'abcdef':.3s}")
 parts.append(f"{3:<4}!")
 parts.append(f"{15!s:>4}")
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -3517,10 +3811,10 @@ write_text("/out.txt", "|".join(parts))
     }
 
     [Theory]
-    [InlineData("write_text(\"/out.txt\", f\"{\")\n")]
-    [InlineData("write_text(\"/out.txt\", f\"}\")\n")]
-    [InlineData("write_text(\"/out.txt\", f\"{}\")\n")]
-    [InlineData("write_text(\"/out.txt\", f\"{1:{2}}\")\n")]
+    [InlineData("f\"{\"\n")]
+    [InlineData("f\"}\"\n")]
+    [InlineData("f\"{}\"\n")]
+    [InlineData("f\"{1:{2}}\"\n")]
     public void FormattedStrings_InvalidShapes_ReportCompileDiagnostic(string source)
     {
         var compiled = new LythonEngine().Compile(source);
@@ -3545,7 +3839,9 @@ vals.append(str(tuple("ab")))
 items = [1]
 items.extend("xy")
 vals.append(str(items))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -3577,10 +3873,9 @@ selected = [
     if path != "/input/B/Parts.csv"
 ]
 
-write_text(
-    "/out.txt",
-    str(files[0]) + "|" + str(files[:2]) + "|" + str(markers) + "|" + str(selected),
-)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(files[0]) + "|" + str(files[:2]) + "|" + str(markers) + "|" + str(selected))
+__lython_file.close()
 """,
             host);
 
@@ -3668,7 +3963,9 @@ parts.append(str(row["pairs"]))
 parts.append(str(row["window"]))
 parts.append(str(len(seen)))
 parts.append(str("b" in seen))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -3686,7 +3983,9 @@ write_text("/out.txt", "|".join(parts))
             """
 d = {"a": 1, "b": 2}
 d.update({"b": 20, "c": 3})
-write_text("/out.txt", str(list(d.items())) + "|" + str(d.get("b")) + "|" + str(d.get("missing", 99)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(list(d.items())) + "|" + str(d.get("b")) + "|" + str(d.get("missing", 99)))
+__lython_file.close()
 """,
             host);
 
@@ -3714,7 +4013,9 @@ vals.append(str(2 in [1, 2, 3]))
 vals.append(str([1, 2] != [2, 1]))
 vals.append(str("b" > "a"))
 vals.append(str(3 >= 3.0))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -3739,7 +4040,9 @@ vals = []
 vals.append(str(0 < mid() < 3))
 vals.append(str(3 < mid() < 4))
 vals.append(str("a" < "b" < "c"))
-write_text("/out.txt", "|".join(vals) + "|" + str(len(seen)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals) + "|" + str(len(seen)))
+__lython_file.close()
 """,
             host);
 
@@ -3755,7 +4058,9 @@ write_text("/out.txt", "|".join(vals) + "|" + str(len(seen)))
         var success = new LythonEngine().Run(
             """
 assert 1 < 2
-write_text("/out.txt", "ok")
+__lython_file = open("/out.txt", "w")
+__lython_file.write("ok")
+__lython_file.close()
 """,
             successHost);
 
@@ -3786,7 +4091,9 @@ value: int = 2 ** 3
 mask = (5 | 2) ^ 1
 shifted = (1 << 4) >> 2
 flipped = ~1
-write_text("/out.txt", str(value) + "|" + str(mask) + "|" + str(shifted) + "|" + str(flipped))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(value) + "|" + str(mask) + "|" + str(shifted) + "|" + str(flipped))
+__lython_file.close()
 """,
             host);
 
@@ -3805,7 +4112,9 @@ write_text("/out.txt", str(value) + "|" + str(mask) + "|" + str(shifted) + "|" +
         var result = new LythonEngine().Run(
             """
 with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
-    write_text("/out.txt", left.read() + right.read())
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(left.read() + right.read())
+    __lython_file.close()
 """,
             host);
 
@@ -3820,7 +4129,7 @@ with open("/left.txt", "r") as left, open("/right.txt", "r") as right:
         var host = new MockLythonHost();
 
         var result = new LythonEngine().Run(
-            "a = 1; b = 2; write_text(\"/out.txt\", str(a + b))\n",
+            "a = 1; b = 2; __lython_file = open(\"/out.txt\", \"w\"); __lython_file.write(str(a + b)); __lython_file.close()\n",
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -3849,7 +4158,9 @@ try: vals.append("try")
 except ValueError: vals.append("bad")
 else: vals.append("try-else")
 finally: vals.append("finally")
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -3870,7 +4181,7 @@ for text in ["1", "x", "2"]:
     try: value = int(text)
     except ValueError: continue
     vals.append(str(value))
-if vals: write_text("/out.txt", ",".join(vals))
+if vals: __lython_file = open("/out.txt", "w"); __lython_file.write(",".join(vals)); __lython_file.close()
 """,
             host);
 
@@ -3893,7 +4204,9 @@ with open("/source.txt", "r") as handle: text = handle.read()
 match inc(1):
     case 1: text = text + "bad"
     case 2: text = text + Box.label
-write_text("/out.txt", text)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
 """,
             host);
 
@@ -3915,7 +4228,9 @@ def produce():
     return len(box)
 
 a = b = produce()
-write_text("/out.txt", str(a) + "|" + str(b) + "|" + str(len(box)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(a) + "|" + str(b) + "|" + str(len(box)))
+__lython_file.close()
 """,
             host);
 
@@ -3934,7 +4249,9 @@ write_text("/out.txt", str(a) + "|" + str(b) + "|" + str(len(box)))
 items = [0, 0]
 items[0] = value = 42
 left = right = [1, 2]
-write_text("/out.txt", str(items) + "|" + str(value) + "|" + str(left) + "|" + str(right))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(value) + "|" + str(left) + "|" + str(right))
+__lython_file.close()
 """,
             host);
 
@@ -3970,7 +4287,9 @@ match score:
     case 0 | 1 as small:
         parts.append(str(small))
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -4000,7 +4319,9 @@ match [10, 20]:
     case list(left, right):
         parts.append(str(left + right))
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -4020,7 +4341,9 @@ items = [1, 2, 3]
 items[1] = 20
 row = {"name": "old"}
 row["name"] = "new"
-write_text("/out.txt", str(items) + "|" + str(row))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(row))
+__lython_file.close()
 """,
             host);
 
@@ -4042,7 +4365,9 @@ items = [1, 2, 3]
 del items[1]
 row = {"name": "x", "age": 2}
 del row["age"]
-write_text("/out.txt", str(items) + "|" + str(row))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + str(row))
+__lython_file.close()
 """,
             host);
 
@@ -4076,7 +4401,9 @@ try:
 except:
     vals.append("bare")
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -4095,7 +4422,9 @@ write_text("/out.txt", "|".join(vals))
 rows = [("b", 2), ("a", 3), ("c", 1)]
 f = lambda row: row[1]
 ordered = sorted(rows, key=f, reverse=True)
-write_text("/out.txt", str(ordered) + "|" + str((lambda x: x + 1)(4)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(ordered) + "|" + str((lambda x: x + 1)(4)))
+__lython_file.close()
 """,
             host);
 
@@ -4116,7 +4445,9 @@ def describe(prefix, *items, **meta):
 
 parts = ["a", "b"]
 options = {"flag": True, "count": 2}
-write_text("/out.txt", describe("p", *parts, **options) + "|" + str(sorted(*[[3, 1, 2]], reverse = True)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(describe("p", *parts, **options) + "|" + str(sorted(*[[3, 1, 2]], reverse = True)))
+__lython_file.close()
 """,
             host);
 
@@ -4138,7 +4469,9 @@ head, *middle, tail = [10, 20, 30, 40]
 items = {3, 1, 2, 1}
 items.add(4)
 other = set([2, 4, 5])
-write_text("/out.txt", str(flat) + "|" + str(mapping) + "|" + str(head) + "|" + str(middle) + "|" + str(tail) + "|" + str(items | other) + "|" + str(items & other) + "|" + str(4 in items))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(flat) + "|" + str(mapping) + "|" + str(head) + "|" + str(middle) + "|" + str(tail) + "|" + str(items | other) + "|" + str(items & other) + "|" + str(4 in items))
+__lython_file.close()
 """,
             host);
 
@@ -4172,7 +4505,7 @@ write_text("/out.txt", str(flat) + "|" + str(mapping) + "|" + str(head) + "|" + 
     [InlineData("set([[1]])\n", "TypeError", "hashable")]
     [InlineData("value = {[]}\n", "TypeError", "hashable")]
     [InlineData("f = lambda x: x\nf(**1)\n", "TypeError", "expects a dictionary")]
-    [InlineData("a, *rest = [1]\nwrite_text(\"/out.txt\", str(rest))\n", null, "[]")]
+    [InlineData("a, *rest = [1]\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(rest))\n__lython_file.close()\n", null, "[]")]
     public void SetAndSplattingEdgeCases_ArePinned(string source, string? exceptionType, string expectedFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -4270,7 +4603,9 @@ d.pop("missing")
 
         var result = new LythonEngine().Run(
             """
-write_text("/out.txt", "a{{b}}:{0}".format("x"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("a{{b}}:{0}".format("x"))
+__lython_file.close()
 """,
             host);
 

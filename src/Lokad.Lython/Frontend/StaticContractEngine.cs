@@ -18,11 +18,6 @@ internal static class StaticContractEngine
     private static readonly StaticCallContract[] RegisteredCallContracts =
     [
         new(IsInputCall, AnalyzeInputCall),
-        new(IsReadTextCall, AnalyzeReadTextCall),
-        new(IsWriteAppendTextCall, AnalyzeWriteAppendTextCall),
-        new(IsOnePathStringBuiltinCall, AnalyzeOnePathStringBuiltinCall),
-        new(IsTwoPathStringBuiltinCall, AnalyzeTwoPathStringBuiltinCall),
-        new(IsJoinPathCall, AnalyzeJoinPathCall),
         new(IsDefaultDictCall, AnalyzeDefaultDictCall),
         new(IsArgumentParserConstructorCall, AnalyzeArgumentParserConstructorCall),
         new(IsFunctoolsPartialCall, AnalyzeFunctoolsPartialCall),
@@ -425,21 +420,6 @@ internal static class StaticContractEngine
     private static bool IsInputCall(CallExpressionSyntax call)
         => call.Target is IdentifierExpressionSyntax { Name: "input" };
 
-    private static bool IsReadTextCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "read_text" };
-
-    private static bool IsWriteAppendTextCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "write_text" or "append_text" };
-
-    private static bool IsOnePathStringBuiltinCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "exists" or "listdir" or "mkdir" or "remove" or "dirname" or "basename" or "stat" };
-
-    private static bool IsTwoPathStringBuiltinCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "copy" or "move" };
-
-    private static bool IsJoinPathCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "join_path" };
-
     private static bool IsDefaultDictCall(CallExpressionSyntax call)
         => call.Target is IdentifierExpressionSyntax { Name: "defaultdict" } or
             MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "collections" }, MemberName: "defaultdict" };
@@ -497,48 +477,6 @@ internal static class StaticContractEngine
     private static void AnalyzeInputCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "prompt", "LA3086", "input([prompt]) expects zero or one string argument.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeReadTextCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "path", "LA3082", "read_text(path) expects one string argument.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeWriteAppendTextCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        var name = ((IdentifierExpressionSyntax)call.Target).Name;
-        var message = name == "write_text"
-            ? "write_text(path, text) expects two string arguments."
-            : "append_text(path, text) expects two string arguments.";
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "path", "LA3081", message, diagnostics, bindings);
-        StaticContractChecks.AnalyzeKnownNonByteStringArgument(arguments, 1, "text", "LA3081", message, diagnostics, bindings);
-        StaticContractChecks.AnalyzeTextBoundaryStringArgument(arguments, 1, "text", "LA3046", "Text-only host APIs do not accept bytes; Lython host boundaries are UTF-8 text-shaped only.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeOnePathStringBuiltinCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        var name = ((IdentifierExpressionSyntax)call.Target).Name;
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "path", "LA3083", $"{name}(path) expects one string argument.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeTwoPathStringBuiltinCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        var name = ((IdentifierExpressionSyntax)call.Target).Name;
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "source", "LA3084", $"{name}(source, destination) expects two string arguments.", diagnostics, bindings);
-        StaticContractChecks.AnalyzeKnownStringArgument(arguments, 1, "destination", "LA3084", $"{name}(source, destination) expects two string arguments.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeJoinPathCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        foreach (var expression in arguments.Positional)
-        {
-            if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-                StaticAbstractValueResolver.IsDefinitelyKnownLiteral(expression, bindings))
-            {
-                AddDiagnostic(diagnostics, "LA3087", "join_path(...) expects one or more string arguments.", expression.Span);
-                return;
-            }
-        }
     }
 
     private static void AnalyzeDefaultDictCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

@@ -15,7 +15,9 @@ import json
 
 value = json.loads(" {\"ok\": true, \"count\": 2, \"items\": [1, null, \"x\"]} ")
 text = json.dumps({"ok": value["ok"], "count": value["count"], "items": value["items"]})
-write_text("/out.txt", text + "|" + str(value["items"]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "|" + str(value["items"]))
+__lython_file.close()
 """,
             host);
 
@@ -40,7 +42,9 @@ rows = csv.reader(writer.getvalue().splitlines(), delimiter=";")
 vals = []
 vals.append(writer.getvalue())
 vals.append(str(rows))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

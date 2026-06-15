@@ -4,4 +4,6 @@ for pair in enumerate(sorted(["b", "a"])):
     parts.append(pair[1])
 for value in range(2, 5):
     parts.append(str(value))
-write_text("/result.txt", ",".join(parts))
+__lython_file = open("/result.txt", "w")
+__lython_file.write(",".join(parts))
+__lython_file.close()

@@ -1,11 +1,17 @@
 items = ["a", "skip", "b", "stop", "c"]
-write_text("/result.txt", "")
+__lython_file = open("/result.txt", "w")
+__lython_file.write("")
+__lython_file.close()
 for item in items:
     if item == "skip":
         continue
     if item == "stop":
         break
-    append_text("/result.txt", item)
+    __lython_file = open("/result.txt", "a")
+    __lython_file.write(item)
+    __lython_file.close()
 pending = ["x", "y"]
 while len(pending) != 0:
-    append_text("/result.txt", pending.pop())
+    __lython_file = open("/result.txt", "a")
+    __lython_file.write(pending.pop())
+    __lython_file.close()

@@ -55,7 +55,9 @@ writer = csv.writer()
 writer.writerow(["name", "note"])
 writer.writerow([True, None])
 writer.writerows([["alpha", "x,y"], ["beta", "plain"]])
-write_text("/out.csv", writer.getvalue())
+__lython_file = open("/out.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """,
             host);
 
@@ -108,7 +110,9 @@ writer.writerow([["nested"]])
             """
 import csv
 rows = csv.reader(["\"a,b\",\"c\"\"d\"", "plain,tail"])
-write_text("/out.txt", rows[0][0] + "|" + rows[0][1] + "|" + rows[1][0] + "|" + rows[1][1])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(rows[0][0] + "|" + rows[0][1] + "|" + rows[1][0] + "|" + rows[1][1])
+__lython_file.close()
 """,
             host);
 
@@ -127,7 +131,9 @@ write_text("/out.txt", rows[0][0] + "|" + rows[0][1] + "|" + rows[1][0] + "|" + 
 import csv
 writer = csv.writer()
 writer.writerow(["a,b", "c\"d", "line1\nline2", None])
-write_text("/out.csv", writer.getvalue())
+__lython_file = open("/out.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """,
             host);
 
@@ -148,7 +154,9 @@ write_text("/out.csv", writer.getvalue())
 import csv
 writer = csv.writer()
 writer.writerow(["", None, "x"])
-write_text("/out.csv", writer.getvalue())
+__lython_file = open("/out.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """,
             host);
 
@@ -166,7 +174,9 @@ write_text("/out.csv", writer.getvalue())
             """
 import csv
 rows = csv.reader([",,\"\",tail"])
-write_text("/out.txt", str(rows[0]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(rows[0]))
+__lython_file.close()
 """,
             host);
 
@@ -186,7 +196,9 @@ import csv
 rows = csv.reader(["name\tvalue", "alpha\t1"], delimiter = "\t")
 writer = csv.writer(delimiter = "\t")
 writer.writerows(rows)
-write_text("/out.tsv", writer.getvalue())
+__lython_file = open("/out.tsv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """,
             host);
 
@@ -206,7 +218,9 @@ import csv
 rows = csv.reader(["😀,é", "\"é,😀\",ok"])
 writer = csv.writer()
 writer.writerows(rows)
-write_text("/out.csv", writer.getvalue())
+__lython_file = open("/out.csv", "w")
+__lython_file.write(writer.getvalue())
+__lython_file.close()
 """,
             host);
 

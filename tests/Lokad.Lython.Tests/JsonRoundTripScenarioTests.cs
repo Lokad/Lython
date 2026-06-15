@@ -37,7 +37,9 @@ public sealed class JsonRoundTripScenarioTests
 import json
 text = json.dumps({"n": 123456789012345678901234567890})
 value = json.loads(text)
-write_text("/out.txt", text + "\n" + str(value["n"]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "\n" + str(value["n"]))
+__lython_file.close()
 """,
             host);
 
@@ -58,7 +60,9 @@ write_text("/out.txt", text + "\n" + str(value["n"]))
 import json
 text = json.dumps({"ok": True, "items": [1, None, {"name": "alpha"}], "pair": ["x", 2]})
 value = json.loads(text)
-write_text("/out.txt", text + "\n" + str(value["items"][2]["name"]) + "|" + str(value["pair"][1]) + "|" + str(value["ok"]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "\n" + str(value["items"][2]["name"]) + "|" + str(value["pair"][1]) + "|" + str(value["ok"]))
+__lython_file.close()
 """,
             host);
 
@@ -125,7 +129,9 @@ json.loads("[\"abc\\y\"]")
             """
 import json
 value = json.loads(" \n {\"a\": 1, \"b\": [true, null]} \t ")
-write_text("/out.txt", str(value["a"]) + "|" + str(value["b"][0]) + "|" + str(value["b"][1] is None))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(value["a"]) + "|" + str(value["b"][0]) + "|" + str(value["b"][1] is None))
+__lython_file.close()
 """,
             host);
 
@@ -144,7 +150,9 @@ write_text("/out.txt", str(value["a"]) + "|" + str(value["b"][0]) + "|" + str(va
 import json
 text = json.dumps({"text": "a\"b\nc\\d"})
 value = json.loads(text)
-write_text("/out.txt", text + "\n" + value["text"].replace("\n", "<n>"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "\n" + value["text"].replace("\n", "<n>"))
+__lython_file.close()
 """,
             host);
 
@@ -168,7 +176,9 @@ vals.append(json.dumps(True))
 vals.append(json.dumps(None))
 vals.append(json.dumps("alpha"))
 vals.append(json.dumps(3.5))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -189,7 +199,9 @@ vals = []
 vals.append(str(json.loads("{}")))
 vals.append(str(json.loads("[]")))
 vals.append(json.loads("\"\""))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -224,7 +236,9 @@ import json
 text = json.dumps({"emoji": "😀", "word": "café"})
 plain = json.dumps({"emoji": "😀", "word": "café"}, ensure_ascii=False)
 value = json.loads(text)
-write_text("/out.txt", text + "\n" + plain + "\n" + value["emoji"] + "|" + value["word"])
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text + "\n" + plain + "\n" + value["emoji"] + "|" + value["word"])
+__lython_file.close()
 """,
             host);
 
@@ -241,7 +255,9 @@ write_text("/out.txt", text + "\n" + plain + "\n" + value["emoji"] + "|" + value
         var result = new LythonEngine().Run(
             """
 import json
-write_text("/out.txt", json.dumps({1: "one", None: "nil"}))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(json.dumps({1: "one", None: "nil"}))
+__lython_file.close()
 """,
             host);
 
@@ -303,7 +319,7 @@ vals.append(str(loaded["n"]))
 vals.append(str(loaded["items"][0]))
 vals.append(str(loaded["hooked"]))
 vals.append(str(dumped_none is None))
-vals.append(read_text("/pretty.json"))
+vals.append(open("/pretty.json").read())
 vals.append(json.dumps({"x": re.search("a+", "caa")}, default=fallback))
 vals.append(str(json.loads("1.5", parse_float=lambda text: "F" + text)))
 vals.append(str(json.loads("NaN", parse_constant=lambda text: "C" + text)))
@@ -320,7 +336,9 @@ try:
     json.dumps([math.nan], allow_nan=False)
 except ValueError as err:
     vals.append("nan:" + err.type)
-write_text("/out.txt", "\n---\n".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n---\n".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -344,7 +362,9 @@ try:
     json.loads("{")
 except json.JSONDecodeError as exc:
     vals = [exc.type, str(exc.msg != ""), exc.doc, str(exc.pos), str(exc.lineno), str(exc.colno), str(len(exc.args))]
-    write_text("/out.txt", "|".join(vals))
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write("|".join(vals))
+    __lython_file.close()
 """,
             host);
 

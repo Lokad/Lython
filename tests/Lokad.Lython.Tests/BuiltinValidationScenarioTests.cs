@@ -12,12 +12,6 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("float(\"bad\")\n", "ValueError", "input string")]
     [InlineData("sum([\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("sum([b\"a\"])\n", "TypeError", "string or bytes operands")]
-    [InlineData("read_text(1)\n", "compile", "expects one string argument")]
-    [InlineData("write_text(\"/x\", 1)\n", "compile", "expects two string arguments")]
-    [InlineData("append_text(\"/x\", 1)\n", "compile", "expects two string arguments")]
-    [InlineData("join_path()\n", "TypeError", "one or more string arguments")]
-    [InlineData("dirname(1)\n", "compile", "expects one string argument")]
-    [InlineData("basename(1)\n", "compile", "expects one string argument")]
     [InlineData("raise \"bad\"\n", "TypeError", "raise expects an exception instance")]
     [InlineData("from dataclasses import field\ndefault_factory = list\nfield(default = 1, default_factory = default_factory)\n", "compile", "cannot specify both default and default_factory")]
     [InlineData("from dataclasses import field\nfield(metadata = 1)\n", "TypeError", "metadata=...) expects a dict or None")]
@@ -95,14 +89,6 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("dict(1, 2)\n", "received too many positional arguments")]
     [InlineData("set(1, 2)\n", "received too many positional arguments")]
     [InlineData("range(\"a\")\n", "expects integer arguments")]
-    [InlineData("exists()\n", "is missing argument 'path'")]
-    [InlineData("listdir()\n", "is missing argument 'path'")]
-    [InlineData("mkdir()\n", "is missing argument 'path'")]
-    [InlineData("remove()\n", "is missing argument 'path'")]
-    [InlineData("copy(\"/a\")\n", "is missing argument 'destination'")]
-    [InlineData("move(\"/a\")\n", "is missing argument 'destination'")]
-    [InlineData("cwd(1)\n", "expects no arguments")]
-    [InlineData("stat()\n", "is missing argument 'path'")]
     [InlineData("type(\"Name\", (), {})\n", "supports exactly one argument in Lython")]
     public void BuiltinArityFailure_ReportsTypeError(string source, string messageFragment)
     {
@@ -143,32 +129,34 @@ public sealed class BuiltinValidationScenarioTests
 
         var result = new LythonEngine().Run(
             """
+import os
+
 items = list(iterable = "ab")
 items.append(value = "c")
 items.extend(iterable = ["d"])
 d = dict(iterable = [("a", 1)])
 value = int(value = "12")
-text = read_text(path = "/input.txt")
+text = open("/input.txt").read()
 with open(path = "/output.txt", mode = "w") as handle:
     handle.write(text = text.replace(old = "a", new = "A"))
     handle.writelines(lines = ["\n", str(value), "\n", str(d.get(key = "a"))])
 
-write_text(path = "/out.txt", text = str(items) + "|" + dirname(path = "/output.txt") + "|" + read_text(path = "/output.txt"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items) + "|" + os.path.basename("/output.txt") + "|" + open("/output.txt").read())
+__lython_file.close()
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[a, b, c, d]|.|AlphA\n12\n1", host.ReadText("/out.txt"));
+        Assert.Equal("[a, b, c, d]|output.txt|AlphA\n12\n1", host.ReadText("/out.txt"));
     }
 
     [Theory]
     [InlineData("range(start = 1)\n", "Builtin 'range' does not accept keyword arguments.")]
-    [InlineData("join_path(left = \"/a\", right = \"b\")\n", "Builtin 'join_path' does not accept keyword arguments.")]
     [InlineData("text = \"abc\"\ntext.upper(value = 1)\n", "str.upper() expects no arguments.")]
     [InlineData("int(number = 1)\n", "Builtin 'int' got an unexpected keyword argument 'number'.")]
     [InlineData("int(1, value = 2)\n", "Builtin 'int' got multiple values for argument 'value'.")]
-    [InlineData("copy(source = \"/a\")\n", "Builtin 'copy' is missing argument 'destination'.")]
     [InlineData("text = \"abc\"\ntext.find(needle = \"a\")\n", "str.find(sub[, start[, end]]) expects one to three arguments.")]
     [InlineData("items = []\nitems.append(1, value = 2)\n", "list.append(value) expects one argument.")]
     [InlineData("d = {}\nd.get(default = 1)\n", "dict.get(key[, default]) expects one key and an optional default.")]
@@ -186,6 +174,31 @@ write_text(path = "/out.txt", text = str(items) + "|" + dirname(path = "/output.
             Assert.Equal("TypeError", result.Failure.ExceptionType);
             Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
         }
+    }
+
+    [Theory]
+    [InlineData("append_text")]
+    [InlineData("basename")]
+    [InlineData("copy")]
+    [InlineData("cwd")]
+    [InlineData("dirname")]
+    [InlineData("exists")]
+    [InlineData("join_path")]
+    [InlineData("listdir")]
+    [InlineData("mkdir")]
+    [InlineData("move")]
+    [InlineData("read_text")]
+    [InlineData("remove")]
+    [InlineData("stat")]
+    [InlineData("write_text")]
+    public void NonPythonHostHelpers_AreNotDefaultScriptGlobals(string name)
+    {
+        var result = new LythonEngine().Run(name + "\n", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("NameError", result.Failure!.ExceptionType);
+        Assert.Contains(name, result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -216,7 +229,9 @@ f(**{1: 2})
 source = {"a": 1}
 copy = dict(source)
 source.update({"a": 2})
-write_text("/out.txt", str(copy["a"]) + "|" + str(source["a"]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(copy["a"]) + "|" + str(source["a"]))
+__lython_file.close()
 """,
             host);
 
@@ -237,7 +252,9 @@ same = d.get(1)
 pair = d.get((2, 3))
 missing = d.setdefault(True, "bool")
 popped = d.pop((2, 3))
-write_text("/out.txt", str(same) + "|" + str(pair) + "|" + str(missing) + "|" + str(popped) + "|" + str(list(d.items())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(same) + "|" + str(pair) + "|" + str(missing) + "|" + str(popped) + "|" + str(list(d.items())))
+__lython_file.close()
 """,
             host);
 

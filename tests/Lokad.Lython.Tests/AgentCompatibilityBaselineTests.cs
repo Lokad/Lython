@@ -17,7 +17,9 @@ values.append(str(sum([1, 2, 3])))
 values.append(str(sum((1, 2), 10)))
 values.append(str(sum(x for x in range(4))))
 values.append(str(sum([1.5, 2])))
-write_text("/out.txt", "|".join(values))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -45,7 +47,7 @@ write_text("/out.txt", "|".join(values))
     public void Sum_StaticDiagnosticsCatchProvablyNonIterableArgumentShapes(string source)
     {
         var result = new LythonEngine().Run(
-            source + "write_text(\"/out.txt\", \"side effect\")\n",
+            source + "__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(\"side effect\")\n__lython_file.close()\n",
             new MockLythonHost());
 
         Assert.False(result.Success);
@@ -64,7 +66,9 @@ write_text("/out.txt", "|".join(values))
             """
 import subprocess
 out = subprocess.check_output(["tool", "--version"])
-write_text("/out.txt", out)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(out)
+__lython_file.close()
 """,
             host);
 
@@ -84,7 +88,9 @@ write_text("/out.txt", out)
             """
 import subprocess
 subprocess.check_output(["tool"])
-write_text("/out.txt", "side effect")
+__lython_file = open("/out.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             host);
 
@@ -110,7 +116,9 @@ values.append(path.read_text())
 values.append(path.read_text("utf-8"))
 values.append(path.read_text(encoding="utf-8"))
 values.append(path.read_text(encoding="utf-8-sig", errors="strict"))
-write_text("/repo/out.txt", "|".join(values))
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -129,7 +137,9 @@ path = Path("/repo/input.txt")
 path.read_text(encoding="latin-1")
 path.read_text(errors="ignore")
 path.read_text("utf-8", "strict", "extra")
-write_text("/repo/out.txt", "side effect")
+__lython_file = open("/repo/out.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
 """,
             new MockLythonHost("/repo"));
 

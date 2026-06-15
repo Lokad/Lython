@@ -1,5 +1,8 @@
 import fnmatch
-mkdir("/out")
-for name in fnmatch.filter(listdir("/src"), "*.txt"):
-    text = read_text(join_path("/src", name)).upper()
-    write_text(join_path("/out", name), text)
+import os
+from pathlib import Path
+
+Path("/out").mkdir()
+for name in fnmatch.filter(os.listdir("/src"), "*.txt"):
+    text = Path("/src", name).read_text().upper()
+    Path("/out", name).write_text(text)

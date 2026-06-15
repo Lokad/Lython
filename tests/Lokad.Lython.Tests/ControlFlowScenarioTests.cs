@@ -68,7 +68,9 @@ while m < 2:
 else:
     vals.append("while-fell-through")
 
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

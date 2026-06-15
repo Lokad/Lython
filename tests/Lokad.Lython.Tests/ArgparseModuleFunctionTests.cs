@@ -25,7 +25,9 @@ vals.append(args.lang)
 vals.append(str(args.include))
 vals.append(str(args.apply))
 vals.append(str(args.max_rounds))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host,
             new LythonRunOptions
@@ -56,7 +58,9 @@ mutex = parser.add_mutually_exclusive_group(required=False)
 mutex.add_argument("--allow-dict-kwargs", action="store_true")
 mutex.add_argument("--no-allow-dict-kwargs", dest="allow_dict_kwargs", action="store_false")
 args = parser.parse_args(args=["--no-allow-dict-kwargs"])
-write_text("/out.txt", str(args.allow_dict_kwargs))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.allow_dict_kwargs))
+__lython_file.close()
 """,
             host);
 
@@ -83,7 +87,9 @@ group = parser.add_mutually_exclusive_group(required=False)
 group.add_argument("--pytest", dest="pattern", action="store_const", const=".*_test\\.py", default=".*_test\\.py")
 group.add_argument("--django", "--unittest", dest="pattern", action="store_const", const="test.*\\.py")
 args = parser.parse_args(["--unittest"])
-write_text("/out.txt", args.pattern)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(args.pattern)
+__lython_file.close()
 """,
             host);
 
@@ -103,7 +109,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("files", nargs="+")
 args = parser.parse_args(["a.txt", "b.txt"])
-write_text("/out.txt", str(args.files))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(args.files))
+__lython_file.close()
 """,
             host);
 
@@ -144,7 +152,9 @@ vals.append(args.existing)
 vals.append(str(rest))
 vals.append(str(parser.get_default("mode")))
 vals.append(missing)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -174,7 +184,9 @@ vals.append(str(args.quiet))
 vals.append(str("destination" in help_text))
 vals.append(str("--quiet" in help_text))
 vals.append(str(argparse.OPTIONAL + argparse.ZERO_OR_MORE + argparse.ONE_OR_MORE))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -194,7 +206,9 @@ import argparse
 
 reader = argparse.FileType("r")
 handle = reader("/in.txt")
-write_text("/out.txt", handle.read())
+__lython_file = open("/out.txt", "w")
+__lython_file.write(handle.read())
+__lython_file.close()
 """,
             host);
 
@@ -216,7 +230,9 @@ parser.add_argument("--lang", choices=("fr", "de"))
 try:
     parser.parse_args(["--lang", "es"])
 except argparse.ArgumentError as ex:
-    write_text("/out.txt", ex.type + ":" + ex.message)
+    __lython_file = open("/out.txt", "w")
+    __lython_file.write(ex.type + ":" + ex.message)
+    __lython_file.close()
 """,
             host);
 

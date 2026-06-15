@@ -59,20 +59,22 @@ toggle = {1, 2}
 same_toggle = toggle
 toggle ^= {2, 3}
 
-write_text(
-    "/out.txt",
-    str(alias)
-    + "|" + str(row["qty"])
-    + "|" + str(matrix[0][0])
-    + "|" + str(box.value)
-    + "|" + str(cell.value)
-    + "|" + str(power)
-    + "|" + str(mask)
-    + "|" + str(shift)
-    + "|" + str(same_left is left) + ":" + str(len(left)) + ":" + str(3 in same_left)
-    + "|" + str(same_middle is middle) + ":" + str(len(middle)) + ":" + str(1 in same_middle)
-    + "|" + str(same_toggle is toggle) + ":" + str(len(toggle)) + ":" + str(3 in same_toggle) + ":" + str(2 in same_toggle),
-)
+values = [
+    str(alias),
+    str(row["qty"]),
+    str(matrix[0][0]),
+    str(box.value),
+    str(cell.value),
+    str(power),
+    str(mask),
+    str(shift),
+    str(same_left is left) + ":" + str(len(left)) + ":" + str(3 in same_left),
+    str(same_middle is middle) + ":" + str(len(middle)) + ":" + str(1 in same_middle),
+    str(same_toggle is toggle) + ":" + str(len(toggle)) + ":" + str(3 in same_toggle) + ":" + str(2 in same_toggle),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
 """,
             host);
 
@@ -99,7 +101,9 @@ ws["A1"].value += 2
 ws.cell(row=1, column=2).value = 3
 ws.cell(row=1, column=2).value += 4
 
-write_text("/out.txt", str(ws["A1"].value) + "|" + str(ws.cell(row=1, column=2).value))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(ws["A1"].value) + "|" + str(ws.cell(row=1, column=2).value))
+__lython_file.close()
 """,
             host);
 
@@ -140,7 +144,9 @@ def owner():
 
 owner().value += 4
 
-write_text("/out.txt", str(items[0]) + "|" + str(box.value) + "|" + str(calls))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(items[0]) + "|" + str(box.value) + "|" + str(calls))
+__lython_file.close()
 """,
             host);
 
@@ -171,7 +177,9 @@ ok = (m == 3) and (n == 3)
 if (flag := ok):
     parts.append(str(flag))
 
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 

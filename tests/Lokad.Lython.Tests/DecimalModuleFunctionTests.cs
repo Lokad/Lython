@@ -29,7 +29,9 @@ vals.append(f"{Decimal('2').copy_sign(Decimal('-1'))}")
 vals.append(f"{Decimal('2.9').to_integral_value()}")
 vals.append(str(Decimal("1.0") == 1))
 vals.append(str(Decimal("3.0") > 2))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -58,7 +60,9 @@ try:
 except DivisionByZero as ex:
     vals.append(ex.type)
     vals.append(ex.message)
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -92,7 +96,9 @@ vals.append(f"{t.digits}")
 vals.append(str(t.exponent))
 vals.append(f"{Decimal(DecimalTuple(0, (1, 2, 3), -2))}")
 vals.append(f"{getcontext().copy().create_decimal('4.50')}")
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -133,7 +139,9 @@ vals.append(f"{Decimal('-2').min(Decimal('3'))}")
 vals.append(f"{Decimal('-2').max(Decimal('3'))}")
 vals.append(f"{Decimal('-2').min_mag(Decimal('3'))}")
 vals.append(f"{Decimal('-2').max_mag(Decimal('3'))}")
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

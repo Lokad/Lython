@@ -84,7 +84,9 @@ vals.append("{name}:{count}".format(name="alpha", count=2))
 vals.append("{name}".format_map({"name": "beta"}))
 vals.append("{items[0]}".format(items=["x", "y"]))
 vals.append("{user[name]}".format(user={"name": "gamma"}))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -115,7 +117,9 @@ vals.append("abc".ljust(5, "."))
 vals.append("a\tb".expandtabs(2))
 vals.append("{} {}".format("a", "b"))
 vals.append("a\rb".splitlines()[1])
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 

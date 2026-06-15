@@ -1,4 +1,6 @@
 import re
-text = read_text("/input.txt")
+text = open("/input.txt").read()
 text = re.sub("alpha", "omega", text)
-write_text("/output.txt", text)
+__lython_file = open("/output.txt", "w")
+__lython_file.write(text)
+__lython_file.close()

@@ -39,7 +39,9 @@ vals.append(str(asdict(box)))
 vals.append(str(astuple(box)))
 vals.append(str(replacement))
 vals.append(str(replacement.items))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -69,7 +71,9 @@ vals.append(str(field_map["x"].metadata["kind"]))
 vals.append(str(params.frozen))
 vals.append(str(params.unsafe_hash))
 vals.append(str(params.match_args))
-write_text("/out.txt", "|".join(vals))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
 """,
             host);
 
@@ -108,7 +112,9 @@ parts.append(str(first.type))
 parts.append(str(Field))
 parts.append(str(Ordered(1) < Ordered(2)))
 parts.append(str(Box.__annotations__["x"]))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
@@ -140,7 +146,9 @@ parts.append(str(names))
 parts.append(str(child.d))
 parts.append(str(Child.__dataclass_fields__["a"].default))
 parts.append(str(Child.__dataclass_fields__["c"].type is int))
-write_text("/out.txt", "|".join(parts))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
 """,
             host);
 
