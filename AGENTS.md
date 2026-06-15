@@ -16,6 +16,11 @@ semantics, and unsupported behavior should fail explicitly.
 - `README.md`: project overview.
 - `SPEC.md`: Lython language and runtime specification.
 
+## Packaging
+
+Treat NuGet artifacts as release outputs only when produced by an explicit
+Release pack. Debug build/test outputs are not release artifacts.
+
 ## Safety Notes
 
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
