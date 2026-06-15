@@ -754,7 +754,12 @@ The initial builtin environment must include exactly the following builtins and 
 - `range`
 - `enumerate`
 - `zip`
+- `iter`
 - `next`
+- `reversed`
+- `map`
+- `filter`
+- `slice`
 - `sorted`
 - `any`
 - `all`

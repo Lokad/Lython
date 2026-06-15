@@ -28,6 +28,11 @@ internal static class PyIndexing
 
     public static object ReadIndex(object target, object index, LythonSourceSpan span)
     {
+        if (index is PySlice slice)
+        {
+            return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span);
+        }
+
         return target switch
         {
             IPySubscriptableValue value => value.GetSubscript(index, span),

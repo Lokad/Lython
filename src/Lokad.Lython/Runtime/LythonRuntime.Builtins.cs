@@ -1628,6 +1628,109 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static object Iter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 1)
+        {
+            return arguments[0] is IPyIteratorValue iterator
+                ? iterator
+                : new PyEnumerableIterator(ToSequence(arguments[0], span));
+        }
+
+        if (arguments.Length == 2)
+        {
+            if (arguments[0] is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "iter(callable, sentinel) expects the first argument to be callable.", span);
+            }
+
+            return new PyCallableSentinelIterator(callable, arguments[1], context, span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "iter(object[, sentinel]) expects one or two arguments.", span);
+    }
+
+    private static object Reversed(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "reversed(sequence) expects one argument.", span);
+        }
+
+        var target = arguments[0];
+        if (PyMemberAccess.TryResolve(target, "__reversed__", context, span, out var reversedMember))
+        {
+            if (reversedMember is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "__reversed__ must be callable.", span);
+            }
+
+            return RuntimeValue(callable.Invoke([], span, context));
+        }
+
+        if (target is IPyIndexableValue indexable)
+        {
+            return new PyReversedIterator(indexable.Length, indexable.GetIndex);
+        }
+
+        if (PyStringOps.TryAsString(target, out var text))
+        {
+            return new PyReversedIterator(text.Length, text.Index);
+        }
+
+        throw new LythonRuntimeException("TypeError", "reversed(sequence) expects a reversible sequence.", span);
+    }
+
+    private static object Map(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length < 2)
+        {
+            throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects a callable and at least one iterable.", span);
+        }
+
+        if (arguments[0] is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects function to be callable.", span);
+        }
+
+        var iterables = new IEnumerable<object>[arguments.Length - 1];
+        for (var i = 1; i < arguments.Length; i++)
+        {
+            iterables[i - 1] = ToSequence(arguments[i], span);
+        }
+
+        return new PyMapIterator(callable, iterables, context, span);
+    }
+
+    private static object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "filter(function, iterable) expects two arguments.", span);
+        }
+
+        var function = arguments[0] switch
+        {
+            PyNone => null,
+            ICallable callable => callable,
+            _ => throw new LythonRuntimeException("TypeError", "filter(function, iterable) expects function to be callable or None.", span)
+        };
+
+        return new PyFilterIterator(function, ToSequence(arguments[1], span), context, span);
+    }
+
+    private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        return arguments.Length switch
+        {
+            1 => new PySlice(PyNone.Instance, arguments[0], PyNone.Instance),
+            2 => new PySlice(arguments[0], arguments[1], PyNone.Instance),
+            3 => new PySlice(arguments[0], arguments[1], arguments[2]),
+            _ => throw new LythonRuntimeException("TypeError", "slice(stop) or slice(start, stop[, step]) expects one to three arguments.", span)
+        };
+    }
+
     private static object Next(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
