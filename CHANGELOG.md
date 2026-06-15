@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.6.0 - 2026-06-15
+
+This release tightens Lython's Python-shaped scripting surface for fresh coding agents while preserving host-mediated containment.
+
+### Python-Shaped Script Surface
+
+- Removed Lython-specific filesystem globals from default script globals; scripts should use `open`, `pathlib`, `os`, and `shutil` instead.
+- Added a contained `shutil` subset for common file-copy and move workflows, including `copyfile`, `copy`, `move`, `copyfileobj`, `SameFileError`, and `Error`.
+- Kept `__file__` as conditional source-backed script/module state rather than a regular builtin.
+
+### Builtin Compatibility
+
+- Added numeric and text builtins including `abs`, `pow`, `round`, `bin`, `oct`, `hex`, `chr`, `ord`, `ascii`, `format`, `callable`, and `hash`.
+- Added iterator and sequence helpers including `iter`, `reversed`, `map`, `filter`, and explicit `slice` objects.
+- Added object inspection helpers `getattr`, `hasattr`, `setattr`, `delattr`, `dir`, and `vars` for supported Lython values.
+- Expanded builtin exception names and catch behavior with Python-shaped categories such as `BaseException`, `ArithmeticError`, `LookupError`, `ModuleNotFoundError`, `RecursionError`, and `MemoryError`.
+
+### Static Analysis And Documentation
+
+- Synchronized runtime builtin registration, static builtin-name inventories, `sys` discovery, `SPEC.md`, and tests.
+- Clarified agent guidance around Lython as a strict, extensive Python subset and disabled the .NET terminal logger by default through repository configuration.
+- Made NuGet packaging explicit and Release-only so Debug build/test outputs cannot be mistaken for release artifacts.
+
 ## 0.5.0 - 2026-06-10
 
 This release expands Python compatibility for coding-agent scratch scripts and workbook automation while preserving Lython's host-mediated containment model.
