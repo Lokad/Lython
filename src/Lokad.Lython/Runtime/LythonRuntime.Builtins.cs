@@ -1,5 +1,7 @@
+using System.Buffers;
 using System.Globalization;
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -174,6 +176,37 @@ internal sealed partial class LythonRuntime
         return ToReprPyString(arguments[0], context);
     }
 
+    private static object Ascii(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "ascii(value) expects one argument.", span);
+        }
+
+        return PyString.FromString(EscapeNonAscii(ToReprPyString(arguments[0], context).AsString()), context.MemoryGovernor, span);
+    }
+
+    private static object Format(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "format(value[, format_spec]) expects one or two arguments.", span);
+        }
+
+        var spec = string.Empty;
+        if (arguments.Length == 2)
+        {
+            if (!PyStringOps.TryAsString(arguments[1], out var formatSpec))
+            {
+                throw new LythonRuntimeException("TypeError", "format(value[, format_spec]) expects format_spec to be a string.", span);
+            }
+
+            spec = formatSpec.AsString();
+        }
+
+        return PyString.FromString(FormatInterpolatedStringValue(arguments[0], spec, context, span), context.MemoryGovernor, span);
+    }
+
     private static object Bool(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -210,6 +243,323 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
+    }
+
+    private static object Abs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "abs(x) expects one argument.", span);
+        }
+
+        if (arguments[0] is PyDecimal decimalValue)
+        {
+            return new PyDecimal(decimal.Abs(decimalValue.Value));
+        }
+
+        if (!PyNumberOps.TryAsNumber(arguments[0], out var number))
+        {
+            throw new LythonRuntimeException("TypeError", "abs(x) expects a numeric value.", span);
+        }
+
+        return number.IsFloat ? Math.Abs(number.Floating) : BigInteger.Abs(number.Integer);
+    }
+
+    private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is < 2 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects two or three arguments.", span);
+        }
+
+        if (arguments.Length == 3 && arguments[2] is not PyNone)
+        {
+            var integerBase = ExpectBuiltinInteger(arguments[0], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            var exponent = ExpectBuiltinInteger(arguments[1], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            var modulus = ExpectBuiltinInteger(arguments[2], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            if (modulus == BigInteger.Zero)
+            {
+                throw new LythonRuntimeException("ValueError", "pow() 3rd argument cannot be 0.", span);
+            }
+
+            if (exponent < BigInteger.Zero)
+            {
+                throw new LythonRuntimeException("ValueError", "pow() modular exponent must be non-negative in Lython.", span);
+            }
+
+            var absModulus = BigInteger.Abs(modulus);
+            var normalizedBase = integerBase % absModulus;
+            if (normalizedBase < BigInteger.Zero)
+            {
+                normalizedBase += absModulus;
+            }
+
+            var result = BigInteger.ModPow(normalizedBase, exponent, absModulus);
+            return modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result;
+        }
+
+        if (arguments[0] is PyDecimal || arguments[1] is PyDecimal)
+        {
+            return PyDecimalOps.Power(arguments[0], arguments[1], span);
+        }
+
+        if (!PyNumberOps.TryAsNumber(arguments[0], out var lhs) ||
+            !PyNumberOps.TryAsNumber(arguments[1], out var rhs))
+        {
+            throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects numeric arguments.", span);
+        }
+
+        return PyNumberOps.Power(lhs, rhs);
+    }
+
+    private static object Round(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects one or two arguments.", span);
+        }
+
+        var hasDigits = arguments.Length == 2 && arguments[1] is not PyNone;
+        var digits = hasDigits
+            ? ToInt32(ExpectBuiltinInteger(arguments[1], "round(number[, ndigits]) expects ndigits to be an integer.", span), "round(number[, ndigits])", span)
+            : 0;
+
+        return arguments[0] switch
+        {
+            bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, hasDigits, digits, span),
+            BigInteger integer => RoundInteger(integer, hasDigits, digits, span),
+            double floating => RoundFloat(floating, hasDigits, digits, span),
+            PyDecimal decimalValue => RoundDecimal(decimalValue, hasDigits, digits, span),
+            _ => throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects a numeric value.", span)
+        };
+    }
+
+    private static object Bin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span);
+    }
+
+    private static object Oct(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span);
+    }
+
+    private static object Hex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span);
+    }
+
+    private static object Chr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "chr(i) expects one integer argument.", span);
+        }
+
+        var codePoint = ExpectBuiltinInteger(arguments[0], "chr(i) expects one integer argument.", span);
+        if (codePoint < BigInteger.Zero || codePoint > new BigInteger(0x10FFFF))
+        {
+            throw new LythonRuntimeException("ValueError", "chr() arg not in range(0x110000).", span);
+        }
+
+        var value = (int)codePoint;
+        if (!Rune.IsValid(value))
+        {
+            throw new LythonRuntimeException("ValueError", "chr() arg is not a valid Unicode scalar value.", span);
+        }
+
+        return PyString.FromString(new Rune(value).ToString(), context.MemoryGovernor, span);
+    }
+
+    private static object Ord(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text) || text.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
+        }
+
+        var source = text.AsString();
+        var status = Rune.DecodeFromUtf16(source, out var rune, out var consumed);
+        if (status != OperationStatus.Done || consumed != source.Length)
+        {
+            throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
+        }
+
+        return new BigInteger(rune.Value);
+    }
+
+    private static object Callable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "callable(object) expects one argument.", span);
+        }
+
+        return arguments[0] is ICallable;
+    }
+
+    private static object Hash(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "hash(object) expects one argument.", span);
+        }
+
+        try
+        {
+            return new BigInteger(PyValueComparer.Instance.GetHashCode(arguments[0]));
+        }
+        catch (InvalidOperationException)
+        {
+            throw new LythonRuntimeException("TypeError", "unhashable type", span);
+        }
+    }
+
+    private static BigInteger ExpectBuiltinInteger(object value, string message, LythonSourceSpan span)
+    {
+        if (!PyNumberOps.TryAsInteger(value, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", message, span);
+        }
+
+        return integer;
+    }
+
+    private static int ToInt32(BigInteger value, string owner, LythonSourceSpan span)
+    {
+        if (value < int.MinValue || value > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", $"{owner} integer argument is too large.", span);
+        }
+
+        return (int)value;
+    }
+
+    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", message, span);
+        }
+
+        var integer = ExpectBuiltinInteger(arguments[0], message, span);
+        var sign = integer < BigInteger.Zero ? "-" : string.Empty;
+        var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);
+        return PyString.FromString(sign + prefix + digits);
+    }
+
+    private static object RoundInteger(BigInteger value, bool hasDigits, int digits, LythonSourceSpan span)
+    {
+        if (!hasDigits || digits >= 0)
+        {
+            return value;
+        }
+
+        var factor = BigInteger.Pow(10, checked(-digits));
+        var sign = value < BigInteger.Zero ? -1 : 1;
+        var quotient = BigInteger.DivRem(BigInteger.Abs(value), factor, out var remainder);
+        var comparison = (remainder * 2).CompareTo(factor);
+        if (comparison > 0 || (comparison == 0 && !quotient.IsEven))
+        {
+            quotient += BigInteger.One;
+        }
+
+        return quotient * factor * sign;
+    }
+
+    private static object RoundFloat(double value, bool hasDigits, int digits, LythonSourceSpan span)
+    {
+        if (!hasDigits)
+        {
+            return new BigInteger(Math.Round(value, MidpointRounding.ToEven));
+        }
+
+        if (digits is >= 0 and <= 15)
+        {
+            return Math.Round(value, digits, MidpointRounding.ToEven);
+        }
+
+        if (digits > 15)
+        {
+            return value;
+        }
+
+        var factor = Math.Pow(10.0, -digits);
+        return Math.Round(value / factor, MidpointRounding.ToEven) * factor;
+    }
+
+    private static object RoundDecimal(PyDecimal value, bool hasDigits, int digits, LythonSourceSpan span)
+    {
+        if (!hasDigits)
+        {
+            return new BigInteger(decimal.Round(value.Value, 0, MidpointRounding.ToEven));
+        }
+
+        if (digits is >= 0 and <= 28)
+        {
+            return new PyDecimal(decimal.Round(value.Value, digits, MidpointRounding.ToEven));
+        }
+
+        if (digits > 28)
+        {
+            return value;
+        }
+
+        var factor = DecimalPowerOfTen(checked(-digits), span);
+        return new PyDecimal(decimal.Round(value.Value / factor, 0, MidpointRounding.ToEven) * factor);
+    }
+
+    private static decimal DecimalPowerOfTen(int exponent, LythonSourceSpan span)
+    {
+        try
+        {
+            var result = 1m;
+            for (var i = 0; i < exponent; i++)
+            {
+                result *= 10m;
+            }
+
+            return result;
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
+    }
+
+    private static string EscapeNonAscii(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if (rune.Value <= 0x7F)
+            {
+                builder.Append(rune.ToString());
+            }
+            else if (rune.Value <= 0xFF)
+            {
+                builder.Append(CultureInfo.InvariantCulture, $"\\x{rune.Value:x2}");
+            }
+            else if (rune.Value <= 0xFFFF)
+            {
+                builder.Append(CultureInfo.InvariantCulture, $"\\u{rune.Value:x4}");
+            }
+            else
+            {
+                builder.Append(CultureInfo.InvariantCulture, $"\\U{rune.Value:x8}");
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static object Float(object[] arguments, LythonSourceSpan span, ExecutionContext context)

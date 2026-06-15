@@ -4,8 +4,9 @@ internal sealed class ExecutionState
 {
     public static readonly HashSet<string> BuiltinNames =
     [
-        "object", "type", "open", "print", "input", "str", "repr",
-        "len", "sorted", "any", "all", "min", "max", "sum", "divmod",
+        "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",
+        "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
+        "bin", "oct", "hex", "chr", "ord", "callable", "hash",
         "range", "enumerate", "zip", "next", "Exception", "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
         "AssertionError", "ImportError", "NameError", "AttributeError", "FileNotFoundError", "OSError", "StopIteration",
         "ZeroDivisionError", "NotImplementedError", "OverflowError", "SystemExit", "bool", "int", "float", "bytes",
