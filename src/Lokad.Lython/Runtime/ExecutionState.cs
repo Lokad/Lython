@@ -5,7 +5,7 @@ internal sealed class ExecutionState
     public static readonly HashSet<string> BuiltinNames =
     [
         "object", "type", "read_text", "write_text", "append_text", "open", "print", "input", "str", "repr",
-        "len", "sorted", "any", "all", "min", "max", "sum",
+        "len", "sorted", "any", "all", "min", "max", "sum", "divmod",
         "range", "enumerate", "zip", "next", "exists", "listdir", "mkdir", "remove", "copy", "move", "cwd", "join_path",
         "dirname", "basename", "stat", "Exception", "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
         "AssertionError", "ImportError", "NameError", "AttributeError", "FileNotFoundError", "OSError", "StopIteration",
