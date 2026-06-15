@@ -297,8 +297,8 @@ local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `fnmatch`,
 `functools`, `glob`, `itertools`, `json`, `math`, `operator`, `os`,
-`pathlib`, `pkgutil`, `random`, `re`, `statistics`, `subprocess` when
-host-enabled, `sys`, `typing`, and related contained helpers.
+`pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
+when host-enabled, `sys`, `typing`, and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members. The runtime must reject imports outside the
@@ -340,6 +340,18 @@ instances, namedtuple-like values, and objects exposing `__replace__`.
 `__copy__` and `__deepcopy__(memo)` hooks are supported; pickle-oriented
 `__reduce__`, `__reduce_ex__`, `__getstate__`, and `__setstate__` protocols
 must fail explicitly unless a direct copy hook handles the object.
+
+The `shutil` subset includes host-mediated `copyfile(src, dst, *,
+follow_symlinks=True)`, `copy(src, dst, *, follow_symlinks=True)`,
+`move(src, dst, copy_function=copy)`, text-only `copyfileobj(fsrc, fdst,
+length=0)`, `Error`, and `SameFileError`. `copy` and `move` must treat an
+existing directory destination as `dst / basename(src)`. `copyfile` and `copy`
+may overwrite an existing file destination through host-mediated remove plus
+copy. `copy2` must fail explicitly because the current host contract cannot
+preserve file metadata. Symlink behavior, custom move copy functions, recursive
+tree helpers, archive helpers, ownership/permission helpers, and raw host
+inspection helpers remain outside the contained path model unless separately
+specified.
 
 The `functools` subset includes `WRAPPER_ASSIGNMENTS`, `WRAPPER_UPDATES`,
 `update_wrapper`, `wraps`, `total_ordering`, `reduce`, `partial`,

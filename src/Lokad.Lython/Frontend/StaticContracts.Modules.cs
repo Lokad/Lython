@@ -206,6 +206,7 @@ internal static partial class StaticContracts
             "islink",
             "supports_unicode_filenames"),
         ["glob"] = Members("glob", "iglob", "escape", "has_magic", "translate", "glob0", "glob1"),
+        ["shutil"] = Members("Error", "SameFileError", "copyfile", "copy", "copy2", "move", "copyfileobj"),
         ["decimal"] = Members(
             "Decimal",
             "DecimalTuple",

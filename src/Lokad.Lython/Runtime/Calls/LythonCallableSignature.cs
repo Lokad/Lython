@@ -58,6 +58,12 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CopyDeepCopy = new("copy.deepcopy", ["x", "memo"], RequiredCount: 1);
     public static readonly LythonCallableSignature CopyReplace = new("copy.replace", ["__object"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
 
+    public static readonly LythonCallableSignature ShutilCopyFile = new("shutil.copyfile", ["src", "dst", "follow_symlinks"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ShutilCopy = new("shutil.copy", ["src", "dst", "follow_symlinks"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ShutilCopy2 = new("shutil.copy2", ["src", "dst", "follow_symlinks"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ShutilMove = new("shutil.move", ["src", "dst", "copy_function"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ShutilCopyFileObj = new("shutil.copyfileobj", ["fsrc", "fdst", "length"], RequiredCount: 2);
+
     public static readonly LythonCallableSignature FunctoolsUpdateWrapper = new("functools.update_wrapper", ["wrapper", "wrapped", "assigned", "updated"], RequiredCount: 2);
     public static readonly LythonCallableSignature FunctoolsWraps = new("functools.wraps", ["wrapped", "assigned", "updated"], RequiredCount: 1);
     public static readonly LythonCallableSignature FunctoolsTotalOrdering = new("functools.total_ordering", ["cls"]);

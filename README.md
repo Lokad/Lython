@@ -92,6 +92,7 @@ The builtin module surface is explicitly allowlisted:
 - `pkgutil`
 - `random`
 - `re`
+- `shutil`
 - `statistics`
 - `subprocess` when the host provides a subprocess capability
 - `sys`
@@ -112,6 +113,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `Counter` arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.
 
 `copy` supports `copy`, `deepcopy(x, memo=None)`, `copy.replace(obj, **changes)`, `Error`/`error`, and a compatibility `dispatch_table`. Deep copies preserve cycles and explicit memo dictionaries, `replace` works for dataclasses, namedtuple-like values, and `__replace__` hooks, and pickle-style reduce/state protocols fail explicitly unless a direct copy hook is provided.
+
+`shutil` covers host-mediated file-copy and move workflows: `copyfile`, `copy`, `move`, text-only `copyfileobj`, `Error`, and `SameFileError`. Metadata-preserving `copy2`, symlink behavior, recursive tree helpers, archive helpers, permission helpers, and raw host inspection helpers remain outside the contained path model.
 
 `functools` covers wrapper metadata helpers, `total_ordering`, `reduce`, `partial`, `partialmethod`, `cmp_to_key`, `lru_cache`, `cache`, `cached_property`, simple `singledispatch` and `singledispatchmethod` registration, and `recursive_repr`. Cache keys use Lython's hashable-value rules; `functools.Placeholder` is exposed only to fail explicitly because placeholder partial application is outside the supported subset.
 

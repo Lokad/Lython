@@ -23,6 +23,7 @@ internal static class StaticFilesystemContractFamily
         }
 
         emitted |= AnalyzeOsKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
+        emitted |= AnalyzeShutilKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= AnalyzeGlobKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= AnalyzeFnmatchKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         return emitted;
@@ -140,6 +141,49 @@ internal static class StaticFilesystemContractFamily
         }
 
         return false;
+    }
+
+    private static bool AnalyzeShutilKnownCallArgumentTypes(
+        string targetName,
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        var emitted = false;
+        if (string.Equals(targetName, LythonKnownCallableSignatures.ShutilCopyFile.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.ShutilCopy.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.ShutilCopy2.Name, StringComparison.Ordinal))
+        {
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "src", $"{targetName}(src, dst, *, follow_symlinks=True) expects path-like arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 1, "dst", $"{targetName}(src, dst, *, follow_symlinks=True) expects path-like arguments.", diagnostics, bindings);
+            emitted |= AnalyzeBooleanArgument(arguments, 2, "follow_symlinks", $"{targetName}(..., follow_symlinks=...) expects a bool.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.ShutilMove.Name, StringComparison.Ordinal))
+        {
+            emitted |= AnalyzePathLikeArgument(arguments, 0, "src", "shutil.move(src, dst, copy_function=copy) expects path-like source and destination arguments.", diagnostics, bindings);
+            emitted |= AnalyzePathLikeArgument(arguments, 1, "dst", "shutil.move(src, dst, copy_function=copy) expects path-like source and destination arguments.", diagnostics, bindings);
+            emitted |= AnalyzeUnsupportedShutilMoveCopyFunction(arguments, diagnostics, bindings);
+            return emitted;
+        }
+
+        return false;
+    }
+
+    private static bool AnalyzeUnsupportedShutilMoveCopyFunction(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!TryGetArgument(arguments, 2, "copy_function", bindings, out var expression, out var value) ||
+            IsUnknown(value))
+        {
+            return false;
+        }
+
+        AddDiagnostic(diagnostics, "LA3158", "shutil.move(..., copy_function=...) is not supported by Lython.", expression.Span);
+        return true;
     }
 
     private static bool AnalyzeGlobKnownCallArgumentTypes(
