@@ -2,6 +2,12 @@
 
 This repository contains Lython, an embeddable, contained-by-design Python runtime implemented in C#/.NET.
 
+## Compatibility Perspective
+
+Lython is intended to feel like regular Python to a fresh coding agent. Treat it
+as a strict but extensive Python subset: supported behavior should follow Python
+semantics, and unsupported behavior should fail explicitly.
+
 ## Layout
 
 - `src/Lokad.Lython/`: production library.
@@ -9,17 +15,6 @@ This repository contains Lython, an embeddable, contained-by-design Python runti
 - `benchmarks/Lokad.Lython.Benchmarks/`: BenchmarkDotNet benchmarks.
 - `README.md`: project overview.
 - `SPEC.md`: Lython language and runtime specification.
-
-## .NET Commands
-
-Use `--tl:off` to avoid dynamic terminal logger output.
-
-```powershell
-dotnet restore Lokad.Lython.slnx --tl:off -v minimal
-dotnet build   Lokad.Lython.slnx --tl:off --nologo -v minimal
-dotnet test    tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj --tl:off --nologo -v minimal
-dotnet pack    src/Lokad.Lython/Lokad.Lython.csproj --tl:off --nologo -v minimal --no-restore
-```
 
 ## Safety Notes
 
