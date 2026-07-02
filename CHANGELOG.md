@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.7.0 - 2026-07-02
+
+This release improves Lython's behavior as a non-surprising Python substitute for fresh coding agents within Lython's contained scope.
+
+### Language And Parser Compatibility
+
+- Added the scoped bytes value model needed by contained OpenXML workflows without adding binary file handles or unmanaged byte I/O.
+- Added set comprehension support, including nested clauses, condition filters, async execution coverage, and static flow handling.
+- Closed parser gaps around grouped multiline layouts, adjacent string literal concatenation, and common repairable syntax failures.
+
+### Callable Compatibility
+
+- Aligned high-value builtin keyword binding with Python spellings and common aliases.
+- Tightened stdlib and method call shapes across commonly generated agent code, including CSV writer method signatures.
+
+### Text IO Compatibility
+
+- Normalized builtin `open(...)` and `Path.open(...)` text-option contracts for `mode`, `encoding`, `errors`, and `newline`.
+- Made text handles behave like linear text streams: `read`, `readline`, `readlines`, and iteration now share one cursor.
+- Made text handle `tell()` report deterministic UTF-8 byte positions and made `flush()` publish writable buffers without duplicating append writes.
+
 ## 0.6.0 - 2026-06-15
 
 This release tightens Lython's Python-shaped scripting surface for fresh coding agents while preserving host-mediated containment.
