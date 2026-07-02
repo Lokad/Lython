@@ -7129,7 +7129,7 @@ internal sealed partial class LythonRuntime
 
                     WriteRow(writer, ToCsvRow(arguments[0], span), span);
                     return PyNone.Instance;
-                }),
+                }, "csv.writerow", ["row"]),
                 "writerows" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -7143,7 +7143,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }),
+                }, "csv.writerows", ["rows"]),
                 "getvalue" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -7347,7 +7347,7 @@ internal sealed partial class LythonRuntime
 
                     CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span), span);
                     return PyNone.Instance;
-                }),
+                }, "csv.DictWriter.writerow", ["rowdict"]),
                 "writerows" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -7361,7 +7361,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }),
+                }, "csv.DictWriter.writerows", ["rowdicts"]),
                 _ => null!
             };
 

@@ -94,6 +94,96 @@ __lython_file.close()
     }
 
     [Fact]
+    public void WriterMembers_AcceptPythonKeywordArgumentNames()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import csv
+
+memory = csv.writer()
+memory.writerow(row=["name", "qty"])
+memory.writerows(rows=[["alpha", 2], ["beta", 3]])
+
+with open("/dict.csv", "w", newline="") as handle:
+    writer = csv.DictWriter(handle, fieldnames=["name", "qty"])
+    writer.writeheader()
+    writer.writerow(rowdict={"name": "gamma", "qty": 4})
+    writer.writerows(rowdicts=[{"name": "delta", "qty": 5}])
+
+__lython_file = open("/memory.csv", "w")
+__lython_file.write(memory.getvalue())
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("name,qty\nalpha,2\nbeta,3", host.ReadText("/memory.csv"));
+        Assert.Equal("name,qty\ngamma,4\ndelta,5\n", host.ReadText("/dict.csv"));
+    }
+
+    [Theory]
+    [InlineData(
+        """
+import csv
+writer = csv.writer()
+method = getattr(writer, "writerow")
+method()
+""",
+        "Method 'csv.writerow' is missing argument 'row'.")]
+    [InlineData(
+        """
+import csv
+writer = csv.writer()
+method = getattr(writer, "writerow")
+method(["a"], row=["b"])
+""",
+        "Method 'csv.writerow' got multiple values for argument 'row'.")]
+    [InlineData(
+        """
+import csv
+writer = csv.writer()
+method = getattr(writer, "writerows")
+method(row=[["a"]])
+""",
+        "Method 'csv.writerows' got an unexpected keyword argument 'row'.")]
+    [InlineData(
+        """
+import csv
+writer = csv.DictWriter(open("/out.csv", "w"), ["name"])
+method = getattr(writer, "writerow")
+method()
+""",
+        "Method 'csv.DictWriter.writerow' is missing argument 'rowdict'.")]
+    [InlineData(
+        """
+import csv
+writer = csv.DictWriter(open("/out.csv", "w"), ["name"])
+method = getattr(writer, "writerow")
+method({"name": "a"}, rowdict={"name": "b"})
+""",
+        "Method 'csv.DictWriter.writerow' got multiple values for argument 'rowdict'.")]
+    [InlineData(
+        """
+import csv
+writer = csv.DictWriter(open("/out.csv", "w"), ["name"])
+method = getattr(writer, "writerows")
+method(rowdict=[{"name": "a"}])
+""",
+        "Method 'csv.DictWriter.writerows' got an unexpected keyword argument 'rowdict'.")]
+    public void WriterMembers_ReportRuntimeCallShapeErrors(string source, string message)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Empty(result.Diagnostics);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure.ExceptionType);
+        Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DictWriter_WritesHeadersMissingFieldsIgnoresOrRaisesExtras()
     {
         var host = new MockLythonHost();
