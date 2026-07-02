@@ -53,6 +53,18 @@ internal sealed class Parser
             return _pendingStatements.Dequeue();
         }
 
+        if (CurrentToken == Token.Indent)
+        {
+            AddDiagnostic("LA1000", "Unexpected indentation.", _position);
+            return null;
+        }
+
+        if (CurrentToken == Token.Dedent)
+        {
+            AddDiagnostic("LA1000", "Unexpected dedentation.", _position);
+            return null;
+        }
+
         if (CurrentToken == Token.With)
         {
             return ParseWithStatement();
@@ -2190,10 +2202,15 @@ internal sealed class Parser
 
     private StatementSyntax? ParseAssignmentAfterFirstTarget(AssignmentTargetSyntax firstTarget, int startToken)
     {
+        var startDiagnosticCount = _diagnostics.Count;
         var expression = ParseExpression();
         if (expression is null)
         {
-            AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", startToken);
+            if (_diagnostics.Count == startDiagnosticCount)
+            {
+                AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", startToken);
+            }
+
             return null;
         }
 
@@ -2215,10 +2232,15 @@ internal sealed class Parser
             targets.Add(nextTarget!);
             ReadToken();
 
+            startDiagnosticCount = _diagnostics.Count;
             currentExpression = ParseExpression();
             if (currentExpression is null)
             {
-                AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", startToken);
+                if (_diagnostics.Count == startDiagnosticCount)
+                {
+                    AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", startToken);
+                }
+
                 return null;
             }
         }
@@ -3092,7 +3114,7 @@ internal sealed class Parser
                     var stringToken = ReadToken();
                     if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var parts))
                     {
-                        AddDiagnostic("LA1007", "Invalid string literal.", prefixToken);
+                        AddDiagnostic("LA1007", "Invalid string literal. Malformed f-string replacement field or unmatched brace.", prefixToken);
                         return null;
                     }
 
@@ -3103,18 +3125,18 @@ internal sealed class Parser
                 {
                     var prefixToken = ReadToken();
                     var stringToken = ReadToken();
-                    if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes))
+                    if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message))
                     {
-                        AddDiagnostic("LA1007", "Invalid string literal.", prefixToken);
+                        AddDiagnostic("LA1007", message, prefixToken);
                         return null;
                     }
 
                     return new BytesLiteralExpressionSyntax(bytes, Merge(SpanOf(prefixToken), SpanOf(stringToken)));
                 }
 
-                if (TryGetUnsupportedStringPrefix(prefix, out var construct))
+                if (TryGetUnsupportedStringPrefix(prefix, out var unsupportedPrefix))
                 {
-                    AddDiagnostic("LA2000", $"Unsupported Python construct '{construct}'.", _position);
+                    AddDiagnostic("LA1007", $"Invalid string literal. Unsupported string prefix '{unsupportedPrefix}'.", _position);
                     return null;
                 }
             }
@@ -3140,6 +3162,24 @@ internal sealed class Parser
             return ParseTupleOrParenthesized();
         }
 
+        if (CurrentToken is Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
+        {
+            AddDiagnostic("LA1000", $"Unexpected closing delimiter {TokenNamer.Instance.TokenName(CurrentToken, Array.Empty<Token>())}.", _position);
+            return null;
+        }
+
+        if (CurrentToken == Token.Indent)
+        {
+            AddDiagnostic("LA1000", "Unexpected indentation.", _position);
+            return null;
+        }
+
+        if (CurrentToken == Token.Dedent)
+        {
+            AddDiagnostic("LA1000", "Unexpected dedentation.", _position);
+            return null;
+        }
+
         AddDiagnostic("LA1000", "Expected expression.", _position);
         return null;
     }
@@ -3159,9 +3199,9 @@ internal sealed class Parser
             }
 
             var literal = _tokens.GetString(tokenIndex);
-            if (!TryDecodeStringLiteral(literal, out var value))
+            if (!TryDecodeStringLiteral(literal, out var value, out var message))
             {
-                AddDiagnostic("LA1007", "Invalid string literal.", tokenIndex);
+                AddDiagnostic("LA1007", message, tokenIndex);
                 return null;
             }
 
@@ -3198,10 +3238,22 @@ internal sealed class Parser
         var items = new List<ExpressionSyntax>();
         SkipGroupedExpressionTrivia();
 
+        if (CurrentToken == Token.End)
+        {
+            AddDiagnostic("LA1021", "Unexpected end of file while parsing list literal; expected ']'.", openBracket);
+            return null;
+        }
+
         if (CurrentToken != Token.CloseBracket)
         {
             while (true)
             {
+                if (CurrentToken == Token.End)
+                {
+                    AddDiagnostic("LA1021", "Unexpected end of file while parsing list literal; expected ']'.", openBracket);
+                    return null;
+                }
+
                 var item = ParseExpression();
                 if (item is null)
                 {
@@ -3266,6 +3318,12 @@ internal sealed class Parser
         var openParen = ReadToken();
         SkipGroupedExpressionTrivia();
 
+        if (CurrentToken == Token.End)
+        {
+            AddDiagnostic("LA1008", "Unexpected end of file while parsing parenthesized expression; expected ')'.", openParen);
+            return null;
+        }
+
         if (CurrentToken == Token.CloseParen)
         {
             var closeEmpty = ReadToken();
@@ -3321,6 +3379,12 @@ internal sealed class Parser
                 break;
             }
 
+            if (CurrentToken == Token.End)
+            {
+                AddDiagnostic("LA1045", "Unexpected end of file while parsing tuple literal; expected ')'.", openParen);
+                return null;
+            }
+
             var item = ParseExpression();
             if (item is null)
             {
@@ -3348,10 +3412,22 @@ internal sealed class Parser
         var setItems = new List<ExpressionSyntax>();
         SkipGroupedExpressionTrivia();
 
+        if (CurrentToken == Token.End)
+        {
+            AddDiagnostic("LA1026", "Unexpected end of file while parsing dictionary or set literal; expected '}'.", openBrace);
+            return null;
+        }
+
         if (CurrentToken != Token.CloseBrace)
         {
             while (true)
             {
+                if (CurrentToken == Token.End)
+                {
+                    AddDiagnostic("LA1026", "Unexpected end of file while parsing dictionary or set literal; expected '}'.", openBrace);
+                    return null;
+                }
+
                 var key = ParseExpression();
                 if (key is null)
                 {
@@ -3390,6 +3466,12 @@ internal sealed class Parser
                             if (CurrentToken == Token.CloseBrace)
                             {
                                 break;
+                            }
+
+                            if (CurrentToken == Token.End)
+                            {
+                                AddDiagnostic("LA1026", "Unexpected end of file while parsing set literal; expected '}'.", openBrace);
+                                return null;
                             }
 
                             var setItem = ParseExpression();
@@ -3916,9 +3998,10 @@ internal sealed class Parser
             span));
     }
 
-    private static bool TryDecodeStringLiteral(string literal, out string value)
+    private static bool TryDecodeStringLiteral(string literal, out string value, out string message)
     {
         value = string.Empty;
+        message = "Invalid string literal. Malformed literal body.";
 
         if (literal.Length < 2)
         {
@@ -3980,6 +4063,7 @@ internal sealed class Parser
 
             if (i + 1 >= end)
             {
+                message = "Invalid string literal. Unfinished escape sequence.";
                 return false;
             }
 
@@ -4008,6 +4092,7 @@ internal sealed class Parser
                     if (i + 2 >= end ||
                         !byte.TryParse(literal.AsSpan(i + 1, 2), System.Globalization.NumberStyles.HexNumber, null, out var hex))
                     {
+                        message = "Invalid string literal. Malformed \\x escape; expected two hexadecimal digits.";
                         return false;
                     }
 
@@ -4094,13 +4179,27 @@ internal sealed class Parser
 
     private static bool TryGetUnsupportedStringPrefix(string text, out string construct)
     {
-        construct = text switch
+        if (text.Length is > 0 and <= 3)
         {
-            _ => string.Empty
-        };
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (!IsStringPrefixLetter(text[i]))
+                {
+                    construct = string.Empty;
+                    return false;
+                }
+            }
 
-        return construct.Length != 0;
+            construct = text;
+            return true;
+        }
+
+        construct = string.Empty;
+        return false;
     }
+
+    private static bool IsStringPrefixLetter(char c)
+        => c is 'r' or 'R' or 'b' or 'B' or 'f' or 'F' or 'u' or 'U';
 
     private static bool IsBytesStringPrefix(string text)
     {
@@ -4112,10 +4211,10 @@ internal sealed class Parser
         return text is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
     }
 
-    private static bool TryDecodeBytesLiteral(string literal, out byte[] value)
+    private static bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message)
     {
         value = Array.Empty<byte>();
-        if (!TryDecodeStringLiteral(literal, out var decoded))
+        if (!TryDecodeStringLiteral(literal, out var decoded, out message))
         {
             return false;
         }
@@ -4125,6 +4224,7 @@ internal sealed class Parser
         {
             if (decoded[i] > byte.MaxValue)
             {
+                message = "Invalid string literal. Bytes literals can only contain byte-sized characters.";
                 return false;
             }
 

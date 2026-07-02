@@ -197,6 +197,34 @@ open("/repo/input.txt", "r" "b")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3001");
     }
 
+    [Theory]
+    [InlineData("text = 'unterminated\n", "LA0001", "Unterminated single-quoted string literal")]
+    [InlineData("text = \"\"\"unterminated\nstill text\n", "LA0001", "Unterminated triple-quoted string literal")]
+    [InlineData("text = \"abc\\\n", "LA0001", "Unfinished string escape")]
+    [InlineData("items = [\n", "LA1021", "expected ']'")]
+    [InlineData("value = (\n", "LA1008", "expected ')'")]
+    [InlineData("value = 1]\n", "LA1000", "Unexpected closing delimiter ']'")]
+    [InlineData("    value = 1\n", "LA1000", "Unexpected indentation")]
+    [InlineData("text = \"\\xZ0\"\n", "LA1007", "Malformed \\x escape")]
+    [InlineData("text = f\"{\"\n", "LA1007", "f-string")]
+    [InlineData("text = u\"hello\"\n", "LA1007", "Unsupported string prefix 'u'")]
+    public void Compile_CommonSyntaxFailures_ReportRepairableDiagnostics(
+        string source,
+        string expectedCode,
+        string expectedMessageFragment)
+    {
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.False(compiled.IsValid);
+        var diagnostic = Assert.Single(compiled.Diagnostics);
+        Assert.Equal(expectedCode, diagnostic.Code);
+        Assert.Equal(LythonDiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.Contains(expectedMessageFragment, diagnostic.Message, StringComparison.Ordinal);
+        Assert.NotNull(diagnostic.Span);
+        Assert.True(diagnostic.Span!.Line > 0);
+        Assert.True(diagnostic.Span.Column > 0);
+    }
+
     private static string FormatDiagnostic(LythonDiagnostic diagnostic)
         => diagnostic.Span is null
             ? $"{diagnostic.Code}: {diagnostic.Message}"
