@@ -101,6 +101,37 @@ __lython_file.close()
     }
 
     [Fact]
+    public void CompleteTextWorkflow_CoversSupportedAgentScriptShapes()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/input.txt", "alpha\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+values = ["a", "b"]
+out = []
+for index, value in enumerate(values, 1):
+    out.append(f"{index}:{value}")
+
+text = "alpha beta"
+text = text.replace(
+    "alpha",
+    "gamma",
+)
+
+source = Path("/repo/input.txt").read_text(encoding="utf-8", errors="strict")
+with open("/repo/output.txt", "w", encoding="utf-8", newline="") as handle:
+    handle.write(source.strip() + "|" + text + "|" + ",".join(out))
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("alpha|gamma beta|1:a,2:b", host.ReadText("/repo/output.txt"));
+    }
+
+    [Fact]
     public void PathReadText_AcceptsCommonEncodingAndErrorsForms()
     {
         var host = new MockLythonHost("/repo");
@@ -148,6 +179,59 @@ __lython_file.close()
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("encoding", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("errors", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3114" && d.Message.Contains("read_text", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.txt").read_text(errors="surrogateescape")
+""",
+        "LA3049",
+        "strict")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.bin").read_bytes()
+""",
+        "LA3047",
+        "UTF-8 text-shaped only")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.bin").open("rb")
+""",
+        "LA3061",
+        "binary modes like 'rb' and 'wb' are unsupported")]
+    [InlineData(
+        """
+open("/repo/input.bin", "rb")
+""",
+        "LA3001",
+        "binary modes like 'rb' and 'wb' are unsupported")]
+    public void IntentionalDivergences_ReportStaticDiagnosticsBeforeHostEffects(
+        string source,
+        string expectedCode,
+        string expectedMessage)
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/input.txt", "alpha");
+
+        var result = new LythonEngine().Run(
+            source + """
+
+__lython_file = open("/repo/created.txt", "w")
+__lython_file.write("side effect")
+__lython_file.close()
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.Null(result.Failure);
+        Assert.Contains(
+            result.Diagnostics,
+            d => d.Code == expectedCode && d.Message.Contains(expectedMessage, StringComparison.Ordinal));
+        Assert.False(host.Exists("/repo/created.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)
