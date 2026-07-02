@@ -1598,9 +1598,31 @@ The design goal is that externally visible string behavior is defined by Python 
 
 ### 15.4 Bytes
 
-The initial subset does not expose a public bytes model.
+Lython exposes a limited public `bytes` value model.
 
-If a public bytes model is added later, it must be introduced as an explicit extension without changing the text-first semantics of the initial subset.
+Supported bytes behavior includes:
+
+- bytes literals
+- `bytes([iterable])`
+- truthiness
+- equality and hashing
+- `len(...)`
+- iteration as integer byte values
+- indexing as integer byte values
+- slicing as `bytes`
+- Python-shaped rendering such as `b'abc'`
+
+Bytes are immutable byte sequences governed by the same execution memory
+budgets as other runtime values.
+
+This bytes value model exists for ordinary Python value compatibility and for
+contained modules that need binary package payloads, such as OpenXML workbook
+support. It does not make the host boundary binary-shaped by default.
+
+Public text APIs remain text-shaped. `open(...)` binary modes,
+`Path.read_bytes()`, `Path.write_bytes(...)`, and path-byte helper APIs are
+outside the supported public scripting surface unless the host/file API
+contract is explicitly expanded.
 
 ---
 
