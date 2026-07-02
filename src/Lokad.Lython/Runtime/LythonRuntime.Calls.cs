@@ -275,8 +275,8 @@ internal sealed partial class LythonRuntime
 
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        private const string Signature = "open(file/path[, mode][, encoding][, newline][, errors])";
-        private static readonly string[] ParameterNames = ["file/path", "mode", "encoding", "newline", "errors"];
+        private const string Signature = "open(file/path[, mode][, encoding][, errors][, newline])";
+        private static readonly string[] ParameterNames = ["file/path", "mode", "encoding", "errors", "newline"];
 
         public string Name => "open";
 
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
             return await OpenAsync(BindArguments(arguments, span), span, context).ConfigureAwait(false);
         }
 
-        private static object[] BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
+        private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
         {
             var bound = new object[ParameterNames.Length];
             Array.Fill(bound, PyNone.Instance);
@@ -329,8 +329,8 @@ internal sealed partial class LythonRuntime
                     "file" or "path" => 0,
                     "mode" => 1,
                     "encoding" => 2,
-                    "newline" => 3,
-                    "errors" => 4,
+                    "errors" => 3,
+                    "newline" => 4,
                     _ => -1
                 };
 
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
                 count--;
             }
 
-            return bound[..count];
+            return new BoundOpenArguments(bound, assigned, count);
         }
     }
 

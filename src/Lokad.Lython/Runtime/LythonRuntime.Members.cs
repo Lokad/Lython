@@ -1772,30 +1772,7 @@ internal sealed partial class LythonRuntime
                 "chmod" => UnsupportedPathMember("Path.chmod", "Path.chmod(mode) is not supported by Lython because permissions are not exposed by the host path model."),
                 "owner" => UnsupportedPathMember("Path.owner", "Path.owner() is not supported by Lython because user ownership is not exposed by the host path model."),
                 "group" => UnsupportedPathMember("Path.group", "Path.group() is not supported by Lython because group ownership is not exposed by the host path model."),
-                "open" => new BoundCallable((arguments, span, context) =>
-                {
-                    var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
-                    var modeText = mode.AsString();
-                    return modeText switch
-                    {
-                        "r" => LythonRuntime.ExecutionContext.TextFileHandle.ForRead(path.Value.AsString(), context, encodingMode),
-                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context, encodingMode),
-                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context, encodingMode),
-                        _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
-                    };
-                },
-                async (arguments, span, context) =>
-                {
-                    var (mode, encodingMode) = ParsePathOpenArguments(arguments, span);
-                    var modeText = mode.AsString();
-                    return modeText switch
-                    {
-                        "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path.Value.AsString(), context, encodingMode).ConfigureAwait(false),
-                        "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path.Value.AsString(), context, encodingMode),
-                        "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path.Value.AsString(), context, encodingMode),
-                        _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
-                    };
-                }, "Path.open", ["mode", "encoding", "errors", "newline"], 0),
+                "open" => new PathOpenCallable(path.Value.AsString()),
                 "glob" => new BoundCallable((arguments, span, context) =>
                 {
                     var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
@@ -2216,33 +2193,124 @@ internal sealed partial class LythonRuntime
             await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
         }
 
-        private static (PyString Mode, TextEncodingMode EncodingMode) ParsePathOpenArguments(object[] arguments, LythonSourceSpan span)
+        private sealed class PathOpenCallable(string path) : ICallable
         {
-            if (arguments.Length > 4)
+            private static readonly string[] ParameterNames = ["mode", "encoding", "errors", "newline"];
+
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                var (mode, encodingMode) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                return OpenTextFile(path, mode, encodingMode, span, context);
+            }
+
+            public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                var (mode, encodingMode) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                var modeText = mode.AsString();
+                return modeText switch
+                {
+                    "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path, context, encodingMode).ConfigureAwait(false),
+                    "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path, context, encodingMode),
+                    "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path, context, encodingMode),
+                    _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
+                };
+            }
+
+            private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
+            {
+                var bound = new object[ParameterNames.Length];
+                Array.Fill(bound, PyNone.Instance);
+                var assigned = new bool[ParameterNames.Length];
+                var positionalIndex = 0;
+
+                foreach (var argument in arguments)
+                {
+                    if (argument.Name is null)
+                    {
+                        if (positionalIndex >= bound.Length)
+                        {
+                            throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding][, errors][, newline]) received too many positional arguments.", span);
+                        }
+
+                        bound[positionalIndex] = argument.Value;
+                        assigned[positionalIndex] = true;
+                        positionalIndex++;
+                        continue;
+                    }
+
+                    var index = argument.Name switch
+                    {
+                        "mode" => 0,
+                        "encoding" => 1,
+                        "errors" => 2,
+                        "newline" => 3,
+                        _ => -1
+                    };
+
+                    if (index < 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"Path.open([mode][, encoding][, errors][, newline]) got an unexpected keyword argument '{argument.Name}'.", span);
+                    }
+
+                    if (assigned[index])
+                    {
+                        throw new LythonRuntimeException("TypeError", $"Path.open([mode][, encoding][, errors][, newline]) got multiple values for argument '{ParameterNames[index]}'.", span);
+                    }
+
+                    bound[index] = argument.Value;
+                    assigned[index] = true;
+                }
+
+                var count = bound.Length;
+                while (count > 0 && !assigned[count - 1])
+                {
+                    count--;
+                }
+
+                return new BoundOpenArguments(bound, assigned, count);
+            }
+
+            private static object OpenTextFile(string path, PyString mode, TextEncodingMode encodingMode, LythonSourceSpan span, ExecutionContext context)
+            {
+                var modeText = mode.AsString();
+                return modeText switch
+                {
+                    "r" => LythonRuntime.ExecutionContext.TextFileHandle.ForRead(path, context, encodingMode),
+                    "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path, context, encodingMode),
+                    "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path, context, encodingMode),
+                    _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
+                };
+            }
+        }
+
+        private static (PyString Mode, TextEncodingMode EncodingMode) ParsePathOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
+        {
+            var arguments = boundArguments.Values;
+            if (boundArguments.Count > 4)
             {
                 throw new LythonRuntimeException("TypeError", "Path.open([mode][, encoding][, errors][, newline]) expects supported text-mode options.", span);
             }
 
-            var mode = arguments.Length >= 1
+            var mode = boundArguments.Assigned[0]
                 ? arguments[0] switch
                 {
-                    null => PyString.FromString("r"),
-                    PyNone => PyString.FromString("r"),
                     PyString text => text,
                     _ => throw new LythonRuntimeException("TypeError", "Path.open(mode) expects mode to be a string.", span)
                 }
                 : PyString.FromString("r");
 
-            var encodingMode = arguments.Length >= 2
+            var encodingMode = boundArguments.Count >= 2
                 ? ParseTextEncoding(arguments[1], "Path.open()", span)
                 : TextEncodingMode.Utf8;
 
-            if (arguments.Length >= 3)
+            if (boundArguments.Count >= 3)
             {
                 ValidateStrictTextErrors(arguments[2], "Path.open()", span);
             }
 
-            if (arguments.Length == 4)
+            if (boundArguments.Count == 4)
             {
                 ValidatePathNewline(arguments[3], "Path.open()", span);
             }

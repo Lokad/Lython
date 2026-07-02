@@ -4073,8 +4073,8 @@ internal sealed partial class LythonRuntime
             if (encoding is not null || errors is not null)
             {
                 values.Add(encoding is null ? PyNone.Instance : PyString.FromString(encoding));
-                values.Add(PyString.Empty);
                 values.Add(errors is null ? PyNone.Instance : PyString.FromString(errors));
+                values.Add(PyString.Empty);
             }
 
             return Open(values.ToArray(), span, context);

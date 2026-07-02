@@ -15,7 +15,12 @@ internal sealed partial class LythonRuntime
         Utf8Bom,
     }
 
+    private readonly record struct BoundOpenArguments(object[] Values, bool[] Assigned, int Count);
+
     private static object Open(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => Open(BindPositionalOpenArguments(arguments, span), span, context);
+
+    private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (path, mode, encodingMode) = ParseOpenArguments(arguments, span);
         var modeText = mode.AsString();
@@ -28,7 +33,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static async ValueTask<object> OpenAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (path, mode, encodingMode) = ParseOpenArguments(arguments, span);
         var modeText = mode.AsString();
@@ -41,48 +46,36 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static (PyString Path, PyString Mode, TextEncodingMode EncodingMode) ParseOpenArguments(object[] arguments, LythonSourceSpan span)
+    private static (PyString Path, PyString Mode, TextEncodingMode EncodingMode) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 5 || !PyStringOps.TryAsString(arguments[0], out var path))
+        var arguments = boundArguments.Values;
+        if (boundArguments.Count is < 1 or > 5 || !PyStringOps.TryAsString(arguments[0], out var path))
         {
-            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, newline][, errors]) expects a string file/path plus supported text-mode options.", span);
+            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, errors][, newline]) expects a string file/path plus supported text-mode options.", span);
         }
 
-        var mode = arguments.Length >= 2
+        var mode = boundArguments.Assigned[1]
             ? arguments[1] switch
             {
-                null => PyString.FromString("r"),
-                PyNone => PyString.FromString("r"),
                 PyString text => text,
                 _ => throw new LythonRuntimeException("TypeError", "open(file/path, mode) expects mode to be a string.", span)
             }
             : PyString.FromString("r");
 
         var encodingMode = TextEncodingMode.Utf8;
-        if (arguments.Length >= 3)
+        if (boundArguments.Count >= 3)
         {
             encodingMode = ParseTextEncoding(arguments[2], "open()", span);
         }
 
-        if (arguments.Length >= 4)
+        if (boundArguments.Count >= 4)
         {
-            if (arguments[3] is not null &&
-                arguments[3] is not PyNone &&
-                (!PyStringOps.TryAsString(arguments[3], out var newline) || newline.Length != 0))
-            {
-                throw new LythonRuntimeException("ValueError", "open() only supports newline=''.", span);
-            }
+            ValidateOpenTextErrors(arguments[3], span);
         }
 
-        if (arguments.Length == 5)
+        if (boundArguments.Count == 5)
         {
-            if (arguments[4] is not null &&
-                arguments[4] is not PyNone &&
-                (!PyStringOps.TryAsString(arguments[4], out var errors) ||
-                 !errors.AsString().Equals("strict", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new LythonRuntimeException("ValueError", "open() only supports errors='strict'.", span);
-            }
+            ValidateOpenNewline(arguments[4], span);
         }
 
         var modeText = mode.AsString();
@@ -92,6 +85,52 @@ internal sealed partial class LythonRuntime
         }
 
         return (path, mode, encodingMode);
+    }
+
+    private static BoundOpenArguments BindPositionalOpenArguments(object[] arguments, LythonSourceSpan span)
+    {
+        if (arguments.Length > 5)
+        {
+            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, errors][, newline]) received too many positional arguments.", span);
+        }
+
+        var bound = new object[5];
+        Array.Fill(bound, PyNone.Instance);
+        var assigned = new bool[5];
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            bound[i] = arguments[i];
+            assigned[i] = true;
+        }
+
+        return new BoundOpenArguments(bound, assigned, arguments.Length);
+    }
+
+    private static void ValidateOpenTextErrors(object value, LythonSourceSpan span)
+    {
+        if (value is null or PyNone)
+        {
+            return;
+        }
+
+        if (!PyStringOps.TryAsString(value, out var errors) ||
+            !errors.AsString().Equals("strict", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new LythonRuntimeException("ValueError", "open() only supports errors='strict'.", span);
+        }
+    }
+
+    private static void ValidateOpenNewline(object value, LythonSourceSpan span)
+    {
+        if (value is null or PyNone)
+        {
+            return;
+        }
+
+        if (!PyStringOps.TryAsString(value, out var newline) || newline.Length != 0)
+        {
+            throw new LythonRuntimeException("ValueError", "open() only supports newline=''.", span);
+        }
     }
 
     private static object Input(object[] arguments, LythonSourceSpan span, ExecutionContext context)

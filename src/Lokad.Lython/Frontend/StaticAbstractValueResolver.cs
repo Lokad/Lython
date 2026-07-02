@@ -894,8 +894,7 @@ internal static class StaticAbstractValueResolver
 
     private static AbstractTextFileMode TryGetTextFileMode(ConcreteCallArguments arguments, int modePosition, string modeKeyword)
     {
-        if (!arguments.TryGetValue(modePosition, modeKeyword, out var modeExpression) ||
-            modeExpression is NoneLiteralExpressionSyntax)
+        if (!arguments.TryGetValue(modePosition, modeKeyword, out var modeExpression))
         {
             return AbstractTextFileMode.Read;
         }

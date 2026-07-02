@@ -434,6 +434,98 @@ with open("/repo/out.txt", "w", encoding="utf-8-sig", errors="strict") as writer
     }
 
     [Fact]
+    public void TextOpenOptions_UseEncodingErrorsNewlinePositionalOrder()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/in.txt", "\uFEFFalpha\n");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+with open("/repo/in.txt", "r", "utf-8-sig", "strict", "") as reader:
+    text = reader.read()
+
+path = Path("/repo/path.txt")
+path.write_text(text, "utf-8", "strict", "")
+with path.open("r", "utf-8", "strict", "") as reader:
+    path_text = reader.read()
+
+again = Path("/repo/in.txt").read_text("utf-8-sig", "strict")
+with open("/repo/out.txt", "w", "utf-8", "strict", "") as writer:
+    writer.write(text + "|" + path_text + "|" + again)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("alpha\n|alpha\n|alpha\n", host.ReadText("/repo/out.txt"));
+    }
+
+    [Theory]
+    [InlineData(
+        """
+open("/repo/input.txt", "r", encoding="latin-1")
+open("/repo/created.txt", "w").write("created")
+""",
+        "open() only supports encoding='utf-8' or 'utf-8-sig'.")]
+    [InlineData(
+        """
+open("/repo/input.txt", "r", errors="ignore")
+open("/repo/created.txt", "w").write("created")
+""",
+        "open() only supports errors='strict'.")]
+    [InlineData(
+        """
+open("/repo/input.txt", "r", newline="\r\n")
+open("/repo/created.txt", "w").write("created")
+""",
+        "open() only supports newline=''.")]
+    [InlineData(
+        """
+open("/repo/input.txt", None)
+open("/repo/created.txt", "w").write("created")
+""",
+        "open(file/path, mode) expects mode to be a string")]
+    [InlineData(
+        """
+open("/repo/input.txt", "r", buffering=1)
+open("/repo/created.txt", "w").write("created")
+""",
+        "got an unexpected keyword argument 'buffering'")]
+    [InlineData(
+        """
+open("/repo/input.txt", "r", "utf-8", "strict", "", "extra")
+open("/repo/created.txt", "w").write("created")
+""",
+        "received too many positional arguments")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.txt").read_text(newline="")
+Path("/repo/created.txt").write_text("created")
+""",
+        "Path.read_text([encoding][, errors]) expects zero to two arguments.")]
+    [InlineData(
+        """
+from pathlib import Path
+Path("/repo/input.txt").open(None)
+Path("/repo/created.txt").write_text("created")
+""",
+        "Path.open(mode) expects mode to be a string")]
+    public void ConcreteInvalidTextOpenOptions_FailBeforeHostWrites(string source, string messageFragment)
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedFile("/repo/input.txt", "alpha");
+
+        var result = new LythonEngine().Run(source, host);
+
+        Assert.False(result.Success);
+        Assert.Null(result.Failure);
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains(messageFragment, StringComparison.Ordinal));
+        Assert.False(host.Exists("/repo/created.txt"));
+    }
+
+    [Fact]
     public void PathlibParts_ExposePurePathSegments()
     {
         var host = new MockLythonHost("/repo");

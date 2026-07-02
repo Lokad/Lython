@@ -4,6 +4,7 @@ internal static class StaticTextIoContractFamily
 {
     private const string TextBoundaryCode = "LA3046";
     private const string TextBoundaryMessage = "Text-only host APIs do not accept bytes; Lython host boundaries are UTF-8 text-shaped only.";
+    private const string OpenSignature = "open(file/path[, mode][, encoding][, errors][, newline])";
 
     public static bool TryAnalyze(
         CallExpressionSyntax call,
@@ -13,7 +14,7 @@ internal static class StaticTextIoContractFamily
     {
         if (call.Target is IdentifierExpressionSyntax { Name: "open" })
         {
-            AnalyzeOpenCall(arguments, diagnostics, bindings);
+            AnalyzeOpenCall(call.Span, arguments, diagnostics, bindings);
             return true;
         }
 
@@ -76,20 +77,24 @@ internal static class StaticTextIoContractFamily
         return false;
     }
 
-    private static void AnalyzeOpenCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    private static void AnalyzeOpenCall(LythonSourceSpan callSpan, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
+        AnalyzeOpenCallShape(callSpan, arguments, diagnostics);
+
         if (arguments.TryGetValue(1, "mode", out var modeExpression))
         {
-            if (modeExpression is not NoneLiteralExpressionSyntax &&
-                !StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out _))
+            if (modeExpression is NoneLiteralExpressionSyntax)
+            {
+                AddDiagnostic(diagnostics, "LA3000", "open(file/path, mode) expects mode to be a string; omit mode to use read mode.", modeExpression.Span);
+            }
+            else if (!StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out _))
             {
                 if (StaticAbstractValueResolver.IsDefinitelyKnownNonStringLiteral(modeExpression, bindings))
                 {
-                    AddDiagnostic(diagnostics, "LA3000", "open(..., mode=...) must be a string literal or None when it is statically known.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3000", "open(..., mode=...) must be a string literal when it is statically known.", modeExpression.Span);
                 }
             }
-            else if (modeExpression is not NoneLiteralExpressionSyntax &&
-                     StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
+            else if (StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
             {
                 if (modeText.Contains('b', StringComparison.Ordinal))
                 {
@@ -103,24 +108,51 @@ internal static class StaticTextIoContractFamily
         }
 
         AnalyzeEncodingArgument(arguments, 2, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', or None when it is statically known.", "open() only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        AnalyzeNewlineArgument(arguments, 3, "newline", "LA3004", "open(..., newline=...) must be '' or None when it is statically known.", "open() only supports newline=''.", diagnostics, bindings);
+        AnalyzeErrorsArgument(arguments, 3, "errors", "LA3005", "open(..., errors=...) must be 'strict' or None when it is statically known.", "open() only supports errors='strict'.", diagnostics, bindings);
+        AnalyzeNewlineArgument(arguments, 4, "newline", "LA3004", "open(..., newline=...) must be '' or None when it is statically known.", "open() only supports newline=''.", diagnostics, bindings);
+    }
 
-        if (arguments.TryGetValue(4, "errors", out var errorsExpression))
+    private static void AnalyzeOpenCallShape(LythonSourceSpan callSpan, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics)
+    {
+        if (arguments.Positional.Count > 5)
         {
-            if (errorsExpression is not NoneLiteralExpressionSyntax &&
-                !StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out _))
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} received too many positional arguments.", arguments.Positional[5].Span);
+        }
+
+        var hasFileKeyword = arguments.Keywords.ContainsKey("file");
+        var hasPathKeyword = arguments.Keywords.ContainsKey("path");
+        if (arguments.Positional.Count == 0 && !hasFileKeyword && !hasPathKeyword)
+        {
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} expects a file/path argument.", callSpan);
+        }
+
+        if ((arguments.Positional.Count > 0 && (hasFileKeyword || hasPathKeyword)) ||
+            (hasFileKeyword && hasPathKeyword))
+        {
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} got multiple values for argument 'file/path'.", callSpan);
+        }
+
+        AnalyzeOpenDuplicate(arguments, 1, "mode", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 2, "encoding", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 3, "errors", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 4, "newline", diagnostics);
+
+        foreach (var keyword in arguments.Keywords.Keys)
+        {
+            if (keyword is "file" or "path" or "mode" or "encoding" or "errors" or "newline")
             {
-                if (StaticAbstractValueResolver.IsDefinitelyKnownLiteral(errorsExpression, bindings))
-                {
-                    AddDiagnostic(diagnostics, "LA3005", "open(..., errors=...) must be 'strict' or None when it is statically known.", errorsExpression.Span);
-                }
+                continue;
             }
-            else if (errorsExpression is not NoneLiteralExpressionSyntax &&
-                     StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out var errorsText) &&
-                     !errorsText.Equals("strict", StringComparison.OrdinalIgnoreCase))
-            {
-                AddDiagnostic(diagnostics, "LA3005", "open() only supports errors='strict'.", errorsExpression.Span);
-            }
+
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} got an unexpected keyword argument '{keyword}'.", arguments.Keywords[keyword].Span);
+        }
+    }
+
+    private static void AnalyzeOpenDuplicate(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics)
+    {
+        if (arguments.Positional.Count > position && arguments.Keywords.ContainsKey(keyword))
+        {
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} got multiple values for argument '{keyword}'.", arguments.Keywords[keyword].Span);
         }
     }
 
@@ -190,16 +222,18 @@ internal static class StaticTextIoContractFamily
     {
         if (arguments.TryGetValue(0, "mode", out var modeExpression))
         {
-            if (modeExpression is not NoneLiteralExpressionSyntax &&
-                !StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out _))
+            if (modeExpression is NoneLiteralExpressionSyntax)
+            {
+                AddDiagnostic(diagnostics, "LA3060", "Path.open(mode) expects mode to be a string; omit mode to use read mode.", modeExpression.Span);
+            }
+            else if (!StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out _))
             {
                 if (StaticAbstractValueResolver.IsDefinitelyKnownLiteral(modeExpression, bindings))
                 {
                     AddDiagnostic(diagnostics, "LA3060", "Path.open(mode) expects mode to be a string.", modeExpression.Span);
                 }
             }
-            else if (modeExpression is not NoneLiteralExpressionSyntax &&
-                     StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
+            else if (StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
             {
                 if (modeText.Contains('b', StringComparison.Ordinal))
                 {
