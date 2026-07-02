@@ -273,6 +273,96 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    {
+        private const string Signature = "open(file/path[, mode][, encoding][, newline][, errors])";
+        private static readonly string[] ParameterNames = ["file/path", "mode", "encoding", "newline", "errors"];
+
+        public string Name => "open";
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(Name);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return Open(BindArguments(arguments, span), span, context);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return await OpenAsync(BindArguments(arguments, span), span, context).ConfigureAwait(false);
+        }
+
+        private static object[] BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
+        {
+            var bound = new object[ParameterNames.Length];
+            Array.Fill(bound, PyNone.Instance);
+            var assigned = new bool[ParameterNames.Length];
+            var positionalIndex = 0;
+
+            foreach (var argument in arguments)
+            {
+                if (argument.Name is null)
+                {
+                    if (positionalIndex >= bound.Length)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{Signature} received too many positional arguments.", span);
+                    }
+
+                    bound[positionalIndex] = argument.Value;
+                    assigned[positionalIndex] = true;
+                    positionalIndex++;
+                    continue;
+                }
+
+                var index = argument.Name switch
+                {
+                    "file" or "path" => 0,
+                    "mode" => 1,
+                    "encoding" => 2,
+                    "newline" => 3,
+                    "errors" => 4,
+                    _ => -1
+                };
+
+                if (index < 0)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{Signature} got an unexpected keyword argument '{argument.Name}'.", span);
+                }
+
+                if (assigned[index])
+                {
+                    throw new LythonRuntimeException("TypeError", $"{Signature} got multiple values for argument '{ParameterNames[index]}'.", span);
+                }
+
+                bound[index] = argument.Value;
+                assigned[index] = true;
+            }
+
+            if (!assigned[0])
+            {
+                throw new LythonRuntimeException("TypeError", $"{Signature} expects a file/path argument.", span);
+            }
+
+            var count = bound.Length;
+            while (count > 1 && !assigned[count - 1])
+            {
+                count--;
+            }
+
+            return bound[..count];
+        }
+    }
+
     private sealed class PrintCallable : ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -283,9 +373,11 @@ internal sealed partial class LythonRuntime
             PyString separator = DefaultPrintSeparator;
             PyString ending = DefaultPrintEnding;
             object? outputTarget = null;
+            var flush = false;
             var seenSeparator = false;
             var seenEnding = false;
             var seenFile = false;
+            var seenFlush = false;
 
             foreach (var argument in arguments)
             {
@@ -345,10 +437,14 @@ internal sealed partial class LythonRuntime
                         break;
 
                     case "flush":
-                        throw new LythonRuntimeException(
-                            "TypeError",
-                            "print(..., flush=...) is not supported by Lython.",
-                            span);
+                        if (seenFlush)
+                        {
+                            throw CallErrors.MultipleValues("Builtin", "print", "flush", span);
+                        }
+
+                        flush = IsTruthy(argument.Value);
+                        seenFlush = true;
+                        break;
 
                     default:
                         throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.Name, span);
@@ -366,6 +462,11 @@ internal sealed partial class LythonRuntime
             }
 
             AppendOutput(ending, context, outputTarget, span);
+            if (flush)
+            {
+                FlushOutput(context, outputTarget, span);
+            }
+
             return PyNone.Instance;
         }
 
@@ -377,9 +478,11 @@ internal sealed partial class LythonRuntime
             PyString separator = DefaultPrintSeparator;
             PyString ending = DefaultPrintEnding;
             object? outputTarget = null;
+            var flush = false;
             var seenSeparator = false;
             var seenEnding = false;
             var seenFile = false;
+            var seenFlush = false;
 
             foreach (var argument in arguments)
             {
@@ -439,10 +542,14 @@ internal sealed partial class LythonRuntime
                         break;
 
                     case "flush":
-                        throw new LythonRuntimeException(
-                            "TypeError",
-                            "print(..., flush=...) is not supported by Lython.",
-                            span);
+                        if (seenFlush)
+                        {
+                            throw CallErrors.MultipleValues("Builtin", "print", "flush", span);
+                        }
+
+                        flush = IsTruthy(argument.Value);
+                        seenFlush = true;
+                        break;
 
                     default:
                         throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.Name, span);
@@ -460,6 +567,11 @@ internal sealed partial class LythonRuntime
             }
 
             await AppendOutputAsync(ending, context, outputTarget, span).ConfigureAwait(false);
+            if (flush)
+            {
+                await FlushOutputAsync(context, outputTarget, span).ConfigureAwait(false);
+            }
+
             return PyNone.Instance;
         }
 
@@ -481,6 +593,22 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private static void FlushOutput(ExecutionContext context, object? outputTarget, LythonSourceSpan span)
+        {
+            if (outputTarget is null)
+            {
+                _ = context.State.Stdout.Flush(span);
+            }
+            else if (outputTarget is ExecutionContext.TextFileHandle fileHandle)
+            {
+                _ = fileHandle.Flush();
+            }
+            else if (outputTarget is HostTextOutputHandle outputHandle)
+            {
+                _ = outputHandle.Flush(span);
+            }
+        }
+
         private static async ValueTask AppendOutputAsync(PyString value, ExecutionContext context, object? outputTarget, LythonSourceSpan span)
         {
             if (outputTarget is null)
@@ -496,6 +624,22 @@ internal sealed partial class LythonRuntime
             else if (outputTarget is HostTextOutputHandle outputHandle)
             {
                 _ = await outputHandle.WriteAsync(value, span).ConfigureAwait(false);
+            }
+        }
+
+        private static async ValueTask FlushOutputAsync(ExecutionContext context, object? outputTarget, LythonSourceSpan span)
+        {
+            if (outputTarget is null)
+            {
+                _ = await context.State.Stdout.FlushAsync(span).ConfigureAwait(false);
+            }
+            else if (outputTarget is ExecutionContext.TextFileHandle fileHandle)
+            {
+                _ = fileHandle.Flush();
+            }
+            else if (outputTarget is HostTextOutputHandle outputHandle)
+            {
+                _ = await outputHandle.FlushAsync(span).ConfigureAwait(false);
             }
         }
     }

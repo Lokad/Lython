@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length is < 1 or > 5 || !PyStringOps.TryAsString(arguments[0], out var path))
         {
-            throw new LythonRuntimeException("TypeError", "open(path[, mode][, encoding][, newline][, errors]) expects a string path plus supported text-mode options.", span);
+            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, newline][, errors]) expects a string file/path plus supported text-mode options.", span);
         }
 
         var mode = arguments.Length >= 2
@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
                 null => PyString.FromString("r"),
                 PyNone => PyString.FromString("r"),
                 PyString text => text,
-                _ => throw new LythonRuntimeException("TypeError", "open(path, mode) expects mode to be a string.", span)
+                _ => throw new LythonRuntimeException("TypeError", "open(file/path, mode) expects mode to be a string.", span)
             }
             : PyString.FromString("r");
 

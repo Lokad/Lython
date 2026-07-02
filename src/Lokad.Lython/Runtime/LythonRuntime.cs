@@ -3468,7 +3468,7 @@ internal sealed partial class LythonRuntime
             {
                 ["object"] = objectType,
                 ["type"] = typeType,
-                ["open"] = new BuiltinCallable("open", Open, OpenAsync, ["path", "mode", "encoding", "newline", "errors"], requiredCount: 1),
+                ["open"] = new OpenCallable(),
                 ["print"] = new PrintCallable(),
                 ["input"] = new BuiltinCallable("input", Input, InputAsync, ["prompt"], requiredCount: 0),
                 ["str"] = new BuiltinCallable("str", Str, ["value"]),
@@ -3492,7 +3492,7 @@ internal sealed partial class LythonRuntime
                 ["chr"] = new BuiltinCallable("chr", Chr, ["i"]),
                 ["ord"] = new BuiltinCallable("ord", Ord, ["c"]),
                 ["range"] = new BuiltinCallable("range", Range),
-                ["enumerate"] = new BuiltinCallable("enumerate", Enumerate),
+                ["enumerate"] = new BuiltinCallable("enumerate", Enumerate, ["iterable", "start"], requiredCount: 1),
                 ["zip"] = new BuiltinCallable("zip", Zip),
                 ["iter"] = new BuiltinCallable("iter", Iter),
                 ["next"] = new BuiltinCallable("next", Next, ["iterator", "default"], requiredCount: 1),

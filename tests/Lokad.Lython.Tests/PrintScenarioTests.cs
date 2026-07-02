@@ -51,14 +51,21 @@ print("x", file=sys.stderr)
     }
 
     [Fact]
-    public void Print_FlushKeyword_RemainsUnsupported()
+    public void Print_SupportsFlushKeyword()
     {
-        var result = new LythonEngine().Run("print(\"x\", flush=True)\n", new MockLythonHost());
+        var host = new MockLythonHost();
 
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("print(..., flush=...) is not supported by Lython", result.Failure.Message, StringComparison.Ordinal);
+        var result = new LythonEngine().Run(
+            """
+print("x", flush=True)
+print("y", flush=False)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("x\ny\n", result.StandardOutput);
+        Assert.Equal("x\ny\n", host.CapturedStandardOutput());
     }
 
     [Fact]
