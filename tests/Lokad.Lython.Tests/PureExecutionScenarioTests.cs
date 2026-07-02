@@ -4465,19 +4465,22 @@ __lython_file.close()
             """
 flat = [value for row in [[1, 2], [3]] for value in row]
 mapping = {str(x) + str(y): x + y for x in [1, 2] for y in [3]}
+squares = {value * value for value in [1, 2, 2, 3] if value > 1}
+labels = {name for name, value in [("a", 1), ("b", 2)] if value > 1}
+nested = {left + right for left in [1, 2] for right in [10, 20] if right == 20}
 head, *middle, tail = [10, 20, 30, 40]
 items = {3, 1, 2, 1}
 items.add(4)
 other = set([2, 4, 5])
 __lython_file = open("/out.txt", "w")
-__lython_file.write(str(flat) + "|" + str(mapping) + "|" + str(head) + "|" + str(middle) + "|" + str(tail) + "|" + str(items | other) + "|" + str(items & other) + "|" + str(4 in items))
+__lython_file.write(str(flat) + "|" + str(mapping) + "|" + str(sorted(squares)) + "|" + str(sorted(labels)) + "|" + str(sorted(nested)) + "|" + str(head) + "|" + str(middle) + "|" + str(tail) + "|" + str(items | other) + "|" + str(items & other) + "|" + str(4 in items))
 __lython_file.close()
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 2, 3]|{'13': 4, '23': 5}|10|[20, 30]|40|{1, 2, 3, 4, 5}|{2, 4}|True", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 2, 3]|{'13': 4, '23': 5}|[4, 9]|[b]|[21, 22]|10|[20, 30]|40|{1, 2, 3, 4, 5}|{2, 4}|True", host.ReadText("/out.txt"));
     }
 
     [Theory]
@@ -4504,6 +4507,7 @@ __lython_file.close()
     [Theory]
     [InlineData("set([[1]])\n", "TypeError", "hashable")]
     [InlineData("value = {[]}\n", "TypeError", "hashable")]
+    [InlineData("value = {[item] for item in [1]}\n", "TypeError", "hashable")]
     [InlineData("f = lambda x: x\nf(**1)\n", "TypeError", "expects a dictionary")]
     [InlineData("a, *rest = [1]\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(rest))\n__lython_file.close()\n", null, "[]")]
     public void SetAndSplattingEdgeCases_ArePinned(string source, string? exceptionType, string expectedFragment)

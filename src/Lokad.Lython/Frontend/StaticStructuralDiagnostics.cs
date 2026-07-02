@@ -464,14 +464,15 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.Tuple or
             AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.Dict or
-            AbstractValueKind.Set;
+            AbstractValueKind.Set or
+            AbstractValueKind.SetType;
     }
 
     private static bool IsListLike(AbstractValue value)
         => value.Kind is AbstractValueKind.List or AbstractValueKind.ListType;
 
     private static bool IsSetLike(AbstractValue value)
-        => value.Kind == AbstractValueKind.Set;
+        => value.Kind is AbstractValueKind.Set or AbstractValueKind.SetType;
 
     private static bool TryGetExactSequenceLength(AbstractValue value, out int length)
     {
@@ -596,7 +597,7 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.List or AbstractValueKind.ListType => "list",
             AbstractValueKind.Tuple => "tuple",
             AbstractValueKind.Dict => "dict",
-            AbstractValueKind.Set => "set",
+            AbstractValueKind.Set or AbstractValueKind.SetType => "set",
             AbstractValueKind.Path => "pathlib.Path",
             AbstractValueKind.TextFileHandle => "file",
             AbstractValueKind.Module => $"module '{value.Value}'",

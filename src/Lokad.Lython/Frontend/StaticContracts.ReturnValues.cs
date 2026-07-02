@@ -109,7 +109,9 @@ internal static partial class StaticContracts
     }
 
     private static AbstractValue CopyContainerValue(AbstractValue receiver, LythonSourceSpan span, AbstractValueKind expectedKind)
-        => receiver.Kind == expectedKind || (expectedKind == AbstractValueKind.List && receiver.Kind == AbstractValueKind.ListType)
+        => receiver.Kind == expectedKind ||
+           (expectedKind == AbstractValueKind.List && receiver.Kind == AbstractValueKind.ListType) ||
+           (expectedKind == AbstractValueKind.Set && receiver.Kind == AbstractValueKind.SetType)
             ? receiver.WithSpan(span)
             : AbstractValue.Unknown(span);
 

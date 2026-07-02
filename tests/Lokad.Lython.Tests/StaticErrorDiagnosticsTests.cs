@@ -1050,6 +1050,29 @@ with open("/repo/output.txt", "w") as writer:
     }
 
     [Fact]
+    public void SetComprehensionTypeFlow_ReportStaticErrorsAtCompileTime()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+from pathlib import Path
+
+text = Path("/repo/input.txt").read_text()
+items = {line.strip() for line in text.splitlines()}
+Path("/repo/output.txt").write_text(items)
+
+bad = {line.find(1) for line in text.splitlines()}
+
+with open("/repo/output.txt", "w") as writer:
+    leaked = {line.find(1) for line in writer}
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3072");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3075");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3109");
+    }
+
+    [Fact]
     public void ConditionalExpressionTypeFlow_ReportStaticErrorsAtCompileTime()
     {
         var compiled = new LythonEngine().Compile(

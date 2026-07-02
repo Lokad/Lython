@@ -375,6 +375,13 @@ internal static class StaticAbstractInterpreter
                 AnalyzeExpressions(set.Items, diagnostics, bindings);
                 break;
 
+            case SetComprehensionExpressionSyntax setComprehension:
+            {
+                var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings);
+                AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                break;
+            }
+
             case DictComprehensionExpressionSyntax dictComprehension:
             {
                 var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings);

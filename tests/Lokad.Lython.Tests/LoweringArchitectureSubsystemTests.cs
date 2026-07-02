@@ -62,6 +62,7 @@ for item in [1]:
         var frontend = LythonFrontend.Compile("""
 values = [f"{item:03d}" for item in [1, 2] if item]
 mapping = {item: f"{item!s}" for item in [1, 2]}
+unique = {f"{item}" for item in [1, 2] if item}
 """);
 
         var lowered = LoweredScript.Lower(frontend.Script!);
@@ -80,6 +81,13 @@ mapping = {item: f"{item!s}" for item in [1, 2]}
         var dictFormatted = Assert.IsType<LoweredFormattedStringExpression>(dictComprehension.ValueExpression);
         var dictPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(dictFormatted.Parts));
         Assert.Equal('s', dictPart.Conversion);
+
+        var setAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[2]);
+        var setComprehension = Assert.IsType<LoweredSetComprehensionExpression>(setAssignment.Expression);
+        Assert.IsType<LoweredFormattedStringExpression>(setComprehension.ItemExpression);
+        Assert.Single(setComprehension.Clauses);
+        Assert.IsType<LoweredListLiteralExpression>(setComprehension.Clauses[0].Iterable);
+        Assert.IsType<LoweredIdentifierExpression>(setComprehension.Clauses[0].Condition);
     }
 
     [Fact]
@@ -1048,6 +1056,26 @@ return helper(payload["items"]) + "|" + text
                     yield return nested;
                 }
                 foreach (var clause in listComprehension.Clauses)
+                {
+                    foreach (var nested in FlattenExpressions(clause.Iterable))
+                    {
+                        yield return nested;
+                    }
+                    if (clause.Condition is not null)
+                    {
+                        foreach (var nested in FlattenExpressions(clause.Condition))
+                        {
+                            yield return nested;
+                        }
+                    }
+                }
+                break;
+            case LoweredSetComprehensionExpression setComprehension:
+                foreach (var nested in FlattenExpressions(setComprehension.ItemExpression))
+                {
+                    yield return nested;
+                }
+                foreach (var clause in setComprehension.Clauses)
                 {
                     foreach (var nested in FlattenExpressions(clause.Iterable))
                     {

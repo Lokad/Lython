@@ -203,6 +203,18 @@ internal static class StaticHostRequirementDiagnostics
                 }
                 break;
 
+            case SetComprehensionExpressionSyntax setComprehension:
+                AnalyzeHostExecutableExpression(setComprehension.ItemExpression, context, host);
+                foreach (var clause in setComprehension.Clauses)
+                {
+                    AnalyzeHostExecutableExpression(clause.Iterable, context, host);
+                    if (clause.Condition is not null)
+                    {
+                        AnalyzeHostExecutableExpression(clause.Condition, context, host);
+                    }
+                }
+                break;
+
             case MemberExpressionSyntax member:
                 AnalyzeHostExecutableExpression(member.Target, context, host);
                 break;

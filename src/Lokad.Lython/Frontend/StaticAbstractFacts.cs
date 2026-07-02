@@ -21,6 +21,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Tuple or
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
+            AbstractValueKind.SetType or
             AbstractValueKind.Path or
             AbstractValueKind.TextFileHandle or
             AbstractValueKind.Module or
@@ -252,7 +253,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.Dict or
-            AbstractValueKind.Set;
+            AbstractValueKind.Set or
+            AbstractValueKind.SetType;
 
     public static bool IsDefinitelyNonSubscriptable(AbstractValue value)
         => value.Kind is AbstractValueKind.Integer or
@@ -263,6 +265,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.BooleanType or
             AbstractValueKind.None or
             AbstractValueKind.Set or
+            AbstractValueKind.SetType or
             AbstractValueKind.Path or
             AbstractValueKind.TextFileHandle or
             AbstractValueKind.Module or
@@ -507,6 +510,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Tuple => "tuple",
             AbstractValueKind.Dict => "dict",
             AbstractValueKind.Set => "set",
+            AbstractValueKind.SetType => "set",
             AbstractValueKind.Path => "pathlib.Path",
             AbstractValueKind.TextFileHandle => "file",
             AbstractValueKind.Module => $"module '{value.Value}'",

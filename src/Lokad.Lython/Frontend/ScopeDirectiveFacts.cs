@@ -434,6 +434,14 @@ internal static class ScopeDirectiveFactsCollector
             case SetLiteralExpressionSyntax set:
                 foreach (var item in set.Items) CollectExpressionBindings(item, names);
                 break;
+            case SetComprehensionExpressionSyntax setComprehension:
+                CollectExpressionBindings(setComprehension.ItemExpression, names);
+                foreach (var clause in setComprehension.Clauses)
+                {
+                    CollectExpressionBindings(clause.Iterable, names);
+                    if (clause.Condition is not null) CollectExpressionBindings(clause.Condition, names);
+                }
+                break;
             case DictLiteralExpressionSyntax dict:
                 foreach (var item in dict.Items)
                 {

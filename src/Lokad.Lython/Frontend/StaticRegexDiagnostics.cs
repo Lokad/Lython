@@ -370,6 +370,18 @@ internal static class StaticRegexDiagnostics
                 }
                 break;
 
+            case SetComprehensionExpressionSyntax setComprehension:
+                AnalyzeRegexStaticExpression(setComprehension.ItemExpression, diagnostics, stringBindings, localeFlagBindings);
+                foreach (var clause in setComprehension.Clauses)
+                {
+                    AnalyzeRegexStaticExpression(clause.Iterable, diagnostics, stringBindings, localeFlagBindings);
+                    if (clause.Condition is not null)
+                    {
+                        AnalyzeRegexStaticExpression(clause.Condition, diagnostics, stringBindings, localeFlagBindings);
+                    }
+                }
+                break;
+
             case DictComprehensionExpressionSyntax dictComprehension:
                 AnalyzeRegexStaticExpression(dictComprehension.KeyExpression, diagnostics, stringBindings, localeFlagBindings);
                 AnalyzeRegexStaticExpression(dictComprehension.ValueExpression, diagnostics, stringBindings, localeFlagBindings);

@@ -322,6 +322,11 @@ internal sealed record SetLiteralExpressionSyntax(
     IReadOnlyList<ExpressionSyntax> Items,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
+internal sealed record SetComprehensionExpressionSyntax(
+    ExpressionSyntax ItemExpression,
+    IReadOnlyList<ComprehensionClauseSyntax> Clauses,
+    LythonSourceSpan Span) : ExpressionSyntax(Span);
+
 internal sealed record ComprehensionClauseSyntax(
     LoopTargetSyntax Target,
     ExpressionSyntax Iterable,

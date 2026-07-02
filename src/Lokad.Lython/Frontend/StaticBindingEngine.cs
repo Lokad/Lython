@@ -213,6 +213,7 @@ internal static class StaticBindingEngine
                 return true;
 
             case AbstractValueKind.ListType:
+            case AbstractValueKind.SetType:
                 itemValue = ((AbstractValue)iterableValue.Value).WithSpan(expression.Span);
                 return true;
 
@@ -999,6 +1000,15 @@ internal static class StaticBindingEngine
                     CollectMutatedReceiverNames(clause.Condition, bindings, names);
                 }
                 CollectMutatedReceiverNames(generator.ItemExpression, bindings, names);
+                break;
+
+            case SetComprehensionExpressionSyntax setComprehension:
+                foreach (var clause in setComprehension.Clauses)
+                {
+                    CollectMutatedReceiverNames(clause.Iterable, bindings, names);
+                    CollectMutatedReceiverNames(clause.Condition, bindings, names);
+                }
+                CollectMutatedReceiverNames(setComprehension.ItemExpression, bindings, names);
                 break;
 
             case DictComprehensionExpressionSyntax dictComprehension:

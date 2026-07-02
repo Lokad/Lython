@@ -94,6 +94,14 @@ internal sealed record LoweredSetLiteralExpression(
     public override ExpressionSyntax Syntax => Set;
 }
 
+internal sealed record LoweredSetComprehensionExpression(
+    SetComprehensionExpressionSyntax SetComprehension,
+    LoweredExpression ItemExpression,
+    IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => SetComprehension;
+}
+
 internal sealed record LoweredComprehensionClause(
     LoopTargetSyntax Target,
     LoweredExpression Iterable,

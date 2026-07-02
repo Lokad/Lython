@@ -3363,7 +3363,22 @@ internal sealed class Parser
                 {
                     if (CurrentToken == Token.For)
                     {
-                        AddDiagnostic("LA2000", "Unsupported Python construct 'comprehension'.", _position);
+                        if (!TryParseComprehensionClauses(out var clauses, out _))
+                        {
+                            return null;
+                        }
+
+                        SkipGroupedExpressionTrivia();
+                        if (!TryRead(Token.CloseBrace, out var closeComprehension))
+                        {
+                            AddDiagnostic("LA1026", "Expected '}' after set comprehension.", openBrace);
+                            return null;
+                        }
+
+                        return new SetComprehensionExpressionSyntax(
+                            key,
+                            clauses,
+                            Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
                     }
                     else if (CurrentToken is Token.Comma or Token.CloseBrace)
                     {

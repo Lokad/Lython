@@ -996,6 +996,7 @@ internal static partial class StaticContracts
             AbstractValueKind.Tuple or
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
+            AbstractValueKind.SetType or
             AbstractValueKind.CollectionsDefaultDict or
             AbstractValueKind.CollectionsCounter or
             AbstractValueKind.CollectionsDeque or
@@ -1085,7 +1086,7 @@ internal static partial class StaticContracts
             AbstractValueKind.List or AbstractValueKind.ListType => ListMembers.Contains(memberName),
             AbstractValueKind.Tuple => false,
             AbstractValueKind.Dict => DictMembers.Contains(memberName),
-            AbstractValueKind.Set => SetMembers.Contains(memberName),
+            AbstractValueKind.Set or AbstractValueKind.SetType => SetMembers.Contains(memberName),
             AbstractValueKind.CollectionsDefaultDict => CollectionsDefaultDictMembers.Contains(memberName),
             AbstractValueKind.CollectionsCounter => CollectionsCounterMembers.Contains(memberName),
             AbstractValueKind.CollectionsDeque => CollectionsDequeMembers.Contains(memberName),

@@ -646,6 +646,7 @@ internal sealed partial class LythonRuntime
                     context,
                     tuple.Span),
                 LoweredSetLiteralExpression set => await EvaluateLoweredSetLiteralAsync(set, context).ConfigureAwait(false),
+                LoweredSetComprehensionExpression comprehension => await EvaluateLoweredSetComprehensionAsync(comprehension, context).ConfigureAwait(false),
                 LoweredDictLiteralExpression dict => await EvaluateLoweredDictLiteralAsync(dict, context).ConfigureAwait(false),
                 LoweredDictComprehensionExpression comprehension => await EvaluateLoweredDictComprehensionAsync(comprehension, context).ConfigureAwait(false),
                 LoweredMemberExpression member => await ResolveLoweredMemberAsync(member, context).ConfigureAwait(false),
@@ -752,6 +753,27 @@ internal sealed partial class LythonRuntime
                 0,
                 context,
                 async scope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, scope).ConfigureAwait(false))))
+            .ConfigureAwait(false);
+
+        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        return result;
+    }
+
+    private static async ValueTask<object> EvaluateLoweredSetComprehensionAsync(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
+    {
+        var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        await EvaluateLoweredComprehensionClausesAsync(
+                comprehension.Clauses,
+                0,
+                context,
+                async scope =>
+                {
+                    var item = ValidateSetItem(
+                        await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, scope).ConfigureAwait(false),
+                        comprehension.ItemExpression.Span,
+                        scope.MemoryGovernor);
+                    result.Add(item);
+                })
             .ConfigureAwait(false);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);

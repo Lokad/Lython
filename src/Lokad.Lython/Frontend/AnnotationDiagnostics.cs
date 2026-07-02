@@ -317,7 +317,7 @@ internal static class AnnotationDiagnostics
             AbstractValueKind.List or AbstractValueKind.ListType => SimpleType.List,
             AbstractValueKind.Tuple => SimpleType.Tuple,
             AbstractValueKind.Dict => SimpleType.Dict,
-            AbstractValueKind.Set => SimpleType.Set,
+            AbstractValueKind.Set or AbstractValueKind.SetType => SimpleType.Set,
             _ => SimpleType.Unknown
         };
     }

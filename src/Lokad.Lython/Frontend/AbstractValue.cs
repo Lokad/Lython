@@ -20,6 +20,7 @@ internal enum AbstractValueKind
     Tuple,
     Dict,
     Set,
+    SetType,
     Path,
     TextFileHandle,
     Module,
@@ -177,6 +178,7 @@ internal readonly record struct AbstractValue(
     public static AbstractValue BooleanType(LythonSourceSpan span) => new(AbstractValueKind.BooleanType, "bool", span);
     public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, new object(), span);
     public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, item, span);
+    public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, item, span);
     public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, pairs, span);
     public static AbstractValue Path(LythonSourceSpan span) => new(AbstractValueKind.Path, "pathlib.Path", span);
     public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, mode, span);
@@ -335,6 +337,11 @@ internal readonly record struct AbstractValue(
             return ListOf(Join(leftItem, rightItem, span), span);
         }
 
+        if (TryGetSetElement(left, out var leftSetItem) && TryGetSetElement(right, out var rightSetItem))
+        {
+            return SetOf(Join(leftSetItem, rightSetItem, span), span);
+        }
+
         return Unknown(span);
     }
 
@@ -349,6 +356,7 @@ internal readonly record struct AbstractValue(
             AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
             AbstractValueKind.List => JoinLiteralLists(left, right, span),
             AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+            AbstractValueKind.SetType => SetOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
             AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
             AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes((AbstractTextFileMode)left.Value, (AbstractTextFileMode)right.Value), span),
             AbstractValueKind.Module => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
@@ -565,6 +573,24 @@ internal readonly record struct AbstractValue(
         }
 
         if (value.Kind == AbstractValueKind.List)
+        {
+            item = JoinListItems((IReadOnlyList<AbstractValue>)value.Value, Array.Empty<AbstractValue>(), value.Span);
+            return true;
+        }
+
+        item = default;
+        return false;
+    }
+
+    private static bool TryGetSetElement(AbstractValue value, out AbstractValue item)
+    {
+        if (value.Kind == AbstractValueKind.SetType)
+        {
+            item = (AbstractValue)value.Value;
+            return true;
+        }
+
+        if (value.Kind == AbstractValueKind.Set)
         {
             item = JoinListItems((IReadOnlyList<AbstractValue>)value.Value, Array.Empty<AbstractValue>(), value.Span);
             return true;

@@ -412,6 +412,10 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(generator.ItemExpression, names);
                 CollectComprehensionNames(generator.Clauses, names);
                 break;
+            case SetComprehensionExpressionSyntax setComprehension:
+                CollectSeenNames(setComprehension.ItemExpression, names);
+                CollectComprehensionNames(setComprehension.Clauses, names);
+                break;
             case DictComprehensionExpressionSyntax dictComprehension:
                 CollectSeenNames(dictComprehension.KeyExpression, names);
                 CollectSeenNames(dictComprehension.ValueExpression, names);

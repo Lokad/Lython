@@ -169,6 +169,10 @@ internal static class StaticAbstractValueResolver
                 value = ResolveListComprehensionValue(listComprehension, bindings);
                 return true;
 
+            case SetComprehensionExpressionSyntax setComprehension:
+                value = ResolveSetComprehensionValue(setComprehension, bindings);
+                return true;
+
             case ConditionalExpressionSyntax conditional:
                 value = AbstractValue.Join(
                     ResolveOrUnknown(conditional.Consequent, bindings),
@@ -251,6 +255,14 @@ internal static class StaticAbstractValueResolver
         return AbstractValue.ListOf(
             ResolveOrUnknown(listComprehension.ItemExpression, comprehensionBindings),
             listComprehension.Span);
+    }
+
+    private static AbstractValue ResolveSetComprehensionValue(SetComprehensionExpressionSyntax setComprehension, AbstractState bindings)
+    {
+        var comprehensionBindings = StaticBindingEngine.BindComprehensionClauses(setComprehension.Clauses, bindings);
+        return AbstractValue.SetOf(
+            ResolveOrUnknown(setComprehension.ItemExpression, comprehensionBindings),
+            setComprehension.Span);
     }
 
     private static bool TryResolveBinaryAbstractValue(BinaryExpressionSyntax binary, AbstractState bindings, out AbstractValue value)

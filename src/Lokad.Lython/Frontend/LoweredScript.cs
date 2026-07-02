@@ -225,6 +225,10 @@ internal sealed class LoweredScript
             SetLiteralExpressionSyntax set => new LoweredSetLiteralExpression(
                 set,
                 set.Items.Select(LowerExpression).ToArray()),
+            SetComprehensionExpressionSyntax comprehension => new LoweredSetComprehensionExpression(
+                comprehension,
+                LowerExpression(comprehension.ItemExpression),
+                comprehension.Clauses.Select(LowerComprehensionClause).ToArray()),
             DictLiteralExpressionSyntax dict => new LoweredDictLiteralExpression(
                 dict,
                 dict.Items.Select(item => new KeyValuePair<LoweredExpression, LoweredExpression>(

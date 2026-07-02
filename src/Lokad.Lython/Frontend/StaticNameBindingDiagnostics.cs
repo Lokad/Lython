@@ -392,6 +392,11 @@ internal static class StaticNameBindingDiagnostics
                 AnalyzeExpressions(set.Items, context, localNames, maybeAssigned);
                 break;
 
+            case SetComprehensionExpressionSyntax setComprehension:
+                AnalyzeExpression(setComprehension.ItemExpression, context, localNames, Clone(maybeAssigned));
+                AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
+                break;
+
             case DictComprehensionExpressionSyntax dictComprehension:
                 AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, Clone(maybeAssigned));
@@ -756,6 +761,15 @@ internal static class StaticNameBindingDiagnostics
                 break;
             case SetLiteralExpressionSyntax set:
                 foreach (var item in set.Items) CollectLocalAssignments(item, localNames);
+                break;
+            case SetComprehensionExpressionSyntax setComprehension:
+                CollectLocalAssignments(setComprehension.ItemExpression, localNames);
+                foreach (var clause in setComprehension.Clauses)
+                {
+                    CollectLoopTargetNames(clause.Target, localNames);
+                    CollectLocalAssignments(clause.Iterable, localNames);
+                    if (clause.Condition is not null) CollectLocalAssignments(clause.Condition, localNames);
+                }
                 break;
             case DictComprehensionExpressionSyntax dictComprehension:
                 CollectLocalAssignments(dictComprehension.KeyExpression, localNames);

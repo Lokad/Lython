@@ -557,6 +557,7 @@ internal sealed partial class LythonRuntime
                     context,
                     tuple.Span),
                 LoweredSetLiteralExpression set => EvaluateLoweredSetLiteral(set, context),
+                LoweredSetComprehensionExpression comprehension => EvaluateLoweredSetComprehension(comprehension, context),
                 LoweredDictLiteralExpression dict => EvaluateLoweredDictLiteral(dict, context),
                 LoweredDictComprehensionExpression comprehension => EvaluateLoweredDictComprehension(comprehension, context),
                 LoweredMemberExpression member => ResolveLoweredMember(member, context),
@@ -660,6 +661,26 @@ internal sealed partial class LythonRuntime
             0,
             context,
             scope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, scope))));
+
+        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        return result;
+    }
+
+    private static object EvaluateLoweredSetComprehension(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
+    {
+        var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        EvaluateLoweredComprehensionClauses(
+            comprehension.Clauses,
+            0,
+            context,
+            scope =>
+            {
+                var item = ValidateSetItem(
+                    EvaluateLoweredExpression(comprehension.ItemExpression, scope),
+                    comprehension.ItemExpression.Span,
+                    scope.MemoryGovernor);
+                result.Add(item);
+            });
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;

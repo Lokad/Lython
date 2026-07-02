@@ -317,6 +317,7 @@ internal sealed partial class LythonRuntime
                 GeneratorExpressionSyntax generator => EvaluateGeneratorExpression(generator, context),
                 DictLiteralExpressionSyntax dict => EvaluateDictLiteral(dict, context),
                 SetLiteralExpressionSyntax set => EvaluateSetLiteral(set, context),
+                SetComprehensionExpressionSyntax setComprehension => EvaluateSetComprehension(setComprehension, context),
                 DictComprehensionExpressionSyntax dictComprehension => EvaluateDictComprehension(dictComprehension, context),
                 TupleLiteralExpressionSyntax tuple => CreateTuple(
                     tuple.Items.Count,
@@ -2850,6 +2851,26 @@ internal sealed partial class LythonRuntime
             0,
             context,
             scope => result.Add(RuntimeValue(EvaluateExpression(comprehension.ItemExpression, scope))));
+
+        context.ObserveCollectionCount(result.Count, comprehension.Span);
+        return result;
+    }
+
+    private static object EvaluateSetComprehension(SetComprehensionExpressionSyntax comprehension, ExecutionContext context)
+    {
+        var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        EvaluateComprehensionClauses(
+            comprehension.Clauses,
+            0,
+            context,
+            scope =>
+            {
+                var item = ValidateSetItem(
+                    EvaluateExpression(comprehension.ItemExpression, scope),
+                    comprehension.ItemExpression.Span,
+                    scope.MemoryGovernor);
+                result.Add(item);
+            });
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;

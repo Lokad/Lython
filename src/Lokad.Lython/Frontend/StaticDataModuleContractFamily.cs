@@ -1147,7 +1147,7 @@ internal static class StaticDataModuleContractFamily
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.ListType)
+        if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
             var item = (AbstractValue)value.Value;
             if (!IsPathLike(item) && !IsUnknown(item))
@@ -1242,7 +1242,7 @@ internal static class StaticDataModuleContractFamily
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.ListType)
+        if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
             var item = (AbstractValue)value.Value;
             if (!IsBytesLike(item) && !IsUnknown(item))
