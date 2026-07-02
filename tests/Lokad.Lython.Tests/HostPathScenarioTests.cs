@@ -271,7 +271,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void OpenReadLines_AndFileIteration_SupportTextProcessingWorkflows()
+    public void OpenReadLines_AndFileIteration_ConsumeLinearTextStream()
     {
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha\nbeta\nlast");
@@ -292,7 +292,157 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[alpha\n, beta\n, last]|ALPHA\nBETA\nLAST", host.ReadText("/out.txt"));
+        Assert.Equal("[alpha\n, beta\n, last]|", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OpenReadMethods_AdvanceSharedCursor()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/input.txt", "alpha\nbeta\ngamma");
+
+        var result = new LythonEngine().Run(
+            """
+with open("/input.txt", "r", encoding="utf-8") as handle:
+    first = handle.readline().replace("\n", "<n>")
+    second = handle.readline().replace("\n", "<n>")
+    remaining = handle.readlines()
+    after_lines = handle.readlines()
+
+with open("/input.txt", "r", encoding="utf-8") as handle:
+    handle.readline()
+    tail = handle.read().replace("\n", "<n>")
+    after_read = handle.read()
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first + "|" + second + "|" + str(remaining) + "|" + str(after_lines) + "|" + tail + "|" + after_read)
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("alpha<n>|beta<n>|[gamma]|[]|beta<n>gamma|", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OpenFileIteration_ConsumesFromCurrentCursorAndStopsAtEof()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/input.txt", "alpha\nbeta\ngamma");
+
+        var result = new LythonEngine().Run(
+            """
+with open("/input.txt", "r") as handle:
+    first = handle.readline().rstrip()
+    remaining = [line.rstrip() for line in handle]
+    again = [line for line in handle]
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(first + "|" + str(remaining) + "|" + str(again))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("alpha|[beta, gamma]|[]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void TextHandleTell_UsesUtf8BytePositions()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/input.txt", "é\nabc");
+        host.SeedFile("/append.txt", "éx");
+
+        var result = new LythonEngine().Run(
+            """
+vals = []
+with open("/input.txt", "r", encoding="utf-8") as reader:
+    vals.append(str(reader.tell()))
+    vals.append(reader.readline().replace("\n", ""))
+    vals.append(str(reader.tell()))
+    vals.append(reader.read())
+    vals.append(str(reader.tell()))
+
+with open("/output.txt", "w", encoding="utf-8") as writer:
+    vals.append(str(writer.tell()))
+    vals.append(str(writer.write("é")))
+    vals.append(str(writer.tell()))
+    writer.write("x")
+    vals.append(str(writer.tell()))
+
+with open("/append.txt", "a", encoding="utf-8") as appender:
+    vals.append(str(appender.tell()))
+    appender.write("é")
+    vals.append(str(appender.tell()))
+
+vals.append(open("/append.txt", "r", encoding="utf-8").read())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("0|é|3|abc|6|0|1|2|3|3|5|éxé", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void TextHandleFlush_PublishesWritesWithoutDuplicatingAppends()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/append.txt", "base");
+
+        var result = new LythonEngine().Run(
+            """
+vals = []
+writer = open("/output.txt", "w", encoding="utf-8")
+writer.write("alpha")
+writer.flush()
+vals.append(open("/output.txt", "r", encoding="utf-8").read())
+writer.flush()
+vals.append(open("/output.txt", "r", encoding="utf-8").read())
+writer.write("é")
+writer.close()
+vals.append(open("/output.txt", "r", encoding="utf-8").read())
+
+reader = open("/output.txt", "r", encoding="utf-8")
+vals.append(str(reader.flush()))
+reader.close()
+try:
+    reader.flush()
+except ValueError as ex:
+    vals.append(ex.type + ":" + ex.message)
+
+printed = open("/printed.txt", "w", encoding="utf-8")
+print("ok", end="", file=printed, flush=True)
+vals.append(open("/printed.txt", "r", encoding="utf-8").read())
+printed.close()
+vals.append(open("/printed.txt", "r", encoding="utf-8").read())
+
+appender = open("/append.txt", "a", encoding="utf-8")
+vals.append(str(appender.tell()))
+appender.write("é")
+vals.append(str(appender.tell()))
+appender.flush()
+appender.flush()
+vals.append(open("/append.txt", "r", encoding="utf-8").read())
+appender.write("x")
+appender.close()
+vals.append(open("/append.txt", "r", encoding="utf-8").read())
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("alpha|alpha|alphaé|None|ValueError:I/O operation on closed file|ok|ok|4|6|baseé|baseéx", host.ReadText("/out.txt"));
     }
 
     [Fact]

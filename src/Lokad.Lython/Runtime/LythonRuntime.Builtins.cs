@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
         {
             "r" => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode).ConfigureAwait(false),
             "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode),
-            "a" => ExecutionContext.TextFileHandle.ForAppend(path.AsString(), context, encodingMode),
+            "a" => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode).ConfigureAwait(false),
             _ => throw new LythonRuntimeException("ValueError", "open() only supports modes 'r', 'w', and 'a'.", span)
         };
     }
@@ -2028,18 +2028,28 @@ internal sealed partial class LythonRuntime
         {
             private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
 
-            private TextFileHandle(string path, string mode, PyString text, ExecutionContext context, TextEncodingMode encoding)
+            private TextFileHandle(
+                string path,
+                string mode,
+                PyString text,
+                ExecutionContext context,
+                TextEncodingMode encoding,
+                BigInteger appendBasePosition = default)
             {
                 Path = path;
                 Mode = mode;
                 _text = text;
                 _context = context;
                 _encoding = encoding;
+                _appendBasePosition = appendBasePosition;
             }
 
             private PyString _text;
             private readonly ExecutionContext _context;
             private readonly TextEncodingMode _encoding;
+            private readonly BigInteger _appendBasePosition;
+            private int _readCursorByte;
+            private int _flushedAppendByteLength;
 
             public string Path { get; }
 
@@ -2068,12 +2078,26 @@ internal sealed partial class LythonRuntime
             public BigInteger Tell()
             {
                 EnsureOpen();
-                return Mode == "r" ? BigInteger.Zero : new BigInteger(_text.Length);
+                return Mode switch
+                {
+                    "r" => new BigInteger(_readCursorByte),
+                    "w" => new BigInteger(_text.Utf8Bytes.Length),
+                    "a" => _appendBasePosition + new BigInteger(_text.Utf8Bytes.Length),
+                    _ => BigInteger.Zero
+                };
             }
 
             public object Flush()
             {
                 EnsureOpen();
+                FlushCore(null);
+                return PyNone.Instance;
+            }
+
+            public async ValueTask<object> FlushAsync()
+            {
+                EnsureOpen();
+                await FlushCoreAsync(null).ConfigureAwait(false);
                 return PyNone.Instance;
             }
 
@@ -2116,7 +2140,22 @@ internal sealed partial class LythonRuntime
                 => new(path, "w", PyString.Empty, context, encoding);
 
             public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
-                => new(path, "a", PyString.Empty, context, encoding);
+            {
+                var stat = context.HostStat(path, null);
+                var appendBasePosition = stat is { Exists: true, IsFile: true }
+                    ? stat.Size
+                    : BigInteger.Zero;
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, appendBasePosition);
+            }
+
+            public static async ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
+            {
+                var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
+                var appendBasePosition = stat is { Exists: true, IsFile: true }
+                    ? stat.Size
+                    : BigInteger.Zero;
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, appendBasePosition);
+            }
 
             public object Enter() => this;
 
@@ -2137,25 +2176,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                if (Mode == "w")
-                {
-                    _context.ObserveString(_text, null);
-                    _context.RegisterHostCall(null);
-                    var utf8 = PyStringOps.EncodeUtf8(_text);
-                    if (_encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        utf8 = [.. Utf8Bom, .. utf8];
-                    }
-
-                    _context.WriteTextUtf8(Path, utf8, null);
-                }
-                else if (Mode == "a")
-                {
-                    _context.ObserveString(_text, null);
-                    _context.RegisterHostCall(null);
-                    _context.AppendTextUtf8(Path, PyStringOps.EncodeUtf8(_text), null);
-                }
-
+                FlushCore(null);
                 IsClosed = true;
                 return false;
             }
@@ -2167,25 +2188,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                if (Mode == "w")
-                {
-                    _context.ObserveString(_text, null);
-                    _context.RegisterHostCall(null);
-                    var utf8 = PyStringOps.EncodeUtf8(_text);
-                    if (_encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        utf8 = [.. Utf8Bom, .. utf8];
-                    }
-
-                    await _context.WriteTextUtf8Async(Path, utf8, null).ConfigureAwait(false);
-                }
-                else if (Mode == "a")
-                {
-                    _context.ObserveString(_text, null);
-                    _context.RegisterHostCall(null);
-                    await _context.AppendTextUtf8Async(Path, PyStringOps.EncodeUtf8(_text), null).ConfigureAwait(false);
-                }
-
+                await FlushCoreAsync(null).ConfigureAwait(false);
                 IsClosed = true;
                 return false;
             }
@@ -2204,7 +2207,14 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "file is not open for reading", null);
                 }
 
-                return _text;
+                if (_readCursorByte >= _text.Utf8Bytes.Length)
+                {
+                    return PyString.Empty;
+                }
+
+                var result = _text.SliceByByteRange(_readCursorByte, _text.Utf8Bytes.Length);
+                _readCursorByte = _text.Utf8Bytes.Length;
+                return result;
             }
 
             public PyString ReadLine()
@@ -2215,8 +2225,25 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "file is not open for reading", null);
                 }
 
-                var lines = SplitLinesPreservingNewlines(_text);
-                return lines.Count == 0 ? PyString.Empty : lines[0];
+                var source = _text.Utf8Bytes.Span;
+                if (_readCursorByte >= source.Length)
+                {
+                    return PyString.Empty;
+                }
+
+                var end = source.Length;
+                for (var i = _readCursorByte; i < source.Length; i++)
+                {
+                    if (source[i] == (byte)'\n')
+                    {
+                        end = i + 1;
+                        break;
+                    }
+                }
+
+                var line = _text.SliceByByteRange(_readCursorByte, end);
+                _readCursorByte = end;
+                return line;
             }
 
             public PyList ReadLines()
@@ -2227,11 +2254,16 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "file is not open for reading", null);
                 }
 
-                var lines = SplitLinesPreservingNewlines(_text);
-                var items = new object[lines.Count];
-                for (var i = 0; i < lines.Count; i++)
+                var items = new List<object>();
+                while (true)
                 {
-                    items[i] = lines[i];
+                    var line = ReadLine();
+                    if (line.Length == 0)
+                    {
+                        break;
+                    }
+
+                    items.Add(line);
                 }
 
                 return new PyList(items, _context.MemoryGovernor, null);
@@ -2274,39 +2306,84 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
+            private void FlushCore(LythonSourceSpan? span)
+            {
+                if (Mode == "r")
+                {
+                    return;
+                }
+
+                if (Mode == "w")
+                {
+                    _context.ObserveString(_text, span);
+                    _context.RegisterHostCall(span);
+                    _context.WriteTextUtf8(Path, EncodeBufferedText(), span);
+                    return;
+                }
+
+                FlushAppendCore(span);
+            }
+
+            private async ValueTask FlushCoreAsync(LythonSourceSpan? span)
+            {
+                if (Mode == "r")
+                {
+                    return;
+                }
+
+                if (Mode == "w")
+                {
+                    _context.ObserveString(_text, span);
+                    _context.RegisterHostCall(span);
+                    await _context.WriteTextUtf8Async(Path, EncodeBufferedText(), span).ConfigureAwait(false);
+                    return;
+                }
+
+                await FlushAppendCoreAsync(span).ConfigureAwait(false);
+            }
+
+            private void FlushAppendCore(LythonSourceSpan? span)
+            {
+                if (_flushedAppendByteLength >= _text.Utf8Bytes.Length)
+                {
+                    return;
+                }
+
+                var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
+                _context.ObserveString(suffix, span);
+                _context.RegisterHostCall(span);
+                _context.AppendTextUtf8(Path, PyStringOps.EncodeUtf8(suffix), span);
+                _flushedAppendByteLength = _text.Utf8Bytes.Length;
+            }
+
+            private async ValueTask FlushAppendCoreAsync(LythonSourceSpan? span)
+            {
+                if (_flushedAppendByteLength >= _text.Utf8Bytes.Length)
+                {
+                    return;
+                }
+
+                var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
+                _context.ObserveString(suffix, span);
+                _context.RegisterHostCall(span);
+                await _context.AppendTextUtf8Async(Path, PyStringOps.EncodeUtf8(suffix), span).ConfigureAwait(false);
+                _flushedAppendByteLength = _text.Utf8Bytes.Length;
+            }
+
+            private byte[] EncodeBufferedText()
+            {
+                var utf8 = PyStringOps.EncodeUtf8(_text);
+                return _encoding == TextEncodingMode.Utf8Bom
+                    ? [.. Utf8Bom, .. utf8]
+                    : utf8;
+            }
+
             private void EnsureOpen()
             {
                 if (IsClosed)
                 {
                     throw new LythonRuntimeException("ValueError", "I/O operation on closed file", null);
                 }
-            }
-
-            private static IReadOnlyList<PyString> SplitLinesPreservingNewlines(PyString text)
-            {
-                var source = text.Utf8Bytes.Span;
-                if (source.Length == 0)
-                {
-                    return Array.Empty<PyString>();
-                }
-
-                var lines = new List<PyString>();
-                var start = 0;
-                for (var i = 0; i < source.Length; i++)
-                {
-                    if (source[i] == (byte)'\n')
-                    {
-                        lines.Add(text.SliceByByteRange(start, i + 1));
-                        start = i + 1;
-                    }
-                }
-
-                if (start < source.Length)
-                {
-                    lines.Add(text.SliceByByteRange(start, source.Length));
-                }
-
-                return lines;
             }
         }
     }

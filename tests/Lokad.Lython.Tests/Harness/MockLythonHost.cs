@@ -287,7 +287,7 @@ internal sealed class MockLythonHost : ILythonHost
                 Exists: true,
                 IsFile: true,
                 IsDir: false,
-                Size: new BigInteger(text.Length),
+                Size: new BigInteger(Utf8.GetByteCount(text)),
                 ModifiedAt: MockTimestamp));
         }
 

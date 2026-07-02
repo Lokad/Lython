@@ -635,7 +635,7 @@ internal sealed partial class LythonRuntime
             }
             else if (outputTarget is ExecutionContext.TextFileHandle fileHandle)
             {
-                _ = fileHandle.Flush();
+                _ = await fileHandle.FlushAsync().ConfigureAwait(false);
             }
             else if (outputTarget is HostTextOutputHandle outputHandle)
             {

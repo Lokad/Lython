@@ -2213,7 +2213,7 @@ internal sealed partial class LythonRuntime
                 {
                     "r" => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path, context, encodingMode).ConfigureAwait(false),
                     "w" => LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(path, context, encodingMode),
-                    "a" => LythonRuntime.ExecutionContext.TextFileHandle.ForAppend(path, context, encodingMode),
+                    "a" => await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(path, context, encodingMode).ConfigureAwait(false),
                     _ => throw new LythonRuntimeException("ValueError", "Path.open() only supports modes 'r', 'w', and 'a'.", span)
                 };
             }
@@ -2637,6 +2637,15 @@ internal sealed partial class LythonRuntime
                     }
 
                     return handle.Flush();
+                },
+                async (arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.flush() expects no arguments.", span);
+                    }
+
+                    return await handle.FlushAsync().ConfigureAwait(false);
                 }, "file.flush", []),
                 _ => null!
             };
