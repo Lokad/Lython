@@ -3044,15 +3044,7 @@ internal sealed class Parser
 
         if (CurrentToken == Token.String)
         {
-            var tokenIndex = ReadToken();
-            var literal = _tokens.GetString(tokenIndex);
-            if (!TryDecodeStringLiteral(literal, out var value))
-            {
-                AddDiagnostic("LA1007", "Invalid string literal.", tokenIndex);
-                return null;
-            }
-
-            return new StringLiteralExpressionSyntax(value, SpanOf(tokenIndex));
+            return ParseStringLiteralExpression();
         }
 
         if (CurrentToken == Token.Integer)
@@ -3150,6 +3142,36 @@ internal sealed class Parser
 
         AddDiagnostic("LA1000", "Expected expression.", _position);
         return null;
+    }
+
+    private ExpressionSyntax? ParseStringLiteralExpression()
+    {
+        var firstToken = -1;
+        var lastToken = -1;
+        var builder = new System.Text.StringBuilder();
+
+        while (CurrentToken == Token.String)
+        {
+            var tokenIndex = ReadToken();
+            if (firstToken < 0)
+            {
+                firstToken = tokenIndex;
+            }
+
+            var literal = _tokens.GetString(tokenIndex);
+            if (!TryDecodeStringLiteral(literal, out var value))
+            {
+                AddDiagnostic("LA1007", "Invalid string literal.", tokenIndex);
+                return null;
+            }
+
+            builder.Append(value);
+            lastToken = tokenIndex;
+        }
+
+        return new StringLiteralExpressionSyntax(
+            builder.ToString(),
+            Merge(SpanOf(firstToken), SpanOf(lastToken)));
     }
 
     private ExpressionSyntax? ParseLambdaExpression()

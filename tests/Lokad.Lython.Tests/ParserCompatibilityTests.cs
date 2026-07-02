@@ -1,3 +1,5 @@
+using Lokad.Lython.Tests.Harness;
+
 namespace Lokad.Lython.Tests;
 
 public sealed class ParserCompatibilityTests
@@ -128,6 +130,71 @@ match [
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
         Assert.Empty(compiled.Diagnostics);
+    }
+
+    [Fact]
+    public void Compile_AcceptsAdjacentTextLiteralConcatenation()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+plain = "hello" " " 'world'
+raw = (
+    r"alpha\s+"
+    r"beta"
+)
+triple = (
+    '''left'''
+    '''right'''
+)
+items = [
+    "a"
+    "b",
+]
+mapping = {
+    "k" "ey": "v" "alue",
+}
+unique = {
+    "a" "b",
+}
+""");
+
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Empty(compiled.Diagnostics);
+    }
+
+    [Fact]
+    public void Run_FoldsAdjacentTextLiteralsBeforeExecution()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+text = (
+    "hello"
+    " "
+    r"world"
+    '''!'''
+)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(text)
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("hello world!", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void Compile_FoldedAdjacentTextLiteralsStayVisibleToStaticDiagnostics()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+open("/repo/input.txt", "r" "b")
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3001");
     }
 
     private static string FormatDiagnostic(LythonDiagnostic diagnostic)
