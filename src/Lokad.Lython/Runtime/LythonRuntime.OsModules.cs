@@ -1895,6 +1895,65 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+        {
+            while (_frames.Count != 0)
+            {
+                var frame = _frames.Peek();
+                if (!frame.Scanned)
+                {
+                    if (!await TryScanAsync(frame).ConfigureAwait(false))
+                    {
+                        _frames.Pop();
+                        continue;
+                    }
+
+                    if (_topdown)
+                    {
+                        frame.Yielded = true;
+                        return (true, CreateTuple(frame));
+                    }
+                }
+
+                var childNames = frame.GetChildNames(_topdown, _span);
+                while (frame.NextChildIndex < childNames.Count)
+                {
+                    var childName = childNames[frame.NextChildIndex++];
+                    var childPath = JoinChild(frame.DirectoryPath, childName);
+                    try
+                    {
+                        _context.RegisterHostCall(_span);
+                        var stat = await _context.HostStatAsync(childPath, _span).ConfigureAwait(false);
+                        if (!stat.Exists || !stat.IsDir)
+                        {
+                            continue;
+                        }
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        await HandleWalkErrorAsync(ex.Message).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    _frames.Push(new WalkFrame(childPath));
+                    goto ContinueTraversal;
+                }
+
+                if (!_topdown && !frame.Yielded)
+                {
+                    frame.Yielded = true;
+                    return (true, CreateTuple(frame));
+                }
+
+                _frames.Pop();
+
+            ContinueTraversal:
+                continue;
+            }
+
+            return (false, PyNone.Instance);
+        }
+
         private bool TryScan(WalkFrame frame)
         {
             try
@@ -1940,6 +1999,51 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private async ValueTask<bool> TryScanAsync(WalkFrame frame)
+        {
+            try
+            {
+                _context.RegisterHostCall(_span);
+                var names = await _context.HostListDirAsync(frame.DirectoryPath, _span).ConfigureAwait(false);
+                var directories = new List<string>();
+                var files = new List<string>();
+                foreach (var name in names)
+                {
+                    var child = JoinChild(frame.DirectoryPath, name);
+                    _context.RegisterHostCall(_span);
+                    var stat = await _context.HostStatAsync(child, _span).ConfigureAwait(false);
+                    if (!stat.Exists)
+                    {
+                        continue;
+                    }
+
+                    if (stat.IsDir)
+                    {
+                        directories.Add(name);
+                    }
+                    else if (stat.IsFile)
+                    {
+                        files.Add(name);
+                    }
+                }
+
+                directories.Sort(StringComparer.Ordinal);
+                files.Sort(StringComparer.Ordinal);
+                frame.SetEntries(CreateStringList(directories), CreateStringList(files));
+                return true;
+            }
+            catch (InvalidOperationException ex)
+            {
+                await HandleWalkErrorAsync(ex.Message).ConfigureAwait(false);
+                return false;
+            }
+            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            {
+                await HandleWalkErrorAsync(ex.Message).ConfigureAwait(false);
+                return false;
+            }
+        }
+
         private PyList CreateStringList(IReadOnlyList<string> items)
         {
             var values = new object[items.Count];
@@ -1966,6 +2070,23 @@ internal sealed partial class LythonRuntime
                 callbackSpan,
                 _context,
                 [new CallArgumentValue(null, new PyException("RuntimeError", message, payload))]);
+        }
+
+        private async ValueTask HandleWalkErrorAsync(string message)
+        {
+            if (_onerror is null)
+            {
+                return;
+            }
+
+            var payload = PyString.FromString(message, _governor, _span);
+            var callbackSpan = _span ?? new LythonSourceSpan(0, 0, 0, 0);
+            _ = await InvokeCallableTargetAsync(
+                _onerror,
+                callbackSpan,
+                callbackSpan,
+                _context,
+                () => ValueTask.FromResult(new[] { new CallArgumentValue(null, new PyException("RuntimeError", message, payload)) })).ConfigureAwait(false);
         }
 
         private object CreateTuple(WalkFrame frame)

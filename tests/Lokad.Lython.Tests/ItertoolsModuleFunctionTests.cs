@@ -147,6 +147,58 @@ __lython_file.close()
         Assert.Equal("[(1, [1, 1]), (2, [2, 2]), (1, [1])]|1|2|1|2|3|3|1|[]|2|[2]", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public async Task ItertoolsModule_RunAsync_AwaitsAsyncIteratorSourcesAndCallbacks()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/root.txt", "r");
+        host.SeedFile("/repo/docs/a/alpha.txt", "a");
+        host.SeedFile("/repo/docs/b/beta.txt", "b");
+        host.SeedFile("/repo/marker.txt", "m");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import itertools
+import os
+
+def root(row):
+    return row[0]
+
+def describe(root, dirs, files):
+    open("/repo/marker.txt").read()
+    return root
+
+def key(row):
+    open("/repo/marker.txt").read()
+    return len(row[2])
+
+vals = []
+vals.append(",".join([row[0] for row in itertools.islice(os.walk("/repo/docs"), 2)]))
+vals.append(",".join(list(map(root, itertools.chain(os.walk("/repo/docs"))))))
+vals.append(str(len(list(itertools.product(os.walk("/repo/docs"), [1])))))
+vals.append(",".join(list(itertools.starmap(describe, os.walk("/repo/docs")))))
+
+groups = []
+for key_value, group in itertools.groupby(os.walk("/repo/docs"), key=key):
+    groups.append(str(key_value) + ":" + str(len(list(group))))
+vals.append(",".join(groups))
+
+left, right = itertools.tee(os.walk("/repo/docs"), 2)
+vals.append(next(left)[0] + ":" + next(right)[0])
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(
+            "/repo/docs,/repo/docs/a|/repo/docs,/repo/docs/a,/repo/docs/b|3|/repo/docs,/repo/docs/a,/repo/docs/b|1:3|/repo/docs:/repo/docs",
+            host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData(
         """

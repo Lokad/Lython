@@ -67,6 +67,53 @@ __lython_file.close()
             host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public async Task RunAsync_MaterializersAndLazyBuiltinIterators_AwaitAsyncSourcesAndCallbacks()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/root.txt", "r");
+        host.SeedFile("/repo/docs/a/alpha.txt", "a");
+        host.SeedFile("/repo/docs/b/beta.txt", "b");
+        host.SeedFile("/repo/marker.txt", "m");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import os
+
+def root_with_read(row):
+    return row[0] + ":" + open("/repo/marker.txt").read()
+
+def is_a(row):
+    open("/repo/marker.txt").read()
+    return row[0] == "/repo/docs/a"
+
+def under_repo(row):
+    return row[0].startswith("/repo")
+
+vals = []
+vals.append(",".join([row[0] for row in os.walk("/repo/docs")]))
+vals.append(",".join(list(map(root_with_read, os.walk("/repo/docs")))))
+vals.append(",".join([row[0] for row in filter(is_a, os.walk("/repo/docs"))]))
+first = next(os.walk("/repo/docs"))
+vals.append(first[0] + ":" + str(first[1]) + ":" + str(first[2]))
+vals.append(str(len(list(os.walk("/repo/docs")))))
+vals.append(str(len(tuple(os.walk("/repo/docs")))))
+vals.append(str(any(map(is_a, os.walk("/repo/docs")))))
+vals.append(str(all(map(under_repo, os.walk("/repo/docs")))))
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(
+            "/repo/docs,/repo/docs/a,/repo/docs/b|/repo/docs:m,/repo/docs/a:m,/repo/docs/b:m|/repo/docs/a|/repo/docs:[a, b]:[root.txt]|3|3|True|True",
+            host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("iter(1)\n", "TypeError", "not iterable")]
     [InlineData("iter(1, 0)\n", "TypeError", "callable")]

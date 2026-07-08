@@ -191,7 +191,7 @@ internal static class CallExpansion
                     AddExpanded(new CallArgumentValue(getName(argument), LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false))));
                     break;
                 case CallArgumentKind.StarredList:
-                    foreach (var value in PyIteration.ToSequence(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument)))
+                    await foreach (var value in PyIteration.ToSequenceAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument)).ConfigureAwait(false))
                     {
                         AddExpanded(new CallArgumentValue(null, value));
                     }

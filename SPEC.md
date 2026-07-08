@@ -1501,6 +1501,8 @@ Cancellation must terminate script execution safely with an explicit runtime fai
 
 The public embedding API may expose synchronous execution, asynchronous execution, or both, but host-safe cancellation must not depend on unsafe preemptive interruption.
 
+When asynchronous execution is used with an asynchronous host, host I/O must be awaited through the async host boundary even when the I/O is reached by lazy iterator advancement, iterable materialization, or common iterator combinators. Synchronous execution may still fail explicitly if a host operation cannot complete synchronously.
+
 ### 14.4 Stack Safety
 
 Python-level recursion must never be allowed to become an uncontrolled CLR stack overflow.

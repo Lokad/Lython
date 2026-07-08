@@ -2,7 +2,7 @@ using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyIterableValue
+internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIterableValue
 {
     private readonly IReadOnlyList<LoweredComprehensionClause> _clauses;
     private readonly LoweredExpression _itemExpression;
@@ -28,11 +28,19 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyIterableValue
         return IterateClauses(_clauses, 0, _closure);
     }
 
-    public async ValueTask<List<object>> IterateAsync()
+    public async ValueTask<List<object>> MaterializeAsync()
     {
         var result = new List<object>();
         await IterateClausesAsync(_clauses, 0, _closure, result).ConfigureAwait(false);
         return result;
+    }
+
+    public async IAsyncEnumerable<object> IterateAsync()
+    {
+        foreach (var item in await MaterializeAsync().ConfigureAwait(false))
+        {
+            yield return item;
+        }
     }
 
     private IEnumerable<object> IterateClauses(
@@ -74,7 +82,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyIterableValue
     {
         var clause = clauses[index];
         var iterable = await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
-        foreach (var item in LythonRuntime.ToSequence(iterable, clause.Iterable.Span))
+        await foreach (var item in LythonRuntime.ToSequenceAsync(iterable, clause.Iterable.Span).ConfigureAwait(false))
         {
             var scope = new LythonRuntime.ExecutionContext(context);
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);

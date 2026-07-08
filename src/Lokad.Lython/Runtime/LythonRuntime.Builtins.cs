@@ -926,6 +926,24 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> ListAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 0)
+        {
+            return new PyList([], context.MemoryGovernor, span);
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
+        }
+
+        var items = await PyIteration.MaterializeAsync(arguments[0], span).ConfigureAwait(false);
+        var result = new PyList(items, context.MemoryGovernor, span);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
     private static object Tuple(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -940,6 +958,25 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyTuple(ToSequence(arguments[0], span), context.MemoryGovernor, span);
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
+    private static async ValueTask<object> TupleAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length == 0)
+        {
+            return PyTuple.Empty;
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
+        }
+
+        var items = await PyIteration.MaterializeAsync(arguments[0], span).ConfigureAwait(false);
+        var result = new PyTuple(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }
@@ -992,6 +1029,42 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> DictAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length == 0)
+        {
+            return new PyDict(context.MemoryGovernor, span);
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects one argument.", span);
+        }
+
+        if (arguments[0] is PyDict sourceDict)
+        {
+            var copied = new PyDict(sourceDict, context.MemoryGovernor, span);
+            context.ObserveCollectionCount(copied.Count, span);
+            return copied;
+        }
+
+        var result = new PyDict(context.MemoryGovernor, span);
+        await foreach (var pair in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        {
+            var values = await PyIteration.MaterializeAsync(pair, span).ConfigureAwait(false);
+            if (values.Count != 2)
+            {
+                throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects key-value pairs.", span);
+            }
+
+            result.SetItem(ValidateDictionaryKey(values[0], span, context.MemoryGovernor), values[1]);
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
     private static object Set(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
@@ -1006,6 +1079,28 @@ internal sealed partial class LythonRuntime
 
         var result = new PySet(context.MemoryGovernor, span);
         foreach (var item in ToSequence(arguments[0], span))
+        {
+            result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+            context.ObserveCollectionCount(result.Count, span);
+        }
+
+        return result;
+    }
+
+    private static async ValueTask<object> SetAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length == 0)
+        {
+            return new PySet(context.MemoryGovernor, span);
+        }
+
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "set(iterable) expects one argument.", span);
+        }
+
+        var result = new PySet(context.MemoryGovernor, span);
+        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
         {
             result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
             context.ObserveCollectionCount(result.Count, span);
@@ -1585,6 +1680,25 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
+    private static async ValueTask<object> AnyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
+        }
+
+        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        {
+            if (IsTruthy(item))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static object All(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -1594,6 +1708,25 @@ internal sealed partial class LythonRuntime
         }
 
         foreach (var item in ToSequence(arguments[0], span))
+        {
+            if (!IsTruthy(item))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async ValueTask<object> AllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);
+        }
+
+        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
         {
             if (!IsTruthy(item))
             {
@@ -1631,6 +1764,38 @@ internal sealed partial class LythonRuntime
         return best;
     }
 
+    private static async ValueTask<object> MinAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "min(iterable) expects one argument.", span);
+        }
+
+        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
+        var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+        if (!hasValue)
+        {
+            throw new LythonRuntimeException("ValueError", "min() arg is an empty sequence", span);
+        }
+
+        while (true)
+        {
+            var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasCandidate)
+            {
+                break;
+            }
+
+            if (Compare(candidate, best, span) < 0)
+            {
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
     private static object Max(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -1658,6 +1823,38 @@ internal sealed partial class LythonRuntime
         return best;
     }
 
+    private static async ValueTask<object> MaxAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "max(iterable) expects one argument.", span);
+        }
+
+        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
+        var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+        if (!hasValue)
+        {
+            throw new LythonRuntimeException("ValueError", "max() arg is an empty sequence", span);
+        }
+
+        while (true)
+        {
+            var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasCandidate)
+            {
+                break;
+            }
+
+            if (Compare(candidate, best, span) > 0)
+            {
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length is < 1 or > 2)
@@ -1668,6 +1865,24 @@ internal sealed partial class LythonRuntime
         var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
         EnsureSummableValue(total, span);
         foreach (var item in ToSequence(arguments[0], span))
+        {
+            EnsureSummableValue(item, span);
+            total = EvaluateAdd(total, item, context, span);
+        }
+
+        return total;
+    }
+
+    private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "sum(iterable[, start]) expects one iterable and optional start argument.", span);
+        }
+
+        var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
+        EnsureSummableValue(total, span);
+        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
         {
             EnsureSummableValue(item, span);
             total = EvaluateAdd(total, item, context, span);
@@ -1752,10 +1967,10 @@ internal sealed partial class LythonRuntime
     {
         if (value is PyGeneratorExpression generator)
         {
-            return await generator.IterateAsync().ConfigureAwait(false);
+            return await generator.MaterializeAsync().ConfigureAwait(false);
         }
 
-        return [.. ToSequence(value, span)];
+        return await PyIteration.MaterializeAsync(value, span).ConfigureAwait(false);
     }
 
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1839,6 +2054,31 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> EnumerateAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is not 1 and not 2)
+        {
+            throw new LythonRuntimeException("TypeError", "enumerate(iterable[, start]) expects one or two arguments.", span);
+        }
+
+        var result = new PyList([], context.MemoryGovernor, span);
+        var index = arguments.Length == 2 && arguments[1] is BigInteger start
+            ? start
+            : arguments.Length == 1
+                ? BigInteger.Zero
+                : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
+
+        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        {
+            result.Add(CreateTuple(2, i => i == 0 ? index : item, context, span));
+            context.ObserveCollectionCount(result.Count, span);
+            index += BigInteger.One;
+        }
+
+        return result;
+    }
+
     private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, span);
@@ -1887,13 +2127,56 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static async ValueTask<object> ZipAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var result = new PyList([], context.MemoryGovernor, span);
+        if (arguments.Length == 0)
+        {
+            return result;
+        }
+
+        var cursors = new PyIteration.Cursor[arguments.Length];
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            cursors[i] = PyIteration.Cursor.Create(arguments[i], span);
+        }
+
+        try
+        {
+            while (true)
+            {
+                var items = new object[cursors.Length];
+                for (var i = 0; i < cursors.Length; i++)
+                {
+                    var (hasValue, value) = await cursors[i].TryMoveNextAsync().ConfigureAwait(false);
+                    if (!hasValue)
+                    {
+                        return result;
+                    }
+
+                    items[i] = RuntimeValue(value);
+                }
+
+                result.Add(new PyTuple(items, context.MemoryGovernor, span));
+                context.ObserveCollectionCount(result.Count, span);
+            }
+        }
+        finally
+        {
+            foreach (var cursor in cursors)
+            {
+                await cursor.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
     private static object Iter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 1)
         {
             return arguments[0] is IPyIteratorValue iterator
                 ? iterator
-                : new PyEnumerableIterator(ToSequence(arguments[0], span));
+                : new PyEnumerableIterator(arguments[0], span);
         }
 
         if (arguments.Length == 2)
@@ -1952,10 +2235,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects function to be callable.", span);
         }
 
-        var iterables = new IEnumerable<object>[arguments.Length - 1];
+        var iterables = new object[arguments.Length - 1];
         for (var i = 1; i < arguments.Length; i++)
         {
-            iterables[i - 1] = ToSequence(arguments[i], span);
+            _ = PyIteration.Cursor.Create(arguments[i], span);
+            iterables[i - 1] = arguments[i];
         }
 
         return new PyMapIterator(callable, iterables, context, span);
@@ -1975,7 +2259,7 @@ internal sealed partial class LythonRuntime
             _ => throw new LythonRuntimeException("TypeError", "filter(function, iterable) expects function to be callable or None.", span)
         };
 
-        return new PyFilterIterator(function, ToSequence(arguments[1], span), context, span);
+        return new PyFilterIterator(function, arguments[1], context, span);
     }
 
     private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2002,6 +2286,29 @@ internal sealed partial class LythonRuntime
         if (enumerator.MoveNext())
         {
             return RuntimeValue(enumerator.Current);
+        }
+
+        if (arguments.Length == 2)
+        {
+            return arguments[1];
+        }
+
+        throw new LythonRuntimeException("StopIteration", "iterator is exhausted", span);
+    }
+
+    private static async ValueTask<object> NextAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        if (arguments.Length is not 1 and not 2)
+        {
+            throw new LythonRuntimeException("TypeError", "next(iterator[, default]) expects one or two arguments.", span);
+        }
+
+        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
+        var (hasValue, value) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+        if (hasValue)
+        {
+            return RuntimeValue(value);
         }
 
         if (arguments.Length == 2)

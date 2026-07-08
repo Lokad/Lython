@@ -21,11 +21,11 @@ internal sealed partial class LythonRuntime
                 "repeat" => new ItertoolsCallable("itertools.repeat", Repeat),
                 "cycle" => new ItertoolsCallable("itertools.cycle", Cycle),
                 "islice" => new ItertoolsCallable("itertools.islice", Islice),
-                "product" => new ItertoolsCallable("itertools.product", Product),
+                "product" => new ItertoolsCallable("itertools.product", Product, ProductAsync),
                 "zip_longest" => new ItertoolsCallable("itertools.zip_longest", ZipLongest),
-                "combinations" => new ItertoolsCallable("itertools.combinations", Combinations),
-                "combinations_with_replacement" => new ItertoolsCallable("itertools.combinations_with_replacement", CombinationsWithReplacement),
-                "permutations" => new ItertoolsCallable("itertools.permutations", Permutations),
+                "combinations" => new ItertoolsCallable("itertools.combinations", Combinations, CombinationsAsync),
+                "combinations_with_replacement" => new ItertoolsCallable("itertools.combinations_with_replacement", CombinationsWithReplacement, CombinationsWithReplacementAsync),
+                "permutations" => new ItertoolsCallable("itertools.permutations", Permutations, PermutationsAsync),
                 "accumulate" => new ItertoolsCallable("itertools.accumulate", Accumulate),
                 "compress" => new ItertoolsCallable("itertools.compress", Compress),
                 "filterfalse" => new ItertoolsCallable("itertools.filterfalse", FilterFalse),
@@ -61,13 +61,13 @@ internal sealed partial class LythonRuntime
                 positionalCount++;
             }
 
-            var iterables = new IEnumerable<object>[positionalCount];
+            var iterables = new object[positionalCount];
             for (var i = 0; i < positionalCount; i++)
             {
-                iterables[i] = ToSequence(arguments[i].Value, span);
+                iterables[i] = arguments[i].Value;
             }
 
-            return new PyChainIterator(iterables);
+            return new PyChainIterator(iterables, span);
         }
 
         public bool TryGetMember(string name, out object value)
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "itertools.chain.from_iterable(iterable) expects one iterable argument.", span);
             }
 
-            return new PyChainIterator(new FromIterableSequences(ToSequence(positional[0], span), span));
+            return new PyChainIterator(positional[0], span);
         }
     }
 
@@ -98,17 +98,30 @@ internal sealed partial class LythonRuntime
     {
         private readonly string _name;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
-        public ItertoolsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
+        public ItertoolsCallable(
+            string name,
+            Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
         {
             _name = name;
             _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             return _implementation(arguments, span, context);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return _asyncImplementation is null
+                ? _implementation(arguments, span, context)
+                : await _asyncImplementation(arguments, span, context).ConfigureAwait(false);
         }
     }
 
@@ -142,7 +155,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.cycle(iterable) expects one iterable argument.", span);
         }
 
-        return new PyCycleIterator(ToSequence(positional[0], span), context.MemoryGovernor, context, span);
+        return new PyCycleIterator(positional[0], context.MemoryGovernor, context, span);
     }
 
     private static object Islice(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -154,7 +167,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.islice(iterable, stop) or itertools.islice(iterable, start, stop[, step]) is required.", span);
         }
 
-        var iterable = ToSequence(positional[0], span);
         long start;
         long stop;
         long step;
@@ -173,7 +185,7 @@ internal sealed partial class LythonRuntime
                 : 1;
         }
 
-        return new PyIsliceIterator(iterable, start, stop, step);
+        return new PyIsliceIterator(positional[0], start, stop, step, span);
     }
 
     private static object Product(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -224,10 +236,58 @@ internal sealed partial class LythonRuntime
         return new PyProductIterator(repeated, context.MemoryGovernor, span);
     }
 
+    private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        var positionalCount = 0;
+        var repeat = 1;
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            var argument = arguments[i];
+            if (argument.Name is null)
+            {
+                positionalCount++;
+                continue;
+            }
+
+            if (!string.Equals(argument.Name, "repeat", StringComparison.Ordinal))
+            {
+                throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
+            }
+
+            repeat = checked((int)ExpectNonNegativeLong(argument.Value, "itertools.product(..., repeat=...) expects repeat to be a non-negative integer.", span));
+        }
+
+        var pools = new object[positionalCount][];
+        var positionalIndex = 0;
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            var argument = arguments[i];
+            if (argument.Name is not null)
+            {
+                continue;
+            }
+
+            pools[positionalIndex++] = await MaterializeItSequenceAsync(argument.Value, span).ConfigureAwait(false);
+        }
+
+        var repeated = new IReadOnlyList<object>[pools.Length * repeat];
+        var repeatedIndex = 0;
+        for (var i = 0; i < repeat; i++)
+        {
+            for (var j = 0; j < pools.Length; j++)
+            {
+                repeated[repeatedIndex++] = pools[j];
+            }
+        }
+
+        return new PyProductIterator(repeated, context.MemoryGovernor, span);
+    }
+
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        var iterables = new IEnumerable<object>[arguments.Length];
+        var iterables = new object[arguments.Length];
         var iterableCount = 0;
         object fillValue = PyNone.Instance;
         for (var i = 0; i < arguments.Length; i++)
@@ -235,7 +295,7 @@ internal sealed partial class LythonRuntime
             var argument = arguments[i];
             if (argument.Name is null)
             {
-                iterables[iterableCount++] = ToSequence(argument.Value, span);
+                iterables[iterableCount++] = argument.Value;
                 continue;
             }
 
@@ -247,13 +307,21 @@ internal sealed partial class LythonRuntime
             fillValue = argument.Value;
         }
 
-        return new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, context.MemoryGovernor, span);
+        return new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, span);
     }
 
     private static object Combinations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var bound = BindArguments(arguments, "itertools.combinations", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
         var pool = MaterializeSequence(bound.Values[0], span);
+        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
+        return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
+    }
+
+    private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var bound = BindArguments(arguments, "itertools.combinations", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
     }
@@ -266,10 +334,28 @@ internal sealed partial class LythonRuntime
         return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
     }
 
+    private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var bound = BindArguments(arguments, "itertools.combinations_with_replacement", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
+        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
+        return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
+    }
+
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var bound = BindArguments(arguments, "itertools.permutations", ["iterable", "r"], requiredCount: 1, maxPositionalCount: 2, span);
         var pool = MaterializeSequence(bound.Values[0], span);
+        var r = !bound.Assigned[1] || bound.Values[1] is PyNone
+            ? pool.Length
+            : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
+        return new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
+    }
+
+    private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var bound = BindArguments(arguments, "itertools.permutations", ["iterable", "r"], requiredCount: 1, maxPositionalCount: 2, span);
+        var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
@@ -287,14 +373,14 @@ internal sealed partial class LythonRuntime
         }
 
         var hasInitial = bound.Assigned[2] && bound.Values[2] is not PyNone;
-        return new PyAccumulateIterator(ToSequence(bound.Values[0], span), function, bound.Values[2], hasInitial, context, span);
+        return new PyAccumulateIterator(bound.Values[0], function, bound.Values[2], hasInitial, context, span);
     }
 
     private static object Compress(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
         var bound = BindArguments(arguments, "itertools.compress", ["data", "selectors"], requiredCount: 2, maxPositionalCount: 2, span);
-        return new PyCompressIterator(ToSequence(bound.Values[0], span), ToSequence(bound.Values[1], span));
+        return new PyCompressIterator(bound.Values[0], bound.Values[1], span);
     }
 
     private static object FilterFalse(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -308,19 +394,19 @@ internal sealed partial class LythonRuntime
         var predicate = positional[0] is PyNone
             ? null
             : positional[0] as ICallable ?? throw new LythonRuntimeException("TypeError", "itertools.filterfalse(function, iterable) expects a callable or None.", span);
-        return new PyPredicateIterator(predicate, ToSequence(positional[1], span), PyPredicateIteratorMode.FilterFalse, context, span);
+        return new PyPredicateIterator(predicate, positional[1], PyPredicateIteratorMode.FilterFalse, context, span);
     }
 
     private static object DropWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.dropwhile", span);
-        return new PyPredicateIterator(predicate, ToSequence(iterable, span), PyPredicateIteratorMode.DropWhile, context, span);
+        return new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.DropWhile, context, span);
     }
 
     private static object TakeWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.takewhile", span);
-        return new PyPredicateIterator(predicate, ToSequence(iterable, span), PyPredicateIteratorMode.TakeWhile, context, span);
+        return new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.TakeWhile, context, span);
     }
 
     private static object Starmap(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -331,7 +417,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.starmap(function, iterable) expects a callable and an iterable.", span);
         }
 
-        return new PyStarmapIterator(function, ToSequence(positional[1], span), context, span);
+        return new PyStarmapIterator(function, positional[1], context, span);
     }
 
     private static object Pairwise(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -342,7 +428,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.pairwise(iterable) expects one iterable argument.", span);
         }
 
-        return new PyPairwiseIterator(ToSequence(positional[0], span), context.MemoryGovernor, span);
+        return new PyPairwiseIterator(positional[0], context.MemoryGovernor, span);
     }
 
     private static object GroupBy(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -355,7 +441,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "itertools.groupby(..., key=...) expects a callable or None.", span);
         }
 
-        return new PyGroupByIterator(ToSequence(bound.Values[0], span), keyFunction, context.MemoryGovernor, context, span);
+        return new PyGroupByIterator(bound.Values[0], keyFunction, context.MemoryGovernor, context, span);
     }
 
     private static object Tee(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -369,7 +455,7 @@ internal sealed partial class LythonRuntime
         var count = positional.Length == 2
             ? ExpectItNonNegativeInt(positional[1], "n must be >= 0", span)
             : 2;
-        var shared = new PyTeeSharedState(ToSequence(positional[0], span), count, context.MemoryGovernor, context, span);
+        var shared = new PyTeeSharedState(positional[0], count, context.MemoryGovernor, context, span);
         var iterators = new object[count];
         for (var i = 0; i < count; i++)
         {
@@ -384,7 +470,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, "itertools.batched", ["iterable", "n", "strict"], requiredCount: 2, maxPositionalCount: 2, span);
         var size = ExpectItPositiveInt(bound.Values[1], "n must be at least one", span);
         var strict = bound.Assigned[2] && IsTruthy(bound.Values[2]);
-        return new PyBatchedIterator(ToSequence(bound.Values[0], span), size, strict, context.MemoryGovernor, span);
+        return new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span);
     }
 
     private static object[] PositionalOnly(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
@@ -492,29 +578,18 @@ internal sealed partial class LythonRuntime
         return [.. list];
     }
 
-    private readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
-
-    private sealed class FromIterableSequences : IEnumerable<IEnumerable<object>>
+    private static async ValueTask<object[]> MaterializeItSequenceAsync(object value, LythonSourceSpan span)
     {
-        private readonly IEnumerable<object> _outer;
-        private readonly LythonSourceSpan _span;
-
-        public FromIterableSequences(IEnumerable<object> outer, LythonSourceSpan span)
+        var list = new List<object>();
+        await foreach (var item in ToSequenceAsync(value, span).ConfigureAwait(false))
         {
-            _outer = outer;
-            _span = span;
+            list.Add(RuntimeValue(item));
         }
 
-        public IEnumerator<IEnumerable<object>> GetEnumerator()
-        {
-            foreach (var item in _outer)
-            {
-                yield return ToSequence(item, _span);
-            }
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        return [.. list];
     }
+
+    private readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
 
     private static long ExpectNonNegativeLong(object value, string message, LythonSourceSpan span)
     {

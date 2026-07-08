@@ -414,6 +414,58 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task OsWalk_RunAsync_AwaitsLazyTraversalAndPreservesTopdownPruning()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/root.txt", "r");
+        host.SeedFile("/repo/docs/a/alpha.txt", "a");
+        host.SeedFile("/repo/docs/b/beta.txt", "b");
+
+        var result = await new LythonEngine().RunAsync(
+            """
+import os
+
+rows = []
+for root, dirs, files in os.walk("/repo/docs", topdown=True):
+    if root == "/repo/docs":
+        del dirs[0]
+    rows.append(root + "|" + str(dirs) + "|" + str(files))
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write("\n".join(rows))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(host.CompletedAsynchronously > 0);
+        Assert.Equal(
+            "/repo/docs|[b]|[root.txt]\n/repo/docs/b|[]|[beta.txt]",
+            host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void OsWalk_RunWithAsynchronousHost_FailsFastWithRunAsyncGuidance()
+    {
+        var host = new DelayedLythonHost("/repo");
+        host.SeedFile("/repo/docs/root.txt", "r");
+
+        var result = new LythonEngine().Run(
+            """
+import os
+
+for root, dirs, files in os.walk("/repo/docs"):
+    pass
+""",
+            host);
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void OsModule_RmdirRemovedirsAndReplace_HaveDirectCoverage()
     {
         var host = new MockLythonHost("/repo");

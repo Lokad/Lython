@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
             var syntax = statement.Syntax;
             var iterable = await EvaluateLoweredExpressionAsync(statement.Iterable, context).ConfigureAwait(false);
             var broke = false;
-            foreach (var item in ToSequence(iterable, statement.Iterable.Span))
+            await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span).ConfigureAwait(false))
             {
                 AssignLoopTarget(syntax.Target, item, statement.Iterable.Span, context);
                 var signal = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
@@ -810,7 +810,7 @@ internal sealed partial class LythonRuntime
         var clause = clauses[index];
         var iterable = await EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
 
-        foreach (var item in ToSequence(iterable, clause.Iterable.Span))
+        await foreach (var item in ToSequenceAsync(iterable, clause.Iterable.Span).ConfigureAwait(false))
         {
             var scope = new ExecutionContext(context);
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);

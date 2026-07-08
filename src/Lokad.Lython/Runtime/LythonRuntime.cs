@@ -2845,6 +2845,9 @@ internal sealed partial class LythonRuntime
     internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
         => PyIteration.ToSequence(value, span);
 
+    internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
+        => PyIteration.ToSequenceAsync(value, span);
+
     internal static bool AreEqual(object left, object right) => PyEquality.AreEqual(left, right);
 
     private static int Compare(object left, object right, LythonSourceSpan span) => PyComparison.Compare(left, right, span);
@@ -3485,11 +3488,11 @@ internal sealed partial class LythonRuntime
                 ["format"] = new BuiltinCallable("format", Format, ["value", "format_spec"], requiredCount: 1),
                 ["len"] = new BuiltinCallable("len", Len),
                 ["sorted"] = new BuiltinCallable("sorted", Sorted, SortedAsync, ["iterable", "key", "reverse"], requiredCount: 1),
-                ["any"] = new BuiltinCallable("any", Any),
-                ["all"] = new BuiltinCallable("all", All),
-                ["min"] = new BuiltinCallable("min", Min),
-                ["max"] = new BuiltinCallable("max", Max),
-                ["sum"] = new BuiltinCallable("sum", Sum, ["iterable", "start"], requiredCount: 1),
+                ["any"] = new BuiltinCallable("any", Any, AnyAsync),
+                ["all"] = new BuiltinCallable("all", All, AllAsync),
+                ["min"] = new BuiltinCallable("min", Min, MinAsync),
+                ["max"] = new BuiltinCallable("max", Max, MaxAsync),
+                ["sum"] = new BuiltinCallable("sum", Sum, SumAsync, ["iterable", "start"], requiredCount: 1),
                 ["abs"] = new BuiltinCallable("abs", Abs, ["x"]),
                 ["pow"] = new BuiltinCallable("pow", Pow, ["base", "exp", "mod"], requiredCount: 2),
                 ["round"] = new BuiltinCallable("round", Round, ["number", "ndigits"], requiredCount: 1),
@@ -3500,10 +3503,10 @@ internal sealed partial class LythonRuntime
                 ["chr"] = new BuiltinCallable("chr", Chr, ["i"]),
                 ["ord"] = new BuiltinCallable("ord", Ord, ["c"]),
                 ["range"] = new BuiltinCallable("range", Range),
-                ["enumerate"] = new BuiltinCallable("enumerate", Enumerate, ["iterable", "start"], requiredCount: 1),
-                ["zip"] = new BuiltinCallable("zip", Zip),
+                ["enumerate"] = new BuiltinCallable("enumerate", Enumerate, EnumerateAsync, ["iterable", "start"], requiredCount: 1),
+                ["zip"] = new BuiltinCallable("zip", Zip, ZipAsync),
                 ["iter"] = new BuiltinCallable("iter", Iter),
-                ["next"] = new BuiltinCallable("next", Next, ["iterator", "default"], requiredCount: 1),
+                ["next"] = new BuiltinCallable("next", Next, NextAsync, ["iterator", "default"], requiredCount: 1),
                 ["reversed"] = new BuiltinCallable("reversed", Reversed, ["sequence"]),
                 ["map"] = new BuiltinCallable("map", Map),
                 ["filter"] = new BuiltinCallable("filter", Filter, ["function", "iterable"]),
@@ -3562,10 +3565,10 @@ internal sealed partial class LythonRuntime
                 ["vars"] = new BuiltinCallable("vars", Vars, ["object"], requiredCount: 0),
                 ["callable"] = new BuiltinCallable("callable", Callable, ["object"]),
                 ["hash"] = new BuiltinCallable("hash", Hash, ["object"]),
-                ["list"] = new BuiltinCallable("list", List, ["iterable"], requiredCount: 0),
-                ["tuple"] = new BuiltinCallable("tuple", Tuple, ["iterable"], requiredCount: 0),
-                ["dict"] = new BuiltinCallable("dict", Dict, ["iterable"], requiredCount: 0),
-                ["set"] = new BuiltinCallable("set", Set, ["iterable"], requiredCount: 0),
+                ["list"] = new BuiltinCallable("list", List, ListAsync, ["iterable"], requiredCount: 0),
+                ["tuple"] = new BuiltinCallable("tuple", Tuple, TupleAsync, ["iterable"], requiredCount: 0),
+                ["dict"] = new BuiltinCallable("dict", Dict, DictAsync, ["iterable"], requiredCount: 0),
+                ["set"] = new BuiltinCallable("set", Set, SetAsync, ["iterable"], requiredCount: 0),
             };
 
             if (!string.IsNullOrWhiteSpace(sourcePath))
