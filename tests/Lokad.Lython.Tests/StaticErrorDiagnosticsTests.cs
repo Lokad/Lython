@@ -11,8 +11,8 @@ public sealed class StaticErrorDiagnosticsTests
             """
 open("/repo/in.txt", "rb")
 open("/repo/in.txt", encoding="latin-1")
-open("/repo/in.txt", newline="\n")
-open("/repo/in.txt", errors="ignore")
+open("/repo/in.txt", newline="bad")
+open("/repo/in.txt", errors="surrogateescape")
 """);
 
         Assert.False(compiled.IsValid);
@@ -218,7 +218,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--flag", action="explode")
 parser.add_argument("--count", nargs=0)
-Path("/repo/output.txt").write_text("alpha", encoding="latin-1", newline="\r\n")
+Path("/repo/output.txt").write_text("alpha", encoding="latin-1", newline="bad")
 """);
 
         Assert.False(compiled.IsValid);
@@ -241,7 +241,7 @@ parser.add_argument(1, dest=2, action=3, help=4, choices=1)
 parser.add_argument("   ")
 Path("/repo/input.txt").open(1)
 Path("/repo/input.txt").open("x")
-Path("/repo/input.txt").open("rb", "latin-1")
+Path("/repo/input.txt").open("rb", -1, "latin-1")
 """);
 
         Assert.False(compiled.IsValid);
@@ -621,13 +621,13 @@ path = Path("/repo/input.txt")
 path.as_posix(1)
 path.resolve(extra=1)
 path.exists(1)
-path.read_text("utf-8", "strict", "extra")
+path.read_text("utf-8", "strict", "", "extra")
 path.write_text()
 path.with_suffix()
 path.joinpath()
 
 with open("/repo/input.txt", "r") as reader:
-    reader.readline(1)
+    reader.readline(1, 2)
     reader.write()
     reader.writelines()
 """);

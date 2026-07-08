@@ -2238,13 +2238,33 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "argparse.FileType only supports host-mediated UTF-8 text modes.", span);
             }
 
+            mode = ParseTextOpenMode(PyString.FromString(mode), "argparse.FileType", span);
+            if (arguments.Length >= 2)
+            {
+                ValidateTextBuffering(arguments[1], "argparse.FileType", span);
+            }
+
             if (mode is not ("r" or "w" or "a"))
             {
                 throw new LythonRuntimeException("ValueError", "argparse.FileType only supports modes 'r', 'w', and 'a'.", span);
             }
 
-            var encoding = arguments.Length >= 3 ? OptionalString(arguments[2], "encoding", "argparse.FileType", span) : null;
-            var errors = arguments.Length >= 4 ? OptionalString(arguments[3], "errors", "argparse.FileType", span) : null;
+            var encodingMode = arguments.Length >= 3
+                ? ParseTextEncoding(arguments[2], "argparse.FileType", span)
+                : TextEncodingMode.Utf8;
+            var errorsMode = arguments.Length >= 4
+                ? ParseTextErrors(arguments[3], "argparse.FileType", span)
+                : TextErrorMode.Strict;
+            var encoding = arguments.Length >= 3 ? (encodingMode == TextEncodingMode.Utf8Bom ? "utf-8-sig" : "utf-8") : null;
+            var errors = arguments.Length >= 4
+                ? errorsMode switch
+                {
+                    TextErrorMode.Ignore => "ignore",
+                    TextErrorMode.Replace => "replace",
+                    TextErrorMode.BackslashReplace => "backslashreplace",
+                    _ => "strict"
+                }
+                : null;
             return new ArgparseFileTypeObject(mode, encoding, errors);
         }
 
@@ -4072,6 +4092,7 @@ internal sealed partial class LythonRuntime
             var values = new List<object> { filename, PyString.FromString(mode) };
             if (encoding is not null || errors is not null)
             {
+                values.Add(PyNone.Instance);
                 values.Add(encoding is null ? PyNone.Instance : PyString.FromString(encoding));
                 values.Add(errors is null ? PyNone.Instance : PyString.FromString(errors));
                 values.Add(PyString.Empty);
@@ -4261,6 +4282,21 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "encode" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.encode([encoding][, errors]) expects zero to two arguments.", span);
+                    }
+
+                    var encoding = arguments.Length >= 1
+                        ? ParseTextEncoding(arguments[0], "str.encode()", span)
+                        : TextEncodingMode.Utf8;
+                    _ = arguments.Length == 2
+                        ? ParseTextErrors(arguments[1], "str.encode()", span)
+                        : TextErrorMode.Strict;
+                    return CreateBytes(EncodeUtf8Text(text, encoding, TextNewlineMode.PreserveUniversal), context, span);
+                }, "str.encode", ["encoding", "errors"], 0),
                 "replace" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length is < 2 or > 3 ||
@@ -5008,6 +5044,44 @@ internal sealed partial class LythonRuntime
             }
 
             return value;
+        }
+    }
+
+    internal static class BytesMembers
+    {
+        public static bool TryGetMember(PyBytes bytes, string name, out object value)
+        {
+            value = name switch
+            {
+                "decode" => new BoundCallable((arguments, span, context) =>
+                {
+                    if (arguments.Length > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.decode([encoding][, errors]) expects zero to two arguments.", span);
+                    }
+
+                    var encoding = arguments.Length >= 1
+                        ? ParseTextEncoding(arguments[0], "bytes.decode()", span)
+                        : TextEncodingMode.Utf8;
+                    var errors = arguments.Length == 2
+                        ? ParseTextErrors(arguments[1], "bytes.decode()", span)
+                        : TextErrorMode.Strict;
+                    var text = DecodeUtf8Text(bytes.ToArray(), context, span, errors, TextNewlineMode.PreserveUniversal);
+                    if (encoding == TextEncodingMode.Utf8Bom)
+                    {
+                        var decoded = text.AsString();
+                        if (decoded.Length > 0 && decoded[0] == '\uFEFF')
+                        {
+                            return PyString.FromString(decoded[1..], context.MemoryGovernor, span);
+                        }
+                    }
+
+                    return text;
+                }, "bytes.decode", ["encoding", "errors"], 0),
+                _ => null!
+            };
+
+            return value is not null;
         }
     }
 

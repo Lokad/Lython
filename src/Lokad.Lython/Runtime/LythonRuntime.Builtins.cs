@@ -22,36 +22,34 @@ internal sealed partial class LythonRuntime
 
     private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode) = ParseOpenArguments(arguments, span);
-        var modeText = mode.AsString();
-        return modeText switch
+        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span);
+        return mode switch
         {
-            "r" => ExecutionContext.TextFileHandle.ForRead(path.AsString(), context, encodingMode),
-            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode),
-            "a" => ExecutionContext.TextFileHandle.ForAppend(path.AsString(), context, encodingMode),
+            "r" => ExecutionContext.TextFileHandle.ForRead(path.AsString(), context, encodingMode, errors, newline),
+            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
+            "a" => ExecutionContext.TextFileHandle.ForAppend(path.AsString(), context, encodingMode, errors, newline),
             _ => throw new LythonRuntimeException("ValueError", "open() only supports modes 'r', 'w', and 'a'.", span)
         };
     }
 
     private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode) = ParseOpenArguments(arguments, span);
-        var modeText = mode.AsString();
-        return modeText switch
+        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span);
+        return mode switch
         {
-            "r" => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode).ConfigureAwait(false),
-            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode),
-            "a" => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode).ConfigureAwait(false),
+            "r" => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
+            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
+            "a" => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
             _ => throw new LythonRuntimeException("ValueError", "open() only supports modes 'r', 'w', and 'a'.", span)
         };
     }
 
-    private static (PyString Path, PyString Mode, TextEncodingMode EncodingMode) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
+    private static (PyString Path, string Mode, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
     {
         var arguments = boundArguments.Values;
-        if (boundArguments.Count is < 1 or > 5 || !PyStringOps.TryAsString(arguments[0], out var path))
+        if (boundArguments.Count is < 1 or > 8 || !PyStringOps.TryAsString(arguments[0], out var path))
         {
-            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, errors][, newline]) expects a string file/path plus supported text-mode options.", span);
+            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) expects a string file/path plus supported text-mode options.", span);
         }
 
         var mode = boundArguments.Assigned[1]
@@ -62,41 +60,44 @@ internal sealed partial class LythonRuntime
             }
             : PyString.FromString("r");
 
-        var encodingMode = TextEncodingMode.Utf8;
         if (boundArguments.Count >= 3)
         {
-            encodingMode = ParseTextEncoding(arguments[2], "open()", span);
+            ValidateTextBuffering(arguments[2], "open()", span);
         }
 
-        if (boundArguments.Count >= 4)
+        var encodingMode = boundArguments.Count >= 4
+            ? ParseTextEncoding(arguments[3], "open()", span)
+            : TextEncodingMode.Utf8;
+        var errors = boundArguments.Count >= 5
+            ? ParseTextErrors(arguments[4], "open()", span)
+            : TextErrorMode.Strict;
+        var newline = boundArguments.Count >= 6
+            ? ParseTextNewline(arguments[5], "open()", span)
+            : TextNewlineMode.TranslateUniversal;
+
+        if (boundArguments.Count >= 7)
         {
-            ValidateOpenTextErrors(arguments[3], span);
+            ValidateCloseFd(arguments[6], "open()", span);
         }
 
-        if (boundArguments.Count == 5)
+        if (boundArguments.Count == 8)
         {
-            ValidateOpenNewline(arguments[4], span);
+            ValidateOpener(arguments[7], "open()", span);
         }
 
-        var modeText = mode.AsString();
-        if (modeText.Contains('b'))
-        {
-            throw new LythonRuntimeException("ValueError", "open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
-        }
-
-        return (path, mode, encodingMode);
+        return (path, ParseTextOpenMode(mode, "open()", span), encodingMode, errors, newline);
     }
 
     private static BoundOpenArguments BindPositionalOpenArguments(object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length > 5)
+        if (arguments.Length > 8)
         {
-            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, encoding][, errors][, newline]) received too many positional arguments.", span);
+            throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) received too many positional arguments.", span);
         }
 
-        var bound = new object[5];
+        var bound = new object[8];
         Array.Fill(bound, PyNone.Instance);
-        var assigned = new bool[5];
+        var assigned = new bool[8];
         for (var i = 0; i < arguments.Length; i++)
         {
             bound[i] = arguments[i];
@@ -104,33 +105,6 @@ internal sealed partial class LythonRuntime
         }
 
         return new BoundOpenArguments(bound, assigned, arguments.Length);
-    }
-
-    private static void ValidateOpenTextErrors(object value, LythonSourceSpan span)
-    {
-        if (value is null or PyNone)
-        {
-            return;
-        }
-
-        if (!PyStringOps.TryAsString(value, out var errors) ||
-            !errors.AsString().Equals("strict", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new LythonRuntimeException("ValueError", "open() only supports errors='strict'.", span);
-        }
-    }
-
-    private static void ValidateOpenNewline(object value, LythonSourceSpan span)
-    {
-        if (value is null or PyNone)
-        {
-            return;
-        }
-
-        if (!PyStringOps.TryAsString(value, out var newline) || newline.Length != 0)
-        {
-            throw new LythonRuntimeException("ValueError", "open() only supports newline=''.", span);
-        }
     }
 
     private static object Input(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -175,34 +149,38 @@ internal sealed partial class LythonRuntime
         return PyStringOps.TrimTrailingNewline(line);
     }
 
-    private static TextEncodingMode ParseTextEncoding(object value, string owner, LythonSourceSpan span)
-    {
-        if (value is null or PyNone)
-        {
-            return TextEncodingMode.Utf8;
-        }
-
-        if (!PyStringOps.TryAsString(value, out var encoding))
-        {
-            throw new LythonRuntimeException("ValueError", $"{owner} only supports encoding='utf-8' or 'utf-8-sig'.", span);
-        }
-
-        return encoding.AsString().ToLowerInvariant() switch
-        {
-            "utf-8" => TextEncodingMode.Utf8,
-            "utf-8-sig" => TextEncodingMode.Utf8Bom,
-            _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports encoding='utf-8' or 'utf-8-sig'.", span)
-        };
-    }
-
     private static object Str(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length != 1)
+        if (arguments.Length == 0)
         {
-            throw new LythonRuntimeException("TypeError", "str(value) expects one argument.", span);
+            return PyString.Empty;
         }
 
-        return ToPythonPyString(arguments[0], context);
+        if (arguments.Length == 1)
+        {
+            return ToPythonPyString(arguments[0], context);
+        }
+
+        if (arguments.Length > 3 || arguments[0] is not PyBytes bytes)
+        {
+            throw new LythonRuntimeException("TypeError", "str(object='', encoding='utf-8', errors='strict') expects bytes when encoding or errors are provided.", span);
+        }
+
+        var encoding = ParseTextEncoding(arguments[1], "str()", span);
+        var errors = arguments.Length == 3
+            ? ParseTextErrors(arguments[2], "str()", span)
+            : TextErrorMode.Strict;
+        var text = DecodeUtf8Text(bytes.ToArray(), context, span, errors, TextNewlineMode.PreserveUniversal);
+        if (encoding == TextEncodingMode.Utf8Bom)
+        {
+            var decoded = text.AsString();
+            if (decoded.Length > 0 && decoded[0] == '\uFEFF')
+            {
+                return PyString.FromString(decoded[1..], context.MemoryGovernor, span);
+            }
+        }
+
+        return text;
     }
 
     private static object Repr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -635,9 +613,21 @@ internal sealed partial class LythonRuntime
             return new PyBytes(Array.Empty<byte>());
         }
 
-        if (arguments.Length != 1)
+        if (arguments.Length > 3)
         {
-            throw new LythonRuntimeException("TypeError", "bytes([iterable]) expects zero or one argument.", span);
+            throw new LythonRuntimeException("TypeError", "bytes([source[, encoding[, errors]]]) expects zero to three arguments.", span);
+        }
+
+        if (arguments.Length >= 2)
+        {
+            if (!PyStringOps.TryAsString(arguments[0], out var text))
+            {
+                throw new LythonRuntimeException("TypeError", "bytes(source, encoding[, errors]) expects source to be a string.", span);
+            }
+
+            var encoding = ParseTextEncoding(arguments[1], "bytes()", span);
+            _ = arguments.Length == 3 ? ParseTextErrors(arguments[2], "bytes()", span) : TextErrorMode.Strict;
+            return CreateBytes(EncodeUtf8Text(text, encoding, TextNewlineMode.PreserveUniversal), context, span);
         }
 
         return arguments[0] switch
@@ -2026,14 +2016,14 @@ internal sealed partial class LythonRuntime
     {
         internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIterableValue
         {
-            private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
-
             private TextFileHandle(
                 string path,
                 string mode,
                 PyString text,
                 ExecutionContext context,
                 TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline,
                 BigInteger appendBasePosition = default)
             {
                 Path = path;
@@ -2041,12 +2031,16 @@ internal sealed partial class LythonRuntime
                 _text = text;
                 _context = context;
                 _encoding = encoding;
+                _errors = errors;
+                _newline = newline;
                 _appendBasePosition = appendBasePosition;
             }
 
             private PyString _text;
             private readonly ExecutionContext _context;
             private readonly TextEncodingMode _encoding;
+            private readonly TextErrorMode _errors;
+            private readonly TextNewlineMode _newline;
             private readonly BigInteger _appendBasePosition;
             private int _readCursorByte;
             private int _flushedAppendByteLength;
@@ -2054,6 +2048,16 @@ internal sealed partial class LythonRuntime
             public string Path { get; }
 
             public string Mode { get; }
+
+            public string EncodingName => _encoding == TextEncodingMode.Utf8Bom ? "utf-8-sig" : "utf-8";
+
+            public string ErrorsName => _errors switch
+            {
+                TextErrorMode.Ignore => "ignore",
+                TextErrorMode.Replace => "replace",
+                TextErrorMode.BackslashReplace => "backslashreplace",
+                _ => "strict"
+            };
 
             public bool IsClosed { get; private set; }
 
@@ -2104,9 +2108,14 @@ internal sealed partial class LythonRuntime
             public object Seek(LythonSourceSpan span)
                 => throw new LythonRuntimeException("NotImplementedError", "file.seek(...) is not supported by Lython text handles.", span);
 
-            public static TextFileHandle ForRead(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
+            public static TextFileHandle ForRead(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding = TextEncodingMode.Utf8,
+                TextErrorMode errors = TextErrorMode.Strict,
+                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
             {
-                var text = ReadGovernedHostText(path, context, null);
+                var text = ReadGovernedHostText(path, context, null, errors, newline);
                 if (encoding == TextEncodingMode.Utf8Bom)
                 {
                     var decoded = text.AsString();
@@ -2117,12 +2126,17 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.ObserveString(text, null);
-                return new TextFileHandle(path, "r", text, context, encoding);
+                return new TextFileHandle(path, "r", text, context, encoding, errors, newline);
             }
 
-            public static async ValueTask<TextFileHandle> ForReadAsync(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
+            public static async ValueTask<TextFileHandle> ForReadAsync(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding = TextEncodingMode.Utf8,
+                TextErrorMode errors = TextErrorMode.Strict,
+                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
             {
-                var text = await ReadGovernedHostTextAsync(path, context, null).ConfigureAwait(false);
+                var text = await ReadGovernedHostTextAsync(path, context, null, errors, newline).ConfigureAwait(false);
                 if (encoding == TextEncodingMode.Utf8Bom)
                 {
                     var decoded = text.AsString();
@@ -2133,28 +2147,43 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.ObserveString(text, null);
-                return new TextFileHandle(path, "r", text, context, encoding);
+                return new TextFileHandle(path, "r", text, context, encoding, errors, newline);
             }
 
-            public static TextFileHandle ForWrite(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
-                => new(path, "w", PyString.Empty, context, encoding);
+            public static TextFileHandle ForWrite(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding = TextEncodingMode.Utf8,
+                TextErrorMode errors = TextErrorMode.Strict,
+                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                => new(path, "w", PyString.Empty, context, encoding, errors, newline);
 
-            public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
+            public static TextFileHandle ForAppend(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding = TextEncodingMode.Utf8,
+                TextErrorMode errors = TextErrorMode.Strict,
+                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
             {
                 var stat = context.HostStat(path, null);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, appendBasePosition);
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition);
             }
 
-            public static async ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding = TextEncodingMode.Utf8)
+            public static async ValueTask<TextFileHandle> ForAppendAsync(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding = TextEncodingMode.Utf8,
+                TextErrorMode errors = TextErrorMode.Strict,
+                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
             {
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, appendBasePosition);
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition);
             }
 
             public object Enter() => this;
@@ -2199,7 +2228,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            public PyString Read()
+            public PyString Read(int size = -1)
             {
                 EnsureOpen();
                 if (Mode != "r")
@@ -2212,12 +2241,15 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                var result = _text.SliceByByteRange(_readCursorByte, _text.Utf8Bytes.Length);
-                _readCursorByte = _text.Utf8Bytes.Length;
+                var end = size < 0
+                    ? _text.Utf8Bytes.Length
+                    : ByteOffsetAfterRunes(_readCursorByte, size);
+                var result = _text.SliceByByteRange(_readCursorByte, end);
+                _readCursorByte = end;
                 return result;
             }
 
-            public PyString ReadLine()
+            public PyString ReadLine(int size = -1)
             {
                 EnsureOpen();
                 if (Mode != "r")
@@ -2231,14 +2263,10 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                var end = source.Length;
-                for (var i = _readCursorByte; i < source.Length; i++)
+                var end = FindLineEndByte(source, _readCursorByte);
+                if (size >= 0)
                 {
-                    if (source[i] == (byte)'\n')
-                    {
-                        end = i + 1;
-                        break;
-                    }
+                    end = Math.Min(end, ByteOffsetAfterRunes(_readCursorByte, size));
                 }
 
                 var line = _text.SliceByByteRange(_readCursorByte, end);
@@ -2246,7 +2274,7 @@ internal sealed partial class LythonRuntime
                 return line;
             }
 
-            public PyList ReadLines()
+            public PyList ReadLines(int hint = -1)
             {
                 EnsureOpen();
                 if (Mode != "r")
@@ -2255,6 +2283,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var items = new List<object>();
+                var totalBytes = 0;
                 while (true)
                 {
                     var line = ReadLine();
@@ -2264,6 +2293,11 @@ internal sealed partial class LythonRuntime
                     }
 
                     items.Add(line);
+                    totalBytes += line.Utf8Bytes.Length;
+                    if (hint > 0 && totalBytes > hint)
+                    {
+                        break;
+                    }
                 }
 
                 return new PyList(items, _context.MemoryGovernor, null);
@@ -2279,7 +2313,6 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "file is not open for writing", null);
                 }
 
-                text = PyStringOps.NormalizeNewlines(text);
                 _text = _text.Concat(text);
                 _context.ObserveString(_text, null);
                 return new BigInteger(text.Length);
@@ -2304,6 +2337,58 @@ internal sealed partial class LythonRuntime
                 }
 
                 return PyNone.Instance;
+            }
+
+            private int ByteOffsetAfterRunes(int startByte, int runeCount)
+            {
+                if (runeCount <= 0)
+                {
+                    return startByte;
+                }
+
+                var currentRune = _text.ByteIndexToRuneIndex(startByte);
+                return _text.GetByteIndexForRuneBoundary(currentRune + runeCount);
+            }
+
+            private int FindLineEndByte(ReadOnlySpan<byte> source, int startByte)
+            {
+                for (var i = startByte; i < source.Length; i++)
+                {
+                    if (source[i] == (byte)'\n' &&
+                        _newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
+                    {
+                        return i + 1;
+                    }
+
+                    if (source[i] != (byte)'\r')
+                    {
+                        continue;
+                    }
+
+                    if (_newline is TextNewlineMode.PreserveCarriageReturn)
+                    {
+                        return i + 1;
+                    }
+
+                    if (_newline is TextNewlineMode.PreserveCarriageReturnLineFeed)
+                    {
+                        if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
+                        {
+                            return i + 2;
+                        }
+
+                        continue;
+                    }
+
+                    if (_newline == TextNewlineMode.PreserveUniversal)
+                    {
+                        return i + 1 < source.Length && source[i + 1] == (byte)'\n'
+                            ? i + 2
+                            : i + 1;
+                    }
+                }
+
+                return source.Length;
             }
 
             private void FlushCore(LythonSourceSpan? span)
@@ -2352,7 +2437,7 @@ internal sealed partial class LythonRuntime
                 var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
                 _context.ObserveString(suffix, span);
                 _context.RegisterHostCall(span);
-                _context.AppendTextUtf8(Path, PyStringOps.EncodeUtf8(suffix), span);
+                _context.AppendTextUtf8(Path, EncodeAppendText(suffix), span);
                 _flushedAppendByteLength = _text.Utf8Bytes.Length;
             }
 
@@ -2366,17 +2451,15 @@ internal sealed partial class LythonRuntime
                 var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
                 _context.ObserveString(suffix, span);
                 _context.RegisterHostCall(span);
-                await _context.AppendTextUtf8Async(Path, PyStringOps.EncodeUtf8(suffix), span).ConfigureAwait(false);
+                await _context.AppendTextUtf8Async(Path, EncodeAppendText(suffix), span).ConfigureAwait(false);
                 _flushedAppendByteLength = _text.Utf8Bytes.Length;
             }
 
             private byte[] EncodeBufferedText()
-            {
-                var utf8 = PyStringOps.EncodeUtf8(_text);
-                return _encoding == TextEncodingMode.Utf8Bom
-                    ? [.. Utf8Bom, .. utf8]
-                    : utf8;
-            }
+                => EncodeUtf8Text(_text, _encoding, _newline);
+
+            private byte[] EncodeAppendText(PyString suffix)
+                => EncodeUtf8Text(suffix, TextEncodingMode.Utf8, _newline);
 
             private void EnsureOpen()
             {

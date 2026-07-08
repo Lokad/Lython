@@ -852,9 +852,9 @@ For path and text-resource manipulation, scripts must use Python-shaped APIs:
 host-mediated through `ILythonHost`; Lython-specific global filesystem helper
 names are not part of the supported script surface.
 
-`pathlib.Path.read_text(...)` is supported for host-mediated text resources. It accepts the Python-shaped forms `read_text()`, `read_text("utf-8")`, `read_text(encoding="utf-8")`, and `read_text(encoding="utf-8-sig", errors="strict")`. Other encodings, other error modes, and extra arguments must fail explicitly.
+`pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. They accept Python-shaped UTF-8 options: `encoding` may be `None`, `utf-8`, or `utf-8-sig`; `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly.
 
-Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF-8 text-handle helpers. They expose ordinary text-handle inspection such as `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, and iteration. Binary modes and random access must fail explicitly.
+Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF-8 text-handle helpers. The signatures include CPython-compatible `buffering`, `encoding`, `errors`, and `newline` slots, while `closefd=False`, custom `opener`, binary modes, and updating modes remain explicitly unsupported. Text handles expose ordinary inspection such as `name`, `mode`, `encoding`, `errors`, `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, sized `read(...)`/`readline(...)`/`readlines(...)`, and iteration. Random access must fail explicitly.
 
 `pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 
@@ -1603,7 +1603,8 @@ Lython exposes a limited public `bytes` value model.
 Supported bytes behavior includes:
 
 - bytes literals
-- `bytes([iterable])`
+- `bytes([iterable])` and UTF-8 string encoding forms
+- `bytes.decode(...)` and `str.encode(...)` for the supported UTF-8 codec policy
 - truthiness
 - equality and hashing
 - `len(...)`

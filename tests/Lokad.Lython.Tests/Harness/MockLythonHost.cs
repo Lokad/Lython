@@ -9,6 +9,7 @@ internal sealed class MockLythonHost : ILythonHost
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     private readonly Dictionary<string, string> _files = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, byte[]> _rawTextFiles = new(StringComparer.Ordinal);
     private readonly Dictionary<string, byte[]> _binaryFiles = new(StringComparer.Ordinal);
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
@@ -45,6 +46,11 @@ internal sealed class MockLythonHost : ILythonHost
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
 
+        if (_rawTextFiles.TryGetValue(path, out var rawText))
+        {
+            return ValueTask.FromResult<ReadOnlyMemory<byte>>(rawText.ToArray());
+        }
+
         if (!_files.TryGetValue(path, out var text))
         {
             throw new InvalidOperationException($"File does not exist: {path}");
@@ -61,6 +67,7 @@ internal sealed class MockLythonHost : ILythonHost
 
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));
+        _rawTextFiles.Remove(path);
         _files[path] = text;
         return ValueTask.CompletedTask;
     }
@@ -73,6 +80,7 @@ internal sealed class MockLythonHost : ILythonHost
 
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));
+        _rawTextFiles.Remove(path);
         _files[path] = _files.TryGetValue(path, out var current)
             ? current + text
             : text;
@@ -105,7 +113,7 @@ internal sealed class MockLythonHost : ILythonHost
     {
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
-        return ValueTask.FromResult(_files.ContainsKey(path) || _binaryFiles.ContainsKey(path) || _directories.Contains(path));
+        return ValueTask.FromResult(_files.ContainsKey(path) || _rawTextFiles.ContainsKey(path) || _binaryFiles.ContainsKey(path) || _directories.Contains(path));
     }
 
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -126,7 +134,7 @@ internal sealed class MockLythonHost : ILythonHost
         var prefix = path == "/" ? "/" : path + "/";
         var names = new SortedSet<string>(StringComparer.Ordinal);
 
-        foreach (var file in _files.Keys.Concat(_binaryFiles.Keys))
+        foreach (var file in _files.Keys.Concat(_rawTextFiles.Keys).Concat(_binaryFiles.Keys))
         {
             if (file.StartsWith(prefix, StringComparison.Ordinal))
             {
@@ -180,7 +188,7 @@ internal sealed class MockLythonHost : ILythonHost
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
 
-        if (_files.Remove(path) || _binaryFiles.Remove(path))
+        if (_files.Remove(path) || _rawTextFiles.Remove(path) || _binaryFiles.Remove(path))
         {
             return ValueTask.CompletedTask;
         }
@@ -198,6 +206,7 @@ internal sealed class MockLythonHost : ILythonHost
 
         var prefix = dir + "/";
         if (_files.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
+            _rawTextFiles.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
             _binaryFiles.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
             _directories.Any(d => d.StartsWith(prefix, StringComparison.Ordinal)))
         {
@@ -223,6 +232,18 @@ internal sealed class MockLythonHost : ILythonHost
 
             EnsureDirectory(ParentOf(destination));
             _files[destination] = text;
+            return ValueTask.CompletedTask;
+        }
+
+        if (_rawTextFiles.TryGetValue(source, out var rawText))
+        {
+            if (Exists(destination))
+            {
+                throw new InvalidOperationException($"Destination already exists: {destination}");
+            }
+
+            EnsureDirectory(ParentOf(destination));
+            _rawTextFiles[destination] = rawText.ToArray();
             return ValueTask.CompletedTask;
         }
 
@@ -260,6 +281,19 @@ internal sealed class MockLythonHost : ILythonHost
             return ValueTask.CompletedTask;
         }
 
+        if (_rawTextFiles.TryGetValue(source, out var rawText))
+        {
+            if (Exists(destination))
+            {
+                throw new InvalidOperationException($"Destination already exists: {destination}");
+            }
+
+            EnsureDirectory(ParentOf(destination));
+            _rawTextFiles.Remove(source);
+            _rawTextFiles[destination] = rawText;
+            return ValueTask.CompletedTask;
+        }
+
         if (!_binaryFiles.TryGetValue(source, out var payload))
         {
             throw new InvalidOperationException($"File does not exist: {source}");
@@ -288,6 +322,16 @@ internal sealed class MockLythonHost : ILythonHost
                 IsFile: true,
                 IsDir: false,
                 Size: new BigInteger(Utf8.GetByteCount(text)),
+                ModifiedAt: MockTimestamp));
+        }
+
+        if (_rawTextFiles.TryGetValue(path, out var rawText))
+        {
+            return ValueTask.FromResult(new LythonPathStat(
+                Exists: true,
+                IsFile: true,
+                IsDir: false,
+                Size: new BigInteger(rawText.Length),
                 ModifiedAt: MockTimestamp));
         }
 
@@ -337,6 +381,14 @@ internal sealed class MockLythonHost : ILythonHost
     public void SeedFile(string path, string text)
     {
         WriteText(path, text);
+    }
+
+    public void SeedRawTextUtf8(string path, byte[] utf8)
+    {
+        path = NormalizePath(path);
+        EnsureDirectory(ParentOf(path));
+        _files.Remove(path);
+        _rawTextFiles[path] = utf8.ToArray();
     }
 
     public void SeedWorkbook(string path, byte[] payload)

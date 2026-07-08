@@ -166,8 +166,9 @@ from pathlib import Path
 
 path = Path("/repo/input.txt")
 path.read_text(encoding="latin-1")
-path.read_text(errors="ignore")
+path.read_text(errors="surrogateescape")
 path.read_text("utf-8", "strict", "extra")
+path.read_text("utf-8", "strict", "", "too-many")
 __lython_file = open("/repo/out.txt", "w")
 __lython_file.write("side effect")
 __lython_file.close()
@@ -177,7 +178,8 @@ __lython_file.close()
         Assert.False(result.Success);
         Assert.Null(result.Failure);
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("encoding", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("errors", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("error handlers", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Code == "LA3049" && d.Message.Contains("newline", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3114" && d.Message.Contains("read_text", StringComparison.Ordinal));
     }
 
@@ -188,7 +190,7 @@ from pathlib import Path
 Path("/repo/input.txt").read_text(errors="surrogateescape")
 """,
         "LA3049",
-        "strict")]
+        "error handlers")]
     [InlineData(
         """
 from pathlib import Path

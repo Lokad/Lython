@@ -39,6 +39,7 @@ internal static partial class StaticContracts
         ("join", StaticReturnShape.String),
         ("format", StaticReturnShape.String),
         ("format_map", StaticReturnShape.String),
+        ("encode", StaticReturnShape.Bytes),
     ];
 
     private static readonly StaticMemberReturnContract[] MemberReturnContracts = CreateMemberReturnContracts();
@@ -109,6 +110,8 @@ internal static partial class StaticContracts
             new(AbstractValueKind.Path, "chmod", StaticReturnShape.None),
             new(AbstractValueKind.Path, "owner", StaticReturnShape.String),
             new(AbstractValueKind.Path, "group", StaticReturnShape.String),
+            new(AbstractValueKind.Bytes, "decode", StaticReturnShape.String),
+            new(AbstractValueKind.BytesType, "decode", StaticReturnShape.String),
             new(AbstractValueKind.TextFileHandle, "close", StaticReturnShape.None),
             new(AbstractValueKind.TextFileHandle, "readable", StaticReturnShape.Boolean),
             new(AbstractValueKind.TextFileHandle, "writable", StaticReturnShape.Boolean),

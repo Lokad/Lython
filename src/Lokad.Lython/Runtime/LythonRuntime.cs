@@ -16,7 +16,12 @@ internal sealed partial class LythonRuntime
 {
     internal static object RuntimeValue(object? value) => value ?? PyNone.Instance;
 
-    internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span)
+    internal static PyString ReadGovernedHostText(
+        string path,
+        ExecutionContext context,
+        LythonSourceSpan? span,
+        TextErrorMode errors = TextErrorMode.Strict,
+        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
     {
         context.RegisterHostCall(span);
         var stat = context.HostStat(path, span);
@@ -33,8 +38,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxReadBytes})", span);
         }
 
-        var text = CreateUtf8String(utf8, context, span);
-        text = PyStringOps.NormalizeNewlines(text);
+        var text = DecodeUtf8Text(utf8, context, span, errors, newline);
         if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
         {
             text = CreateString(text.AsString(), context, span);
@@ -43,7 +47,12 @@ internal sealed partial class LythonRuntime
         return text;
     }
 
-    internal static async ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span)
+    internal static async ValueTask<PyString> ReadGovernedHostTextAsync(
+        string path,
+        ExecutionContext context,
+        LythonSourceSpan? span,
+        TextErrorMode errors = TextErrorMode.Strict,
+        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
     {
         context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
@@ -60,8 +69,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxReadBytes})", span);
         }
 
-        var text = CreateUtf8String(utf8, context, span);
-        text = PyStringOps.NormalizeNewlines(text);
+        var text = DecodeUtf8Text(utf8, context, span, errors, newline);
         if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
         {
             text = CreateString(text.AsString(), context, span);
@@ -3471,7 +3479,7 @@ internal sealed partial class LythonRuntime
                 ["open"] = new OpenCallable(),
                 ["print"] = new PrintCallable(),
                 ["input"] = new BuiltinCallable("input", Input, InputAsync, ["prompt"], requiredCount: 0),
-                ["str"] = new BuiltinCallable("str", Str, ["value"]),
+                ["str"] = new BuiltinCallable("str", Str, ["object", "encoding", "errors"], requiredCount: 0),
                 ["repr"] = new BuiltinCallable("repr", Repr, ["value"]),
                 ["ascii"] = new BuiltinCallable("ascii", Ascii, ["value"]),
                 ["format"] = new BuiltinCallable("format", Format, ["value", "format_spec"], requiredCount: 1),
@@ -3539,7 +3547,7 @@ internal sealed partial class LythonRuntime
                 ["bool"] = new BuiltinCallable("bool", Bool, ["value"]),
                 ["int"] = new BuiltinCallable("int", Int, ["value"]),
                 ["float"] = new BuiltinCallable("float", Float, ["value"]),
-                ["bytes"] = new BuiltinCallable("bytes", Bytes, ["value"], requiredCount: 0),
+                ["bytes"] = new BuiltinCallable("bytes", Bytes, ["source", "encoding", "errors"], requiredCount: 0),
                 ["staticmethod"] = new BuiltinCallable("staticmethod", StaticMethod, ["func"], requiredCount: 1),
                 ["classmethod"] = new BuiltinCallable("classmethod", ClassMethod, ["func"], requiredCount: 1),
                 ["property"] = new BuiltinCallable("property", Property, ["fget", "fset"], requiredCount: 0),

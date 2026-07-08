@@ -47,8 +47,8 @@ internal static partial class StaticContracts
             new(AbstractValueKind.Path, "rmdir", 0, 0, "LA3114", "Path.rmdir() expects no arguments."),
             new(AbstractValueKind.Path, "touch", 0, 2, "LA3114", "Path.touch([mode][, exist_ok]) expects zero to two arguments.", ParameterNames: ["mode", "exist_ok"]),
             new(AbstractValueKind.Path, "mkdir", 0, 3, "LA3114", "Path.mkdir([mode][, parents][, exist_ok]) expects zero to three arguments.", ParameterNames: ["mode", "parents", "exist_ok"]),
-            new(AbstractValueKind.Path, "read_text", 0, 2, "LA3114", "Path.read_text([encoding][, errors]) expects zero to two arguments.", ParameterNames: ["encoding", "errors"]),
-            new(AbstractValueKind.Path, "open", 0, 4, "LA3114", "Path.open([mode][, encoding][, errors][, newline]) expects zero to four arguments.", ParameterNames: ["mode", "encoding", "errors", "newline"]),
+            new(AbstractValueKind.Path, "read_text", 0, 3, "LA3114", "Path.read_text([encoding][, errors][, newline]) expects zero to three arguments.", ParameterNames: ["encoding", "errors", "newline"]),
+            new(AbstractValueKind.Path, "open", 0, 5, "LA3114", "Path.open([mode][, buffering][, encoding][, errors][, newline]) expects zero to five arguments.", ParameterNames: ["mode", "buffering", "encoding", "errors", "newline"]),
             new(AbstractValueKind.Path, "write_text", 1, 4, "LA3114", "Path.write_text(text[, encoding][, errors][, newline]) expects one to four arguments.", ParameterNames: ["text", "encoding", "errors", "newline"]),
             new(AbstractValueKind.Path, "match", 1, 1, "LA3114", "Path.match(pattern) expects one argument.", ParameterNames: ["pattern"]),
             new(AbstractValueKind.Path, "relative_to", 1, 1, "LA3114", "Path.relative_to(other) expects one argument.", ParameterNames: ["other"]),
@@ -76,9 +76,9 @@ internal static partial class StaticContracts
             new(AbstractValueKind.TextFileHandle, "seekable", 0, 0, "LA3108", "file.seekable() expects no arguments."),
             new(AbstractValueKind.TextFileHandle, "tell", 0, 0, "LA3108", "file.tell() expects no arguments."),
             new(AbstractValueKind.TextFileHandle, "seek", 1, 2, "LA3108", "file.seek(offset[, whence]) expects one or two arguments.", ParameterNames: ["offset", "whence"]),
-            new(AbstractValueKind.TextFileHandle, "read", 0, 0, "LA3108", "file.read() expects no arguments."),
-            new(AbstractValueKind.TextFileHandle, "readline", 0, 0, "LA3108", "file.readline() expects no arguments."),
-            new(AbstractValueKind.TextFileHandle, "readlines", 0, 0, "LA3108", "file.readlines() expects no arguments."),
+            new(AbstractValueKind.TextFileHandle, "read", 0, 1, "LA3108", "file.read([size]) expects zero or one argument.", ParameterNames: ["size"]),
+            new(AbstractValueKind.TextFileHandle, "readline", 0, 1, "LA3108", "file.readline([size]) expects zero or one argument.", ParameterNames: ["size"]),
+            new(AbstractValueKind.TextFileHandle, "readlines", 0, 1, "LA3108", "file.readlines([hint]) expects zero or one argument.", ParameterNames: ["hint"]),
             new(AbstractValueKind.TextFileHandle, "write", 1, 1, "LA3111", "file.write(text) expects one string argument.", ParameterNames: ["text"]),
             new(AbstractValueKind.TextFileHandle, "writelines", 1, 1, "LA3112", "file.writelines(lines) expects one iterable of strings argument.", ParameterNames: ["lines"]),
             new(AbstractValueKind.TextFileHandle, "flush", 0, 0, "LA3108", "file.flush() expects no arguments."),
@@ -391,6 +391,9 @@ internal static partial class StaticContracts
         AddStringCallableContract(contracts, "rpartition", 1, 1, "str.rpartition(sep) expects one argument.", "sep");
         AddStringCallableContract(contracts, "join", 1, 1, "str.join(iterable) expects one argument.", "iterable");
         AddStringCallableContract(contracts, "format_map", 1, 1, "str.format_map(mapping) expects one argument.", "mapping");
+        AddStringCallableContract(contracts, "encode", 0, 2, "str.encode([encoding][, errors]) expects zero to two arguments.", "encoding", "errors");
+        contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", ParameterNames: ["encoding", "errors"]));
+        contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", ParameterNames: ["encoding", "errors"]));
     }
 
     private static void AddStringCallableContract(

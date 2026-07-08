@@ -901,9 +901,9 @@ internal static class StaticAbstractValueResolver
 
         return modeExpression switch
         {
-            StringLiteralExpressionSyntax { Value: "r" } => AbstractTextFileMode.Read,
-            StringLiteralExpressionSyntax { Value: "w" } => AbstractTextFileMode.Write,
-            StringLiteralExpressionSyntax { Value: "a" } => AbstractTextFileMode.Append,
+            StringLiteralExpressionSyntax { Value: "r" or "rt" } => AbstractTextFileMode.Read,
+            StringLiteralExpressionSyntax { Value: "w" or "wt" } => AbstractTextFileMode.Write,
+            StringLiteralExpressionSyntax { Value: "a" or "at" } => AbstractTextFileMode.Append,
             _ => AbstractTextFileMode.Unknown
         };
     }

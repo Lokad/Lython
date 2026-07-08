@@ -2477,7 +2477,7 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "True|True|8|alpha beta|alpha beta  |  alpha beta|[a, b, c]|[a, , b]|[x, y, z]|[x\n, y\n, z]|right:left",
+            "True|True|8|alpha beta|alpha beta  |  alpha beta|[a, b, c]|[a, , b]|[x, y, z]|[x\n, y\r\n, z]|right:left",
             host.ReadText("/out.txt"));
     }
 

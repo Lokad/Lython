@@ -268,10 +268,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         object stdout = invocation.Request.StandardOutput == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardOutputUtf8, context, span)
+            ? DecodeSubprocessOutput(result.StandardOutputUtf8, invocation.Request.Encoding, invocation.Request.Errors, context, span)
             : PyNone.Instance;
         object stderr = invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardErrorUtf8, context, span)
+            ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.Encoding, invocation.Request.Errors, context, span)
             : PyNone.Instance;
         var args = new PyList(invocation.Request.Args.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
         context.ObserveCollectionCount(args.Count, span);
@@ -298,11 +298,30 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static PyString DecodeSubprocessOutput(ReadOnlyMemory<byte> utf8, ExecutionContext context, LythonSourceSpan span)
+    private static PyString DecodeSubprocessOutput(
+        ReadOnlyMemory<byte> utf8,
+        string? encoding,
+        string? errors,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
-        var text = utf8.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8, context.MemoryGovernor, span);
+        var errorMode = errors?.ToLowerInvariant() switch
+        {
+            "ignore" => TextErrorMode.Ignore,
+            "replace" => TextErrorMode.Replace,
+            "backslashreplace" => TextErrorMode.BackslashReplace,
+            _ => TextErrorMode.Strict
+        };
+        var text = DecodeUtf8Text(utf8, context, span, errorMode);
+        if (string.Equals(encoding, "utf-8-sig", StringComparison.OrdinalIgnoreCase))
+        {
+            var decoded = text.AsString();
+            if (decoded.Length > 0 && decoded[0] == '\uFEFF')
+            {
+                text = PyString.FromString(decoded[1..], context.MemoryGovernor, span);
+            }
+        }
+
         context.ObserveString(text, span);
         return text;
     }
@@ -558,13 +577,13 @@ internal sealed partial class LythonRuntime
             return null;
         }
 
-        if (!PyStringOps.TryAsString(value, out var errors) ||
-            !errors.AsString().Equals("strict", StringComparison.OrdinalIgnoreCase))
+        return ParseTextErrors(value, owner, span) switch
         {
-            throw new LythonRuntimeException("ValueError", $"{owner}(...) only supports errors='strict'.", span);
-        }
-
-        return "strict";
+            TextErrorMode.Ignore => "ignore",
+            TextErrorMode.Replace => "replace",
+            TextErrorMode.BackslashReplace => "backslashreplace",
+            _ => "strict"
+        };
     }
 
     private static IReadOnlyDictionary<string, string>? ParseSubprocessEnvironment(object value, string owner, LythonSourceSpan span)

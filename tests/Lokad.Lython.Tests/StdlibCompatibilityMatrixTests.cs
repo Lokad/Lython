@@ -434,6 +434,40 @@ with open("/repo/out.txt", "w", encoding="utf-8-sig", errors="strict") as writer
     }
 
     [Fact]
+    public void TextCodecOptions_CoverOpenPathAndStringBytesSurfaces()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedRawTextUtf8("/repo/invalid.txt", [(byte)'a', 0xFF, (byte)'b', (byte)'\n']);
+        host.SeedFile("/repo/lines.txt", "alpha\r\nbeta\ngamma");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+
+with open("/repo/invalid.txt", "r", encoding="utf-8", errors="ignore") as reader:
+    ignored = next(reader, "")
+
+replaced = Path("/repo/invalid.txt").read_text(errors="replace")
+escaped = Path("/repo/invalid.txt").read_text(errors="backslashreplace")
+
+with open("/repo/lines.txt", "rt", 1, "utf-8", "ignore", "") as reader:
+    attrs = [reader.name, reader.mode, reader.encoding, reader.errors]
+    first = reader.read(2)
+    rest = reader.readline(5)
+
+payload = "é".encode("utf-8")
+decoded = payload.decode("utf-8")
+from_ctor = str(bytes("é", "utf-8"), "utf-8")
+
+Path("/repo/out.txt").write_text("|".join(attrs + [ignored, replaced, escaped, first, rest, decoded, from_ctor]), newline="\n")
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("/repo/lines.txt|r|utf-8|ignore|ab\n|a\uFFFDb\n|a\\xffb\n|al|pha\r\n|é|é", host.ReadText("/repo/out.txt"));
+    }
+
+    [Fact]
     public void TextOpenOptions_UseEncodingErrorsNewlinePositionalOrder()
     {
         var host = new MockLythonHost("/repo");
@@ -443,16 +477,16 @@ with open("/repo/out.txt", "w", encoding="utf-8-sig", errors="strict") as writer
             """
 from pathlib import Path
 
-with open("/repo/in.txt", "r", "utf-8-sig", "strict", "") as reader:
+with open("/repo/in.txt", "r", -1, "utf-8-sig", "strict", "") as reader:
     text = reader.read()
 
 path = Path("/repo/path.txt")
 path.write_text(text, "utf-8", "strict", "")
-with path.open("r", "utf-8", "strict", "") as reader:
+with path.open("r", -1, "utf-8", "strict", "") as reader:
     path_text = reader.read()
 
 again = Path("/repo/in.txt").read_text("utf-8-sig", "strict")
-with open("/repo/out.txt", "w", "utf-8", "strict", "") as writer:
+with open("/repo/out.txt", "w", -1, "utf-8", "strict", "") as writer:
     writer.write(text + "|" + path_text + "|" + again)
 """,
             host);
@@ -470,16 +504,16 @@ open("/repo/created.txt", "w").write("created")
         "open() only supports encoding='utf-8' or 'utf-8-sig'.")]
     [InlineData(
         """
-open("/repo/input.txt", "r", errors="ignore")
+open("/repo/input.txt", "r", errors="surrogateescape")
 open("/repo/created.txt", "w").write("created")
 """,
-        "open() only supports errors='strict'.")]
+        "error handlers")]
     [InlineData(
         """
-open("/repo/input.txt", "r", newline="\r\n")
+open("/repo/input.txt", "r", newline="bad")
 open("/repo/created.txt", "w").write("created")
 """,
-        "open() only supports newline=''.")]
+        "newline must be None")]
     [InlineData(
         """
 open("/repo/input.txt", None)
@@ -488,23 +522,23 @@ open("/repo/created.txt", "w").write("created")
         "open(file/path, mode) expects mode to be a string")]
     [InlineData(
         """
-open("/repo/input.txt", "r", buffering=1)
+open("/repo/input.txt", "r", closefd=False)
 open("/repo/created.txt", "w").write("created")
 """,
-        "got an unexpected keyword argument 'buffering'")]
+        "closefd=False")]
     [InlineData(
         """
-open("/repo/input.txt", "r", "utf-8", "strict", "", "extra")
+open("/repo/input.txt", "r", -1, "utf-8", "strict", "", True, None, "extra")
 open("/repo/created.txt", "w").write("created")
 """,
         "received too many positional arguments")]
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.txt").read_text(newline="")
+Path("/repo/input.txt").read_text(newline="bad")
 Path("/repo/created.txt").write_text("created")
 """,
-        "Path.read_text([encoding][, errors]) expects zero to two arguments.")]
+        "newline must be None")]
     [InlineData(
         """
 from pathlib import Path
@@ -723,31 +757,31 @@ Path("/repo/input.txt").read_text(encoding="latin-1")
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.txt").read_text(errors="ignore")
+Path("/repo/input.txt").read_text(errors="surrogateescape")
 """,
         "compile",
-        "only supports errors='strict'")]
+        "UTF-8 error handlers")]
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/output.txt").write_text("alpha", encoding="utf-8", errors="ignore")
+Path("/repo/output.txt").write_text("alpha", encoding="utf-8", errors="surrogateescape")
 """,
         "compile",
-        "only supports errors='strict'")]
+        "UTF-8 error handlers")]
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/output.txt").write_text("alpha", encoding="utf-8", newline="\r\n")
+Path("/repo/output.txt").write_text("alpha", encoding="utf-8", newline="bad")
 """,
         "compile",
-        "only supports newline=''")]
+        "newline must be None")]
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.txt").open(encoding="utf-8", newline="\r\n")
+Path("/repo/input.txt").open(encoding="utf-8", newline="bad")
 """,
         "compile",
-        "only supports newline=''")]
+        "newline must be None")]
     public void PathlibEncodingAndNewlineContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var host = new MockLythonHost("/repo");

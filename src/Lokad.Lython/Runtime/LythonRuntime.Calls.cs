@@ -275,8 +275,8 @@ internal sealed partial class LythonRuntime
 
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        private const string Signature = "open(file/path[, mode][, encoding][, errors][, newline])";
-        private static readonly string[] ParameterNames = ["file/path", "mode", "encoding", "errors", "newline"];
+        private const string Signature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";
+        private static readonly string[] ParameterNames = ["file/path", "mode", "buffering", "encoding", "errors", "newline", "closefd", "opener"];
 
         public string Name => "open";
 
@@ -328,9 +328,12 @@ internal sealed partial class LythonRuntime
                 {
                     "file" or "path" => 0,
                     "mode" => 1,
-                    "encoding" => 2,
-                    "errors" => 3,
-                    "newline" => 4,
+                    "buffering" => 2,
+                    "encoding" => 3,
+                    "errors" => 4,
+                    "newline" => 5,
+                    "closefd" => 6,
+                    "opener" => 7,
                     _ => -1
                 };
 

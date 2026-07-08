@@ -575,6 +575,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
     {
+        "encode",
         "replace",
         "startswith",
         "endswith",
@@ -612,6 +613,11 @@ internal static partial class StaticContracts
         "rpartition",
         "format",
         "format_map",
+    };
+
+    private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
+    {
+        "decode",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -673,6 +679,10 @@ internal static partial class StaticContracts
     private static readonly HashSet<string> TextFileHandleMembers = new(StringComparer.Ordinal)
     {
         "closed",
+        "name",
+        "mode",
+        "encoding",
+        "errors",
         "__enter__",
         "__exit__",
         "close",
@@ -1072,8 +1082,7 @@ internal static partial class StaticContracts
         {
             AbstractValueKind.Module => ModuleMembers.TryGetValue((string)value.Value, out var members) && members.Contains(memberName),
             AbstractValueKind.String or AbstractValueKind.StringType => StringMembers.Contains(memberName),
-            AbstractValueKind.Bytes or
-            AbstractValueKind.BytesType or
+            AbstractValueKind.Bytes or AbstractValueKind.BytesType => BytesMembers.Contains(memberName),
             AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
             AbstractValueKind.Float or

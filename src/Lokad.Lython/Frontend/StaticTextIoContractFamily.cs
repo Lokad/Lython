@@ -4,7 +4,7 @@ internal static class StaticTextIoContractFamily
 {
     private const string TextBoundaryCode = "LA3046";
     private const string TextBoundaryMessage = "Text-only host APIs do not accept bytes; Lython host boundaries are UTF-8 text-shaped only.";
-    private const string OpenSignature = "open(file/path[, mode][, encoding][, errors][, newline])";
+    private const string OpenSignature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";
 
     public static bool TryAnalyze(
         CallExpressionSyntax call,
@@ -100,23 +100,31 @@ internal static class StaticTextIoContractFamily
                 {
                     AddDiagnostic(diagnostics, "LA3001", "open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
                 }
-                else if (modeText is not ("r" or "w" or "a"))
+                else if (modeText.Contains('+', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3002", "open() only supports modes 'r', 'w', and 'a'.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3002", "open() does not support updating text modes such as 'r+'.", modeExpression.Span);
+                }
+                else if (!IsSupportedTextMode(modeText))
+                {
+                    AddDiagnostic(diagnostics, "LA3002", "open() only supports modes 'r', 'w', and 'a' with optional text marker 't'.", modeExpression.Span);
                 }
             }
         }
 
-        AnalyzeEncodingArgument(arguments, 2, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', or None when it is statically known.", "open() only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        AnalyzeErrorsArgument(arguments, 3, "errors", "LA3005", "open(..., errors=...) must be 'strict' or None when it is statically known.", "open() only supports errors='strict'.", diagnostics, bindings);
-        AnalyzeNewlineArgument(arguments, 4, "newline", "LA3004", "open(..., newline=...) must be '' or None when it is statically known.", "open() only supports newline=''.", diagnostics, bindings);
+        StaticKnownCallArgumentChecks.AnalyzeIntegerOrNoneArgument(arguments, 2, "buffering", "open(..., buffering=...) expects an integer or None.", diagnostics, bindings);
+        AnalyzeEncodingArgument(arguments, 3, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', or None when it is statically known.", "open() only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        AnalyzeErrorsArgument(arguments, 4, "errors", "LA3005", "open(..., errors=...) must be 'strict', 'ignore', 'replace', 'backslashreplace', or None when it is statically known.", "open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        AnalyzeNewlineArgument(arguments, 5, "newline", "LA3004", "open(..., newline=...) must be None, '', '\\n', '\\r', or '\\r\\n' when it is statically known.", "open() newline must be None, '', '\\n', '\\r', or '\\r\\n'.", diagnostics, bindings);
+        StaticKnownCallArgumentChecks.AnalyzeBooleanOrNoneArgument(arguments, 6, "closefd", "open(..., closefd=...) expects a bool or None.", diagnostics, bindings);
+        AnalyzeCloseFdArgument(arguments, diagnostics, bindings);
+        AnalyzeOpenerArgument(arguments, diagnostics, bindings);
     }
 
     private static void AnalyzeOpenCallShape(LythonSourceSpan callSpan, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics)
     {
-        if (arguments.Positional.Count > 5)
+        if (arguments.Positional.Count > 8)
         {
-            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} received too many positional arguments.", arguments.Positional[5].Span);
+            AddDiagnostic(diagnostics, "LA3151", $"{OpenSignature} received too many positional arguments.", arguments.Positional[8].Span);
         }
 
         var hasFileKeyword = arguments.Keywords.ContainsKey("file");
@@ -133,13 +141,16 @@ internal static class StaticTextIoContractFamily
         }
 
         AnalyzeOpenDuplicate(arguments, 1, "mode", diagnostics);
-        AnalyzeOpenDuplicate(arguments, 2, "encoding", diagnostics);
-        AnalyzeOpenDuplicate(arguments, 3, "errors", diagnostics);
-        AnalyzeOpenDuplicate(arguments, 4, "newline", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 2, "buffering", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 3, "encoding", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 4, "errors", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 5, "newline", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 6, "closefd", diagnostics);
+        AnalyzeOpenDuplicate(arguments, 7, "opener", diagnostics);
 
         foreach (var keyword in arguments.Keywords.Keys)
         {
-            if (keyword is "file" or "path" or "mode" or "encoding" or "errors" or "newline")
+            if (keyword is "file" or "path" or "mode" or "buffering" or "encoding" or "errors" or "newline" or "closefd" or "opener")
             {
                 continue;
             }
@@ -172,8 +183,17 @@ internal static class StaticTextIoContractFamily
             1,
             "errors",
             "LA3049",
-            "Path.read_text() only supports errors='strict'.",
-            "Path.read_text() only supports errors='strict'.",
+            "Path.read_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.read_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            diagnostics,
+            bindings);
+        AnalyzeNewlineArgument(
+            arguments,
+            2,
+            "newline",
+            "LA3049",
+            "Path.read_text() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
+            "Path.read_text() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
             diagnostics,
             bindings);
     }
@@ -203,8 +223,8 @@ internal static class StaticTextIoContractFamily
             2,
             "errors",
             "LA3053",
-            "Path.write_text() only supports errors='strict'.",
-            "Path.write_text() only supports errors='strict'.",
+            "Path.write_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.write_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
             diagnostics,
             bindings);
         AnalyzeNewlineArgument(
@@ -212,8 +232,8 @@ internal static class StaticTextIoContractFamily
             3,
             "newline",
             "LA3054",
-            "Path.write_text() only supports newline=''.",
-            "Path.write_text() only supports newline=''.",
+            "Path.write_text() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
+            "Path.write_text() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
             diagnostics,
             bindings);
     }
@@ -239,16 +259,21 @@ internal static class StaticTextIoContractFamily
                 {
                     AddDiagnostic(diagnostics, "LA3061", "Path.open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
                 }
-                else if (modeText is not ("r" or "w" or "a"))
+                else if (modeText.Contains('+', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3062", "Path.open() only supports modes 'r', 'w', and 'a'.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3062", "Path.open() does not support updating text modes such as 'r+'.", modeExpression.Span);
+                }
+                else if (!IsSupportedTextMode(modeText))
+                {
+                    AddDiagnostic(diagnostics, "LA3062", "Path.open() only supports modes 'r', 'w', and 'a' with optional text marker 't'.", modeExpression.Span);
                 }
             }
         }
 
+        StaticKnownCallArgumentChecks.AnalyzeIntegerOrNoneArgument(arguments, 1, "buffering", "Path.open(..., buffering=...) expects an integer or None.", diagnostics, bindings);
         AnalyzeEncodingArgument(
             arguments,
-            1,
+            2,
             "encoding",
             "LA3063",
             "Path.open() only supports encoding='utf-8' or 'utf-8-sig'.",
@@ -257,20 +282,20 @@ internal static class StaticTextIoContractFamily
             bindings);
         AnalyzeErrorsArgument(
             arguments,
-            2,
+            3,
             "errors",
             "LA3063",
-            "Path.open() only supports errors='strict'.",
-            "Path.open() only supports errors='strict'.",
+            "Path.open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
             diagnostics,
             bindings);
         AnalyzeNewlineArgument(
             arguments,
-            3,
+            4,
             "newline",
             "LA3064",
-            "Path.open() only supports newline=''.",
-            "Path.open() only supports newline=''.",
+            "Path.open() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
+            "Path.open() newline must be None, '', '\\n', '\\r', or '\\r\\n'.",
             diagnostics,
             bindings);
     }
@@ -282,9 +307,9 @@ internal static class StaticTextIoContractFamily
         List<LythonDiagnostic> diagnostics,
         LythonSourceSpan span)
     {
-        if (arguments.Positional.Count != 0 || arguments.Keywords.Count != 0)
+        if (arguments.Positional.Count + arguments.Keywords.Count > 1)
         {
-            AddDiagnostic(diagnostics, "LA3108", $"file.{memberName}() expects no arguments.", span);
+            AddDiagnostic(diagnostics, "LA3108", $"file.{memberName}([size]) expects zero or one integer argument.", span);
             return;
         }
 
@@ -450,7 +475,7 @@ internal static class StaticTextIoContractFamily
         }
         else if (newlineExpression is not NoneLiteralExpressionSyntax &&
                  StaticAbstractValueResolver.TryResolveKnownString(newlineExpression, bindings, out var newlineText) &&
-                 newlineText.Length != 0)
+                 newlineText is not ("" or "\n" or "\r" or "\r\n"))
         {
             AddDiagnostic(diagnostics, code, unsupportedNewlineMessage, newlineExpression.Span);
         }
@@ -484,10 +509,53 @@ internal static class StaticTextIoContractFamily
 
         if (errorsExpression is not NoneLiteralExpressionSyntax &&
             StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out var errorsText) &&
-            !errorsText.Equals("strict", StringComparison.OrdinalIgnoreCase))
+            !IsSupportedTextError(errorsText))
         {
             AddDiagnostic(diagnostics, code, unsupportedErrorsMessage, errorsExpression.Span);
         }
+    }
+
+    private static bool IsSupportedTextMode(string mode)
+        => mode is "r" or "rt" or "w" or "wt" or "a" or "at";
+
+    private static bool IsSupportedTextError(string errors)
+        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
+
+    private static void AnalyzeOpenerArgument(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(7, "opener", out var openerExpression) ||
+            openerExpression is NoneLiteralExpressionSyntax)
+        {
+            return;
+        }
+
+        if (StaticAbstractValueResolver.TryResolve(openerExpression, bindings, out var value) &&
+            value.Kind != AbstractValueKind.None)
+        {
+            AddDiagnostic(diagnostics, "LA3006", "open(..., opener=...) is not supported because file access is host-mediated.", openerExpression.Span);
+        }
+    }
+
+    private static void AnalyzeCloseFdArgument(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(6, "closefd", out var closeFdExpression) ||
+            !StaticAbstractValueResolver.TryResolve(closeFdExpression, bindings, out var value) ||
+            value.Kind != AbstractValueKind.Boolean ||
+            value.Value is not false)
+        {
+            return;
+        }
+
+        AddDiagnostic(diagnostics, "LA3006", "open(..., closefd=False) is not supported for host-mediated paths.", closeFdExpression.Span);
     }
 
     private static void AnalyzeTextBoundaryStringArgument(

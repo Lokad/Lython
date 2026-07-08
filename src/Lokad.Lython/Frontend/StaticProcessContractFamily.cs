@@ -57,6 +57,8 @@ internal static class StaticProcessContractFamily
         emitted |= AnalyzeBooleanOrNoneArgument(arguments, TextIndex, "text", $"{owner}(..., text=...) expects a bool or None.", diagnostics, bindings);
         emitted |= AnalyzeStringOrNoneArgument(arguments, EncodingIndex, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
         emitted |= AnalyzeStringOrNoneArgument(arguments, ErrorsIndex, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeUtf8Encoding(arguments, EncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        emitted |= AnalyzeTextErrors(arguments, ErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         emitted |= AnalyzeBooleanOrNoneArgument(arguments, UniversalNewlinesIndex, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
         emitted |= AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings);
         return emitted;
@@ -254,6 +256,8 @@ internal static class StaticProcessContractFamily
             $"{owner}(..., errors=...) expects a string or None.",
             diagnostics,
             bindings);
+        AnalyzeUtf8Encoding(arguments, EncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        AnalyzeTextErrors(arguments, ErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
             UniversalNewlinesIndex,
@@ -263,6 +267,53 @@ internal static class StaticProcessContractFamily
             diagnostics,
             bindings);
     }
+
+    private static bool AnalyzeUtf8Encoding(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax ||
+            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
+            text.Equals("utf-8", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        StaticDiagnosticSink.AddError(diagnostics, "LA3031", message, expression.Span);
+        return true;
+    }
+
+    private static bool AnalyzeTextErrors(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax ||
+            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
+            IsSupportedTextError(text))
+        {
+            return false;
+        }
+
+        StaticDiagnosticSink.AddError(diagnostics, "LA3032", message, expression.Span);
+        return true;
+    }
+
+    private static bool IsSupportedTextError(string errors)
+        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSubprocessKnownCall(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.SubprocessRun.Name, StringComparison.Ordinal) ||

@@ -28,8 +28,11 @@ internal static class StaticArgparseContractFamily
         {
             var emitted = false;
             emitted |= AnalyzeStringArgument(arguments, 0, "mode", "argparse.FileType(..., mode=...) expects a string.", diagnostics, bindings);
+            emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "bufsize", "argparse.FileType(..., bufsize=...) expects an integer or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "encoding", "argparse.FileType(..., encoding=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "errors", "argparse.FileType(..., errors=...) expects a string or None.", diagnostics, bindings);
+            emitted |= AnalyzeUtf8Encoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+            emitted |= AnalyzeTextErrors(arguments, 3, "errors", "argparse.FileType only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
             return emitted;
         }
 
@@ -225,4 +228,51 @@ internal static class StaticArgparseContractFamily
                !int.TryParse((string)value.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var literal) ||
                literal > 0;
     }
+
+    private static bool AnalyzeUtf8Encoding(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax ||
+            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
+            text.Equals("utf-8", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        StaticDiagnosticSink.AddError(diagnostics, "LA3151", message, expression.Span);
+        return true;
+    }
+
+    private static bool AnalyzeTextErrors(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax ||
+            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
+            IsSupportedTextError(text))
+        {
+            return false;
+        }
+
+        StaticDiagnosticSink.AddError(diagnostics, "LA3151", message, expression.Span);
+        return true;
+    }
+
+    private static bool IsSupportedTextError(string errors)
+        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
+           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
 }

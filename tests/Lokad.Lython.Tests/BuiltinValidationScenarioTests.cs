@@ -74,7 +74,6 @@ public sealed class BuiltinValidationScenarioTests
     }
 
     [Theory]
-    [InlineData("str()\n", "is missing argument 'value'")]
     [InlineData("repr()\n", "is missing argument 'value'")]
     [InlineData("bool()\n", "is missing argument 'value'")]
     [InlineData("sum()\n", "is missing argument 'iterable'")]
@@ -191,9 +190,9 @@ with open(path = "/out.txt", mode = "w") as handle:
     [InlineData("enumerate([1], iterable = [2])\n", "Builtin 'enumerate' got multiple values for argument 'iterable'.")]
     [InlineData("enumerate(start = 1)\n", "Builtin 'enumerate' is missing argument 'iterable'.")]
     [InlineData("enumerate(iterable = [1], bad = 2)\n", "Builtin 'enumerate' got an unexpected keyword argument 'bad'.")]
-    [InlineData("open(\"/input.txt\", file = \"/other.txt\")\n", "open(file/path[, mode][, encoding][, errors][, newline]) got multiple values for argument 'file/path'.")]
-    [InlineData("open(mode = \"r\")\n", "open(file/path[, mode][, encoding][, errors][, newline]) expects a file/path argument.")]
-    [InlineData("open(target = \"/input.txt\")\n", "open(file/path[, mode][, encoding][, errors][, newline]) got an unexpected keyword argument 'target'.")]
+    [InlineData("open(\"/input.txt\", file = \"/other.txt\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) got multiple values for argument 'file/path'.")]
+    [InlineData("open(mode = \"r\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) expects a file/path argument.")]
+    [InlineData("open(target = \"/input.txt\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) got an unexpected keyword argument 'target'.")]
     [InlineData("print(\"x\", destination = None)\n", "Builtin 'print' got an unexpected keyword argument 'destination'.")]
     [InlineData("text = \"abc\"\ntext.upper(value = 1)\n", "str.upper() expects no arguments.")]
     [InlineData("int(number = 1)\n", "Builtin 'int' got an unexpected keyword argument 'number'.")]

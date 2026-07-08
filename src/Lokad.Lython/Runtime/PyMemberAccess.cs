@@ -10,6 +10,7 @@ internal static class PyMemberAccess
         new Dictionary<Type, ExactMemberResolver>
         {
             [typeof(PyString)] = static (object target, string memberName, out object value) => LythonRuntime.StringMembers.TryGetMember((PyString)target, memberName, out value),
+            [typeof(PyBytes)] = static (object target, string memberName, out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
             [typeof(PyList)] = static (object target, string memberName, out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
             [typeof(PyDict)] = static (object target, string memberName, out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
             [typeof(PySet)] = static (object target, string memberName, out object value) => LythonRuntime.SetMembers.TryGetMember((PySet)target, memberName, out value),

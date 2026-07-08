@@ -25,9 +25,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         var utf8 = AwaitHost(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
         CheckInputLimit(utf8.Length, span);
-        return utf8.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8, _state.MemoryGovernor, span);
+        return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
     }
 
     public async ValueTask<PyString> ReadAllAsync(LythonSourceSpan? span)
@@ -39,9 +37,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         var utf8 = await AwaitHostAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
         CheckInputLimit(utf8.Length, span);
-        return utf8.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8, _state.MemoryGovernor, span);
+        return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
     }
 
     public PyString ReadLine(LythonSourceSpan? span)
@@ -58,9 +54,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         CheckInputLimit(utf8.Value.Length, span);
-        return utf8.Value.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8.Value, _state.MemoryGovernor, span);
+        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span);
     }
 
     public async ValueTask<PyString> ReadLineAsync(LythonSourceSpan? span)
@@ -77,9 +71,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         CheckInputLimit(utf8.Value.Length, span);
-        return utf8.Value.Length == 0
-            ? PyString.Empty
-            : PyString.FromUtf8(utf8.Value, _state.MemoryGovernor, span);
+        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<stdin>");
