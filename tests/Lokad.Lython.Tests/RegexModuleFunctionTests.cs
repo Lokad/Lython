@@ -5,6 +5,34 @@ namespace Lokad.Lython.Tests;
 
 public sealed class RegexModuleFunctionTests
 {
+    [Fact]
+    public void RegexModule_EmptyMatchesPreserveAdjacentNonEmptyProgression()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import re
+
+matches = [(m.group(), m.span()) for m in re.finditer(".*?", "ab")]
+compiled = re.compile(".*?")
+values = [
+    str(matches),
+    str(re.findall(".*?", "ab")),
+    re.sub(".*?", "-", "ab"),
+    str(re.subn(".*?", "-", "ab")),
+    str(compiled.findall("ab")),
+    compiled.sub(lambda m: "-" if m.group() == "" else m.group().upper(), "ab"),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[('', (0, 0)), ('a', (0, 1)), ('', (1, 1)), ('b', (1, 2)), ('', (2, 2))]|['', 'a', '', 'b', '']|-----|('-----', 5)|['', 'a', '', 'b', '']|-A-B-", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("re.search(\"a+\", \"caaab\").group(0)", "aaa")]
     [InlineData("re.match(\"a+\", \"aaab\").span()", "(0, 3)")]

@@ -625,7 +625,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 20 — Route decimal rounding through the active context.** Apply exported rounding modes consistently to supported rounding and integral conversion operations. Addresses LY-MOD-011.
 - [x] **Commit 21 — Retain decimal quantum metadata.** Preserve representable exponent/scale information through construction, rendering, tuple conversion, copying, and arithmetic where Python retains it. Addresses LY-MOD-012.
 - [x] **Commit 22 — Encode empty CSV fields without losing row shape.** Quote the single-empty-field case and retain correct character counts for file-backed and in-memory writers. Addresses LY-MOD-005.
-- [ ] **Commit 23 — Fix regex empty-match progression.** Permit adjacent non-empty matches at the same position across find, substitute, and count paths. Addresses LY-MOD-038.
+- [x] **Commit 23 — Fix regex empty-match progression.** Permit adjacent non-empty matches at the same position across find, substitute, and count paths. Addresses LY-MOD-038.
 - [ ] **Commit 24 — Share singledispatch's MRO resolver.** Make public `dispatch(cls)` select exactly as ordinary decorated invocation does. Addresses LY-MOD-031.
 - [ ] **Commit 25 — Make `cmp_to_key` wrappers comparable.** Implement the comparator-backed rich comparison surface directly on wrapper values. Addresses LY-MOD-032.
 - [ ] **Commit 26 — Unify JSON dictionary-key handling.** Use canonical float spellings and apply `sort_keys` to original keys before their JSON string conversion. Addresses LY-MOD-015 and LY-MOD-016.

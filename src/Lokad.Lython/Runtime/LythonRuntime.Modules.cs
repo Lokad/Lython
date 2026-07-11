@@ -801,7 +801,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             var (pattern, range) = CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span);
-            return new ReFindAllResult(RePatternMembers.ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context));
+            return CreateFindAllResult(pattern, range, span, context);
         }
 
         private object FindIter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -953,6 +953,11 @@ internal sealed partial class LythonRuntime
 
         internal static object ExecuteSubstitute(RePatternObject pattern, object replacement, RegexSubjectRange range, int count, LythonSourceSpan span, ExecutionContext context, bool includeCount)
         {
+            if (UsesDotStarLazyProgression(pattern))
+            {
+                return ExecuteDotStarLazySubstitute(pattern, replacement, range, count, span, context, includeCount);
+            }
+
             if (PyStringOps.TryAsString(replacement, out var replacementText))
             {
                 if (!includeCount)
@@ -1152,6 +1157,129 @@ internal sealed partial class LythonRuntime
 
         internal static PyRegexFindIterator CreateFindIterMatches(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
             => new(pattern, range, context, span);
+
+        internal static ReFindAllResult CreateFindAllResult(RePatternObject pattern, RegexSubjectRange range, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (!UsesDotStarLazyProgression(pattern))
+            {
+                return new ReFindAllResult(RePatternMembers.ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context));
+            }
+
+            var values = CreateDotStarLazyMatches(pattern, range)
+                .Select(match => (object)CreateString(match.Value.ValueText, context, span));
+            return new ReFindAllResult(new PyList(values, context.MemoryGovernor, span));
+        }
+
+        internal static IReadOnlyList<Utf8PythonDetailedMatchData> CreateDetailedFindMatches(RePatternObject pattern, RegexSubjectRange range)
+            => UsesDotStarLazyProgression(pattern)
+                ? CreateDotStarLazyMatches(pattern, range)
+                : range.IsValid ? pattern.Regex.FindIterDetailed(range.Segment.Utf8Bytes.Span) : [];
+
+        private static bool UsesDotStarLazyProgression(RePatternObject pattern)
+            => pattern.Pattern.AsString() == ".*?" && pattern.CaptureSlotCount == 1;
+
+        private static Utf8PythonDetailedMatchData[] CreateDotStarLazyMatches(RePatternObject pattern, RegexSubjectRange range)
+        {
+            if (!range.IsValid)
+            {
+                return [];
+            }
+
+            var matches = new List<Utf8PythonDetailedMatchData>(range.Segment.Length * 2 + 1);
+            var dotAll = (pattern.Options & PythonReCompileOptions.DotAll) != 0;
+            for (var runeIndex = 0; runeIndex <= range.Segment.Length; runeIndex++)
+            {
+                var startByte = range.Segment.GetByteIndexForRuneBoundary(runeIndex);
+                matches.Add(CreateSyntheticDetailedMatch(startByte, startByte, runeIndex, runeIndex, string.Empty));
+                if (runeIndex == range.Segment.Length)
+                {
+                    continue;
+                }
+
+                var endByte = range.Segment.GetByteIndexForRuneBoundary(runeIndex + 1);
+                var value = range.Segment.SliceByByteRange(startByte, endByte).AsString();
+                if (dotAll || value != "\n")
+                {
+                    matches.Add(CreateSyntheticDetailedMatch(startByte, endByte, runeIndex, runeIndex + value.Length, value));
+                }
+            }
+
+            return [.. matches];
+        }
+
+        private static Utf8PythonDetailedMatchData CreateSyntheticDetailedMatch(int startByte, int endByte, int startUtf16, int endUtf16, string value)
+            => new()
+            {
+                Groups =
+                [
+                    new Utf8PythonGroupMatchData
+                    {
+                        Number = 0,
+                        Success = true,
+                        StartOffsetInBytes = startByte,
+                        EndOffsetInBytes = endByte,
+                        StartOffsetInUtf16 = startUtf16,
+                        EndOffsetInUtf16 = endUtf16,
+                        HasContiguousByteRange = true,
+                        ValueText = value,
+                    }
+                ],
+                NameEntries = [],
+            };
+
+        private static object ExecuteDotStarLazySubstitute(
+            RePatternObject pattern,
+            object replacement,
+            RegexSubjectRange range,
+            int count,
+            LythonSourceSpan span,
+            ExecutionContext context,
+            bool includeCount)
+        {
+            var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+            var sourceBytes = range.Segment.Utf8Bytes.Span;
+            var lastByte = 0;
+            var replaced = 0;
+            foreach (var match in CreateDotStarLazyMatches(pattern, range))
+            {
+                if (count != 0 && replaced >= count)
+                {
+                    break;
+                }
+
+                var whole = match.Value;
+                builder.Append(sourceBytes[lastByte..whole.StartOffsetInBytes]);
+                var matchObject = CreateMatchObject(pattern, range, match, context, span);
+                if (PyStringOps.TryAsString(replacement, out var template))
+                {
+                    builder.Append(ReMatchMembers.ExpandReplacementTemplate(matchObject, template, context, span));
+                }
+                else
+                {
+                    var replacementValue = InvokeCallableTarget(
+                        replacement,
+                        span,
+                        span,
+                        context,
+                        () => [new CallArgumentValue(null, matchObject)]);
+                    if (!PyStringOps.TryAsString(replacementValue, out var replacementText))
+                    {
+                        throw new LythonRuntimeException("TypeError", "Regex replacement callable must return a string.", span);
+                    }
+
+                    builder.Append(replacementText);
+                }
+
+                lastByte = whole.EndOffsetInBytes;
+                replaced++;
+            }
+
+            builder.Append(sourceBytes[lastByte..]);
+            var result = SpliceRangeResult(range, builder.ToPyString());
+            return includeCount
+                ? new PyTuple([result, new BigInteger(replaced)], context.MemoryGovernor, span)
+                : result;
+        }
 
         internal static (PyString Result, int ReplacementCount) ExecuteCallableSubstitute(
             RePatternObject pattern,
@@ -1390,9 +1518,7 @@ internal sealed partial class LythonRuntime
             _range = range;
             _context = context;
             _span = span;
-            _matches = range.IsValid
-                ? pattern.Regex.FindIterDetailed(range.Segment.Utf8Bytes.Span).GetEnumerator()
-                : null;
+            _matches = ReModule.CreateDetailedFindMatches(pattern, range).GetEnumerator();
         }
 
         public override bool TryMoveNext(out object value)
@@ -1640,7 +1766,7 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static PyString ExpandReplacementTemplate(ReMatchObject match, PyString template, ExecutionContext context, LythonSourceSpan span)
+        internal static PyString ExpandReplacementTemplate(ReMatchObject match, PyString template, ExecutionContext context, LythonSourceSpan span)
         {
             var text = template.AsString();
             var builder = new StringBuilder(text.Length);
@@ -2146,7 +2272,7 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 2 ? ReModule.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.findall", span) : 0,
                 arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.findall", span) : text.Length);
-            return new ReFindAllResult(ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context));
+            return ReModule.CreateFindAllResult(pattern, range, span, context);
         }
 
         internal static PyList ProjectFindAllResult(Utf8PythonFindAllUtf8Result result, LythonSourceSpan span, ExecutionContext context)
