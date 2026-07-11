@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choice(seq) expects one sequence argument.", span);
             }
 
-            var items = MaterializeSequence(arguments[0], span);
+            var items = MaterializePopulation(arguments[0], "random.choice", span);
             if (items.Count == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choices(population[, weights][, cum_weights][, k]) expects one to four arguments.", span);
             }
 
-            var population = MaterializeSequence(arguments[0], span);
+            var population = MaterializePopulation(arguments[0], "random.choices", span);
             if (population.Count == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
@@ -248,7 +248,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.sample(population, k, *, counts=None) expects two arguments plus optional counts.", span);
             }
 
-            var population = MaterializeSequence(arguments[0], span);
+            var population = MaterializePopulation(arguments[0], "random.sample", span);
             var count = ExpectNonNegativeInt(arguments[1], "random.sample(population, k) expects k to be a non-negative integer.", span);
             var items = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? ExpandPopulationCounts(population, arguments[2], span, context)
@@ -737,6 +737,16 @@ internal sealed partial class LythonRuntime
             }
 
             return result;
+        }
+
+        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span)
+        {
+            if (value is not IPyIndexableValue && value is not PyRange)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner} population must be a sequence.", span);
+            }
+
+            return MaterializeSequence(value, span);
         }
 
         private static int ChooseWeightedIndex(PyRandomState state, int populationLength, double[]? weights, double[]? cumulative, LythonSourceSpan span)

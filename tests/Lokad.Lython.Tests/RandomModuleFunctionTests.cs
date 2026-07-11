@@ -4,6 +4,23 @@ namespace Lokad.Lython.Tests;
 
 public sealed class RandomModuleFunctionTests
 {
+    [Theory]
+    [InlineData("random.choice({1})", "random.choice")]
+    [InlineData("random.choices({1}, k=1)", "random.choices")]
+    [InlineData("random.sample({1}, 1)", "random.sample")]
+    public void RandomModule_PopulationsMustBeSequences(string expression, string owner)
+    {
+        var result = new LythonEngine().Run(
+            $"import random\n{expression}\n",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Contains(owner, result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("sequence", result.Failure.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void RandomModule_Functions_HaveDirectCoverage()
     {
