@@ -1467,6 +1467,86 @@ internal sealed partial class LythonRuntime
                baseName == "object";
     }
 
+    private static object Dict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var positional = arguments.Where(argument => argument.Name is null).ToArray();
+        if (positional.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+        }
+
+        var result = new PyDict(context.MemoryGovernor, span);
+        if (positional.Length == 1)
+        {
+            UpdateDictionaryFromSource(result, positional[0].Value, context, span);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is not null)
+            {
+                result.SetItem(PyString.FromString(argument.Name, context.MemoryGovernor, span), argument.Value);
+            }
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
+    private static void UpdateDictionaryFromSource(PyDict target, object source, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (source is PyDict mapping)
+        {
+            foreach (var pair in mapping)
+            {
+                target.SetItem(pair.Key, pair.Value);
+            }
+
+            return;
+        }
+
+        foreach (var pair in ToSequence(source, span, context))
+        {
+            var values = ToSequence(pair, span, context).ToArray();
+            if (values.Length != 2)
+            {
+                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
+            }
+
+            target.SetItem(ValidateDictionaryKey(values[0], span, context.MemoryGovernor), values[1]);
+        }
+    }
+
+    private static object UpdateDictionary(
+        PyDict target,
+        CallArgumentValue[] arguments,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        var positional = arguments.Where(argument => argument.Name is null).ToArray();
+        if (positional.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dict.update expected at most 1 positional argument", span);
+        }
+
+        target.AttachMemoryGovernor(context.MemoryGovernor, span);
+        if (positional.Length == 1)
+        {
+            UpdateDictionaryFromSource(target, positional[0].Value, context, span);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Name is not null)
+            {
+                target.SetItem(PyString.FromString(argument.Name, context.MemoryGovernor, span), argument.Value);
+            }
+        }
+
+        context.ObserveCollectionCount(target.Count, span);
+        return PyNone.Instance;
+    }
+
     private static string? GetBuiltinTypeName(object value) => value switch
     {
         PyType type when type.Name is "object" or "type" => type.Name,

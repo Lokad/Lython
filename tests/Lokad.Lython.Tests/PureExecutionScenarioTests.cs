@@ -2736,7 +2736,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 2, 3]|4|99|1|[(b, 2)]", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 2, 3]|4|99|1|[('b', 2)]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2994,7 +2994,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[]|()|{}|None|2|[2, 1]|[(b, 2), (a, 1)]", host.ReadText("/out.txt"));
+        Assert.Equal("[]|()|{}|None|2|[2, 1]|[('b', 2), ('a', 1)]", host.ReadText("/out.txt"));
     }
 
     [Fact]

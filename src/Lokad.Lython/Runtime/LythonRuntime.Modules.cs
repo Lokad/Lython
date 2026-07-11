@@ -5204,6 +5204,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private sealed class RawBoundCallable(
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return implementation(arguments, span, context);
+        }
+    }
+
     internal sealed class FnMatchModule : PyModule
     {
         public static readonly FnMatchModule Instance = new();

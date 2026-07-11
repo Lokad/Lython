@@ -372,32 +372,22 @@ internal sealed partial class LythonRuntime
 
                     return new DictItemsView(dict);
                 }),
-                "update" => new BoundCallable((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1 || arguments[0] is not PyDict source)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.update(mapping) expects one dictionary argument.", span);
-                    }
-
-                      foreach (var pair in source)
-                      {
-                          dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                          dict.SetItem(pair.Key, pair.Value);
-                          context.ObserveCollectionCount(dict.Count, span);
-                      }
-
-                    return PyNone.Instance;
-                }, "dict.update", ["mapping"]),
+                "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)),
                 "pop" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
+                    if (arguments.Length is < 1 or > 2)
                     {
-                        throw new LythonRuntimeException("TypeError", "dict.pop(key) expects one key.", span);
+                        throw new LythonRuntimeException("TypeError", "dict.pop(key[, default]) expects one key and an optional default.", span);
                     }
 
                     var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
                     if (!dict.TryGetValue(key, out var found))
                     {
+                        if (arguments.Length == 2)
+                        {
+                            return arguments[1];
+                        }
+
                         var renderedKey = key switch
                         {
                             PyString text => text.AsString(),
@@ -412,7 +402,7 @@ internal sealed partial class LythonRuntime
 
                     dict.Remove(key);
                     return found;
-                }, "dict.pop", ["key"]),
+                }, "dict.pop", ["key", "default"], 1),
                 "copy" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)

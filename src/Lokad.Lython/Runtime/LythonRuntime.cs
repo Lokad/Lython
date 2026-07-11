@@ -3944,7 +3944,7 @@ internal sealed partial class LythonRuntime
                 ["hash"] = new BuiltinCallable("hash", Hash, ["object"]),
                 ["list"] = new BuiltinCallable(new LythonCallableSignature("list", ["iterable"], RequiredCount: 0, PositionalOnlyCount: 1), List, ListAsync),
                 ["tuple"] = new BuiltinCallable(new LythonCallableSignature("tuple", ["iterable"], RequiredCount: 0, PositionalOnlyCount: 1), Tuple, TupleAsync),
-                ["dict"] = new BuiltinCallable(new LythonCallableSignature("dict", ["iterable"], RequiredCount: 0, PositionalOnlyCount: 1), Dict, DictAsync),
+                ["dict"] = new DictCallable(),
                 ["set"] = new BuiltinCallable(new LythonCallableSignature("set", ["iterable"], RequiredCount: 0, PositionalOnlyCount: 1), Set, SetAsync),
             };
 

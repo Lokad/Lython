@@ -337,6 +337,21 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
+    private sealed class DictCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    {
+        public string Name => "dict";
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return Dict(arguments, span, context);
+        }
+
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+    }
+
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
         private const string Signature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";

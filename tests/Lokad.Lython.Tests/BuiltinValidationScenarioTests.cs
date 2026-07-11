@@ -138,6 +138,22 @@ return "|".join(values)
     }
 
     [Fact]
+    public void DictionaryConstructionUpdateAndPopMatchPythonForms()
+    {
+        var result = new LythonEngine().Run(
+            """
+d = dict([("a", 1)], b=2)
+d.update({"c": 3}, d=4)
+d.update([("e", 5)])
+return str(d) + "|" + str(d.pop("missing", None)) + "|" + str(d.pop("other", 9))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("{'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}|None|9", result.ReturnValue);
+    }
+
+    [Fact]
     public void PythonKeywordSpellings_AreAcceptedForSupportedBuiltinsAndMethods()
     {
         var host = new MockLythonHost();
@@ -317,7 +333,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("one|pair|one|pair|[(1, one)]", host.ReadText("/out.txt"));
+        Assert.Equal("one|pair|one|pair|[(1, 'one')]", host.ReadText("/out.txt"));
     }
 
     [Theory]
