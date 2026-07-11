@@ -136,6 +136,21 @@ return "|".join(values)
     }
 
     [Fact]
+    public void BooleanBitwiseOperatorsPreserveBooleanResults()
+    {
+        var result = new LythonEngine().Run(
+            """
+x = True
+x &= True
+return str(True & True) + "|" + str(True | False) + "|" + str(True ^ False) + "|" + type(x).__name__
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|bool", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

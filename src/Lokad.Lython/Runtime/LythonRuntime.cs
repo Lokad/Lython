@@ -1854,6 +1854,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
     {
+        if (left is bool leftBoolean && right is bool rightBoolean)
+        {
+            return leftBoolean | rightBoolean;
+        }
+
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Max, keepPositiveOnly: true, span);
@@ -1880,6 +1885,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateBitwiseXor(object left, object right, LythonSourceSpan span)
     {
+        if (left is bool leftBoolean && right is bool rightBoolean)
+        {
+            return leftBoolean ^ rightBoolean;
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
@@ -1901,6 +1911,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateBitwiseAnd(object left, object right, LythonSourceSpan span)
     {
+        if (left is bool leftBoolean && right is bool rightBoolean)
+        {
+            return leftBoolean & rightBoolean;
+        }
+
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Min, keepPositiveOnly: true, span);
