@@ -122,7 +122,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[alpha]", host.ReadText("/out.txt"));
+        Assert.Equal("['alpha']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -199,7 +199,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[, :, a, ::, b, :, ]|[, None,  , a, ]", host.ReadText("/out.txt"));
+        Assert.Equal("['', ':', 'a', '::', 'b', ':', '']|['', None, ' ', 'a', '']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -377,7 +377,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[Alpha, alpha, ALPHA]|x x x|3", host.ReadText("/out.txt"));
+        Assert.Equal("['Alpha', 'alpha', 'ALPHA']|x x x|3", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -409,7 +409,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[src, other]|src=x other=b|1|a b", host.ReadText("/out.txt"));
+        Assert.Equal("['src', 'other']|src=x other=b|1|a b", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -458,7 +458,7 @@ m = pat.search("zzA zzab", pos=2, endpos=5)
 groupdict = m.groupdict("-")
 vals = []
 vals.append(pat.pattern)
-vals.append(str(pat.flags == re.I))
+vals.append(str(pat.flags == (re.I | re.U)))
 vals.append(str(pat.groups))
 vals.append(str(pat.groupindex["word"]) + ":" + str(pat.groupindex["opt"]))
 vals.append(m.group(0) + ":" + str(m.pos) + ":" + str(m.endpos))
@@ -499,7 +499,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("(?P<word>a)(?P<opt>b)?|True|2|1:2|A:2:5|2:-1:(-1, -1)|(A, -)|A:-|<A->|1:word|True:zzA zzab|ab|[a]|done|a|[a]|a x a|ab z:1|[, a, None, ay]|error:error|pattern:error", host.ReadText("/out.txt"));
+        Assert.Equal("(?P<word>a)(?P<opt>b)?|True|2|1:2|A:2:5|2:-1:(-1, -1)|('A', '-')|A:-|<A->|1:word|True:zzA zzab|ab|['a']|done|a|['a']|a x a|ab z:1|['', 'a', None, 'ay']|error:error|pattern:error", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -520,7 +520,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("(a, a)|(a, None, c)", host.ReadText("/out.txt"));
+        Assert.Equal("('a', 'a')|('a', None, 'c')", host.ReadText("/out.txt"));
     }
 
     [Theory]

@@ -60,6 +60,7 @@ internal sealed partial class LythonRuntime
     internal sealed record RePatternObject(
         PyString Pattern,
         PythonReCompileOptions Options,
+        int Flags,
         Utf8PythonRegex Regex,
         int CaptureSlotCount,
         IReadOnlyDictionary<string, int> NamedGroups);
@@ -672,8 +673,8 @@ internal sealed partial class LythonRuntime
                 "NOFLAG" => BigInteger.Zero,
                 "IGNORECASE" => new BigInteger((int)PythonReCompileOptions.IgnoreCase),
                 "I" => new BigInteger((int)PythonReCompileOptions.IgnoreCase),
-                "UNICODE" => BigInteger.Zero,
-                "U" => BigInteger.Zero,
+                "UNICODE" => new BigInteger(PythonUnicodeFlag),
+                "U" => new BigInteger(PythonUnicodeFlag),
                 "MULTILINE" => new BigInteger((int)PythonReCompileOptions.Multiline),
                 "M" => new BigInteger((int)PythonReCompileOptions.Multiline),
                 "DOTALL" => new BigInteger((int)PythonReCompileOptions.DotAll),
@@ -694,6 +695,7 @@ internal sealed partial class LythonRuntime
         }
 
         private const int RegexDebugFlag = 1 << 20;
+        private const int PythonUnicodeFlag = 32;
 
         private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
         {
@@ -842,7 +844,13 @@ internal sealed partial class LythonRuntime
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
                 var (captureSlotCount, namedGroups) = SummarizePatternGroups(pattern.AsString());
-                return new RePatternObject(pattern, options, compiled, captureSlotCount, namedGroups);
+                var reportedFlags = (int)options;
+                if ((options & PythonReCompileOptions.Ascii) == 0)
+                {
+                    reportedFlags |= PythonUnicodeFlag;
+                }
+
+                return new RePatternObject(pattern, options, reportedFlags, compiled, captureSlotCount, namedGroups);
             }
             catch (PythonRePatternException ex)
             {
@@ -1010,7 +1018,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
             }
 
-            var options = (PythonReCompileOptions)flagBits;
+            var options = (PythonReCompileOptions)(flagBits & ~PythonUnicodeFlag);
             if ((options & PythonReCompileOptions.Locale) != 0)
             {
                 throw new LythonRuntimeException("NotImplementedError", "re.LOCALE is not supported by Lython's Unicode-only regex runtime.", span);
@@ -1996,7 +2004,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "pattern" => pattern.Pattern,
-                "flags" => new BigInteger((int)pattern.Options),
+                "flags" => new BigInteger(pattern.Flags),
                 "groups" => new BigInteger(Math.Max(0, pattern.CaptureSlotCount - 1)),
                 "groupindex" => CreateGroupIndex(pattern),
                 "search" => new BoundCallable((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.SearchDetailedData(input)), "pattern.search", ["string", "pos", "endpos"], 1),

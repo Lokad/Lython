@@ -725,7 +725,7 @@ internal static class PyStringOps
         var builder = CreateBuilder(value, value.Utf8Bytes.Length * 2);
         foreach (var rune in value.EnumerateRunes())
         {
-            if (rune.Utf8Bytes.Length == 1 && ".^$*+?{}[]\\|()".Contains((char)rune.Utf8Bytes.Span[0], StringComparison.Ordinal))
+            if (rune.Utf8Bytes.Length == 1 && ".^$*+?{}[]\\|()&~#- \t\n\r\v\f".Contains((char)rune.Utf8Bytes.Span[0], StringComparison.Ordinal))
             {
                 builder.Append((byte)'\\');
             }
