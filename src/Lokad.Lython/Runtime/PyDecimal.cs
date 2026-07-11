@@ -316,7 +316,7 @@ internal static class PyDecimalOps
         }
 
         var rounding = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
-        var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) : defaultContext;
+        var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? defaultContext : defaultContext;
         return new PyDecimal(Round(value.Value, 0, rounding, context, span));
     }
 

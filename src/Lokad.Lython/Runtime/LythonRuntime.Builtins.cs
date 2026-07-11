@@ -382,7 +382,6 @@ internal sealed partial class LythonRuntime
 
     private static object Round(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects one or two arguments.", span);
@@ -398,7 +397,7 @@ internal sealed partial class LythonRuntime
             bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, hasDigits, digits, span),
             BigInteger integer => RoundInteger(integer, hasDigits, digits, span),
             double floating => RoundFloat(floating, hasDigits, digits, span),
-            PyDecimal decimalValue => RoundDecimal(decimalValue, hasDigits, digits, span),
+            PyDecimal decimalValue => RoundDecimal(decimalValue, hasDigits, digits, context.DecimalContext, span),
             _ => throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects a numeric value.", span)
         };
     }
@@ -698,7 +697,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object RoundDecimal(PyDecimal value, bool hasDigits, int digits, LythonSourceSpan span)
+    private static object RoundDecimal(PyDecimal value, bool hasDigits, int digits, PyDecimalContext context, LythonSourceSpan span)
     {
         if (!hasDigits)
         {
@@ -707,7 +706,7 @@ internal sealed partial class LythonRuntime
 
         if (digits is >= 0 and <= 28)
         {
-            return new PyDecimal(decimal.Round(value.Value, digits, MidpointRounding.ToEven));
+            return new PyDecimal(PyDecimalOps.Round(value.Value, digits, PyNone.Instance, context, span));
         }
 
         if (digits > 28)
@@ -716,7 +715,7 @@ internal sealed partial class LythonRuntime
         }
 
         var factor = DecimalPowerOfTen(checked(-digits), span);
-        return new PyDecimal(decimal.Round(value.Value / factor, 0, MidpointRounding.ToEven) * factor);
+        return new PyDecimal(PyDecimalOps.Round(value.Value / factor, 0, PyNone.Instance, context, span) * factor);
     }
 
     private static decimal DecimalPowerOfTen(int exponent, LythonSourceSpan span)

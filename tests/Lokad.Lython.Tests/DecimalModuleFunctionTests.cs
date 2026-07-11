@@ -107,6 +107,34 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DecimalModule_ActiveContextControlsRoundingOperations()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal, ROUND_DOWN, ROUND_UP, getcontext
+
+context = getcontext()
+context.rounding = ROUND_DOWN
+values = [
+    str(round(Decimal("1.29"), 1)),
+    str(round(Decimal("129"), -1)),
+    str(round(Decimal("1.9"))),
+    str(Decimal("1.29").quantize(Decimal("0.1"))),
+    str(Decimal("1.9").to_integral_value(context=None)),
+    str(Decimal("1.21").to_integral_value(ROUND_UP)),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1.2|120|2|1.2|1|2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DecimalModule_ExpandedMethodsAndRoundingModes_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
