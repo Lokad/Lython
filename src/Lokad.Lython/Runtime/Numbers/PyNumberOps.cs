@@ -191,6 +191,29 @@ internal static class PyNumberOps
     public static double ParseFloat(string text)
         => double.Parse(text.Replace("_", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture);
 
+    public static string RenderFloat(double value)
+    {
+        if (double.IsNaN(value))
+        {
+            return "nan";
+        }
+
+        if (double.IsPositiveInfinity(value))
+        {
+            return "inf";
+        }
+
+        if (double.IsNegativeInfinity(value))
+        {
+            return "-inf";
+        }
+
+        var rendered = value.ToString("R", CultureInfo.InvariantCulture).Replace('E', 'e');
+        return rendered.Contains('.', StringComparison.Ordinal) || rendered.Contains('e', StringComparison.Ordinal)
+            ? rendered
+            : rendered + ".0";
+    }
+
     public static int GetHashCode(PyNumber number)
     {
         if (number.IsFloat)

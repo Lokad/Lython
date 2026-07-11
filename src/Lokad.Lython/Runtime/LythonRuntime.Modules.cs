@@ -7321,7 +7321,7 @@ internal sealed partial class LythonRuntime
                     PyString text => new CsvCell(text, IsNumeric: false),
                     BigInteger integer => new CsvCell(PyString.FromString(integer.ToString()), IsNumeric: true),
                     bool boolean => new CsvCell(PyString.FromString(boolean ? "True" : "False"), IsNumeric: false),
-                    double floating => new CsvCell(PyString.FromString(floating.ToString(System.Globalization.CultureInfo.InvariantCulture)), IsNumeric: true),
+                    double floating => new CsvCell(PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)), IsNumeric: true),
                     _ => throw new LythonRuntimeException("TypeError", "CSV rows must contain scalar values.", span)
                 });
             }
