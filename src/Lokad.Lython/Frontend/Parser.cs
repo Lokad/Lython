@@ -4342,11 +4342,22 @@ internal sealed class Parser
     private static bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts)
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
-        var isRaw = prefix.Contains('r', StringComparison.OrdinalIgnoreCase);
         if (!TryExtractStringContent(literal, out var content))
         {
             return false;
         }
+
+        return TryParseFormattedStringContent(prefix, content, allowNestedFormatFields: true, out parts);
+    }
+
+    private static bool TryParseFormattedStringContent(
+        string prefix,
+        string content,
+        bool allowNestedFormatFields,
+        out IReadOnlyList<FormattedStringPartSyntax> parts)
+    {
+        parts = Array.Empty<FormattedStringPartSyntax>();
+        var isRaw = prefix.Contains('r', StringComparison.OrdinalIgnoreCase);
 
         var parsedParts = new List<FormattedStringPartSyntax>();
         var text = new System.Text.StringBuilder();
@@ -4374,9 +4385,21 @@ internal sealed class Parser
                     text.Clear();
                 }
 
-                if (!TryParseFormattedStringField(content, i + 1, out var end, out var expressionPart))
+                if (!TryParseFormattedStringField(
+                        prefix,
+                        content,
+                        i + 1,
+                        allowNestedFormatFields,
+                        out var end,
+                        out var expressionPart,
+                        out var debugText))
                 {
                     return false;
+                }
+
+                if (debugText is not null)
+                {
+                    parsedParts.Add(new FormattedStringTextPartSyntax(debugText));
                 }
 
                 parsedParts.Add(expressionPart);
@@ -4414,13 +4437,17 @@ internal sealed class Parser
     }
 
     private static bool TryParseFormattedStringField(
+        string prefix,
         string content,
         int start,
+        bool allowNestedFormatFields,
         out int end,
-        out FormattedStringExpressionPartSyntax part)
+        out FormattedStringExpressionPartSyntax part,
+        out string? debugText)
     {
         end = -1;
         part = null!;
+        debugText = null;
 
         if (!TryFindFormattedStringFieldEnd(content, start, out end))
         {
@@ -4428,14 +4455,45 @@ internal sealed class Parser
         }
 
         var field = content[start..end];
-        if (!TrySplitFormattedStringField(field, out var expressionText, out var conversion, out var formatSpecifier) ||
+        if (!TrySplitFormattedStringField(
+                field,
+                out var expressionText,
+                out var conversion,
+                out var formatSpecifier,
+                out debugText) ||
             expressionText.Length == 0 ||
             !TryParseEmbeddedExpression(expressionText, out var expression))
         {
             return false;
         }
 
-        part = new FormattedStringExpressionPartSyntax(expression, conversion, formatSpecifier);
+        IReadOnlyList<FormattedStringPartSyntax>? formatSpecifierParts = null;
+        if (formatSpecifier is not null &&
+            (formatSpecifier.Contains('{', StringComparison.Ordinal) || formatSpecifier.Contains('}', StringComparison.Ordinal)))
+        {
+            if (!allowNestedFormatFields ||
+                !TryParseFormattedStringContent(
+                    prefix,
+                    formatSpecifier,
+                    allowNestedFormatFields: false,
+                    out formatSpecifierParts))
+            {
+                return false;
+            }
+
+            formatSpecifier = null;
+        }
+
+        if (debugText is not null && conversion is null && formatSpecifier is null && formatSpecifierParts is null)
+        {
+            conversion = 'r';
+        }
+
+        part = new FormattedStringExpressionPartSyntax(
+            expression,
+            conversion,
+            formatSpecifier,
+            formatSpecifierParts);
         return true;
     }
 
@@ -4510,11 +4568,13 @@ internal sealed class Parser
         string field,
         out string expressionText,
         out char? conversion,
-        out string? formatSpecifier)
+        out string? formatSpecifier,
+        out string? debugText)
     {
         expressionText = string.Empty;
         conversion = null;
         formatSpecifier = null;
+        debugText = null;
 
         if (!TryFindFormattedStringSeparators(field, out var conversionIndex, out var formatIndex))
         {
@@ -4526,7 +4586,22 @@ internal sealed class Parser
             : formatIndex >= 0
                 ? formatIndex
                 : field.Length;
-        expressionText = field[..expressionEnd].Trim();
+        var expressionSource = field[..expressionEnd];
+        var debugEnd = expressionSource.Length - 1;
+        while (debugEnd >= 0 && char.IsWhiteSpace(expressionSource[debugEnd]))
+        {
+            debugEnd--;
+        }
+
+        if (debugEnd >= 0 &&
+            expressionSource[debugEnd] == '=' &&
+            (debugEnd == 0 || expressionSource[debugEnd - 1] is not ('=' or '!' or '<' or '>' or ':')))
+        {
+            debugText = expressionSource;
+            expressionSource = expressionSource[..debugEnd];
+        }
+
+        expressionText = expressionSource.Trim();
 
         if (conversionIndex >= 0)
         {
@@ -4556,11 +4631,6 @@ internal sealed class Parser
         if (formatIndex >= 0)
         {
             formatSpecifier = field[(formatIndex + 1)..];
-            if (formatSpecifier.Contains('{', StringComparison.Ordinal) ||
-                formatSpecifier.Contains('}', StringComparison.Ordinal))
-            {
-                return false;
-            }
         }
 
         return true;

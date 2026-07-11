@@ -626,9 +626,15 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateLoweredFormattedString(LoweredFormattedStringExpression formatted, ExecutionContext context)
+        => EvaluateLoweredFormattedStringParts(formatted.Parts, context, formatted.Span);
+
+    private static PyString EvaluateLoweredFormattedStringParts(
+        IReadOnlyList<LoweredFormattedStringPart> parts,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
-        var builder = new Utf8ValueBuilder(context.MemoryGovernor, formatted.Span);
-        foreach (var part in formatted.Parts)
+        var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+        foreach (var part in parts)
         {
             switch (part)
             {
@@ -636,12 +642,15 @@ internal sealed partial class LythonRuntime
                     builder.AppendString(text.Text);
                     break;
                 case LoweredFormattedStringExpressionPart expression:
+                    var formatSpecifier = expression.FormatSpecifierParts is null
+                        ? expression.FormatSpecifier
+                        : EvaluateLoweredFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
                     builder.Append(FormatInterpolatedStringPart(
                         EvaluateLoweredExpression(expression.Expression, context),
                         expression.Conversion,
-                        expression.FormatSpecifier,
+                        formatSpecifier,
                         context,
-                        formatted.Span));
+                        span));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
@@ -649,7 +658,7 @@ internal sealed partial class LythonRuntime
         }
 
         var value = builder.ToPyString();
-        context.ObserveString(value, formatted.Span);
+        context.ObserveString(value, span);
         return value;
     }
 

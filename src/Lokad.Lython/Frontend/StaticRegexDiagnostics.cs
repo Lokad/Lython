@@ -315,12 +315,9 @@ internal static class StaticRegexDiagnostics
         switch (expression)
         {
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart)
-                    {
-                        AnalyzeRegexStaticExpression(expressionPart.Expression, diagnostics, stringBindings, localeFlagBindings);
-                    }
+                    AnalyzeRegexStaticExpression(nestedExpression, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
 

@@ -2202,9 +2202,15 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateFormattedString(FormattedStringExpressionSyntax formatted, ExecutionContext context)
+        => EvaluateFormattedStringParts(formatted.Parts, context, formatted.Span);
+
+    private static PyString EvaluateFormattedStringParts(
+        IReadOnlyList<FormattedStringPartSyntax> parts,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
-        var builder = new Utf8ValueBuilder(context.MemoryGovernor, formatted.Span);
-        foreach (var part in formatted.Parts)
+        var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+        foreach (var part in parts)
         {
             switch (part)
             {
@@ -2212,12 +2218,15 @@ internal sealed partial class LythonRuntime
                     builder.AppendString(text.Text);
                     break;
                 case FormattedStringExpressionPartSyntax expression:
+                    var formatSpecifier = expression.FormatSpecifierParts is null
+                        ? expression.FormatSpecifier
+                        : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
                     builder.Append(FormatInterpolatedStringPart(
                         EvaluateExpression(expression.Expression, context),
                         expression.Conversion,
-                        expression.FormatSpecifier,
+                        formatSpecifier,
                         context,
-                        formatted.Span));
+                        span));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
@@ -2225,7 +2234,7 @@ internal sealed partial class LythonRuntime
         }
 
         var value = builder.ToPyString();
-        context.ObserveString(value, formatted.Span);
+        context.ObserveString(value, span);
         return value;
     }
 

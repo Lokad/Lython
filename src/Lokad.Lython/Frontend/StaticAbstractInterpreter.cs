@@ -336,12 +336,9 @@ internal static class StaticAbstractInterpreter
         switch (expression)
         {
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart)
-                    {
-                        AnalyzeExpression(expressionPart.Expression, diagnostics, bindings);
-                    }
+                    AnalyzeExpression(nestedExpression, diagnostics, bindings);
                 }
                 break;
 

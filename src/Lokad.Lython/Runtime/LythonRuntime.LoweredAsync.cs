@@ -718,9 +718,15 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask<object> EvaluateLoweredFormattedStringAsync(LoweredFormattedStringExpression formatted, ExecutionContext context)
+        => await EvaluateLoweredFormattedStringPartsAsync(formatted.Parts, context, formatted.Span).ConfigureAwait(false);
+
+    private static async ValueTask<PyString> EvaluateLoweredFormattedStringPartsAsync(
+        IReadOnlyList<LoweredFormattedStringPart> parts,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
-        var builder = new Utf8ValueBuilder(context.MemoryGovernor, formatted.Span);
-        foreach (var part in formatted.Parts)
+        var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+        foreach (var part in parts)
         {
             switch (part)
             {
@@ -728,12 +734,18 @@ internal sealed partial class LythonRuntime
                     builder.AppendString(text.Text);
                     break;
                 case LoweredFormattedStringExpressionPart expression:
+                    var formatSpecifier = expression.FormatSpecifierParts is null
+                        ? expression.FormatSpecifier
+                        : (await EvaluateLoweredFormattedStringPartsAsync(
+                            expression.FormatSpecifierParts,
+                            context,
+                            span).ConfigureAwait(false)).AsString();
                     builder.Append(FormatInterpolatedStringPart(
                         await EvaluateLoweredExpressionAsync(expression.Expression, context).ConfigureAwait(false),
                         expression.Conversion,
-                        expression.FormatSpecifier,
+                        formatSpecifier,
                         context,
-                        formatted.Span));
+                        span));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
@@ -741,7 +753,7 @@ internal sealed partial class LythonRuntime
         }
 
         var value = builder.ToPyString();
-        context.ObserveString(value, formatted.Span);
+        context.ObserveString(value, span);
         return value;
     }
 

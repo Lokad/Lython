@@ -3810,11 +3810,30 @@ __lython_file.close()
         Assert.Equal("0015|-0015|0xf|12,345|2.50|12.5%|  xy|x0000|abc|3   !|  15", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void FormattedStrings_SupportDebugExpressionsAndNestedFormatFields()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+value = "a"
+width = 5
+parts = [f"{value=}", f"{value=:>{width}}", f"{ width = }"]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("value='a'|value=    a| width = 5", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("f\"{\"\n")]
     [InlineData("f\"}\"\n")]
     [InlineData("f\"{}\"\n")]
-    [InlineData("f\"{1:{2}}\"\n")]
     public void FormattedStrings_InvalidShapes_ReportCompileDiagnostic(string source)
     {
         var compiled = new LythonEngine().Compile(source);

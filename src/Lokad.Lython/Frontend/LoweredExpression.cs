@@ -57,7 +57,8 @@ internal sealed record LoweredFormattedStringTextPart(
 internal sealed record LoweredFormattedStringExpressionPart(
     LoweredExpression Expression,
     char? Conversion,
-    string? FormatSpecifier) : LoweredFormattedStringPart;
+    string? FormatSpecifier,
+    IReadOnlyList<LoweredFormattedStringPart>? FormatSpecifierParts) : LoweredFormattedStringPart;
 
 internal sealed record LoweredFormattedStringExpression(
     FormattedStringExpressionSyntax FormattedString,

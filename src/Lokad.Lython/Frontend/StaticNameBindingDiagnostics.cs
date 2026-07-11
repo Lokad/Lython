@@ -357,12 +357,9 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart)
-                    {
-                        AnalyzeExpression(expressionPart.Expression, context, localNames, maybeAssigned);
-                    }
+                    AnalyzeExpression(nestedExpression, context, localNames, maybeAssigned);
                 }
                 break;
 
@@ -726,9 +723,9 @@ internal static class StaticNameBindingDiagnostics
                 CollectLocalAssignments(assignment.Expression, localNames);
                 break;
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart) CollectLocalAssignments(expressionPart.Expression, localNames);
+                    CollectLocalAssignments(nestedExpression, localNames);
                 }
                 break;
             case ListLiteralExpressionSyntax list:

@@ -286,11 +286,38 @@ internal sealed record FormattedStringTextPartSyntax(
 internal sealed record FormattedStringExpressionPartSyntax(
     ExpressionSyntax Expression,
     char? Conversion = null,
-    string? FormatSpecifier = null) : FormattedStringPartSyntax;
+    string? FormatSpecifier = null,
+    IReadOnlyList<FormattedStringPartSyntax>? FormatSpecifierParts = null) : FormattedStringPartSyntax;
 
 internal sealed record FormattedStringExpressionSyntax(
     IReadOnlyList<FormattedStringPartSyntax> Parts,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
+
+internal static class FormattedStringSyntaxTraversal
+{
+    public static IEnumerable<ExpressionSyntax> EnumerateExpressions(
+        IReadOnlyList<FormattedStringPartSyntax> parts)
+    {
+        foreach (var part in parts)
+        {
+            if (part is not FormattedStringExpressionPartSyntax expressionPart)
+            {
+                continue;
+            }
+
+            yield return expressionPart.Expression;
+            if (expressionPart.FormatSpecifierParts is null)
+            {
+                continue;
+            }
+
+            foreach (var nested in EnumerateExpressions(expressionPart.FormatSpecifierParts))
+            {
+                yield return nested;
+            }
+        }
+    }
+}
 
 internal sealed record ListLiteralExpressionSyntax(
     IReadOnlyList<ExpressionSyntax> Items,

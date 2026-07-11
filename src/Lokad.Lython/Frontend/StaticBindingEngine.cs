@@ -971,12 +971,9 @@ internal static class StaticBindingEngine
         switch (expression)
         {
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart)
-                    {
-                        CollectMutatedReceiverNames(expressionPart.Expression, bindings, names);
-                    }
+                    CollectMutatedReceiverNames(nestedExpression, bindings, names);
                 }
                 break;
 

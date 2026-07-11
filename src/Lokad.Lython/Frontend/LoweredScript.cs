@@ -292,7 +292,8 @@ internal sealed class LoweredScript
             FormattedStringExpressionPartSyntax expression => new LoweredFormattedStringExpressionPart(
                 LowerExpression(expression.Expression),
                 expression.Conversion,
-                expression.FormatSpecifier),
+                expression.FormatSpecifier,
+                expression.FormatSpecifierParts?.Select(LowerFormattedStringPart).ToArray()),
             _ => throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}")
         };
     }

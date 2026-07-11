@@ -165,12 +165,9 @@ internal static class StaticHostRequirementDiagnostics
                 break;
 
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart)
-                    {
-                        AnalyzeHostExecutableExpression(expressionPart.Expression, context, host);
-                    }
+                    AnalyzeHostExecutableExpression(nestedExpression, context, host);
                 }
                 break;
 

@@ -348,9 +348,9 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(assignment.Expression, names);
                 break;
             case FormattedStringExpressionSyntax formatted:
-                foreach (var part in formatted.Parts)
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {
-                    if (part is FormattedStringExpressionPartSyntax expressionPart) CollectSeenNames(expressionPart.Expression, names);
+                    CollectSeenNames(nestedExpression, names);
                 }
                 break;
             case ListLiteralExpressionSyntax list:
