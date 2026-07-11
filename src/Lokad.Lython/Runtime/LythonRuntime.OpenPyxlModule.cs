@@ -697,7 +697,7 @@ internal sealed partial class LythonRuntime
             bool? auto)
         {
             Type = type;
-            Rgb = rgb;
+            Rgb = rgb is null ? null : NormalizeRgbColor(rgb, "openpyxl color", null);
             Indexed = indexed;
             Theme = theme;
             Tint = tint;
@@ -1131,8 +1131,18 @@ internal sealed partial class LythonRuntime
         }
 
         return PyStringOps.TryAsString(value, out var text)
-            ? new OpenPyxlColor("rgb", text.AsString(), null, null, 0d, null)
+            ? new OpenPyxlColor("rgb", NormalizeRgbColor(text.AsString(), "openpyxl style color", null), null, null, 0d, null)
             : value;
+    }
+
+    private static string NormalizeRgbColor(string value, string owner, LythonSourceSpan? span)
+    {
+        if (value.Length is not (6 or 8) || value.Any(static character => !Uri.IsHexDigit(character)))
+        {
+            throw new LythonRuntimeException("ValueError", owner + " expects a 6- or 8-digit hexadecimal RGB value.", span);
+        }
+
+        return value.Length == 6 ? "00" + value : value;
     }
 
     private static string? OptionalColorString(object[] arguments, int index, string owner, LythonSourceSpan span)
@@ -8788,7 +8798,7 @@ internal sealed partial class LythonRuntime
 
             if (PyStringOps.TryAsString(value, out var text))
             {
-                return new XElement(XlsxMain + elementName, new XAttribute("rgb", text.AsString()));
+                return new XElement(XlsxMain + elementName, new XAttribute("rgb", NormalizeRgbColor(text.AsString(), "openpyxl style color", null)));
             }
 
             return null;

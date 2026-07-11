@@ -495,7 +495,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("True|True|00FF00|solid|FFFF00|thin|FF0000|center|True|False|True", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|0000FF00|solid|00FFFF00|thin|00FF0000|center|True|False|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -547,7 +547,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("False|False|False|False|True|00FF00|FFFF00|thin|FF0000|accent|accent", host.ReadText("/out.txt"));
+        Assert.Equal("False|False|False|False|True|0000FF00|00FFFF00|thin|00FF0000|accent|accent", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -591,7 +591,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("styled|0.00|True|True|00FF00|solid|FFFF00|thin|FF0000|center|True|False|True", host.ReadText("/out.txt"));
+        Assert.Equal("styled|0.00|True|True|0000FF00|solid|00FFFF00|thin|00FF0000|center|True|False|True", host.ReadText("/out.txt"));
 
         var stylesXml = WorkbookPartText(host.ReadWorkbook("/styled.xlsx"), "xl/styles.xml");
         Assert.Contains("applyFont=\"1\"", stylesXml, StringComparison.Ordinal);
@@ -626,6 +626,7 @@ before = [
     cell.fill.bgColor.type, str(cell.fill.bgColor.auto),
     cell.border.left.color.type, str(cell.border.left.color.theme), str(cell.border.left.color.tint),
     str(cell.font.color == "FF00FF00"),
+    Color(rgb="FF0000").rgb,
 ]
 wb.save("/colors.xlsx")
 
@@ -637,6 +638,7 @@ after = [
     out.fill.bgColor.type, str(out.fill.bgColor.auto),
     out.border.left.color.type, str(out.border.left.color.theme), str(out.border.left.color.tint),
     str(out.font.color == "FF00FF00"),
+    Color(rgb="FF0000").rgb,
 ]
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(before) + "\n" + "|".join(after))
@@ -646,8 +648,8 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
-            "rgb|FF00FF00|FF00FF00|indexed|64|0.5|auto|True|theme|1|-0.25|True\n" +
-            "rgb|FF00FF00|FF00FF00|indexed|64|0.5|auto|True|theme|1|-0.25|True",
+            "rgb|FF00FF00|FF00FF00|indexed|64|0.5|auto|True|theme|1|-0.25|True|00FF0000\n" +
+            "rgb|FF00FF00|FF00FF00|indexed|64|0.5|auto|True|theme|1|-0.25|True|00FF0000",
             host.ReadText("/out.txt"));
 
         var stylesXml = WorkbookPartText(host.ReadWorkbook("/colors.xlsx"), "xl/styles.xml");
@@ -706,7 +708,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("['Normal', 'currency']|['Normal', 'currency']|currency|0.00|True|FFFF00|currency|0.00|True|FFFF00|thin|00FF00|currency|0.00|True|FFFF00", host.ReadText("/out.txt"));
+        Assert.Equal("['Normal', 'currency']|['Normal', 'currency']|currency|0.00|True|00FFFF00|currency|0.00|True|00FFFF00|thin|0000FF00|currency|0.00|True|00FFFF00", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1072,7 +1074,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("3.1.0+lython.0|A001:5|B2:6:A001:=B2*2:2024-01-02|True:FFFF00:B2:18.0:24.0|A1:B3:reviewed:TableStyleMedium2", host.ReadText("/out.txt"));
+        Assert.Equal("3.1.0+lython.0|A001:5|B2:6:A001:=B2*2:2024-01-02|True:00FFFF00:B2:18.0:24.0|A1:B3:reviewed:TableStyleMedium2", host.ReadText("/out.txt"));
     }
 
     [Fact]
