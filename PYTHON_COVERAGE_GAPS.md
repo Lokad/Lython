@@ -613,7 +613,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 08 — Complete open-ended `itertools.islice`.** Represent a `None` stop without narrowing it to a machine integer and test both supported signatures. Addresses LY-MOD-014.
 - [x] **Commit 09 — Enforce random population protocols.** Require sequence/indexable populations for `choice` and `sample` while retaining deterministic state behavior. Addresses LY-MOD-018.
 - [x] **Commit 10 — Preserve atomic tuple identity in deep copies.** Reuse tuple inputs when every recursively copied element is unchanged, without regressing cycles or memo dictionaries. Addresses LY-MOD-004.
-- [ ] **Commit 11 — Complete `Counter` numeric/unary behavior.** Generalize supported numeric counts and implement unary positive/negative filtering with ordered results. Addresses LY-MOD-002 and LY-MOD-025.
+- [x] **Commit 11 — Complete `Counter` numeric/unary behavior.** Generalize supported numeric counts and implement unary positive/negative filtering with ordered results. Addresses LY-MOD-002 and LY-MOD-025.
 - [ ] **Commit 12 — Normalize deque rotations before conversion.** Reduce arbitrary-size rotation integers modulo the current length and retain empty-deque behavior. Addresses LY-MOD-003.
 - [ ] **Commit 13 — Complete `ChainMap`'s mapping protocol.** Count the union of visible keys and pin length alongside iteration, lookup, and mutation. Addresses LY-MOD-026.
 - [ ] **Commit 14 — Generate dataclass representations with `repr`.** Render every generated field through the shared representation protocol. Addresses LY-MOD-006.

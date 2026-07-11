@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -570,10 +571,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Counter.total() expects no arguments.", span);
                     }
 
-                    var total = BigInteger.Zero;
+                    object total = BigInteger.Zero;
                     foreach (var pair in counter.Items)
                     {
-                        total += ExpectCounterCount(pair.Value, span);
+                        total = AddCounterCounts(total, ExpectCounterCount(pair.Value, span), span);
                     }
 
                     return total;
@@ -605,7 +606,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var sortedItems = counter.Items.ToList();
-                    sortedItems.Sort((left, right) => ExpectCounterCount(right.Value, span).CompareTo(ExpectCounterCount(left.Value, span)));
+                    sortedItems.Sort((left, right) => CompareCounterCounts(right.Value, left.Value, span));
 
                     var count = limit is null ? sortedItems.Count : Math.Min(limit.Value, sortedItems.Count);
                     var items = new object[count];
@@ -627,7 +628,10 @@ internal sealed partial class LythonRuntime
                     var items = new List<object>();
                     foreach (var pair in counter.Items)
                     {
-                        var count = ExpectCounterCount(pair.Value, span);
+                        if (!PyNumberOps.TryAsInteger(pair.Value, out var count))
+                        {
+                            throw new LythonRuntimeException("TypeError", "Counter.elements() counts must be integers.", span);
+                        }
                         if (count <= 0)
                         {
                             continue;

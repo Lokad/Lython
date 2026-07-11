@@ -320,6 +320,28 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_CounterRetainsNumericCountsAndSupportsUnaryFiltering()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter
+
+numeric = Counter(a=1.5, b=2)
+numeric.update(a=0.25)
+filtered = Counter(a=2, b=-1, c=0)
+vals = [str(numeric.total()), str(numeric), str(+filtered), str(-filtered)]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("3.75|Counter({'a': 1.75, 'b': 2})|Counter({'a': 2})|Counter({'b': 1})", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_DequeBoundedIndexInsertRemoveAndEquality_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

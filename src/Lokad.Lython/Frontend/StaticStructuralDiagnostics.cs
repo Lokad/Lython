@@ -246,7 +246,8 @@ internal static class StaticStructuralDiagnostics
         {
             if (!StaticAbstractFacts.IsNumericLike(operand) &&
                 operand.Kind != AbstractValueKind.DateTimeTimedelta &&
-                operand.Kind != AbstractValueKind.StatisticsNormalDist)
+                operand.Kind != AbstractValueKind.StatisticsNormalDist &&
+                operand.Kind != AbstractValueKind.CollectionsCounter)
             {
                 AddDiagnostic(diagnostics, "LA3144", "Operand is not numeric.", unary.Span);
             }

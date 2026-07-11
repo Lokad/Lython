@@ -567,7 +567,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in otherCounter)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? -delta : delta);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span) : delta, span);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -579,7 +579,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in dict)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? -delta : delta);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span) : delta, span);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -588,7 +588,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(source, span))
         {
-            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One);
+            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }
@@ -603,19 +603,19 @@ internal sealed partial class LythonRuntime
         foreach (var pair in keywordItems)
         {
             var delta = ExpectCounterCount(pair.Value, span);
-            counter.Increment(PyString.FromString(pair.Key), subtract ? -delta : delta);
+            counter.Increment(PyString.FromString(pair.Key), subtract ? NegateCounterCount(delta, span) : delta, span);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }
 
-    private static BigInteger ExpectCounterCount(object value, LythonSourceSpan span)
+    private static object ExpectCounterCount(object value, LythonSourceSpan span)
     {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
+        if (!Numbers.PyNumberOps.TryAsNumber(value, out _) && value is not PyDecimal)
         {
-            throw new LythonRuntimeException("TypeError", "Counter mapping values must be integers.", span);
+            throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);
         }
 
-        return integer;
+        return value;
     }
 
     private static int? ExpectDequeMaxLength(object value, LythonSourceSpan span)

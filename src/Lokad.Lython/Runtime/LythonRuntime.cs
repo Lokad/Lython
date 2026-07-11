@@ -1566,7 +1566,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => lhs + rhs, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span), keepPositiveOnly: true, span);
         }
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
@@ -1605,7 +1605,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => lhs - rhs, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span), keepPositiveOnly: true, span);
         }
 
         if (left is PyDecimal || right is PyDecimal)
@@ -1932,7 +1932,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Max, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -1989,7 +1989,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, BigInteger.Min, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) <= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -2083,7 +2083,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter negativeCounter)
         {
-            return BuildCounterUnaryResult(negativeCounter, count => -count, keepPositiveOnly: true, span);
+            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span), keepPositiveOnly: true, span);
         }
 
         if (operand is PyTimedelta)
@@ -2111,7 +2111,7 @@ internal sealed partial class LythonRuntime
 
     private static PyCounter BuildCounterUnaryResult(
         PyCounter source,
-        Func<BigInteger, BigInteger> transform,
+        Func<object, object> transform,
         bool keepPositiveOnly,
         LythonSourceSpan span)
     {
@@ -2119,7 +2119,7 @@ internal sealed partial class LythonRuntime
         foreach (var pair in source.Items)
         {
             var count = transform(ExpectCounterCount(pair.Value, span));
-            if (keepPositiveOnly && count <= 0)
+            if (keepPositiveOnly && CompareCounterCounts(count, BigInteger.Zero, span) <= 0)
             {
                 continue;
             }
@@ -2133,15 +2133,15 @@ internal sealed partial class LythonRuntime
     private static PyCounter BuildCounterBinaryResult(
         PyCounter left,
         PyCounter right,
-        Func<BigInteger, BigInteger, BigInteger> combine,
+        Func<object, object, object> combine,
         bool keepPositiveOnly,
         LythonSourceSpan span)
     {
         var result = CreateCounterResult(left, right, span);
         foreach (var key in UnionCounterKeys(left, right))
         {
-            var count = combine(left.GetIntegerCountOrZero(key, span), right.GetIntegerCountOrZero(key, span));
-            if (keepPositiveOnly && count <= 0)
+            var count = combine(ExpectCounterCount(left.GetCount(key), span), ExpectCounterCount(right.GetCount(key), span));
+            if (keepPositiveOnly && CompareCounterCounts(count, BigInteger.Zero, span) <= 0)
             {
                 continue;
             }
@@ -2151,6 +2151,42 @@ internal sealed partial class LythonRuntime
 
         return result;
     }
+
+    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span)
+    {
+        left = ExpectCounterCount(left, span);
+        right = ExpectCounterCount(right, span);
+        if (left is PyDecimal || right is PyDecimal)
+        {
+            return PyDecimalOps.Add(left, right, span);
+        }
+
+        PyNumberOps.TryAsNumber(left, out var lhs);
+        PyNumberOps.TryAsNumber(right, out var rhs);
+        return PyNumberOps.Add(lhs, rhs);
+    }
+
+    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span)
+    {
+        if (left is PyDecimal || right is PyDecimal)
+        {
+            return PyDecimalOps.Subtract(left, right, span);
+        }
+
+        PyNumberOps.TryAsNumber(left, out var lhs);
+        PyNumberOps.TryAsNumber(right, out var rhs);
+        return PyNumberOps.Subtract(lhs, rhs);
+    }
+
+    private static object NegateCounterCount(object value, LythonSourceSpan span)
+        => value is PyDecimal decimalValue
+            ? new PyDecimal(-decimalValue.Value)
+            : PyNumberOps.TryAsNumber(value, out var number)
+                ? PyNumberOps.Negate(number)
+                : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);
+
+    private static int CompareCounterCounts(object left, object right, LythonSourceSpan span)
+        => PyComparison.Compare(left, right, span);
 
     private static PyCounter CreateCounterResult(PyCounter left, PyCounter? right, LythonSourceSpan span)
     {

@@ -177,30 +177,15 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public void Clear() => _items.Clear();
 
-    public void Increment(object key, BigInteger delta)
+    public void Increment(object key, object delta, LythonSourceSpan span)
     {
-        if (_items.TryGetValue(key, out var value) && Numbers.PyNumberOps.TryAsInteger(value, out var current))
+        if (_items.TryGetValue(key, out var value))
         {
-            _items.SetItem(key, current + delta);
+            _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span));
             return;
         }
 
         _items.SetItem(key, delta);
-    }
-
-    public BigInteger GetIntegerCountOrZero(object key, LythonSourceSpan span)
-    {
-        if (!_items.TryGetValue(key, out var value))
-        {
-            return BigInteger.Zero;
-        }
-
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", "Counter counts must be integers.", span);
-        }
-
-        return integer;
     }
 
     public bool IsTruthy() => Count != 0;
