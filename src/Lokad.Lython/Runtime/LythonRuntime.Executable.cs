@@ -1249,7 +1249,7 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, span);
         }
 
-        return PyIndexing.ReadIndex(target, index, span);
+        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span);
     }
 
     private static IPyContextManager PopContextManager(ExecutableValueStack stack, LythonSourceSpan span)
@@ -1397,7 +1397,13 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)
-        => op switch
+    {
+        if (TryEvaluateExecutableNumericProtocol(op, left, right, context, span, out var protocolResult))
+        {
+            return protocolResult;
+        }
+
+        return op switch
         {
             ExecutableBinaryOperator.Add => EvaluateAdd(left, right, context, span),
             ExecutableBinaryOperator.Subtract => EvaluateSubtract(left, right, span),
@@ -1423,9 +1429,23 @@ internal sealed partial class LythonRuntime
             ExecutableBinaryOperator.NotEqual => !AreEqualWithProtocols(left, right, context, span),
             _ => throw new NotSupportedException($"Executable interpreter does not yet support binary operator {op}."),
         };
+    }
 
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
-        => op switch
+    {
+        var method = op switch
+        {
+            ExecutableUnaryOperator.Plus => "__pos__",
+            ExecutableUnaryOperator.Minus => "__neg__",
+            ExecutableUnaryOperator.BitwiseNot => "__invert__",
+            _ => null,
+        };
+        if (method is not null && TryInvokeUnarySpecialMethod(operand, method, context, span, out var protocolResult))
+        {
+            return protocolResult;
+        }
+
+        return op switch
         {
             ExecutableUnaryOperator.Not => !IsTruthy(operand, context, span),
             ExecutableUnaryOperator.Plus => EvaluateUnaryPlus(operand, span),
@@ -1433,6 +1453,42 @@ internal sealed partial class LythonRuntime
             ExecutableUnaryOperator.BitwiseNot => EvaluateBitwiseNot(operand, span),
             _ => throw new NotSupportedException($"Executable interpreter does not yet support unary operator {op}."),
         };
+    }
+
+    private static bool TryEvaluateExecutableNumericProtocol(
+        ExecutableBinaryOperator op,
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        var methods = op switch
+        {
+            ExecutableBinaryOperator.Add => ("__add__", "__radd__"),
+            ExecutableBinaryOperator.Subtract => ("__sub__", "__rsub__"),
+            ExecutableBinaryOperator.Multiply => ("__mul__", "__rmul__"),
+            ExecutableBinaryOperator.Divide => ("__truediv__", "__rtruediv__"),
+            ExecutableBinaryOperator.FloorDivide => ("__floordiv__", "__rfloordiv__"),
+            ExecutableBinaryOperator.Modulo => ("__mod__", "__rmod__"),
+            ExecutableBinaryOperator.Power => ("__pow__", "__rpow__"),
+            ExecutableBinaryOperator.BitwiseOr => ("__or__", "__ror__"),
+            ExecutableBinaryOperator.BitwiseXor => ("__xor__", "__rxor__"),
+            ExecutableBinaryOperator.BitwiseAnd => ("__and__", "__rand__"),
+            ExecutableBinaryOperator.LeftShift => ("__lshift__", "__rlshift__"),
+            ExecutableBinaryOperator.RightShift => ("__rshift__", "__rrshift__"),
+            _ => (null, null),
+        };
+        if (methods.Item1 is not null &&
+            (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
+             TryInvokeBinarySpecialMethod(right, methods.Item2!, left, context, span, out result)))
+        {
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
+    }
 
     private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAugmentedAssignment(

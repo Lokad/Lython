@@ -135,6 +135,42 @@ return str(x == 3) + "|" + str(x != 4) + "|" + str(x < 4) + "|" + str(2 < x) + "
         Assert.Equal("True|True|True|True|7", result.ReturnValue);
     }
 
+    [Fact]
+    public void InstancesDispatchNumericConversionAndOperatorProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+class Seven:
+    def __int__(self):
+        return 7
+    def __float__(self):
+        return 7.5
+    def __index__(self):
+        return 1
+    def __neg__(self):
+        return -7
+    def __abs__(self):
+        return 7
+    def __add__(self, other):
+        return 7 + other
+    def __radd__(self, other):
+        return other + 7
+    def __iadd__(self, other):
+        return 70 + other
+
+x = Seven()
+left = x + 2
+right = 2 + x
+x += 3
+return str(int(Seven())) + "|" + str(float(Seven())) + "|" + str([10, 20][Seven()]) + "|" + str(-Seven()) + "|" + str(abs(Seven())) + "|" + str(left) + "|" + str(right) + "|" + str(x)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("7|7.5|20|-7|7|9|9|73", result.ReturnValue);
+    }
+
+
 
 
 

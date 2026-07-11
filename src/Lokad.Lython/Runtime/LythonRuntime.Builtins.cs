@@ -248,6 +248,11 @@ internal sealed partial class LythonRuntime
             return BigInteger.Zero;
         }
 
+        if (arguments.Length == 1 && arguments[0] is PyInstance intInstance)
+        {
+            return InvokeIntegerConversion(intInstance, "__int__", context, span);
+        }
+
         var numberBase = 10;
         if (arguments.Length == 2)
         {
@@ -289,10 +294,15 @@ internal sealed partial class LythonRuntime
 
     private static object Abs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "abs(x) expects one argument.", span);
+        }
+
+        if (arguments[0] is PyInstance absInstance &&
+            TryInvokeUnarySpecialMethod(absInstance, "__abs__", context, span, out var absolute))
+        {
+            return absolute;
         }
 
         if (arguments[0] is PyDecimal decimalValue)
@@ -640,6 +650,26 @@ internal sealed partial class LythonRuntime
         return negative ? -result : result;
     }
 
+    private static BigInteger InvokeIntegerConversion(
+        PyInstance instance,
+        string methodName,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute(methodName, context, span, out var member) || member is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", "int() argument must be a number or a string", span);
+        }
+
+        var converted = callable.Invoke([], span, context);
+        if (!PyNumberOps.TryAsInteger(converted, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " returned non-int", span);
+        }
+
+        return integer;
+    }
+
     private static BigInteger FloatToInteger(
         double value,
         string owner,
@@ -742,6 +772,22 @@ internal sealed partial class LythonRuntime
         if (arguments.Length == 0)
         {
             return 0.0;
+        }
+
+        if (arguments[0] is PyInstance floatInstance)
+        {
+            if (!floatInstance.TryGetAttribute("__float__", context, span, out var member) || member is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "float() argument must be a real number", span);
+            }
+
+            var converted = callable.Invoke([], span, context);
+            if (converted is not double floating)
+            {
+                throw new LythonRuntimeException("TypeError", "__float__ returned non-float", span);
+            }
+
+            return floating;
         }
 
         try

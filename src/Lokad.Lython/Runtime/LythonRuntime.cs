@@ -399,6 +399,10 @@ internal sealed partial class LythonRuntime
 
         var left = EvaluateExpression(binary.Left, context);
         var right = EvaluateExpression(binary.Right, context);
+        if (TryEvaluateNumericProtocol(binary.Operator, left, right, context, binary.Span, out var protocolResult))
+        {
+            return protocolResult;
+        }
 
         return binary.Operator switch
         {
@@ -844,7 +848,7 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, span);
         }
 
-        return PyIndexing.ReadIndex(target, index, span);
+        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span);
     }
 
     private static void ExecuteSliceAssignment(
@@ -951,6 +955,28 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        var inPlaceMethod = op switch
+        {
+            AugmentedAssignmentOperatorSyntax.Add => "__iadd__",
+            AugmentedAssignmentOperatorSyntax.Subtract => "__isub__",
+            AugmentedAssignmentOperatorSyntax.Multiply => "__imul__",
+            AugmentedAssignmentOperatorSyntax.Divide => "__itruediv__",
+            AugmentedAssignmentOperatorSyntax.FloorDivide => "__ifloordiv__",
+            AugmentedAssignmentOperatorSyntax.Modulo => "__imod__",
+            AugmentedAssignmentOperatorSyntax.Power => "__ipow__",
+            AugmentedAssignmentOperatorSyntax.BitwiseOr => "__ior__",
+            AugmentedAssignmentOperatorSyntax.BitwiseXor => "__ixor__",
+            AugmentedAssignmentOperatorSyntax.BitwiseAnd => "__iand__",
+            AugmentedAssignmentOperatorSyntax.LeftShift => "__ilshift__",
+            AugmentedAssignmentOperatorSyntax.RightShift => "__irshift__",
+            _ => null,
+        };
+        if (inPlaceMethod is not null &&
+            TryInvokeBinarySpecialMethod(currentValue, inPlaceMethod, right, context, span, out var inPlaceResult))
+        {
+            return inPlaceResult;
+        }
+
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
@@ -1471,6 +1497,18 @@ internal sealed partial class LythonRuntime
     private static object EvaluateUnary(UnaryExpressionSyntax unary, ExecutionContext context)
     {
         var operand = EvaluateExpression(unary.Operand, context);
+        var method = unary.Operator switch
+        {
+            UnaryOperatorSyntax.Plus => "__pos__",
+            UnaryOperatorSyntax.Minus => "__neg__",
+            UnaryOperatorSyntax.BitwiseNot => "__invert__",
+            _ => null,
+        };
+        if (method is not null && TryInvokeUnarySpecialMethod(operand, method, context, unary.Span, out var protocolResult))
+        {
+            return protocolResult;
+        }
+
         return unary.Operator switch
         {
             UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
@@ -2929,7 +2967,7 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, subscript.Span);
         }
 
-        return PyIndexing.ReadIndex(target, index, subscript.Span);
+        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, subscript.Span), subscript.Span);
     }
 
     private static object EvaluateSlice(SliceExpressionSyntax slice, ExecutionContext context)
@@ -3052,6 +3090,60 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
+    private static bool TryInvokeUnarySpecialMethod(
+        object target,
+        string method,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        if (target is PyInstance instance &&
+            instance.TryGetAttribute(method, context, span, out var member) &&
+            member is ICallable callable)
+        {
+            result = callable.Invoke([], span, context);
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
+    }
+
+    private static bool TryEvaluateNumericProtocol(
+        BinaryOperatorSyntax op,
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        var methods = op switch
+        {
+            BinaryOperatorSyntax.Add => ("__add__", "__radd__"),
+            BinaryOperatorSyntax.Subtract => ("__sub__", "__rsub__"),
+            BinaryOperatorSyntax.Multiply => ("__mul__", "__rmul__"),
+            BinaryOperatorSyntax.Divide => ("__truediv__", "__rtruediv__"),
+            BinaryOperatorSyntax.FloorDivide => ("__floordiv__", "__rfloordiv__"),
+            BinaryOperatorSyntax.Modulo => ("__mod__", "__rmod__"),
+            BinaryOperatorSyntax.Power => ("__pow__", "__rpow__"),
+            BinaryOperatorSyntax.BitwiseOr => ("__or__", "__ror__"),
+            BinaryOperatorSyntax.BitwiseXor => ("__xor__", "__rxor__"),
+            BinaryOperatorSyntax.BitwiseAnd => ("__and__", "__rand__"),
+            BinaryOperatorSyntax.LeftShift => ("__lshift__", "__rlshift__"),
+            BinaryOperatorSyntax.RightShift => ("__rshift__", "__rrshift__"),
+            _ => (null, null),
+        };
+        if (methods.Item1 is not null &&
+            (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
+             TryInvokeBinarySpecialMethod(right, methods.Item2!, left, context, span, out result)))
+        {
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
+    }
+
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);
 
     private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
@@ -3074,6 +3166,27 @@ internal sealed partial class LythonRuntime
         }
 
         return callable.Invoke([new CallArgumentValue(null, index)], span, context);
+    }
+
+    private static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (index is not PyInstance instance)
+        {
+            return index;
+        }
+
+        if (!instance.TryGetAttribute("__index__", context, span, out var member) || member is not ICallable callable)
+        {
+            return index;
+        }
+
+        var converted = callable.Invoke([], span, context);
+        if (!PyNumberOps.TryAsInteger(converted, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
+        }
+
+        return integer;
     }
 
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
