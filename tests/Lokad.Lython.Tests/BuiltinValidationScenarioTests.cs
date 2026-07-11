@@ -8,7 +8,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("min([])\n", "ValueError", "empty sequence")]
     [InlineData("max([])\n", "ValueError", "empty sequence")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
-    [InlineData("int(\"bad\")\n", "ValueError", "could not be parsed")]
+    [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
     [InlineData("float(\"bad\")\n", "ValueError", "input string")]
     [InlineData("sum([\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("sum([b\"a\"])\n", "TypeError", "string or bytes operands")]

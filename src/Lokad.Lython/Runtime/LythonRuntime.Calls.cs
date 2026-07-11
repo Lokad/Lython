@@ -273,6 +273,29 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private sealed class MinMaxCallable(bool isMin) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    {
+        public string Name => isMin ? "min" : "max";
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return MinMax(arguments, isMin, span, context);
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return MinMaxAsync(arguments, isMin, span, context);
+        }
+
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+    }
+
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
         private const string Signature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";

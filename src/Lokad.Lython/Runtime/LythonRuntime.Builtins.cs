@@ -1889,48 +1889,64 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static object Min(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object MinMax(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "min(iterable) expects one argument.", span);
-        }
-
-        using var enumerator = ToSequence(arguments[0], span).GetEnumerator();
+        var (positional, keyCallable, hasDefault, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span) : positional).GetEnumerator();
         if (!enumerator.MoveNext())
         {
-            throw new LythonRuntimeException("ValueError", "min() arg is an empty sequence", span);
+            if (hasDefault)
+            {
+                return defaultValue;
+            }
+
+            throw new LythonRuntimeException("ValueError", $"{(isMin ? "min" : "max")}() arg is an empty sequence", span);
         }
 
         var best = enumerator.Current;
+        var bestKey = keyCallable is null
+            ? best
+            : keyCallable.Invoke([new CallArgumentValue(null, best)], span, context);
         while (enumerator.MoveNext())
         {
             var candidate = enumerator.Current;
-            if (Compare(candidate, best, span) < 0)
+            var candidateKey = keyCallable is null
+                ? candidate
+                : keyCallable.Invoke([new CallArgumentValue(null, candidate)], span, context);
+            var comparison = Compare(candidateKey, bestKey, span);
+            if (isMin ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
+                bestKey = candidateKey;
             }
         }
 
         return best;
     }
 
-    private static async ValueTask<object> MinAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        if (arguments.Length != 1)
+        var (positional, keyCallable, hasDefault, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        if (positional.Count > 1)
         {
-            throw new LythonRuntimeException("TypeError", "min(iterable) expects one argument.", span);
+            return await MinMaxValuesAsync(positional, keyCallable, isMin, span, context).ConfigureAwait(false);
         }
 
-        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
+        await using var cursor = PyIteration.Cursor.Create(positional[0], span);
         var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            throw new LythonRuntimeException("ValueError", "min() arg is an empty sequence", span);
+            if (hasDefault)
+            {
+                return defaultValue;
+            }
+
+            throw new LythonRuntimeException("ValueError", $"{(isMin ? "min" : "max")}() arg is an empty sequence", span);
         }
 
+        var bestKey = keyCallable is null
+            ? best
+            : await keyCallable.InvokeAsync([new CallArgumentValue(null, best)], span, context).ConfigureAwait(false);
         while (true)
         {
             var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
@@ -1939,72 +1955,109 @@ internal sealed partial class LythonRuntime
                 break;
             }
 
-            if (Compare(candidate, best, span) < 0)
+            var candidateKey = keyCallable is null
+                ? candidate
+                : await keyCallable.InvokeAsync([new CallArgumentValue(null, candidate)], span, context).ConfigureAwait(false);
+            var comparison = Compare(candidateKey, bestKey, span);
+            if (isMin ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
+                bestKey = candidateKey;
             }
         }
 
         return best;
     }
 
-    private static object Max(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> MinMaxValuesAsync(
+        IReadOnlyList<object> values,
+        ICallable? keyCallable,
+        bool isMin,
+        LythonSourceSpan span,
+        ExecutionContext context)
     {
-        _ = context;
-        if (arguments.Length != 1)
+        var best = values[0];
+        var bestKey = keyCallable is null
+            ? best
+            : await keyCallable.InvokeAsync([new CallArgumentValue(null, best)], span, context).ConfigureAwait(false);
+        for (var i = 1; i < values.Count; i++)
         {
-            throw new LythonRuntimeException("TypeError", "max(iterable) expects one argument.", span);
-        }
-
-        using var enumerator = ToSequence(arguments[0], span).GetEnumerator();
-        if (!enumerator.MoveNext())
-        {
-            throw new LythonRuntimeException("ValueError", "max() arg is an empty sequence", span);
-        }
-
-        var best = enumerator.Current;
-        while (enumerator.MoveNext())
-        {
-            var candidate = enumerator.Current;
-            if (Compare(candidate, best, span) > 0)
+            var candidate = values[i];
+            var candidateKey = keyCallable is null
+                ? candidate
+                : await keyCallable.InvokeAsync([new CallArgumentValue(null, candidate)], span, context).ConfigureAwait(false);
+            var comparison = Compare(candidateKey, bestKey, span);
+            if (isMin ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
+                bestKey = candidateKey;
             }
         }
 
         return best;
     }
 
-    private static async ValueTask<object> MaxAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static (IReadOnlyList<object> Positional, ICallable? Key, bool HasDefault, object Default) BindMinMaxArguments(
+        CallArgumentValue[] arguments,
+        string name,
+        LythonSourceSpan span)
     {
-        _ = context;
-        if (arguments.Length != 1)
+        var positional = new List<object>();
+        ICallable? key = null;
+        var sawKey = false;
+        var hasDefault = false;
+        object defaultValue = PyNone.Instance;
+        foreach (var argument in arguments)
         {
-            throw new LythonRuntimeException("TypeError", "max(iterable) expects one argument.", span);
-        }
-
-        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
-        var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue)
-        {
-            throw new LythonRuntimeException("ValueError", "max() arg is an empty sequence", span);
-        }
-
-        while (true)
-        {
-            var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasCandidate)
+            if (argument.Name is null)
             {
-                break;
+                positional.Add(argument.Value);
+                continue;
             }
 
-            if (Compare(candidate, best, span) > 0)
+            if (argument.Name == "key")
             {
-                best = candidate;
+                if (sawKey)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{name}() got multiple values for keyword argument 'key'", span);
+                }
+
+                sawKey = true;
+                if (!ReferenceEquals(argument.Value, PyNone.Instance) && argument.Value is not ICallable)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{name}() key must be callable or None", span);
+                }
+
+                key = argument.Value as ICallable;
+                continue;
             }
+
+            if (argument.Name == "default")
+            {
+                if (hasDefault)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{name}() got multiple values for keyword argument 'default'", span);
+                }
+
+                hasDefault = true;
+                defaultValue = argument.Value;
+                continue;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"{name}() got an unexpected keyword argument '{argument.Name}'", span);
         }
 
-        return best;
+        if (positional.Count == 0)
+        {
+            throw new LythonRuntimeException("TypeError", $"{name} expected at least 1 argument, got 0", span);
+        }
+
+        if (positional.Count > 1 && hasDefault)
+        {
+            throw new LythonRuntimeException("TypeError", $"Cannot specify a default for {name}() with multiple positional arguments", span);
+        }
+
+        return (positional, key, hasDefault, defaultValue);
     }
 
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -36,6 +36,27 @@ return str(missing_encoding) + "|" + repr(bytes(3)) + "|" + repr(bytes("é", "ut
     }
 
     [Fact]
+    public void MinAndMaxSupportPythonCallForms()
+    {
+        var result = new LythonEngine().Run(
+            """
+values = []
+values.append(str(min(3, 1, 2)))
+values.append(str(max("a", "bbb", "cc", key=len)))
+values.append(str(min([], default=7)))
+try:
+    max(1, 2, default=0)
+except TypeError:
+    values.append("caught")
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("1|bbb|7|caught", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
