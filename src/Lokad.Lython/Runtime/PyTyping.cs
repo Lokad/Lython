@@ -140,11 +140,25 @@ internal static class PyTyping
         "TypedDict"
     };
 
+    private static readonly IReadOnlyDictionary<string, PyTypingAlias> Aliases = AliasNames
+        .ToDictionary(static name => name, static name => new PyTypingAlias(name), StringComparer.Ordinal);
+
+    private static readonly PyTypingAlias NoneTypeAlias = new("NoneType", qualified: false);
+
+    private static readonly IReadOnlyDictionary<string, string> BuiltinOrigins = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["List"] = "list",
+        ["Dict"] = "dict",
+        ["Tuple"] = "tuple",
+        ["Set"] = "set",
+        ["Type"] = "type",
+    };
+
     public static bool TryGetMember(string name, out object value)
     {
         if (AliasNames.Contains(name))
         {
-            value = new PyTypingAlias(name);
+            value = Aliases[name];
             return true;
         }
 
@@ -208,9 +222,23 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_origin(tp) expects one argument.", span);
         }
 
-        return value is PyTypingAlias { IsSubscripted: true } alias
-            ? alias.OriginAlias
-            : PyNone.Instance;
+        if (value is not PyTypingAlias { IsSubscripted: true } alias)
+        {
+            return PyNone.Instance;
+        }
+
+        if (alias.ShortName is "Optional" or "Union")
+        {
+            return Aliases["Union"];
+        }
+
+        if (BuiltinOrigins.TryGetValue(alias.ShortName, out var builtinName) &&
+            context.TryGetBuiltin(builtinName, out var builtin))
+        {
+            return builtin;
+        }
+
+        return alias.OriginAlias;
     }
 
     public static object GetArgs(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -221,9 +249,14 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_args(tp) expects one argument.", span);
         }
 
-        return value is PyTypingAlias alias
-            ? new PyTuple(alias.Arguments)
-            : PyTuple.Empty;
+        if (value is not PyTypingAlias alias)
+        {
+            return PyTuple.Empty;
+        }
+
+        return alias.ShortName == "Optional" && alias.IsSubscripted
+            ? new PyTuple(alias.Arguments.Concat([NoneTypeAlias]))
+            : new PyTuple(alias.Arguments);
     }
 
     public static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -52,7 +52,35 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("typing.List[int]|typing.Dict[str, int]|typing.List|(str, int)|7|3|False|T|Point(x=1, y=2)|1|2|abc|<class 'Box'>|<class 'Shape'>|<class 'Row'>", host.ReadText("/out.txt"));
+        Assert.Equal("typing.List[int]|typing.Dict[str, int]|list|(str, int)|7|3|False|T|Point(x=1, y=2)|1|2|abc|<class 'Box'>|<class 'Shape'>|<class 'Row'>", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void TypingInspection_NormalizesBuiltinAndOptionalAliases()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from typing import Dict, List, Optional, Union, get_args, get_origin
+
+values = [
+    get_origin(List[int]) is list,
+    get_origin(Dict[str, int]) is dict,
+    get_origin(Optional[int]) is Union,
+    get_args(Optional[int]),
+    get_args(Union[int, str]),
+    get_origin(int),
+    get_args(int),
+]
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("True|True|True|(int, NoneType)|(int, str)|None|()", host.ReadText("/out.txt"));
     }
 
     [Fact]
