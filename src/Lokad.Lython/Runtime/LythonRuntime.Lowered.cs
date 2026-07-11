@@ -673,11 +673,13 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            context,
-            scope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, scope))));
+            scope,
+            itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))));
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -686,18 +688,20 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredSetComprehension(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            context,
-            scope =>
+            scope,
+            itemScope =>
             {
                 var item = ValidateSetItem(
-                    EvaluateLoweredExpression(comprehension.ItemExpression, scope),
+                    EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
                     comprehension.ItemExpression.Span,
-                    scope.MemoryGovernor);
+                    itemScope.MemoryGovernor);
                 result.Add(item);
             });
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -706,15 +710,17 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredDictComprehension(LoweredDictComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            context,
-            scope =>
+            scope,
+            itemScope =>
             {
-                var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, scope), comprehension.KeyExpression.Span, scope.MemoryGovernor);
-                result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, scope)));
+                var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, itemScope), comprehension.KeyExpression.Span, itemScope.MemoryGovernor);
+                result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, itemScope)));
             });
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -731,21 +737,20 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
         {
-            var scope = new ExecutionContext(context);
-            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
+            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 
-            if (clause.Condition is not null && !IsTruthy(EvaluateLoweredExpression(clause.Condition, scope)))
+            if (clause.Condition is not null && !IsTruthy(EvaluateLoweredExpression(clause.Condition, context), context, clause.Condition.Span))
             {
                 continue;
             }
 
             if (index == clauses.Count - 1)
             {
-                emit(scope);
+                emit(context);
             }
             else
             {
-                EvaluateLoweredComprehensionClauses(clauses, index + 1, scope, emit);
+                EvaluateLoweredComprehensionClauses(clauses, index + 1, context, emit);
             }
         }
     }

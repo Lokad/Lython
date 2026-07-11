@@ -3312,6 +3312,43 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static void PropagateComprehensionBindings(
+        ExecutionContext scope,
+        ExecutionContext outer,
+        IEnumerable<LoopTargetSyntax> targets,
+        LythonSourceSpan span)
+    {
+        var loopNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var target in targets)
+        {
+            CollectLoopTargetNames(target, loopNames);
+        }
+
+        foreach (var pair in scope.Variables)
+        {
+            if (!loopNames.Contains(pair.Key) && !ExecutionState.BuiltinNames.Contains(pair.Key))
+            {
+                StoreName(pair.Key, pair.Value, outer, span);
+            }
+        }
+    }
+
+    private static void CollectLoopTargetNames(LoopTargetSyntax target, HashSet<string> names)
+    {
+        switch (target)
+        {
+            case LoopNameTargetSyntax name:
+                names.Add(name.Name);
+                break;
+            case LoopTupleTargetSyntax tuple:
+                foreach (var item in tuple.Items)
+                {
+                    CollectLoopTargetNames(item, names);
+                }
+                break;
+        }
+    }
+
     private static void AssignTargets(
         IReadOnlyList<UnpackingTargetSyntax> targets,
         object value,

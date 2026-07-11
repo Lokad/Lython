@@ -6,6 +6,27 @@ namespace Lokad.Lython.Tests;
 public sealed class PureExecutionScenarioTests
 {
     [Fact]
+    public void ComprehensionsUseSharedCellsWithoutLeakingLoopTargets()
+    {
+        var result = new LythonEngine().Run(
+            """
+total = 0
+values = [(total := total + x) for x in [1, 2, 3]]
+functions = [lambda: x for x in [1, 2, 3]]
+try:
+    x
+    leaked = True
+except NameError:
+    leaked = False
+return str(values) + "|" + str(total) + "|" + str([f() for f in functions]) + "|" + str(leaked)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[1, 3, 6]|6|[3, 3, 3]|False", result.ReturnValue);
+    }
+
+    [Fact]
     public void SortedEnumerateAndRangeFixture_RunsSuccessfully()
     {
         var fixture = FixtureLoader.Load(Path.Combine("Language", "Values", "SortedEnumerateAndRange"));
