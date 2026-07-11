@@ -282,4 +282,31 @@ f.register(1, f)
         Assert.Equal(exceptionType, result.Failure!.ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void SingleDispatch_SelectsNearestRegisteredMroType()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import singledispatch
+
+class Base: pass
+class Child(Base): pass
+
+@singledispatch
+def f(value): return "object"
+
+@f.register(Child)
+def child(value): return "child"
+
+@f.register(Base)
+def base(value): return "base"
+
+return f(Child()) + "|" + f.dispatch(Child)(Child())
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("child|child", result.ReturnValue);
+    }
 }

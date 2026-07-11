@@ -1088,15 +1088,23 @@ internal sealed partial class LythonRuntime
 
         public ICallable ResolveForValue(object value)
         {
+            SingleDispatchRegistration? best = null;
+            var bestDistance = int.MaxValue;
             for (var i = _registrations.Count - 1; i >= 0; i--)
             {
-                if (IsInstanceAgainstSingleType(value, _registrations[i].TypeSpec))
+                var registration = _registrations[i];
+                if (IsInstanceAgainstSingleType(value, registration.TypeSpec))
                 {
-                    return _registrations[i].Callable;
+                    var distance = GetDispatchDistance(value, registration.TypeSpec);
+                    if (distance < bestDistance)
+                    {
+                        best = registration;
+                        bestDistance = distance;
+                    }
                 }
             }
 
-            return _defaultCallable;
+            return best?.Callable ?? _defaultCallable;
         }
 
         public ICallable ResolveForType(object typeSpec, LythonSourceSpan span)
@@ -1106,15 +1114,23 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects a supported class/type argument.", span);
             }
 
+            SingleDispatchRegistration? best = null;
+            var bestDistance = int.MaxValue;
             for (var i = _registrations.Count - 1; i >= 0; i--)
             {
-                if (DoesDispatchTypeMatch(typeSpec, _registrations[i].TypeSpec))
+                var registration = _registrations[i];
+                if (DoesDispatchTypeMatch(typeSpec, registration.TypeSpec))
                 {
-                    return _registrations[i].Callable;
+                    var distance = GetDispatchTypeDistance(typeSpec, registration.TypeSpec);
+                    if (distance < bestDistance)
+                    {
+                        best = registration;
+                        bestDistance = distance;
+                    }
                 }
             }
 
-            return _defaultCallable;
+            return best?.Callable ?? _defaultCallable;
         }
 
         public void Register(object typeSpec, ICallable callable, LythonSourceSpan span)
@@ -1184,6 +1200,67 @@ internal sealed partial class LythonRuntime
         }
 
         private readonly record struct SingleDispatchRegistration(object TypeSpec, ICallable Callable);
+
+        private static int GetDispatchDistance(object value, object registeredType)
+        {
+            if (value is PyInstance instance && registeredType is PyType runtimeType)
+            {
+                for (var i = 0; i < instance.Type.Mro.Count; i++)
+                {
+                    if (ReferenceEquals(instance.Type.Mro[i], runtimeType))
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            var valueTypeName = value switch
+            {
+                bool => "bool",
+                BigInteger or int => "int",
+                double => "float",
+                PyString or string => "str",
+                PyBytes => "bytes",
+                PyList => "list",
+                PyTuple => "tuple",
+                PyDict => "dict",
+                PySet => "set",
+                PyType type when type.MetaType is not null => type.MetaType.Name,
+                _ => null
+            };
+            return GetNamedDispatchDistance(valueTypeName, GetDispatchTypeName(registeredType));
+        }
+
+        private static int GetDispatchTypeDistance(object requestedType, object registeredType)
+        {
+            if (requestedType is PyType runtimeType && registeredType is PyType runtimeBase)
+            {
+                for (var i = 0; i < runtimeType.Mro.Count; i++)
+                {
+                    if (ReferenceEquals(runtimeType.Mro[i], runtimeBase))
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return GetNamedDispatchDistance(GetDispatchTypeName(requestedType), GetDispatchTypeName(registeredType));
+        }
+
+        private static int GetNamedDispatchDistance(string? requestedType, string? registeredType)
+        {
+            if (string.Equals(requestedType, registeredType, StringComparison.Ordinal))
+            {
+                return 0;
+            }
+
+            if (requestedType == "bool" && registeredType == "int")
+            {
+                return 1;
+            }
+
+            return registeredType == "object" ? int.MaxValue - 1 : int.MaxValue - 2;
+        }
 
         private sealed class SingleDispatchRegisterMethod : ICallable, IPyRenderableValue
         {
