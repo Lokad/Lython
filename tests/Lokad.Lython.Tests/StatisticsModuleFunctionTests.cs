@@ -65,6 +65,32 @@ with open("/out.txt", "w") as output:
     }
 
     [Fact]
+    public void StatisticsAggregates_AcceptWeightsAndSuppliedCenters()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import statistics
+
+values = [
+    statistics.fmean([1, 2, 3], weights=[1, 1, 2]),
+    statistics.pvariance([1, 2, 3], mu=2),
+    statistics.variance([1, 2, 3], xbar=2),
+    int(statistics.pstdev([1, 2, 3], mu=1) * 1000),
+    int(statistics.stdev([1, 2, 3], xbar=1) * 1000),
+]
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("2.25|0.6666666666666666|1.0|1290|1581", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void StatisticsModule_ExpandedFunctions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

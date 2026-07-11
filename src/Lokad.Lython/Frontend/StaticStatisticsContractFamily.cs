@@ -12,6 +12,20 @@ internal static class StaticStatisticsContractFamily
         AbstractState bindings)
     {
         var emitted = false;
+        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsFMean.Name, StringComparison.Ordinal))
+        {
+            emitted |= AnalyzeIterableArgument(arguments, 0, "data", "statistics.fmean(data, weights=None) expects iterable data.", diagnostics, bindings);
+            emitted |= AnalyzeIterableOrNoneArgument(arguments, 1, "weights", "statistics.fmean(..., weights=...) expects an iterable or None.", diagnostics, bindings);
+            return emitted;
+        }
+
+        if (IsVarianceCall(targetName, out var centerName))
+        {
+            emitted |= AnalyzeIterableArgument(arguments, 0, "data", $"{targetName}(data) expects iterable data.", diagnostics, bindings);
+            emitted |= AnalyzeRealOrNoneArgument(arguments, 1, centerName, $"{targetName}(..., {centerName}=...) expects a real number or None.", diagnostics, bindings);
+            return emitted;
+        }
+
         if (IsSingleDataCall(targetName))
         {
             return AnalyzeIterableArgument(arguments, 0, "data", $"{targetName}(data) expects an iterable.", diagnostics, bindings);
@@ -100,19 +114,43 @@ internal static class StaticStatisticsContractFamily
         AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsNumericLike);
 
+    private static bool AnalyzeRealOrNoneArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsNumericLike(value));
+
     private static bool IsSingleDataCall(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMean.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsFMean.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsGeometricMean.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedian.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedianLow.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMedianHigh.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMode.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMultiMode.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPStdev.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsStdev.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPVariance.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsVariance.Name, StringComparison.Ordinal);
+           string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMultiMode.Name, StringComparison.Ordinal);
+
+    private static bool IsVarianceCall(string targetName, out string centerName)
+    {
+        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPStdev.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsPVariance.Name, StringComparison.Ordinal))
+        {
+            centerName = "mu";
+            return true;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsStdev.Name, StringComparison.Ordinal) ||
+            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsVariance.Name, StringComparison.Ordinal))
+        {
+            centerName = "xbar";
+            return true;
+        }
+
+        centerName = string.Empty;
+        return false;
+    }
 
     private static bool IsPairedDataCall(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.StatisticsCovariance.Name, StringComparison.Ordinal) ||

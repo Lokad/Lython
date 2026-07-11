@@ -164,7 +164,7 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DateTimeTzInfo = new("datetime.tzinfo", []);
 
     public static readonly LythonCallableSignature StatisticsMean = new("statistics.mean", ["data"]);
-    public static readonly LythonCallableSignature StatisticsFMean = new("statistics.fmean", ["data"]);
+    public static readonly LythonCallableSignature StatisticsFMean = new("statistics.fmean", ["data", "weights"], RequiredCount: 1);
     public static readonly LythonCallableSignature StatisticsGeometricMean = new("statistics.geometric_mean", ["data"]);
     public static readonly LythonCallableSignature StatisticsHarmonicMean = new("statistics.harmonic_mean", ["data", "weights"], RequiredCount: 1);
     public static readonly LythonCallableSignature StatisticsMedian = new("statistics.median", ["data"]);
@@ -173,10 +173,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature StatisticsMedianGrouped = new("statistics.median_grouped", ["data", "interval"], RequiredCount: 1);
     public static readonly LythonCallableSignature StatisticsMode = new("statistics.mode", ["data"]);
     public static readonly LythonCallableSignature StatisticsMultiMode = new("statistics.multimode", ["data"]);
-    public static readonly LythonCallableSignature StatisticsPStdev = new("statistics.pstdev", ["data"]);
-    public static readonly LythonCallableSignature StatisticsStdev = new("statistics.stdev", ["data"]);
-    public static readonly LythonCallableSignature StatisticsPVariance = new("statistics.pvariance", ["data"]);
-    public static readonly LythonCallableSignature StatisticsVariance = new("statistics.variance", ["data"]);
+    public static readonly LythonCallableSignature StatisticsPStdev = new("statistics.pstdev", ["data", "mu"], RequiredCount: 1);
+    public static readonly LythonCallableSignature StatisticsStdev = new("statistics.stdev", ["data", "xbar"], RequiredCount: 1);
+    public static readonly LythonCallableSignature StatisticsPVariance = new("statistics.pvariance", ["data", "mu"], RequiredCount: 1);
+    public static readonly LythonCallableSignature StatisticsVariance = new("statistics.variance", ["data", "xbar"], RequiredCount: 1);
     public static readonly LythonCallableSignature StatisticsQuantiles = new("statistics.quantiles", ["data", "n", "method"], RequiredCount: 1, MaxPositionalCount: 1);
     public static readonly LythonCallableSignature StatisticsCovariance = new("statistics.covariance", ["x", "y"]);
     public static readonly LythonCallableSignature StatisticsCorrelation = new("statistics.correlation", ["x", "y"]);

@@ -67,8 +67,32 @@ internal sealed partial class LythonRuntime
 
         private static object FMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValues(arguments, "statistics.fmean", span, context);
-            return values.Average();
+            var values = GetNumericValuesFromData(arguments, "statistics.fmean", span, context);
+            if (arguments.Length < 2 || arguments[1] is PyNone)
+            {
+                return values.Average();
+            }
+
+            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span);
+            if (weights.Count != values.Count)
+            {
+                throw new LythonRuntimeException("StatisticsError", "data and weights must be the same length", span);
+            }
+
+            var weightedSum = 0.0;
+            var weightSum = 0.0;
+            for (var index = 0; index < values.Count; index++)
+            {
+                weightedSum += values[index] * weights[index];
+                weightSum += weights[index];
+            }
+
+            if (weightSum == 0.0)
+            {
+                throw new LythonRuntimeException("StatisticsError", "sum of weights must be non-zero", span);
+            }
+
+            return weightedSum / weightSum;
         }
 
         private static object Median(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -246,13 +270,15 @@ internal sealed partial class LythonRuntime
 
         private static double ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
         {
-            var values = GetNumericValues(arguments, owner, span, context);
+            var values = GetNumericValuesFromData(arguments, owner, span, context);
             if (sample && values.Count < 2)
             {
                 throw new LythonRuntimeException("StatisticsError", $"{owner}(data) requires at least two data points.", span);
             }
 
-            var mean = values.Average();
+            var mean = arguments.Length >= 2 && arguments[1] is not PyNone
+                ? ExpectRealForStatistics(arguments[1], owner, span)
+                : values.Average();
             var sum = values.Sum(value => Math.Pow(value - mean, 2));
             return sum / (sample ? values.Count - 1 : values.Count);
         }
