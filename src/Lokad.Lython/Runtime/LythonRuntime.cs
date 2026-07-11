@@ -414,16 +414,16 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
             BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
             BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => CompareRelational(left, right, binary.Span, static value => value < 0),
-            BinaryOperatorSyntax.LessEqual => CompareRelational(left, right, binary.Span, static value => value <= 0),
-            BinaryOperatorSyntax.Greater => CompareRelational(left, right, binary.Span, static value => value > 0),
-            BinaryOperatorSyntax.GreaterEqual => CompareRelational(left, right, binary.Span, static value => value >= 0),
+            BinaryOperatorSyntax.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, binary.Span, static value => value < 0),
+            BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, binary.Span, static value => value <= 0),
+            BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, binary.Span, static value => value > 0),
+            BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, binary.Span, static value => value >= 0),
             BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
             BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, context, binary.Span),
             BinaryOperatorSyntax.NotIn => !Contains(right, left, context, binary.Span),
-            BinaryOperatorSyntax.Equal => AreEqual(left, right),
-            BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
+            BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, binary.Span),
+            BinaryOperatorSyntax.NotEqual => !AreEqualWithProtocols(left, right, context, binary.Span),
             _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Operator}")
         };
     }
@@ -3001,6 +3001,55 @@ internal sealed partial class LythonRuntime
         }
 
         return predicate(Compare(left, right, span));
+    }
+
+    private static bool AreEqualWithProtocols(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var result) ||
+            TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out result))
+        {
+            return IsTruthy(result, context, span);
+        }
+
+        return AreEqual(left, right);
+    }
+
+    private static bool EvaluateRichComparison(
+        object left,
+        object right,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+    {
+        if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var result) ||
+            TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out result))
+        {
+            return IsTruthy(result, context, span);
+        }
+
+        return CompareRelational(left, right, span, fallback);
+    }
+
+    private static bool TryInvokeBinarySpecialMethod(
+        object target,
+        string method,
+        object argument,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        if (target is PyInstance instance &&
+            instance.TryGetAttribute(method, context, span, out var member) &&
+            member is ICallable callable)
+        {
+            result = callable.Invoke([new CallArgumentValue(null, argument)], span, context);
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
     }
 
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);

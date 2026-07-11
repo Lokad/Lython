@@ -109,6 +109,33 @@ return repr(box) + "|" + str(box) + "|" + format(box, "x") + "|" + str(["a", box
         Assert.Equal("Box!|box|formatted:x|['a', Box!]|{'k': 'v'}", result.ReturnValue);
     }
 
+    [Fact]
+    public void InstancesDispatchRichComparisonAndHashProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+class Box:
+    def __init__(self, value):
+        self.value = value
+    def __eq__(self, other):
+        return self.value == other
+    def __lt__(self, other):
+        return self.value < other
+    def __gt__(self, other):
+        return self.value > other
+    def __hash__(self):
+        return 7
+
+x = Box(3)
+return str(x == 3) + "|" + str(x != 4) + "|" + str(x < 4) + "|" + str(2 < x) + "|" + str(hash(x))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|True|7", result.ReturnValue);
+    }
+
+
 
 
 

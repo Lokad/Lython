@@ -469,10 +469,22 @@ internal sealed partial class LythonRuntime
 
     private static object Hash(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "hash(object) expects one argument.", span);
+        }
+
+        if (arguments[0] is PyInstance instance &&
+            instance.TryGetAttribute("__hash__", context, span, out var hashMember) &&
+            hashMember is ICallable hashCallable)
+        {
+            var hashValue = hashCallable.Invoke([], span, context);
+            if (!PyNumberOps.TryAsInteger(hashValue, out var integerHash))
+            {
+                throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
+            }
+
+            return integerHash;
         }
 
         try
