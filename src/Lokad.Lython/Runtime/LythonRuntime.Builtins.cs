@@ -422,6 +422,11 @@ internal sealed partial class LythonRuntime
     private static object Ord(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
+        if (arguments.Length == 1 && arguments[0] is PyBytes bytes && bytes.Length == 1)
+        {
+            return new BigInteger(bytes.Bytes[0]);
+        }
+
         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text) || text.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
@@ -772,10 +777,28 @@ internal sealed partial class LythonRuntime
         return arguments[0] switch
         {
             PyBytes bytes => CreateBytes(bytes.ToArray(), context, span),
-            PyString text => CreateBytes(PyStringOps.EncodeUtf8(text), context, span),
-            string text => CreateBytes(PyStringOps.EncodeUtf8(PyString.FromString(text)), context, span),
+            PyString => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
+            string => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
+            BigInteger size => CreateZeroBytes(size, context, span),
+            int size => CreateZeroBytes(new BigInteger(size), context, span),
+            bool size => CreateZeroBytes(size ? BigInteger.One : BigInteger.Zero, context, span),
             _ => CreateBytes(ToByteArray(arguments[0], span), context, span)
         };
+    }
+
+    private static PyBytes CreateZeroBytes(BigInteger size, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (size < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "negative count", span);
+        }
+
+        if (size > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "bytes object is too large", span);
+        }
+
+        return CreateBytes(new byte[(int)size], context, span);
     }
 
     private static byte[] ToByteArray(object value, LythonSourceSpan span)

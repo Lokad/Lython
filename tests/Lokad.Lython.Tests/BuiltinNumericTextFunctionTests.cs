@@ -19,6 +19,23 @@ return str(int()) + "|" + str(float()) + "|" + str(bool()) + "|" + str(int("101"
     }
 
     [Fact]
+    public void BytesConstructorAndOrdMatchPythonForms()
+    {
+        var result = new LythonEngine().Run(
+            """
+try:
+    bytes("é")
+except TypeError:
+    missing_encoding = True
+return str(missing_encoding) + "|" + repr(bytes(3)) + "|" + repr(bytes("é", "utf-8")) + "|" + str(ord(b"A"))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|b'\\x00\\x00\\x00'|b'\\xc3\\xa9'|65", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
