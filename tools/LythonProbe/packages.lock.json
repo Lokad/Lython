@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "JetBrains.Annotations": {
+        "type": "Transitive",
+        "resolved": "11.1.0",
+        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+      },
+      "Lokad.Utf8Regex": {
+        "type": "Transitive",
+        "resolved": "0.2.0",
+        "contentHash": "AK2u9bIayI3bqbHvuRYuyB9pUVbzIMhimSsFhy7GAvESangIWACzc1TdJWHKFoXD2hus0F+G1MFj343tPdeAUg=="
+      },
+      "lokad.lython": {
+        "type": "Project",
+        "dependencies": {
+          "Lokad.Parsing": "[1.1.0, )",
+          "Lokad.Utf8Regex.PythonRe": "[0.2.0, )"
+        }
+      },
+      "Lokad.Parsing": {
+        "type": "CentralTransitive",
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+        "dependencies": {
+          "JetBrains.Annotations": "11.1.0"
+        }
+      },
+      "Lokad.Utf8Regex.PythonRe": {
+        "type": "CentralTransitive",
+        "requested": "[0.2.0, )",
+        "resolved": "0.2.0",
+        "contentHash": "8aQ2gzf/tKiUJBq86eHe4HqO1AstEf5e6WNZQcxtuNMmkAuRC8iDZTnciayuurf7X4covUD5O+AtEIByQjhDxA==",
+        "dependencies": {
+          "Lokad.Utf8Regex": "0.2.0"
+        }
+      }
+    }
+  }
+}

@@ -13,6 +13,12 @@ semantics, and unsupported behavior should fail explicitly.
 - `src/Lokad.Lython/`: production library.
 - `tests/Lokad.Lython.Tests/`: xUnit test suite.
 - `benchmarks/Lokad.Lython.Benchmarks/`: BenchmarkDotNet benchmarks.
+- `tools/LythonProbe/`: CLI for independent, pure compatibility probes through
+  Lython's public API. It accepts `-c`, a `.py` file, plain stdin, or batch JSON;
+  `--compare-python` runs the same trusted snippet under isolated local CPython.
+  Its deliberately capability-free host does not exercise file, directory,
+  stream, subprocess, or local-import APIs. Invoke it concisely as
+  `./tools/LythonProbe/lythonprobe.ps1 ...`; see its `README.md` for examples.
 - `README.md`: project overview.
 - `SPEC.md`: Lython language and runtime specification.
 
