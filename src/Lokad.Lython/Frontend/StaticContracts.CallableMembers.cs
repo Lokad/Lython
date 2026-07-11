@@ -257,6 +257,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.StatisticsLinearRegression, "_replace", 0, 2, "LA3163", "LinearRegression._replace([slope][, intercept]) expects zero to two field values.", ParameterNames: ["slope", "intercept"]),
             new(AbstractValueKind.StatisticsLinearRegression, "count", 1, 1, "LA3163", "LinearRegression.count(value) expects one argument.", ParameterNames: ["value"]),
             new(AbstractValueKind.StatisticsLinearRegression, "index", 1, 3, "LA3163", "LinearRegression.index(value[, start[, stop]]) expects one to three arguments.", ParameterNames: ["value", "start", "stop"]),
+            new(AbstractValueKind.StatisticsNormalDist, "zscore", 1, 1, "LA3163", "NormalDist.zscore(x) expects one argument.", ParameterNames: ["x"]),
             new(AbstractValueKind.StatisticsNormalDist, "pdf", 1, 1, "LA3163", "NormalDist.pdf(x) expects one argument.", ParameterNames: ["x"]),
             new(AbstractValueKind.StatisticsNormalDist, "cdf", 1, 1, "LA3163", "NormalDist.cdf(x) expects one argument.", ParameterNames: ["x"]),
             new(AbstractValueKind.StatisticsNormalDist, "inv_cdf", 1, 1, "LA3163", "NormalDist.inv_cdf(p) expects one argument.", ParameterNames: ["p"]),

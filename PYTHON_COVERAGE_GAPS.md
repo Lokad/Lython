@@ -632,7 +632,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 27 — Pin JSON lexer error coordinates.** Report the offending code-point position consistently for incomplete numbers, bad escapes, and surrounding structural failures. Addresses LY-MOD-033.
 - [x] **Commit 28 — Make statistical modes type-generic.** Count supported hashable observations without routing through numeric aggregate coercion. Addresses LY-MOD-020.
 - [x] **Commit 29 — Complete statistics aggregate signatures.** Add weighted `fmean` and optional supplied-center arguments to variance and standard-deviation helpers. Addresses LY-MOD-039 and LY-MOD-040.
-- [ ] **Commit 30 — Complete the supported `NormalDist` methods.** Add deterministic `zscore` behavior and its zero-sigma failure contract. Addresses LY-MOD-041.
+- [x] **Commit 30 — Complete the supported `NormalDist` methods.** Add deterministic `zscore` behavior and its zero-sigma failure contract. Addresses LY-MOD-041.
 - [ ] **Commit 31 — Normalize typing inspection aliases.** Map collection aliases to builtin origins and normalize `Optional`/`Union` origins and argument tuples while retaining inert annotations. Addresses LY-MOD-022.
 - [ ] **Commit 32 — Align openpyxl named-style visibility.** Return public style-name strings from `named_styles` and keep object access on the private style collection. Addresses LY-MOD-023.
 - [ ] **Commit 33 — Complete openpyxl style aliases.** Accept and expose the common long/short `Font` and `Alignment` names consistently in runtime and static contracts. Addresses LY-MOD-044.

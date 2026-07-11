@@ -132,6 +132,7 @@ vals.append(str(int(normal.mean)) + ":" + str(int(normal.median)) + ":" + str(in
 vals.append(str(int(normal.pdf(100) * 1000000)))
 vals.append(str(int(normal.cdf(100) * 1000)))
 vals.append(str(int(normal.inv_cdf(0.5))))
+vals.append(str(normal.zscore(130)))
 vals.append(str(int(normal.overlap(statistics.NormalDist(110, 15)) * 1000)))
 vals.append(str(int(normal_cuts[0] * 1000)) + ":" + str(int(normal_cuts[1] * 1000)) + ":" + str(int(normal_cuts[2] * 1000)))
 vals.append(str(int(sampled.mean * 1000)) + ":" + str(int(sampled.stdev * 1000)) + ":" + str(int(sampled.variance * 1000)))
@@ -148,7 +149,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "48000|56000|36000|0|52.5|25:50:75|30:50:70|[1, 1, 1]|5500|972271|2200:-1000:('slope', 'intercept'):True:1:1|1927:0|LinearRegression(slope=2.2, intercept=2)|LinearRegression(slope=3, intercept=-2)|100:100:100:15:225|26596|500|100|738|89882:100000:110117|5000:2138:4571|110:21213|-1500:3000|True|True|4000",
+            "48000|56000|36000|0|52.5|25:50:75|30:50:70|[1, 1, 1]|5500|972271|2200:-1000:('slope', 'intercept'):True:1:1|1927:0|LinearRegression(slope=2.2, intercept=2)|LinearRegression(slope=3, intercept=-2)|100:100:100:15:225|26596|500|100|2.0|738|89882:100000:110117|5000:2138:4571|110:21213|-1500:3000|True|True|4000",
             host.ReadText("/out.txt"));
     }
 
@@ -287,6 +288,13 @@ statistics.NormalDist(0, -1)
         """
 import statistics
 statistics.NormalDist(0, 0).pdf(0)
+""",
+        "StatisticsError",
+        "sigma is zero")]
+    [InlineData(
+        """
+import statistics
+statistics.NormalDist(0, 0).zscore(1)
 """,
         "StatisticsError",
         "sigma is zero")]

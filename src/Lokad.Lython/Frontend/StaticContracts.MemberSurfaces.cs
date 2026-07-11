@@ -951,6 +951,7 @@ internal static partial class StaticContracts
         "mode",
         "stdev",
         "variance",
+        "zscore",
         "pdf",
         "cdf",
         "inv_cdf",

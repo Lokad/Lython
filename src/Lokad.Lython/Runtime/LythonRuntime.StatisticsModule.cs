@@ -1033,6 +1033,17 @@ internal sealed partial class LythonRuntime
                     "mode" => Mean,
                     "stdev" => Stdev,
                     "variance" => Variance,
+                    "zscore" => new BoundCallable((arguments, span, _) =>
+                    {
+                        if (arguments.Length != 1)
+                        {
+                            throw new LythonRuntimeException("TypeError", "NormalDist.zscore(x) expects one argument.", span);
+                        }
+
+                        RequirePositiveStdev("zscore()", span);
+                        var x = ExpectReal(arguments[0], "NormalDist.zscore(x)", span);
+                        return (x - Mean) / Stdev;
+                    }, "NormalDist.zscore", ["x"]),
                     "pdf" => new BoundCallable((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)

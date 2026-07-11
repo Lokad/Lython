@@ -239,6 +239,7 @@ internal static partial class StaticContracts
             new(AbstractValueKind.StatisticsLinearRegression, "_replace", StaticReturnShape.StatisticsLinearRegression),
             new(AbstractValueKind.StatisticsLinearRegression, "count", StaticReturnShape.Integer),
             new(AbstractValueKind.StatisticsLinearRegression, "index", StaticReturnShape.Integer),
+            new(AbstractValueKind.StatisticsNormalDist, "zscore", StaticReturnShape.Float),
             new(AbstractValueKind.StatisticsNormalDist, "pdf", StaticReturnShape.Float),
             new(AbstractValueKind.StatisticsNormalDist, "cdf", StaticReturnShape.Float),
             new(AbstractValueKind.StatisticsNormalDist, "inv_cdf", StaticReturnShape.Float),
