@@ -6153,19 +6153,23 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                var entries = new List<(string Key, object Value)>();
+                var entries = new List<(object OriginalKey, object Value)>();
                 foreach (var pair in dict)
                 {
                     context.CheckExecutionBudget(span);
-                    if (TryConvertJsonObjectKey(pair.Key, options.SkipKeys, out var key))
+                    if (IsSupportedJsonObjectKey(pair.Key))
                     {
-                        entries.Add((key, pair.Value));
+                        entries.Add((pair.Key, pair.Value));
+                    }
+                    else if (!options.SkipKeys)
+                    {
+                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
                     }
                 }
 
                 if (options.SortKeys)
                 {
-                    entries.Sort(static (left, right) => string.CompareOrdinal(left.Key, right.Key));
+                    entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
                 }
 
                 builder.Append('{');
@@ -6177,7 +6181,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, index);
-                    AppendJsonString(builder, entries[index].Key, options.EnsureAscii);
+                    _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
+                    AppendJsonString(builder, key, options.EnsureAscii);
                     builder.Append(options.KeySeparator);
                     AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, active);
                 }
@@ -6212,7 +6217,7 @@ internal sealed partial class LythonRuntime
                     key = integer.ToString(CultureInfo.InvariantCulture);
                     return true;
                 case double floating when double.IsFinite(floating):
-                    key = floating.ToString("R", CultureInfo.InvariantCulture);
+                    key = Numbers.PyNumberOps.RenderFloat(floating);
                     return true;
                 case bool boolean:
                     key = boolean ? "true" : "false";
@@ -6230,6 +6235,10 @@ internal sealed partial class LythonRuntime
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
             }
         }
+
+        private static bool IsSupportedJsonObjectKey(object key)
+            => key is PyString or string or BigInteger or int or bool or PyNone ||
+               key is double floating && double.IsFinite(floating);
 
         private static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index)
         {

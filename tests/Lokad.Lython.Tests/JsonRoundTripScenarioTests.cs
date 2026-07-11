@@ -309,6 +309,33 @@ __lython_file.close()
     }
 
     [Fact]
+    public void JsonDumps_UsesPythonFloatKeySpellingAndSortsOriginalKeys()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import json
+
+values = [json.dumps({1.0: "x", -0.0: "z"})]
+try:
+    json.dumps({1: "a", "2": "b"}, sort_keys=True)
+except TypeError:
+    values.append("caught")
+else:
+    values.append("missed")
+
+values.append(json.dumps({2.0: "b", 1.0: "a"}, sort_keys=True))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("{\"1.0\": \"x\", \"-0.0\": \"z\"}|caught|{\"1.0\": \"a\", \"2.0\": \"b\"}", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void JsonDumps_UnsupportedDictionaryKeys_FailWithTypeErrorUnlessSkipped()
     {
         var result = new LythonEngine().Run(

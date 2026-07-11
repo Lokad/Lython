@@ -628,7 +628,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 23 — Fix regex empty-match progression.** Permit adjacent non-empty matches at the same position across find, substitute, and count paths. Addresses LY-MOD-038.
 - [x] **Commit 24 — Share singledispatch's MRO resolver.** Make public `dispatch(cls)` select exactly as ordinary decorated invocation does. Addresses LY-MOD-031.
 - [x] **Commit 25 — Make `cmp_to_key` wrappers comparable.** Implement the comparator-backed rich comparison surface directly on wrapper values. Addresses LY-MOD-032.
-- [ ] **Commit 26 — Unify JSON dictionary-key handling.** Use canonical float spellings and apply `sort_keys` to original keys before their JSON string conversion. Addresses LY-MOD-015 and LY-MOD-016.
+- [x] **Commit 26 — Unify JSON dictionary-key handling.** Use canonical float spellings and apply `sort_keys` to original keys before their JSON string conversion. Addresses LY-MOD-015 and LY-MOD-016.
 - [ ] **Commit 27 — Pin JSON lexer error coordinates.** Report the offending code-point position consistently for incomplete numbers, bad escapes, and surrounding structural failures. Addresses LY-MOD-033.
 - [ ] **Commit 28 — Make statistical modes type-generic.** Count supported hashable observations without routing through numeric aggregate coercion. Addresses LY-MOD-020.
 - [ ] **Commit 29 — Complete statistics aggregate signatures.** Add weighted `fmean` and optional supplied-center arguments to variance and standard-deviation helpers. Addresses LY-MOD-039 and LY-MOD-040.
