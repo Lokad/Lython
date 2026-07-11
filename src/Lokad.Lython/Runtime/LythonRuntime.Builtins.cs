@@ -227,20 +227,40 @@ internal sealed partial class LythonRuntime
     private static object Bool(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        if (arguments.Length != 1)
+        if (arguments.Length > 1)
         {
-            throw new LythonRuntimeException("TypeError", "bool(value) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
         }
 
-        return IsTruthy(arguments[0]);
+        return arguments.Length == 1 && IsTruthy(arguments[0]);
     }
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        if (arguments.Length != 1)
+        if (arguments.Length > 2)
         {
-            throw new LythonRuntimeException("TypeError", "int(value) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "int([x[, base]]) expects at most two arguments.", span);
+        }
+
+        if (arguments.Length == 0)
+        {
+            return BigInteger.Zero;
+        }
+
+        var numberBase = 10;
+        if (arguments.Length == 2)
+        {
+            if (!PyNumberOps.TryAsInteger(arguments[1], out var parsedBase) || parsedBase < 0 || parsedBase > 36 || parsedBase == 1)
+            {
+                throw new LythonRuntimeException("ValueError", "int() base must be >= 2 and <= 36, or 0", span);
+            }
+
+            numberBase = (int)parsedBase;
+            if (arguments[0] is not PyString and not string and not PyBytes)
+            {
+                throw new LythonRuntimeException("TypeError", "int() can't convert non-string with explicit base", span);
+            }
         }
 
         try
@@ -250,8 +270,9 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => integer,
                 double floating => FloatToInteger(floating, "int", span, Math.Truncate),
                 PyDecimal decimalValue => new BigInteger(decimal.Truncate(decimalValue.Value)),
-                PyString text => BigInteger.Parse(text.AsString(), CultureInfo.InvariantCulture),
-                string text => BigInteger.Parse(text, CultureInfo.InvariantCulture),
+                PyString text => ParsePythonIntegerText(text.AsString(), numberBase, span),
+                string text => ParsePythonIntegerText(text, numberBase, span),
+                PyBytes bytes => ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)
             };
@@ -518,6 +539,76 @@ internal sealed partial class LythonRuntime
         return Math.Round(value / factor, MidpointRounding.ToEven) * factor;
     }
 
+    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span)
+    {
+        var value = text.Trim();
+        var negative = false;
+        if (value.StartsWith('+') || value.StartsWith('-'))
+        {
+            negative = value[0] == '-';
+            value = value[1..];
+        }
+
+        var detectedBase = numberBase;
+        if (value.Length >= 2 && value[0] == '0')
+        {
+            var prefixBase = char.ToLowerInvariant(value[1]) switch
+            {
+                'b' => 2,
+                'o' => 8,
+                'x' => 16,
+                _ => 0,
+            };
+            if (prefixBase != 0 && (numberBase == 0 || numberBase == prefixBase))
+            {
+                detectedBase = prefixBase;
+                value = value[2..];
+                if (value.StartsWith('_'))
+                {
+                    value = value[1..];
+                }
+            }
+        }
+
+        detectedBase = detectedBase == 0 ? 10 : detectedBase;
+        if (value.Length == 0 || value.StartsWith('_') || value.EndsWith('_') || value.Contains("__", StringComparison.Ordinal))
+        {
+            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}", span);
+        }
+
+        var result = BigInteger.Zero;
+        var sawNonZero = false;
+        foreach (var character in value)
+        {
+            if (character == '_')
+            {
+                continue;
+            }
+
+            var digit = character switch
+            {
+                >= '0' and <= '9' => character - '0',
+                >= 'a' and <= 'z' => character - 'a' + 10,
+                >= 'A' and <= 'Z' => character - 'A' + 10,
+                _ => -1,
+            };
+            if (digit < 0 || digit >= detectedBase)
+            {
+                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}", span);
+            }
+
+            sawNonZero |= digit != 0;
+            result = result * detectedBase + digit;
+        }
+
+        if (numberBase == 0 && detectedBase == 10 && value.Length > 1 && value[0] == '0' && sawNonZero)
+        {
+            throw new LythonRuntimeException("ValueError", "invalid literal for int() with base 0", span);
+        }
+
+        return negative ? -result : result;
+    }
+
     private static BigInteger FloatToInteger(
         double value,
         string owner,
@@ -612,9 +703,14 @@ internal sealed partial class LythonRuntime
     private static object Float(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        if (arguments.Length != 1)
+        if (arguments.Length > 1)
         {
-            throw new LythonRuntimeException("TypeError", "float(value) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "float([value]) expects at most one argument.", span);
+        }
+
+        if (arguments.Length == 0)
+        {
+            return 0.0;
         }
 
         try
@@ -624,8 +720,8 @@ internal sealed partial class LythonRuntime
                 double floating => floating,
                 BigInteger integer => (double)integer,
                 PyDecimal decimalValue => (double)decimalValue.Value,
-                PyString text => double.Parse(text.AsString(), CultureInfo.InvariantCulture),
-                string text => double.Parse(text, CultureInfo.InvariantCulture),
+                PyString text => ParsePythonFloatText(text.AsString()),
+                string text => ParsePythonFloatText(text),
                 bool boolean => boolean ? 1.0 : 0.0,
                 _ => throw new LythonRuntimeException("TypeError", "float() does not support this value.", span)
             };
@@ -634,6 +730,19 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
+    }
+
+    private static double ParsePythonFloatText(string text)
+    {
+        var normalized = text.Trim().Replace("_", string.Empty, StringComparison.Ordinal);
+        return normalized.ToLowerInvariant() switch
+        {
+            "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
+            "-inf" or "-infinity" => double.NegativeInfinity,
+            "nan" or "+nan" => double.NaN,
+            "-nan" => -double.NaN,
+            _ => double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture),
+        };
     }
 
     private static object Bytes(object[] arguments, LythonSourceSpan span, ExecutionContext context)

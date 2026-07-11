@@ -5,6 +5,20 @@ namespace Lokad.Lython.Tests;
 public sealed class BuiltinNumericTextFunctionTests
 {
     [Fact]
+    public void ScalarConstructorsMatchPythonDefaultsBasesAndFloatText()
+    {
+        var result = new LythonEngine().Run(
+            """
+import math
+return str(int()) + "|" + str(float()) + "|" + str(bool()) + "|" + str(int("101", 2)) + "|" + str(int("0xff", base=0)) + "|" + str(int("1_000")) + "|" + str(math.isinf(float("-inf"))) + "|" + str(math.isnan(float("nan"))) + "|" + str(float("1_000.5"))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("0|0|False|5|255|1000|True|True|1000.5", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
