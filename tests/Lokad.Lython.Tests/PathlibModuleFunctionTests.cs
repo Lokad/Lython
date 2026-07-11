@@ -5,6 +5,24 @@ namespace Lokad.Lython.Tests;
 public sealed class PathlibModuleFunctionTests
 {
     [Fact]
+    public void PathlibModule_EmptyComponents_AreCurrentDirectoryPaths()
+    {
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path, PurePath, PurePosixPath
+
+print(Path(""))
+print(PurePath(""))
+print(PurePosixPath("", "child"))
+print(PurePosixPath(" "))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(".\n.\nchild\n \n", result.StandardOutput);
+    }
+
+    [Fact]
     public void PathlibModule_AliasesClassHelpersAndPathProtocol_HaveDirectCoverage()
     {
         var host = new MockLythonHost("/repo");

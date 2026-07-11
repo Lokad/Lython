@@ -9,7 +9,11 @@ internal static class PathOps
 
     public static string Normalize(string path, string? basePath = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        ArgumentNullException.ThrowIfNull(path);
+        if (path.Length == 0)
+        {
+            path = ".";
+        }
 
         var absolute = path.StartsWith("/", StringComparison.Ordinal)
             ? path
@@ -66,6 +70,16 @@ internal static class PathOps
 
     public static string Combine(string left, string right)
     {
+        if (left.Length == 0)
+        {
+            return right;
+        }
+
+        if (right.Length == 0)
+        {
+            return left;
+        }
+
         return left.EndsWith("/", StringComparison.Ordinal)
             ? left + right
             : left + "/" + right;
