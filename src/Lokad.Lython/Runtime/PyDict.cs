@@ -7,6 +7,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
+    private int _version;
 
     public PyDict()
     {
@@ -48,10 +49,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         get
         {
-            foreach (var key in _items.Keys)
+            var expectedVersion = _version;
+            var keys = _items.Keys.ToArray();
+            foreach (var key in keys)
             {
+                EnsureUnmodified(expectedVersion);
                 yield return FromStorageKey(key);
             }
+
+            EnsureUnmodified(expectedVersion);
         }
     }
 
@@ -59,10 +65,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         get
         {
-            foreach (var value in _items.Values)
+            var expectedVersion = _version;
+            var keys = _items.Keys.ToArray();
+            foreach (var key in keys)
             {
-                yield return FromStorageValue(value);
+                EnsureUnmodified(expectedVersion);
+                yield return FromStorageValue(_items.GetRequired(key));
             }
+
+            EnsureUnmodified(expectedVersion);
         }
     }
 
@@ -92,7 +103,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
         }
 
-        _ = _items.SetItem(storageKey, ToStorageValue(value));
+        if (_items.SetItem(storageKey, ToStorageValue(value)))
+        {
+            _version++;
+        }
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
@@ -102,10 +116,25 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _allocationSpan ??= allocationSpan;
     }
 
-    public bool Remove(object key) => _items.Remove(ToStorageKey(key));
+    public bool Remove(object key)
+    {
+        if (!_items.Remove(ToStorageKey(key)))
+        {
+            return false;
+        }
+
+        _version++;
+        return true;
+    }
 
     public void Clear()
     {
+        if (Count == 0)
+        {
+            return;
+        }
+
+        _version++;
         if (_memoryGovernor is not null)
         {
             var released = _items.ReleaseCommittedBytes();
@@ -131,10 +160,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
     {
-        foreach (var pair in _items)
+        var expectedVersion = _version;
+        var keys = _items.Keys.ToArray();
+        foreach (var key in keys)
         {
-            yield return new KeyValuePair<object, object>(FromStorageKey(pair.Key), FromStorageValue(pair.Value));
+            EnsureUnmodified(expectedVersion);
+            yield return new KeyValuePair<object, object>(FromStorageKey(key), FromStorageValue(_items.GetRequired(key)));
         }
+
+        EnsureUnmodified(expectedVersion);
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
@@ -146,4 +180,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private static object ToStorageValue(object value) => value;
 
     private static object FromStorageValue(object value) => value;
+
+    private void EnsureUnmodified(int expectedVersion)
+    {
+        if (_version != expectedVersion)
+        {
+            throw new LythonRuntimeException("RuntimeError", "dictionary changed size during iteration", _allocationSpan);
+        }
+    }
 }

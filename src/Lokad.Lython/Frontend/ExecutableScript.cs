@@ -1377,14 +1377,25 @@ internal sealed class ExecutableScript
         private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(IReadOnlyDictionary<int, int> indexMap)
         {
             return _regions
-                .Where(region => indexMap.ContainsKey(region.ProtectedStartBlockIndex) && indexMap.ContainsKey(region.ProtectedEndBlockIndex))
-                .Select(region => new ExecutableExceptionRegion(
-                    indexMap[region.ProtectedStartBlockIndex],
-                    indexMap[region.ProtectedEndBlockIndex],
-                    region.ExceptionTypeNames,
-                    region.ExceptionVariableName,
-                    region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
-                    region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null))
+                .Select(region =>
+                {
+                    var protectedBlocks = indexMap
+                        .Where(pair => pair.Key >= region.ProtectedStartBlockIndex && pair.Key <= region.ProtectedEndBlockIndex)
+                        .Select(pair => pair.Value)
+                        .Order()
+                        .ToArray();
+                    return protectedBlocks.Length == 0
+                        ? null
+                        : new ExecutableExceptionRegion(
+                            protectedBlocks[0],
+                            protectedBlocks[^1],
+                            region.ExceptionTypeNames,
+                            region.ExceptionVariableName,
+                            region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
+                            region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null);
+                })
+                .Where(region => region is not null)
+                .Select(region => region!)
                 .ToArray();
         }
 
