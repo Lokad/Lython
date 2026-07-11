@@ -52,7 +52,13 @@ internal static class PyNumberOps
             throw new DivideByZeroException();
         }
 
-        return lhs.ToDouble() / rhs.ToDouble();
+        var result = lhs.ToDouble() / rhs.ToDouble();
+        if (!lhs.IsFloat && !rhs.IsFloat && !double.IsFinite(result))
+        {
+            throw new OverflowException("integer division result too large for a float");
+        }
+
+        return result;
     }
 
     public static object FloorDivide(PyNumber lhs, PyNumber rhs)
@@ -82,8 +88,20 @@ internal static class PyNumberOps
             return lhs.Integer - FloorDivideIntegers(lhs.Integer, rhs.Integer) * rhs.Integer;
         }
 
-        var quotient = Math.Floor(lhs.ToDouble() / rhs.ToDouble());
-        return lhs.ToDouble() - quotient * rhs.ToDouble();
+        var left = lhs.ToDouble();
+        var right = rhs.ToDouble();
+        if (double.IsFinite(left) && double.IsInfinity(right))
+        {
+            if (left == 0.0 || Math.CopySign(1.0, left) == Math.CopySign(1.0, right))
+            {
+                return left;
+            }
+
+            return right;
+        }
+
+        var quotient = Math.Floor(left / right);
+        return left - quotient * right;
     }
 
     public static object Power(PyNumber lhs, PyNumber rhs)

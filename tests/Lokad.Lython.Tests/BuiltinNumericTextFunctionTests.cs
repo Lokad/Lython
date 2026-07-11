@@ -111,6 +111,31 @@ return "|".join(values)
     }
 
     [Fact]
+    public void DivisionAndModuloHandleOverflowAndInfinityLikePython()
+    {
+        var result = new LythonEngine().Run(
+            """
+import math
+values = []
+try:
+    (10 ** 400) / 1
+except OverflowError:
+    values.append("overflow")
+left = -1.0 % math.inf
+right = 1.0 % -math.inf
+values.append(str(math.isinf(left) and left > 0))
+values.append(str(math.isinf(right) and right < 0))
+values.append(str(1.0 % math.inf))
+values.append(str(-1.0 % -math.inf))
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("overflow|True|True|1.0|-1.0", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

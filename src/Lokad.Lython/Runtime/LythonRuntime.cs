@@ -1648,6 +1648,10 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ZeroDivisionError", "division by zero", span);
         }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     private static object EvaluateFloorDivide(object left, object right, LythonSourceSpan span)
