@@ -23,6 +23,11 @@ internal static class PyEquality
             return true;
         }
 
+        if (left is LythonRuntime.OpenPyxlColor leftColor && right is LythonRuntime.OpenPyxlColor rightColor)
+        {
+            return leftColor.Equals(rightColor);
+        }
+
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
         {
             return leftText.Equals(rightText);

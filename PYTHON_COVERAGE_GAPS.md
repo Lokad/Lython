@@ -637,5 +637,5 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 32 — Align openpyxl named-style visibility.** Return public style-name strings from `named_styles` and keep object access on the private style collection. Addresses LY-MOD-023.
 - [x] **Commit 33 — Complete openpyxl style aliases.** Accept and expose the common long/short `Font` and `Alignment` names consistently in runtime and static contracts. Addresses LY-MOD-044.
 - [x] **Commit 34 — Normalize openpyxl ARGB colors.** Canonicalize accepted six-digit RGB inputs before public access and package serialization. Addresses LY-MOD-045.
-- [ ] **Commit 35 — Give openpyxl styles value equality.** Compare supported style descriptors structurally and reuse that equality for style-table deduplication. Addresses LY-MOD-046.
+- [x] **Commit 35 — Give openpyxl styles value equality.** Compare supported style descriptors structurally and reuse that equality for style-table deduplication. Addresses LY-MOD-046.
 - [ ] **Commit 36 — Complete workbook/cell object protocols.** Add sheet-name containment, cache public cell objects per coordinate, and include worksheet qualification in cell representations. Addresses LY-MOD-043 and LY-MOD-047.

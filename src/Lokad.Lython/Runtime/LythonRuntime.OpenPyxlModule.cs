@@ -686,7 +686,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class OpenPyxlColor : IPyDynamicAttributes, IPyRenderableValue, IPyStringCoercibleValue
+    internal sealed class OpenPyxlColor : IPyDynamicAttributes, IPyRenderableValue, IPyStringCoercibleValue, IEquatable<OpenPyxlColor>
     {
         public OpenPyxlColor(
             string type,
@@ -750,6 +750,19 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
+        public bool Equals(OpenPyxlColor? other)
+            => other is not null &&
+               string.Equals(Type, other.Type, StringComparison.Ordinal) &&
+               string.Equals(Rgb, other.Rgb, StringComparison.Ordinal) &&
+               Indexed == other.Indexed &&
+               Theme == other.Theme &&
+               Tint.Equals(other.Tint) &&
+               Auto == other.Auto;
+
+        public override bool Equals(object? obj) => obj is OpenPyxlColor other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Type, Rgb, Indexed, Theme, Tint, Auto);
+
         public string Key
             => string.Join(
                 ":",
@@ -791,7 +804,7 @@ internal sealed partial class LythonRuntime
             => value is null ? PyNone.Instance : value.Value;
     }
 
-    internal sealed class OpenPyxlStyleValue : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlStyleValue : IPyDynamicAttributes, IPyRenderableValue, IEquatable<OpenPyxlStyleValue>
     {
         private readonly Dictionary<string, object> _members;
 
@@ -840,7 +853,112 @@ internal sealed partial class LythonRuntime
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public bool Equals(OpenPyxlStyleValue? other) => StyleValuesEqual(this, other);
+
+        public override bool Equals(object? obj) => obj is OpenPyxlStyleValue other && Equals(other);
+
+        public override int GetHashCode() => StyleValueHashCode(this);
     }
+
+    private static bool StyleValuesEqual(OpenPyxlStyleValue? left, OpenPyxlStyleValue? right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is null || right is null || !string.Equals(left.QualifiedName, right.QualifiedName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        foreach (var name in ComparableStyleMemberNames(left.QualifiedName))
+        {
+            var leftValue = ComparableStyleValue(left, name);
+            var rightValue = ComparableStyleValue(right, name);
+            if (!StyleObjectsEqual(leftValue, rightValue))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool StyleObjectsEqual(object? left, object? right)
+    {
+        if (ReferenceEquals(left, right) || IsMissingStyleValue(left) && IsMissingStyleValue(right))
+        {
+            return true;
+        }
+
+        return (left, right) switch
+        {
+            (OpenPyxlStyleValue leftStyle, OpenPyxlStyleValue rightStyle) => StyleValuesEqual(leftStyle, rightStyle),
+            (OpenPyxlColor leftColor, OpenPyxlColor rightColor) => leftColor.Equals(rightColor),
+            (null or PyNone, _) or (_, null or PyNone) => false,
+            _ => PyEquality.AreEqual(left!, right!),
+        };
+    }
+
+    private static bool IsMissingStyleValue(object? value) => value is null or PyNone;
+
+    private static object? ComparableStyleValue(OpenPyxlStyleValue style, string name)
+        => style.TryGetMember(name, out var value) && value is not PyNone ? value : null;
+
+    private static int StyleValueHashCode(OpenPyxlStyleValue style)
+    {
+        var hash = new HashCode();
+        hash.Add(style.QualifiedName, StringComparer.Ordinal);
+        foreach (var name in ComparableStyleMemberNames(style.QualifiedName))
+        {
+            hash.Add(name, StringComparer.Ordinal);
+            hash.Add(StyleObjectHashCode(ComparableStyleValue(style, name)));
+        }
+
+        return hash.ToHashCode();
+    }
+
+    private static int StyleObjectHashCode(object? value)
+    {
+        if (IsMissingStyleValue(value))
+        {
+            return 0;
+        }
+
+        if (value is OpenPyxlStyleValue style)
+        {
+            return StyleValueHashCode(style);
+        }
+
+        if (value is OpenPyxlColor color)
+        {
+            return color.GetHashCode();
+        }
+
+        try
+        {
+            return PyValueComparer.Instance.GetHashCode(value!);
+        }
+        catch (InvalidOperationException)
+        {
+            return value!.GetHashCode();
+        }
+    }
+
+    private static string[] ComparableStyleMemberNames(string qualifiedName)
+        => qualifiedName switch
+        {
+            "openpyxl.styles.Font" => ["name", "sz", "bold", "italic", "color", "underline", "strike"],
+            "openpyxl.styles.PatternFill" => ["fill_type", "fgColor", "bgColor"],
+            "openpyxl.styles.Border" => ["left", "right", "top", "bottom"],
+            "openpyxl.styles.Side" => ["style", "color"],
+            "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "text_rotation", "shrink_to_fit"],
+            "openpyxl.styles.Protection" => ["locked", "hidden"],
+            "openpyxl.styles.NamedStyle" => ["name", "number_format", "font", "fill", "border", "alignment", "protection"],
+            _ => [],
+        };
 
     private static object CreateColor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -8384,9 +8502,9 @@ internal sealed partial class LythonRuntime
             private const int FirstCustomNumberFormatId = 164;
             private readonly Dictionary<string, int> _cellStyleIds = new(StringComparer.Ordinal);
             private readonly Dictionary<string, int> _numberFormatIds = new(StringComparer.Ordinal);
-            private readonly Dictionary<string, int> _fontIds = new(StringComparer.Ordinal);
-            private readonly Dictionary<string, int> _fillIds = new(StringComparer.Ordinal);
-            private readonly Dictionary<string, int> _borderIds = new(StringComparer.Ordinal);
+            private readonly Dictionary<OpenPyxlStyleValue, int> _fontIds = new(OpenPyxlStyleValueComparer.Instance);
+            private readonly Dictionary<OpenPyxlStyleValue, int> _fillIds = new(OpenPyxlStyleValueComparer.Instance);
+            private readonly Dictionary<OpenPyxlStyleValue, int> _borderIds = new(OpenPyxlStyleValueComparer.Instance);
 
             private OpenPyxlStyleRegistry()
             {
@@ -8482,7 +8600,7 @@ internal sealed partial class LythonRuntime
 
             private static int AddStyleComponent(
                 OpenPyxlStyleValue? style,
-                Dictionary<string, int> ids,
+                Dictionary<OpenPyxlStyleValue, int> ids,
                 List<OpenPyxlStyleValue> styles,
                 int firstCustomId)
             {
@@ -8491,16 +8609,24 @@ internal sealed partial class LythonRuntime
                     return 0;
                 }
 
-                var key = StyleValueKey(style);
-                if (ids.TryGetValue(key, out var id))
+                if (ids.TryGetValue(style, out var id))
                 {
                     return id;
                 }
 
                 id = firstCustomId + styles.Count;
-                ids[key] = id;
+                ids[style] = id;
                 styles.Add(style);
                 return id;
+            }
+
+            private sealed class OpenPyxlStyleValueComparer : IEqualityComparer<OpenPyxlStyleValue>
+            {
+                public static readonly OpenPyxlStyleValueComparer Instance = new();
+
+                public bool Equals(OpenPyxlStyleValue? left, OpenPyxlStyleValue? right) => StyleValuesEqual(left, right);
+
+                public int GetHashCode(OpenPyxlStyleValue value) => value.GetHashCode();
             }
 
             private static IEnumerable<CellAddress> StyledAddresses(OpenPyxlWorksheet worksheet)
@@ -8975,13 +9101,13 @@ internal sealed partial class LythonRuntime
         private static string[] StyleMemberNames(string qualifiedName)
             => qualifiedName switch
             {
-                "openpyxl.styles.Font" => ["name", "sz", "size", "bold", "b", "italic", "i", "color", "underline", "u", "strike", "strikethrough"],
+                "openpyxl.styles.Font" => ["name", "sz", "bold", "italic", "color", "underline", "strike"],
                 "openpyxl.styles.PatternFill" => ["fill_type", "fgColor", "bgColor"],
                 "openpyxl.styles.Border" => ["left", "right", "top", "bottom"],
                 "openpyxl.styles.Side" => ["style", "color"],
-                "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "wrapText", "text_rotation", "textRotation", "shrink_to_fit", "shrinkToFit"],
+                "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "text_rotation", "shrink_to_fit"],
                 "openpyxl.styles.Protection" => ["locked", "hidden"],
-                "openpyxl.styles.NamedStyle" => ["name"],
+                "openpyxl.styles.NamedStyle" => ["name", "number_format", "font", "fill", "border", "alignment", "protection"],
                 _ => [],
             };
 

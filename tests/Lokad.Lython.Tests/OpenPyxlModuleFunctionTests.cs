@@ -745,6 +745,43 @@ with open("/out.txt", "w") as output:
     }
 
     [Fact]
+    public void OpenPyxlStyles_CompareAndDeduplicateStructurally()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+from openpyxl.styles.colors import Color
+
+wb = Workbook()
+ws = wb.active
+ws["A1"].font = Font(bold=True, size=12)
+ws["A2"].font = Font(b=True, sz=12)
+ws["A3"].font = Font(bold=False, size=12)
+values = [
+    Font(bold=True) == Font(bold=True),
+    Font(bold=True) == Font(bold=False),
+    Font(size=12) == Font(sz=12),
+    Alignment(wrapText=True) == Alignment(wrap_text=True),
+    Color(rgb="FF0000", tint=0.0) == Color(rgb="FF0000", tint=0.5),
+]
+wb.save("/deduplicated.xlsx")
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("True|False|True|True|False", host.ReadText("/out.txt"));
+
+        var stylesXml = WorkbookPartText(host.ReadWorkbook("/deduplicated.xlsx"), "xl/styles.xml");
+        Assert.Equal(3, stylesXml.Split("<font>", StringSplitOptions.None).Length - 1);
+    }
+
+    [Fact]
     public void OpenPyxlWorkbook_LoadsNamedStylesAsObjects()
     {
         var host = new MockLythonHost();
