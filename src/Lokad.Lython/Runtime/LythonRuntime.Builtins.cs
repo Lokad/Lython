@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
         }
 
-        return arguments.Length == 1 && IsTruthy(arguments[0]);
+        return arguments.Length == 1 && IsTruthy(arguments[0], context, span);
     }
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -462,7 +462,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "callable(object) expects one argument.", span);
         }
 
-        return arguments[0] is ICallable;
+        return arguments[0] is PyInstance instance
+            ? instance.TryGetAttribute("__call__", context, span, out var member) && member is ICallable
+            : arguments[0] is ICallable;
     }
 
     private static object Hash(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1761,8 +1763,30 @@ internal sealed partial class LythonRuntime
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             PyDict dict => new BigInteger(dict.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
+            PyInstance instance => GetInstanceLength(instance, context, span),
             _ => throw new LythonRuntimeException("TypeError", "Object has no len().", span)
         };
+    }
+
+    private static BigInteger GetInstanceLength(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute("__len__", context, span, out var member) || member is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"object of type '{instance.Type.Name}' has no len()", span);
+        }
+
+        var value = callable.Invoke([], span, context);
+        if (!PyNumberOps.TryAsInteger(value, out var length))
+        {
+            throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);
+        }
+
+        if (length < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "__len__() should return >= 0", span);
+        }
+
+        return length;
     }
 
     private static object Sorted(object[] arguments, LythonSourceSpan span, ExecutionContext context)

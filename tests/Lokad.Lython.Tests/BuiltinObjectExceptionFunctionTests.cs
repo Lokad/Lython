@@ -21,6 +21,33 @@ return type(1).__name__ + "|" + str(issubclass(bool, int)) + "|" + str(issubclas
     }
 
     [Fact]
+    public void InstancesDispatchTruthLengthAndCallProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+class Empty:
+    def __bool__(self):
+        return False
+
+class Sized:
+    def __len__(self):
+        return 0
+
+class AddOne:
+    def __call__(self, value):
+        return value + 1
+
+f = AddOne()
+return str(bool(Empty())) + "|" + str(bool(Sized())) + "|" + str(len(Sized())) + "|" + str(callable(f)) + "|" + str(callable(Empty())) + "|" + str(f(3))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("False|False|0|True|False|4", result.ReturnValue);
+    }
+
+
+    [Fact]
     public void ObjectHelpersAndExceptionCategories_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

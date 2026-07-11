@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
                     return;
 
                 case IfStatementSyntax ifStatement:
-                    var branch = IsTruthy(EvaluateExpression(ifStatement.Condition, context))
+                    var branch = IsTruthy(EvaluateExpression(ifStatement.Condition, context), context, ifStatement.Condition.Span)
                         ? ifStatement.ThenStatements
                         : ifStatement.ElseStatements;
 
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
 
                 case WhileStatementSyntax whileStatement:
                     var whileBroke = false;
-                    while (IsTruthy(EvaluateExpression(whileStatement.Condition, context)))
+                    while (IsTruthy(EvaluateExpression(whileStatement.Condition, context), context, whileStatement.Condition.Span))
                     {
                         var signal = ExecuteStatements(whileStatement.Body, context);
                         if (signal is ContinueSignal)

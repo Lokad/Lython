@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue
+internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable
 {
     private readonly Dictionary<string, object> _attributes = new(StringComparer.Ordinal);
 
@@ -24,6 +24,26 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue
     public void SetAttribute(string name, object value) => _attributes[name] = value;
 
     public bool RemoveAttribute(string name) => _attributes.Remove(name);
+
+    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (!TryGetAttribute("__call__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
+        }
+
+        return callable.Invoke(arguments, span, context);
+    }
+
+    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (!TryGetAttribute("__call__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
+        }
+
+        return callable.InvokeAsync(arguments, span, context);
+    }
 
     public int GetPyHashCode()
     {

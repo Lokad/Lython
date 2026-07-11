@@ -384,7 +384,7 @@ internal sealed partial class LythonRuntime
         if (binary.Operator == BinaryOperatorSyntax.Or)
         {
             var leftValue = EvaluateExpression(binary.Left, context);
-            return IsTruthy(leftValue)
+            return IsTruthy(leftValue, context, binary.Left.Span)
                 ? leftValue!
                 : EvaluateExpression(binary.Right, context)!;
         }
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
         if (binary.Operator == BinaryOperatorSyntax.And)
         {
             var leftValue = EvaluateExpression(binary.Left, context);
-            return !IsTruthy(leftValue)
+            return !IsTruthy(leftValue, context, binary.Left.Span)
                 ? leftValue!
                 : EvaluateExpression(binary.Right, context)!;
         }
@@ -430,7 +430,7 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteAssertStatement(AssertStatementSyntax statement, ExecutionContext context)
     {
-        if (IsTruthy(EvaluateExpression(statement.Condition, context)))
+        if (IsTruthy(EvaluateExpression(statement.Condition, context), context, statement.Condition.Span))
         {
             return;
         }
@@ -962,7 +962,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateConditional(ConditionalExpressionSyntax conditional, ExecutionContext context)
     {
-        return IsTruthy(EvaluateExpression(conditional.Condition, context))
+        return IsTruthy(EvaluateExpression(conditional.Condition, context), context, conditional.Condition.Span)
             ? EvaluateExpression(conditional.Consequent, context)
             : EvaluateExpression(conditional.Alternative, context);
     }
@@ -1432,7 +1432,7 @@ internal sealed partial class LythonRuntime
         var operand = EvaluateExpression(unary.Operand, context);
         return unary.Operator switch
         {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand),
+            UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
             UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
             UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
             UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
@@ -2881,6 +2881,40 @@ internal sealed partial class LythonRuntime
     }
 
     internal static bool IsTruthy(object value) => PyTruthiness.IsTruthy(value);
+
+    internal static bool IsTruthy(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is not PyInstance instance)
+        {
+            return PyTruthiness.IsTruthy(value);
+        }
+
+        if (instance.TryGetAttribute("__bool__", context, span, out var boolMember) && boolMember is ICallable boolCallable)
+        {
+            var result = boolCallable.Invoke([], span, context);
+            return result is bool boolean
+                ? boolean
+                : throw new LythonRuntimeException("TypeError", "__bool__ should return bool", span);
+        }
+
+        if (instance.TryGetAttribute("__len__", context, span, out var lengthMember) && lengthMember is ICallable lengthCallable)
+        {
+            var result = lengthCallable.Invoke([], span, context);
+            if (!PyNumberOps.TryAsInteger(result, out var length))
+            {
+                throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);
+            }
+
+            if (length < 0)
+            {
+                throw new LythonRuntimeException("ValueError", "__len__() should return >= 0", span);
+            }
+
+            return length != 0;
+        }
+
+        return true;
+    }
 
     internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
         => PyIteration.ToSequence(value, span);

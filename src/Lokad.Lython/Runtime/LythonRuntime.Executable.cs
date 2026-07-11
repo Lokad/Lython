@@ -624,7 +624,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.Unary:
                             {
                                 var operand = Pop(stack, instruction.Span);
-                                var value = EvaluateExecutableUnary(instruction.UnaryOperator, operand, instruction.Span);
+                                var value = EvaluateExecutableUnary(instruction.UnaryOperator, operand, context, instruction.Span);
                                 context.ObserveValue(value, instruction.Span);
                                 stack.Push(value);
                                 break;
@@ -633,7 +633,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.JumpIfFalse:
                             {
                                 var condition = Pop(stack, instruction.Span);
-                                if (!IsTruthy(condition))
+                                if (!IsTruthy(condition, context, instruction.Span))
                                 {
                                     currentBlockIndex = instruction.A;
                                     jumped = true;
@@ -1419,10 +1419,10 @@ internal sealed partial class LythonRuntime
             _ => throw new NotSupportedException($"Executable interpreter does not yet support binary operator {op}."),
         };
 
-    private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, LythonSourceSpan span)
+    private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
         => op switch
         {
-            ExecutableUnaryOperator.Not => !IsTruthy(operand),
+            ExecutableUnaryOperator.Not => !IsTruthy(operand, context, span),
             ExecutableUnaryOperator.Plus => EvaluateUnaryPlus(operand, span),
             ExecutableUnaryOperator.Minus => EvaluateUnaryMinus(operand, span),
             ExecutableUnaryOperator.BitwiseNot => EvaluateBitwiseNot(operand, span),
