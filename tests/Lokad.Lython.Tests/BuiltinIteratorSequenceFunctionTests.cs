@@ -5,6 +5,25 @@ namespace Lokad.Lython.Tests;
 public sealed class BuiltinIteratorSequenceFunctionTests
 {
     [Fact]
+    public void NextRequiresIteratorAndGeneratorExpressionsAreOneShot()
+    {
+        var result = new LythonEngine().Run(
+            """
+g = (x for x in [1, 2])
+values = [str(next(g)), str(next(g)), str(next(g, "done"))]
+try:
+    next([1])
+except TypeError:
+    values.append("caught")
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1|2|done|caught", result.ReturnValue);
+    }
+
+    [Fact]
     public void IteratorAndSequenceBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

@@ -2,12 +2,15 @@ using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIterableValue
+internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorValue
 {
     private readonly IReadOnlyList<LoweredComprehensionClause> _clauses;
     private readonly LoweredExpression _itemExpression;
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly LythonSourceSpan _span;
+    private IEnumerator<object>? _iterator;
+    private List<object>? _asyncItems;
+    private int _asyncIndex;
 
     public PyGeneratorExpression(
         IReadOnlyList<LoweredComprehensionClause> clauses,
@@ -25,22 +28,77 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIterableVa
 
     public IEnumerable<object> Iterate()
     {
-        return IterateClauses(_clauses, 0, _closure);
+        while (TryMoveNext(out var value))
+        {
+            yield return value;
+        }
+    }
+
+    public bool TryMoveNext(out object value)
+    {
+        _iterator ??= IterateClauses(_clauses, 0, _closure).GetEnumerator();
+        if (_iterator.MoveNext())
+        {
+            value = _iterator.Current;
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
     }
 
     public async ValueTask<List<object>> MaterializeAsync()
     {
         var result = new List<object>();
-        await IterateClausesAsync(_clauses, 0, _closure, result).ConfigureAwait(false);
+        while (true)
+        {
+            var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasValue)
+            {
+                break;
+            }
+
+            result.Add(value);
+        }
+
         return result;
     }
 
     public async IAsyncEnumerable<object> IterateAsync()
     {
-        foreach (var item in await MaterializeAsync().ConfigureAwait(false))
+        while (true)
         {
-            yield return item;
+            var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasValue)
+            {
+                yield break;
+            }
+
+            yield return value;
         }
+    }
+
+    public async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    {
+        if (_iterator is not null)
+        {
+            return TryMoveNext(out var syncValue)
+                ? (true, syncValue)
+                : (false, PyNone.Instance);
+        }
+
+        if (_asyncItems is null)
+        {
+            _asyncItems = [];
+            await IterateClausesAsync(_clauses, 0, _closure, _asyncItems).ConfigureAwait(false);
+        }
+
+        if (_asyncIndex < _asyncItems.Count)
+        {
+            return (true, _asyncItems[_asyncIndex++]);
+        }
+
+        return (false, PyNone.Instance);
     }
 
     private IEnumerable<object> IterateClauses(

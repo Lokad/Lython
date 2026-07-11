@@ -2620,10 +2620,14 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "next(iterator[, default]) expects one or two arguments.", span);
         }
 
-        using var enumerator = ToSequence(arguments[0], span).GetEnumerator();
-        if (enumerator.MoveNext())
+        if (arguments[0] is not IPyIteratorValue iterator)
         {
-            return RuntimeValue(enumerator.Current);
+            throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+        }
+
+        if (iterator.TryMoveNext(out var value))
+        {
+            return RuntimeValue(value);
         }
 
         if (arguments.Length == 2)
@@ -2642,8 +2646,14 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "next(iterator[, default]) expects one or two arguments.", span);
         }
 
-        await using var cursor = PyIteration.Cursor.Create(arguments[0], span);
-        var (hasValue, value) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+        var (hasValue, value) = arguments[0] switch
+        {
+            IPyAsyncIteratorValue asyncIterator => await asyncIterator.TryMoveNextAsync().ConfigureAwait(false),
+            IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
+                ? (true, item)
+                : (false, PyNone.Instance),
+            _ => throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span),
+        };
         if (hasValue)
         {
             return RuntimeValue(value);
