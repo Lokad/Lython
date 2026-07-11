@@ -170,6 +170,30 @@ return str(int(Seven())) + "|" + str(float(Seven())) + "|" + str([10, 20][Seven(
         Assert.Equal("7|7.5|20|-7|7|9|9|73", result.ReturnValue);
     }
 
+    [Fact]
+    public void ExceptionsExposePythonArgsTextAndClearHandlerAliases()
+    {
+        var result = new LythonEngine().Run(
+            """
+e = ValueError("bad", 3)
+values = [str(e), repr(e), str(e.args), str(hasattr(e, "message"))]
+try:
+    raise e
+except ValueError as error:
+    values.append("caught")
+try:
+    error
+except NameError:
+    values.append("missing")
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("('bad', 3)|ValueError('bad', 3)|('bad', 3)|False|caught|missing", result.ReturnValue);
+    }
+
+
 
 
 

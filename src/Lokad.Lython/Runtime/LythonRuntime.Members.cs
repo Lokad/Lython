@@ -1159,6 +1159,11 @@ internal sealed partial class LythonRuntime
 
         private static PyTuple CreateExceptionArgs(PyException exception)
         {
+            if (exception.ExplicitArgs is not null)
+            {
+                return exception.ExplicitArgs;
+            }
+
             if (string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal))
             {
                 return ReferenceEquals(exception.Value, PyNone.Instance)

@@ -1038,22 +1038,16 @@ internal sealed partial class LythonRuntime
                 return new PyException(TypeName, FormatSystemExitMessage(value), value);
             }
 
-            if (arguments.Length > 1)
+            var values = arguments.Select(argument => argument.Value).ToArray();
+            var args = new PyTuple(values, context.MemoryGovernor, span);
+            var message = values.Length switch
             {
-                throw new LythonRuntimeException("TypeError", $"{TypeName}([message]) expects zero or one string argument.", span);
-            }
-
-            if (arguments.Length == 0)
-            {
-                return new PyException(TypeName, string.Empty, PyNone.Instance);
-            }
-
-            if (!PyStringOps.TryAsString(arguments[0].Value, out var generalMessage))
-            {
-                throw new LythonRuntimeException("TypeError", $"{TypeName}([message]) expects zero or one string argument.", span);
-            }
-
-            return new PyException(TypeName, generalMessage.AsString(), generalMessage);
+                0 => string.Empty,
+                1 => PyRendering.ToInterpolatedString(values[0], new PyRenderingContext(context)),
+                _ => PyRendering.ToReprPyString(args, new PyRenderingContext(context)).AsString(),
+            };
+            var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
+            return new PyException(TypeName, message, payload, args);
         }
     }
 

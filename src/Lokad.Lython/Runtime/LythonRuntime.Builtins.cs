@@ -1644,6 +1644,10 @@ internal sealed partial class LythonRuntime
         }
 
         var name = ExpectAttributeName(arguments[1], "hasattr(object, name)", span);
+        if (arguments[0] is PyException && name == "message")
+        {
+            return false;
+        }
         try
         {
             return PyMemberAccess.TryResolve(arguments[0], name, context, span, out _);

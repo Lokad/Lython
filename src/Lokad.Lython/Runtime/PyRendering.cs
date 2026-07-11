@@ -31,7 +31,7 @@ internal static class PyRendering
                 LythonRuntime.DictKeysView view => JoinRenderedSequence("dict_keys([", new RenderedSequence(view, context, interpolated: true), "])", context),
                 LythonRuntime.DictValuesView view => JoinRenderedSequence("dict_values([", new RenderedSequence(view, context, interpolated: true), "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedSequence("dict_items([", new RenderedSequence(view, context, interpolated: true), "])", context),
-                PyException exception => PyString.FromString($"{exception.TypeName}({exception.Message})"),
+                PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
                 _ => PyString.FromString(value.ToString() ?? string.Empty)
@@ -62,7 +62,7 @@ internal static class PyRendering
                 LythonRuntime.DictKeysView view => JoinRenderedSequence("dict_keys([", new RenderedSequence(view, context, interpolated: false), "])", context),
                 LythonRuntime.DictValuesView view => JoinRenderedSequence("dict_values([", new RenderedSequence(view, context, interpolated: false), "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedSequence("dict_items([", new RenderedSequence(view, context, interpolated: false), "])", context),
-                PyException exception => PyString.FromString($"{exception.TypeName}({exception.Message})"),
+                PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
                 _ => PyString.FromString(value.ToString() ?? string.Empty)
@@ -410,7 +410,18 @@ internal static class PyRendering
         var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
         builder.AppendString(exception.TypeName);
         builder.AppendAscii("(");
-        builder.Append(RenderStringLiteral(exception.Message, context));
+        var args = exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
+            ? PyTuple.Empty
+            : new PyTuple([exception.Value]));
+        for (var i = 0; i < args.Count; i++)
+        {
+            if (i > 0)
+            {
+                builder.AppendAscii(", ");
+            }
+
+            builder.Append(ToReprPyString(args[i], context));
+        }
         builder.AppendAscii(")");
         return builder.ToPyString();
     }
