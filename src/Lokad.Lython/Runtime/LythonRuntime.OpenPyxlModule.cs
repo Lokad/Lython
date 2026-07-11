@@ -2646,6 +2646,7 @@ internal sealed partial class LythonRuntime
         IPyDynamicAttributes,
         IPyIterableValue,
         IEnumerable<object>,
+        IPyContainsValue,
         IMutablePySubscriptableValue,
         IDeletablePySubscriptableValue,
         IPyRenderableValue
@@ -2801,6 +2802,13 @@ internal sealed partial class LythonRuntime
         }
 
         public IEnumerable<object> Iterate() => _worksheets;
+
+        public bool Contains(object candidate, LythonSourceSpan span)
+        {
+            _ = span;
+            return PyStringOps.TryAsString(candidate, out var name) &&
+                   _worksheets.Any(sheet => string.Equals(sheet.Title, name.AsString(), StringComparison.Ordinal));
+        }
 
         public IEnumerator<object> GetEnumerator() => _worksheets.Cast<object>().GetEnumerator();
 
@@ -3194,6 +3202,7 @@ internal sealed partial class LythonRuntime
         IPyRenderableValue
     {
         private readonly Dictionary<CellAddress, object> _cells = new();
+        private readonly Dictionary<CellAddress, OpenPyxlCell> _cellObjects = new();
         private readonly Dictionary<CellAddress, string> _dataTypes = new();
         private readonly Dictionary<CellAddress, string> _numberFormats = new();
         private readonly Dictionary<CellAddress, int> _loadedStyleIds = new();
@@ -3442,7 +3451,7 @@ internal sealed partial class LythonRuntime
             }
 
             var address = ParseCellAddress(text, span);
-            return new OpenPyxlCell(this, address.Row, address.Column);
+            return GetCellObject(address.Row, address.Column);
         }
 
         public object GetSlice(object? start, object? end, object? step, LythonSourceSpan span)
@@ -4143,7 +4152,7 @@ internal sealed partial class LythonRuntime
                 SetCellValue(row, column, arguments[2]);
             }
 
-            return new OpenPyxlCell(this, row, column);
+            return GetCellObject(row, column);
         }
 
         private object Append(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -4756,7 +4765,7 @@ internal sealed partial class LythonRuntime
             var items = new List<object>();
             for (var column = minColumn; column <= maxColumn; column++)
             {
-                items.Add(valuesOnly ? GetCellValue(row, column) : new OpenPyxlCell(this, row, column));
+                items.Add(valuesOnly ? GetCellValue(row, column) : GetCellObject(row, column));
             }
 
             return context is null ? new PyTuple(items) : new PyTuple(items, context.MemoryGovernor, span);
@@ -4767,7 +4776,7 @@ internal sealed partial class LythonRuntime
             var items = new List<object>();
             for (var row = minRow; row <= maxRow; row++)
             {
-                items.Add(valuesOnly ? GetCellValue(row, column) : new OpenPyxlCell(this, row, column));
+                items.Add(valuesOnly ? GetCellValue(row, column) : GetCellObject(row, column));
             }
 
             return context is null ? new PyTuple(items) : new PyTuple(items, context.MemoryGovernor, span);
@@ -4791,6 +4800,18 @@ internal sealed partial class LythonRuntime
         }
 
         private readonly record struct IterationBounds(int MinRow, int MaxRow, int MinColumn, int MaxColumn, bool ValuesOnly);
+
+        internal OpenPyxlCell GetCellObject(int row, int column)
+        {
+            var address = new CellAddress(row, column);
+            if (!_cellObjects.TryGetValue(address, out var cell))
+            {
+                cell = new OpenPyxlCell(this, row, column);
+                _cellObjects[address] = cell;
+            }
+
+            return cell;
+        }
 
         internal void EnsureCanMutate(LythonSourceSpan? span)
         {
@@ -4907,16 +4928,53 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Row or column is outside Excel worksheet bounds.", span);
             }
 
-            return new OpenPyxlCell(_worksheet, (int)row, (int)column);
+            return _worksheet.GetCellObject((int)row, (int)column);
         }
 
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString($"<Cell '{CellReference(Row, Column)}'>");
+            var title = QuotePythonString(_worksheet.Title);
+            return PyString.FromString($"<Cell {title}.{CellReference(Row, Column)}>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private static string QuotePythonString(string value)
+    {
+        var quote = value.Contains('\'') && !value.Contains('"') ? '"' : '\'';
+        var builder = new StringBuilder(value.Length + 2);
+        builder.Append(quote);
+        foreach (var character in value)
+        {
+            switch (character)
+            {
+                case '\\':
+                    builder.Append("\\\\");
+                    break;
+                case '\n':
+                    builder.Append("\\n");
+                    break;
+                case '\r':
+                    builder.Append("\\r");
+                    break;
+                case '\t':
+                    builder.Append("\\t");
+                    break;
+                default:
+                    if (character == quote)
+                    {
+                        builder.Append('\\');
+                    }
+
+                    builder.Append(character);
+                    break;
+            }
+        }
+
+        builder.Append(quote);
+        return builder.ToString();
     }
 
     private sealed class OpenPyxlHyperlink : IPyDynamicAttributes, IPyRenderableValue

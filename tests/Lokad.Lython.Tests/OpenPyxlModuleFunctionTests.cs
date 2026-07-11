@@ -782,6 +782,40 @@ with open("/out.txt", "w") as output:
     }
 
     [Fact]
+    public void OpenPyxlWorkbookAndCells_ImplementPythonObjectProtocols()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from openpyxl import Workbook
+
+book = Workbook()
+sheet = book.active
+same = sheet["A1"]
+values = [
+    "Sheet" in book,
+    "Missing" in book,
+    sheet in book,
+    same is sheet.cell(1, 1),
+    same is sheet["A1"],
+    same is sheet.cell(1, 1).offset(),
+    same is sheet.iter_rows(min_row=1, max_row=1, min_col=1, max_col=1)[0][0],
+    repr(same),
+]
+sheet.title = "O'Brien"
+values.append(repr(same))
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("True|False|False|True|True|True|True|<Cell 'Sheet'.A1>|<Cell \"O'Brien\".A1>", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OpenPyxlWorkbook_LoadsNamedStylesAsObjects()
     {
         var host = new MockLythonHost();

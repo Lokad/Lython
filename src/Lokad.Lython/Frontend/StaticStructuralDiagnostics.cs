@@ -464,6 +464,7 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
             AbstractValueKind.StatisticsLinearRegression or
+            AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
             AbstractValueKind.SetType;
