@@ -2228,8 +2228,8 @@ wb = openpyxl.Workbook()
 wb.not_a_workbook_member
 wb.security.not_a_workbook_protection_member
 wb.security.set_workbook_password()
-wb.named_styles[0].not_a_named_style_member
-wb.named_styles[0].font.not_a_font_member
+wb._named_styles[0].not_a_named_style_member
+wb._named_styles[0].font.not_a_font_member
 
 ws = wb.active
 ws.not_a_worksheet_member

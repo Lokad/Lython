@@ -684,10 +684,10 @@ ws["A2"].style = "currency"
 parts = [
     str(wb.named_styles),
     str(wb.style_names),
-    wb.named_styles[1].name,
-    wb.named_styles[1].number_format,
-    str(wb.named_styles[1].font.bold),
-    wb.named_styles[1].fill.fgColor,
+    wb._named_styles[1].name,
+    wb._named_styles[1].number_format,
+    str(wb._named_styles[1].font.bold),
+    wb._named_styles[1].fill.fgColor,
     ws["A1"].style,
     ws["A1"].number_format,
     str(ws["A1"].font.bold),
@@ -706,7 +706,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal, currency]|['Normal', 'currency']|currency|0.00|True|FFFF00|currency|0.00|True|FFFF00|thin|00FF00|currency|0.00|True|FFFF00", host.ReadText("/out.txt"));
+        Assert.Equal("['Normal', 'currency']|['Normal', 'currency']|currency|0.00|True|FFFF00|currency|0.00|True|FFFF00|thin|00FF00|currency|0.00|True|FFFF00", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -721,7 +721,7 @@ from openpyxl import load_workbook
 
 wb = load_workbook("/named.xlsx")
 ws = wb.active
-style = wb.named_styles[1]
+style = wb._named_styles[1]
 ws["B1"].style = style
 ws["C1"].style = "Headline"
 parts = [
@@ -754,7 +754,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal, Headline]|['Normal', 'Headline']|Headline|0.00|True|FFFF0000|FFFFFF00|thin|FF00FF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00", host.ReadText("/out.txt"));
+        Assert.Equal("['Normal', 'Headline']|['Normal', 'Headline']|Headline|0.00|True|FFFF0000|FFFFFF00|thin|FF00FF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1297,6 +1297,7 @@ from openpyxl import Workbook
 wb = Workbook()
 before = [
     str(wb.named_styles),
+    str(wb.named_styles == ["Normal"]),
     str(wb.style_names),
     str(wb.template),
     wb.mime_type,
@@ -1312,7 +1313,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal]|['Normal']|False|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml|1899-12-30 00:00:00|1899-12-30 00:00:00|True|application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml", host.ReadText("/out.txt"));
+        Assert.Equal("['Normal']|True|['Normal']|False|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml|1899-12-30 00:00:00|1899-12-30 00:00:00|True|application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml", host.ReadText("/out.txt"));
     }
 
     [Fact]

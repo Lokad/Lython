@@ -178,6 +178,7 @@ internal static partial class StaticContracts
         "epoch",
         "excel_base_date",
         "named_styles",
+        "_named_styles",
         "style_names",
         "security",
         "add_named_style",
