@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
 
     private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span);
+        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
         return mode switch
         {
             "r" => ExecutionContext.TextFileHandle.ForRead(path.AsString(), context, encodingMode, errors, newline),
@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span);
+        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
         return mode switch
         {
             "r" => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
@@ -44,13 +44,15 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static (PyString Path, string Mode, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
+    private static (PyString Path, string Mode, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context)
     {
         var arguments = boundArguments.Values;
-        if (boundArguments.Count is < 1 or > 8 || !PyStringOps.TryAsString(arguments[0], out var path))
+        if (boundArguments.Count is < 1 or > 8)
         {
             throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) expects a string file/path plus supported text-mode options.", span);
         }
+
+        var path = CoercePathLike(arguments[0], context, span, "open()");
 
         var mode = boundArguments.Assigned[1]
             ? arguments[1] switch

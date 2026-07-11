@@ -318,13 +318,12 @@ internal sealed partial class LythonRuntime
 
     private static object OsFspath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "os.fspath(path) expects one path-like argument.", span);
         }
 
-        return PyString.FromString(GetPath(arguments[0], "os.fspath", span));
+        return CoercePathLike(arguments[0], context, span, "os.fspath()");
     }
 
     private static object OsFsEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)

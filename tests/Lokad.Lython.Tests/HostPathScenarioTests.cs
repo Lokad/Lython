@@ -5,6 +5,28 @@ namespace Lokad.Lython.Tests;
 public sealed class HostPathScenarioTests
 {
     [Fact]
+    public void OpenAndOsFspathHonorPathLikeObjects()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/repo/value.txt", "ok");
+        var result = new LythonEngine().Run(
+            """
+import os
+from pathlib import Path
+
+class PathLike:
+    def __fspath__(self):
+        return "/repo/value.txt"
+
+return os.fspath(PathLike()) + "|" + open(Path("/repo/value.txt")).read() + "|" + open(PathLike()).read()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("/repo/value.txt|ok|ok", result.ReturnValue);
+    }
+
+    [Fact]
     public void CopySelectedFilesFixture_RunsSuccessfully()
     {
         var fixture = FixtureLoader.Load(Path.Combine("Workflows", "HostPath", "CopySelectedFiles"));

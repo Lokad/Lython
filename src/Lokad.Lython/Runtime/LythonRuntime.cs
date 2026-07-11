@@ -3193,6 +3193,34 @@ internal sealed partial class LythonRuntime
         return integer;
     }
 
+    private static PyString CoercePathLike(object value, ExecutionContext context, LythonSourceSpan span, string owner)
+    {
+        if (value is PyPath path)
+        {
+            return path.Value;
+        }
+
+        if (PyStringOps.TryAsString(value, out var text))
+        {
+            return text;
+        }
+
+        if (value is PyInstance instance &&
+            instance.TryGetAttribute("__fspath__", context, span, out var member) &&
+            member is ICallable callable)
+        {
+            var result = callable.Invoke([], span, context);
+            if (PyStringOps.TryAsString(result, out var pathText))
+            {
+                return pathText;
+            }
+
+            throw new LythonRuntimeException("TypeError", "__fspath__() must return str", span);
+        }
+
+        throw new LythonRuntimeException("TypeError", owner + " expects a path-like object", span);
+    }
+
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
