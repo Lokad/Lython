@@ -616,7 +616,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 11 — Complete `Counter` numeric/unary behavior.** Generalize supported numeric counts and implement unary positive/negative filtering with ordered results. Addresses LY-MOD-002 and LY-MOD-025.
 - [x] **Commit 12 — Normalize deque rotations before conversion.** Reduce arbitrary-size rotation integers modulo the current length and retain empty-deque behavior. Addresses LY-MOD-003.
 - [x] **Commit 13 — Complete `ChainMap`'s mapping protocol.** Count the union of visible keys and pin length alongside iteration, lookup, and mutation. Addresses LY-MOD-026.
-- [ ] **Commit 14 — Generate dataclass representations with `repr`.** Render every generated field through the shared representation protocol. Addresses LY-MOD-006.
+- [x] **Commit 14 — Generate dataclass representations with `repr`.** Render every generated field through the shared representation protocol. Addresses LY-MOD-006.
 - [ ] **Commit 15 — Generalize recursive dataclass dictionary conversion.** Preserve supported key objects and recursively copy keys and values in `asdict`. Addresses LY-MOD-007.
 - [ ] **Commit 16 — Stabilize dataclass field/error objects.** Reuse class-owned `Field` records and leave invalid `replace` overrides as catchable runtime `ValueError`s. Addresses LY-MOD-027 and LY-MOD-028.
 - [ ] **Commit 17 — Separate datetime display and representation paths.** Implement Python-shaped `timedelta.__str__` and `datetime.__str__`, and retain `tzinfo`/`fold` in aware representations. Addresses LY-MOD-008, LY-MOD-009, and LY-MOD-029.

@@ -86,7 +86,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
                 builder.AppendString(field.Name);
                 builder.AppendAscii("=");
                 _ = TryGetOwnAttribute(field.Name, out var value);
-                builder.Append(PyRendering.ToPythonPyString(value ?? PyNone.Instance, context));
+                builder.Append(PyRendering.ToReprPyString(value ?? PyNone.Instance, context));
             }
 
             builder.AppendAscii(")");

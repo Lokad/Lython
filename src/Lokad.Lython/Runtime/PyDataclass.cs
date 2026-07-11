@@ -1984,7 +1984,7 @@ internal static class PyDataclass
                 builder.AppendString(field.Name);
                 builder.AppendAscii("=");
                 _ = instance.TryGetOwnAttribute(field.Name, out var value);
-                builder.Append(PyRendering.ToPythonPyString(value ?? PyNone.Instance, new PyRenderingContext(context)));
+                builder.Append(PyRendering.ToReprPyString(value ?? PyNone.Instance, new PyRenderingContext(context)));
             }
 
             builder.AppendAscii(")");

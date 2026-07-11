@@ -46,7 +46,34 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|True|['name', 'count', 'items']|pcs|{'name': 'demo', 'count': 2, 'items': [4, 9]}|('demo', 2, [4, 9])|Box(name=next, count=2, items=[4, 9])|[4, 9]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|['name', 'count', 'items']|pcs|{'name': 'demo', 'count': 2, 'items': [4, 9]}|('demo', 2, [4, 9])|Box(name='next', count=2, items=[4, 9])|[4, 9]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DataclassesModule_GeneratedRepresentationUsesFieldRepr()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass
+
+class Label:
+    def __repr__(self):
+        return "<label>"
+
+@dataclass
+class Box:
+    name: str
+    label: Label
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(Box("x", Label())))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Box(name='x', label=<label>)", host.ReadText("/out.txt"));
     }
 
     [Fact]
