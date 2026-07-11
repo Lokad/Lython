@@ -4,41 +4,55 @@ namespace Lokad.Lython.Tests;
 
 public sealed class MathModuleFunctionTests
 {
+    [Fact]
+    public void SensitiveMathFunctionsPreserveSmallInputsAndSpecialValues()
+    {
+        var result = new LythonEngine().Run(
+            """
+import math
+return str(math.expm1(1e-16) != 0.0) + "|" + str(math.log1p(1e-16) != 0.0) + "|" + str(math.erf(0.0) == 0.0) + "|" + str(math.erfc(0.0) == 1.0) + "|" + str(math.erf(math.inf) == 1.0) + "|" + str(math.erfc(-math.inf) == 2.0)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|True|True|True", result.ReturnValue);
+    }
+
     [Theory]
-    [InlineData("math.sqrt(9)", "3")]
+    [InlineData("math.sqrt(9)", "3.0")]
     [InlineData("math.exp(1)", "2.718281828459045")]
-    [InlineData("math.log(8, 2)", "3")]
-    [InlineData("math.log10(1000)", "3")]
-    [InlineData("math.log2(8)", "3")]
-    [InlineData("math.sin(0)", "0")]
-    [InlineData("math.cos(0)", "1")]
-    [InlineData("math.tan(0)", "0")]
+    [InlineData("math.log(8, 2)", "3.0")]
+    [InlineData("math.log10(1000)", "3.0")]
+    [InlineData("math.log2(8)", "3.0")]
+    [InlineData("math.sin(0)", "0.0")]
+    [InlineData("math.cos(0)", "1.0")]
+    [InlineData("math.tan(0)", "0.0")]
     [InlineData("math.asin(1)", "1.5707963267948966")]
-    [InlineData("math.acos(1)", "0")]
+    [InlineData("math.acos(1)", "0.0")]
     [InlineData("math.atan(1)", "0.7853981633974483")]
     [InlineData("math.atan2(1, 1)", "0.7853981633974483")]
-    [InlineData("math.sinh(0)", "0")]
-    [InlineData("math.cosh(0)", "1")]
-    [InlineData("math.tanh(0)", "0")]
+    [InlineData("math.sinh(0)", "0.0")]
+    [InlineData("math.cosh(0)", "1.0")]
+    [InlineData("math.tanh(0)", "0.0")]
     [InlineData("math.floor(1.9)", "1")]
     [InlineData("math.ceil(1.1)", "2")]
     [InlineData("math.fabs(-1.5)", "1.5")]
     [InlineData("math.trunc(1.9)", "1")]
-    [InlineData("math.degrees(math.pi)", "180")]
+    [InlineData("math.degrees(math.pi)", "180.0")]
     [InlineData("math.radians(180)", "3.141592653589793")]
     [InlineData("math.isfinite(math.inf)", "False")]
     [InlineData("math.isinf(math.inf)", "True")]
     [InlineData("math.isnan(math.nan)", "True")]
-    [InlineData("math.pow(2, 3)", "8")]
-    [InlineData("math.hypot(3, 4)", "5")]
-    [InlineData("math.hypot(2, 3, 6)", "7")]
-    [InlineData("math.hypot()", "0")]
-    [InlineData("math.fmod(7, 4)", "3")]
-    [InlineData("math.copysign(2, -1)", "-2")]
+    [InlineData("math.pow(2, 3)", "8.0")]
+    [InlineData("math.hypot(3, 4)", "5.0")]
+    [InlineData("math.hypot(2, 3, 6)", "7.0")]
+    [InlineData("math.hypot()", "0.0")]
+    [InlineData("math.fmod(7, 4)", "3.0")]
+    [InlineData("math.copysign(2, -1)", "-2.0")]
     [InlineData("math.isclose(1, 1.0000000001)", "True")]
     [InlineData("math.prod([2, 3], start = 4)", "24")]
     [InlineData("math.fsum([0.1, 0.2, 0.3])", "0.6")]
-    [InlineData("math.fsum([1e100, 1.0, -1e100])", "1")]
+    [InlineData("math.fsum([1e100, 1.0, -1e100])", "1.0")]
     [InlineData("math.isnan(math.fsum([math.nan]))", "True")]
     [InlineData("math.factorial(6)", "720")]
     [InlineData("math.factorial(True)", "1")]
@@ -54,29 +68,29 @@ public sealed class MathModuleFunctionTests
     [InlineData("math.perm(3, 5)", "0")]
     [InlineData("math.isqrt(10)", "3")]
     [InlineData("math.isqrt(10 ** 40)", "100000000000000000000")]
-    [InlineData("math.dist([0, 0], [3, 4])", "5")]
+    [InlineData("math.dist([0, 0], [3, 4])", "5.0")]
     [InlineData("math.frexp(8)", "(0.5, 4)")]
-    [InlineData("math.frexp(math.inf)", "(Infinity, 0)")]
-    [InlineData("math.ldexp(0.5, 4)", "8")]
-    [InlineData("math.modf(-1.25)", "(-0.25, -1)")]
-    [InlineData("math.remainder(7, 4)", "-1")]
+    [InlineData("math.frexp(math.inf)", "(inf, 0)")]
+    [InlineData("math.ldexp(0.5, 4)", "8.0")]
+    [InlineData("math.modf(-1.25)", "(-0.25, -1.0)")]
+    [InlineData("math.remainder(7, 4)", "-1.0")]
     [InlineData("math.nextafter(1, 2) > 1", "True")]
     [InlineData("math.nextafter(1, 2, steps = 0) == 1", "True")]
     [InlineData("math.nextafter(1, 2, steps = 2) > math.nextafter(1, 2)", "True")]
     [InlineData("math.nextafter(0, -1) < 0", "True")]
     [InlineData("math.ulp(1) > 0 and math.ulp(1) < 0.000000000000001", "True")]
-    [InlineData("math.ulp(math.inf)", "Infinity")]
-    [InlineData("math.exp2(3)", "8")]
+    [InlineData("math.ulp(math.inf)", "inf")]
+    [InlineData("math.exp2(3)", "8.0")]
     [InlineData("math.expm1(1) > 1.718 and math.expm1(1) < 1.719", "True")]
     [InlineData("math.log1p(math.e - 1) > 0.999 and math.log1p(math.e - 1) < 1.001", "True")]
-    [InlineData("math.cbrt(-8)", "-2")]
+    [InlineData("math.cbrt(-8)", "-2.0")]
     [InlineData("math.erf(1) > 0.842 and math.erf(1) < 0.843", "True")]
     [InlineData("math.erfc(1) > 0.157 and math.erfc(1) < 0.158", "True")]
     [InlineData("math.gamma(5) > 23.999 and math.gamma(5) < 24.001", "True")]
     [InlineData("math.lgamma(5) > 3.17 and math.lgamma(5) < 3.18", "True")]
-    [InlineData("math.fma(2, 3, 4)", "10")]
+    [InlineData("math.fma(2, 3, 4)", "10.0")]
     [InlineData("math.sumprod([1, 2, 3], [4, 5, 6])", "32")]
-    [InlineData("math.sumprod([1.0, 2.0], [3, 4])", "11")]
+    [InlineData("math.sumprod([1.0, 2.0], [3, 4])", "11.0")]
     public void MathModule_Functions_HaveDirectCoverage(string expression, string expected)
     {
         Assert.Equal(expected, EvaluateToString(expression));
@@ -154,7 +168,7 @@ return str((m, e, frac, whole, total, distance, step > 1))
             new MockLythonHost());
 
         Assert.True(valid.Success, valid.Failure?.Message);
-        Assert.Equal("(0.5, 4, 0.25, 1, 24, 5, True)", Assert.IsType<string>(valid.ReturnValue));
+        Assert.Equal("(0.5, 4, 0.25, 1.0, 24, 5.0, True)", Assert.IsType<string>(valid.ReturnValue));
 
         var invalid = new LythonEngine().Run(
             """

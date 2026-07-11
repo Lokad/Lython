@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
             => UnaryCheckedFloat(arguments, "math.exp2", span, context, static value => Math.Pow(2.0, value));
 
         private static object Expm1(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryCheckedFloat(arguments, "math.expm1", span, context, static value => Math.Exp(value) - 1.0);
+            => UnaryCheckedFloat(arguments, "math.expm1", span, context, Expm1Accurate);
 
         private static object Log1p(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "math domain error", span);
             }
 
-            return Math.Log(1.0 + value);
+            return Log1pAccurate(value);
         }
 
         private static object Cbrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
             => UnaryFloat(arguments, "math.erf", span, context, ErfApprox);
 
         private static object Erfc(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.erfc", span, context, static value => 1.0 - ErfApprox(value));
+            => UnaryFloat(arguments, "math.erfc", span, context, ErfcApprox);
 
         private static object Gamma(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -528,12 +528,82 @@ internal sealed partial class LythonRuntime
                 return -1.0;
             }
 
+            if (value == 0.0)
+            {
+                return value;
+            }
+
             var sign = Math.Sign(value);
             var x = Math.Abs(value);
             var t = 1.0 / (1.0 + 0.3275911 * x);
             var polynomial = (((((1.061405429 * t) - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
             var result = 1.0 - polynomial * Math.Exp(-x * x);
             return sign < 0 ? -result : result;
+        }
+
+        private static double ErfcApprox(double value)
+        {
+            if (double.IsNaN(value))
+            {
+                return double.NaN;
+            }
+
+            if (double.IsPositiveInfinity(value))
+            {
+                return 0.0;
+            }
+
+            if (double.IsNegativeInfinity(value))
+            {
+                return 2.0;
+            }
+
+            if (value == 0.0)
+            {
+                return 1.0;
+            }
+
+            var x = Math.Abs(value);
+            var t = 1.0 / (1.0 + 0.3275911 * x);
+            var polynomial = (((((1.061405429 * t) - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+            var tail = polynomial * Math.Exp(-x * x);
+            return value < 0 ? 2.0 - tail : tail;
+        }
+
+        private static double Expm1Accurate(double value)
+        {
+            if (Math.Abs(value) >= 1e-5 || !double.IsFinite(value))
+            {
+                return Math.Exp(value) - 1.0;
+            }
+
+            var term = value;
+            var sum = value;
+            for (var n = 2; n <= 18; n++)
+            {
+                term *= value / n;
+                sum += term;
+            }
+
+            return sum;
+        }
+
+        private static double Log1pAccurate(double value)
+        {
+            if (Math.Abs(value) >= 1e-4)
+            {
+                return Math.Log(1.0 + value);
+            }
+
+            var term = value;
+            var sum = value;
+            for (var n = 2; n <= 24; n++)
+            {
+                term *= -value;
+                sum += term / n;
+            }
+
+            return sum;
         }
 
         private static double GammaLanczos(double value)
