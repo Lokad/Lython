@@ -100,6 +100,39 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DataclassesModule_FieldsAreStableAndReplaceErrorsRemainCatchable()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass, field, fields, replace
+
+@dataclass
+class Box:
+    value: int
+    cached: int = field(init=False, default=0)
+
+box = Box(1)
+stable = fields(Box)[0] is fields(box)[0]
+public = fields(Box)[0] is Box.__dataclass_fields__["value"]
+try:
+    replace(box, cached=2)
+except ValueError:
+    caught = True
+else:
+    caught = False
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(stable) + "|" + str(public) + "|" + str(caught))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DataclassesModule_FieldAndParamsMetadata_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

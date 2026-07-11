@@ -985,7 +985,7 @@ internal static class PyDataclass
 
                 if (!field.Init)
                 {
-                    throw new LythonRuntimeException("TypeError", $"{owner}() cannot override init=False field '{change}'.", span);
+                    throw new LythonRuntimeException("ValueError", $"{owner}() cannot override init=False field '{change}'.", span);
                 }
             }
 
@@ -1052,10 +1052,19 @@ internal static class PyDataclass
 
         var type = GetDataclassType(arguments[0], span, "dataclasses.fields()");
         var visibleFields = GetHelperVisibleFields(type.DataclassFields!).ToArray();
+        if (!type.TryGetOwnMember("__dataclass_fields__", out var rawFieldMap) || rawFieldMap is not PyDict fieldMap)
+        {
+            throw new LythonRuntimeException("TypeError", "dataclasses.fields() could not read the dataclass field map.", span);
+        }
+
         var items = new object[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
-            items[i] = new PyDataclassFieldObject(visibleFields[i]);
+            var key = PyString.FromString(visibleFields[i].Name);
+            if (!fieldMap.TryGetValue(key, out items[i]))
+            {
+                throw new LythonRuntimeException("TypeError", "dataclasses.fields() found an incomplete dataclass field map.", span);
+            }
         }
 
         return new PyTuple(items, context.MemoryGovernor, span);

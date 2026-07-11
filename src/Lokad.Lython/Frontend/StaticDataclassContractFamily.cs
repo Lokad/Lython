@@ -166,20 +166,9 @@ internal static class StaticDataclassContractFamily
 
             if (!field.IncludeInInit)
             {
-                AddDiagnostic(diagnostics, "LA3156", $"dataclasses.replace() cannot override init=False field '{keyword}'.", expression.Span);
-                emitted = true;
-            }
-        }
-
-        foreach (var field in instance.Class.Fields)
-        {
-            if (field.IncludeInInit &&
-                !field.StoreOnInstance &&
-                !field.HasDefault &&
-                !arguments.Keywords.ContainsKey(field.Name))
-            {
-                AddDiagnostic(diagnostics, "LA3156", $"InitVar '{field.Name}' must be specified with dataclasses.replace().", call.Span);
-                emitted = true;
+                // dataclasses.replace deliberately reports init=False overrides as a
+                // catchable runtime ValueError.
+                continue;
             }
         }
 

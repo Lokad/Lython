@@ -2462,7 +2462,7 @@ replace(row, hidden="y")
         Assert.False(compiled.IsValid);
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3075") >= 2);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3141");
-        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3156") >= 2);
+        Assert.Single(compiled.Diagnostics, d => d.Code == "LA3156");
     }
 
     [Fact]
