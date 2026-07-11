@@ -49,6 +49,39 @@ public sealed class ParserCompatibilityTests
         Assert.Equal(new System.Numerics.BigInteger(4), result.ReturnValue);
     }
 
+    [Fact]
+    public void Run_DecodesPythonStringEscapesAndRetainsUnknownEscapes()
+    {
+        var result = new LythonEngine().Run(
+            """
+return [
+    "\u0061" == "a",
+    "\U0001F600" == "😀",
+    "\101" == "A",
+    "\a\b\f\v" == chr(7) + chr(8) + chr(12) + chr(11),
+    "\q" == "\\q",
+]
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        Assert.All(
+            Assert.IsType<List<object?>>(result.ReturnValue),
+            item => Assert.True(Assert.IsType<bool>(item)));
+    }
+
+    [Fact]
+    public void Compile_RejectsNonAsciiBytesSourceAndRetainsBytesUnicodeEscapes()
+    {
+        var invalid = new LythonEngine().Compile("return b\"é\"\n");
+        var valid = new LythonEngine().Run("return b\"\\u0061\" == b\"\\\\u0061\"\n", new MockLythonHost());
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Message.Contains("ASCII", StringComparison.Ordinal));
+        Assert.True(valid.Success, valid.Failure?.Message);
+        Assert.True(Assert.IsType<bool>(valid.ReturnValue));
+    }
+
     [Theory]
     [InlineData("return 1__0\n")]
     [InlineData("return 1_\n")]

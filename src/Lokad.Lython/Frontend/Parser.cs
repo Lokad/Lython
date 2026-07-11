@@ -4002,7 +4002,11 @@ internal sealed class Parser
             span));
     }
 
-    private static bool TryDecodeStringLiteral(string literal, out string value, out string message)
+    private static bool TryDecodeStringLiteral(
+        string literal,
+        out string value,
+        out string message,
+        bool decodeUnicodeEscapes = true)
     {
         value = string.Empty;
         message = "Invalid string literal. Malformed literal body.";
@@ -4086,11 +4090,23 @@ internal sealed class Parser
                 case 'n':
                     builder.Append('\n');
                     break;
+                case 'a':
+                    builder.Append('\a');
+                    break;
+                case 'b':
+                    builder.Append('\b');
+                    break;
+                case 'f':
+                    builder.Append('\f');
+                    break;
                 case 'r':
                     builder.Append('\r');
                     break;
                 case 't':
                     builder.Append('\t');
+                    break;
+                case 'v':
+                    builder.Append('\v');
                     break;
                 case 'x':
                     if (i + 2 >= end ||
@@ -4103,13 +4119,92 @@ internal sealed class Parser
                     builder.Append((char)hex);
                     i += 2;
                     break;
+                case 'u' when decodeUnicodeEscapes:
+                    if (!TryReadHexCodePoint(literal, i + 1, 4, end, out var shortCodePoint))
+                    {
+                        message = "Invalid string literal. Malformed \\u escape; expected four hexadecimal digits.";
+                        return false;
+                    }
+
+                    builder.Append((char)shortCodePoint);
+                    i += 4;
+                    break;
+                case 'U' when decodeUnicodeEscapes:
+                    if (!TryReadHexCodePoint(literal, i + 1, 8, end, out var longCodePoint) ||
+                        longCodePoint > 0x10FFFF)
+                    {
+                        message = "Invalid string literal. Malformed \\U escape; expected eight hexadecimal digits naming a Unicode code point.";
+                        return false;
+                    }
+
+                    if (longCodePoint <= char.MaxValue)
+                    {
+                        builder.Append((char)longCodePoint);
+                    }
+                    else
+                    {
+                        builder.Append(char.ConvertFromUtf32(longCodePoint));
+                    }
+
+                    i += 8;
+                    break;
                 default:
-                    builder.Append(literal[i]);
+                    if (literal[i] is >= '0' and <= '7')
+                    {
+                        var octal = literal[i] - '0';
+                        var digits = 1;
+                        while (digits < 3 && i + 1 < end && literal[i + 1] is >= '0' and <= '7')
+                        {
+                            i++;
+                            digits++;
+                            octal = (octal * 8) + literal[i] - '0';
+                        }
+
+                        builder.Append((char)octal);
+                    }
+                    else
+                    {
+                        builder.Append('\\');
+                        builder.Append(literal[i]);
+                    }
                     break;
             }
         }
 
         value = builder.ToString();
+        return true;
+    }
+
+    private static bool TryReadHexCodePoint(
+        string literal,
+        int start,
+        int length,
+        int end,
+        out int codePoint)
+    {
+        codePoint = 0;
+        if (start + length > end)
+        {
+            return false;
+        }
+
+        for (var i = start; i < start + length; i++)
+        {
+            var digit = literal[i] switch
+            {
+                >= '0' and <= '9' => literal[i] - '0',
+                >= 'a' and <= 'f' => literal[i] - 'a' + 10,
+                >= 'A' and <= 'F' => literal[i] - 'A' + 10,
+                _ => -1
+            };
+            if (digit < 0)
+            {
+                return false;
+            }
+
+            codePoint = (codePoint * 16) + digit;
+        }
+
         return true;
     }
 
@@ -4218,7 +4313,19 @@ internal sealed class Parser
     private static bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message)
     {
         value = Array.Empty<byte>();
-        if (!TryDecodeStringLiteral(literal, out var decoded, out message))
+        if (!TryExtractStringContent(literal, out var content))
+        {
+            message = "Invalid string literal. Malformed bytes literal body.";
+            return false;
+        }
+
+        if (content.Any(static c => c > 0x7F))
+        {
+            message = "Invalid string literal. Bytes literals can only contain ASCII source characters.";
+            return false;
+        }
+
+        if (!TryDecodeStringLiteral(literal, out var decoded, out message, decodeUnicodeEscapes: false))
         {
             return false;
         }
@@ -4226,12 +4333,6 @@ internal sealed class Parser
         value = new byte[decoded.Length];
         for (var i = 0; i < decoded.Length; i++)
         {
-            if (decoded[i] > byte.MaxValue)
-            {
-                message = "Invalid string literal. Bytes literals can only contain byte-sized characters.";
-                return false;
-            }
-
             value[i] = (byte)decoded[i];
         }
 
