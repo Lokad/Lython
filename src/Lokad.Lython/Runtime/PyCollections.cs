@@ -365,14 +365,14 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
     }
 
-    public void Rotate(int offset)
+    public void Rotate(BigInteger offset)
     {
         if (_items.Count == 0 || offset == 0)
         {
             return;
         }
 
-        var steps = offset % _items.Count;
+        var steps = (int)(offset % _items.Count);
         if (steps > 0)
         {
             for (var i = 0; i < steps; i++)

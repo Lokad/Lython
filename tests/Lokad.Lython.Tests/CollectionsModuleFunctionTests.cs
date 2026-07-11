@@ -379,6 +379,28 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_DequeRotateReducesArbitrarySizeIntegersBeforeNarrowing()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+items = deque([1, 2, 3])
+items.rotate(1_000_000_000_000)
+empty = deque()
+empty.rotate(-1_000_000_000_000_000_000_000)
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(list(items)) + "|" + str(list(empty)))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[3, 1, 2]|[]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_StaticDiagnosticsCoverExpandedSurface()
     {
         var valid = new LythonEngine().Compile(

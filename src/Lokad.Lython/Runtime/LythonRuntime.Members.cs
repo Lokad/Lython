@@ -977,12 +977,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var offset = arguments.Length == 0 ? BigInteger.One : ExpectInteger(arguments[0], "deque.rotate([n]) expects n to be an integer.", span);
-                    if (offset < int.MinValue || offset > int.MaxValue)
-                    {
-                        throw new LythonRuntimeException("OverflowError", "deque rotation is too large.", span);
-                    }
-
-                    deque.Rotate((int)offset);
+                    deque.Rotate(offset);
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
                 _ => null!,
