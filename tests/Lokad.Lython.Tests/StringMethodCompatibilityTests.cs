@@ -7,12 +7,12 @@ public sealed class StringMethodCompatibilityTests
     [Theory]
     [InlineData("\"banana\".replace(\"na\", \"X\", 1)", "baXna")]
     [InlineData("\"banana\".replace(\"na\", \"X\", 0)", "banana")]
-    [InlineData("\" a  b \".split(None, 0)", "[a  b ]")]
-    [InlineData("\" a  b \".split(None, 1)", "[a, b ]")]
-    [InlineData("\"a,b,c\".split(\",\", 0)", "[a,b,c]")]
-    [InlineData("\"a,b,c\".split(\",\", 1)", "[a, b,c]")]
-    [InlineData("\"a,b,c\".rsplit(\",\", 1)", "[a,b, c]")]
-    [InlineData("\" a  b \".rsplit(None, 1)", "[ a, b]")]
+    [InlineData("\" a  b \".split(None, 0)", "['a  b ']")]
+    [InlineData("\" a  b \".split(None, 1)", "['a', 'b ']")]
+    [InlineData("\"a,b,c\".split(\",\", 0)", "['a,b,c']")]
+    [InlineData("\"a,b,c\".split(\",\", 1)", "['a', 'b,c']")]
+    [InlineData("\"a,b,c\".rsplit(\",\", 1)", "['a,b', 'c']")]
+    [InlineData("\" a  b \".rsplit(None, 1)", "[' a', 'b']")]
     [InlineData("str(\"banana\".index(\"na\"))", "2")]
     [InlineData("str(\"banana\".index(\"na\", 3))", "4")]
     [InlineData("str(\"banana\".rfind(\"na\"))", "4")]
@@ -54,11 +54,11 @@ public sealed class StringMethodCompatibilityTests
     [InlineData("str(\"hello.py\".endswith(\"lo\", 0, 5))", "True")]
     [InlineData("str(\"a\".startswith(\"\", 5))", "False")]
     [InlineData("str(\"a\".endswith(\"\", 5))", "False")]
-    [InlineData("str(\"a=b=c\".rpartition(\"=\"))", "(a=b, =, c)")]
-    [InlineData("str(\"a\\rb\".splitlines())", "[a, b]")]
-    [InlineData("str(\"a\\r\\nb\".splitlines(True))", "[a\r\n, b]")]
-    [InlineData("str(\"a\vb\".splitlines())", "[a, b]")]
-    [InlineData("str(\"a" + "\u2028" + "b\".splitlines())", "[a, b]")]
+    [InlineData("str(\"a=b=c\".rpartition(\"=\"))", "('a=b', '=', 'c')")]
+    [InlineData("str(\"a\\rb\".splitlines())", "['a', 'b']")]
+    [InlineData("str(\"a\\r\\nb\".splitlines(True))", "['a\\r\\n', 'b']")]
+    [InlineData("str(\"a\vb\".splitlines())", "['a', 'b']")]
+    [InlineData("str(\"a" + "\u2028" + "b\".splitlines())", "['a', 'b']")]
     [InlineData("str(\"ABC\".isupper())", "True")]
     [InlineData("str(\"AbC\".isupper())", "False")]
     [InlineData("str(\"é\".isalpha())", "True")]
@@ -97,7 +97,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("baXna|[a, b,c]|[a,b, c]|abc|  abc  |00042|alpha:2|beta|x|gamma", host.ReadText("/out.txt"));
+        Assert.Equal("baXna|['a', 'b,c']|['a,b', 'c']|abc|  abc  |00042|alpha:2|beta|x|gamma", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -130,7 +130,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[alpha, beta gamma  ]|ALPHA|Beta Gamma  |True|True|alpha|True|4|(a=b, =, c)|4|abc..|a b|a b|b", host.ReadText("/out.txt"));
+        Assert.Equal("['alpha', 'beta gamma  ']|ALPHA|Beta Gamma  |True|True|alpha|True|4|('a=b', '=', 'c')|4|abc..|a b|a b|b", host.ReadText("/out.txt"));
     }
 
     private static string EvaluateToString(string expression)

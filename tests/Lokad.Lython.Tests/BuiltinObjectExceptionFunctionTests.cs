@@ -87,6 +87,29 @@ return str(list(Counter())) + "|" + str(3 in box) + "|" + str(assigned) + "|" + 
         Assert.Equal("[0, 1, 2]|True|17|8", result.ReturnValue);
     }
 
+    [Fact]
+    public void InstancesAndContainersDispatchPythonRenderingProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+class Box:
+    def __repr__(self):
+        return "Box!"
+    def __str__(self):
+        return "box"
+    def __format__(self, spec):
+        return "formatted:" + spec
+
+box = Box()
+return repr(box) + "|" + str(box) + "|" + format(box, "x") + "|" + str(["a", box]) + "|" + str({"k": "v"})
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Box!|box|formatted:x|['a', Box!]|{'k': 'v'}", result.ReturnValue);
+    }
+
+
 
 
     [Fact]

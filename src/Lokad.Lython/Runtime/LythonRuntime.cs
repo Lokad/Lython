@@ -2359,6 +2359,22 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (value is PyInstance instance &&
+            instance.TryGetAttribute("__format__", context, span, out var formatMember) &&
+            formatMember is ICallable formatCallable)
+        {
+            var formatted = formatCallable.Invoke(
+                [new CallArgumentValue(null, PyString.FromString(formatSpecifier, context.MemoryGovernor, span))],
+                span,
+                context);
+            if (!PyStringOps.TryAsString(formatted, out var formattedText))
+            {
+                throw new LythonRuntimeException("TypeError", "__format__ returned non-string", span);
+            }
+
+            return formattedText.AsString();
+        }
+
         if (value is PyDate or PyTime or PyDateTime)
         {
             return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();

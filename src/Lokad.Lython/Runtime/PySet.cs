@@ -167,9 +167,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public IEnumerable<object> Iterate() => this;
 
-    public PyString RenderPython(PyRenderingContext context) => PyRendering.RenderSet(this, context, interpolated: false);
+    public PyString RenderPython(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
-    public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.RenderSet(this, context, interpolated: true);
+    public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
 

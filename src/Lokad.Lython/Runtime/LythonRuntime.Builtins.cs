@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1)
         {
-            return ToPythonPyString(arguments[0], context);
+            return PyRendering.ToInterpolatedPyString(arguments[0], new PyRenderingContext(context));
         }
 
         if (arguments.Length > 3 || arguments[0] is not PyBytes bytes)

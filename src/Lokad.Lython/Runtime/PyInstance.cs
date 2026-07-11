@@ -62,6 +62,13 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public PyString RenderPython(PyRenderingContext context)
     {
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        if (TryGetAttribute("__repr__", context.Context, span, out var reprMember) &&
+            reprMember is LythonRuntime.ICallable reprCallable)
+        {
+            return RequireRenderedString(reprCallable.Invoke([], span, context.Context), "__repr__");
+        }
+
         if (Type.DataclassReprEnabled && Type.DataclassFields is { } fields)
         {
             var renderedFields = fields.Where(field => field.Repr).ToArray();
@@ -89,7 +96,27 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         return PyString.FromString($"<{Type.Name} object>");
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    public PyString RenderInterpolated(PyRenderingContext context)
+    {
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        if (TryGetAttribute("__str__", context.Context, span, out var strMember) &&
+            strMember is LythonRuntime.ICallable strCallable)
+        {
+            return RequireRenderedString(strCallable.Invoke([], span, context.Context), "__str__");
+        }
+
+        return RenderPython(context);
+    }
+
+    private static PyString RequireRenderedString(object value, string methodName)
+    {
+        if (PyStringOps.TryAsString(value, out var text))
+        {
+            return text;
+        }
+
+        throw new LythonRuntimeException("TypeError", methodName + " returned non-string", null);
+    }
 
     public override string ToString() => $"<{Type.Name} object>";
 

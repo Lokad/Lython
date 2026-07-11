@@ -165,14 +165,10 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     }
 
     public PyString RenderPython(PyRenderingContext context)
-        => Length == 1
-            ? PyRendering.RenderSingletonTuple(PyRendering.ToPythonPyString(_items[0], context))
-            : PyRendering.JoinRenderedSequence("(", new RenderedItems(this, context, interpolated: false), ")");
+        => PyRendering.ToReprPyString(this, context);
 
     public PyString RenderInterpolated(PyRenderingContext context)
-        => Length == 1
-            ? PyRendering.RenderSingletonTuple(PyRendering.ToInterpolatedPyString(_items[0], context))
-            : PyRendering.JoinRenderedSequence("(", new RenderedItems(this, context, interpolated: true), ")");
+        => PyRendering.ToReprPyString(this, context);
 
     private object[] MaterializeSlice(IEnumerable<int> indices)
     {

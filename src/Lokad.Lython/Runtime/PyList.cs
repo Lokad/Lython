@@ -243,10 +243,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     public IEnumerable<object> Iterate() => this;
 
     public PyString RenderPython(PyRenderingContext context)
-        => PyRendering.JoinRenderedSequence("[", new RenderedItems(this, context, interpolated: false), "]");
+        => PyRendering.ToReprPyString(this, context);
 
     public PyString RenderInterpolated(PyRenderingContext context)
-        => PyRendering.JoinRenderedSequence("[", new RenderedItems(this, context, interpolated: true), "]");
+        => PyRendering.ToReprPyString(this, context);
 
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
 

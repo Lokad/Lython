@@ -154,9 +154,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public IEnumerable<object> Iterate() => Keys;
 
-    public PyString RenderPython(PyRenderingContext context) => PyRendering.JoinRenderedDictionary(this, context, interpolated: false);
+    public PyString RenderPython(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
-    public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.JoinRenderedDictionary(this, context, interpolated: true);
+    public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
     {
