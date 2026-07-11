@@ -207,7 +207,6 @@ __lython_file.close()
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pop", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("index", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3034" && d.Message.Contains("sort", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3035" && d.Message.Contains("sort", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3123" && d.Message.Contains("keyword-only", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("Extended slice assignment", StringComparison.Ordinal));
         Assert.False(host.Exists("/out.txt"));

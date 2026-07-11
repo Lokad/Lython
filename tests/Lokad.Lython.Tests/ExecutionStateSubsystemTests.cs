@@ -50,7 +50,7 @@ public sealed class ExecutionStateSubsystemTests
 
         Assert.Equal(
             ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
-            context.Frame.Variables.Keys.Order(StringComparer.Ordinal));
+            context.Frame.Variables.Keys.Where(static name => name != "__name__").Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -61,9 +61,10 @@ public sealed class ExecutionStateSubsystemTests
             new LythonRunOptions { SourcePath = "scripts/tool.py" });
 
         Assert.DoesNotContain("__file__", ExecutionState.BuiltinNames);
+        Assert.DoesNotContain("__name__", ExecutionState.BuiltinNames);
         Assert.Equal(
             ExecutionState.BuiltinNames.Order(StringComparer.Ordinal),
-            context.Frame.Variables.Keys.Where(static name => name != "__file__").Order(StringComparer.Ordinal));
+            context.Frame.Variables.Keys.Where(static name => name is not "__file__" and not "__name__").Order(StringComparer.Ordinal));
 
         var file = Assert.IsType<PyString>(context.Frame.Variables["__file__"]);
         Assert.Equal("/repo/scripts/tool.py", file.AsString());

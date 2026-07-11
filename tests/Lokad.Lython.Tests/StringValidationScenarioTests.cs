@@ -30,7 +30,6 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"hello\".split(\",\", \"1\")\n", "expects maxsplit to be an integer.")]
     [InlineData("\"hello\".rsplit(1)\n", "str.rsplit([separator[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.")]
     [InlineData("\"hello\".rsplit(\",\", \"1\")\n", "expects maxsplit to be an integer.")]
-    [InlineData("\"hello\".splitlines(1)\n", "str.splitlines([keepends]) expects zero or one bool argument.")]
     [InlineData("\"hello\".strip(1)\n", "str.strip([chars]) expects zero or one string argument.")]
     [InlineData("\"hello\".lstrip(1)\n", "str.lstrip([chars]) expects zero or one string argument.")]
     [InlineData("\"hello\".rstrip(1)\n", "str.rstrip([chars]) expects zero or one string argument.")]

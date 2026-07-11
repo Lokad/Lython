@@ -177,12 +177,7 @@ internal sealed partial class LythonRuntime
             var reverse = false;
             if (arguments.Length >= 2)
             {
-                if (arguments[1] is not bool reverseFlag)
-                {
-                    throw new LythonRuntimeException("TypeError", "list.sort(..., reverse=...) expects a bool.", span);
-                }
-
-                reverse = reverseFlag;
+                reverse = IsTruthy(arguments[1]);
             }
 
             var sorted = SortListItems([.. list], keyCallable, reverse, span, context);
@@ -203,12 +198,7 @@ internal sealed partial class LythonRuntime
             var reverse = false;
             if (arguments.Length >= 2)
             {
-                if (arguments[1] is not bool reverseFlag)
-                {
-                    throw new LythonRuntimeException("TypeError", "list.sort(..., reverse=...) expects a bool.", span);
-                }
-
-                reverse = reverseFlag;
+                reverse = IsTruthy(arguments[1]);
             }
 
             var sorted = await SortListItemsAsync([.. list], keyCallable, reverse, span, context).ConfigureAwait(false);

@@ -268,7 +268,7 @@ def helper(*parts, sep="|", suffix):
     typed: list[str] = ["x"]
     return sep.join(parts) + suffix + typed[0]
 
-line = [match, case][0].upper().splitlines(keepends=True)[0]
+line = [match, case][0].upper().splitlines(True)[0]
 result = helper(*["a", "b"], suffix="?")
 """);
 

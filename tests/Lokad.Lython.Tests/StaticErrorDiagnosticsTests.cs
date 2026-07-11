@@ -112,7 +112,6 @@ sorted([1], key=1, reverse=1)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3032");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3033");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3034");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3035");
     }
 
     [Fact]

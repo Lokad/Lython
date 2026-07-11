@@ -6,7 +6,8 @@ internal readonly record struct LythonCallableSignature(
     int? RequiredCount = null,
     int? MaxPositionalCount = null,
     bool AllowsExtraKeywords = false,
-    bool AllowsExtraPositional = false)
+    bool AllowsExtraPositional = false,
+    int PositionalOnlyCount = 0)
 {
     public int MinimumArgumentCount => RequiredCount ?? ParameterNames?.Length ?? 0;
 

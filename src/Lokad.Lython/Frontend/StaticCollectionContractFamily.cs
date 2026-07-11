@@ -184,14 +184,6 @@ internal static class StaticCollectionContractFamily
             AddDiagnostic(diagnostics, "LA3034", "sorted(..., key=...) expects a callable or None.", keyExpression.Span);
         }
 
-        if (arguments.TryGetValue(2, "reverse", out var reverseExpression) &&
-            reverseExpression is not BooleanLiteralExpressionSyntax)
-        {
-            if (StaticAbstractFacts.IsDefinitelyKnownLiteral(reverseExpression, bindings))
-            {
-                AddDiagnostic(diagnostics, "LA3035", "sorted(..., reverse=...) expects a bool.", reverseExpression.Span);
-            }
-        }
     }
 
     private static void AnalyzeListMemberCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -251,12 +243,6 @@ internal static class StaticCollectionContractFamily
             AddDiagnostic(diagnostics, "LA3034", "list.sort(..., key=...) expects a callable or None.", keyExpression.Span);
         }
 
-        if (arguments.TryGetValue(1, "reverse", out var reverseExpression) &&
-            reverseExpression is not BooleanLiteralExpressionSyntax &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(reverseExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3035", "list.sort(..., reverse=...) expects a bool.", reverseExpression.Span);
-        }
     }
 
     private static void AnalyzeOptionalIntegerArgument(

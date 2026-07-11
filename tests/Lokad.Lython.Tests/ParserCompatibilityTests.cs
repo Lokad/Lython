@@ -108,7 +108,7 @@ case = "beta"
 value = "a" + \
     "b"
 items = [match, case]
-line = items[0].upper().splitlines(keepends=True)[0]
+line = items[0].upper().splitlines(True)[0]
 """);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(d => d.Message)));

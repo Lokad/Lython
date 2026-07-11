@@ -81,7 +81,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("any()\n", "expects one argument")]
     [InlineData("all()\n", "expects one argument")]
     [InlineData("enumerate()\n", "is missing argument 'iterable'")]
-    [InlineData("int()\n", "is missing argument 'value'")]
+    [InlineData("int()\n", "is missing argument 'x'")]
     [InlineData("float()\n", "is missing argument 'value'")]
     [InlineData("list(1, 2)\n", "received too many positional arguments")]
     [InlineData("tuple(1, 2)\n", "received too many positional arguments")]
@@ -101,7 +101,6 @@ public sealed class BuiltinValidationScenarioTests
 
     [Theory]
     [InlineData("key = 1\nsorted([1], key = key)\n", "compile", "callable or None")]
-    [InlineData("reverse = 1\nsorted([1], reverse = reverse)\n", "compile", "expects a bool")]
     public void SortedKeywordFailures_ReportExpectedFailure(string source, string expectedFailureKind, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -121,7 +120,28 @@ public sealed class BuiltinValidationScenarioTests
     }
 
     [Fact]
-    public void KeywordArguments_AreAcceptedForSupportedBuiltinsAndMethods()
+    public void CallBindingMatchesPositionalOnlyAndTruthTestSemantics()
+    {
+        var result = new LythonEngine().Run(
+            """
+values = ["a\n".splitlines(1)[0], str(sorted([1, 2], reverse=1))]
+items = [1, 2]
+items.sort(reverse="yes")
+values.append(str(items))
+try:
+    int(value="12")
+except TypeError:
+    values.append("caught")
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("a\n|[2, 1]|[2, 1]|caught", result.ReturnValue);
+    }
+
+    [Fact]
+    public void PythonKeywordSpellings_AreAcceptedForSupportedBuiltinsAndMethods()
     {
         var host = new MockLythonHost();
         host.SeedFile("/input.txt", "alpha");
@@ -130,15 +150,15 @@ public sealed class BuiltinValidationScenarioTests
             """
 import os
 
-items = list(iterable = "ab")
-items.append(value = "c")
-items.extend(iterable = ["d"])
-d = dict(iterable = [("a", 1)])
-value = int(value = "12")
+items = list("ab")
+items.append("c")
+items.extend(["d"])
+d = dict([("a", 1)])
+value = int("12")
 text = open("/input.txt").read()
-with open(path = "/output.txt", mode = "w") as handle:
-    handle.write(text = text.replace(old = "a", new = "A"))
-    handle.writelines(lines = ["\n", str(value), "\n", str(d.get(key = "a"))])
+with open(file = "/output.txt", mode = "w") as handle:
+    handle.write(text.replace("a", "A"))
+    handle.writelines(["\n", str(value), "\n", str(d.get("a"))])
 
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(items) + "|" + os.path.basename("/output.txt") + "|" + open("/output.txt").read())
@@ -167,12 +187,12 @@ for index, value in enumerate(values, start = 1):
 with open(file = "/input.txt", mode = "r", encoding = "utf-8") as reader:
     text = reader.read()
 
-with open(path = "/printed.txt", mode = "w") as handle:
+with open(file = "/printed.txt", mode = "w") as handle:
     print("text", text, sep = "=", end = "", file = handle, flush = True)
 
 print("done", flush = True)
 
-with open(path = "/out.txt", mode = "w") as handle:
+with open(file = "/out.txt", mode = "w") as handle:
     handle.write(",".join(pairs))
 """,
             host);
@@ -187,16 +207,16 @@ with open(path = "/out.txt", mode = "w") as handle:
     [Theory]
     [InlineData("range(start = 1)\n", "Builtin 'range' does not accept keyword arguments.")]
     [InlineData("range(stop = 3)\n", "Builtin 'range' does not accept keyword arguments.")]
-    [InlineData("enumerate([1], iterable = [2])\n", "Builtin 'enumerate' got multiple values for argument 'iterable'.")]
+    [InlineData("enumerate([1], iterable = [2])\n", "Builtin 'enumerate' got an unexpected keyword argument 'iterable'.")]
     [InlineData("enumerate(start = 1)\n", "Builtin 'enumerate' is missing argument 'iterable'.")]
-    [InlineData("enumerate(iterable = [1], bad = 2)\n", "Builtin 'enumerate' got an unexpected keyword argument 'bad'.")]
+    [InlineData("enumerate(iterable = [1], bad = 2)\n", "Builtin 'enumerate' got an unexpected keyword argument 'iterable'.")]
     [InlineData("open(\"/input.txt\", file = \"/other.txt\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) got multiple values for argument 'file/path'.")]
     [InlineData("open(mode = \"r\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) expects a file/path argument.")]
     [InlineData("open(target = \"/input.txt\")\n", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) got an unexpected keyword argument 'target'.")]
     [InlineData("print(\"x\", destination = None)\n", "Builtin 'print' got an unexpected keyword argument 'destination'.")]
     [InlineData("text = \"abc\"\ntext.upper(value = 1)\n", "str.upper() expects no arguments.")]
     [InlineData("int(number = 1)\n", "Builtin 'int' got an unexpected keyword argument 'number'.")]
-    [InlineData("int(1, value = 2)\n", "Builtin 'int' got multiple values for argument 'value'.")]
+    [InlineData("int(1, value = 2)\n", "Builtin 'int' got an unexpected keyword argument 'value'.")]
     [InlineData("text = \"abc\"\ntext.find(needle = \"a\")\n", "str.find(sub[, start[, end]]) expects one to three arguments.")]
     [InlineData("items = []\nitems.append(1, value = 2)\n", "list.append(value) expects one argument.")]
     [InlineData("d = {}\nd.get(default = 1)\n", "dict.get(key[, default]) expects one key and an optional default.")]

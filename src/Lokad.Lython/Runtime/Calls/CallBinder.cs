@@ -38,7 +38,8 @@ internal static class CallBinder
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
             signature.AllowsExtraKeywords,
-            signature.AllowsExtraPositional);
+            signature.AllowsExtraPositional,
+            signature.PositionalOnlyCount);
     }
 
     public static object[] BindNamedArguments(
@@ -49,7 +50,7 @@ internal static class CallBinder
         string[]? parameterNames,
         IReadOnlyDictionary<string, int>? parameterIndices,
         int requiredCount)
-        => BindNamedArguments(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false);
+        => BindNamedArguments(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false, positionalOnlyCount: 0);
 
     private static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
@@ -62,7 +63,8 @@ internal static class CallBinder
         int? maxArgumentCount,
         int? maxPositionalCount,
         bool allowsExtraKeywords,
-        bool allowsExtraPositional)
+        bool allowsExtraPositional,
+        int positionalOnlyCount)
     {
         if (parameterNames is null)
         {
@@ -128,6 +130,11 @@ internal static class CallBinder
                     continue;
                 }
 
+                throw CallErrors.UnexpectedKeyword(callableKind, callableName, argument.Name, span);
+            }
+
+            if (index < positionalOnlyCount)
+            {
                 throw CallErrors.UnexpectedKeyword(callableKind, callableName, argument.Name, span);
             }
 

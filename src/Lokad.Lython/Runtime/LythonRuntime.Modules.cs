@@ -4548,16 +4548,11 @@ internal sealed partial class LythonRuntime
                     var keepEnds = false;
                     if (arguments.Length == 1)
                     {
-                        if (arguments[0] is not bool parsedKeepEnds)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.splitlines([keepends]) expects zero or one bool argument.", span);
-                        }
-
-                        keepEnds = parsedKeepEnds;
+                        keepEnds = IsTruthy(arguments[0]);
                     }
 
                     return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                }, "str.splitlines", ["keepends"], 0),
+                }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, PositionalOnlyCount: 1)),
                 "expandtabs" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)

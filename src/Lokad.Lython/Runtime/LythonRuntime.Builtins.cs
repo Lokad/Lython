@@ -1577,15 +1577,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
         }
 
-        var reverse = false;
-        if (arguments.Length >= 3)
-        {
-            if (arguments[2] is not bool reverseFlag)
+            var reverse = false;
+            if (arguments.Length >= 3)
             {
-                throw new LythonRuntimeException("TypeError", "sorted(..., reverse=...) expects a bool.", span);
-            }
-
-            reverse = reverseFlag;
+                reverse = IsTruthy(arguments[2]);
         }
 
         var keyed = new List<SortKeyValue>(values.Count);
@@ -1642,15 +1637,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
         }
 
-        var reverse = false;
-        if (arguments.Length >= 3)
-        {
-            if (arguments[2] is not bool reverseFlag)
+            var reverse = false;
+            if (arguments.Length >= 3)
             {
-                throw new LythonRuntimeException("TypeError", "sorted(..., reverse=...) expects a bool.", span);
-            }
-
-            reverse = reverseFlag;
+                reverse = IsTruthy(arguments[2]);
         }
 
         var keyed = new List<SortKeyValue>(values.Count);
