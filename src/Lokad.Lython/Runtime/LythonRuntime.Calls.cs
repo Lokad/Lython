@@ -322,6 +322,21 @@ internal sealed partial class LythonRuntime
 
     }
 
+    private sealed class ZipCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    {
+        public string Name => "zip";
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return Zip(arguments, span);
+        }
+
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+    }
+
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
         private const string Signature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";

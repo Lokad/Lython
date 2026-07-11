@@ -2404,25 +2404,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "range() arg 3 must not be zero", span);
         }
 
-        var result = new PyList([], context.MemoryGovernor, span);
-        if (step > BigInteger.Zero)
-        {
-            for (var current = start; current < stop; current += step)
-            {
-                result.Add(current);
-                context.ObserveCollectionCount(result.Count, span);
-            }
-        }
-        else
-        {
-            for (var current = start; current > stop; current += step)
-            {
-                result.Add(current);
-                context.ObserveCollectionCount(result.Count, span);
-            }
-        }
-
-        return result;
+        return new PyRange(start, stop, step);
     }
 
     private static object Enumerate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2433,21 +2415,38 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "enumerate(iterable[, start]) expects one or two arguments.", span);
         }
 
-        var result = new PyList([], context.MemoryGovernor, span);
         var index = arguments.Length == 2 && arguments[1] is BigInteger start
             ? start
             : arguments.Length == 1
                 ? BigInteger.Zero
                 : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
 
-        foreach (var item in ToSequence(arguments[0], span, context))
+        return new PyEnumerateIterator(arguments[0], index, span);
+    }
+
+    private static object Zip(CallArgumentValue[] arguments, LythonSourceSpan span)
+    {
+        var iterables = new List<object>();
+        var strict = false;
+        var sawStrict = false;
+        foreach (var argument in arguments)
         {
-            result.Add(CreateTuple(2, i => i == 0 ? index : item, context, span));
-            context.ObserveCollectionCount(result.Count, span);
-            index += BigInteger.One;
+            if (argument.Name is null)
+            {
+                iterables.Add(argument.Value);
+                continue;
+            }
+
+            if (argument.Name != "strict" || sawStrict)
+            {
+                throw new LythonRuntimeException("TypeError", $"zip() got an unexpected keyword argument '{argument.Name}'", span);
+            }
+
+            sawStrict = true;
+            strict = IsTruthy(argument.Value);
         }
 
-        return result;
+        return new PyZipIterator([.. iterables], strict, span);
     }
 
     private static async ValueTask<object> EnumerateAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -24,6 +24,28 @@ return "|".join(values)
     }
 
     [Fact]
+    public void RangeEnumerateAndZipUseLazyIteratorSemantics()
+    {
+        var result = new LythonEngine().Run(
+            """
+r = range(3)
+e = enumerate(["a", "b"])
+z = zip([1, 2], [3, 4])
+values = [repr(r), repr(r[1:]), str(iter(e) is e), str(next(e)), str(next(e)), str(iter(z) is z), str(next(z)), str(next(z))]
+try:
+    list(zip([1], [2, 3], strict=True))
+except ValueError:
+    values.append("strict")
+values.append(str(next(iter(range(100000000000000000000)), -1)))
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("range(0, 3)|range(1, 3)|True|(0, 'a')|(1, 'b')|True|(1, 3)|(2, 4)|strict|0", result.ReturnValue);
+    }
+
+    [Fact]
     public void IteratorAndSequenceBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
@@ -129,7 +151,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
         Assert.Equal(
-            "/repo/docs,/repo/docs/a,/repo/docs/b|/repo/docs:m,/repo/docs/a:m,/repo/docs/b:m|/repo/docs/a|/repo/docs:[a, b]:[root.txt]|3|3|True|True",
+            "/repo/docs,/repo/docs/a,/repo/docs/b|/repo/docs:m,/repo/docs/a:m,/repo/docs/b:m|/repo/docs/a|/repo/docs:['a', 'b']:['root.txt']|3|3|True|True",
             host.ReadText("/out.txt"));
     }
 
