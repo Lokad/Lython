@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -1144,11 +1145,11 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredIntegerLiteralExpression integer:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(BigInteger.Parse(integer.Literal.ValueText, CultureInfo.InvariantCulture)), integer.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNumberOps.ParseInteger(integer.Literal.ValueText)), integer.Span));
                     return;
 
                 case LoweredFloatLiteralExpression floating:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(double.Parse(floating.Literal.ValueText, CultureInfo.InvariantCulture)), floating.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNumberOps.ParseFloat(floating.Literal.ValueText)), floating.Span));
                     return;
 
                 case LoweredBooleanLiteralExpression boolean:

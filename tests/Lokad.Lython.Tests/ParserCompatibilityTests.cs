@@ -16,6 +16,45 @@ public sealed class ParserCompatibilityTests
     }
 
     [Fact]
+    public void Run_AcceptsPythonFloatAndDecimalSeparatorSpellings()
+    {
+        var result = new LythonEngine().Run(
+            "return [.5, 5., 1_000.5, 1.2_3, 1e1_0, 1_000, 00, 0_0]\n",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Equal(
+            new object?[]
+            {
+                0.5,
+                5.0,
+                1000.5,
+                1.23,
+                1e10,
+                new System.Numerics.BigInteger(1000),
+                System.Numerics.BigInteger.Zero,
+                System.Numerics.BigInteger.Zero
+            },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("return 1__0\n")]
+    [InlineData("return 1_\n")]
+    [InlineData("return 01\n")]
+    public void Compile_InvalidDecimalSeparatorsAndLeadingZerosAreStructuredSyntaxFailures(string source)
+    {
+        LythonCompiledScript? compiled = null;
+
+        var exception = Record.Exception(() => compiled = new LythonEngine().Compile(source));
+
+        Assert.Null(exception);
+        Assert.NotNull(compiled);
+        Assert.False(compiled!.IsValid);
+        Assert.NotEmpty(compiled.Diagnostics);
+    }
+
+    [Fact]
     public void Compile_AcceptsOrdinarySoftKeywordContinuationAndPostfixShapes()
     {
         var compiled = new LythonEngine().Compile(

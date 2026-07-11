@@ -136,7 +136,7 @@ internal static class PyNumberOps
         => BigInteger.Parse(text.Replace("_", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture);
 
     public static double ParseFloat(string text)
-        => double.Parse(text, CultureInfo.InvariantCulture);
+        => double.Parse(text.Replace("_", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture);
 
     public static int GetHashCode(PyNumber number)
     {
