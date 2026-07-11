@@ -583,12 +583,39 @@ internal static class StaticRegexContractFamily
 
         if (TryGetInt32(flagsValue, out var flags) && flags >= 0)
         {
-            options = (PythonReCompileOptions)flags;
-            return true;
+            return TryTranslatePythonRegexFlags(flags, out options);
         }
 
         options = PythonReCompileOptions.None;
         return false;
+    }
+
+    private static bool TryTranslatePythonRegexFlags(int flags, out PythonReCompileOptions options)
+    {
+        const int ignoreCase = 2;
+        const int locale = 4;
+        const int multiline = 8;
+        const int dotAll = 16;
+        const int unicode = 32;
+        const int verbose = 64;
+        const int debug = 128;
+        const int ascii = 256;
+        const int supported = ignoreCase | locale | multiline | dotAll | unicode | verbose | debug | ascii;
+
+        options = PythonReCompileOptions.None;
+        if ((flags & ~supported) != 0 ||
+            (flags & (locale | debug)) != 0 ||
+            (flags & ascii) != 0 && (flags & unicode) != 0)
+        {
+            return false;
+        }
+
+        if ((flags & ignoreCase) != 0) options |= PythonReCompileOptions.IgnoreCase;
+        if ((flags & multiline) != 0) options |= PythonReCompileOptions.Multiline;
+        if ((flags & dotAll) != 0) options |= PythonReCompileOptions.DotAll;
+        if ((flags & verbose) != 0) options |= PythonReCompileOptions.Verbose;
+        if ((flags & ascii) != 0) options |= PythonReCompileOptions.Ascii;
+        return true;
     }
 
     private static PythonReCompileOptions GetRegexOptions(

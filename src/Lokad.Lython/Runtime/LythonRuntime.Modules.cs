@@ -671,20 +671,20 @@ internal sealed partial class LythonRuntime
                 "PatternError" => new ExceptionTypeValue("PatternError"),
                 "RegexFlag" => new RegexFlagFactory(),
                 "NOFLAG" => BigInteger.Zero,
-                "IGNORECASE" => new BigInteger((int)PythonReCompileOptions.IgnoreCase),
-                "I" => new BigInteger((int)PythonReCompileOptions.IgnoreCase),
+                "IGNORECASE" => new BigInteger(PythonIgnoreCaseFlag),
+                "I" => new BigInteger(PythonIgnoreCaseFlag),
                 "UNICODE" => new BigInteger(PythonUnicodeFlag),
                 "U" => new BigInteger(PythonUnicodeFlag),
-                "MULTILINE" => new BigInteger((int)PythonReCompileOptions.Multiline),
-                "M" => new BigInteger((int)PythonReCompileOptions.Multiline),
-                "DOTALL" => new BigInteger((int)PythonReCompileOptions.DotAll),
-                "S" => new BigInteger((int)PythonReCompileOptions.DotAll),
-                "VERBOSE" => new BigInteger((int)PythonReCompileOptions.Verbose),
-                "X" => new BigInteger((int)PythonReCompileOptions.Verbose),
-                "ASCII" => new BigInteger((int)PythonReCompileOptions.Ascii),
-                "A" => new BigInteger((int)PythonReCompileOptions.Ascii),
-                "LOCALE" => new BigInteger((int)PythonReCompileOptions.Locale),
-                "L" => new BigInteger((int)PythonReCompileOptions.Locale),
+                "MULTILINE" => new BigInteger(PythonMultilineFlag),
+                "M" => new BigInteger(PythonMultilineFlag),
+                "DOTALL" => new BigInteger(PythonDotAllFlag),
+                "S" => new BigInteger(PythonDotAllFlag),
+                "VERBOSE" => new BigInteger(PythonVerboseFlag),
+                "X" => new BigInteger(PythonVerboseFlag),
+                "ASCII" => new BigInteger(PythonAsciiFlag),
+                "A" => new BigInteger(PythonAsciiFlag),
+                "LOCALE" => new BigInteger(PythonLocaleFlag),
+                "L" => new BigInteger(PythonLocaleFlag),
                 "DEBUG" => new BigInteger(RegexDebugFlag),
                 "Pattern" => PyString.FromString("re.Pattern"),
                 "Match" => PyString.FromString("re.Match"),
@@ -694,8 +694,23 @@ internal sealed partial class LythonRuntime
             return value is not null;
         }
 
-        private const int RegexDebugFlag = 1 << 20;
+        private const int PythonIgnoreCaseFlag = 2;
+        private const int PythonLocaleFlag = 4;
+        private const int PythonMultilineFlag = 8;
+        private const int PythonDotAllFlag = 16;
         private const int PythonUnicodeFlag = 32;
+        private const int PythonVerboseFlag = 64;
+        private const int RegexDebugFlag = 128;
+        private const int PythonAsciiFlag = 256;
+        private const int SupportedPythonFlags =
+            PythonIgnoreCaseFlag |
+            PythonLocaleFlag |
+            PythonMultilineFlag |
+            PythonDotAllFlag |
+            PythonUnicodeFlag |
+            PythonVerboseFlag |
+            RegexDebugFlag |
+            PythonAsciiFlag;
 
         private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
         {
@@ -844,8 +859,8 @@ internal sealed partial class LythonRuntime
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
                 var (captureSlotCount, namedGroups) = SummarizePatternGroups(pattern.AsString());
-                var reportedFlags = (int)options;
-                if ((options & PythonReCompileOptions.Ascii) == 0)
+                var reportedFlags = ToPythonFlags(options) | ParseLeadingInlinePythonFlags(pattern.AsString());
+                if ((reportedFlags & PythonAsciiFlag) == 0)
                 {
                     reportedFlags |= PythonUnicodeFlag;
                 }
@@ -1013,18 +1028,70 @@ internal sealed partial class LythonRuntime
             }
 
             var flagBits = (int)flags;
+            if ((flagBits & ~SupportedPythonFlags) != 0)
+            {
+                throw new LythonRuntimeException("ValueError", "Unsupported regular expression flags.", span);
+            }
+
             if ((flagBits & RegexDebugFlag) != 0)
             {
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
             }
 
-            var options = (PythonReCompileOptions)(flagBits & ~PythonUnicodeFlag);
-            if ((options & PythonReCompileOptions.Locale) != 0)
+            if ((flagBits & PythonLocaleFlag) != 0)
             {
                 throw new LythonRuntimeException("NotImplementedError", "re.LOCALE is not supported by Lython's Unicode-only regex runtime.", span);
             }
 
+            if ((flagBits & PythonAsciiFlag) != 0 && (flagBits & PythonUnicodeFlag) != 0)
+            {
+                throw new LythonRuntimeException("ValueError", "ASCII and UNICODE flags are incompatible.", span);
+            }
+
+            var options = PythonReCompileOptions.None;
+            if ((flagBits & PythonIgnoreCaseFlag) != 0) options |= PythonReCompileOptions.IgnoreCase;
+            if ((flagBits & PythonMultilineFlag) != 0) options |= PythonReCompileOptions.Multiline;
+            if ((flagBits & PythonDotAllFlag) != 0) options |= PythonReCompileOptions.DotAll;
+            if ((flagBits & PythonVerboseFlag) != 0) options |= PythonReCompileOptions.Verbose;
+            if ((flagBits & PythonAsciiFlag) != 0) options |= PythonReCompileOptions.Ascii;
             return options;
+        }
+
+        private static int ToPythonFlags(PythonReCompileOptions options)
+        {
+            var flags = 0;
+            if ((options & PythonReCompileOptions.IgnoreCase) != 0) flags |= PythonIgnoreCaseFlag;
+            if ((options & PythonReCompileOptions.Multiline) != 0) flags |= PythonMultilineFlag;
+            if ((options & PythonReCompileOptions.DotAll) != 0) flags |= PythonDotAllFlag;
+            if ((options & PythonReCompileOptions.Verbose) != 0) flags |= PythonVerboseFlag;
+            if ((options & PythonReCompileOptions.Ascii) != 0) flags |= PythonAsciiFlag;
+            return flags;
+        }
+
+        private static int ParseLeadingInlinePythonFlags(string pattern)
+        {
+            if (!pattern.StartsWith("(?", StringComparison.Ordinal))
+            {
+                return 0;
+            }
+
+            var flags = 0;
+            for (var index = 2; index < pattern.Length; index++)
+            {
+                switch (pattern[index])
+                {
+                    case ')': return flags;
+                    case 'a': flags |= PythonAsciiFlag; break;
+                    case 'i': flags |= PythonIgnoreCaseFlag; break;
+                    case 'm': flags |= PythonMultilineFlag; break;
+                    case 's': flags |= PythonDotAllFlag; break;
+                    case 'u': flags |= PythonUnicodeFlag; break;
+                    case 'x': flags |= PythonVerboseFlag; break;
+                    default: return 0;
+                }
+            }
+
+            return 0;
         }
 
         internal static int ParseOptionalInt(object value, string name, string signature, LythonSourceSpan span)

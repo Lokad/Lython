@@ -27,7 +27,10 @@ public sealed class RegexModuleFunctionTests
     [InlineData("re.escape(\"a+b?(é)\")", "a\\+b\\?\\(é\\)")]
     [InlineData("re.escape(\"a b#c&d\")", "a\\ b\\#c\\&d")]
     [InlineData("int(re.UNICODE)", "32")]
+    [InlineData("str((int(re.I), int(re.M), int(re.S), int(re.X), int(re.A), int(re.U), int(re.DEBUG)))", "(2, 8, 16, 64, 256, 32, 128)")]
     [InlineData("re.compile(\"x\").flags", "32")]
+    [InlineData("re.compile(\"(?i)x\").flags", "34")]
+    [InlineData("str(re.findall(r\"\\w+\", \"é_1\", re.A))", "['_1']")]
     [InlineData("str(re.search(\"^a\", \"x\\na\", re.MULTILINE).start())", "2")]
     [InlineData("str(re.fullmatch(\"a.b\", \"a\\nb\", re.DOTALL).span())", "(0, 3)")]
     public void RegexModule_ModuleFunctions_HaveDirectCoverage(string expression, string expected)
