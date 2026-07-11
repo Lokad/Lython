@@ -261,24 +261,22 @@ internal sealed partial class LythonRuntime
 
         private static object Floor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "math.floor(x) expects one numeric argument.", span);
             }
 
-            return ExpectFloorLike(arguments[0], "math.floor", span, static x => Math.Floor(x));
+            return ExpectFloorLike(arguments[0], "math.floor", "__floor__", span, context, static x => Math.Floor(x));
         }
 
         private static object Ceil(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "math.ceil(x) expects one numeric argument.", span);
             }
 
-            return ExpectFloorLike(arguments[0], "math.ceil", span, static x => Math.Ceiling(x));
+            return ExpectFloorLike(arguments[0], "math.ceil", "__ceil__", span, context, static x => Math.Ceiling(x));
         }
 
         private static object Fabs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -286,13 +284,12 @@ internal sealed partial class LythonRuntime
 
         private static object Trunc(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "math.trunc(x) expects one numeric argument.", span);
             }
 
-            return ExpectFloorLike(arguments[0], "math.trunc", span, static x => Math.Truncate(x));
+            return ExpectFloorLike(arguments[0], "math.trunc", "__trunc__", span, context, static x => Math.Truncate(x));
         }
 
         private static object Degrees(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -600,8 +597,21 @@ internal sealed partial class LythonRuntime
             return PyNumberOps.Multiply(left, right);
         }
 
-        private static object ExpectFloorLike(object value, string owner, LythonSourceSpan span, Func<double, double> func)
+        private static object ExpectFloorLike(
+            object value,
+            string owner,
+            string specialMethod,
+            LythonSourceSpan span,
+            ExecutionContext context,
+            Func<double, double> func)
         {
+            if (value is PyInstance instance &&
+                instance.TryGetAttribute(specialMethod, context, span, out var member) &&
+                member is ICallable callable)
+            {
+                return callable.Invoke([], span, context);
+            }
+
             if (!PyNumberOps.TryAsNumber(value, out var number))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);

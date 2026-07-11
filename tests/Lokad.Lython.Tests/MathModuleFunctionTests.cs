@@ -5,6 +5,34 @@ namespace Lokad.Lython.Tests;
 public sealed class MathModuleFunctionTests
 {
     [Fact]
+    public void MathModule_DispatchesRoundingAndIndexProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+import math
+
+class Rounded:
+    def __ceil__(self): return 7
+    def __floor__(self): return 6
+    def __trunc__(self): return 5
+
+class Indexed:
+    def __index__(self): return 5
+
+rounded = Rounded()
+indexed = Indexed()
+print(math.ceil(rounded), math.floor(rounded), math.trunc(rounded))
+print(math.factorial(indexed), math.isqrt(indexed))
+print(math.comb(indexed, 2), math.perm(indexed, 2))
+print(math.gcd(indexed, 10), math.lcm(indexed, 10))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("7 6 5\n120 2\n10 20\n5 10\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void SensitiveMathFunctionsPreserveSmallInputsAndSpecialValues()
     {
         var result = new LythonEngine().Run(

@@ -23,8 +23,7 @@ internal sealed partial class LythonRuntime
 
         private static object Factorial(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var n = ExpectNonNegativeInteger(arguments[0], "math.factorial", span);
+            var n = ExpectNonNegativeInteger(arguments[0], "math.factorial", span, context);
             var count = ExpectBoundedLoopCount(n, "math.factorial", span);
             var result = BigInteger.One;
             for (var i = 2; i <= count; i++)
@@ -37,11 +36,10 @@ internal sealed partial class LythonRuntime
 
         private static object Gcd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             var result = BigInteger.Zero;
             foreach (var argument in arguments)
             {
-                result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, "math.gcd", span)));
+                result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, "math.gcd", span, context)));
             }
 
             return result;
@@ -49,11 +47,10 @@ internal sealed partial class LythonRuntime
 
         private static object Lcm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             var result = BigInteger.One;
             foreach (var argument in arguments)
             {
-                var value = BigInteger.Abs(ExpectInteger(argument, "math.lcm", span));
+                var value = BigInteger.Abs(ExpectInteger(argument, "math.lcm", span, context));
                 if (result.IsZero || value.IsZero)
                 {
                     result = BigInteger.Zero;
@@ -68,9 +65,8 @@ internal sealed partial class LythonRuntime
 
         private static object Comb(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var n = ExpectNonNegativeInteger(arguments[0], "math.comb", span);
-            var k = ExpectNonNegativeInteger(arguments[1], "math.comb", span);
+            var n = ExpectNonNegativeInteger(arguments[0], "math.comb", span, context);
+            var k = ExpectNonNegativeInteger(arguments[1], "math.comb", span, context);
             if (k > n)
             {
                 return BigInteger.Zero;
@@ -89,10 +85,9 @@ internal sealed partial class LythonRuntime
 
         private static object Perm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var n = ExpectNonNegativeInteger(arguments[0], "math.perm", span);
+            var n = ExpectNonNegativeInteger(arguments[0], "math.perm", span, context);
             var k = arguments.Length >= 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
-                ? ExpectNonNegativeInteger(arguments[1], "math.perm", span)
+                ? ExpectNonNegativeInteger(arguments[1], "math.perm", span, context)
                 : n;
             if (k > n)
             {
@@ -111,8 +106,7 @@ internal sealed partial class LythonRuntime
 
         private static object ISqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            return IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "math.isqrt", span));
+            return IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "math.isqrt", span, context));
         }
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -170,7 +164,7 @@ internal sealed partial class LythonRuntime
         private static object Ldexp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = ExpectReal(arguments[0], "math.ldexp", span);
-            var exponent = ExpectInteger(arguments[1], "math.ldexp", span);
+            var exponent = ExpectInteger(arguments[1], "math.ldexp", span, context);
             if (double.IsNaN(value) || double.IsInfinity(value) || value == 0.0)
             {
                 return value;
@@ -234,7 +228,7 @@ internal sealed partial class LythonRuntime
             var x = ExpectReal(arguments[0], "math.nextafter", span);
             var y = ExpectReal(arguments[1], "math.nextafter", span);
             var steps = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
-                ? ExpectInteger(arguments[2], "math.nextafter", span)
+                ? ExpectInteger(arguments[2], "math.nextafter", span, context)
                 : BigInteger.One;
             if (steps < BigInteger.Zero)
             {
@@ -400,9 +394,10 @@ internal sealed partial class LythonRuntime
             return RuntimeValue(total);
         }
 
-        private static BigInteger ExpectInteger(object value, string owner, LythonSourceSpan span)
+        private static BigInteger ExpectInteger(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            if (!PyNumberOps.TryAsInteger(value, out var integer))
+            var converted = CoerceIndexProtocol(value, context, span);
+            if (!PyNumberOps.TryAsInteger(converted, out var integer))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects integer arguments.", span);
             }
@@ -410,9 +405,9 @@ internal sealed partial class LythonRuntime
             return integer;
         }
 
-        private static BigInteger ExpectNonNegativeInteger(object value, string owner, LythonSourceSpan span)
+        private static BigInteger ExpectNonNegativeInteger(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            var integer = ExpectInteger(value, owner, span);
+            var integer = ExpectInteger(value, owner, span, context);
             if (integer < BigInteger.Zero)
             {
                 throw new LythonRuntimeException("ValueError", $"{owner} expects non-negative integer arguments.", span);

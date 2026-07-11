@@ -608,7 +608,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 03 — Centralize and shape Lython version metadata.** Derive every version view from the declared target and give `version_info` its named fields. Addresses LY-MOD-021 and LY-MOD-042.
 - [x] **Commit 04 — Correct the public regex flag map.** Separate `ASCII` from `UNICODE`, translate CPython bits at the backend boundary, and enforce ASCII character-class behavior. Addresses LY-MOD-019.
 - [x] **Commit 05 — Complete operator protocol dispatch.** Honor `__length_hint__` and `__index__` with CPython validation and fallback semantics. Addresses LY-MOD-017 and LY-MOD-036.
-- [ ] **Commit 06 — Dispatch math conversion protocols.** Route rounding and integer-only helpers through the relevant Python special methods without regressing builtin numeric fast paths. Addresses LY-MOD-035.
+- [x] **Commit 06 — Dispatch math conversion protocols.** Route rounding and integer-only helpers through the relevant Python special methods without regressing builtin numeric fast paths. Addresses LY-MOD-035.
 - [ ] **Commit 07 — Complete argparse token disambiguation.** Consume `--` as the option terminator and recognize unmatched negative numbers as positional values. Addresses LY-MOD-001 and LY-MOD-024.
 - [ ] **Commit 08 — Complete open-ended `itertools.islice`.** Represent a `None` stop without narrowing it to a machine integer and test both supported signatures. Addresses LY-MOD-014.
 - [ ] **Commit 09 — Enforce random population protocols.** Require sequence/indexable populations for `choice` and `sample` while retaining deterministic state behavior. Addresses LY-MOD-018.
