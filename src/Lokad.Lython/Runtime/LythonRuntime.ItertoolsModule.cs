@@ -168,20 +168,26 @@ internal sealed partial class LythonRuntime
         }
 
         long start;
-        long stop;
+        long? stop;
         long step;
         if (positional.Length == 2)
         {
             start = 0;
-            stop = ExpectNonNegativeLong(positional[1], "itertools.islice() stop must be a non-negative integer.", span);
+            stop = ReferenceEquals(positional[1], PyNone.Instance)
+                ? null
+                : ExpectNonNegativeLong(positional[1], "itertools.islice() stop must be a non-negative integer or None.", span);
             step = 1;
         }
         else
         {
-            start = ExpectNonNegativeLong(positional[1], "itertools.islice() start must be a non-negative integer.", span);
-            stop = ExpectNonNegativeLong(positional[2], "itertools.islice() stop must be a non-negative integer.", span);
-            step = positional.Length == 4
-                ? ExpectPositiveLong(positional[3], "itertools.islice() step must be a positive integer.", span)
+            start = ReferenceEquals(positional[1], PyNone.Instance)
+                ? 0
+                : ExpectNonNegativeLong(positional[1], "itertools.islice() start must be a non-negative integer or None.", span);
+            stop = ReferenceEquals(positional[2], PyNone.Instance)
+                ? null
+                : ExpectNonNegativeLong(positional[2], "itertools.islice() stop must be a non-negative integer or None.", span);
+            step = positional.Length == 4 && !ReferenceEquals(positional[3], PyNone.Instance)
+                ? ExpectPositiveLong(positional[3], "itertools.islice() step must be a positive integer or None.", span)
                 : 1;
         }
 

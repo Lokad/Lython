@@ -60,6 +60,23 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ItertoolsModule_IsliceAcceptsOpenEndedNoneBounds()
+    {
+        var result = new LythonEngine().Run(
+            """
+import itertools
+
+print(list(itertools.islice("abc", None)))
+print(list(itertools.islice("abcdef", 1, None, 2)))
+print(list(itertools.islice("abcdef", None, None, None)))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['a', 'b', 'c']\n['b', 'd', 'f']\n['a', 'b', 'c', 'd', 'e', 'f']\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void ItertoolsModule_ExpandedFiniteIterators_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

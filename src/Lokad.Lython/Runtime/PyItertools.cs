@@ -165,12 +165,12 @@ internal sealed class PyIsliceIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
     private readonly long _start;
-    private readonly long _stop;
+    private readonly long? _stop;
     private readonly long _step;
     private long _position;
     private bool _skippedStart;
 
-    public PyIsliceIterator(object source, long start, long stop, long step, LythonSourceSpan span)
+    public PyIsliceIterator(object source, long start, long? stop, long step, LythonSourceSpan span)
     {
         _source = PyIteration.Cursor.Create(source, span);
         _start = start;
@@ -186,7 +186,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
             return false;
         }
 
-        if (_position >= _stop)
+        if (_stop is { } stop && _position >= stop)
         {
             value = PyNone.Instance;
             return false;
@@ -202,7 +202,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
         _position++;
 
         var skip = _step - 1;
-        for (var i = 0L; i < skip && _position < _stop && _source.TryMoveNext(out _); i++)
+        for (var i = 0L; i < skip && (_stop is not { } stopLimit || _position < stopLimit) && _source.TryMoveNext(out _); i++)
         {
             _position++;
         }
@@ -212,7 +212,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
 
     public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
     {
-        if (!await SkipStartAsync().ConfigureAwait(false) || _position >= _stop)
+        if (!await SkipStartAsync().ConfigureAwait(false) || _stop is { } stop && _position >= stop)
         {
             return (false, PyNone.Instance);
         }
@@ -226,7 +226,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
         _position++;
 
         var skip = _step - 1;
-        for (var i = 0L; i < skip && _position < _stop; i++)
+        for (var i = 0L; i < skip && (_stop is not { } stopLimit || _position < stopLimit); i++)
         {
             var (skipped, _) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!skipped)
