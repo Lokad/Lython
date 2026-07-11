@@ -36,6 +36,35 @@ __lython_file.close()
     }
 
     [Fact]
+    public void StatisticsModeHelpers_AcceptGenericHashableObservations()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import statistics
+
+values = [
+    statistics.multimode("abac"),
+    statistics.mode("abac"),
+    statistics.multimode([("x", 1), ("y", 2), ("x", 1)]),
+    statistics.multimode([]),
+]
+try:
+    statistics.mode([[1], [1]])
+except TypeError as error:
+    values.append(error.type)
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("['a']|a|[('x', 1)]|[]|TypeError", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void StatisticsModule_ExpandedFunctions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

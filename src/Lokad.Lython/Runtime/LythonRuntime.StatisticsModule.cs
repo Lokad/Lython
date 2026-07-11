@@ -101,14 +101,14 @@ internal sealed partial class LythonRuntime
 
         private static object Mode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericObjects(arguments, "statistics.mode", span, context);
-            return GetModeCounts(values).First().Key;
+            var values = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
+            return GetModeCounts(values, span).First().Key;
         }
 
         private static object MultiMode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericObjects(arguments, "statistics.multimode", span, context);
-            var counts = GetModeCounts(values);
+            var values = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
+            var counts = GetModeCounts(values, span);
             var modes = new object[counts.Count];
             for (var i = 0; i < counts.Count; i++)
             {
@@ -394,20 +394,27 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("NotImplementedError", qualifiedName + " is unsupported by Lython.", span);
                 });
 
-        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values)
+        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, LythonSourceSpan span)
         {
             var counts = new Dictionary<object, int>(PyValueComparer.Instance);
             var order = new List<object>();
             foreach (var value in values)
             {
-                if (counts.TryGetValue(value, out var count))
+                try
                 {
-                    counts[value] = count + 1;
-                    continue;
-                }
+                    if (counts.TryGetValue(value, out var count))
+                    {
+                        counts[value] = count + 1;
+                        continue;
+                    }
 
-                counts[value] = 1;
-                order.Add(value);
+                    counts[value] = 1;
+                    order.Add(value);
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new LythonRuntimeException("TypeError", "unhashable type", span);
+                }
             }
 
             var maxCount = 0;
@@ -427,6 +434,32 @@ internal sealed partial class LythonRuntime
             }
 
             return result;
+        }
+
+        private static List<object> GetModeValues(
+            object[] arguments,
+            string owner,
+            bool allowEmpty,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
+            }
+
+            var values = new List<object>();
+            foreach (var value in ToSequence(arguments[0], span, context))
+            {
+                values.Add(value);
+            }
+
+            if (!allowEmpty && values.Count == 0)
+            {
+                throw new LythonRuntimeException("StatisticsError", $"{owner}(data) requires at least one data point.", span);
+            }
+
+            return values;
         }
 
         private static (List<double> X, List<double> Y) GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span)
