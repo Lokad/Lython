@@ -14,8 +14,10 @@ public sealed class SysModuleFunctionTests
 import sys
 
 parts = [
-    str(sys.version.startswith("3.11.0")),
+    str(sys.version.startswith("3.13.0")),
     str(sys.version_info[0]) + "." + str(sys.version_info[1]) + "." + str(sys.version_info[2]),
+    str(sys.version_info.major) + "." + str(sys.version_info.minor),
+    sys.version_info.releaselevel + ":" + str(sys.version_info.serial),
     str(sys.hexversion > 0),
     sys.implementation.name,
     sys.implementation.cache_tag,
@@ -36,7 +38,7 @@ __lython_file.close()
             new LythonRunOptions { SourcePath = "/repo/main.py" });
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("True|3.11.0|True|lython|lython-3.11|lython|True|little|/repo|/repo|lython|utf-8|/repo", host.ReadText("/out.txt"));
+        Assert.Equal("True|3.13.0|3.13|final:0|True|lython|lython-3.13|lython|True|little|/repo|/repo|lython|utf-8|/repo", host.ReadText("/out.txt"));
     }
 
     [Fact]

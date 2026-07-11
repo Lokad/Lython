@@ -1645,10 +1645,9 @@ internal sealed partial class LythonRuntime
 
     private sealed class SysModule : PyModule
     {
-        private const int VersionMajor = 3;
-        private const int VersionMinor = 11;
-        private const int VersionMicro = 0;
-        private const int HexVersion = (VersionMajor << 24) | (VersionMinor << 16) | (VersionMicro << 8) | 0xF0;
+        private static readonly PyNamedTupleType VersionInfoType = new(
+            "sys.version_info",
+            ["major", "minor", "micro", "releaselevel", "serial"]);
 
         private readonly ExecutionContext _context;
         private readonly PyList _argv;
@@ -1680,10 +1679,10 @@ internal sealed partial class LythonRuntime
                 "stdin" => _stdin,
                 "stdout" => _stdout,
                 "stderr" => _stderr,
-                "version" => PyString.FromString("3.11.0 (Lython)"),
+                "version" => PyString.FromString(LythonPythonVersion.DisplayVersion),
                 "version_info" => VersionInfo(_context),
-                "hexversion" => new BigInteger(HexVersion),
-                "implementation" => new SysImplementationObject(VersionInfo(_context), new BigInteger(HexVersion)),
+                "hexversion" => new BigInteger(LythonPythonVersion.HexVersion),
+                "implementation" => new SysImplementationObject(VersionInfo(_context), new BigInteger(LythonPythonVersion.HexVersion)),
                 "platform" => PyString.FromString("lython"),
                 "maxsize" => new BigInteger(long.MaxValue),
                 "byteorder" => PyString.FromString("little"),
@@ -1721,16 +1720,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, payload: value);
         }
 
-        private static PyTuple VersionInfo(ExecutionContext context)
-            => new(
+        private static PyNamedTupleObject VersionInfo(ExecutionContext context)
+            => VersionInfoType.CreateFromValues(
                 [
-                    new BigInteger(VersionMajor),
-                    new BigInteger(VersionMinor),
-                    new BigInteger(VersionMicro),
-                    PyString.FromString("final"),
-                    BigInteger.Zero
+                    new BigInteger(LythonPythonVersion.Major),
+                    new BigInteger(LythonPythonVersion.Minor),
+                    new BigInteger(LythonPythonVersion.Micro),
+                    PyString.FromString(LythonPythonVersion.ReleaseLevel),
+                    new BigInteger(LythonPythonVersion.Serial)
                 ],
-                context.MemoryGovernor);
+                span: null!);
 
         private static object GetDefaultEncoding(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -1841,10 +1840,10 @@ internal sealed partial class LythonRuntime
 
     private sealed class SysImplementationObject : IPyDynamicAttributes, IPyRenderableValue
     {
-        private readonly PyTuple _version;
+        private readonly PyNamedTupleObject _version;
         private readonly BigInteger _hexversion;
 
-        public SysImplementationObject(PyTuple version, BigInteger hexversion)
+        public SysImplementationObject(PyNamedTupleObject version, BigInteger hexversion)
         {
             _version = version;
             _hexversion = hexversion;
@@ -1857,7 +1856,7 @@ internal sealed partial class LythonRuntime
                 "name" => PyString.FromString("lython"),
                 "version" => _version,
                 "hexversion" => _hexversion,
-                "cache_tag" => PyString.FromString("lython-3.11"),
+                "cache_tag" => PyString.FromString(LythonPythonVersion.CacheTag),
                 _ => null!
             };
 
@@ -1874,7 +1873,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("namespace(name='lython', cache_tag='lython-3.11')");
+            return PyString.FromString($"namespace(name='lython', cache_tag='{LythonPythonVersion.CacheTag}')");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

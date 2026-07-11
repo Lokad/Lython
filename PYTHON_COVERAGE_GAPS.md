@@ -605,7 +605,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 
 - [x] **Commit 01 — Bound JSON serialization recursion.** Keep recursion accounting active when `check_circular=False` so cycles fail inside Lython rather than overflowing the CLR stack. Addresses LY-MOD-034.
 - [x] **Commit 02 — Contain empty pathlib inputs.** Represent empty/no-component paths as `.` and translate every path-construction failure through the Python failure boundary. Addresses LY-MOD-037.
-- [ ] **Commit 03 — Centralize and shape Lython version metadata.** Derive every version view from the declared target and give `version_info` its named fields. Addresses LY-MOD-021 and LY-MOD-042.
+- [x] **Commit 03 — Centralize and shape Lython version metadata.** Derive every version view from the declared target and give `version_info` its named fields. Addresses LY-MOD-021 and LY-MOD-042.
 - [ ] **Commit 04 — Correct the public regex flag map.** Separate `ASCII` from `UNICODE`, translate CPython bits at the backend boundary, and enforce ASCII character-class behavior. Addresses LY-MOD-019.
 - [ ] **Commit 05 — Complete operator protocol dispatch.** Honor `__length_hint__` and `__index__` with CPython validation and fallback semantics. Addresses LY-MOD-017 and LY-MOD-036.
 - [ ] **Commit 06 — Dispatch math conversion protocols.** Route rounding and integer-only helpers through the relevant Python special methods without regressing builtin numeric fast paths. Addresses LY-MOD-035.
