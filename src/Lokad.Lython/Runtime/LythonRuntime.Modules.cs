@@ -7469,6 +7469,7 @@ internal sealed partial class LythonRuntime
         private static PyString RenderCsvRow(CsvCell[] row, CsvOptions options, LythonSourceSpan span)
         {
             var builder = new Utf8ValueBuilder();
+            var singleEmptyField = row.Length == 1 && row[0].Text.Length == 0;
             for (var i = 0; i < row.Length; i++)
             {
                 if (i != 0)
@@ -7476,19 +7477,20 @@ internal sealed partial class LythonRuntime
                     builder.Append(options.Delimiter);
                 }
 
-                builder.Append(EscapeCsvField(row[i], options, span));
+                builder.Append(EscapeCsvField(row[i], options, span, forceQuotes: singleEmptyField));
             }
 
             return builder.ToPyString();
         }
 
-        private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span)
+        private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span, bool forceQuotes = false)
         {
             var field = cell.Text;
             var fieldBytes = field.Utf8Bytes.Span;
             var delimiterBytes = options.Delimiter.Utf8Bytes.Span;
             var quoteBytes = options.QuoteChar is null ? ReadOnlySpan<byte>.Empty : options.QuoteChar.Utf8Bytes.Span;
             var needsQuotes =
+                forceQuotes ||
                 options.Quoting == CsvQuoteAll ||
                 options.Quoting == CsvQuoteNonNumeric && !cell.IsNumeric ||
                 options.Quoting == CsvQuoteMinimal && (
@@ -7499,6 +7501,11 @@ internal sealed partial class LythonRuntime
 
             if (options.Quoting == CsvQuoteNone)
             {
+                if (forceQuotes)
+                {
+                    throw CsvError("single empty field record must be quoted", span);
+                }
+
                 return EscapeUnquotedField(field, options, span);
             }
 

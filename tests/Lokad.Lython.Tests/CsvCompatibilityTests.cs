@@ -30,6 +30,30 @@ __lython_file.close()
     }
 
     [Fact]
+    public void CsvWriters_QuoteSingleEmptyFieldsAndReportExactCounts()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import csv
+
+memory = csv.writer(lineterminator="\n")
+memory_count = memory.writerow([""])
+with open("/empty.csv", "w", newline="") as handle:
+    file_count = csv.writer(handle, lineterminator="\n").writerow([""])
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(memory_count) + "|" + repr(memory.getvalue()) + "|" + str(file_count))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("3|'\"\"'|3", host.ReadText("/out.txt"));
+        Assert.Equal("\"\"\n", host.ReadText("/empty.csv"));
+    }
+
+    [Fact]
     public void DictReader_HandlesHeadersExplicitFieldnamesRestValuesAndIteration()
     {
         var host = new MockLythonHost();
