@@ -762,7 +762,19 @@ internal sealed partial class LythonRuntime
         var current = GetPath(arguments[0], "os.path.join", span);
         for (var i = 1; i < arguments.Length; i++)
         {
-            current = PathOps.Join(current, GetPath(arguments[i], "os.path.join", span));
+            var next = GetPath(arguments[i], "os.path.join", span);
+            if (next.StartsWith("/", StringComparison.Ordinal) || current.Length == 0)
+            {
+                current = next;
+            }
+            else if (current.EndsWith("/", StringComparison.Ordinal))
+            {
+                current += next;
+            }
+            else
+            {
+                current += "/" + next;
+            }
         }
 
         return PyString.FromString(current);
@@ -1230,30 +1242,20 @@ internal sealed partial class LythonRuntime
             return (string.Empty, string.Empty);
         }
 
-        if (path == "/")
-        {
-            return ("/", string.Empty);
-        }
-
-        var end = path.Length;
-        while (end > 1 && path[end - 1] == '/')
-        {
-            end--;
-        }
-
-        var trimmed = path[..end];
-        var slash = trimmed.LastIndexOf('/');
+        var slash = path.LastIndexOf('/') + 1;
         if (slash < 0)
         {
-            return (string.Empty, trimmed);
+            return (string.Empty, path);
         }
 
-        if (slash == 0)
+        var head = path[..slash];
+        var tail = path[slash..];
+        if (head.Length != 0 && head.Any(character => character != '/'))
         {
-            return ("/", trimmed[1..]);
+            head = head.TrimEnd('/');
         }
 
-        return (trimmed[..slash], trimmed[(slash + 1)..]);
+        return (head, tail);
     }
 
     private static (string Root, string Extension) SplitExt(string path)

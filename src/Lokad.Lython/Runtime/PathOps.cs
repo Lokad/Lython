@@ -101,7 +101,7 @@ internal static class PathOps
         var normalized = Normalize(path);
         if (normalized == "/" || normalized == ".")
         {
-            return normalized;
+            return string.Empty;
         }
 
         var trimmed = normalized.TrimEnd('/');
@@ -113,14 +113,14 @@ internal static class PathOps
     {
         var name = BaseName(path);
         var dot = name.LastIndexOf('.');
-        return dot <= 0 ? string.Empty : name[dot..];
+        return dot <= 0 || dot == name.Length - 1 ? string.Empty : name[dot..];
     }
 
     public static string Stem(string path)
     {
         var name = BaseName(path);
         var dot = name.LastIndexOf('.');
-        return dot <= 0 ? name : name[..dot];
+        return dot <= 0 || dot == name.Length - 1 ? name : name[..dot];
     }
 
     public static string WithSuffix(string path, string suffix)
@@ -162,7 +162,36 @@ internal static class PathOps
     public static bool IsAbsolute(string path) => Normalize(path).StartsWith("/", StringComparison.Ordinal);
 
     public static bool Match(string path, string pattern)
-        => LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(BaseName(path)), PyString.FromString(pattern));
+    {
+        var normalized = Normalize(path);
+        var pathIsAbsolute = normalized.StartsWith("/", StringComparison.Ordinal);
+        var patternIsAbsolute = pattern.StartsWith("/", StringComparison.Ordinal);
+        if (patternIsAbsolute != pathIsAbsolute && patternIsAbsolute)
+        {
+            return false;
+        }
+
+        var pathParts = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var patternParts = pattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (patternParts.Length == 0 || patternParts.Length > pathParts.Length ||
+            (patternIsAbsolute && patternParts.Length != pathParts.Length))
+        {
+            return false;
+        }
+
+        var offset = pathParts.Length - patternParts.Length;
+        for (var i = 0; i < patternParts.Length; i++)
+        {
+            if (!LythonRuntime.FnMatchModule.MatchSimple(
+                    PyString.FromString(pathParts[offset + i]),
+                    PyString.FromString(patternParts[i])))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public static string RelativeTo(string path, string parent)
     {
@@ -187,6 +216,11 @@ internal static class PathOps
     {
         var values = governor is null ? new PyList() : new PyList([], governor, span);
         var current = Parent(path);
+        if (current.Equals(path))
+        {
+            return values;
+        }
+
         while (true)
         {
             values.Add(new PyPath(current));

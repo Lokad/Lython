@@ -604,6 +604,36 @@ __lython_file.close()
         Assert.Equal("True|True|/repo/docs/nested/intro.txt", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void PosixPathLexing_PreservesPythonEdgeComponents()
+    {
+        var host = new MockLythonHost("/repo");
+
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path
+import os
+
+values = []
+for path in [Path("."), Path("/"), Path("name.")]:
+    values.append(repr(path.name))
+    values.append(repr(path.stem))
+    values.append(repr(path.suffix))
+    values.append(str(len(path.parents)))
+values.append(str(Path("a/b.py").match("a/*.py")))
+values.append(repr(os.path.join("", "a")))
+values.append(repr(os.path.join("a", "")))
+values.append(repr(os.path.split("a/b/")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("''|''|''|0|''|''|''|0|'name.'|'name.'|''|1|True|'a'|'a/'|('a/b', '')", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData(
         """
