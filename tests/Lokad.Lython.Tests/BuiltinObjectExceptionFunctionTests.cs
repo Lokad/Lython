@@ -46,6 +46,48 @@ return str(bool(Empty())) + "|" + str(bool(Sized())) + "|" + str(len(Sized())) +
         Assert.Equal("False|False|0|True|False|4", result.ReturnValue);
     }
 
+    [Fact]
+    public void InstancesDispatchIterationContainmentAndSubscriptionProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+class Counter:
+    def __init__(self):
+        self.value = 0
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.value == 3:
+            raise StopIteration()
+        value = self.value
+        self.value += 1
+        return value
+
+class Box:
+    def __init__(self):
+        self.value = 0
+    def __contains__(self, value):
+        return value == 3
+    def __getitem__(self, key):
+        return key + 10 + self.value
+    def __setitem__(self, key, value):
+        self.value = key + value
+    def __delitem__(self, key):
+        self.value = -key
+
+box = Box()
+box[2] = 3
+assigned = box[2]
+del box[4]
+return str(list(Counter())) + "|" + str(3 in box) + "|" + str(assigned) + "|" + str(box[2])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[0, 1, 2]|True|17|8", result.ReturnValue);
+    }
+
+
 
     [Fact]
     public void ObjectHelpersAndExceptionCategories_MatchPythonShapedCoreBehavior()

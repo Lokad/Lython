@@ -548,7 +548,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.GetIter:
                             {
                                 var iterable = Pop(stack, instruction.Span);
-                                stack.Push(ToSequence(iterable, instruction.Span).GetEnumerator());
+                                stack.Push(ToSequence(iterable, instruction.Span, context).GetEnumerator());
                                 break;
                             }
 
@@ -1244,6 +1244,11 @@ internal sealed partial class LythonRuntime
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
         }
 
+        if (target is PyInstance instance)
+        {
+            return GetUserItem(instance, index, context, span);
+        }
+
         return PyIndexing.ReadIndex(target, index, span);
     }
 
@@ -1412,8 +1417,8 @@ internal sealed partial class LythonRuntime
             ExecutableBinaryOperator.GreaterEqual => CompareRelational(left, right, span, static value => value >= 0),
             ExecutableBinaryOperator.Is => ReferenceEquals(left, right),
             ExecutableBinaryOperator.IsNot => !ReferenceEquals(left, right),
-            ExecutableBinaryOperator.In => Contains(right, left, span),
-            ExecutableBinaryOperator.NotIn => !Contains(right, left, span),
+            ExecutableBinaryOperator.In => Contains(right, left, context, span),
+            ExecutableBinaryOperator.NotIn => !Contains(right, left, context, span),
             ExecutableBinaryOperator.Equal => AreEqual(left, right),
             ExecutableBinaryOperator.NotEqual => !AreEqual(left, right),
             _ => throw new NotSupportedException($"Executable interpreter does not yet support binary operator {op}."),

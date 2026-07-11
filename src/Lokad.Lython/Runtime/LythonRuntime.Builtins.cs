@@ -1097,7 +1097,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var result = new PyList(ToSequence(arguments[0], span), context.MemoryGovernor, span);
+        var result = new PyList(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }
@@ -1133,7 +1133,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        var result = new PyTuple(ToSequence(arguments[0], span), context.MemoryGovernor, span);
+        var result = new PyTuple(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }
@@ -1178,9 +1178,9 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in ToSequence(arguments[0], span))
+        foreach (var pair in ToSequence(arguments[0], span, context))
         {
-            using var enumerator = ToSequence(pair, span).GetEnumerator();
+            using var enumerator = ToSequence(pair, span, context).GetEnumerator();
             if (!enumerator.MoveNext())
             {
                 throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects key-value pairs.", span);
@@ -1254,7 +1254,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PySet(context.MemoryGovernor, span);
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
             context.ObserveCollectionCount(result.Count, span);
@@ -1797,7 +1797,7 @@ internal sealed partial class LythonRuntime
         }
 
         var values = new List<object>();
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             values.Add(item);
         }
@@ -1921,7 +1921,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
         }
 
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (IsTruthy(item))
             {
@@ -1959,7 +1959,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);
         }
 
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (!IsTruthy(item))
             {
@@ -2202,7 +2202,7 @@ internal sealed partial class LythonRuntime
 
         var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
         EnsureSummableValue(total, span);
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             EnsureSummableValue(item, span);
             total = EvaluateAdd(total, item, context, span);
@@ -2382,7 +2382,7 @@ internal sealed partial class LythonRuntime
                 ? BigInteger.Zero
                 : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
 
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             result.Add(CreateTuple(2, i => i == 0 ? index : item, context, span));
             context.ObserveCollectionCount(result.Count, span);
@@ -2428,7 +2428,7 @@ internal sealed partial class LythonRuntime
         var enumerators = new System.Collections.IEnumerator[arguments.Length];
         for (var i = 0; i < arguments.Length; i++)
         {
-            enumerators[i] = ToSequence(arguments[i], span).GetEnumerator();
+            enumerators[i] = ToSequence(arguments[i], span, context).GetEnumerator();
         }
 
         try

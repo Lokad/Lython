@@ -608,6 +608,14 @@ internal sealed partial class LythonRuntime
                 counter.SetItem(ValidateDictionaryKey(index, statement.Span), value);
                 context.ObserveCollectionCount(counter.Count, statement.Span);
                 return;
+            case PyInstance instance:
+                InvokeItemMutation(
+                    instance,
+                    "__setitem__",
+                    [new CallArgumentValue(null, index), new CallArgumentValue(null, value)],
+                    context,
+                    statement.Span);
+                return;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", statement.Span);
             case PyString:
@@ -1011,6 +1019,9 @@ internal sealed partial class LythonRuntime
                         return;
                     case PyCounter counter:
                         _ = counter.Remove(ValidateDictionaryKey(index, statement.Span));
+                        return;
+                    case PyInstance instance:
+                        InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, statement.Span);
                         return;
                     case PyTuple:
                         throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", statement.Span);

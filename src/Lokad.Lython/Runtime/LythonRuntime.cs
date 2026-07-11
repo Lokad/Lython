@@ -420,8 +420,8 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.GreaterEqual => CompareRelational(left, right, binary.Span, static value => value >= 0),
             BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
             BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, binary.Span),
+            BinaryOperatorSyntax.In => Contains(right, left, context, binary.Span),
+            BinaryOperatorSyntax.NotIn => !Contains(right, left, context, binary.Span),
             BinaryOperatorSyntax.Equal => AreEqual(left, right),
             BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
             _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Operator}")
@@ -484,6 +484,10 @@ internal sealed partial class LythonRuntime
 
                     case PyCounter counter:
                         _ = counter.Remove(ValidateDictionaryKey(index, statement.Span));
+                        return;
+
+                    case PyInstance instance:
+                        InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, statement.Span);
                         return;
 
                     case PyTuple:
@@ -631,6 +635,15 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counter.Count, statement.Span);
                 return;
 
+            case PyInstance instance:
+                InvokeItemMutation(
+                    instance,
+                    "__setitem__",
+                    [new CallArgumentValue(null, index), new CallArgumentValue(null, value)],
+                    context,
+                    statement.Span);
+                return;
+
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", statement.Span);
 
@@ -640,6 +653,21 @@ internal sealed partial class LythonRuntime
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", statement.Span);
         }
+    }
+
+    private static void InvokeItemMutation(
+        PyInstance instance,
+        string methodName,
+        CallArgumentValue[] arguments,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute(methodName, context, span, out var member) || member is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
+        }
+
+        _ = callable.Invoke(arguments, span, context);
     }
 
     private static void ExecuteSliceAssignment(SliceAssignmentStatementSyntax statement, ExecutionContext context)
@@ -715,6 +743,14 @@ internal sealed partial class LythonRuntime
             case PyCounter counter:
                 counter.AttachMemoryGovernor(context.MemoryGovernor, span);
                 counter.SetItem(ValidateDictionaryKey(index, span), value);
+                return;
+            case PyInstance instance:
+                InvokeItemMutation(
+                    instance,
+                    "__setitem__",
+                    [new CallArgumentValue(null, index), new CallArgumentValue(null, value)],
+                    context,
+                    span);
                 return;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
@@ -803,6 +839,11 @@ internal sealed partial class LythonRuntime
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
         }
 
+        if (target is PyInstance instance)
+        {
+            return GetUserItem(instance, index, context, span);
+        }
+
         return PyIndexing.ReadIndex(target, index, span);
     }
 
@@ -818,7 +859,7 @@ internal sealed partial class LythonRuntime
         if (target is PyList list)
         {
             list.AttachMemoryGovernor(context.MemoryGovernor, span);
-            var values = ToSequence(value, span).ToArray();
+            var values = ToSequence(value, span, context).ToArray();
             var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
             list.SetSlice(bounds, values, span);
             context.ObserveCollectionCount(list.Count, span);
@@ -913,7 +954,7 @@ internal sealed partial class LythonRuntime
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
-            currentList.AddRange(ToSequence(right, span));
+            currentList.AddRange(ToSequence(right, span, context));
             return currentList;
         }
 
@@ -2867,6 +2908,11 @@ internal sealed partial class LythonRuntime
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, subscript.Span), context, subscript.Span);
         }
 
+        if (target is PyInstance instance)
+        {
+            return GetUserItem(instance, index, context, subscript.Span);
+        }
+
         return PyIndexing.ReadIndex(target, index, subscript.Span);
     }
 
@@ -2919,6 +2965,11 @@ internal sealed partial class LythonRuntime
     internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
         => PyIteration.ToSequence(value, span);
 
+    internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, ExecutionContext context)
+        => value is PyInstance instance
+            ? new PyUserIterator(instance, context, span).Iterate()
+            : PyIteration.ToSequence(value, span);
+
     internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
         => PyIteration.ToSequenceAsync(value, span);
 
@@ -2937,6 +2988,28 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);
+
+    private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (container is PyInstance instance &&
+            instance.TryGetAttribute("__contains__", context, span, out var member) &&
+            member is ICallable callable)
+        {
+            return IsTruthy(callable.Invoke([new CallArgumentValue(null, candidate)], span, context), context, span);
+        }
+
+        return PyContainment.Contains(container, candidate, span);
+    }
+
+    private static object GetUserItem(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
+        }
+
+        return callable.Invoke([new CallArgumentValue(null, index)], span, context);
+    }
 
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
@@ -3010,13 +3083,13 @@ internal sealed partial class LythonRuntime
         var clause = clauses[index];
         var iterable = EvaluateExpression(clause.Iterable, context);
 
-        foreach (var item in ToSequence(iterable, clause.Iterable.Span))
+        foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
         {
             var scope = new ExecutionContext(context);
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
 
             if (clause.Condition is not null &&
-                !IsTruthy(EvaluateExpression(clause.Condition, scope)))
+                !IsTruthy(EvaluateExpression(clause.Condition, scope), scope, clause.Condition.Span))
             {
                 continue;
             }

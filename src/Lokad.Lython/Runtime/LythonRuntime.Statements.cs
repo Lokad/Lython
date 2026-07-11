@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                 case ForStatementSyntax forStatement:
                     var iterable = EvaluateExpression(forStatement.Iterable, context);
                     var broke = false;
-                    foreach (var item in ToSequence(iterable, forStatement.Iterable.Span))
+                    foreach (var item in ToSequence(iterable, forStatement.Iterable.Span, context))
                     {
                         AssignLoopTarget(forStatement.Target, item, forStatement.Iterable.Span, context);
                         var signal = ExecuteStatements(forStatement.Body, context);
