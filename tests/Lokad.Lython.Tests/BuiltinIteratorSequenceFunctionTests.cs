@@ -46,6 +46,25 @@ return "|".join(values)
     }
 
     [Fact]
+    public void SetOperatorsMatchPythonAndInPlaceDifferencePreservesIdentity()
+    {
+        var result = new LythonEngine().Run(
+            """
+a = {1, 2}
+b = a
+a -= {2}
+return str({1} < {1, 2}) + "|" + str({1} <= {1}) + "|" + str({1, 2} > {2}) + "|" + str(a is b) + "|" + str(a)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|True|{1}", result.ReturnValue);
+
+        var invalidAddition = new LythonEngine().Run("return {1} + {2}\n", new MockLythonHost());
+        Assert.False(invalidAddition.Success);
+    }
+
+    [Fact]
     public void IteratorAndSequenceBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

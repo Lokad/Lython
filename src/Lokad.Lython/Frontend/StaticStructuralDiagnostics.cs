@@ -414,8 +414,7 @@ internal static class StaticStructuralDiagnostics
            IsDateOrDateTime(left) && right.Kind == AbstractValueKind.DateTimeTimedelta ||
            left.Kind == AbstractValueKind.DateTimeTimedelta && IsDateOrDateTime(right) ||
            IsListLike(left) && IsListLike(right) ||
-           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
-           IsSetLike(left) && IsSetLike(right);
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
 
     private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)
         => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
@@ -426,7 +425,8 @@ internal static class StaticStructuralDiagnostics
            left.Kind == AbstractValueKind.DateTimeTime && right.Kind == AbstractValueKind.DateTimeTime ||
            left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
            IsListLike(left) && IsListLike(right) ||
-           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           IsSetLike(left) && IsSetLike(right);
 
     private static bool CanApplyDateTimeSubtract(AbstractValue left, AbstractValue right)
         => left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||

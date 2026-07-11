@@ -1006,6 +1006,9 @@ internal sealed partial class LythonRuntime
                 case AugmentedAssignmentOperatorSyntax.BitwiseXor:
                     currentSet.SymmetricExceptWith(rightSet);
                     return currentSet;
+                case AugmentedAssignmentOperatorSyntax.Subtract:
+                    currentSet.ExceptWith(rightSet);
+                    return currentSet;
             }
         }
 
@@ -1559,17 +1562,6 @@ internal sealed partial class LythonRuntime
             return governor is null
                 ? new PyTuple(leftTuple.Concat(rightTuple))
                 : new PyTuple(leftTuple.Concat(rightTuple), governor, allocationSpan);
-        }
-
-        if (left is PySet leftSet && right is PySet rightSet)
-        {
-            var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
-            var allocationSpan = leftSet.AllocationSpan ?? rightSet.AllocationSpan;
-            var result = governor is null
-                ? new PySet(leftSet)
-                : new PySet(leftSet, governor, allocationSpan);
-            result.UnionWith(rightSet);
-            return result;
         }
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
@@ -3061,6 +3053,18 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         Func<int, bool> fallback)
     {
+        if (left is PySet leftSet && right is PySet rightSet)
+        {
+            return method switch
+            {
+                "__lt__" => leftSet.IsProperSubsetOf(rightSet),
+                "__le__" => leftSet.IsSubsetOf(rightSet),
+                "__gt__" => leftSet.IsProperSupersetOf(rightSet),
+                "__ge__" => leftSet.IsSupersetOf(rightSet),
+                _ => false,
+            };
+        }
+
         if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var result) ||
             TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out result))
         {

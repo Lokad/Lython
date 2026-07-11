@@ -163,6 +163,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool SetEquals(PySet other) => _items.SetEquals(other._items);
 
+    public bool IsSubsetOf(PySet other) => _items.IsSubsetOf(other._items);
+
+    public bool IsProperSubsetOf(PySet other) => _items.IsProperSubsetOf(other._items);
+
+    public bool IsSupersetOf(PySet other) => _items.IsSupersetOf(other._items);
+
+    public bool IsProperSupersetOf(PySet other) => _items.IsProperSupersetOf(other._items);
+
     public bool IsTruthy() => Count != 0;
 
     public IEnumerable<object> Iterate() => this;
