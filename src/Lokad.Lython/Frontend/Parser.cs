@@ -1,3 +1,4 @@
+using System.Text;
 using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
@@ -462,7 +463,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var name = _tokens.GetString(nameToken);
+            var name = IdentifierText(nameToken);
             if (name == "_")
             {
                 AddDiagnostic("LA1092", "Wildcard '_' cannot be used as an 'as' capture target.", nameToken);
@@ -550,7 +551,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var name = _tokens.GetString(nameToken);
+            var name = IdentifierText(nameToken);
             var expression = ParseNameOrAttributeExpressionFromName(nameToken, name);
             if (expression is IdentifierExpressionSyntax identifier)
             {
@@ -695,7 +696,7 @@ internal sealed class Parser
             return null;
         }
 
-        var name = _tokens.GetString(targetToken);
+        var name = IdentifierText(targetToken);
         return name == "_"
             ? new MatchStarPatternSyntax(null, Merge(SpanOf(starToken), SpanOf(targetToken)))
             : new MatchStarPatternSyntax(name, Merge(SpanOf(starToken), SpanOf(targetToken)));
@@ -720,7 +721,7 @@ internal sealed class Parser
                         return null;
                     }
 
-                    restName = _tokens.GetString(restToken);
+                    restName = IdentifierText(restToken);
                     if (restName == "_")
                     {
                         AddDiagnostic("LA1100", "Wildcard '_' cannot be used as a mapping rest capture.", restToken);
@@ -795,7 +796,7 @@ internal sealed class Parser
                         return null;
                     }
 
-                    keywordPatterns.Add(new MatchClassKeywordPatternSyntax(_tokens.GetString(nameToken), keywordPattern));
+                    keywordPatterns.Add(new MatchClassKeywordPatternSyntax(IdentifierText(nameToken), keywordPattern));
                 }
                 else
                 {
@@ -858,7 +859,7 @@ internal sealed class Parser
             return null;
         }
 
-        var expression = ParseNameOrAttributeExpressionFromName(nameToken, _tokens.GetString(nameToken));
+        var expression = ParseNameOrAttributeExpressionFromName(nameToken, IdentifierText(nameToken));
         return expression is MemberExpressionSyntax ? expression : null;
     }
 
@@ -917,7 +918,7 @@ internal sealed class Parser
 
             expression = new MemberExpressionSyntax(
                 expression,
-                _tokens.GetString(memberToken),
+                IdentifierText(memberToken),
                 Merge(expression.Span, SpanOf(memberToken)));
         }
 
@@ -1080,7 +1081,7 @@ internal sealed class Parser
         }
 
         return new FunctionDefinitionStatementSyntax(
-            _tokens.GetString(nameToken),
+            IdentifierText(nameToken),
             decorators,
             parameters,
             returnAnnotation,
@@ -1293,7 +1294,7 @@ internal sealed class Parser
                         }
 
                         keywordArguments.Add(new ClassKeywordArgumentSyntax(
-                            _tokens.GetString(keywordNameToken),
+                            IdentifierText(keywordNameToken),
                             keywordValue,
                             Merge(SpanOf(keywordNameToken), keywordValue.Span)));
                     }
@@ -1340,7 +1341,7 @@ internal sealed class Parser
         }
 
         return new ClassDefinitionStatementSyntax(
-            _tokens.GetString(nameToken),
+            IdentifierText(nameToken),
             dataclassDecorator,
             decorators,
             bases,
@@ -1454,7 +1455,7 @@ internal sealed class Parser
                 return false;
             }
 
-            parsed.Add(new FunctionParameterSyntax(_tokens.GetString(parameterToken), annotation, defaultValue, kind));
+            parsed.Add(new FunctionParameterSyntax(IdentifierText(parameterToken), annotation, defaultValue, kind));
 
             if (CurrentToken == terminator)
             {
@@ -1640,7 +1641,7 @@ internal sealed class Parser
                         return null;
                     }
 
-                    exceptionVariable = _tokens.GetString(variableToken);
+                    exceptionVariable = IdentifierText(variableToken);
                 }
             }
 
@@ -1713,7 +1714,7 @@ internal sealed class Parser
             return false;
         }
 
-        typeName = _tokens.GetString(typeToken);
+        typeName = IdentifierText(typeToken);
         while (CurrentToken == Token.Dot)
         {
             ReadToken();
@@ -1723,7 +1724,7 @@ internal sealed class Parser
                 return false;
             }
 
-            typeName = _tokens.GetString(partToken);
+            typeName = IdentifierText(partToken);
         }
 
         return true;
@@ -1746,7 +1747,7 @@ internal sealed class Parser
         var statements = new List<StatementSyntax>();
         while (true)
         {
-            var moduleName = _tokens.GetString(moduleToken).Trim();
+            var moduleName = IdentifierText(moduleToken);
             var bindingName = moduleName;
             var endToken = moduleToken;
 
@@ -1759,7 +1760,7 @@ internal sealed class Parser
                     return null;
                 }
 
-                bindingName = _tokens.GetString(aliasToken);
+                bindingName = IdentifierText(aliasToken);
                 endToken = aliasToken;
             }
 
@@ -1860,7 +1861,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var memberName = _tokens.GetString(memberToken);
+            var memberName = IdentifierText(memberToken);
             var bindingName = memberName;
             if (CurrentToken == Token.As)
             {
@@ -1871,7 +1872,7 @@ internal sealed class Parser
                     return null;
                 }
 
-                bindingName = _tokens.GetString(aliasToken);
+                bindingName = IdentifierText(aliasToken);
             }
 
             importedMembers.Add(new ImportedMemberSyntax(memberName, bindingName));
@@ -1931,7 +1932,7 @@ internal sealed class Parser
                 return null;
             }
 
-            var name = _tokens.GetString(nameToken);
+            var name = IdentifierText(nameToken);
             if (!seen.Add(name))
             {
                 AddDiagnostic("LA1071", $"Duplicate scope directive name '{name}'.", nameToken);
@@ -1971,7 +1972,7 @@ internal sealed class Parser
         }
 
         endToken = startToken;
-        var parts = new List<string> { _tokens.GetString(startToken).Trim() };
+        var parts = new List<string> { IdentifierText(startToken) };
         while (CurrentToken == Token.Dot)
         {
             ReadToken();
@@ -1981,7 +1982,7 @@ internal sealed class Parser
                 return false;
             }
 
-            parts.Add(_tokens.GetString(partToken).Trim());
+            parts.Add(IdentifierText(partToken));
             endToken = partToken;
         }
 
@@ -1995,7 +1996,7 @@ internal sealed class Parser
         ReadExpected(Token.Assign, "LA1003", "Expected '=' in assignment.");
 
         return ParseAssignmentAfterFirstTarget(
-            new NameAssignmentTargetSyntax(_tokens.GetString(nameToken), SpanOf(nameToken)),
+            new NameAssignmentTargetSyntax(IdentifierText(nameToken), SpanOf(nameToken)),
             nameToken);
     }
 
@@ -2024,7 +2025,7 @@ internal sealed class Parser
         }
 
         return new AnnotatedAssignmentStatementSyntax(
-            _tokens.GetString(nameToken),
+            IdentifierText(nameToken),
             annotation,
             expression,
             Merge(nameToken, (expression ?? annotation).Span));
@@ -2112,7 +2113,7 @@ internal sealed class Parser
                     return null;
                 }
 
-                variableName = _tokens.GetString(variableToken);
+                variableName = IdentifierText(variableToken);
             }
 
             managers.Add((contextExpression, variableName));
@@ -2180,7 +2181,7 @@ internal sealed class Parser
                 return null;
             }
 
-            targets.Add(new UnpackingTargetSyntax(_tokens.GetString(nameToken), isStarred));
+            targets.Add(new UnpackingTargetSyntax(IdentifierText(nameToken), isStarred));
             if (CurrentToken != Token.Comma)
             {
                 break;
@@ -2832,7 +2833,7 @@ internal sealed class Parser
 
                 expression = new MemberExpressionSyntax(
                     expression,
-                    _tokens.GetString(memberToken),
+                    IdentifierText(memberToken),
                     Merge(expression.Span, SpanOf(memberToken)));
                 continue;
             }
@@ -2871,7 +2872,7 @@ internal sealed class Parser
                         {
                             var nameToken = ReadToken();
                             ReadToken();
-                            argumentName = _tokens.GetString(nameToken);
+                            argumentName = IdentifierText(nameToken);
                             kind = CallArgumentKind.Keyword;
                             sawKeywordArgument = true;
                         }
@@ -3143,7 +3144,7 @@ internal sealed class Parser
 
             var tokenIndex = ReadToken();
             return new IdentifierExpressionSyntax(
-                _tokens.GetString(tokenIndex),
+                IdentifierText(tokenIndex),
                 SpanOf(tokenIndex));
         }
 
@@ -3667,7 +3668,7 @@ internal sealed class Parser
     {
         if (TryReadNameToken(out tokenIndex))
         {
-            target = new LoopNameTargetSyntax(_tokens.GetString(tokenIndex));
+            target = new LoopNameTargetSyntax(IdentifierText(tokenIndex));
             return true;
         }
 
@@ -3915,6 +3916,9 @@ internal sealed class Parser
     }
 
     private bool TryReadMemberName(out int tokenIndex) => TryReadNameToken(out tokenIndex);
+
+    private string IdentifierText(int tokenIndex)
+        => _tokens.GetString(tokenIndex).Normalize(NormalizationForm.FormKC);
 
     private static bool IsNameToken(Token token) => token is Token.Identifier or Token.Match or Token.Case;
 

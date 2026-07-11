@@ -38,6 +38,17 @@ public sealed class ParserCompatibilityTests
             Assert.IsType<List<object?>>(result.ReturnValue));
     }
 
+    [Fact]
+    public void Run_AcceptsAndNormalizesPythonUnicodeIdentifiers()
+    {
+        var result = new LythonEngine().Run(
+            "café = 3\nK = café + 1\nreturn K\n",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Equal(new System.Numerics.BigInteger(4), result.ReturnValue);
+    }
+
     [Theory]
     [InlineData("return 1__0\n")]
     [InlineData("return 1_\n")]

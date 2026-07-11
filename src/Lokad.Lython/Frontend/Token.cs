@@ -64,7 +64,7 @@ internal enum Token
     [Any("{")] OpenBrace,
     [Any("}")] CloseBrace,
 
-    [Pattern("[A-Za-z_][A-Za-z0-9_]*")] Identifier,
+    [Pattern("[_\\p{L}\\p{Nl}][\\p{L}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}]*")] Identifier,
     [Any("import"), F(Identifier, true)] Import,
     [Any("def"), F(Identifier, true)] Def,
     [Any("return"), F(Identifier, true)] Return,
