@@ -9,28 +9,44 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public static readonly PyTimedelta Min = new(TimeSpan.MinValue);
-    public static readonly PyTimedelta Max = new(TimeSpan.MaxValue);
+    public static readonly BigInteger MicrosecondsPerDay = new(86_400_000_000L);
+    private static readonly BigInteger MinimumMicroseconds = -999_999_999 * MicrosecondsPerDay;
+    private static readonly BigInteger MaximumMicroseconds = 999_999_999 * MicrosecondsPerDay + MicrosecondsPerDay - 1;
+
+    public static readonly PyTimedelta Min = new(MinimumMicroseconds);
+    public static readonly PyTimedelta Max = new(MaximumMicroseconds);
     public static readonly PyTimedelta Resolution = new(TimeSpan.FromTicks(10));
 
     public PyTimedelta(TimeSpan value)
+        : this(new BigInteger(value.Ticks / 10))
     {
-        Value = Normalize(value);
     }
 
-    public TimeSpan Value { get; }
+    public PyTimedelta(BigInteger totalMicroseconds)
+    {
+        if (totalMicroseconds < MinimumMicroseconds || totalMicroseconds > MaximumMicroseconds)
+        {
+            throw new OverflowException("timedelta is outside Python's supported day range");
+        }
 
-    public BigInteger Days => new(GetNormalizedParts().Days);
+        TotalMicroseconds = totalMicroseconds;
+    }
+
+    public BigInteger TotalMicroseconds { get; }
+
+    public TimeSpan Value => new(checked((long)(TotalMicroseconds * 10)));
+
+    public BigInteger Days => GetNormalizedParts().Days;
 
     public BigInteger Seconds => new(GetNormalizedParts().Seconds);
 
     public BigInteger Microseconds => new(GetNormalizedParts().Microseconds);
 
-    public bool IsTruthy() => Value != TimeSpan.Zero;
+    public bool IsTruthy() => !TotalMicroseconds.IsZero;
 
-    public int GetPyHashCode() => HashCode.Combine(Value.Ticks);
+    public int GetPyHashCode() => TotalMicroseconds.GetHashCode();
 
-    public double TotalSeconds() => Value.TotalSeconds;
+    public double TotalSeconds() => (double)TotalMicroseconds / 1_000_000.0;
 
     public PyString RenderPython(PyRenderingContext context)
     {
@@ -41,34 +57,23 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    public override bool Equals(object? obj) => obj is PyTimedelta other && Value.Equals(other.Value);
+    public override bool Equals(object? obj) => obj is PyTimedelta other && TotalMicroseconds.Equals(other.TotalMicroseconds);
 
     public override int GetHashCode() => GetPyHashCode();
 
     public override string ToString() => RenderPython(default).AsString();
 
-    private static TimeSpan Normalize(TimeSpan value)
+    private (BigInteger Days, int Seconds, int Microseconds) GetNormalizedParts()
     {
-        var ticks = value.Ticks - (value.Ticks % 10);
-        return new TimeSpan(ticks);
-    }
-
-    private (long Days, long Seconds, long Microseconds) GetNormalizedParts()
-    {
-        const long ticksPerDay = TimeSpan.TicksPerDay;
-        const long ticksPerSecond = TimeSpan.TicksPerSecond;
-        const long ticksPerMicrosecond = 10;
-
-        var totalTicks = Value.Ticks;
-        var days = Math.DivRem(totalTicks, ticksPerDay, out var remainderTicks);
-        if (remainderTicks < 0)
+        var days = BigInteger.DivRem(TotalMicroseconds, MicrosecondsPerDay, out var remainderMicroseconds);
+        if (remainderMicroseconds.Sign < 0)
         {
-            remainderTicks += ticksPerDay;
+            remainderMicroseconds += MicrosecondsPerDay;
             days -= 1;
         }
 
-        var seconds = remainderTicks / ticksPerSecond;
-        var microseconds = (remainderTicks % ticksPerSecond) / ticksPerMicrosecond;
+        var seconds = (int)(remainderMicroseconds / 1_000_000);
+        var microseconds = (int)(remainderMicroseconds % 1_000_000);
         return (days, seconds, microseconds);
     }
 }
@@ -469,16 +474,23 @@ internal static class PyDateTimeOps
         var hours = GetReal(ArgAt(bound, 5), "datetime.timedelta", span);
         var weeks = GetReal(ArgAt(bound, 6), "datetime.timedelta", span);
 
-        var totalTicks =
-            (decimal)weeks * 7m * TimeSpan.TicksPerDay +
-            (decimal)days * TimeSpan.TicksPerDay +
-            (decimal)hours * TimeSpan.TicksPerHour +
-            (decimal)minutes * TimeSpan.TicksPerMinute +
-            (decimal)seconds * TimeSpan.TicksPerSecond +
-            (decimal)milliseconds * TimeSpan.TicksPerMillisecond +
-            (decimal)microseconds * 10m;
+        var totalMicroseconds =
+            (decimal)weeks * 7m * 86_400_000_000m +
+            (decimal)days * 86_400_000_000m +
+            (decimal)hours * 3_600_000_000m +
+            (decimal)minutes * 60_000_000m +
+            (decimal)seconds * 1_000_000m +
+            (decimal)milliseconds * 1_000m +
+            (decimal)microseconds;
 
-        return new PyTimedelta(new TimeSpan((long)Math.Round(totalTicks, MidpointRounding.ToEven)));
+        try
+        {
+            return new PyTimedelta(new BigInteger(Math.Round(totalMicroseconds, MidpointRounding.ToEven)));
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+        }
     }
 
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -575,12 +587,12 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects a timedelta offset.", span);
         }
 
-        if (delta.Value.Ticks % TimeSpan.TicksPerMinute != 0)
+        if (delta.TotalMicroseconds % 60_000_000 != 0)
         {
             throw new LythonRuntimeException("ValueError", "datetime.timezone(...) only supports whole-minute offsets.", span);
         }
 
-        if (delta.Value <= TimeSpan.FromHours(-24) || delta.Value >= TimeSpan.FromHours(24))
+        if (delta.TotalMicroseconds <= -86_400_000_000 || delta.TotalMicroseconds >= 86_400_000_000)
         {
             throw new LythonRuntimeException("ValueError", "datetime.timezone(...) offset must be strictly between -24h and +24h.", span);
         }
@@ -592,7 +604,7 @@ internal static class PyDateTimeOps
             _ => throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects name to be a string or None.", span)
         };
 
-        return delta.Value == TimeSpan.Zero && name is null
+        return delta.TotalMicroseconds.IsZero && name is null
             ? PyTimezone.Utc
             : new PyTimezone(delta.Value, name);
     }
@@ -888,7 +900,7 @@ internal static class PyDateTimeOps
     {
         return (left, right) switch
         {
-            (PyTimedelta lhs, PyTimedelta rhs) => new PyTimedelta(lhs.Value + rhs.Value),
+            (PyTimedelta lhs, PyTimedelta rhs) => CreateTimedelta(lhs.TotalMicroseconds + rhs.TotalMicroseconds, span),
             (PyDate date, PyTimedelta delta) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
             (PyTimedelta delta, PyDate date) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
             (PyDateTime dateTime, PyTimedelta delta) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold),
@@ -901,7 +913,7 @@ internal static class PyDateTimeOps
     {
         return (left, right) switch
         {
-            (PyTimedelta lhs, PyTimedelta rhs) => new PyTimedelta(lhs.Value - rhs.Value),
+            (PyTimedelta lhs, PyTimedelta rhs) => CreateTimedelta(lhs.TotalMicroseconds - rhs.TotalMicroseconds, span),
             (PyDate lhs, PyTimedelta rhs) => new PyDate(lhs.Value.AddDays(-GetDateDeltaDays(rhs))),
             (PyDate lhs, PyDate rhs) => new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)),
             (PyDateTime lhs, PyTimedelta rhs) => new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold),
@@ -914,7 +926,7 @@ internal static class PyDateTimeOps
     {
         return operand switch
         {
-            PyTimedelta delta => new PyTimedelta(-delta.Value),
+            PyTimedelta delta => CreateTimedelta(-delta.TotalMicroseconds, span),
             _ => throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span)
         };
     }
@@ -943,7 +955,7 @@ internal static class PyDateTimeOps
     {
         return (left, right) switch
         {
-            (PyTimedelta delta, PyTimedelta other) => new BigInteger(Math.Floor(DivideTimedeltas(delta, other, span))),
+            (PyTimedelta delta, PyTimedelta other) => FloorDivideMicroseconds(delta.TotalMicroseconds, other.TotalMicroseconds, span),
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '//'.", span)
         };
@@ -970,7 +982,7 @@ internal static class PyDateTimeOps
     {
         return (left, right) switch
         {
-            (PyTimedelta lhs, PyTimedelta rhs) => lhs.Value.CompareTo(rhs.Value),
+            (PyTimedelta lhs, PyTimedelta rhs) => lhs.TotalMicroseconds.CompareTo(rhs.TotalMicroseconds),
             (PyDate lhs, PyDate rhs) => lhs.Value.CompareTo(rhs.Value),
             (PyTime lhs, PyTime rhs) => CompareTimes(lhs, rhs, span),
             (PyDateTime lhs, PyDateTime rhs) => CompareDateTimes(lhs, rhs, span),
@@ -1754,33 +1766,62 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("ValueError", "division by zero", span);
         }
 
-        var scaledMicroseconds = delta.Value.Ticks * scale / 10.0;
+        var scaledMicroseconds = (double)delta.TotalMicroseconds * scale;
         var roundedMicroseconds = floor
             ? Math.Floor(scaledMicroseconds)
             : Math.Round(scaledMicroseconds, MidpointRounding.ToEven);
-        return new PyTimedelta(new TimeSpan(checked((long)roundedMicroseconds * 10L)));
+        try
+        {
+            return CreateTimedelta(new BigInteger(roundedMicroseconds), span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+        }
     }
 
     private static double DivideTimedeltas(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
     {
-        if (right.Value == TimeSpan.Zero)
+        if (right.TotalMicroseconds.IsZero)
         {
             throw new LythonRuntimeException("ValueError", "division by zero", span);
         }
 
-        return (double)left.Value.Ticks / right.Value.Ticks;
+        return (double)left.TotalMicroseconds / (double)right.TotalMicroseconds;
     }
 
     private static PyTimedelta TimedeltaModulo(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
     {
-        if (right.Value == TimeSpan.Zero)
+        var quotient = FloorDivideMicroseconds(left.TotalMicroseconds, right.TotalMicroseconds, span);
+        return CreateTimedelta(left.TotalMicroseconds - quotient * right.TotalMicroseconds, span);
+    }
+
+    private static BigInteger FloorDivideMicroseconds(BigInteger left, BigInteger right, LythonSourceSpan span)
+    {
+        if (right.IsZero)
         {
             throw new LythonRuntimeException("ValueError", "integer division or modulo by zero", span);
         }
 
-        var quotient = Math.Floor((double)left.Value.Ticks / right.Value.Ticks);
-        var remainderTicks = left.Value.Ticks - checked((long)quotient * right.Value.Ticks);
-        return new PyTimedelta(new TimeSpan(remainderTicks));
+        var quotient = BigInteger.DivRem(left, right, out var remainder);
+        if (!remainder.IsZero && left.Sign != right.Sign)
+        {
+            quotient -= BigInteger.One;
+        }
+
+        return quotient;
+    }
+
+    private static PyTimedelta CreateTimedelta(BigInteger totalMicroseconds, LythonSourceSpan span)
+    {
+        try
+        {
+            return new PyTimedelta(totalMicroseconds);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+        }
     }
 
     private static int GetDateDeltaDays(PyTimedelta delta)

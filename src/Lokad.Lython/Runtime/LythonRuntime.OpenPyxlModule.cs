@@ -9690,7 +9690,7 @@ internal sealed partial class LythonRuntime
         => time.Value.ToTimeSpan().TotalDays;
 
     private static double ExcelSerialFromTimedelta(PyTimedelta delta)
-        => delta.Value.TotalDays;
+        => delta.TotalSeconds() / 86_400.0;
 
     private static object DateValueFromExcelSerial(double serial, string numberFormat, bool date1904)
     {

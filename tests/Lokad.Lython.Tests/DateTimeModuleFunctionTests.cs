@@ -11,13 +11,14 @@ public sealed class DateTimeModuleFunctionTests
     [InlineData("datetime.timedelta(days=1, seconds=2, microseconds=3).seconds", "2")]
     [InlineData("datetime.timedelta(days=1, seconds=2, microseconds=3).microseconds", "3")]
     [InlineData("datetime.timedelta(days=1, seconds=2, microseconds=3).total_seconds()", "86402.000003")]
-    [InlineData("datetime.timedelta.min.days", "-10675200")]
-    [InlineData("datetime.timedelta.max.microseconds", "477580")]
+    [InlineData("datetime.timedelta.min.days", "-999999999")]
+    [InlineData("datetime.timedelta.max.days", "999999999")]
+    [InlineData("datetime.timedelta.max.microseconds", "999999")]
     [InlineData("datetime.timedelta.resolution.microseconds", "1")]
     [InlineData("datetime.timedelta(days=-1, microseconds=1).days", "-1")]
-    [InlineData("(datetime.timedelta(seconds=5) % datetime.timedelta(seconds=2)).total_seconds()", "1")]
+    [InlineData("(datetime.timedelta(seconds=5) % datetime.timedelta(seconds=2)).total_seconds()", "1.0")]
     [InlineData("divmod(datetime.timedelta(seconds=5), datetime.timedelta(seconds=2))[0]", "2")]
-    [InlineData("divmod(datetime.timedelta(seconds=5), datetime.timedelta(seconds=2))[1].total_seconds()", "1")]
+    [InlineData("divmod(datetime.timedelta(seconds=5), datetime.timedelta(seconds=2))[1].total_seconds()", "1.0")]
     [InlineData("(-datetime.timedelta(days=1)).days", "-1")]
     [InlineData("(datetime.timedelta(microseconds=3) * 0.5).microseconds", "2")]
     [InlineData("(datetime.timedelta(microseconds=3) / 2).microseconds", "2")]
@@ -53,7 +54,7 @@ public sealed class DateTimeModuleFunctionTests
     [InlineData("datetime.time(7, 8, 9, 10).second", "9")]
     [InlineData("datetime.time(7, 8, 9, 10).microsecond", "10")]
     [InlineData("datetime.time(7, 8, 9, 10).tzinfo", "None")]
-    [InlineData("datetime.time(7, 8, tzinfo=datetime.timezone(datetime.timedelta(hours=2))).utcoffset().total_seconds()", "7200")]
+    [InlineData("datetime.time(7, 8, tzinfo=datetime.timezone(datetime.timedelta(hours=2))).utcoffset().total_seconds()", "7200.0")]
     [InlineData("datetime.time(7, 8, tzinfo=datetime.timezone(datetime.timedelta(hours=2), \"X\")).tzname()", "X")]
     [InlineData("datetime.time(7, 8, tzinfo=datetime.timezone.utc).dst()", "None")]
     [InlineData("datetime.time(7, 8, 9, 10).isoformat()", "07:08:09.000010")]
@@ -102,12 +103,12 @@ public sealed class DateTimeModuleFunctionTests
     [InlineData("datetime.datetime.fromtimestamp(0, datetime.timezone.utc).isoformat()", "1970-01-01T00:00:00+00:00")]
     [InlineData("datetime.datetime.fromtimestamp(timestamp=0, tz=datetime.UTC).isoformat()", "1970-01-01T00:00:00+00:00")]
     [InlineData("datetime.datetime.utcfromtimestamp(0).isoformat()", "1970-01-01T00:00:00")]
-    [InlineData("datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc).timestamp()", "0")]
+    [InlineData("datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc).timestamp()", "0.0")]
     [InlineData("datetime.datetime(2024, 1, 1, 12, tzinfo=datetime.timezone(datetime.timedelta(hours=2))) == datetime.datetime(2024, 1, 1, 10, tzinfo=datetime.UTC)", "True")]
-    [InlineData("datetime.datetime(2024, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone(datetime.timedelta(hours=2), \"X\")).utcoffset().total_seconds()", "7200")]
+    [InlineData("datetime.datetime(2024, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone(datetime.timedelta(hours=2), \"X\")).utcoffset().total_seconds()", "7200.0")]
     [InlineData("datetime.datetime(2024, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone(datetime.timedelta(hours=2), \"X\")).tzname()", "X")]
     [InlineData("datetime.datetime(2024, 1, 2, 3, 4, 5, 6, tzinfo=datetime.timezone.utc).dst()", "None")]
-    [InlineData("datetime.timezone.utc.utcoffset(None).total_seconds()", "0")]
+    [InlineData("datetime.timezone.utc.utcoffset(None).total_seconds()", "0.0")]
     [InlineData("datetime.timezone.utc.tzname(None)", "UTC")]
     [InlineData("datetime.timezone.utc.dst(None)", "None")]
     [InlineData("datetime.timezone.utc", "datetime.timezone.utc")]
@@ -140,7 +141,7 @@ public sealed class DateTimeModuleFunctionTests
         Assert.Equal("2024-04-05T07:07:08+01:00", EvaluateToString("datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=1))).isoformat()", host));
         Assert.Equal("1970-01-01", EvaluateToString("datetime.date.fromtimestamp(0).isoformat()", host));
         Assert.Equal("1970-01-01T02:00:00", EvaluateToString("datetime.datetime.fromtimestamp(0).isoformat()", host));
-        Assert.Equal("0", EvaluateToString("datetime.datetime(1970, 1, 1, 2).timestamp()", host));
+        Assert.Equal("0.0", EvaluateToString("datetime.datetime(1970, 1, 1, 2).timestamp()", host));
         Assert.Equal("2024-01-01T10:00:00+00:00", EvaluateToString("datetime.datetime(2024, 1, 1, 12, tzinfo=datetime.timezone(datetime.timedelta(hours=2))).astimezone(datetime.UTC).isoformat()", host));
         Assert.Equal("2024-01-01T10:00:00+00:00", EvaluateToString("datetime.datetime(2024, 1, 1, 12).astimezone(datetime.UTC).isoformat()", host));
         Assert.Equal("2024-01-01T12:00:00+02:00", EvaluateToString("datetime.datetime(2024, 1, 1, 10, tzinfo=datetime.UTC).astimezone().isoformat()", host));
@@ -168,7 +169,7 @@ return "|".join(out)
             new MockLythonHost());
 
         Assert.True(valid.Success, valid.Failure?.Message);
-        Assert.Equal("86402|2025-01-02|1|2024-01-02T03:04:05+00:00|UTC", Assert.IsType<string>(valid.ReturnValue));
+        Assert.Equal("86402.0|2025-01-02|1|2024-01-02T03:04:05+00:00|UTC", Assert.IsType<string>(valid.ReturnValue));
 
         var invalid = new LythonEngine().Run(
             """
