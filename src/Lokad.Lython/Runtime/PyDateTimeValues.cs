@@ -702,9 +702,9 @@ internal static class PyDateTimeOps
         {
             return new PyDate(ParseIsoDate(text.AsString()));
         }
-        catch (FormatException ex)
+        catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
+            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
         }
     }
 
@@ -754,9 +754,9 @@ internal static class PyDateTimeOps
         {
             return ParseTime(text.AsString());
         }
-        catch (FormatException ex)
+        catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
+            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
         }
     }
 
@@ -772,9 +772,9 @@ internal static class PyDateTimeOps
         {
             return ParseDateTime(text.AsString());
         }
-        catch (FormatException ex)
+        catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
+            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
         }
     }
 

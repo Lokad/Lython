@@ -17,8 +17,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("from dataclasses import field\nfield(metadata = 1)\n", "TypeError", "metadata=...) expects a dict or None")]
     [InlineData("from dataclasses import dataclass\n@dataclass(order=True, eq=False)\nclass Bad:\n    x: int\n", "TypeError", "requires eq=True")]
     [InlineData("from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Bad:\n    x: int\n    def __hash__(self):\n        return 1\n", "TypeError", "cannot be combined with an explicit __hash__")]
-    [InlineData("from dataclasses import dataclass, field, replace\n@dataclass\nclass Box:\n    x: int\n    y: int = field(init=False, default=1)\nreplace(Box(1), y=2)\n", "compile", "cannot override init=False field")]
-    [InlineData("from dataclasses import InitVar, dataclass, replace\n@dataclass\nclass Box:\n    x: int\n    y: InitVar[int]\nreplace(Box(1, 2), x=3)\n", "compile", "InitVar 'y' must be specified")]
+    [InlineData("from dataclasses import dataclass, field, replace\n@dataclass\nclass Box:\n    x: int\n    y: int = field(init=False, default=1)\nreplace(Box(1), y=2)\n", "ValueError", "cannot override init=False field")]
+    [InlineData("from dataclasses import InitVar, dataclass, replace\n@dataclass\nclass Box:\n    x: int\n    y: InitVar[int]\nreplace(Box(1, 2), x=3)\n", "ValueError", "InitVar 'y' must be specified")]
     [InlineData("from dataclasses import dataclass\n@dataclass\nclass Box:\n    x: int\nd = {Box(1): 1}\n", "TypeError", "hashable")]
     [InlineData("import math\nmath.sqrt(-1)\n", "ValueError", "math domain error")]
     [InlineData("import math\nmath.log(0)\n", "ValueError", "math domain error")]
@@ -27,7 +27,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import math\nmath.floor(\"x\")\n", "compile", "expects a real number")]
     [InlineData("import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\na < b\n", "TypeError", "naive and timezone-aware datetimes")]
     [InlineData("import datetime\ndatetime.timezone(1)\n", "TypeError", "expects a timedelta offset")]
-    [InlineData("import datetime\ndatetime.date.fromisoformat(\"bad\")\n", "ValueError", "not recognized")]
+    [InlineData("import datetime\ndatetime.date.fromisoformat(\"bad\")\n", "ValueError", "Invalid isoformat string")]
     [InlineData("import datetime\ndatetime.datetime.now(1)\n", "TypeError", "expects tz to be a timezone or None")]
     public void BuiltinContractFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
