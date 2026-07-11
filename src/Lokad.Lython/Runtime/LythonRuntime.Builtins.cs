@@ -2404,16 +2404,7 @@ internal sealed partial class LythonRuntime
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
         {
-            var result = leftKey.Comparer.Invoke(
-                [new CallArgumentValue(null, leftKey.Value), new CallArgumentValue(null, rightKey.Value)],
-                span,
-                context);
-            if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
-            }
-
-            return integer.Sign;
+            return leftKey.CompareTo(rightKey, span, context);
         }
 
         return Compare(left, right, span);

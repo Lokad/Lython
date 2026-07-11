@@ -330,4 +330,26 @@ return f(True) + "|" + f.dispatch(bool)(True)
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("int|int", result.ReturnValue);
     }
+
+    [Fact]
+    public void CmpToKey_WrappersExposeComparatorBackedRichComparisons()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import cmp_to_key
+
+key = cmp_to_key(lambda a, b: (a > b) - (a < b))
+one = key(1)
+two = key(2)
+return "|".join([
+    str(one < two), str(one <= two), str(one == key(1)),
+    str(two > one), str(two >= one), str(one != two),
+    str(one < two < key(3)),
+])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|True|True|True|True", result.ReturnValue);
+    }
 }

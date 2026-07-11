@@ -938,7 +938,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
         {
             var right = await EvaluateLoweredExpressionAsync(chained.Operands[i + 1], context).ConfigureAwait(false);
-            if (!EvaluateComparisonOperator(left, right, chained.ChainedComparison.Operators[i], chained.Span))
+            if (!EvaluateComparisonOperator(left, right, chained.ChainedComparison.Operators[i], context, chained.Span))
             {
                 return false;
             }

@@ -533,7 +533,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < chainedComparison.Operators.Count; i++)
         {
             var right = EvaluateExpression(chainedComparison.Operands[i + 1], context);
-            if (!EvaluateComparisonOperator(left, right, chainedComparison.Operators[i], chainedComparison.Span))
+            if (!EvaluateComparisonOperator(left, right, chainedComparison.Operators[i], context, chainedComparison.Span))
             {
                 return false;
             }
@@ -544,20 +544,20 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool EvaluateComparisonOperator(object left, object right, BinaryOperatorSyntax op, LythonSourceSpan span)
+    private static bool EvaluateComparisonOperator(object left, object right, BinaryOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
     {
         return op switch
         {
-            BinaryOperatorSyntax.Less => CompareRelational(left, right, span, static value => value < 0),
-            BinaryOperatorSyntax.LessEqual => CompareRelational(left, right, span, static value => value <= 0),
-            BinaryOperatorSyntax.Greater => CompareRelational(left, right, span, static value => value > 0),
-            BinaryOperatorSyntax.GreaterEqual => CompareRelational(left, right, span, static value => value >= 0),
+            BinaryOperatorSyntax.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0),
+            BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, span, static value => value <= 0),
+            BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, span, static value => value > 0),
+            BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, span, static value => value >= 0),
             BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
             BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, span),
             BinaryOperatorSyntax.NotIn => !Contains(right, left, span),
-            BinaryOperatorSyntax.Equal => AreEqual(left, right),
-            BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
+            BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, span),
+            BinaryOperatorSyntax.NotEqual => !AreEqualWithProtocols(left, right, context, span),
             _ => throw new InvalidOperationException($"Unsupported chained comparison operator: {op}")
         };
     }
@@ -3071,6 +3071,11 @@ internal sealed partial class LythonRuntime
 
     private static bool AreEqualWithProtocols(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return leftKey.CompareTo(rightKey, span, context) == 0;
+        }
+
         if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var result) ||
             TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out result))
         {
@@ -3089,6 +3094,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         Func<int, bool> fallback)
     {
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return fallback(leftKey.CompareTo(rightKey, span, context));
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             return method switch

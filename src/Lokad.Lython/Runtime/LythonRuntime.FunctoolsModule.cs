@@ -1590,6 +1590,20 @@ internal sealed partial class LythonRuntime
 
         public object Value { get; }
 
+        public int CompareTo(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
+        {
+            var result = Comparer.Invoke(
+                [new CallArgumentValue(null, Value), new CallArgumentValue(null, other.Value)],
+                span,
+                context);
+            if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
+            }
+
+            return integer.Sign;
+        }
+
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.KeyWrapper>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
