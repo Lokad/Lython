@@ -1904,6 +1904,7 @@ internal sealed partial class LythonRuntime
             string text => new BigInteger(PyString.FromString(text).Length),
             ReFindAllResult matches => new BigInteger(matches.Items.Count),
             PySet set => new BigInteger(set.Count),
+            PyChainMap chainMap => new BigInteger(chainMap.Count),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             PyDict dict => new BigInteger(dict.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),

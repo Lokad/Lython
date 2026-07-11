@@ -237,7 +237,9 @@ vals.append(str(chain["a"]))
 vals.append(str(chain["c"]))
 vals.append(str(sorted(chain.keys())))
 vals.append(str(sorted(chain.items())))
+vals.append(str(len(chain)))
 vals.append(str(child["d"]))
+vals.append(str(len(child)))
 vals.append(str(len(child.maps)))
 vals.append(str(abc.Sequence))
 vals.append(str(Iterable))
@@ -253,7 +255,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[('b', 2), ('a', 1)]|1|0|3|['a', 'b', 'c']|[('a', 0), ('b', 2), ('c', 3)]|4|3|Sequence|Iterable|Mapping[str, int]|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("[('b', 2), ('a', 1)]|1|0|3|['a', 'b', 'c']|[('a', 0), ('b', 2), ('c', 3)]|3|4|4|3|Sequence|Iterable|Mapping[str, int]|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Fact]
