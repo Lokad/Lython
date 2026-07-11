@@ -2093,7 +2093,7 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyDecimal decimalValue)
         {
-            return new PyDecimal(-decimalValue.Value);
+            return new PyDecimal(-decimalValue.Value, decimalValue.Exponent);
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
@@ -2180,7 +2180,7 @@ internal sealed partial class LythonRuntime
 
     private static object NegateCounterCount(object value, LythonSourceSpan span)
         => value is PyDecimal decimalValue
-            ? new PyDecimal(-decimalValue.Value)
+            ? new PyDecimal(-decimalValue.Value, decimalValue.Exponent)
             : PyNumberOps.TryAsNumber(value, out var number)
                 ? PyNumberOps.Negate(number)
                 : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);

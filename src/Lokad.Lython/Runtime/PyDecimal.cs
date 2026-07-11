@@ -8,11 +8,19 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyDecimal : IPyTruthyValue, IPyRenderableValue, IPyHashableValue
 {
     public PyDecimal(decimal value)
+        : this(value, -PyDecimalOps.GetScale(value))
+    {
+    }
+
+    public PyDecimal(decimal value, int exponent)
     {
         Value = value;
+        Exponent = exponent;
     }
 
     public decimal Value { get; }
+
+    public int Exponent { get; }
 
     public bool IsTruthy() => Value != 0m;
 
@@ -21,13 +29,13 @@ internal sealed class PyDecimal : IPyTruthyValue, IPyRenderableValue, IPyHashabl
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        return PyString.FromString($"Decimal('{PyDecimalOps.Format(Value)}')");
+        return PyString.FromString($"Decimal('{PyDecimalOps.Format(this)}')");
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
         _ = context;
-        return PyString.FromString(PyDecimalOps.Format(Value));
+        return PyString.FromString(PyDecimalOps.Format(this));
     }
 
     public int GetPyHashCode()
@@ -90,7 +98,7 @@ internal static class PyDecimalOps
 
                     if (decimal.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
                     {
-                        return new PyDecimal(parsed);
+                        return new PyDecimal(parsed, ParseExponent(raw));
                     }
                 }
 
@@ -116,13 +124,13 @@ internal static class PyDecimalOps
     }
 
     public static object Add(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs + rhs);
+        => Binary(left, right, span, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
     public static object Subtract(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs - rhs);
+        => Binary(left, right, span, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
     public static object Multiply(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs * rhs);
+        => Binary(left, right, span, static (lhs, rhs) => lhs * rhs, static (lhs, rhs) => checked(lhs + rhs));
 
     public static object Divide(object left, object right, LythonSourceSpan span)
     {
@@ -151,7 +159,7 @@ internal static class PyDecimalOps
             throw new LythonRuntimeException("DivisionByZero", "decimal modulo by zero", span);
         }
 
-        return new PyDecimal(lhs % rhs);
+        return new PyDecimal(lhs % rhs, Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
     }
 
     public static object Power(object left, object right, LythonSourceSpan span)
@@ -182,7 +190,7 @@ internal static class PyDecimalOps
             return new PyDecimal(1m / Pow(lhs, -exponentInt));
         }
 
-        return new PyDecimal(Pow(lhs, exponentInt));
+            return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
     }
 
     public static int Compare(object left, object right, LythonSourceSpan span)
@@ -200,8 +208,13 @@ internal static class PyDecimalOps
 
     public static PyDecimal Quantize(PyDecimal value, PyDecimal exponent, object? rounding, PyDecimalContext? context, LythonSourceSpan span)
     {
-        var scale = GetScale(exponent.Value);
-        return new PyDecimal(Round(value.Value, scale, rounding, context, span));
+        if (exponent.Exponent <= 0)
+        {
+            return new PyDecimal(Round(value.Value, -exponent.Exponent, rounding, context, span), exponent.Exponent);
+        }
+
+        var factor = Pow(10m, exponent.Exponent);
+        return new PyDecimal(Round(value.Value / factor, 0, rounding, context, span) * factor, exponent.Exponent);
     }
 
     public static PyDecimal Normalize(PyDecimal value)
@@ -220,8 +233,8 @@ internal static class PyDecimalOps
             "exp" => new PyDecimal((decimal)Math.Exp((double)value.Value)),
             "ln" => new PyDecimal((decimal)Math.Log((double)value.Value)),
             "log10" => new PyDecimal((decimal)Math.Log10((double)value.Value)),
-            "copy_abs" => new PyDecimal(decimal.Abs(value.Value)),
-            "copy_negate" => new PyDecimal(decimal.Negate(value.Value)),
+            "copy_abs" => new PyDecimal(decimal.Abs(value.Value), value.Exponent),
+            "copy_negate" => new PyDecimal(decimal.Negate(value.Value), value.Exponent),
             "normalize" => Normalize(value),
             _ => throw new InvalidOperationException($"Unknown decimal unary op: {name}")
         };
@@ -235,14 +248,15 @@ internal static class PyDecimalOps
         }
 
         var magnitude = decimal.Abs(value.Value);
-        return new PyDecimal(IsSigned(sign) ? decimal.Negate(magnitude) : magnitude);
+        return new PyDecimal(IsSigned(sign) ? decimal.Negate(magnitude) : magnitude, value.Exponent);
     }
 
     public static PyDecimalTuple AsTuple(PyDecimal value)
     {
-        var scale = GetScale(value.Value);
-        var formatted = decimal.Abs(value.Value).ToString($"F{scale}", CultureInfo.InvariantCulture);
-        var digitsText = formatted.Replace(".", string.Empty, StringComparison.Ordinal).TrimStart('0');
+        var coefficient = value.Exponent >= 0
+            ? decimal.Abs(value.Value) / Pow(10m, value.Exponent)
+            : decimal.Abs(value.Value) * Pow(10m, -value.Exponent);
+        var digitsText = decimal.Truncate(coefficient).ToString("0", CultureInfo.InvariantCulture).TrimStart('0');
         if (digitsText.Length == 0)
         {
             digitsText = "0";
@@ -254,7 +268,7 @@ internal static class PyDecimalOps
             digits[i] = new BigInteger(digitsText[i] - '0');
         }
 
-        return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, new PyTuple(digits), new BigInteger(-scale));
+        return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, new PyTuple(digits), new BigInteger(value.Exponent));
     }
 
     public static BigInteger Adjusted(PyDecimal value)
@@ -317,7 +331,7 @@ internal static class PyDecimalOps
 
         var rounding = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
         var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? defaultContext : defaultContext;
-        return new PyDecimal(Round(value.Value, 0, rounding, context, span));
+        return new PyDecimal(Round(value.Value, 0, rounding, context, span), 0);
     }
 
     public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span)
@@ -334,7 +348,7 @@ internal static class PyDecimalOps
 
         var shift = (int)exponent;
         var factor = Pow(10m, Math.Abs(shift));
-        return new PyDecimal(shift >= 0 ? value.Value * factor : value.Value / factor);
+        return new PyDecimal(shift >= 0 ? value.Value * factor : value.Value / factor, checked(value.Exponent + shift));
     }
 
     public static PyDecimal Shift(PyDecimal value, object[] arguments, LythonSourceSpan span)
@@ -394,7 +408,7 @@ internal static class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal.same_quantum(other) expects one Decimal argument.", span);
         }
 
-        return GetScale(value.Value) == GetScale(other.Value);
+        return value.Exponent == other.Exponent;
     }
 
     public static PyDecimal RemainderNear(PyDecimal value, object[] arguments, LythonSourceSpan span)
@@ -422,22 +436,50 @@ internal static class PyDecimalOps
 
         return name switch
         {
-            "min" => new PyDecimal(value.Value <= other ? value.Value : other),
-            "max" => new PyDecimal(value.Value >= other ? value.Value : other),
-            "min_mag" => new PyDecimal(decimal.Abs(value.Value) <= decimal.Abs(other) ? value.Value : other),
-            "max_mag" => new PyDecimal(decimal.Abs(value.Value) >= decimal.Abs(other) ? value.Value : other),
+            "min" => value.Value <= other ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
+            "max" => value.Value >= other ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
+            "min_mag" => decimal.Abs(value.Value) <= decimal.Abs(other) ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
+            "max_mag" => decimal.Abs(value.Value) >= decimal.Abs(other) ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
             _ => throw new InvalidOperationException($"Unknown decimal min/max op: {name}")
         };
     }
 
     public static PyString ToEngineeringString(PyDecimal value)
-        => PyString.FromString(Format(value.Value));
+        => PyString.FromString(Format(value));
 
-    public static string Format(decimal value)
+    public static string Format(PyDecimal value)
     {
-        var text = decimal.Abs(value).ToString(CultureInfo.InvariantCulture);
-        return IsSigned(value) && value == 0m ? "-" + text : value.ToString(CultureInfo.InvariantCulture);
+        var tuple = AsTuple(value);
+        var digits = DigitsToString(tuple.Digits);
+        var negative = tuple.Sign == 1;
+        var adjusted = value.Value == 0m ? value.Exponent : digits.Length + value.Exponent - 1;
+        string body;
+        if (value.Exponent > 0 || adjusted < -6)
+        {
+            body = digits.Length == 1 ? digits : digits[0] + "." + digits[1..];
+            body += "E" + (adjusted >= 0 ? "+" : string.Empty) + adjusted.ToString(CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            var point = digits.Length + value.Exponent;
+            if (point <= 0)
+            {
+                body = "0." + new string('0', -point) + digits;
+            }
+            else if (point >= digits.Length)
+            {
+                body = digits + new string('0', point - digits.Length);
+            }
+            else
+            {
+                body = digits[..point] + "." + digits[point..];
+            }
+        }
+
+        return negative ? "-" + body : body;
     }
+
+    public static string Format(decimal value) => Format(new PyDecimal(value));
 
     public static bool IsSigned(decimal value)
         => (decimal.GetBits(value)[3] & int.MinValue) != 0;
@@ -466,7 +508,7 @@ internal static class PyDecimalOps
     {
         var digits = DigitsToString(tuple.Digits);
         var exponent = tuple.Exponent;
-        if (exponent < -28)
+        if (exponent < -28 || exponent > 28 || exponent < int.MinValue || exponent > int.MaxValue)
         {
             throw new LythonRuntimeException("InvalidOperation", "DecimalTuple exponent is outside Lython's 28-digit fixed-precision scale.", span);
         }
@@ -500,18 +542,40 @@ internal static class PyDecimalOps
         }
 
         return decimal.TryParse(builder.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
-            ? new PyDecimal(parsed)
+            ? new PyDecimal(parsed, (int)exponent)
             : throw new LythonRuntimeException("InvalidOperation", "DecimalTuple is outside Lython's fixed-precision Decimal range.", span);
     }
 
-    private static object Binary(object left, object right, LythonSourceSpan span, Func<decimal, decimal, decimal> operation)
+    private static object Binary(
+        object left,
+        object right,
+        LythonSourceSpan span,
+        Func<decimal, decimal, decimal> operation,
+        Func<int, int, int> combineExponent)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
             throw new LythonRuntimeException("TypeError", "Decimal arithmetic requires Decimal and integer operands.", span);
         }
 
-        return new PyDecimal(operation(lhs, rhs));
+        return new PyDecimal(
+            operation(lhs, rhs),
+            combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+    }
+
+    private static int GetOperandExponent(object value, decimal numericValue)
+        => value is PyDecimal pyDecimal ? pyDecimal.Exponent : -GetScale(numericValue);
+
+    private static int ParseExponent(string text)
+    {
+        var exponentMarker = text.IndexOfAny(['e', 'E']);
+        var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
+        var explicitExponent = exponentMarker < 0
+            ? 0
+            : int.Parse(text[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+        var decimalPoint = mantissa.IndexOf('.');
+        var fractionalDigits = decimalPoint < 0 ? 0 : mantissa.Length - decimalPoint - 1;
+        return checked(explicitExponent - fractionalDigits);
     }
 
     private static decimal Pow(decimal value, int exponent)

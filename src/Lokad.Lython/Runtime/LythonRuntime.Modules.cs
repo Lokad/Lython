@@ -5939,7 +5939,7 @@ internal sealed partial class LythonRuntime
                     AppendJsonDouble(builder, floating, options, span);
                     return;
                 case PyDecimal decimalValue:
-                    builder.Append(PyDecimalOps.Format(decimalValue.Value));
+                    builder.Append(PyDecimalOps.Format(decimalValue));
                     return;
                 case PyList list:
                     AppendJsonSequence(builder, list, options, context, span, depth, active);

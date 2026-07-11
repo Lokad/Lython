@@ -174,7 +174,37 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("2.6|2.5|-2.6|2.6|1.6|2|-1|1|False|False|True|True|True|123.45|1230.0|1230.0|31.2|True|False|-2|-2|3|-2|3", host.ReadText("/out.txt"));
+        Assert.Equal("2.6|2.5|-2.6|2.6|1.6|2|-1|1|False|False|True|True|True|123.45|1.23E+3|1230.0|31.2|True|False|-2|-2|3|-2|3", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DecimalModule_RetainsRepresentableExponentAndQuantumMetadata()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import copy
+from decimal import Decimal, DecimalTuple
+
+x = Decimal("1E+3")
+values = [
+    str(x),
+    repr(x),
+    str(x.as_tuple()),
+    str(copy.copy(x)),
+    str(x.copy_abs()),
+    str(x + Decimal("0E+2")),
+    str(x * Decimal("1.0")),
+    str(Decimal(DecimalTuple(0, (1, 2, 3, 0), -2))),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1E+3|Decimal('1E+3')|DecimalTuple(sign=0, digits=(1,), exponent=3)|1E+3|1E+3|1.0E+3|1.0E+3|12.30", host.ReadText("/out.txt"));
     }
 
     [Fact]
