@@ -2154,19 +2154,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool DoesDispatchTypeMatch(object requestedType, object registeredType)
-    {
-        if (DispatchTypeIdentityEquals(requestedType, registeredType))
-        {
-            return true;
-        }
-
-        if (requestedType is PyType type && registeredType is PyType baseType)
-        {
-            return type.IsSubtypeOf(baseType);
-        }
-
-        return false;
-    }
+        => IsSubclassAgainstSingleType(requestedType, registeredType);
 
     private static bool DispatchTypeIdentityEquals(object left, object right)
     {

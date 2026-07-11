@@ -309,4 +309,25 @@ return f(Child()) + "|" + f.dispatch(Child)(Child())
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("child|child", result.ReturnValue);
     }
+
+    [Fact]
+    public void SingleDispatch_PublicDispatchUsesBuiltinMroResolution()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import singledispatch
+
+@singledispatch
+def f(value): return "base"
+
+@f.register(int)
+def integer(value): return "int"
+
+return f(True) + "|" + f.dispatch(bool)(True)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("int|int", result.ReturnValue);
+    }
 }
