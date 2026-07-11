@@ -443,6 +443,32 @@ except json.JSONDecodeError as exc:
     }
 
     [Fact]
+    public void JsonDecodeError_ReportsPythonLexerCoordinatesInCodePoints()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import json
+
+cases = ["1.", "1e+", "-", "tru", '"\\x"', '"\\u12x4"', '"abc', '["é", 1.]', '["😀",\n "\\x"]']
+values = []
+for text in cases:
+    try:
+        json.loads(text)
+    except json.JSONDecodeError as exc:
+        values.append(str(exc.pos) + ":" + str(exc.lineno) + ":" + str(exc.colno))
+with open("/out.txt", "w") as output:
+    output.write("|".join(values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
+        Assert.Equal("1:1:2|1:1:2|0:1:1|0:1:1|1:1:2|2:1:3|0:1:1|7:1:8|8:2:3", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void JsonExpandedSurface_InvalidOptionsFailAtCompileTime()
     {
         var result = new LythonEngine().Run(

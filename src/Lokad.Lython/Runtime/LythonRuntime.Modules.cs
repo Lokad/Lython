@@ -6376,20 +6376,23 @@ internal sealed partial class LythonRuntime
 
         private static LythonRuntimeException CreateJsonDecodeError(PyString document, JsonException exception, LythonSourceSpan span, ExecutionContext context)
         {
-            var docText = document.AsString();
-            var line = exception.LineNumber.GetValueOrDefault();
-            var bytePosition = exception.BytePositionInLine.GetValueOrDefault();
-            var position = ComputeJsonErrorPosition(docText, line, bytePosition);
+            var reportedBytePosition = ComputeJsonErrorBytePosition(
+                document.Utf8Bytes.Span,
+                exception.LineNumber.GetValueOrDefault(),
+                exception.BytePositionInLine.GetValueOrDefault());
+            var bytePosition = NormalizeJsonErrorBytePosition(document.Utf8Bytes.Span, reportedBytePosition, exception.Message);
+            var position = document.ByteIndexToRuneIndex(bytePosition);
+            var (line, column) = ComputeJsonErrorLineAndColumn(document, bytePosition);
             var payload = new PyDict(context.MemoryGovernor, span);
             payload.SetItem(PyString.FromString("msg"), CreateString(exception.Message, context, span));
             payload.SetItem(PyString.FromString("doc"), document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
-            payload.SetItem(PyString.FromString("lineno"), new BigInteger(line + 1));
-            payload.SetItem(PyString.FromString("colno"), new BigInteger(bytePosition + 1));
+            payload.SetItem(PyString.FromString("lineno"), new BigInteger(line));
+            payload.SetItem(PyString.FromString("colno"), new BigInteger(column));
             return new LythonRuntimeException("JSONDecodeError", exception.Message, span, exception, payload);
         }
 
-        private static int ComputeJsonErrorPosition(string text, long lineNumber, long bytePositionInLine)
+        private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
         {
             var line = 0L;
             var position = 0;
@@ -6403,6 +6406,124 @@ internal sealed partial class LythonRuntime
 
             return (int)Math.Min(text.Length, position + bytePositionInLine);
         }
+
+        private static int NormalizeJsonErrorBytePosition(ReadOnlySpan<byte> text, int reportedPosition, string message)
+        {
+            if (message.Contains("invalid escapable character", StringComparison.Ordinal) &&
+                reportedPosition > 0 && text[reportedPosition - 1] == (byte)'\\')
+            {
+                return reportedPosition - 1;
+            }
+
+            if (message.Contains("not a hex digit following '\\u'", StringComparison.Ordinal))
+            {
+                for (var position = Math.Min(reportedPosition - 1, text.Length - 1);
+                     position > 0 && position >= reportedPosition - 6;
+                     position--)
+                {
+                    if (text[position] == (byte)'u' && text[position - 1] == (byte)'\\')
+                    {
+                        return position;
+                    }
+                }
+            }
+
+            if (message.Contains("Expected end of string", StringComparison.Ordinal))
+            {
+                var openingQuote = FindUnterminatedJsonStringStart(text, reportedPosition);
+                if (openingQuote >= 0)
+                {
+                    return openingQuote;
+                }
+            }
+
+            if (message.Contains("invalid JSON literal", StringComparison.Ordinal))
+            {
+                var position = Math.Min(reportedPosition, text.Length);
+                while (position > 0 && IsAsciiLetter(text[position - 1]))
+                {
+                    position--;
+                }
+
+                return position;
+            }
+
+            if (message.Contains("invalid within a number", StringComparison.Ordinal) ||
+                message.Contains("Expected a digit ('0'-'9'), but instead reached end of data", StringComparison.Ordinal))
+            {
+                var tokenStart = reportedPosition;
+                while (tokenStart > 0 && IsJsonNumberTokenByte(text[tokenStart - 1]))
+                {
+                    tokenStart--;
+                }
+
+                for (var position = tokenStart; position < reportedPosition; position++)
+                {
+                    if (text[position] is (byte)'.' or (byte)'e' or (byte)'E')
+                    {
+                        return position;
+                    }
+                }
+
+                return tokenStart;
+            }
+
+            return reportedPosition;
+        }
+
+        private static int FindUnterminatedJsonStringStart(ReadOnlySpan<byte> text, int end)
+        {
+            var openingQuote = -1;
+            var escaped = false;
+            for (var position = 0; position < Math.Min(end, text.Length); position++)
+            {
+                if (openingQuote < 0)
+                {
+                    if (text[position] == (byte)'"')
+                    {
+                        openingQuote = position;
+                    }
+                }
+                else if (escaped)
+                {
+                    escaped = false;
+                }
+                else if (text[position] == (byte)'\\')
+                {
+                    escaped = true;
+                }
+                else if (text[position] == (byte)'"')
+                {
+                    openingQuote = -1;
+                }
+            }
+
+            return openingQuote;
+        }
+
+        private static (int Line, int Column) ComputeJsonErrorLineAndColumn(PyString document, int bytePosition)
+        {
+            var line = 1;
+            var lineStart = 0;
+            var bytes = document.Utf8Bytes.Span;
+            for (var position = 0; position < Math.Min(bytePosition, bytes.Length); position++)
+            {
+                if (bytes[position] == (byte)'\n')
+                {
+                    line++;
+                    lineStart = position + 1;
+                }
+            }
+
+            var column = document.ByteIndexToRuneIndex(bytePosition) - document.ByteIndexToRuneIndex(lineStart) + 1;
+            return (line, column);
+        }
+
+        private static bool IsAsciiLetter(byte value)
+            => value is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
+
+        private static bool IsJsonNumberTokenByte(byte value)
+            => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
         private static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
             => InvokeCallableTarget(callable, span, span, context, [new CallArgumentValue(null, argument)]);
