@@ -5818,6 +5818,14 @@ internal sealed partial class LythonRuntime
             HashSet<object>? active)
         {
             context.CheckExecutionBudget(span);
+            if (depth >= ExecutionLimits.MaxInterpreterDepth)
+            {
+                throw new LythonRuntimeException(
+                    "RecursionError",
+                    "maximum recursion depth exceeded while encoding a JSON object",
+                    span);
+            }
+
             switch (value)
             {
                 case PyNone:

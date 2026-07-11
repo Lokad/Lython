@@ -603,7 +603,7 @@ print(repr(sheet["A1"]))
 
 Each checkbox is one intended implementation commit, including regression tests derived from the referenced reproducer(s). Containment escapes come first, followed by shared protocols and small call-shape fixes, then data-model and serialization work, and finally the openpyxl object/style surface.
 
-- [ ] **Commit 01 — Bound JSON serialization recursion.** Keep recursion accounting active when `check_circular=False` so cycles fail inside Lython rather than overflowing the CLR stack. Addresses LY-MOD-034.
+- [x] **Commit 01 — Bound JSON serialization recursion.** Keep recursion accounting active when `check_circular=False` so cycles fail inside Lython rather than overflowing the CLR stack. Addresses LY-MOD-034.
 - [ ] **Commit 02 — Contain empty pathlib inputs.** Represent empty/no-component paths as `.` and translate every path-construction failure through the Python failure boundary. Addresses LY-MOD-037.
 - [ ] **Commit 03 — Centralize and shape Lython version metadata.** Derive every version view from the declared target and give `version_info` its named fields. Addresses LY-MOD-021 and LY-MOD-042.
 - [ ] **Commit 04 — Correct the public regex flag map.** Separate `ASCII` from `UNICODE`, translate CPython bits at the backend boundary, and enforce ASCII character-class behavior. Addresses LY-MOD-019.

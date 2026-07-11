@@ -5,6 +5,25 @@ namespace Lokad.Lython.Tests;
 public sealed class JsonRoundTripScenarioTests
 {
     [Fact]
+    public void JsonDumps_CheckCircularFalse_RemainsRecursionBounded()
+    {
+        var result = new LythonEngine().Run(
+            """
+import json
+
+value = []
+value.append(value)
+json.dumps(value, check_circular=False)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RecursionError", result.Failure!.ExceptionType);
+        Assert.Contains("maximum recursion depth exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void UpdateObjectFixture_RunsSuccessfully()
     {
         var fixture = FixtureLoader.Load(Path.Combine("Workflows", "Json", "UpdateObject"));
