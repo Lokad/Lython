@@ -647,6 +647,10 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.ClearException:
+                                if (instruction.A >= 0)
+                                {
+                                    _ = DeleteName(codeObject.Names[instruction.A], context, instruction.Span);
+                                }
                                 context.Services.SetCurrentException(null);
                                 break;
 
