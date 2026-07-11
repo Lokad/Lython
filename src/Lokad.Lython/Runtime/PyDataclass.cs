@@ -1137,7 +1137,7 @@ internal static class PyDataclass
             PyInstance instance when instance.Type.DataclassFields is not null => BuildDataclassDict(instance, dictFactory, span, context),
             PyList list => MapDataclassList(list, item => AsDictInner(item, dictFactory, span, context), context, span),
             PyTuple tuple => MapDataclassTuple(tuple, item => AsDictInner(item, dictFactory, span, context), context, span),
-            PyDict dict => BuildMappedDict(dict, pairValue => AsDictInner(pairValue, dictFactory, span, context), dictFactory, span, context),
+            PyDict dict => BuildMappedDict(dict, dictFactory, span, context),
             _ => value
         };
     }
@@ -1167,14 +1167,14 @@ internal static class PyDataclass
         return result;
     }
 
-    private static object BuildDictFromPairs(IEnumerable<(string Key, object Value)> pairs, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static object BuildDictFromPairs(IEnumerable<(object Key, object Value)> pairs, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (dictFactory is null)
         {
             var dict = new PyDict(context.MemoryGovernor, span);
             foreach (var pair in pairs)
             {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
+                dict.SetItem(LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value));
             }
 
             return dict;
@@ -1183,7 +1183,7 @@ internal static class PyDataclass
         var items = new PyList([], context.MemoryGovernor, span);
         foreach (var pair in pairs)
         {
-            items.Add(new PyTuple([PyString.FromString(pair.Key), pair.Value], context.MemoryGovernor, span));
+            items.Add(new PyTuple([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
         }
 
         return dictFactory.Invoke([new CallArgumentValue(null, items)], span, context);
@@ -1204,12 +1204,12 @@ internal static class PyDataclass
     private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields!).ToArray();
-        var pairs = new (string Key, object Value)[visibleFields.Length];
+        var pairs = new (object Key, object Value)[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
             var field = visibleFields[i];
             _ = instance.TryGetOwnAttribute(field.Name, out var fieldValue);
-            pairs[i] = (field.Name, AsDictInner(fieldValue ?? PyNone.Instance, dictFactory, span, context));
+            pairs[i] = (PyString.FromString(field.Name), AsDictInner(fieldValue ?? PyNone.Instance, dictFactory, span, context));
         }
 
         return BuildDictFromPairs(pairs, dictFactory, span, context);
@@ -1251,13 +1251,15 @@ internal static class PyDataclass
         return new PyTuple(items, context.MemoryGovernor, span);
     }
 
-    private static object BuildMappedDict(PyDict dict, Func<object, object> mapValue, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static object BuildMappedDict(PyDict dict, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var pairs = new (string Key, object Value)[dict.Count];
+        var pairs = new (object Key, object Value)[dict.Count];
         var index = 0;
         foreach (var pair in dict)
         {
-            pairs[index++] = (ToPythonStringKey(pair.Key, span), mapValue(pair.Value));
+            pairs[index++] = (
+                AsDictInner(pair.Key, dictFactory, span, context),
+                AsDictInner(pair.Value, dictFactory, span, context));
         }
 
         return BuildDictFromPairs(pairs, dictFactory, span, context);
@@ -1283,16 +1285,6 @@ internal static class PyDataclass
         }
 
         return [.. materialized];
-    }
-
-    private static string ToPythonStringKey(object key, LythonSourceSpan span)
-    {
-        if (PyStringOps.TryAsString(key, out var text))
-        {
-            return text.AsString();
-        }
-
-        throw new LythonRuntimeException("TypeError", "asdict() only supports dictionaries with string keys inside dataclass values.", span);
     }
 
     private static PyDict BuildFieldMap(IReadOnlyList<DataclassFieldSpec> fields, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

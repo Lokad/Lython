@@ -77,6 +77,29 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DataclassesModule_AsDictPreservesAndRecursivelyCopiesMappingKeys()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import asdict, dataclass
+
+@dataclass
+class Box:
+    data: dict
+
+value = asdict(Box({1: "x", ("a", 2): ["y"]}))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(value))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("{'data': {1: 'x', ('a', 2): ['y']}}", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DataclassesModule_FieldAndParamsMetadata_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
