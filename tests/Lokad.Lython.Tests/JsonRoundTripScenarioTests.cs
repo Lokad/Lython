@@ -46,7 +46,7 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "{\"n\":123456789012345678901234567890}\n123456789012345678901234567890",
+            "{\"n\": 123456789012345678901234567890}\n123456789012345678901234567890",
             host.ReadText("/out.txt"));
     }
 
@@ -69,7 +69,7 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "{\"ok\":true,\"items\":[1,null,{\"name\":\"alpha\"}],\"pair\":[\"x\",2]}\nalpha|2|True",
+            "{\"ok\": true, \"items\": [1, null, {\"name\": \"alpha\"}], \"pair\": [\"x\", 2]}\nalpha|2|True",
             host.ReadText("/out.txt"));
     }
 
@@ -159,7 +159,7 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "{\"text\":\"a\\\"b\\nc\\\\d\"}\na\"b<n>c\\d",
+            "{\"text\": \"a\\\"b\\nc\\\\d\"}\na\"b<n>c\\d",
             host.ReadText("/out.txt"));
     }
 
@@ -185,6 +185,29 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal("true|null|\"alpha\"|3.5", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void JsonDumps_UsesPythonFloatAndSeparatorLexemes()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import json
+values = [
+    json.dumps(1.0),
+    json.dumps(-0.0),
+    json.dumps({"a": 1}),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1.0|-0.0|{\"a\": 1}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -244,7 +267,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("{\"emoji\":\"\\ud83d\\ude00\",\"word\":\"caf\\u00e9\"}\n{\"emoji\":\"😀\",\"word\":\"café\"}\n😀|café", host.ReadText("/out.txt"));
+        Assert.Equal("{\"emoji\": \"\\ud83d\\ude00\", \"word\": \"caf\\u00e9\"}\n{\"emoji\": \"😀\", \"word\": \"café\"}\n😀|café", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -263,7 +286,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("{\"1\":\"one\",\"null\":\"nil\"}", host.ReadText("/out.txt"));
+        Assert.Equal("{\"1\": \"one\", \"null\": \"nil\"}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -345,7 +368,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "12\n---\n11\n---\nTrue\n---\nTrue\n---\n{\n  \"a\": [\n    \"é\",\n    1\n  ],\n  \"b\": 2\n}\n---\n{\"x\":\"fallback:aa\"}\n---\nF1.5\n---\nCNaN\n---\n{'count': 1, 'first': z}\n---\n{\"d\":1.20}\n---\n{\"ok\":1}\n---\nValueError\n---\nnan:ValueError",
+            "12\n---\n11\n---\nTrue\n---\nTrue\n---\n{\n  \"a\": [\n    \"é\",\n    1\n  ],\n  \"b\": 2\n}\n---\n{\"x\": \"fallback:aa\"}\n---\nF1.5\n---\nCNaN\n---\n{'count': 1, 'first': 'z'}\n---\n{\"d\": 1.20}\n---\n{\"ok\": 1}\n---\nValueError\n---\nnan:ValueError",
             host.ReadText("/out.txt"));
     }
 

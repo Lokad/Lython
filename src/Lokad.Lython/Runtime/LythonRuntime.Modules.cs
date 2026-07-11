@@ -6118,7 +6118,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            builder.Append(value.ToString("R", CultureInfo.InvariantCulture));
+            builder.Append(Numbers.PyNumberOps.RenderFloat(value));
         }
 
         private static bool TryConvertJsonConstant(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, out object value)
@@ -6237,7 +6237,7 @@ internal sealed partial class LythonRuntime
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
-                return pretty ? (",", ": ") : (",", ":");
+                return pretty ? (",", ": ") : (", ", ": ");
             }
 
             if (value is not PyTuple and not PyList)

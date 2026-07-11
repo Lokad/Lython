@@ -22,7 +22,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("{\"ok\":true,\"count\":2,\"items\":[1,null,\"x\"]}|[1, None, x]", host.ReadText("/out.txt"));
+        Assert.Equal("{\"ok\": true, \"count\": 2, \"items\": [1, null, \"x\"]}|[1, None, 'x']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -49,6 +49,6 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("name;note\nTrue;\nalpha;x,y\nbeta;plain|[[name, note], [True, ], [alpha, x,y], [beta, plain]]", host.ReadText("/out.txt"));
+        Assert.Equal("name;note\nTrue;\nalpha;x,y\nbeta;plain|[['name', 'note'], ['True', ''], ['alpha', 'x,y'], ['beta', 'plain']]", host.ReadText("/out.txt"));
     }
 }
