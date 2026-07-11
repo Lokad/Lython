@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
                 "neg" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryMinus)),
                 "pos" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorPos, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryPlus)),
                 "invert" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, _) => Unary(arguments, span, EvaluateBitwiseNot)),
-                "index" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, _) => Unary(arguments, span, EvaluateIndex)),
+                "index" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateIndex(value, context, innerSpan))),
                 "add" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
                 "sub" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorSub, (arguments, span, _) => Binary(arguments, span, EvaluateSubtract)),
                 "mul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
@@ -285,9 +285,10 @@ internal sealed partial class LythonRuntime
         return number.IsFloat ? Math.Abs(number.Floating) : BigInteger.Abs(number.Integer);
     }
 
-    private static object EvaluateIndex(object value, LythonSourceSpan span)
+    private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)
     {
-        if (!PyNumberOps.TryAsInteger(value, out var integer))
+        var converted = CoerceIndexProtocol(value, context, span);
+        if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "operator.index(obj) expects an integer-compatible value.", span);
         }
@@ -441,14 +442,36 @@ internal sealed partial class LythonRuntime
 
     private static object LengthHint(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "operator.length_hint(obj, default=0) expects one or two arguments.", span);
         }
 
-        if (TryGetLength(arguments[0], out var length))
+        try
         {
+            return Len([arguments[0]], span, context);
+        }
+        catch (LythonRuntimeException exception) when (exception.ExceptionType == "TypeError")
+        {
+            // CPython clears a missing/failed len() lookup before consulting
+            // __length_hint__ and finally the caller's default.
+        }
+
+        if (arguments[0] is PyInstance instance &&
+            instance.TryGetAttribute("__length_hint__", context, span, out var member) &&
+            member is ICallable callable)
+        {
+            var hinted = callable.Invoke([], span, context);
+            if (!PyNumberOps.TryAsInteger(hinted, out var length))
+            {
+                throw new LythonRuntimeException("TypeError", "__length_hint__ must be an integer, not a non-integer value", span);
+            }
+
+            if (length < 0)
+            {
+                throw new LythonRuntimeException("ValueError", "__length_hint__() should return >= 0", span);
+            }
+
             return length;
         }
 

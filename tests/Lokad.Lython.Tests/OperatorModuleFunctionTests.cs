@@ -5,6 +5,38 @@ namespace Lokad.Lython.Tests;
 public sealed class OperatorModuleFunctionTests
 {
     [Fact]
+    public void OperatorModule_IndexAndLengthHint_DispatchUserProtocols()
+    {
+        var result = new LythonEngine().Run(
+            """
+import operator
+
+class Indexed:
+    def __index__(self):
+        return 7
+
+class Hinted:
+    def __length_hint__(self):
+        return 9
+
+class SizedAndHinted:
+    def __len__(self):
+        return 3
+    def __length_hint__(self):
+        return 99
+
+print(operator.index(Indexed()))
+print(operator.length_hint(Hinted()))
+print(operator.length_hint(SizedAndHinted()))
+print(operator.length_hint(object(), 5))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("7\n9\n3\n5\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void OperatorModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
