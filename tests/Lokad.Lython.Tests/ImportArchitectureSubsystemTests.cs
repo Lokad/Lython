@@ -5,6 +5,30 @@ namespace Lokad.Lython.Tests;
 public sealed class ImportArchitectureSubsystemTests
 {
     [Fact]
+    public void ScriptAndModulesExposePythonNameMetadata()
+    {
+        var host = new CountingHost();
+        host.SeedFile("/helper.py", "seen_name = __name__\n");
+
+        var result = new LythonEngine().Run(
+            """
+import helper
+import math
+return [__name__, helper.__name__, helper.seen_name, math.__name__]
+""",
+            host,
+            new LythonRunOptions
+            {
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            new object?[] { "__main__", "helper", "helper", "math" },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
     public void BuiltinImports_DoNotTouchHostModuleResolution()
     {
         var host = new CountingHost();

@@ -1078,6 +1078,11 @@ internal static partial class StaticContracts
 
     public static bool HasKnownMember(AbstractValue value, string memberName)
     {
+        if (value.Kind == AbstractValueKind.Module && memberName == "__name__")
+        {
+            return true;
+        }
+
         return value.Kind switch
         {
             AbstractValueKind.Module => ModuleMembers.TryGetValue((string)value.Value, out var members) && members.Contains(memberName),

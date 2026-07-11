@@ -3080,7 +3080,7 @@ internal sealed partial class LythonRuntime
             Services = new ExecutionServices(new ExecutionState(host, options));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
-            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath));
+            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath, "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -3120,12 +3120,16 @@ internal sealed partial class LythonRuntime
             NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
         }
 
-        public ExecutionContext(ExecutionContext template, bool moduleScope, string? sourcePath = null)
+        public ExecutionContext(
+            ExecutionContext template,
+            bool moduleScope,
+            string? sourcePath = null,
+            string? moduleName = null)
         {
             _ = moduleScope;
             Services = template.Services;
             SourcePath = sourcePath;
-            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath));
+            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath, moduleName ?? "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -3468,7 +3472,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private Dictionary<string, object> CreateBuiltinVariables(string? sourcePath)
+        private Dictionary<string, object> CreateBuiltinVariables(string? sourcePath, string moduleName)
         {
             var objectMembers = new Dictionary<string, object>(StringComparer.Ordinal)
             {
@@ -3486,6 +3490,7 @@ internal sealed partial class LythonRuntime
 
             var builtins = new Dictionary<string, object>(StringComparer.Ordinal)
             {
+                ["__name__"] = PyString.FromString(moduleName),
                 ["object"] = objectType,
                 ["type"] = typeType,
                 ["open"] = new OpenCallable(),
