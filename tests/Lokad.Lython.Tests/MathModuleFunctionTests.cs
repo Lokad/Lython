@@ -107,6 +107,10 @@ public sealed class MathModuleFunctionTests
     [InlineData("math.prod([1], 2)", "compile", "start=1")]
     [InlineData("math.nextafter(1, 2, -1)", "compile", "steps")]
     [InlineData("math.nextafter(1, 2, steps = -1)", "ValueError", "non-negative")]
+    [InlineData("math.floor(math.nan)", "ValueError", "NaN")]
+    [InlineData("math.floor(math.inf)", "OverflowError", "infinity")]
+    [InlineData("math.ceil(math.nan)", "ValueError", "NaN")]
+    [InlineData("math.trunc(-math.inf)", "OverflowError", "infinity")]
     public void MathModule_Failures_ArePythonShaped(string expression, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(

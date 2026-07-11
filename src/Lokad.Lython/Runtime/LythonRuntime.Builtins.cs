@@ -248,7 +248,7 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
-                double floating => new BigInteger(floating),
+                double floating => FloatToInteger(floating, "int", span, Math.Truncate),
                 PyDecimal decimalValue => new BigInteger(decimal.Truncate(decimalValue.Value)),
                 PyString text => BigInteger.Parse(text.AsString(), CultureInfo.InvariantCulture),
                 string text => BigInteger.Parse(text, CultureInfo.InvariantCulture),
@@ -259,6 +259,10 @@ internal sealed partial class LythonRuntime
         catch (FormatException ex)
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 
@@ -497,7 +501,7 @@ internal sealed partial class LythonRuntime
     {
         if (!hasDigits)
         {
-            return new BigInteger(Math.Round(value, MidpointRounding.ToEven));
+            return FloatToInteger(value, "round", span, static number => Math.Round(number, MidpointRounding.ToEven));
         }
 
         if (digits is >= 0 and <= 15)
@@ -512,6 +516,32 @@ internal sealed partial class LythonRuntime
 
         var factor = Math.Pow(10.0, -digits);
         return Math.Round(value / factor, MidpointRounding.ToEven) * factor;
+    }
+
+    private static BigInteger FloatToInteger(
+        double value,
+        string owner,
+        LythonSourceSpan span,
+        Func<double, double> transform)
+    {
+        if (double.IsNaN(value))
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner} cannot convert float NaN to integer.", span);
+        }
+
+        if (double.IsInfinity(value))
+        {
+            throw new LythonRuntimeException("OverflowError", $"{owner} cannot convert float infinity to integer.", span);
+        }
+
+        try
+        {
+            return new BigInteger(transform(value));
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     private static object RoundDecimal(PyDecimal value, bool hasDigits, int digits, LythonSourceSpan span)

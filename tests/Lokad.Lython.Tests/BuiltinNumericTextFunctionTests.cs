@@ -60,6 +60,10 @@ __lython_file.close()
     [InlineData("ord('ab')\n", "TypeError", "character")]
     [InlineData("format(1, 2)\n", "TypeError", "format_spec")]
     [InlineData("hash([])\n", "TypeError", "unhashable")]
+    [InlineData("import math\nint(math.nan)\n", "ValueError", "NaN")]
+    [InlineData("import math\nint(math.inf)\n", "OverflowError", "infinity")]
+    [InlineData("import math\nround(math.nan)\n", "ValueError", "NaN")]
+    [InlineData("import math\nround(math.inf)\n", "OverflowError", "infinity")]
     public void NumericAndTextBuiltins_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

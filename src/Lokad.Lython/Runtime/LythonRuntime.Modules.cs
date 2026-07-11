@@ -559,7 +559,7 @@ internal sealed partial class LythonRuntime
                 return number.Integer;
             }
 
-            return new BigInteger(func(number.Floating));
+            return FloatToInteger(number.Floating, owner, span, func);
         }
     }
 
