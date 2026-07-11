@@ -207,7 +207,7 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
-    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
     {
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
@@ -256,6 +256,31 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
+        public bool TryGetMember(string name, out object value)
+        {
+            if (IsBuiltinTypeName(Name) && name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (IsBuiltinTypeName(Name) && name == "__module__")
+            {
+                value = PyString.FromString("builtins");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
@@ -294,6 +319,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+
     }
 
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue

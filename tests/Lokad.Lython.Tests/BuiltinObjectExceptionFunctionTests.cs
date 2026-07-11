@@ -5,6 +5,22 @@ namespace Lokad.Lython.Tests;
 public sealed class BuiltinObjectExceptionFunctionTests
 {
     [Fact]
+    public void BuiltinTypesAndLocalNamespacesAreInspectable()
+    {
+        var result = new LythonEngine().Run(
+            """
+x = 3
+names = dir()
+local_values = vars()
+return type(1).__name__ + "|" + str(issubclass(bool, int)) + "|" + str(issubclass(int, object)) + "|" + str("x" in names) + "|" + str(local_values["x"]) + "|" + str("upper" in dir("x")) + "|" + str("append" in dir([]))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("int|True|True|True|3|True|True", result.ReturnValue);
+    }
+
+    [Fact]
     public void ObjectHelpersAndExceptionCategories_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
@@ -97,9 +113,6 @@ except Exception:
     [InlineData("getattr(object(), 'missing')\n", "AttributeError", "missing")]
     [InlineData("setattr(1, 'x', 2)\n", "AttributeError", "writable")]
     [InlineData("delattr(object(), 'x')\n", "AttributeError", "x")]
-    [InlineData("dir()\n", "TypeError", "without an object")]
-    [InlineData("dir(1)\n", "TypeError", "not supported")]
-    [InlineData("vars()\n", "TypeError", "without an object")]
     [InlineData("vars(1)\n", "TypeError", "attribute dictionary")]
     public void ObjectHelpers_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {

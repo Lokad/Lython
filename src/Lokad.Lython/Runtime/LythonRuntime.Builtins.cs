@@ -1290,12 +1290,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects two arguments.", span);
         }
 
-        if (arguments[0] is not PyType type)
-        {
-            throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects the first argument to be a class.", span);
-        }
-
-        return IsSubclassOf(type, arguments[1], span);
+        return IsSubclassOf(arguments[0], arguments[1], span);
     }
 
     private static bool IsInstanceOf(object value, object typeSpec, LythonSourceSpan span)
@@ -1308,8 +1303,13 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "isinstance(value, type) expects a class or tuple of classes.", span);
     }
 
-    private static bool IsSubclassOf(PyType type, object baseSpec, LythonSourceSpan span)
+    private static bool IsSubclassOf(object type, object baseSpec, LythonSourceSpan span)
     {
+        if (!IsSupportedTypeSpecifier(type))
+        {
+            throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects the first argument to be a class.", span);
+        }
+
         if (TryMatchTypeTuple(baseSpec, candidate => IsSubclassAgainstSingleType(type, candidate), out var matched))
         {
             return matched;
@@ -1376,14 +1376,33 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static bool IsSubclassAgainstSingleType(PyType type, object baseSpec)
+    private static bool IsSubclassAgainstSingleType(object type, object baseSpec)
     {
-        return baseSpec switch
+        if (type is PyType runtimeSubject)
         {
-            PyType runtimeType => type.IsSubtypeOf(runtimeType),
-            _ => false
-        };
+            return baseSpec is PyType runtimeBase && runtimeSubject.IsSubtypeOf(runtimeBase);
+        }
+
+        var subjectName = GetBuiltinTypeName(type);
+        var baseName = GetBuiltinTypeName(baseSpec);
+        if (subjectName is null || baseName is null)
+        {
+            return false;
+        }
+
+        return subjectName == baseName ||
+               subjectName == "bool" && baseName == "int" ||
+               baseName == "object";
     }
+
+    private static string? GetBuiltinTypeName(object value) => value switch
+    {
+        PyType type when type.Name is "object" or "type" => type.Name,
+        BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
+        PyBuiltinRuntimeType builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
+        INamedRuntimeCallable callable when IsBuiltinTypeName(callable.Name) => callable.Name,
+        _ => null,
+    };
 
     private static bool IsBuiltinTypeName(string name)
     {
@@ -1519,7 +1538,10 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            throw new LythonRuntimeException("TypeError", "dir() without an object is not supported by Lython.", span);
+            return CreateNameList(
+                EnumerateCurrentLocalNames(context),
+                context,
+                span);
         }
 
         if (arguments.Length != 1)
@@ -1533,18 +1555,32 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "dir(object) is not supported for this object.", span);
         }
 
-        var sortedNames = names
-            .Distinct(StringComparer.Ordinal)
-            .Order(StringComparer.Ordinal)
-            .Select(name => PyString.FromString(name, context.MemoryGovernor, span));
-        return new PyList(sortedNames, context.MemoryGovernor, span);
+        return CreateNameList(names, context, span);
     }
 
     private static object Vars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
         {
-            throw new LythonRuntimeException("TypeError", "vars() without an object is not supported by Lython.", span);
+            var locals = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in context.Variables)
+            {
+                if (!ExecutionState.BuiltinNames.Contains(pair.Key))
+                {
+                    locals.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+                }
+            }
+
+            if (context.CurrentExecutableFrame is not null)
+            {
+                foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
+                {
+                    locals.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+                }
+            }
+
+            context.ObserveCollectionCount(locals.Count, span);
+            return locals;
         }
 
         if (arguments.Length != 1)
@@ -1650,6 +1686,34 @@ internal sealed partial class LythonRuntime
                 names.Add("args");
                 names.Add("message");
                 names.Add("type");
+                return names;
+
+            case PyString or string:
+                names.AddRange(StringDirNames);
+                return names;
+
+            case PyBytes:
+                names.AddRange(BytesDirNames);
+                return names;
+
+            case PyList:
+                names.AddRange(ListDirNames);
+                return names;
+
+            case PyDict:
+                names.AddRange(DictDirNames);
+                return names;
+
+            case PySet:
+                names.AddRange(SetDirNames);
+                return names;
+
+            case BigInteger or int or double or bool:
+                names.Add("__class__");
+                return names;
+
+            case BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name):
+                names.AddRange(BuiltinTypeMemberNames);
                 return names;
 
             default:
@@ -1923,6 +1987,39 @@ internal sealed partial class LythonRuntime
 
         return best;
     }
+
+    private static PyList CreateNameList(IEnumerable<string> names, ExecutionContext context, LythonSourceSpan span)
+        => new(
+            names.Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .Select(name => PyString.FromString(name, context.MemoryGovernor, span)),
+            context.MemoryGovernor,
+            span);
+
+    private static IEnumerable<string> EnumerateCurrentLocalNames(ExecutionContext context)
+    {
+        foreach (var name in context.Variables.Keys)
+        {
+            if (!ExecutionState.BuiltinNames.Contains(name))
+            {
+                yield return name;
+            }
+        }
+
+        if (context.CurrentExecutableFrame is not null)
+        {
+            foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
+            {
+                yield return pair.Key;
+            }
+        }
+    }
+
+    private static readonly string[] StringDirNames = ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"];
+    private static readonly string[] BytesDirNames = ["decode", "hex"];
+    private static readonly string[] ListDirNames = ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"];
+    private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
+    private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "discard", "intersection", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "union", "update"];
 
     private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {

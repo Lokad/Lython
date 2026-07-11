@@ -61,6 +61,18 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        public IEnumerable<KeyValuePair<string, object>> EnumerateLocals()
+        {
+            foreach (var pair in _codeObject.LocalNameToSlot)
+            {
+                var value = _locals[pair.Value];
+                if (!ReferenceEquals(value, UninitializedLocal))
+                {
+                    yield return new KeyValuePair<string, object>(pair.Key, value!);
+                }
+            }
+        }
+
         public bool TryGetCell(string name, out ExecutableCell cell)
         {
             if (_localCells is not null && _codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
