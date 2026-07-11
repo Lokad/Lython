@@ -35,6 +35,31 @@ __lython_file.close()
             host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DateTime_TimezonePreservesSubMinuteOffsets()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import datetime
+
+zone = datetime.timezone(datetime.timedelta(seconds=30, microseconds=1))
+values = [
+    str(zone.utcoffset(None)),
+    datetime.time(1, tzinfo=zone).isoformat(),
+    datetime.time.fromisoformat("01:00:00+00:00:30.000001").isoformat(),
+    datetime.datetime(2024, 1, 1, tzinfo=zone).strftime("%z"),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("0:00:30.000001|01:00:00+00:00:30.000001|01:00:00+00:00:30.000001|+000030.000001", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("datetime.MINYEAR", "1")]
     [InlineData("datetime.MAXYEAR", "9999")]

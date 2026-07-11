@@ -295,7 +295,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public bool IsTruthy() => true;
 
-    public int GetPyHashCode() => HashCode.Combine(TzInfo is null ? Value.Ticks : ToOffset().UtcTicks);
+    public int GetPyHashCode() => HashCode.Combine(TzInfo is null ? Value.Ticks : ToUtcTicks());
 
     public PyDate DatePart() => new(DateOnly.FromDateTime(Value));
 
@@ -314,8 +314,8 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
         return PyString.FromString(text);
     }
 
-    public DateTimeOffset ToOffset()
-        => new(Value, TzInfo?.Offset ?? TimeSpan.Zero);
+    public long ToUtcTicks()
+        => Value.Ticks - (TzInfo?.Offset.Ticks ?? 0);
 
     public BigInteger ToOrdinal() => new(DateOnly.FromDateTime(Value).DayNumber + 1);
 
@@ -434,6 +434,9 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
 internal static class PyDateTimeOps
 {
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly Regex OffsetTextRegex = new(
+        @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
+        RegexOptions.CultureInvariant);
 
     private sealed class TypeMemberCallable : LythonRuntime.ICallable
     {
@@ -661,11 +664,6 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects a timedelta offset.", span);
         }
 
-        if (delta.TotalMicroseconds % 60_000_000 != 0)
-        {
-            throw new LythonRuntimeException("ValueError", "datetime.timezone(...) only supports whole-minute offsets.", span);
-        }
-
         if (delta.TotalMicroseconds <= -86_400_000_000 || delta.TotalMicroseconds >= 86_400_000_000)
         {
             throw new LythonRuntimeException("ValueError", "datetime.timezone(...) offset must be strictly between -24h and +24h.", span);
@@ -812,7 +810,7 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects tz to be a timezone or None.", span);
         }
 
-        return new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(tz.Offset).DateTime, DateTimeKind.Unspecified), tz);
+        return new PyDateTime(DateTime.SpecifyKind(instant.UtcDateTime + tz.Offset, DateTimeKind.Unspecified), tz);
     }
 
     public static object DateTimeUtcFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -905,8 +903,8 @@ internal static class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.now(tz) expects tz to be a timezone or None.", span);
         }
 
-        var instant = context.Host.UtcNow.ToOffset(tz.Offset);
-        return new PyDateTime(DateTime.SpecifyKind(instant.DateTime, DateTimeKind.Unspecified), tz);
+        var instant = context.Host.UtcNow.UtcDateTime + tz.Offset;
+        return new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), tz);
     }
 
     public static object DateTimeUtcNow(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -947,7 +945,7 @@ internal static class PyDateTimeOps
         try
         {
             var offset = dateTime.TzInfo?.Offset ?? localOffset;
-            return (new DateTimeOffset(dateTime.Value, offset) - UnixEpoch).TotalSeconds;
+            return (dateTime.Value.Ticks - offset.Ticks - UnixEpoch.UtcTicks) / (double)TimeSpan.TicksPerSecond;
         }
         catch (ArgumentOutOfRangeException ex)
         {
@@ -961,8 +959,8 @@ internal static class PyDateTimeOps
         {
             var sourceOffset = dateTime.TzInfo?.Offset ?? localOffset;
             var target = targetTimezone ?? new PyTimezone(localOffset);
-            var instant = new DateTimeOffset(dateTime.Value, sourceOffset).ToOffset(target.Offset);
-            return new PyDateTime(DateTime.SpecifyKind(instant.DateTime, DateTimeKind.Unspecified), target, dateTime.Fold);
+            var instant = dateTime.Value - sourceOffset + target.Offset;
+            return new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), target, dateTime.Fold);
         }
         catch (ArgumentOutOfRangeException ex)
         {
@@ -1068,7 +1066,18 @@ internal static class PyDateTimeOps
     {
         var sign = offset < TimeSpan.Zero ? "-" : "+";
         offset = offset.Duration();
-        return $"{sign}{offset.Hours:00}:{offset.Minutes:00}";
+        var text = $"{sign}{offset.Hours:00}:{offset.Minutes:00}";
+        if (offset.Seconds != 0 || offset.Microseconds != 0)
+        {
+            text += $":{offset.Seconds:00}";
+        }
+
+        if (offset.Microseconds != 0)
+        {
+            text += $".{offset.Microseconds:000000}";
+        }
+
+        return text;
     }
 
     public static string FormatIsoTime(TimeOnly value, string timespec)
@@ -1247,7 +1256,7 @@ internal static class PyDateTimeOps
 
         return left.TzInfo is null
             ? new PyTimedelta(left.Value - right.Value)
-            : new PyTimedelta(left.ToOffset() - right.ToOffset());
+            : new PyTimedelta(new BigInteger((left.ToUtcTicks() - right.ToUtcTicks()) / 10));
     }
 
     private static int CompareDateTimes(PyDateTime left, PyDateTime right, LythonSourceSpan span)
@@ -1259,7 +1268,7 @@ internal static class PyDateTimeOps
 
         return left.TzInfo is null
             ? left.Value.CompareTo(right.Value)
-            : left.ToOffset().CompareTo(right.ToOffset());
+            : left.ToUtcTicks().CompareTo(right.ToUtcTicks());
     }
 
     private static int CompareTimes(PyTime left, PyTime right, LythonSourceSpan span)
@@ -1288,7 +1297,7 @@ internal static class PyDateTimeOps
 
         return left.TzInfo is null
             ? left.Value == right.Value
-            : left.ToOffset().UtcDateTime == right.ToOffset().UtcDateTime;
+            : left.ToUtcTicks() == right.ToUtcTicks();
     }
 
     public static bool TimeEquals(PyTime left, PyTime right)
@@ -1329,7 +1338,18 @@ internal static class PyDateTimeOps
     {
         var sign = offset < TimeSpan.Zero ? "-" : "+";
         offset = offset.Duration();
-        return $"{sign}{(int)offset.TotalHours:00}{offset.Minutes:00}";
+        var text = $"{sign}{(int)offset.TotalHours:00}{offset.Minutes:00}";
+        if (offset.Seconds != 0 || offset.Microseconds != 0)
+        {
+            text += $"{offset.Seconds:00}";
+        }
+
+        if (offset.Microseconds != 0)
+        {
+            text += $".{offset.Microseconds:000000}";
+        }
+
+        return text;
     }
 
     private static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span)
@@ -1575,20 +1595,16 @@ internal static class PyDateTimeOps
 
     private static bool TryParseTrailingOffset(string text, out string body, out TimeSpan offset)
     {
-        if (text.Length >= 6 && (text[^6] == '+' || text[^6] == '-') && text[^3] == ':')
+        for (var i = text.Length - 1; i > 0; i--)
         {
-            body = text[..^6];
-            if (TryParseOffsetText(text[^6..], out offset))
+            if (text[i] is not ('+' or '-'))
             {
-                return true;
+                continue;
             }
-        }
 
-        if (text.Length >= 5 && (text[^5] == '+' || text[^5] == '-'))
-        {
-            body = text[..^5];
-            if (TryParseOffsetText(text[^5..], out offset))
+            if (TryParseOffsetText(text[i..], out offset))
             {
+                body = text[..i];
                 return true;
             }
         }
@@ -1606,29 +1622,30 @@ internal static class PyDateTimeOps
             return true;
         }
 
-        if (text.Length is not 5 and not 6 || (text[0] is not '+' and not '-'))
+        var match = OffsetTextRegex.Match(text);
+        if (!match.Success)
         {
             offset = default;
             return false;
         }
 
-        var hoursStart = 1;
-        var minutesStart = text.Length == 6 ? 4 : 3;
-        if (text.Length == 6 && text[3] != ':')
+        var hours = int.Parse(match.Groups["hour"].Value, CultureInfo.InvariantCulture);
+        var minutes = int.Parse(match.Groups["minute"].Value, CultureInfo.InvariantCulture);
+        var seconds = match.Groups["second"].Success
+            ? int.Parse(match.Groups["second"].Value, CultureInfo.InvariantCulture)
+            : 0;
+        var microseconds = match.Groups["fraction"].Success
+            ? int.Parse(match.Groups["fraction"].Value.PadRight(6, '0'), CultureInfo.InvariantCulture)
+            : 0;
+        if (hours > 23 || minutes > 59 || seconds > 59)
         {
             offset = default;
             return false;
         }
 
-        if (!int.TryParse(text.Substring(hoursStart, 2), CultureInfo.InvariantCulture, out var hours) ||
-            !int.TryParse(text.Substring(minutesStart, 2), CultureInfo.InvariantCulture, out var minutes))
-        {
-            offset = default;
-            return false;
-        }
-
-        var sign = text[0] == '-' ? -1 : 1;
-        offset = new TimeSpan(sign * hours, sign * minutes, 0);
+        var sign = match.Groups["sign"].Value == "-" ? -1L : 1L;
+        var ticks = (hours * 3600L + minutes * 60L + seconds) * TimeSpan.TicksPerSecond + microseconds * 10L;
+        offset = TimeSpan.FromTicks(sign * ticks);
         return true;
     }
 

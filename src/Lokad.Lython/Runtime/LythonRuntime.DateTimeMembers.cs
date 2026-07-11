@@ -325,7 +325,9 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "datetime.utctimetuple() expects no arguments.", span);
                     }
 
-                    var utcValue = dateTime.TzInfo is null ? dateTime.Value : dateTime.ToOffset().UtcDateTime;
+                    var utcValue = dateTime.TzInfo is null
+                        ? dateTime.Value
+                        : new DateTime(dateTime.ToUtcTicks(), DateTimeKind.Unspecified);
                     return PyDateTimeOps.TimeTuple(utcValue, 0);
                 }),
                 "ctime" => new BoundCallable((arguments, span, _) =>
