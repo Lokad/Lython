@@ -621,7 +621,7 @@ Each checkbox is one intended implementation commit, including regression tests 
 - [x] **Commit 16 — Stabilize dataclass field/error objects.** Reuse class-owned `Field` records and leave invalid `replace` overrides as catchable runtime `ValueError`s. Addresses LY-MOD-027 and LY-MOD-028.
 - [x] **Commit 17 — Separate datetime display and representation paths.** Implement Python-shaped `timedelta.__str__` and `datetime.__str__`, and retain `tzinfo`/`fold` in aware representations. Addresses LY-MOD-008, LY-MOD-009, and LY-MOD-029.
 - [x] **Commit 18 — Preserve second/microsecond fixed offsets.** Remove the whole-minute timezone restriction and extend ISO offset formatting/parsing tests. Addresses LY-MOD-010.
-- [ ] **Commit 19 — Complete fixed-offset ISO parsing.** Accept CPython's calendar basic, week-date, compact-time, and leading-`T` forms without adding locale or IANA dependencies. Addresses LY-MOD-030.
+- [x] **Commit 19 — Complete fixed-offset ISO parsing.** Accept CPython's calendar basic, week-date, compact-time, and leading-`T` forms without adding locale or IANA dependencies. Addresses LY-MOD-030.
 - [ ] **Commit 20 — Route decimal rounding through the active context.** Apply exported rounding modes consistently to supported rounding and integral conversion operations. Addresses LY-MOD-011.
 - [ ] **Commit 21 — Retain decimal quantum metadata.** Preserve representable exponent/scale information through construction, rendering, tuple conversion, copying, and arithmetic where Python retains it. Addresses LY-MOD-012.
 - [ ] **Commit 22 — Encode empty CSV fields without losing row shape.** Quote the single-empty-field case and retain correct character counts for file-backed and in-memory writers. Addresses LY-MOD-005.

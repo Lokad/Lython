@@ -60,6 +60,33 @@ __lython_file.close()
         Assert.Equal("0:00:30.000001|01:00:00+00:00:30.000001|01:00:00+00:00:30.000001|+000030.000001", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DateTime_IsoParsingAcceptsBasicWeekAndLeadingTimeForms()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import datetime
+
+values = [
+    str(datetime.date.fromisoformat("2024-W01-2")),
+    str(datetime.date.fromisoformat("2024W012")),
+    str(datetime.date.fromisoformat("20240102")),
+    str(datetime.datetime.fromisoformat("20240102T030405")),
+    str(datetime.datetime.fromisoformat("2024-W01-2T030405")),
+    str(datetime.time.fromisoformat("T03:04:05")),
+    str(datetime.time.fromisoformat("030405")),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("2024-01-02|2024-01-02|2024-01-02|2024-01-02 03:04:05|2024-01-02 03:04:05|03:04:05|03:04:05", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("datetime.MINYEAR", "1")]
     [InlineData("datetime.MAXYEAR", "9999")]

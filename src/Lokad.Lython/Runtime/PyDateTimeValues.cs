@@ -437,6 +437,15 @@ internal static class PyDateTimeOps
     private static readonly Regex OffsetTextRegex = new(
         @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
         RegexOptions.CultureInvariant);
+    private static readonly Regex CalendarDateRegex = new(
+        @"^(?:(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})|(?<basicYear>\d{4})(?<basicMonth>\d{2})(?<basicDay>\d{2}))$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex WeekDateRegex = new(
+        @"^(?:(?<year>\d{4})-W(?<week>\d{2})(?:-(?<weekday>\d))?|(?<basicYear>\d{4})W(?<basicWeek>\d{2})(?<basicWeekday>\d)?)$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex ExtendedTimeRegex = new(
+        @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?)?$",
+        RegexOptions.CultureInvariant);
 
     private sealed class TypeMemberCallable : LythonRuntime.ICallable
     {
@@ -691,7 +700,7 @@ internal static class PyDateTimeOps
 
         try
         {
-            return new PyDate(DateOnly.Parse(text.AsString(), CultureInfo.InvariantCulture));
+            return new PyDate(ParseIsoDate(text.AsString()));
         }
         catch (FormatException ex)
         {
@@ -1564,6 +1573,11 @@ internal static class PyDateTimeOps
     private static PyTime ParseTime(string text)
     {
         text = NormalizeIsoText(text);
+        if (text.StartsWith('T'))
+        {
+            text = text[1..];
+        }
+
         if (text.EndsWith("Z", StringComparison.Ordinal))
         {
             text = text[..^1] + "+00:00";
@@ -1571,10 +1585,10 @@ internal static class PyDateTimeOps
 
         if (TryParseTrailingOffset(text, out var body, out var offset))
         {
-            return new PyTime(TimeOnly.Parse(body, CultureInfo.InvariantCulture), new PyTimezone(offset));
+            return new PyTime(ParseIsoTime(body), new PyTimezone(offset));
         }
 
-        return new PyTime(TimeOnly.Parse(text, CultureInfo.InvariantCulture));
+        return new PyTime(ParseIsoTime(text));
     }
 
     private static PyDateTime ParseDateTime(string text)
@@ -1587,11 +1601,150 @@ internal static class PyDateTimeOps
 
         if (TryParseTrailingOffset(text, out var body, out var offset))
         {
-            return new PyDateTime(DateTime.Parse(body, CultureInfo.InvariantCulture, DateTimeStyles.None), new PyTimezone(offset));
+            return ParseIsoDateTime(body, new PyTimezone(offset));
         }
 
-        return new PyDateTime(DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.None));
+        return ParseIsoDateTime(text, null);
     }
+
+    private static DateOnly ParseIsoDate(string text)
+    {
+        var calendarMatch = CalendarDateRegex.Match(text);
+        if (calendarMatch.Success)
+        {
+            var basic = calendarMatch.Groups["basicYear"].Success;
+            var year = ParseIsoComponent(calendarMatch, basic ? "basicYear" : "year");
+            var month = ParseIsoComponent(calendarMatch, basic ? "basicMonth" : "month");
+            var day = ParseIsoComponent(calendarMatch, basic ? "basicDay" : "day");
+            try
+            {
+                return new DateOnly(year, month, day);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new FormatException("Invalid ISO calendar date.", ex);
+            }
+        }
+
+        var weekMatch = WeekDateRegex.Match(text);
+        if (weekMatch.Success)
+        {
+            var basic = weekMatch.Groups["basicYear"].Success;
+            var year = ParseIsoComponent(weekMatch, basic ? "basicYear" : "year");
+            var week = ParseIsoComponent(weekMatch, basic ? "basicWeek" : "week");
+            var weekdayGroup = weekMatch.Groups[basic ? "basicWeekday" : "weekday"];
+            var weekday = weekdayGroup.Success
+                ? int.Parse(weekdayGroup.Value, CultureInfo.InvariantCulture)
+                : 1;
+            if (weekday is < 1 or > 7 || week is < 1 or > 53)
+            {
+                throw new FormatException("Invalid ISO week date.");
+            }
+
+            try
+            {
+                var dayOfWeek = weekday == 7 ? DayOfWeek.Sunday : (DayOfWeek)weekday;
+                var value = DateOnly.FromDateTime(ISOWeek.ToDateTime(year, week, dayOfWeek));
+                if (ISOWeek.GetYear(value.ToDateTime(TimeOnly.MinValue)) != year ||
+                    ISOWeek.GetWeekOfYear(value.ToDateTime(TimeOnly.MinValue)) != week)
+                {
+                    throw new FormatException("Invalid ISO week date.");
+                }
+
+                return value;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new FormatException("Invalid ISO week date.", ex);
+            }
+        }
+
+        throw new FormatException("Invalid ISO date string.");
+    }
+
+    private static PyDateTime ParseIsoDateTime(string text, PyTimezone? timezone)
+    {
+        foreach (var dateLength in new[] { 10, 8, 7 })
+        {
+            if (text.Length < dateLength)
+            {
+                continue;
+            }
+
+            DateOnly date;
+            try
+            {
+                date = ParseIsoDate(text[..dateLength]);
+            }
+            catch (FormatException)
+            {
+                continue;
+            }
+
+            if (text.Length == dateLength)
+            {
+                return new PyDateTime(date.ToDateTime(TimeOnly.MinValue), timezone);
+            }
+
+            if (text[dateLength] is not ('T' or ' '))
+            {
+                continue;
+            }
+
+            var time = ParseIsoTime(text[(dateLength + 1)..]);
+            return new PyDateTime(date.ToDateTime(time), timezone);
+        }
+
+        throw new FormatException("Invalid ISO datetime string.");
+    }
+
+    private static TimeOnly ParseIsoTime(string text)
+    {
+        var match = ExtendedTimeRegex.Match(text);
+        int hour;
+        int minute;
+        int second;
+        int microsecond;
+        if (match.Success)
+        {
+            hour = ParseIsoComponent(match, "hour");
+            minute = match.Groups["minute"].Success ? ParseIsoComponent(match, "minute") : 0;
+            second = match.Groups["second"].Success ? ParseIsoComponent(match, "second") : 0;
+            microsecond = ParseIsoFraction(match.Groups["fraction"]);
+        }
+        else
+        {
+            var fractionSeparator = text.IndexOfAny(['.', ',']);
+            var digits = fractionSeparator < 0 ? text : text[..fractionSeparator];
+            var fraction = fractionSeparator < 0 ? string.Empty : text[(fractionSeparator + 1)..];
+            if (digits.Length is not (2 or 4 or 6) || !digits.All(char.IsAsciiDigit) ||
+                fraction.Length > 6 || fraction.Any(ch => !char.IsAsciiDigit(ch)) ||
+                fraction.Length > 0 && digits.Length != 6)
+            {
+                throw new FormatException("Invalid ISO time string.");
+            }
+
+            hour = int.Parse(digits[..2], CultureInfo.InvariantCulture);
+            minute = digits.Length >= 4 ? int.Parse(digits.Substring(2, 2), CultureInfo.InvariantCulture) : 0;
+            second = digits.Length == 6 ? int.Parse(digits.Substring(4, 2), CultureInfo.InvariantCulture) : 0;
+            microsecond = fraction.Length == 0 ? 0 : int.Parse(fraction.PadRight(6, '0'), CultureInfo.InvariantCulture);
+        }
+
+        try
+        {
+            return new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new FormatException("Invalid ISO time string.", ex);
+        }
+    }
+
+    private static int ParseIsoComponent(Match match, string groupName)
+        => int.Parse(match.Groups[groupName].Value, CultureInfo.InvariantCulture);
+
+    private static int ParseIsoFraction(Group group)
+        => group.Success ? int.Parse(group.Value.PadRight(6, '0'), CultureInfo.InvariantCulture) : 0;
 
     private static bool TryParseTrailingOffset(string text, out string body, out TimeSpan offset)
     {
