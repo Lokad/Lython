@@ -414,10 +414,10 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
             BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
             BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => Compare(left, right, binary.Span) < 0,
-            BinaryOperatorSyntax.LessEqual => Compare(left, right, binary.Span) <= 0,
-            BinaryOperatorSyntax.Greater => Compare(left, right, binary.Span) > 0,
-            BinaryOperatorSyntax.GreaterEqual => Compare(left, right, binary.Span) >= 0,
+            BinaryOperatorSyntax.Less => CompareRelational(left, right, binary.Span, static value => value < 0),
+            BinaryOperatorSyntax.LessEqual => CompareRelational(left, right, binary.Span, static value => value <= 0),
+            BinaryOperatorSyntax.Greater => CompareRelational(left, right, binary.Span, static value => value > 0),
+            BinaryOperatorSyntax.GreaterEqual => CompareRelational(left, right, binary.Span, static value => value >= 0),
             BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
             BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, binary.Span),
@@ -540,10 +540,10 @@ internal sealed partial class LythonRuntime
     {
         return op switch
         {
-            BinaryOperatorSyntax.Less => Compare(left, right, span) < 0,
-            BinaryOperatorSyntax.LessEqual => Compare(left, right, span) <= 0,
-            BinaryOperatorSyntax.Greater => Compare(left, right, span) > 0,
-            BinaryOperatorSyntax.GreaterEqual => Compare(left, right, span) >= 0,
+            BinaryOperatorSyntax.Less => CompareRelational(left, right, span, static value => value < 0),
+            BinaryOperatorSyntax.LessEqual => CompareRelational(left, right, span, static value => value <= 0),
+            BinaryOperatorSyntax.Greater => CompareRelational(left, right, span, static value => value > 0),
+            BinaryOperatorSyntax.GreaterEqual => CompareRelational(left, right, span, static value => value >= 0),
             BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
             BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, span),
@@ -2860,6 +2860,16 @@ internal sealed partial class LythonRuntime
     internal static bool AreEqual(object left, object right) => PyEquality.AreEqual(left, right);
 
     private static int Compare(object left, object right, LythonSourceSpan span) => PyComparison.Compare(left, right, span);
+
+    private static bool CompareRelational(object left, object right, LythonSourceSpan span, Func<int, bool> predicate)
+    {
+        if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
+        {
+            return PyNumberOps.TryCompare(lhs, rhs, out var comparison) && predicate(comparison);
+        }
+
+        return predicate(Compare(left, right, span));
+    }
 
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);
 

@@ -57,6 +57,23 @@ return "|".join(values)
     }
 
     [Fact]
+    public void NumericComparisonsAreExactAndTreatNanAsUnordered()
+    {
+        var result = new LythonEngine().Run(
+            """
+import math
+n = 9007199254740993
+f = 9007199254740992.0
+x = math.nan
+return str(n == f) + "|" + str(n > f) + "|" + str(x == x) + "|" + str(x != x) + "|" + str(x < 1) + "|" + str(x <= 1) + "|" + str(x > 1) + "|" + str(x >= 1)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("False|True|False|True|False|False|False|False", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

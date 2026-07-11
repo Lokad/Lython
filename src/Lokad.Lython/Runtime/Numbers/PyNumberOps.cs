@@ -123,9 +123,62 @@ internal static class PyNumberOps
     }
 
     public static int Compare(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat
-            ? lhs.Integer.CompareTo(rhs.Integer)
-            : lhs.ToDouble().CompareTo(rhs.ToDouble());
+        => TryCompare(lhs, rhs, out var comparison) ? comparison : 0;
+
+    public static bool AreEqual(PyNumber lhs, PyNumber rhs)
+        => TryCompare(lhs, rhs, out var comparison) && comparison == 0;
+
+    public static bool TryCompare(PyNumber lhs, PyNumber rhs, out int comparison)
+    {
+        if (lhs.IsFloat && double.IsNaN(lhs.Floating) || rhs.IsFloat && double.IsNaN(rhs.Floating))
+        {
+            comparison = 0;
+            return false;
+        }
+
+        if (!lhs.IsFloat && !rhs.IsFloat)
+        {
+            comparison = lhs.Integer.CompareTo(rhs.Integer);
+            return true;
+        }
+
+        if (!lhs.IsFloat)
+        {
+            comparison = CompareIntegerToFloat(lhs.Integer, rhs.Floating);
+            return true;
+        }
+
+        if (!rhs.IsFloat)
+        {
+            comparison = -CompareIntegerToFloat(rhs.Integer, lhs.Floating);
+            return true;
+        }
+
+        comparison = lhs.Floating.CompareTo(rhs.Floating);
+        return true;
+    }
+
+    private static int CompareIntegerToFloat(BigInteger integer, double floating)
+    {
+        if (double.IsPositiveInfinity(floating))
+        {
+            return -1;
+        }
+
+        if (double.IsNegativeInfinity(floating))
+        {
+            return 1;
+        }
+
+        var truncated = new BigInteger(floating);
+        var comparison = integer.CompareTo(truncated);
+        if (comparison != 0 || floating == Math.Truncate(floating))
+        {
+            return comparison;
+        }
+
+        return floating > 0 ? -1 : 1;
+    }
 
     public static object Negate(PyNumber number)
         => number.IsFloat ? -number.Floating : -number.Integer;

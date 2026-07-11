@@ -8,11 +8,6 @@ internal static class PyEquality
 {
     public static bool AreEqual(object left, object right)
     {
-        if (ReferenceEquals(left, right))
-        {
-            return true;
-        }
-
         if (left is PyDecimal || right is PyDecimal)
         {
             return PyDecimalOps.AreEqual(left, right);
@@ -20,7 +15,12 @@ internal static class PyEquality
 
         if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
         {
-            return PyNumberOps.Compare(lhs, rhs) == 0;
+            return PyNumberOps.AreEqual(lhs, rhs);
+        }
+
+        if (ReferenceEquals(left, right))
+        {
+            return true;
         }
 
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
