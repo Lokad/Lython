@@ -437,28 +437,80 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "math.fsum(iterable) expects one iterable.", span);
             }
 
-            decimal finiteTotal = 0m;
-            bool sawFinite = false;
-            double nonFiniteTotal = 0.0;
+            var partials = new List<double>();
+            var infinitySign = 0;
+            var sawNaN = false;
             foreach (var item in ToSequence(arguments[0], span))
             {
                 var value = ExpectReal(item, "math.fsum", span);
-                if (!double.IsFinite(value))
+                if (double.IsNaN(value))
                 {
-                    nonFiniteTotal += value;
+                    sawNaN = true;
                     continue;
                 }
 
-                finiteTotal += (decimal)value;
-                sawFinite = true;
+                if (double.IsInfinity(value))
+                {
+                    var sign = value > 0.0 ? 1 : -1;
+                    if (infinitySign != 0 && infinitySign != sign)
+                    {
+                        throw new LythonRuntimeException("ValueError", "-inf + inf in fsum", span);
+                    }
+
+                    infinitySign = sign;
+                    continue;
+                }
+
+                var x = value;
+                var writeIndex = 0;
+                for (var i = 0; i < partials.Count; i++)
+                {
+                    var y = partials[i];
+                    if (Math.Abs(x) < Math.Abs(y))
+                    {
+                        (x, y) = (y, x);
+                    }
+
+                    var high = x + y;
+                    if (double.IsInfinity(high))
+                    {
+                        throw new LythonRuntimeException("OverflowError", "intermediate overflow in fsum", span);
+                    }
+
+                    var low = y - (high - x);
+                    if (low != 0.0)
+                    {
+                        partials[writeIndex++] = low;
+                    }
+
+                    x = high;
+                }
+
+                if (writeIndex < partials.Count)
+                {
+                    partials.RemoveRange(writeIndex, partials.Count - writeIndex);
+                }
+
+                partials.Add(x);
             }
 
-            if (!double.IsFinite(nonFiniteTotal))
+            if (infinitySign != 0)
             {
-                return nonFiniteTotal;
+                return infinitySign > 0 ? double.PositiveInfinity : double.NegativeInfinity;
             }
 
-            return sawFinite ? (double)finiteTotal : 0.0;
+            if (sawNaN)
+            {
+                return double.NaN;
+            }
+
+            var total = 0.0;
+            for (var i = partials.Count - 1; i >= 0; i--)
+            {
+                total += partials[i];
+            }
+
+            return total;
         }
 
         private static double ExpectUnaryReal(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)

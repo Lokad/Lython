@@ -38,6 +38,8 @@ public sealed class MathModuleFunctionTests
     [InlineData("math.isclose(1, 1.0000000001)", "True")]
     [InlineData("math.prod([2, 3], start = 4)", "24")]
     [InlineData("math.fsum([0.1, 0.2, 0.3])", "0.6")]
+    [InlineData("math.fsum([1e100, 1.0, -1e100])", "1")]
+    [InlineData("math.isnan(math.fsum([math.nan]))", "True")]
     [InlineData("math.factorial(6)", "720")]
     [InlineData("math.factorial(True)", "1")]
     [InlineData("math.gcd(48, 18, -30)", "6")]
@@ -111,6 +113,8 @@ public sealed class MathModuleFunctionTests
     [InlineData("math.floor(math.inf)", "OverflowError", "infinity")]
     [InlineData("math.ceil(math.nan)", "ValueError", "NaN")]
     [InlineData("math.trunc(-math.inf)", "OverflowError", "infinity")]
+    [InlineData("math.fsum([math.inf, -math.inf])", "ValueError", "-inf + inf")]
+    [InlineData("math.fsum([1e308, 1e308])", "OverflowError", "intermediate overflow")]
     public void MathModule_Failures_ArePythonShaped(string expression, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(
