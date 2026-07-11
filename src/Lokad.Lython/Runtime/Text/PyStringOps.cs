@@ -746,6 +746,10 @@ internal static class PyStringOps
         return CheckCased(value, expectLower: false);
     }
 
+    public static PyString Lower(PyString value) => MapCase(value, CaseMapping.Lower);
+
+    public static PyString Upper(PyString value) => MapCase(value, CaseMapping.Upper);
+
     public static bool IsAlpha(PyString value)
     {
         return CheckAllRunes(value, static rune => Rune.IsLetter(rune));
@@ -792,8 +796,7 @@ internal static class PyStringOps
         while (byteIndex < source.Length)
         {
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            var text = rune.ToString();
-            builder.AppendString(first ? text.ToUpperInvariant() : text.ToLowerInvariant());
+            builder.AppendString(MapCase(rune, first ? CaseMapping.Title : CaseMapping.Lower));
             first = false;
             byteIndex += runeLength;
         }
@@ -809,8 +812,8 @@ internal static class PyStringOps
         {
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
             var text = rune.ToString();
-            var lower = text.ToLowerInvariant();
-            var upper = text.ToUpperInvariant();
+            var lower = MapCase(rune, CaseMapping.Lower);
+            var upper = MapCase(rune, CaseMapping.Upper);
             builder.AppendString(text == lower && lower != upper ? upper : text == upper && lower != upper ? lower : text);
             byteIndex += runeLength;
         }
@@ -827,8 +830,8 @@ internal static class PyStringOps
         {
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
             var text = rune.ToString();
-            var lower = text.ToLowerInvariant();
-            var upper = text.ToUpperInvariant();
+            var lower = MapCase(rune, CaseMapping.Lower);
+            var upper = MapCase(rune, CaseMapping.Upper);
             var isCased = lower != upper;
             if (!isCased)
             {
@@ -837,7 +840,7 @@ internal static class PyStringOps
             }
             else
             {
-                builder.AppendString(previousWasCased ? lower : upper);
+                builder.AppendString(previousWasCased ? lower : MapCase(rune, CaseMapping.Title));
                 previousWasCased = true;
             }
 
@@ -965,8 +968,8 @@ internal static class PyStringOps
         {
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
             var text = rune.ToString();
-            var lower = text.ToLowerInvariant();
-            var upper = text.ToUpperInvariant();
+            var lower = MapCase(rune, CaseMapping.Lower);
+            var upper = MapCase(rune, CaseMapping.Upper);
             if (lower == upper)
             {
                 byteIndex += runeLength;
@@ -983,6 +986,76 @@ internal static class PyStringOps
         }
 
         return sawCasedRune;
+    }
+
+    private static PyString MapCase(PyString value, CaseMapping mapping)
+    {
+        var builder = CreateBuilder(value, value.Utf8Bytes.Length);
+        foreach (var rune in value.AsString().EnumerateRunes())
+        {
+            builder.AppendString(MapCase(rune, mapping));
+        }
+
+        return builder.ToPyString();
+    }
+
+    private static string MapCase(Rune rune, CaseMapping mapping)
+    {
+        if (mapping == CaseMapping.Lower && rune.Value == 0x0130)
+        {
+            return "i\u0307";
+        }
+
+        if (mapping is CaseMapping.Upper or CaseMapping.Title)
+        {
+            var special = (rune.Value, mapping) switch
+            {
+                (0x00DF, CaseMapping.Upper) => "SS",
+                (0x00DF, CaseMapping.Title) => "Ss",
+                (0x0149, _) => "\u02BCN",
+                (0x01F0, _) => "J\u030C",
+                (0x0390, _) => "\u0399\u0308\u0301",
+                (0x03B0, _) => "\u03A5\u0308\u0301",
+                (0x0587, CaseMapping.Upper) => "\u0535\u0552",
+                (0x0587, CaseMapping.Title) => "\u0535\u0582",
+                (0xFB00, CaseMapping.Upper) => "FF",
+                (0xFB00, CaseMapping.Title) => "Ff",
+                (0xFB01, CaseMapping.Upper) => "FI",
+                (0xFB01, CaseMapping.Title) => "Fi",
+                (0xFB02, CaseMapping.Upper) => "FL",
+                (0xFB02, CaseMapping.Title) => "Fl",
+                (0xFB03, CaseMapping.Upper) => "FFI",
+                (0xFB03, CaseMapping.Title) => "Ffi",
+                (0xFB04, CaseMapping.Upper) => "FFL",
+                (0xFB04, CaseMapping.Title) => "Ffl",
+                (0xFB05 or 0xFB06, CaseMapping.Upper) => "ST",
+                (0xFB05 or 0xFB06, CaseMapping.Title) => "St",
+                (0xFB13, CaseMapping.Upper) => "\u0544\u0546",
+                (0xFB13, CaseMapping.Title) => "\u0544\u0576",
+                (0xFB14, CaseMapping.Upper) => "\u0544\u0535",
+                (0xFB14, CaseMapping.Title) => "\u0544\u0565",
+                (0xFB15, CaseMapping.Upper) => "\u0544\u053B",
+                (0xFB15, CaseMapping.Title) => "\u0544\u056B",
+                (0xFB16, CaseMapping.Upper) => "\u054E\u0546",
+                (0xFB16, CaseMapping.Title) => "\u054E\u0576",
+                (0xFB17, CaseMapping.Upper) => "\u0544\u053D",
+                (0xFB17, CaseMapping.Title) => "\u0544\u056D",
+                _ => null
+            };
+            if (special is not null)
+            {
+                return special;
+            }
+        }
+
+        var text = rune.ToString();
+        return mapping switch
+        {
+            CaseMapping.Lower => text.ToLowerInvariant(),
+            CaseMapping.Upper => text.ToUpperInvariant(),
+            CaseMapping.Title => text.ToUpperInvariant(),
+            _ => text
+        };
     }
 
     private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate)
@@ -1237,5 +1310,12 @@ internal static class PyStringOps
         Left,
         Right,
         Center
+    }
+
+    private enum CaseMapping
+    {
+        Lower,
+        Upper,
+        Title
     }
 }

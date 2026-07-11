@@ -322,14 +322,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     }
 
     public PyString ToLowerInvariant()
-        => _memoryGovernor is null
-            ? FromString(AsString().ToLowerInvariant())
-            : FromString(AsString().ToLowerInvariant(), _memoryGovernor, _allocationSpan);
+        => PyStringOps.Lower(this);
 
     public PyString ToUpperInvariant()
-        => _memoryGovernor is null
-            ? FromString(AsString().ToUpperInvariant())
-            : FromString(AsString().ToUpperInvariant(), _memoryGovernor, _allocationSpan);
+        => PyStringOps.Upper(this);
 
     public override string ToString() => AsString();
 

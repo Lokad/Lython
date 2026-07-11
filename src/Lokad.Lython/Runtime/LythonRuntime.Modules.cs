@@ -4316,8 +4316,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.startswith(prefix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.startswith(prefix[, start[, end]])");
-                    return StartsOrEndsWith(text, arguments[0], start, end, isStart: true, span);
+                    var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.startswith(prefix[, start[, end]])");
+                    return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: true, span);
                 }, "str.startswith", ["prefix", "start", "end"], 1),
                 "endswith" => new BoundCallable((arguments, span, _) =>
                 {
@@ -4326,8 +4326,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.endswith(suffix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.endswith(suffix[, start[, end]])");
-                    return StartsOrEndsWith(text, arguments[0], start, end, isStart: false, span);
+                    var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.endswith(suffix[, start[, end]])");
+                    return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
                 }, "str.endswith", ["suffix", "start", "end"], 1),
                 "lower" => new BoundCallable((arguments, span, _) =>
                 {
@@ -4666,7 +4666,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.find(sub[, start[, end]]) expects one string argument plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.find(sub[, start[, end]])");
+                    var (start, end, _) = ParseStringBounds(text.Length, arguments, span, "str.find(sub[, start[, end]])");
                     return PyStringOps.Find(text, needle, start, end);
                 }, "str.find", ["sub", "start", "end"], 1),
                 "index" => new BoundCallable((arguments, span, _) =>
@@ -4676,7 +4676,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.index(sub[, start[, end]]) expects one string argument plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.index(sub[, start[, end]])");
+                    var (start, end, _) = ParseStringBounds(text.Length, arguments, span, "str.index(sub[, start[, end]])");
                     var result = PyStringOps.Find(text, needle, start, end);
                     if ((BigInteger)result < 0)
                     {
@@ -4692,7 +4692,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.rfind(sub[, start[, end]]) expects one string argument plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.rfind(sub[, start[, end]])");
+                    var (start, end, _) = ParseStringBounds(text.Length, arguments, span, "str.rfind(sub[, start[, end]])");
                     return PyStringOps.RFind(text, needle, start, end);
                 }, "str.rfind", ["sub", "start", "end"], 1),
                 "rindex" => new BoundCallable((arguments, span, _) =>
@@ -4702,7 +4702,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.rindex(sub[, start[, end]]) expects one string argument plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.rindex(sub[, start[, end]])");
+                    var (start, end, _) = ParseStringBounds(text.Length, arguments, span, "str.rindex(sub[, start[, end]])");
                     var result = PyStringOps.RFind(text, needle, start, end);
                     if ((BigInteger)result < 0)
                     {
@@ -4718,7 +4718,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.count(sub[, start[, end]]) expects one string argument plus optional integer bounds.", span);
                     }
 
-                    var (start, end) = ParseStringBounds(text.Length, arguments, span, "str.count(sub[, start[, end]])");
+                    var (start, end, _) = ParseStringBounds(text.Length, arguments, span, "str.count(sub[, start[, end]])");
                     return PyStringOps.Count(text, needle, start, end);
                 }, "str.count", ["sub", "start", "end"], 1),
                 "removeprefix" => new BoundCallable((arguments, span, _) =>
@@ -4870,13 +4870,24 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static (int Start, int End) ParseStringBounds(int textLength, object[] arguments, LythonSourceSpan span, string signature)
+        private static (int Start, int End, bool StartBeyondLength) ParseStringBounds(
+            int textLength,
+            object[] arguments,
+            LythonSourceSpan span,
+            string signature)
         {
             try
             {
                 object? start = arguments.Length >= 2 ? arguments[1] : null;
                 object? end = arguments.Length == 3 ? arguments[2] : null;
-                return PyStringOps.NormalizeRange(textLength, start, end);
+                var normalized = PyStringOps.NormalizeRange(textLength, start, end);
+                var startBeyondLength = start switch
+                {
+                    BigInteger integer => integer > textLength,
+                    int integer => integer > textLength,
+                    _ => false
+                };
+                return (normalized.Start, normalized.End, startBeyondLength);
             }
             catch (InvalidOperationException)
             {
@@ -4884,11 +4895,19 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool StartsOrEndsWith(PyString text, object prefixOrTuple, int start, int end, bool isStart, LythonSourceSpan span)
+        private static bool StartsOrEndsWith(
+            PyString text,
+            object prefixOrTuple,
+            int start,
+            int end,
+            bool startBeyondLength,
+            bool isStart,
+            LythonSourceSpan span)
         {
             if (PyStringOps.TryAsString(prefixOrTuple, out var single))
             {
-                return isStart ? PyStringOps.StartsWith(text, single, start, end) : PyStringOps.EndsWith(text, single, start, end);
+                return !startBeyondLength &&
+                    (isStart ? PyStringOps.StartsWith(text, single, start, end) : PyStringOps.EndsWith(text, single, start, end));
             }
 
             if (prefixOrTuple is not PyTuple tuple)
@@ -4911,7 +4930,8 @@ internal sealed partial class LythonRuntime
                         span);
                 }
 
-                if (isStart ? PyStringOps.StartsWith(text, textItem, start, end) : PyStringOps.EndsWith(text, textItem, start, end))
+                if (!startBeyondLength &&
+                    (isStart ? PyStringOps.StartsWith(text, textItem, start, end) : PyStringOps.EndsWith(text, textItem, start, end)))
                 {
                     return true;
                 }
