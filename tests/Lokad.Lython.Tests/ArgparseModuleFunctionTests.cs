@@ -6,6 +6,29 @@ namespace Lokad.Lython.Tests;
 public sealed class ArgparseModuleFunctionTests
 {
     [Fact]
+    public void ArgparseModule_OptionTerminatorAndNegativePositionals_AreDisambiguated()
+    {
+        var result = new LythonEngine().Run(
+            """
+import argparse
+
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("first")
+parser.add_argument("second")
+args = parser.parse_args(["--", "-x", "-2.5"])
+print(args.first, args.second)
+
+numeric = argparse.ArgumentParser(add_help=False)
+numeric.add_argument("value", type=int)
+print(numeric.parse_args(["-2"]).value)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("-x -2.5\n-2\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void ArgparseModule_RequiredChoicesAppendStoreTrueAndTypedValues_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

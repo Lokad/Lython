@@ -2658,6 +2658,7 @@ internal sealed partial class LythonRuntime
                     while (index < argv.Count)
                     {
                         ConsumePositional(argv, ref index, positionalSpecs, ref positionalIndex, seenSpecs, values, unknown, collectUnknown, span, context);
+                        index++;
                     }
 
                     break;
@@ -2685,7 +2686,8 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                if (LooksLikeOptionalToken(token))
+                if (LooksLikeOptionalToken(token) &&
+                    (!LooksLikeNegativeNumber(token) || HasNegativeNumberOptions()))
                 {
                     if (collectUnknown)
                     {
@@ -3784,6 +3786,17 @@ internal sealed partial class LythonRuntime
 
         private static bool LooksLikeOptionalToken(string token)
             => token.Length > 1 && token[0] == '-' && token != "-";
+
+        private static bool LooksLikeNegativeNumber(string token)
+            => decimal.TryParse(
+                token,
+                NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture,
+                out _);
+
+        private bool HasNegativeNumberOptions()
+            => _arguments.Any(static argument =>
+                !argument.IsPositional && argument.OptionNames.Any(LooksLikeNegativeNumber));
 
         private static bool IsNoValueAction(string action)
             => action is "store_true" or "store_false" or "store_const" or "count" or "help" or "version";
