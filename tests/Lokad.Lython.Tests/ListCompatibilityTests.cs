@@ -5,6 +5,23 @@ namespace Lokad.Lython.Tests;
 public sealed class ListCompatibilityTests
 {
     [Fact]
+    public void ReverseSortIsStableAndExtendSelfSnapshotsSource()
+    {
+        var result = new LythonEngine().Run(
+            """
+rows = [("a", 1), ("b", 1), ("c", 2)]
+ordered = sorted(rows, key=lambda row: row[1], reverse=True)
+items = [1, 2]
+items.extend(items)
+return "".join(row[0] for row in ordered) + "|" + str(items)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("cab|[1, 2, 1, 2]", result.ReturnValue);
+    }
+
+    [Fact]
     public void ListMethods_FollowCommonPythonSemantics()
     {
         var host = new MockLythonHost();
@@ -40,7 +57,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("0|2|0|2|[a, x]|bcNone|[(1, a), (2, a), (2, b)]|None|[bbb, cc, a]", host.ReadText("/out.txt"));
+        Assert.Equal("0|2|0|2|['a', 'x']|bcNone|[(1, 'a'), (2, 'a'), (2, 'b')]|None|['bbb', 'cc', 'a']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -98,7 +115,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("[0, 0, 0]|[1, 2, 1, 2]|[]|[]|[x, x, x]|True", host.ReadText("/out.txt"));
+        Assert.Equal("[0, 0, 0]|[1, 2, 1, 2]|[]|[]|['x', 'x', 'x']|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -130,7 +147,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("[a, b, c, 3, x, 4]|[10, 30, 5]|[1, 2, 3, 9]", host.ReadText("/out.txt"));
+        Assert.Equal("['a', 'b', 'c', 3, 'x', 4]|[10, 30, 5]|[1, 2, 3, 9]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -171,7 +188,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("True|True|True|[(1, a), (2, a), (2, b)]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|True|[(1, 'a'), (2, 'a'), (2, 'b')]", host.ReadText("/out.txt"));
     }
 
     [Fact]

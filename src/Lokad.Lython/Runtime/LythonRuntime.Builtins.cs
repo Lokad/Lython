@@ -1887,17 +1887,15 @@ internal sealed partial class LythonRuntime
         {
             var current = keyed[i];
             var j = i - 1;
-            while (j >= 0 && CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0)
+            while (j >= 0 && (reverse
+                ? CompareSortKeys(keyed[j].Key, current.Key, span, context) < 0
+                : CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0))
             {
                 keyed[j + 1] = keyed[j];
                 j--;
             }
 
             keyed[j + 1] = current;
-        }
-        if (reverse)
-        {
-            keyed.Reverse();
         }
 
         var items = new object[keyed.Count];
@@ -1947,17 +1945,15 @@ internal sealed partial class LythonRuntime
         {
             var current = keyed[i];
             var j = i - 1;
-            while (j >= 0 && await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0)
+            while (j >= 0 && (reverse
+                ? await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) < 0
+                : await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0))
             {
                 keyed[j + 1] = keyed[j];
                 j--;
             }
 
             keyed[j + 1] = current;
-        }
-        if (reverse)
-        {
-            keyed.Reverse();
         }
 
         var items = new object[keyed.Count];

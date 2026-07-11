@@ -31,11 +31,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    foreach (var item in ToSequence(arguments[0], span))
-                    {
-                        list.Add(item);
-                        context.ObserveCollectionCount(list.Count, span);
-                    }
+                    list.AddRange(ToSequence(arguments[0], span, context).ToArray());
+                    context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.extend", ["iterable"]),
                 "index" => new BoundCallable((arguments, span, _) =>
@@ -223,11 +220,7 @@ internal sealed partial class LythonRuntime
                         : item));
             }
 
-            SortKeyedItems(keyed, span, context);
-            if (reverse)
-            {
-                keyed.Reverse();
-            }
+            SortKeyedItems(keyed, reverse, span, context);
 
             return keyed.Select(item => item.Value).ToArray();
         }
@@ -249,22 +242,20 @@ internal sealed partial class LythonRuntime
                         : item));
             }
 
-            await SortKeyedItemsAsync(keyed, span, context).ConfigureAwait(false);
-            if (reverse)
-            {
-                keyed.Reverse();
-            }
+            await SortKeyedItemsAsync(keyed, reverse, span, context).ConfigureAwait(false);
 
             return keyed.Select(item => item.Value).ToArray();
         }
 
-        private static void SortKeyedItems(List<SortKeyValue> keyed, LythonSourceSpan span, ExecutionContext context)
+        private static void SortKeyedItems(List<SortKeyValue> keyed, bool reverse, LythonSourceSpan span, ExecutionContext context)
         {
             for (var i = 1; i < keyed.Count; i++)
             {
                 var current = keyed[i];
                 var j = i - 1;
-                while (j >= 0 && CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0)
+                while (j >= 0 && (reverse
+                    ? CompareSortKeys(keyed[j].Key, current.Key, span, context) < 0
+                    : CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0))
                 {
                     keyed[j + 1] = keyed[j];
                     j--;
@@ -274,13 +265,15 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static async ValueTask SortKeyedItemsAsync(List<SortKeyValue> keyed, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask SortKeyedItemsAsync(List<SortKeyValue> keyed, bool reverse, LythonSourceSpan span, ExecutionContext context)
         {
             for (var i = 1; i < keyed.Count; i++)
             {
                 var current = keyed[i];
                 var j = i - 1;
-                while (j >= 0 && await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0)
+                while (j >= 0 && (reverse
+                    ? await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) < 0
+                    : await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0))
                 {
                     keyed[j + 1] = keyed[j];
                     j--;
