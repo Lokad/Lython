@@ -22,7 +22,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[x, Yaa]|x aa|1", host.ReadText("/out.txt"));
+        Assert.Equal("['x', 'Yaa']|x aa|1", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -86,7 +86,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|[a.py, b.py]", host.ReadText("/out.txt"));
+        Assert.Equal("True|['a.py', 'b.py']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -107,7 +107,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.txt, b.txt]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.txt', 'b.txt']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -131,7 +131,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("test.*\\.py|[a.py, b.py]", host.ReadText("/out.txt"));
+        Assert.Equal("test.*\\.py|['a.py', 'b.py']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -215,7 +215,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[--demo, x]|[[name, score], [alpha, 2]]|[a.txt, c.txt]|2", host.ReadText("/out.txt"));
+        Assert.Equal("['--demo', 'x']|[['name', 'score'], ['alpha', '2']]|['a.txt', 'c.txt']|2", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("2|(0, 3)|[, a::b:]", host.ReadText("/out.txt"));
+        Assert.Equal("2|(0, 3)|['', 'a::b:']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -575,7 +575,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("(/, repo, docs)", host.ReadText("/out.txt"));
+        Assert.Equal("('/', 'repo', 'docs')", host.ReadText("/out.txt"));
     }
 
     [Fact]

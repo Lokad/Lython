@@ -67,7 +67,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("x.json:True:False|x.pkgutil:True:False||3|manual|True|True|True|(module_finder, name, ispkg)|manual|changed:False|1|1|True", host.ReadText("/out.txt"));
+        Assert.Equal("x.json:True:False|x.pkgutil:True:False||3|manual|True|True|True|('module_finder', 'name', 'ispkg')|manual|changed:False|1|1|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -231,7 +231,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("{\"ok\":true}|{\"ok\":false}|[/a]", host.ReadText("/out.txt"));
+        Assert.Equal("{\"ok\": true}|{\"ok\": false}|['/a']", host.ReadText("/out.txt"));
     }
 
     [Fact]

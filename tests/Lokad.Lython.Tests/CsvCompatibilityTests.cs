@@ -5,6 +5,31 @@ namespace Lokad.Lython.Tests;
 public sealed class CsvCompatibilityTests
 {
     [Fact]
+    public void CsvWriters_PropagateUnderlyingWriteCounts()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import csv
+
+with open("/rows.csv", "w", newline="") as handle:
+    row_count = csv.writer(handle, lineterminator="\n").writerow(["a"])
+
+with open("/dict.csv", "w", newline="") as handle:
+    header_count = csv.DictWriter(handle, fieldnames=["x"], lineterminator="\n").writeheader()
+
+__lython_file = open("/out.txt", "w")
+__lython_file.write(str(row_count) + "|" + str(header_count))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("2|2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DictReader_HandlesHeadersExplicitFieldnamesRestValuesAndIteration()
     {
         var host = new MockLythonHost();
@@ -32,7 +57,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("alpha:2:[]|beta:0:[]|gamma:3:[extra]|name,qty|alpha:2|beta:0|None", host.ReadText("/out.txt"));
+        Assert.Equal("alpha:2:[]|beta:0:[]|gamma:3:['extra']|name,qty|alpha:2|beta:0|None", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -61,7 +86,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4|hello\nworld|hello\nworld|[name, note]|[beta, z]", host.ReadText("/out.txt"));
+        Assert.Equal("4|hello\nworld|hello\nworld|['name', 'note']|['beta', 'z']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -239,7 +264,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Contains("caught:Error", host.ReadText("/out.txt"), StringComparison.Ordinal);
+        Assert.Equal("caught:Invalid csv input.", host.ReadText("/out.txt"));
     }
 
     [Fact]

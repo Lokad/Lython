@@ -26,7 +26,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("(1, 4)|{\"ok\":true}|True", host.ReadText("/out.txt"));
+        Assert.Equal("(1, 4)|{\"ok\": true}|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("{\"ok\":true}|(1, 4)", host.ReadText("/out.txt"));
+        Assert.Equal("{\"ok\": true}|(1, 4)", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("{\"ok\":true}", host.ReadText("/out.txt"));
+        Assert.Equal("{\"ok\": true}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -118,7 +118,7 @@ __lython_file.close()
             Assert.Fail($"{failure?.ExceptionType}|{failure?.Message}|{diagnostics}");
         }
         Assert.Null(result.Failure);
-        Assert.Equal("(1, 4)|[aaa, a]|[, a, ]|[(a, ), (, x), (a, )]|cxb x|{\"ok\":true}", host.ReadText("/out.txt"));
+        Assert.Equal("(1, 4)|['aaa', 'a']|['', 'a', '']|[('a', ''), ('', 'x'), ('a', '')]|cxb x|{\"ok\": true}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -232,7 +232,7 @@ __lython_file.close()
                 $"{result.Failure?.ExceptionType}|{result.Failure?.Message}|{string.Join("||", result.Diagnostics.Select(diagnostic => $"{diagnostic.Code}:{diagnostic.Message}"))}");
         }
         Assert.Null(result.Failure);
-        Assert.Equal("[aaa, a]|2", host.ReadText("/out.txt"));
+        Assert.Equal("['aaa', 'a']|2", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -254,7 +254,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[, a, ]|[(a, ), (, x), (a, )]|[(a, ), (, x), (a, )]", host.ReadText("/out.txt"));
+        Assert.Equal("['', 'a', '']|[('a', ''), ('', 'x'), ('a', '')]|[('a', ''), ('', 'x'), ('a', '')]", host.ReadText("/out.txt"));
     }
 
     [Fact]

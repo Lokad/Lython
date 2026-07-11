@@ -69,7 +69,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[  alpha\n, - bravo\n, + charlie\n]|alpha\nbravo\n|alpha\ncharlie\n|[apply, apple]", host.ReadText("/out.txt"));
+        Assert.Equal("['  alpha\\n', '- bravo\\n', '+ charlie\\n']|alpha\nbravo\n|alpha\ncharlie\n|['apply', 'apple']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -101,7 +101,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("True|[Match(a=0, b=0, size=2), Match(a=2, b=3, size=2), Match(a=4, b=5, size=0)]|[(equal, 0, 2, 0, 2), (insert, 2, 2, 2, 3), (equal, 2, 4, 3, 5)]|0:0:[0, 0, 2]|[[(equal, 1, 2, 1, 2), (insert, 2, 2, 2, 3), (equal, 2, 3, 3, 4)]]|0.5|1|0", host.ReadText("/out.txt"));
+        Assert.Equal("True|[Match(a=0, b=0, size=2), Match(a=2, b=3, size=2), Match(a=4, b=5, size=0)]|[('equal', 0, 2, 0, 2), ('insert', 2, 2, 2, 3), ('equal', 2, 4, 3, 5)]|0:0:[0, 0, 2]|[[('equal', 1, 2, 1, 2), ('insert', 2, 2, 2, 3), ('equal', 2, 3, 3, 4)]]|0.5|1.0|0.0", host.ReadText("/out.txt"));
     }
 
     [Fact]

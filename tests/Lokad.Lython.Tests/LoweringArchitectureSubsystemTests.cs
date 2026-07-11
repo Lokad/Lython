@@ -798,7 +798,7 @@ return helper(payload["items"]) + "|" + text
 """, new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4!|{\"items\":[1,2,3],\"ok\":true}", result.ReturnValue);
+        Assert.Equal("4!|{\"items\": [1, 2, 3], \"ok\": true}", result.ReturnValue);
     }
 
     private static IEnumerable<LoweredStatement> FlattenStatements(IEnumerable<LoweredStatement> statements)

@@ -124,7 +124,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("0", host.ReadText("/out.txt"));
+        Assert.Equal("0.0", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -240,7 +240,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("True|True|False|[a.txt, b.txt, nested]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|False|['a.txt', 'b.txt', 'nested']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -314,7 +314,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[alpha\n, beta\n, last]|", host.ReadText("/out.txt"));
+        Assert.Equal("['alpha\\n', 'beta\\n', 'last']|", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -344,7 +344,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("alpha<n>|beta<n>|[gamma]|[]|beta<n>gamma|", host.ReadText("/out.txt"));
+        Assert.Equal("alpha<n>|beta<n>|['gamma']|[]|beta<n>gamma|", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -368,7 +368,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("alpha|[beta, gamma]|[]", host.ReadText("/out.txt"));
+        Assert.Equal("alpha|['beta', 'gamma']|[]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -645,7 +645,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("/repo|[a.md, nested/b.md]|.md", host.ReadText("/out.txt"));
+        Assert.Equal("/repo|['a.md', 'nested/b.md']|.md", host.ReadText("/out.txt"));
     }
 
     [Fact]

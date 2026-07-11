@@ -46,7 +46,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|True|[name, count, items]|pcs|{'name': demo, 'count': 2, 'items': [4, 9]}|(demo, 2, [4, 9])|Box(name=next, count=2, items=[4, 9])|[4, 9]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|['name', 'count', 'items']|pcs|{'name': 'demo', 'count': 2, 'items': [4, 9]}|('demo', 2, [4, 9])|Box(name=next, count=2, items=[4, 9])|[4, 9]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[x, y]|id|True|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("['x', 'y']|id|True|True|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -153,7 +153,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("Child(a=1, b=2, c=3, d=[])|[a, b, c, d]|[]|MISSING|True", host.ReadText("/out.txt"));
+        Assert.Equal("Child(a=1, b=2, c=3, d=[])|['a', 'b', 'c', 'd']|[]|MISSING|True", host.ReadText("/out.txt"));
     }
 
     [Fact]

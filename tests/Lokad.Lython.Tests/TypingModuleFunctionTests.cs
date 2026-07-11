@@ -82,7 +82,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[values]|List[int]|Box(values=[1, 2])", host.ReadText("/out.txt"));
+        Assert.Equal("['values']|List[int]|Box(values=[1, 2])", host.ReadText("/out.txt"));
     }
 
     [Fact]

@@ -29,7 +29,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[1, 3]|None|[4]|[a, b, c]", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 3]|None|[4]|['a', 'b', 'c']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|[[1], [2]]|[(a, [1]), (b, [2])]|[[1], [2]]|[]", host.ReadText("/out.txt"));
+        Assert.Equal("True|[[1], [2]]|[('a', [1]), ('b', [2])]|[[1], [2]]|[]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -86,7 +86,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("4|0|[(a, 4), (b, 0)]|[a, a, a, a]", host.ReadText("/out.txt"));
+        Assert.Equal("4|0|[('a', 4), ('b', 0)]|['a', 'a', 'a', 'a']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -114,7 +114,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a, b]|[2, 1]|[(a, 2), (b, 1)]|[(a, 2), (b, 1)]|[]", host.ReadText("/out.txt"));
+        Assert.Equal("['a', 'b']|[2, 1]|[('a', 2), ('b', 1)]|[('a', 2), ('b', 1)]|[]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -211,7 +211,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("1|10|1|[1, 10]|(x, y)|{'y': 10}|{'x': 1, 'y': 10}|Point(x=1, y=3)|Point(x=4, y=5)|True|True|Point|True|Point(x=1, y=20)", host.ReadText("/out.txt"));
+        Assert.Equal("1|10|1|[1, 10]|('x', 'y')|{'y': 10}|{'x': 1, 'y': 10}|Point(x=1, y=3)|Point(x=4, y=5)|True|True|Point|True|Point(x=1, y=20)", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -253,7 +253,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[(b, 2), (a, 1)]|1|0|3|[a, b, c]|[(a, 0), (b, 2), (c, 3)]|4|3|Sequence|Iterable|Mapping[str, int]|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("[('b', 2), ('a', 1)]|1|0|3|['a', 'b', 'c']|[('a', 0), ('b', 2), ('c', 3)]|4|3|Sequence|Iterable|Mapping[str, int]|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -284,7 +284,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[(a, 1), (b, [2])]|True|KeyError|[(a, 1), (b, [2]), (c, [3])]", host.ReadText("/out.txt"));
+        Assert.Equal("[('a', 1), ('b', [2])]|True|KeyError|[('a', 1), ('b', [2]), ('c', [3])]", host.ReadText("/out.txt"));
     }
 
     [Fact]

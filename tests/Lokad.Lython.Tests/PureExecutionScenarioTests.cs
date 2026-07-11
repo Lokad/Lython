@@ -307,7 +307,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[--lang, fr, --apply]", host.ReadText("/out.txt"));
+        Assert.Equal("['--lang', 'fr', '--apply']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -327,7 +327,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[(a, 1), (b, 2)]|2|None", host.ReadText("/out.txt"));
+        Assert.Equal("[('a', 1), ('b', 2)]|2|None", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -353,7 +353,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[0:src-a:dst-a, 1:src-b:dst-b]|1", host.ReadText("/out.txt"));
+        Assert.Equal("['0:src-a:dst-a', '1:src-b:dst-b']|1", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -482,7 +482,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("fr|[a, b]|True|5", host.ReadText("/out.txt"));
+        Assert.Equal("fr|['a', 'b']|True|5", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -561,7 +561,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("{'a.md': [(12, bad link), (15, extra link)], 'b.md': [(None, front matter)]}", host.ReadText("/out.txt"));
+        Assert.Equal("{'a.md': [(12, 'bad link'), (15, 'extra link')], 'b.md': [(None, 'front matter')]}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1131,7 +1131,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("5|name|True|{'name': alpha, 'child': {'value': 3}, 'tags': [x], 'meta': {'k': {'value': 4}}, 'hidden': 9}|(alpha, (3,), [x], {'k': (4,)}, 9)|beta:[y]:9", host.ReadText("/out.txt"));
+        Assert.Equal("5|name|True|{'name': 'alpha', 'child': {'value': 3}, 'tags': ['x'], 'meta': {'k': {'value': 4}}, 'hidden': 9}|('alpha', (3,), ['x'], {'k': (4,)}, 9)|beta:['y']:9", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1264,7 +1264,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[Plain:x, Wrapped:x]|10|20", host.ReadText("/out.txt"));
+        Assert.Equal("['Plain:x', 'Wrapped:x']|10|20", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2498,7 +2498,7 @@ __lython_file.close()
         Assert.True(result.Success);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "True|True|8|alpha beta|alpha beta  |  alpha beta|[a, b, c]|[a, , b]|[x, y, z]|[x\n, y\r\n, z]|right:left",
+            "True|True|8|alpha beta|alpha beta  |  alpha beta|['a', 'b', 'c']|['a', '', 'b']|['x', 'y', 'z']|['x\\n', 'y\\r\\n', 'z']|right:left",
             host.ReadText("/out.txt"));
     }
 
@@ -2528,7 +2528,7 @@ __lython_file.close()
             result.Failure?.Message ??
             string.Join(" | ", result.Diagnostics.Select(d => d.Span is null ? d.Message : $"{d.Message} @ {d.Span.Line}:{d.Span.Column}")));
         Assert.Null(result.Failure);
-        Assert.Equal("3|😀|😀|1|1|[a, 😀, b]", host.ReadText("/out.txt"));
+        Assert.Equal("3|😀|😀|1|1|['a', '😀', 'b']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2575,7 +2575,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("True|True|True|1|2|éxé|[é, 😀]|[é, é]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|True|1|2|éxé|['é', '😀']|['é', 'é']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2648,7 +2648,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("😀 é|😀 é \n| \t😀 é|[a, b, c]", host.ReadText("/out.txt"));
+        Assert.Equal("😀 é|😀 é \n| \t😀 é|['a', 'b', 'c']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2667,7 +2667,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("{'name': é😀, 'items': [α, β], 'pair': (x, 2)}", host.ReadText("/out.txt"));
+        Assert.Equal("{'name': 'é😀', 'items': ['α', 'β'], 'pair': ('x', 2)}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2763,7 +2763,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("bool|pair|[True, (2, 3)]|[(True, bool), ((2, 3), pair)]|True|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("bool|pair|[True, (2, 3)]|[(True, 'bool'), ((2, 3), 'pair')]|True|True|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2844,7 +2844,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 2]|[]|1|[3]|{}|2|am|sp|(key, =, value)", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 2]|[]|1|[3]|{}|2|am|sp|('key', '=', 'value')", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -2872,7 +2872,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 2, 3]|[a, b, c]|True|False|True|False|1|c|[(-2, a), (-1, b)]", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 2, 3]|['a', 'b', 'c']|True|False|True|False|1|c|[(-2, 'a'), (-1, 'b')]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -3127,7 +3127,7 @@ __lython_file = open("/out.txt", "w")
 __lython_file.write(str(mapping))
 __lython_file.close()
 """,
-        "{'a': A, 'b': B}")]
+        "{'a': 'A', 'b': 'B'}")]
     [InlineData(
         """
 letters = [ch for ch in "egg"]
@@ -3135,7 +3135,7 @@ __lython_file = open("/out.txt", "w")
 __lython_file.write(str(letters))
 __lython_file.close()
 """,
-        "[e, g, g]")]
+        "['e', 'g', 'g']")]
     [InlineData(
         """
 mapping = {"k" + str(n % 2): n for n in [1, 2, 3, 4]}
@@ -3160,7 +3160,7 @@ __lython_file = open("/out.txt", "w")
 __lython_file.write(str(values))
 __lython_file.close()
 """,
-        "[x, 3]")]
+        "['x', 3]")]
     public void Comprehensions_CoverAdditionalPortableShapes(string source, string expected)
     {
         var host = new MockLythonHost();
@@ -3197,7 +3197,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("bcde|fdb|[1, 2, 3]|[4, 3, 2, 1, 0]|(a, b, c)|(d, b)", host.ReadText("/out.txt"));
+        Assert.Equal("bcde|fdb|[1, 2, 3]|[4, 3, 2, 1, 0]|('a', 'b', 'c')|('d', 'b')", host.ReadText("/out.txt"));
     }
 
     [Theory]
@@ -3353,7 +3353,7 @@ __lython_file = open("/out.txt", "w")
 __lython_file.write(str(values))
 __lython_file.close()
 """,
-        "[odd, even, odd]")]
+        "['odd', 'even', 'odd']")]
     public void ConditionalExpressions_CoverCommonCompositions(string source, string expected)
     {
         var host = new MockLythonHost();
@@ -3517,7 +3517,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[a1, b2]|{'a': 1, 'b': 2}", host.ReadText("/out.txt"));
+        Assert.Equal("['a1', 'b2']|{'a': 1, 'b': 2}", host.ReadText("/out.txt"));
     }
 
     [Theory]
@@ -3887,7 +3887,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[e, g, g, s]|(a, b)|[1, x, y]", host.ReadText("/out.txt"));
+        Assert.Equal("['e', 'g', 'g', 's']|('a', 'b')|[1, 'x', 'y']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -3921,7 +3921,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("/input/A/Parts.csv|[/input/A/Parts.csv, /input/B/Parts.csv]|[A:True, B:True, C:True]|[/input/A/Parts.csv, /input/C/Parts.csv]", host.ReadText("/out.txt"));
+        Assert.Equal("/input/A/Parts.csv|['/input/A/Parts.csv', '/input/B/Parts.csv']|['A:True', 'B:True', 'C:True']|['/input/A/Parts.csv', '/input/C/Parts.csv']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4011,7 +4011,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("head|tail|2|[(b, 2)]|[2, 3]|2|True", host.ReadText("/out.txt"));
+        Assert.Equal("head|tail|2|[('b', 2)]|[2, 3]|2|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4031,7 +4031,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[(a, 1), (b, 20), (c, 3)]|20|99", host.ReadText("/out.txt"));
+        Assert.Equal("[('a', 1), ('b', 20), ('c', 3)]|20|99", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4335,7 +4335,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[2, 3]|/tmp/a.txt|{'mode': w}|1", host.ReadText("/out.txt"));
+        Assert.Equal("[2, 3]|/tmp/a.txt|{'mode': 'w'}|1", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4389,7 +4389,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 20, 3]|{'name': new}", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 20, 3]|{'name': 'new'}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4413,7 +4413,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 3]|{'name': x}", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 3]|{'name': 'x'}", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4470,7 +4470,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[(a, 3), (b, 2), (c, 1)]|5", host.ReadText("/out.txt"));
+        Assert.Equal("[('a', 3), ('b', 2), ('c', 1)]|5", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4493,7 +4493,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("p|(a, b)|{'flag': True, 'count': 2}|[3, 2, 1]", host.ReadText("/out.txt"));
+        Assert.Equal("p|('a', 'b')|{'flag': True, 'count': 2}|[3, 2, 1]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -4520,7 +4520,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("[1, 2, 3]|{'13': 4, '23': 5}|[4, 9]|[b]|[21, 22]|10|[20, 30]|40|{1, 2, 3, 4, 5}|{2, 4}|True", host.ReadText("/out.txt"));
+        Assert.Equal("[1, 2, 3]|{'13': 4, '23': 5}|[4, 9]|['b']|[21, 22]|10|[20, 30]|40|{1, 2, 3, 4, 5}|{2, 4}|True", host.ReadText("/out.txt"));
     }
 
     [Theory]

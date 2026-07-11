@@ -75,7 +75,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal(".|/repo/docs|page.md|.md|[.tar, .gz]|page|/repo/docs|[/repo/docs, /repo, /]|(/, repo, docs, page.md)|True|/repo/docs/page.md/nested/guide.txt|/repo/docs/intro.md|/repo/docs/page.txt|/repo/docs/chapter.md|docs/page.md|True|False|/repo/docs/page.md|/:/:|True", host.ReadText("/out.txt"));
+        Assert.Equal(".|/repo/docs|page.md|.md|['.tar', '.gz']|page|/repo/docs|[/repo/docs, /repo, /]|('/', 'repo', 'docs', 'page.md')|True|/repo/docs/page.md/nested/guide.txt|/repo/docs/intro.md|/repo/docs/page.txt|/repo/docs/chapter.md|docs/page.md|True|False|/repo/docs/page.md|/:/:|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("alpha|[a.md, c.txt, out.md, sub]|[a.md, out.md]|[a.md, out.md, sub/b.md]|11|0|False|replaced.txt|False|True|final.md|True", host.ReadText("/out.txt"));
+        Assert.Equal("alpha|['a.md', 'c.txt', 'out.md', 'sub']|['a.md', 'out.md']|['a.md', 'out.md', 'sub/b.md']|11|0.0|False|replaced.txt|False|True|final.md|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -174,7 +174,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("False|True|False|False|0|[alpha, beta]|True|False|True|False|0|3|3|None|False|True|NotImplementedError:file.seek(...) is not supported by Lython text handles.", host.ReadText("/out.txt"));
+        Assert.Equal("False|True|False|False|0|['alpha', 'beta']|True|False|True|False|0|3|3|None|False|True|NotImplementedError:file.seek(...) is not supported by Lython text handles.", host.ReadText("/out.txt"));
         Assert.Equal("xyz", host.ReadText("/repo/output.txt"));
     }
 
@@ -235,7 +235,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[a.md]|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("['a.md']|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -314,7 +314,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.True(host.CompletedAsynchronously > 0);
-        Assert.Equal("opened|[a.md, opened.md, out.md]|[a.md, opened.md, out.md, sub/b.md]|final.md|True|True|True|0|[file.txt]|False", host.ReadText("/out.txt"));
+        Assert.Equal("opened|['a.md', 'opened.md', 'out.md']|['a.md', 'opened.md', 'out.md', 'sub/b.md']|final.md|True|True|True|0|['file.txt']|False", host.ReadText("/out.txt"));
     }
 
     [Theory]

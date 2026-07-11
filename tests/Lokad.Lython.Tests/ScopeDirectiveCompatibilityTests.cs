@@ -160,7 +160,7 @@ __lython_file.close()
         var result = new LythonEngine().Run(
             """
 def bind_globals():
-    global GPath, g_func, GClass, g_loop, g_unpacked, g_exc, g_match, g_walrus
+    global GPath, g_func, GClass, g_loop, g_unpacked, g_exc, g_exc_text, g_match, g_walrus
     from pathlib import Path as GPath
 
     def g_func():
@@ -175,7 +175,7 @@ def bind_globals():
     try:
         raise ValueError("bad")
     except ValueError as g_exc:
-        pass
+        g_exc_text = str(g_exc)
     match {"x": 4}:
         case {"x": g_match}:
             pass
@@ -186,6 +186,7 @@ def bind_nonlocals():
     n_loop = 0
     n_unpacked = 0
     n_exc = None
+    n_exc_text = None
     n_match = 0
     n_walrus = 0
     n_func = None
@@ -193,7 +194,7 @@ def bind_nonlocals():
     NPath = None
 
     def inner():
-        nonlocal NPath, n_func, NClass, n_loop, n_unpacked, n_exc, n_match, n_walrus
+        nonlocal NPath, n_func, NClass, n_loop, n_unpacked, n_exc, n_exc_text, n_match, n_walrus
         from pathlib import Path as NPath
 
         def n_func():
@@ -208,7 +209,7 @@ def bind_nonlocals():
         try:
             raise ValueError("worse")
         except ValueError as n_exc:
-            pass
+            n_exc_text = str(n_exc)
         match {"x": 8}:
             case {"x": n_match}:
                 pass
@@ -222,7 +223,7 @@ def bind_nonlocals():
         + "|" + str(NClass is None)
         + "|" + str(n_loop)
         + "|" + str(n_unpacked)
-        + "|" + n_exc.message
+        + "|" + n_exc_text
         + "|" + str(n_match)
         + "|" + str(n_walrus)
     )
@@ -235,7 +236,7 @@ global_parts = (
     + "|" + str(GClass is None)
     + "|" + str(g_loop)
     + "|" + str(g_unpacked)
-    + "|" + g_exc.message
+    + "|" + g_exc_text
     + "|" + str(g_match)
     + "|" + str(g_walrus)
 )

@@ -41,7 +41,7 @@ return json.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span())
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("{\"ok\":true}|(1, 4)", result.ReturnValue);
+        Assert.Equal("{\"ok\": true}|(1, 4)", result.ReturnValue);
         Assert.Empty(host.ExistsCalls);
         Assert.Empty(host.ReadCalls);
     }
@@ -238,7 +238,7 @@ fail()
             });
 
         Assert.True(builtin.Success, builtin.Failure?.Message);
-        Assert.Equal("{\"ok\":true}", builtin.ReturnValue);
+        Assert.Equal("{\"ok\": true}", builtin.ReturnValue);
 
         var local = new LythonEngine().Run(
             "import helper",

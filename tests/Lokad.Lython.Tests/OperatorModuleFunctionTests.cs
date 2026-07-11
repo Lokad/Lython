@@ -49,7 +49,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("5|3|12|4|True|True|True|True|True|True|20|2|True|(y, x)|7|12", host.ReadText("/out.txt"));
+        Assert.Equal("5|3|12|4.0|True|True|True|True|True|True|20|2|True|('y', 'x')|7|12", host.ReadText("/out.txt"));
     }
 
     [Fact]

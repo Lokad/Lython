@@ -152,7 +152,7 @@ __lython_file.close()
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Null(result.Failure);
-        Assert.Equal("15|5|[target, index, owner]", host.ReadText("/out.txt"));
+        Assert.Equal("15|5|['target', 'index', 'owner']", host.ReadText("/out.txt"));
     }
 
     [Fact]

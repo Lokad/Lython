@@ -2808,7 +2808,7 @@ internal sealed partial class LythonRuntime
 
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIterableValue
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue
         {
             private TextFileHandle(
                 string path,
@@ -3097,7 +3097,26 @@ internal sealed partial class LythonRuntime
                 return new PyList(items, _context.MemoryGovernor, null);
             }
 
-            public IEnumerable<object> Iterate() => ReadLines();
+            public IEnumerable<object> Iterate()
+            {
+                while (TryMoveNext(out var value))
+                {
+                    yield return value;
+                }
+            }
+
+            public bool TryMoveNext(out object value)
+            {
+                var line = ReadLine();
+                if (line.Length == 0)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                value = line;
+                return true;
+            }
 
             public BigInteger Write(PyString text)
             {

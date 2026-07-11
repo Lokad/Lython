@@ -30,7 +30,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[/repo/docs/a.md]|[/repo/docs/a.md, /repo/docs/sub/c.md]|/repo/docs/[[]draft][*].md|[True, False]|^(?!\\.)[^/]*\\.md$", host.ReadText("/out.txt"));
+        Assert.Equal("['/repo/docs/a.md']|['/repo/docs/a.md', '/repo/docs/sub/c.md']|/repo/docs/[[]draft][*].md|[True, False]|^(?!\\.)[^/]*\\.md$", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.py, sub/b.py]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.py', 'sub/b.py']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -79,7 +79,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.py]|[a.py]|[/repo/pkg/a.py]|a.py", host.ReadText("/out.txt"));
+        Assert.Equal("['a.py']|['a.py']|['/repo/pkg/a.py']|a.py", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[]|[.top.py]|[.top.py]|[sub/vis.py]|[.hiddendir/c.py, .top.py, sub/.hidden.py, sub/vis.py]", host.ReadText("/out.txt"));
+        Assert.Equal("[]|['.top.py']|['.top.py']|['sub/vis.py']|['.hiddendir/c.py', '.top.py', 'sub/.hidden.py', 'sub/vis.py']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.py, sub/b.py, sub/b.py]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.py', 'sub/b.py', 'sub/b.py']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -152,7 +152,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.py, b.py]|[]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.py', 'b.py']|[]", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -179,7 +179,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
-        Assert.Equal("[/repo/docs/a.md]|[/repo/docs/a.md, /repo/docs/sub/c.md]", host.ReadText("/out.txt"));
+        Assert.Equal("['/repo/docs/a.md']|['/repo/docs/a.md', '/repo/docs/sub/c.md']", host.ReadText("/out.txt"));
     }
 
     [Theory]

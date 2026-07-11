@@ -706,7 +706,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal, currency]|[Normal, currency]|currency|0.00|True|FFFF00|currency|0.00|True|FFFF00|thin|00FF00|currency|0.00|True|FFFF00", host.ReadText("/out.txt"));
+        Assert.Equal("[Normal, currency]|['Normal', 'currency']|currency|0.00|True|FFFF00|currency|0.00|True|FFFF00|thin|00FF00|currency|0.00|True|FFFF00", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -754,7 +754,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal, Headline]|[Normal, Headline]|Headline|0.00|True|FFFF0000|FFFFFF00|thin|FF00FF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00", host.ReadText("/out.txt"));
+        Assert.Equal("[Normal, Headline]|['Normal', 'Headline']|Headline|0.00|True|FFFF0000|FFFFFF00|thin|FF00FF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00|Headline|0.00|True|FFFFFF00", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1039,7 +1039,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("3.1.0+lython.0|A001:5|B2:6:A001:=B2*2:2024-01-02|True:FFFF00:B2:18:24|A1:B3:reviewed:TableStyleMedium2", host.ReadText("/out.txt"));
+        Assert.Equal("3.1.0+lython.0|A001:5|B2:6:A001:=B2*2:2024-01-02|True:FFFF00:B2:18.0:24.0|A1:B3:reviewed:TableStyleMedium2", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1143,7 +1143,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("00000000,00FFFFFF,000000FF|WorkbookAlreadySaved(saved)|IllegalCharacterError(bad char)|InvalidFileException", host.ReadText("/out.txt"));
+        Assert.Equal("00000000,00FFFFFF,000000FF|saved|bad char|InvalidFileException", host.ReadText("/out.txt"));
 
         var imageSetupHost = new MockLythonHost();
         var imageSetup = new LythonEngine().Run(
@@ -1233,7 +1233,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Data Copy, Data, Data1]|0|1|2|source|[Data Copy, Data]|[Data]", host.ReadText("/out.txt"));
+        Assert.Equal("['Data Copy', 'Data', 'Data1']|0|1|2|source|['Data Copy', 'Data']|['Data']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1312,7 +1312,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[Normal]|[Normal]|False|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml|1899-12-30 00:00:00|1899-12-30 00:00:00|True|application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml", host.ReadText("/out.txt"));
+        Assert.Equal("[Normal]|['Normal']|False|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml|1899-12-30 00:00:00|1899-12-30 00:00:00|True|application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1457,7 +1457,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[A1:C1, A2:B2]|[A1:C1]|[A1:C1]", host.ReadText("/out.txt"));
+        Assert.Equal("['A1:C1', 'A2:B2']|['A1:C1']|['A1:C1']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1727,7 +1727,7 @@ wb.save("/copy.xlsx")
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("Rich|True|FFFFFF00|center|thin|2024-01-02|=B2*2|[E1:F1]|18.77734375|24|B2|https://www.lokad.com/", host.ReadText("/out.txt"));
+        Assert.Equal("Rich|True|FFFFFF00|center|thin|2024-01-02|=B2*2|['E1:F1']|18.77734375|24.0|B2|https://www.lokad.com/", host.ReadText("/out.txt"));
 
         var copy = host.ReadWorkbook("/copy.xlsx");
         foreach (var part in new[]
@@ -1793,7 +1793,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("18.5|True|0|24.25|True|headline|detail", host.ReadText("/out.txt"));
+        Assert.Equal("18.5|True|0.0|24.25|True|headline|detail", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1823,7 +1823,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("19.33203125|0|True|24.3|True|A001", host.ReadText("/out.txt"));
+        Assert.Equal("19.33203125|0.0|True|24.3|True|A001", host.ReadText("/out.txt"));
     }
 
     [Fact]

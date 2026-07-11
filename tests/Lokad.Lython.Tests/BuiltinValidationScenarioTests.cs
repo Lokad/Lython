@@ -82,7 +82,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("enumerate()\n", "is missing argument 'iterable'")]
     [InlineData("list(1, 2)\n", "received too many positional arguments")]
     [InlineData("tuple(1, 2)\n", "received too many positional arguments")]
-    [InlineData("dict(1, 2)\n", "received too many positional arguments")]
+    [InlineData("dict(1, 2)\n", "expected at most 1 positional argument")]
     [InlineData("set(1, 2)\n", "received too many positional arguments")]
     [InlineData("range(\"a\")\n", "expects integer arguments")]
     [InlineData("type(\"Name\", (), {})\n", "supports exactly one argument in Lython")]
@@ -181,7 +181,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("[a, b, c, d]|output.txt|AlphA\n12\n1", host.ReadText("/out.txt"));
+        Assert.Equal("['a', 'b', 'c', 'd']|output.txt|AlphA\n12\n1", host.ReadText("/out.txt"));
     }
 
     [Fact]

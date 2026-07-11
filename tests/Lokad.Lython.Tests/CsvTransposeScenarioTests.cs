@@ -182,7 +182,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("[, , , tail]", host.ReadText("/out.txt"));
+        Assert.Equal("['', '', '', 'tail']", host.ReadText("/out.txt"));
     }
 
     [Fact]

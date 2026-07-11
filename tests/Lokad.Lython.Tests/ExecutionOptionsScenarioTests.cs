@@ -283,7 +283,7 @@ value = "abcdefghijklmnopqrstuvwxyz0123456789"
     {
         var result = new LythonEngine().Run(
             """
-values = range(10)
+values = list(range(10))
 """,
             new MockLythonHost(),
             new LythonRunOptions
@@ -952,7 +952,7 @@ value = list(itertools.product(range(6), range(6), range(6)))
     {
         var result = new LythonEngine().Run(
             """
-values = range(24)
+values = list(range(24))
 copy = values.copy()
 """,
             new MockLythonHost(),
@@ -1117,7 +1117,7 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
     }
 
     [Fact]
-    public void InterpreterStackLimit_IsEnforced()
+    public void DeeplyNestedGlobalRendering_IsStackSafe()
     {
         var nested = CreateDeeplyNestedList(700);
 
@@ -1134,10 +1134,8 @@ text = str(data)
                 }
             });
 
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
-        Assert.Contains("maximum interpreter stack depth exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Null(result.Failure);
     }
 
     private static List<object?> CreateDeeplyNestedList(int depth)

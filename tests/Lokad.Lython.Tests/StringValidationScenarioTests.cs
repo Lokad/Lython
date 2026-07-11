@@ -138,7 +138,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("baXX|-1|[]|[a]", host.ReadText("/out.txt"));
+        Assert.Equal("baXX|-1|['']|['a']", host.ReadText("/out.txt"));
     }
 
     [Fact]

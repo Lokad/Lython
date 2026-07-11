@@ -7286,8 +7286,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "csv.writerow(row) expects one argument.", span);
                     }
 
-                    WriteRow(writer, ToCsvRow(arguments[0], span), span);
-                    return PyNone.Instance;
+                    return WriteRow(writer, ToCsvRow(arguments[0], span), span);
                 }, "csv.writerow", ["row"]),
                 "writerows" => new BoundCallable((arguments, span, _) =>
                 {
@@ -7318,14 +7317,16 @@ internal sealed partial class LythonRuntime
             return value is not null;
         }
 
-        public static void WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span)
+        public static BigInteger WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span)
         {
             writer.Rows.Add(row);
+            var rendered = RenderCsvDocument([row], writer.Options, trailingTerminator: true, span);
             if (writer.File is not null)
             {
-                var rendered = RenderCsvDocument([row], writer.Options, trailingTerminator: true, span);
-                writer.File.Write(rendered);
+                return writer.File.Write(rendered);
             }
+
+            return new BigInteger(rendered.Length);
         }
 
         public static CsvCell[] ToCsvRow(object row, LythonSourceSpan span)
@@ -7494,8 +7495,7 @@ internal sealed partial class LythonRuntime
                         row.SetItem(fieldName, fieldName);
                     }
 
-                    CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span), span);
-                    return PyNone.Instance;
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span), span);
                 }),
                 "writerow" => new BoundCallable((arguments, span, _) =>
                 {
@@ -7504,8 +7504,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerow(rowdict) expects one argument.", span);
                     }
 
-                    CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span), span);
-                    return PyNone.Instance;
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span), span);
                 }, "csv.DictWriter.writerow", ["rowdict"]),
                 "writerows" => new BoundCallable((arguments, span, _) =>
                 {

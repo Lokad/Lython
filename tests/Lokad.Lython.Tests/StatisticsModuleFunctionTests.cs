@@ -93,7 +93,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "48000|56000|36000|0|52.5|25:50:75|30:50:70|[1, 1, 1]|5500|972271|2200:-1000:(slope, intercept):True:1:1|1927:0|LinearRegression(slope=2.2, intercept=2)|LinearRegression(slope=3, intercept=-2)|100:100:100:15:225|26596|500|100|738|89882:100000:110117|5000:2138:4571|110:21213|-1500:3000|True|True|4000",
+            "48000|56000|36000|0|52.5|25:50:75|30:50:70|[1, 1, 1]|5500|972271|2200:-1000:('slope', 'intercept'):True:1:1|1927:0|LinearRegression(slope=2.2, intercept=2)|LinearRegression(slope=3, intercept=-2)|100:100:100:15:225|26596|500|100|738|89882:100000:110117|5000:2138:4571|110:21213|-1500:3000|True|True|4000",
             host.ReadText("/out.txt"));
     }
 
@@ -119,7 +119,7 @@ return "|".join(out)
         Assert.True(
             valid.Success,
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        Assert.Equal("2|0|199|2", Assert.IsType<string>(valid.ReturnValue));
+        Assert.Equal("2|0.0|199|2", Assert.IsType<string>(valid.ReturnValue));
 
         var invalid = new LythonEngine().Run(
             """

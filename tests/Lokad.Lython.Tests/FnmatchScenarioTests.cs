@@ -48,7 +48,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("True|True|False|[alpha.txt, alps.txt]", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|False|['alpha.txt', 'alps.txt']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -87,7 +87,7 @@ __lython_file.close()
 
         Assert.True(result.Success);
         Assert.Null(result.Failure);
-        Assert.Equal("False|True|True|[abc, axc]", host.ReadText("/out.txt"));
+        Assert.Equal("False|True|True|['abc', 'axc']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("True|[é😀.txt]", host.ReadText("/out.txt"));
+        Assert.Equal("True|['é😀.txt']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -148,7 +148,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("False|False|True|True|True|True|True|True|True|False|[a.py, c.py]|^file[0-9].\\.txt$|True|^(?!)$|True", host.ReadText("/out.txt"));
+        Assert.Equal("False|False|True|True|True|True|True|True|True|False|['a.py', 'c.py']|^file[0-9].\\.txt$|True|^(?!)$|True", host.ReadText("/out.txt"));
     }
 
     [Fact]

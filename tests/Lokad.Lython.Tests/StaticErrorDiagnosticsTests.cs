@@ -1409,7 +1409,7 @@ from pathlib import Path
 text = "a" + "b"
 items = [1] + [2]
 pair = (1,) + (2,)
-union = {1} + {2}
+union = {1} | {2}
 joined = Path("/repo") / "child"
 count = True + 1
 repeat = "a" * 2

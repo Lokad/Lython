@@ -37,7 +37,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("/|/repo/docs/guide.md|/repo/docs/guide.md|/repo/docs/guide.md|(/repo/docs, guide.md)|(/repo/docs/guide, .md)|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
+        Assert.Equal("/|/repo/docs/guide.md|/repo/docs/guide.md|/repo/docs/guide.md|('/repo/docs', 'guide.md')|('/repo/docs/guide', '.md')|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("/Repo/File.TXT|/usr/l|/repo/docs/docs/$MISSING/%MISSING%|(, /repo/docs)|(, , relative/docs)|(, /, repo/docs)|(, //, server/share)|(, /, //server/share)|True|False|0|0|True|/repo/unicode-é.txt", host.ReadText("/out.txt"));
+        Assert.Equal("/Repo/File.TXT|/usr/l|/repo/docs/docs/$MISSING/%MISSING%|('', '/repo/docs')|('', '', 'relative/docs')|('', '/', 'repo/docs')|('', '//', 'server/share')|('', '/', '//server/share')|True|False|0.0|0.0|True|/repo/unicode-é.txt", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -132,7 +132,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("posix|True|:|None|.|/dev/null|0421|/bin:/tools|[/bin, /tools]|value|ok|True|[KEEP, NEW, PATH, PUT]|[(KEEP, seed), (NEW, value), (PATH, /bin:/tools), (PUT, ok)]|yes|True|True|[/bin, /custom]", host.ReadText("/out.txt"));
+        Assert.Equal("posix|True|:|None|.|/dev/null|0421|/bin:/tools|['/bin', '/tools']|value|ok|True|['KEEP', 'NEW', 'PATH', 'PUT']|[('KEEP', 'seed'), ('NEW', 'value'), ('PATH', '/bin:/tools'), ('PUT', 'ok')]|yes|True|True|['/bin', '/custom']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -221,7 +221,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.txt, sub]|/repo|True|True|True|5|0|5|0|True|[a.txt:True:False:5, sub:False:True:0]|True|True|True|False", host.ReadText("/out.txt"));
+        Assert.Equal("['a.txt', 'sub']|/repo|True|True|True|5|0.0|5|0.0|True|['a.txt:True:False:5', 'sub:False:True:0']|True|True|True|False", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -267,7 +267,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("[a.txt, b.txt]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.txt', 'b.txt']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -343,7 +343,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "/repo/docs|[a, b]|[root.txt]\n/repo/docs/a|[]|[alpha.txt]\n/repo/docs/b|[]|[beta.txt]",
+            "/repo/docs|['a', 'b']|['root.txt']\n/repo/docs/a|[]|['alpha.txt']\n/repo/docs/b|[]|['beta.txt']",
             host.ReadText("/out.txt"));
     }
 
@@ -377,7 +377,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "/repo/docs|[b]|[root.txt]\n/repo/docs/b|[]|[beta.txt]\n---\n/repo/docs/a|[]|[alpha.txt]\n/repo/docs/b|[]|[beta.txt]\n/repo/docs|[a, b]|[root.txt]",
+            "/repo/docs|['b']|['root.txt']\n/repo/docs/b|[]|['beta.txt']\n---\n/repo/docs/a|[]|['alpha.txt']\n/repo/docs/b|[]|['beta.txt']\n/repo/docs|['a', 'b']|['root.txt']",
             host.ReadText("/out.txt"));
     }
 
@@ -409,7 +409,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "/repo/docs|[a, b]|[]\n/repo/docs/b|[]|[beta.txt]\n---\nRuntimeError:Host listdir failed: blocked a",
+            "/repo/docs|['a', 'b']|[]\n/repo/docs/b|[]|['beta.txt']\n---\nRuntimeError:Host listdir failed: blocked a",
             host.ReadText("/out.txt"));
     }
 
@@ -440,7 +440,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
         Assert.Equal(
-            "/repo/docs|[b]|[root.txt]\n/repo/docs/b|[]|[beta.txt]",
+            "/repo/docs|['b']|['root.txt']\n/repo/docs/b|[]|['beta.txt']",
             host.ReadText("/out.txt"));
     }
 
@@ -542,7 +542,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
-        Assert.Equal("[a.txt, b.txt]|True|True|True|5|4|[a.txt, b.txt]|alpha|True|False|False|True|False", host.ReadText("/out.txt"));
+        Assert.Equal("['a.txt', 'b.txt']|True|True|True|5|4|['a.txt', 'b.txt']|alpha|True|False|False|True|False", host.ReadText("/out.txt"));
     }
 
     [Theory]

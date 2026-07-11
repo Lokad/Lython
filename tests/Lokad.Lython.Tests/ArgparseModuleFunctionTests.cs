@@ -41,7 +41,7 @@ __lython_file.close()
                 " | ",
                 result.Diagnostics.Select(d => d.Message).Append($"{result.Failure?.ExceptionType}:{result.Failure?.Message}")));
         }
-        Assert.Equal("fr|[a, b]|True|5", host.ReadText("/out.txt"));
+        Assert.Equal("fr|['a', 'b']|True|5", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[a.txt, b.txt]", host.ReadText("/out.txt"));
+        Assert.Equal("['a.txt', 'b.txt']", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -159,7 +159,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("2|auto|[[a, b]]|input.txt|scan|keep|[--extra]|scan|absent", host.ReadText("/out.txt"));
+        Assert.Equal("2|auto|[['a', 'b']]|input.txt|scan|keep|['--extra']|scan|absent", host.ReadText("/out.txt"));
     }
 
     [Fact]
