@@ -281,11 +281,11 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OpenPyxlRowsFromRange = new("openpyxl.utils.rows_from_range", ["range_string"]);
     public static readonly LythonCallableSignature OpenPyxlColsFromRange = new("openpyxl.utils.cols_from_range", ["range_string"]);
     public static readonly LythonCallableSignature OpenPyxlComment = new("openpyxl.comments.Comment", ["text", "author"]);
-    public static readonly LythonCallableSignature OpenPyxlFont = new("openpyxl.styles.Font", ["name", "sz", "bold", "italic", "color", "underline", "b", "i"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlFont = new("openpyxl.styles.Font", ["name", "sz", "bold", "italic", "color", "underline", "b", "i", "size", "u", "strike", "strikethrough"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlPatternFill = new("openpyxl.styles.PatternFill", ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlBorder = new("openpyxl.styles.Border", ["left", "right", "top", "bottom"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlSide = new("openpyxl.styles.Side", ["style", "color", "border_style"], RequiredCount: 0);
-    public static readonly LythonCallableSignature OpenPyxlAlignment = new("openpyxl.styles.Alignment", ["horizontal", "vertical", "wrap_text", "text_rotation"], RequiredCount: 0);
+    public static readonly LythonCallableSignature OpenPyxlAlignment = new("openpyxl.styles.Alignment", ["horizontal", "vertical", "wrap_text", "text_rotation", "wrapText", "textRotation", "shrinkToFit", "shrink_to_fit"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlProtection = new("openpyxl.styles.Protection", ["locked", "hidden"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlNamedStyle = new("openpyxl.styles.NamedStyle", ["name", "font", "fill", "border", "alignment", "number_format", "protection"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlColor = new("openpyxl.styles.colors.Color", ["rgb", "indexed", "auto", "theme", "tint", "type"], RequiredCount: 0);

@@ -656,12 +656,12 @@ internal sealed partial class LythonRuntime
         private OpenPyxlStylesModule()
             : base("openpyxl.styles", new Dictionary<string, object>
             {
-                ["Font"] = new BuiltinCallable("openpyxl.styles.Font", CreateFont, ["name", "sz", "bold", "italic", "color", "underline", "b", "i"], requiredCount: 0),
+                ["Font"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlFont, CreateFont),
                 ["PatternFill"] = new BuiltinCallable("openpyxl.styles.PatternFill", CreatePatternFill, ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], requiredCount: 0),
                 ["GradientFill"] = UnsupportedOpenPyxlCallable("openpyxl.styles.GradientFill"),
                 ["Border"] = new BuiltinCallable("openpyxl.styles.Border", CreateBorder, ["left", "right", "top", "bottom"], requiredCount: 0),
                 ["Side"] = new BuiltinCallable("openpyxl.styles.Side", CreateSide, ["style", "color", "border_style"], requiredCount: 0),
-                ["Alignment"] = new BuiltinCallable("openpyxl.styles.Alignment", CreateAlignment, ["horizontal", "vertical", "wrap_text", "text_rotation"], requiredCount: 0),
+                ["Alignment"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlAlignment, CreateAlignment),
                 ["Protection"] = new BuiltinCallable("openpyxl.styles.Protection", CreateProtection, ["locked", "hidden"], requiredCount: 0),
                 ["NamedStyle"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlNamedStyle, CreateNamedStyle),
                 ["colors"] = OpenPyxlStylesColorsModule.Instance,
@@ -865,17 +865,26 @@ internal sealed partial class LythonRuntime
         _ = context;
         var bold = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 6, false, "openpyxl.styles.Font.b", span), "openpyxl.styles.Font.bold", span);
         var italic = OptionalStyleBool(arguments, 3, OptionalStyleBool(arguments, 7, false, "openpyxl.styles.Font.i", span), "openpyxl.styles.Font.italic", span);
+        var sizeValue = FirstStyleValue(arguments, 8, 1);
+        var size = sizeValue is PyNone
+            ? (object)PyNone.Instance
+            : NormalizeOptionalNonNegativeDouble(sizeValue, "openpyxl.styles.Font.size", span)!.Value;
+        var underline = FirstStyleValue(arguments, 5, 9);
+        var strike = OptionalStyleBool(arguments, 11, OptionalStyleBool(arguments, 10, false, "openpyxl.styles.Font.strike", span), "openpyxl.styles.Font.strikethrough", span);
         return new OpenPyxlStyleValue("openpyxl.styles.Font", new Dictionary<string, object>
         {
             ["name"] = OptionalStyleValue(arguments, 0),
-            ["sz"] = OptionalStyleValue(arguments, 1),
-            ["size"] = OptionalStyleValue(arguments, 1),
+            ["sz"] = size,
+            ["size"] = size,
             ["bold"] = bold,
             ["b"] = bold,
             ["italic"] = italic,
             ["i"] = italic,
             ["color"] = OptionalColorStyleValue(arguments, 4),
-            ["underline"] = OptionalStyleValue(arguments, 5),
+            ["underline"] = underline,
+            ["u"] = underline,
+            ["strike"] = strike,
+            ["strikethrough"] = strike,
         });
     }
 
@@ -924,12 +933,19 @@ internal sealed partial class LythonRuntime
     private static object CreateAlignment(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
+        var wrapText = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 4, false, "openpyxl.styles.Alignment.wrapText", span), "openpyxl.styles.Alignment.wrap_text", span);
+        var textRotation = FirstStyleValue(arguments, 3, 5);
+        var shrinkToFit = OptionalStyleBool(arguments, 7, OptionalStyleBool(arguments, 6, false, "openpyxl.styles.Alignment.shrinkToFit", span), "openpyxl.styles.Alignment.shrink_to_fit", span);
         return new OpenPyxlStyleValue("openpyxl.styles.Alignment", new Dictionary<string, object>
         {
             ["horizontal"] = OptionalStyleValue(arguments, 0),
             ["vertical"] = OptionalStyleValue(arguments, 1),
-            ["wrap_text"] = OptionalStyleBool(arguments, 2, false, "openpyxl.styles.Alignment.wrap_text", span),
-            ["text_rotation"] = OptionalStyleValue(arguments, 3),
+            ["wrap_text"] = wrapText,
+            ["wrapText"] = wrapText,
+            ["text_rotation"] = textRotation,
+            ["textRotation"] = textRotation,
+            ["shrink_to_fit"] = shrinkToFit,
+            ["shrinkToFit"] = shrinkToFit,
         });
     }
 
@@ -6989,9 +7005,14 @@ internal sealed partial class LythonRuntime
 
         private static OpenPyxlStyleValue ReadFontStyle(XElement font)
         {
-            var size = ReadStyleElementAttribute(font, "sz", "val");
+            var size = (string?)font.Element(XlsxMain + "sz")?.Attribute("val") is { } sizeText &&
+                       double.TryParse(sizeText, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedSize)
+                ? (object)parsedSize
+                : PyNone.Instance;
             var bold = font.Element(XlsxMain + "b") is not null;
             var italic = font.Element(XlsxMain + "i") is not null;
+            var strike = font.Element(XlsxMain + "strike") is not null;
+            var underline = ReadUnderlineValue(font.Element(XlsxMain + "u"));
             return new OpenPyxlStyleValue("openpyxl.styles.Font", new Dictionary<string, object>
             {
                 ["name"] = ReadStyleElementAttribute(font, "name", "val"),
@@ -7002,7 +7023,10 @@ internal sealed partial class LythonRuntime
                 ["italic"] = italic,
                 ["i"] = italic,
                 ["color"] = ReadColorValue(font.Element(XlsxMain + "color")),
-                ["underline"] = ReadUnderlineValue(font.Element(XlsxMain + "u")),
+                ["underline"] = underline,
+                ["u"] = underline,
+                ["strike"] = strike,
+                ["strikethrough"] = strike,
             });
         }
 
@@ -7051,7 +7075,11 @@ internal sealed partial class LythonRuntime
                     ["horizontal"] = ReadStyleAttribute(alignment, "horizontal"),
                     ["vertical"] = ReadStyleAttribute(alignment, "vertical"),
                     ["wrap_text"] = ReadStyleBooleanAttribute(alignment, "wrapText"),
+                    ["wrapText"] = ReadStyleBooleanAttribute(alignment, "wrapText"),
                     ["text_rotation"] = ReadStyleAttribute(alignment, "textRotation"),
+                    ["textRotation"] = ReadStyleAttribute(alignment, "textRotation"),
+                    ["shrink_to_fit"] = ReadStyleBooleanAttribute(alignment, "shrinkToFit"),
+                    ["shrinkToFit"] = ReadStyleBooleanAttribute(alignment, "shrinkToFit"),
                 });
 
         private static OpenPyxlStyleValue? ReadProtectionStyle(XElement? protection)
@@ -8632,6 +8660,11 @@ internal sealed partial class LythonRuntime
                 children.Add(new XElement(XlsxMain + "i"));
             }
 
+            if (StyleBool(font, "strike"))
+            {
+                children.Add(new XElement(XlsxMain + "strike"));
+            }
+
             if (StyleString(font, "underline") is { } underline)
             {
                 children.Add(underline == "single"
@@ -8817,6 +8850,11 @@ internal sealed partial class LythonRuntime
                 attributes.Add(new XAttribute("wrapText", "1"));
             }
 
+            if (StyleBool(alignment, "shrink_to_fit"))
+            {
+                attributes.Add(new XAttribute("shrinkToFit", "1"));
+            }
+
             AddOptionalAttribute(attributes, "textRotation", StyleString(alignment, "text_rotation"));
             return new XElement(XlsxMain + "alignment", attributes);
         }
@@ -8927,11 +8965,11 @@ internal sealed partial class LythonRuntime
         private static string[] StyleMemberNames(string qualifiedName)
             => qualifiedName switch
             {
-                "openpyxl.styles.Font" => ["name", "sz", "bold", "italic", "color", "underline"],
+                "openpyxl.styles.Font" => ["name", "sz", "size", "bold", "b", "italic", "i", "color", "underline", "u", "strike", "strikethrough"],
                 "openpyxl.styles.PatternFill" => ["fill_type", "fgColor", "bgColor"],
                 "openpyxl.styles.Border" => ["left", "right", "top", "bottom"],
                 "openpyxl.styles.Side" => ["style", "color"],
-                "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "text_rotation"],
+                "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "wrapText", "text_rotation", "textRotation", "shrink_to_fit", "shrinkToFit"],
                 "openpyxl.styles.Protection" => ["locked", "hidden"],
                 "openpyxl.styles.NamedStyle" => ["name"],
                 _ => [],

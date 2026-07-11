@@ -292,10 +292,14 @@ internal static partial class StaticContracts
     {
         "name",
         "sz",
+        "size",
         "bold",
         "italic",
         "color",
         "underline",
+        "u",
+        "strike",
+        "strikethrough",
         "b",
         "i",
     };
@@ -330,7 +334,11 @@ internal static partial class StaticContracts
         "horizontal",
         "vertical",
         "wrap_text",
+        "wrapText",
         "text_rotation",
+        "textRotation",
+        "shrink_to_fit",
+        "shrinkToFit",
     };
 
     private static readonly HashSet<string> OpenPyxlProtectionMembers = new(StringComparer.Ordinal)

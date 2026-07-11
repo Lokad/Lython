@@ -710,6 +710,39 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OpenPyxlStyles_ExposeConstructorAndMemberAliases()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Alignment, Font
+
+wb = Workbook()
+ws = wb.active
+ws["A1"].font = Font(name="Arial", bold=True, size=12, u="double", strikethrough=True)
+ws["A1"].alignment = Alignment(wrapText=True, textRotation=15, shrink_to_fit=True)
+wb.save("/aliases.xlsx")
+cell = load_workbook("/aliases.xlsx").active["A1"]
+values = [
+    cell.font.size, cell.font.sz, cell.font.bold, cell.font.b,
+    cell.font.underline, cell.font.u, cell.font.strike, cell.font.strikethrough,
+    cell.alignment.wrap_text, cell.alignment.wrapText,
+    cell.alignment.text_rotation, cell.alignment.textRotation,
+    cell.alignment.shrink_to_fit, cell.alignment.shrinkToFit,
+]
+with open("/out.txt", "w") as output:
+    output.write("|".join(str(value) for value in values))
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Null(result.Failure);
+        Assert.Equal("12.0|12.0|True|True|double|double|True|True|True|True|15|15|True|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OpenPyxlWorkbook_LoadsNamedStylesAsObjects()
     {
         var host = new MockLythonHost();
