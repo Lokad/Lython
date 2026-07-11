@@ -88,6 +88,29 @@ return str(1.0) + "|" + repr(-0.0) + "|" + str(1e20) + "|" + str(math.inf) + "|"
     }
 
     [Fact]
+    public void FloatingPowerRejectsPythonExceptionalCases()
+    {
+        var result = new LythonEngine().Run(
+            """
+values = []
+try:
+    0.0 ** -1
+except ZeroDivisionError:
+    values.append("zero")
+try:
+    (-1.0) ** 0.5
+except TypeError:
+    values.append("complex")
+values.append(str(pow(2, -1, 5)))
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("zero|complex|3", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();
@@ -136,7 +159,6 @@ __lython_file.close()
 
     [Theory]
     [InlineData("abs('x')\n", "TypeError", "numeric")]
-    [InlineData("pow(2, -1, 5)\n", "ValueError", "non-negative")]
     [InlineData("pow(2, 3, 0)\n", "ValueError", "cannot be 0")]
     [InlineData("bin(1.2)\n", "TypeError", "integer")]
     [InlineData("chr(1114112)\n", "ValueError", "range")]

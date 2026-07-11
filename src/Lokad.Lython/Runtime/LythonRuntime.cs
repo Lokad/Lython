@@ -1713,6 +1713,18 @@ internal sealed partial class LythonRuntime
 
         try
         {
+            if (lhs.IsZero && (rhs.IsFloat ? rhs.Floating < 0 : rhs.Integer < BigInteger.Zero))
+            {
+                throw new LythonRuntimeException("ZeroDivisionError", "0.0 cannot be raised to a negative power", span);
+            }
+
+            var leftValue = lhs.IsFloat ? lhs.Floating : (double)lhs.Integer;
+            var rightValue = rhs.IsFloat ? rhs.Floating : (double)rhs.Integer;
+            if (leftValue < 0 && double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
+            {
+                throw new LythonRuntimeException("TypeError", "complex results are not supported by Lython", span);
+            }
+
             GuardIntegerPower(lhs, rhs, context, span);
             return PyNumberOps.Power(lhs, rhs);
         }

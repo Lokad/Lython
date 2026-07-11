@@ -328,7 +328,8 @@ internal sealed partial class LythonRuntime
 
             if (exponent < BigInteger.Zero)
             {
-                throw new LythonRuntimeException("ValueError", "pow() modular exponent must be non-negative in Lython.", span);
+                integerBase = ModularInverse(integerBase, BigInteger.Abs(modulus), span);
+                exponent = -exponent;
             }
 
             var absModulus = BigInteger.Abs(modulus);
@@ -342,18 +343,29 @@ internal sealed partial class LythonRuntime
             return modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result;
         }
 
-        if (arguments[0] is PyDecimal || arguments[1] is PyDecimal)
+        return EvaluatePower(arguments[0], arguments[1], context, span);
+    }
+
+    private static BigInteger ModularInverse(BigInteger value, BigInteger modulus, LythonSourceSpan span)
+    {
+        var oldR = value % modulus;
+        var r = modulus;
+        var oldS = BigInteger.One;
+        var s = BigInteger.Zero;
+        while (r != BigInteger.Zero)
         {
-            return PyDecimalOps.Power(arguments[0], arguments[1], span);
+            var quotient = oldR / r;
+            (oldR, r) = (r, oldR - quotient * r);
+            (oldS, s) = (s, oldS - quotient * s);
         }
 
-        if (!PyNumberOps.TryAsNumber(arguments[0], out var lhs) ||
-            !PyNumberOps.TryAsNumber(arguments[1], out var rhs))
+        if (BigInteger.Abs(oldR) != BigInteger.One)
         {
-            throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects numeric arguments.", span);
+            throw new LythonRuntimeException("ValueError", "base is not invertible for the given modulus", span);
         }
 
-        return PyNumberOps.Power(lhs, rhs);
+        var inverse = oldS % modulus;
+        return inverse < BigInteger.Zero ? inverse + modulus : inverse;
     }
 
     private static object Round(object[] arguments, LythonSourceSpan span, ExecutionContext context)
