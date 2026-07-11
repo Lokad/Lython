@@ -4,6 +4,37 @@ namespace Lokad.Lython.Tests;
 
 public sealed class DateTimeModuleFunctionTests
 {
+    [Fact]
+    public void DateTime_DisplayAndRepresentationFollowDistinctPythonContracts()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import datetime
+
+delta = datetime.timedelta(days=1, seconds=2, microseconds=3)
+aware_time = datetime.time(1, 2, tzinfo=datetime.timezone.utc, fold=1)
+aware_datetime = datetime.datetime(2024, 1, 2, tzinfo=datetime.timezone.utc, fold=1)
+values = [
+    str(delta),
+    repr(delta),
+    repr(aware_time),
+    repr(aware_datetime),
+    str(datetime.datetime(2024, 1, 2, 3, 4, 5)),
+    format(datetime.datetime(2024, 1, 2, 3, 4, 5), ""),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            "1 day, 0:00:02.000003|datetime.timedelta(days=1, seconds=2, microseconds=3)|datetime.time(1, 2, tzinfo=datetime.timezone.utc, fold=1)|datetime.datetime(2024, 1, 2, 0, 0, fold=1, tzinfo=datetime.timezone.utc)|2024-01-02 03:04:05|2024-01-02 03:04:05",
+            host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("datetime.MINYEAR", "1")]
     [InlineData("datetime.MAXYEAR", "9999")]

@@ -55,13 +55,39 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
         return PyString.FromString($"datetime.timedelta(days={parts.Days}, seconds={parts.Seconds}, microseconds={parts.Microseconds})");
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    public PyString RenderInterpolated(PyRenderingContext context)
+    {
+        _ = context;
+        var parts = GetNormalizedParts();
+        var builder = new StringBuilder();
+        if (!parts.Days.IsZero)
+        {
+            builder.Append(parts.Days.ToString(CultureInfo.InvariantCulture));
+            builder.Append(BigInteger.Abs(parts.Days) == BigInteger.One ? " day, " : " days, ");
+        }
+
+        var hours = parts.Seconds / 3600;
+        var minutes = parts.Seconds % 3600 / 60;
+        var seconds = parts.Seconds % 60;
+        builder.Append(hours.ToString(CultureInfo.InvariantCulture));
+        builder.Append(':');
+        builder.Append(minutes.ToString("00", CultureInfo.InvariantCulture));
+        builder.Append(':');
+        builder.Append(seconds.ToString("00", CultureInfo.InvariantCulture));
+        if (parts.Microseconds != 0)
+        {
+            builder.Append('.');
+            builder.Append(parts.Microseconds.ToString("000000", CultureInfo.InvariantCulture));
+        }
+
+        return PyString.FromString(builder.ToString());
+    }
 
     public override bool Equals(object? obj) => obj is PyTimedelta other && TotalMicroseconds.Equals(other.TotalMicroseconds);
 
     public override int GetHashCode() => GetPyHashCode();
 
-    public override string ToString() => RenderPython(default).AsString();
+    public override string ToString() => RenderInterpolated(default).AsString();
 
     private (BigInteger Days, int Seconds, int Microseconds) GetNormalizedParts()
     {
@@ -201,8 +227,30 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
-        return PyString.FromString($"datetime.time({Value.Hour}, {Value.Minute}, {Value.Second}, {Value.Microsecond})");
+        var builder = new StringBuilder($"datetime.time({Value.Hour}, {Value.Minute}");
+        if (Value.Second != 0 || Value.Microsecond != 0)
+        {
+            builder.Append($", {Value.Second}");
+        }
+
+        if (Value.Microsecond != 0)
+        {
+            builder.Append($", {Value.Microsecond}");
+        }
+
+        if (TzInfo is not null)
+        {
+            builder.Append(", tzinfo=");
+            builder.Append(TzInfo.RenderPython(context).AsString());
+        }
+
+        if (Fold != 0)
+        {
+            builder.Append(", fold=1");
+        }
+
+        builder.Append(')');
+        return PyString.FromString(builder.ToString());
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat();
@@ -273,11 +321,37 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
-        return PyString.FromString($"datetime.datetime({Value.Year}, {Value.Month}, {Value.Day}, {Value.Hour}, {Value.Minute}, {Value.Second}, {Value.Microsecond})");
+        var builder = new StringBuilder($"datetime.datetime({Value.Year}, {Value.Month}, {Value.Day}, {Value.Hour}, {Value.Minute}");
+        if (Value.Second != 0 || Value.Microsecond != 0)
+        {
+            builder.Append($", {Value.Second}");
+        }
+
+        if (Value.Microsecond != 0)
+        {
+            builder.Append($", {Value.Microsecond}");
+        }
+
+        if (Fold != 0)
+        {
+            builder.Append(", fold=1");
+        }
+
+        if (TzInfo is not null)
+        {
+            builder.Append(", tzinfo=");
+            builder.Append(TzInfo.RenderPython(context).AsString());
+        }
+
+        builder.Append(')');
+        return PyString.FromString(builder.ToString());
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat();
+    public PyString RenderInterpolated(PyRenderingContext context)
+    {
+        _ = context;
+        return IsoFormat(" ");
+    }
 
     public override bool Equals(object? obj)
         => obj is PyDateTime other &&
@@ -285,7 +359,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public override int GetHashCode() => GetPyHashCode();
 
-    public override string ToString() => IsoFormat().AsString();
+    public override string ToString() => IsoFormat(" ").AsString();
 }
 
 internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, IPyIterableValue, IPyTruthyValue, IPyRenderableValue, IPyDynamicAttributes
