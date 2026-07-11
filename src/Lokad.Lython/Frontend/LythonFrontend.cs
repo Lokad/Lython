@@ -7,6 +7,7 @@ internal static class LythonFrontend
     public static FrontendResult Compile(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
+        source = NormalizeSourceText(source);
 
         if (string.IsNullOrWhiteSpace(source))
         {
@@ -40,6 +41,18 @@ internal static class LythonFrontend
             .Concat(StaticAnalyzer.Analyze(parsed.Script))
             .ToArray();
         return new FrontendResult(parsed.Script, diagnostics);
+    }
+
+    private static string NormalizeSourceText(string source)
+    {
+        if (source.Length > 0 && source[0] == '\uFEFF')
+        {
+            source = source[1..];
+        }
+
+        return source.Contains('\r', StringComparison.Ordinal)
+            ? source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n')
+            : source;
     }
 
     private static LythonSourceSpan SpanOf(LexerResult<Token> tokens, int start, int length)

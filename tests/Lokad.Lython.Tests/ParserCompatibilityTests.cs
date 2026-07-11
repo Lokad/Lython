@@ -5,6 +5,17 @@ namespace Lokad.Lython.Tests;
 public sealed class ParserCompatibilityTests
 {
     [Fact]
+    public void Run_NormalizesUtf8BomAndPhysicalSourceNewlines()
+    {
+        var source = "\uFEFFvalue = '''a\r\nb'''\r\nreturn chr(13) in value\r\n";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        Assert.False(Assert.IsType<bool>(result.ReturnValue));
+    }
+
+    [Fact]
     public void Compile_AcceptsOrdinarySoftKeywordContinuationAndPostfixShapes()
     {
         var compiled = new LythonEngine().Compile(
