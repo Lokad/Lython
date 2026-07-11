@@ -5,6 +5,26 @@ namespace Lokad.Lython.Tests;
 public sealed class CopyModuleFunctionTests
 {
     [Fact]
+    public void CopyModule_DeepCopyReusesUnchangedTuples()
+    {
+        var result = new LythonEngine().Run(
+            """
+import copy
+
+atomic = (1, "x", (2, 3))
+mutable = ([],)
+atomic_copy = copy.deepcopy(atomic)
+mutable_copy = copy.deepcopy(mutable)
+print(atomic_copy is atomic)
+print(mutable_copy is mutable, mutable_copy[0] is mutable[0])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True\nFalse False\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void CopyModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();

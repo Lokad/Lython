@@ -246,9 +246,17 @@ internal sealed partial class LythonRuntime
         var items = new object[tuple.Count];
         var clone = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
         memo.Remember(tuple, clone);
+        var changed = false;
         for (var i = 0; i < tuple.Count; i++)
         {
             items[i] = CopyValue(tuple[i], deep: true, context, span, memo);
+            changed |= !ReferenceEquals(items[i], tuple[i]);
+        }
+
+        if (!changed)
+        {
+            memo.Remember(tuple, tuple);
+            return tuple;
         }
 
         return clone;
