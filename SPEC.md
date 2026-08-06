@@ -285,6 +285,11 @@ The initial subset must support:
 - `break` and `continue` inside loops
 - recursion
 
+Open parentheses, brackets, and braces enable Python-style implicit line joining.
+Physical newlines and continuation indentation inside those delimiters do not
+terminate the logical line or alter suite indentation, including when the
+delimited expression appears in a compound-statement header.
+
 The initial subset does not support:
 
 - loop `else`

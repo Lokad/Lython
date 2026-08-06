@@ -227,6 +227,49 @@ match [
     }
 
     [Fact]
+    public void Run_AcceptsContinuationIndentationThatClosesInsideCompoundHeaders()
+    {
+        var result = new LythonEngine().Run(
+            """
+values = []
+for table in ["A4",
+              "A5",
+              "A6"]:
+    values.append(table)
+
+if all([True,
+        True]):
+    values.append("if")
+
+while any([False,
+           False]):
+    values.append("never")
+
+return values
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Equal(new object?[] { "A4", "A5", "A6", "if" }, Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
+    public void Compile_ContinuationIndentationDoesNotHideRealSuiteDedents()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+if all([True,
+        True]):
+    values = [1,
+              2]
+after = 3
+""");
+
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+        Assert.Empty(compiled.Diagnostics);
+    }
+
+    [Fact]
     public void Compile_AcceptsAdjacentTextLiteralConcatenation()
     {
         var compiled = new LythonEngine().Compile(

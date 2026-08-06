@@ -69,6 +69,8 @@ The example elides the host implementation on purpose. In practice, `host` is yo
 
 Lython supports a broad, practical subset of Python. Ordinary control flow, functions, exceptions, collections, comprehensions, strings, regex, classes and dataclasses, structural pattern matching, and host-mediated file/path work are expected to work.
 
+Parenthesized, bracketed, and braced expressions may span physical lines using Python's implicit line joining, including inside compound-statement headers such as `if`, `for`, and `while`.
+
 Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
 
 `typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.

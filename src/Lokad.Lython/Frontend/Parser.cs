@@ -3939,6 +3939,7 @@ internal sealed class Parser
     {
         var hidden = new bool[tokens.Count];
         var depth = 0;
+        var groupedIndentDepth = 0;
 
         for (var i = 0; i < tokens.Count; i++)
         {
@@ -3946,6 +3947,28 @@ internal sealed class Parser
             if (depth > 0 && token is Token.Eol or Token.Indent or Token.Dedent)
             {
                 hidden[i] = true;
+                if (token == Token.Indent)
+                {
+                    groupedIndentDepth++;
+                }
+                else if (token == Token.Dedent && groupedIndentDepth > 0)
+                {
+                    groupedIndentDepth--;
+                }
+
+                continue;
+            }
+
+            // Lokad.Parsing's indentation stack observes physical continuation
+            // indentation even though Python ignores it inside delimiters. When a
+            // closing delimiter stays on that continuation indentation, the lexer
+            // emits the balancing Dedent only on the following physical line. Hide
+            // exactly those delayed balances, while retaining any enclosing-suite
+            // Dedent that follows them.
+            if (depth == 0 && token == Token.Dedent && groupedIndentDepth > 0)
+            {
+                hidden[i] = true;
+                groupedIndentDepth--;
                 continue;
             }
 
