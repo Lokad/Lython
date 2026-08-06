@@ -300,7 +300,7 @@ The initial subset does not support:
 The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `builtins`, `collections`,
-`copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `fnmatch`,
+`copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `filecmp`, `fnmatch`,
 `functools`, `glob`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
 `pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
 when host-enabled, `sys`, `typing`, and related contained helpers.
@@ -894,6 +894,8 @@ names are not part of the supported script surface.
 `pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. `encoding` may be `None`, `utf-8`, `utf-8-sig`, or the Latin-1 aliases `latin-1`, `latin1`, and `iso-8859-1`; `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly. Latin-1 input decodes every byte losslessly, while strict Latin-1 encoding raises `UnicodeEncodeError` for code points outside the byte range.
 
 Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as text-handle helpers for the same UTF-8 and Latin-1 codecs. The signatures include CPython-compatible `buffering`, `encoding`, `errors`, and `newline` slots, while `closefd=False`, custom `opener`, binary modes, and updating modes remain explicitly unsupported. Text handles expose ordinary inspection such as `name`, `mode`, `encoding`, `errors`, `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, sized `read(...)`/`readline(...)`/`readlines(...)`, and iteration. Random access must fail explicitly.
+
+`filecmp.cmp(f1, f2, shallow=True)` compares strings and path-like values through the same contained host path model. A shallow comparison may return from equal file-type, size, and modification-time signatures. Otherwise it compares exact content using bounded host byte reads without exposing those bytes through a script file handle. Missing paths raise `FileNotFoundError`, non-file paths compare unequal, and hosts without the optional binary capability fail explicitly when exact reads are required. `clear_cache()` is a no-op because Lython does not cache comparison results; recursive `dircmp` remains unsupported.
 
 `pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 

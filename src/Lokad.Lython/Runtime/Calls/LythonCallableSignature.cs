@@ -457,6 +457,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature ImportlibUtilSpecFromFileLocation = new("importlib.util.spec_from_file_location", ["name", "location", "loader", "submodule_search_locations"], RequiredCount: 2, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature ImportlibUtilSpecFromLoader = new("importlib.util.spec_from_loader", ["name", "loader", "origin", "is_package"], RequiredCount: 2, MaxPositionalCount: 2);
 
+    public static readonly LythonCallableSignature FilecmpCmp = new("filecmp.cmp", ["f1", "f2", "shallow"], RequiredCount: 2);
+    public static readonly LythonCallableSignature FilecmpClearCache = new("filecmp.clear_cache", []);
+    public static readonly LythonCallableSignature FilecmpDircmp = new("filecmp.dircmp", ["a", "b", "ignore", "hide"], RequiredCount: 2);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);

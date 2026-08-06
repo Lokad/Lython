@@ -96,6 +96,7 @@ The builtin module surface is explicitly allowlisted:
 - `datetime`
 - `decimal`
 - `difflib`
+- `filecmp`
 - `fnmatch`
 - `functools`
 - `glob`
@@ -121,6 +122,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 
 `importlib` and `importlib.util` provide contained dynamic import and discovery. `import_module(...)` reuses Lython's normal builtin/allowlisted import path, while `find_spec(...)` returns Python-shaped module metadata without executing the target. Discovery never inspects ambient runtimes, `PATH`, arbitrary files, extension modules, or native loaders; APIs that would construct or execute arbitrary loaders fail explicitly.
+
+`filecmp.cmp(...)` compares host-mediated files by contained metadata and, when required, bounded exact byte reads. Shallow comparison follows Python's type/size/mtime signature shortcut; exact comparison never exposes the file bytes to the script. Recursive `dircmp` remains explicitly unsupported.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 

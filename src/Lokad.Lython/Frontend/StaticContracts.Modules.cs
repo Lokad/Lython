@@ -100,6 +100,7 @@ internal static partial class StaticContracts
             "read_code"),
         ["importlib"] = Members("import_module", "invalidate_caches", "util"),
         ["importlib.util"] = Members("find_spec", "resolve_name", "module_from_spec", "spec_from_file_location", "spec_from_loader"),
+        ["filecmp"] = Members("cmp", "clear_cache", "dircmp"),
         ["collections"] = Members("defaultdict", "Counter", "deque", "namedtuple", "OrderedDict", "ChainMap", "UserDict", "UserList", "UserString", "abc"),
         ["collections.abc"] = Members("Iterable", "Iterator", "Sequence", "MutableSequence", "Mapping", "MutableMapping", "Set", "MutableSet", "Callable"),
         ["itertools"] = Members(
