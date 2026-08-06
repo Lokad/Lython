@@ -213,6 +213,24 @@ helper.value = b"x"
     }
 
     [Fact]
+    public void LoweredScript_LowersUnparenthesizedTupleExpressionLists()
+    {
+        var frontend = LythonFrontend.Compile(
+            """
+value = 1, 2
+return value, 3
+""");
+
+        Assert.Empty(frontend.Diagnostics);
+        var lowered = LoweredScript.Lower(frontend.Script!);
+
+        var assignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
+        Assert.Equal(2, Assert.IsType<LoweredTupleLiteralExpression>(assignment.Expression).Items.Count);
+        var returnStatement = Assert.IsType<LoweredReturnStatement>(lowered.Statements[1]);
+        Assert.Equal(2, Assert.IsType<LoweredTupleLiteralExpression>(returnStatement.Expression).Items.Count);
+    }
+
+    [Fact]
     public void LoweredScript_LowersMatchStatementsWithoutGenericFallback()
     {
         var frontend = LythonFrontend.Compile("""

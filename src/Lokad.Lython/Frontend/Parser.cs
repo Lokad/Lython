@@ -199,7 +199,7 @@ internal sealed class Parser
             }
         }
 
-        if (CurrentToken == Token.Star || (IsNameToken(CurrentToken) && PeekToken(1) == Token.Comma))
+        if (CurrentToken == Token.Star || IsUnpackingAssignmentStart())
         {
             return ParseUnpackingAssignmentStatement();
         }
@@ -233,7 +233,7 @@ internal sealed class Parser
             }
         }
 
-        var expression = ParseExpression();
+        var expression = ParseExpressionList();
         if (expression is null)
         {
             return null;
@@ -940,7 +940,7 @@ internal sealed class Parser
             return null;
         }
 
-        var iterable = ParseExpression();
+        var iterable = ParseExpressionList();
         if (iterable is null)
         {
             AddDiagnostic("LA1017", "Expected iterable expression in for statement.", targetToken);
@@ -1488,7 +1488,7 @@ internal sealed class Parser
             return new ReturnStatementSyntax(null, SpanOf(returnToken));
         }
 
-        var expression = ParseExpression();
+        var expression = ParseExpressionList();
         if (expression is null)
         {
             AddDiagnostic("LA1036", "Expected expression after 'return'.", returnToken);
@@ -2016,7 +2016,7 @@ internal sealed class Parser
         if (CurrentToken == Token.Assign)
         {
             ReadToken();
-            expression = ParseExpression();
+            expression = ParseExpressionList();
             if (expression is null)
             {
                 AddDiagnostic("LA1060", "Expected expression on the right side of annotated assignment.", nameToken);
@@ -2201,10 +2201,45 @@ internal sealed class Parser
             firstToken);
     }
 
+    private bool IsUnpackingAssignmentStart()
+    {
+        var offset = 0;
+        if (!IsNameToken(PeekToken(offset)))
+        {
+            return false;
+        }
+
+        offset++;
+        var sawComma = false;
+        while (PeekToken(offset) == Token.Comma)
+        {
+            sawComma = true;
+            offset++;
+            if (PeekToken(offset) == Token.Assign)
+            {
+                return true;
+            }
+
+            if (PeekToken(offset) == Token.Star)
+            {
+                offset++;
+            }
+
+            if (!IsNameToken(PeekToken(offset)))
+            {
+                return false;
+            }
+
+            offset++;
+        }
+
+        return sawComma && PeekToken(offset) == Token.Assign;
+    }
+
     private StatementSyntax? ParseAssignmentAfterFirstTarget(AssignmentTargetSyntax firstTarget, int startToken)
     {
         var startDiagnosticCount = _diagnostics.Count;
-        var expression = ParseExpression();
+        var expression = ParseExpressionList();
         if (expression is null)
         {
             if (_diagnostics.Count == startDiagnosticCount)
@@ -2234,7 +2269,7 @@ internal sealed class Parser
             ReadToken();
 
             startDiagnosticCount = _diagnostics.Count;
-            currentExpression = ParseExpression();
+            currentExpression = ParseExpressionList();
             if (currentExpression is null)
             {
                 if (_diagnostics.Count == startDiagnosticCount)
@@ -2447,6 +2482,39 @@ internal sealed class Parser
         }
 
         return expression;
+    }
+
+    private ExpressionSyntax? ParseExpressionList()
+    {
+        var first = ParseExpression();
+        if (first is null || CurrentToken != Token.Comma)
+        {
+            return first;
+        }
+
+        var items = new List<ExpressionSyntax> { first };
+        var endSpan = first.Span;
+        while (CurrentToken == Token.Comma)
+        {
+            var commaToken = ReadToken();
+            endSpan = SpanOf(commaToken);
+            if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End or Token.Colon)
+            {
+                break;
+            }
+
+            var item = ParseExpression();
+            if (item is null)
+            {
+                AddDiagnostic("LA1004", "Expected expression after ','.", commaToken);
+                return null;
+            }
+
+            items.Add(item);
+            endSpan = item.Span;
+        }
+
+        return new TupleLiteralExpressionSyntax(items, Merge(first.Span, endSpan));
     }
 
     private ExpressionSyntax? ParseOrExpression()

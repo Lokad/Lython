@@ -270,6 +270,56 @@ after = 3
     }
 
     [Fact]
+    public void Run_AcceptsUnparenthesizedTupleExpressionLists()
+    {
+        var result = new LythonEngine().Run(
+            """
+events = []
+
+def mark(value):
+    events.append(value)
+    return value
+
+def choose(flag):
+    return 10 if flag else 20, 30
+
+a, b = mark(1), mark(2)
+single = mark(3),
+left = right = mark(4), mark(5)
+mark(6), mark(7)
+a, b
+
+seen = []
+for item in mark(8), mark(9):
+    seen.append(item)
+
+return a, b, single, left is right, events, seen, choose(True), choose(False)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(FormatDiagnostic)));
+        var returned = Assert.IsType<object?[]>(result.ReturnValue);
+        Assert.Equal(new System.Numerics.BigInteger(1), returned[0]);
+        Assert.Equal(new System.Numerics.BigInteger(2), returned[1]);
+        Assert.Equal(new object?[] { new System.Numerics.BigInteger(3) }, Assert.IsType<object?[]>(returned[2]));
+        Assert.True(Assert.IsType<bool>(returned[3]));
+        Assert.Equal(Enumerable.Range(1, 9).Select(value => (object?)new System.Numerics.BigInteger(value)), Assert.IsType<List<object?>>(returned[4]));
+        Assert.Equal(new object?[] { new System.Numerics.BigInteger(8), new System.Numerics.BigInteger(9) }, Assert.IsType<List<object?>>(returned[5]));
+        Assert.Equal(new object?[] { new System.Numerics.BigInteger(10), new System.Numerics.BigInteger(30) }, Assert.IsType<object?[]>(returned[6]));
+        Assert.Equal(new object?[] { new System.Numerics.BigInteger(20), new System.Numerics.BigInteger(30) }, Assert.IsType<object?[]>(returned[7]));
+    }
+
+    [Fact]
+    public void Compile_RejectsMissingTupleExpressionListItemsPrecisely()
+    {
+        var compiled = new LythonEngine().Compile("return 1, , 2\n");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, diagnostic =>
+            diagnostic.Code == "LA1004" && diagnostic.Message.Contains("after ','", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Compile_AcceptsAdjacentTextLiteralConcatenation()
     {
         var compiled = new LythonEngine().Compile(

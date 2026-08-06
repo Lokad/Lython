@@ -387,6 +387,11 @@ The initial subset must support exactly the following literal forms:
 - dictionary literals
 - tuple literals
 
+Tuple expression lists may omit parentheses in assignment values, `return`
+statements, expression statements, and `for` iterable expressions. Their items
+are evaluated from left to right, a trailing comma produces a one-item tuple,
+and chained assignment evaluates and shares its final tuple value once.
+
 The initial subset does not support:
 
 - bytes literals
