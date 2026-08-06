@@ -2190,7 +2190,7 @@ internal sealed partial class LythonRuntime
     private static readonly string[] BytesDirNames = ["decode", "hex"];
     private static readonly string[] ListDirNames = ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"];
     private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
-    private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "discard", "intersection", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "union", "update"];
+    private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
 
     private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {

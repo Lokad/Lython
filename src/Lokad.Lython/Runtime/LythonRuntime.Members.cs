@@ -1048,33 +1048,18 @@ internal sealed partial class LythonRuntime
             {
                 "add" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "set.add(value) expects one argument.", span);
-                    }
-
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.Add(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
-                }, "set.add", ["value"]),
+                }, OnePositional("set.add", "value")),
                 "discard" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "set.discard(value) expects one argument.", span);
-                    }
-
                     set.Remove(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
                     return PyNone.Instance;
-                }, "set.discard", ["value"]),
+                }, OnePositional("set.discard", "value")),
                 "remove" => new BoundCallable((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "set.remove(value) expects one argument.", span);
-                    }
-
                     var candidate = ValidateSetItem(arguments[0], span, context.MemoryGovernor);
                     if (!set.Remove(candidate))
                     {
@@ -1082,7 +1067,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, "set.remove", ["value"]),
+                }, OnePositional("set.remove", "value")),
                 "copy" => new BoundCallable((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1102,10 +1087,195 @@ internal sealed partial class LythonRuntime
                     set.Clear();
                     return PyNone.Instance;
                 }),
+                "pop" => new BoundCallable((arguments, span, _) =>
+                {
+                    if (!set.TryPop(out var item))
+                    {
+                        throw new LythonRuntimeException("KeyError", "pop from an empty set", span);
+                    }
+
+                    return item;
+                }, NoArguments("set.pop")),
+                "union" => new BoundCallable((arguments, span, context) =>
+                {
+                    var result = new PySet(set, context.MemoryGovernor, span);
+                    Update(result, arguments, span, context);
+                    return result;
+                }, VariadicPositional("set.union")),
+                "intersection" => new BoundCallable((arguments, span, context) =>
+                {
+                    var result = new PySet(set, context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        IntersectWithIterable(result, argument, span, context);
+                    }
+
+                    return result;
+                }, VariadicPositional("set.intersection")),
+                "difference" => new BoundCallable((arguments, span, context) =>
+                {
+                    var result = new PySet(set, context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        result.ExceptWith(MaterializeSet(argument, span, context));
+                    }
+
+                    return result;
+                }, VariadicPositional("set.difference")),
+                "symmetric_difference" => new BoundCallable((arguments, span, context) =>
+                {
+                    var result = new PySet(set, context.MemoryGovernor, span);
+                    result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
+                    context.ObserveCollectionCount(result.Count, span);
+                    return result;
+                }, OnePositional("set.symmetric_difference", "other")),
+                "isdisjoint" => new BoundCallable((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (set.Contains(ValidateSetItem(item, span, context.MemoryGovernor)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("set.isdisjoint", "other")),
+                "issubset" => new BoundCallable((arguments, span, context) =>
+                    IsSubsetOfIterable(set, arguments[0], span, context),
+                    OnePositional("set.issubset", "other")),
+                "issuperset" => new BoundCallable((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (!set.Contains(ValidateSetItem(item, span, context.MemoryGovernor)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("set.issuperset", "other")),
+                "update" => new BoundCallable((arguments, span, context) =>
+                {
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    Update(set, arguments, span, context);
+                    return PyNone.Instance;
+                }, VariadicPositional("set.update")),
+                "intersection_update" => new BoundCallable((arguments, span, context) =>
+                {
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        IntersectWithIterable(set, argument, span, context);
+                    }
+
+                    return PyNone.Instance;
+                }, VariadicPositional("set.intersection_update")),
+                "difference_update" => new BoundCallable((arguments, span, context) =>
+                {
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        set.ExceptWith(MaterializeSet(argument, span, context));
+                    }
+
+                    return PyNone.Instance;
+                }, VariadicPositional("set.difference_update")),
+                "symmetric_difference_update" => new BoundCallable((arguments, span, context) =>
+                {
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
+                    context.ObserveCollectionCount(set.Count, span);
+                    return PyNone.Instance;
+                }, OnePositional("set.symmetric_difference_update", "other")),
                 _ => null!,
             };
 
             return value is not null;
+        }
+
+        private static LythonCallableSignature NoArguments(string name) => new(name, []);
+
+        private static LythonCallableSignature OnePositional(string name, string parameterName)
+            => new(name, [parameterName], PositionalOnlyCount: 1);
+
+        private static LythonCallableSignature VariadicPositional(string name)
+            => new(name, RequiredCount: 0, AllowsExtraPositional: true);
+
+        private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            var result = new PySet(context.MemoryGovernor, span);
+            foreach (var item in ToSequence(value, span, context))
+            {
+                result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+                context.ObserveCollectionCount(result.Count, span);
+            }
+
+            return result;
+        }
+
+        private static void IntersectWithIterable(PySet target, object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (value is PySet other)
+            {
+                target.IntersectWith(other);
+                return;
+            }
+
+            var retained = new PySet(context.MemoryGovernor, span);
+            foreach (var item in ToSequence(value, span, context))
+            {
+                var candidate = ValidateSetItem(item, span, context.MemoryGovernor);
+                if (target.Contains(candidate))
+                {
+                    retained.Add(candidate);
+                    context.ObserveCollectionCount(retained.Count, span);
+                    if (target.Count > 0 && retained.Count == target.Count)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            target.IntersectWith(retained);
+        }
+
+        private static bool IsSubsetOfIterable(PySet set, object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (value is PySet other)
+            {
+                return set.IsSubsetOf(other);
+            }
+
+            var found = new PySet(context.MemoryGovernor, span);
+            foreach (var item in ToSequence(value, span, context))
+            {
+                var candidate = ValidateSetItem(item, span, context.MemoryGovernor);
+                if (set.Contains(candidate))
+                {
+                    found.Add(candidate);
+                    context.ObserveCollectionCount(found.Count, span);
+                    if (set.Count > 0 && found.Count == set.Count)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return found.Count == set.Count;
+        }
+
+        private static void Update(PySet target, object[] iterables, LythonSourceSpan span, ExecutionContext context)
+        {
+            foreach (var iterable in iterables)
+            {
+                foreach (var item in ToSequence(iterable, span, context))
+                {
+                    target.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+                    context.ObserveCollectionCount(target.Count, span);
+                }
+            }
         }
     }
 

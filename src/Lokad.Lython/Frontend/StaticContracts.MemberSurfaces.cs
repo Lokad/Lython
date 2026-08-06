@@ -739,10 +739,22 @@ internal static partial class StaticContracts
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
     {
         "add",
-        "discard",
-        "remove",
-        "copy",
         "clear",
+        "copy",
+        "difference",
+        "difference_update",
+        "discard",
+        "intersection",
+        "intersection_update",
+        "isdisjoint",
+        "issubset",
+        "issuperset",
+        "pop",
+        "remove",
+        "symmetric_difference",
+        "symmetric_difference_update",
+        "union",
+        "update",
     };
 
     private static readonly HashSet<string> CollectionsDefaultDictMembers = new(StringComparer.Ordinal)

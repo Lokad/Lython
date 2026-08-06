@@ -75,6 +75,8 @@ Tuple expression lists follow ordinary Python spelling in statement contexts: as
 
 Collection displays support Python's iterable and mapping unpacking forms: `[*items]`, `(*items,)`, `{*items}`, and `{**mapping}`. Mixed entries are evaluated once from left to right, with later dictionary values replacing earlier values without moving their keys.
 
+Mutable sets provide Python's ordinary method family: variadic `union`, `intersection`, `difference`, and update variants; symmetric difference; subset, superset, and disjoint predicates; plus `add`, `discard`, `remove`, `pop`, `copy`, and `clear`. Method operands accept general iterables, results preserve Python equality and hash behavior, and non-mutating methods leave their receiver unchanged.
+
 Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
 
 `typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.

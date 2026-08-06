@@ -627,6 +627,8 @@ The initial subset must support:
 
 `list(iterable)`, `tuple(iterable)`, and `dict(iterable_of_pairs)` must follow Python semantics for the supported subset.
 
+Mutable sets support the ordinary Python method family: `add`, `discard`, `remove`, `pop`, `copy`, `clear`, `union`, `intersection`, `difference`, `symmetric_difference`, `isdisjoint`, `issubset`, `issuperset`, and their mutating update variants. Set-operation methods accept arbitrary iterable operands, variadic methods process operands from left to right, non-mutating methods return a distinct set, and all growth remains subject to execution collection and memory limits.
+
 The `collections` module supports the common contained container helpers:
 
 - `defaultdict`, including mapping/keyword initialization and mutable `default_factory`

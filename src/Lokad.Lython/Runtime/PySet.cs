@@ -86,6 +86,20 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool Remove(object item) => _items.Remove(item);
 
+    public bool TryPop(out object item)
+    {
+        using var enumerator = _items.GetEnumerator();
+        if (!enumerator.MoveNext())
+        {
+            item = PyNone.Instance;
+            return false;
+        }
+
+        item = enumerator.Current;
+        _items.Remove(item);
+        return true;
+    }
+
     public bool Contains(object item) => _items.Contains(item);
 
     public void Clear()
