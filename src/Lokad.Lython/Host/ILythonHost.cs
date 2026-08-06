@@ -42,6 +42,8 @@ public interface ILythonHost
 
     ILythonSubprocessRunner? SubprocessRunner => null;
 
+    ILythonTiming? Timing => null;
+
     async IAsyncEnumerable<LythonWalkEntry> WalkAsync(
         string path,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)

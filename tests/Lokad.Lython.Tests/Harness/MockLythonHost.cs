@@ -17,6 +17,7 @@ internal sealed class MockLythonHost : ILythonHost
     private readonly MockTextOutput _stderr = new();
     private MockTextInput? _stdin;
     private readonly MockSubprocessRunner _subprocess = new();
+    private ILythonTiming? _timing;
 
     public MockLythonHost(string cwd = "/")
     {
@@ -40,6 +41,17 @@ internal sealed class MockLythonHost : ILythonHost
     public ILythonTextOutput? StandardError => _stderr;
 
     public ILythonSubprocessRunner? SubprocessRunner => _subprocess.Enabled ? _subprocess : null;
+
+    public ILythonTiming? Timing => _timing;
+
+    public MockTiming EnableTiming(long monotonicNanoseconds = 0, long resolutionNanoseconds = 1)
+    {
+        var timing = new MockTiming(monotonicNanoseconds, resolutionNanoseconds);
+        _timing = timing;
+        return timing;
+    }
+
+    public void SetTiming(ILythonTiming? timing) => _timing = timing;
 
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
     {
@@ -571,6 +583,34 @@ internal sealed class MockLythonHost : ILythonHost
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.CompletedTask;
         }
+    }
+
+    public sealed class MockTiming : ILythonTiming
+    {
+        private readonly List<TimeSpan> _delays = [];
+
+        public MockTiming(long monotonicNanoseconds, long resolutionNanoseconds)
+        {
+            MonotonicNanoseconds = monotonicNanoseconds;
+            MonotonicResolutionNanoseconds = resolutionNanoseconds;
+        }
+
+        public long MonotonicNanoseconds { get; private set; }
+
+        public long MonotonicResolutionNanoseconds { get; }
+
+        public IReadOnlyList<TimeSpan> Delays => _delays;
+
+        public ValueTask DelayAsync(TimeSpan duration, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _delays.Add(duration);
+            MonotonicNanoseconds = checked(MonotonicNanoseconds + duration.Ticks * 100);
+            return ValueTask.CompletedTask;
+        }
+
+        public void Advance(long nanoseconds)
+            => MonotonicNanoseconds = checked(MonotonicNanoseconds + nanoseconds);
     }
 
     private sealed class MockSubprocessRunner : ILythonSubprocessRunner

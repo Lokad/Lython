@@ -104,7 +104,7 @@ internal static partial class StaticContracts
         ["hashlib"] = Members("md5", "sha1", "sha256", "sha384", "sha512", "new", "algorithms_available", "algorithms_guaranteed", "file_digest"),
         ["gzip"] = Members("open", "compress", "decompress", "BadGzipFile"),
         ["shlex"] = Members("shlex", "quote", "join", "split"),
-        ["time"] = Members("time", "time_ns", "gmtime", "localtime", "ctime", "mktime", "asctime", "strftime", "strptime", "struct_time", "timezone", "altzone", "daylight", "tzname", "tzset"),
+        ["time"] = Members("time", "time_ns", "monotonic", "monotonic_ns", "perf_counter", "perf_counter_ns", "sleep", "get_clock_info", "process_time", "process_time_ns", "thread_time", "thread_time_ns", "clock_gettime", "clock_gettime_ns", "clock_getres", "clock_settime", "clock_settime_ns", "pthread_getcpuclockid", "gmtime", "localtime", "ctime", "mktime", "asctime", "strftime", "strptime", "struct_time", "timezone", "altzone", "daylight", "tzname", "tzset"),
         ["collections"] = Members("defaultdict", "Counter", "deque", "namedtuple", "OrderedDict", "ChainMap", "UserDict", "UserList", "UserString", "abc"),
         ["collections.abc"] = Members("Iterable", "Iterator", "Sequence", "MutableSequence", "Mapping", "MutableMapping", "Set", "MutableSet", "Callable"),
         ["itertools"] = Members(

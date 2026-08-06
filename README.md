@@ -135,7 +135,7 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `shlex.quote(...)`, `shlex.join(...)`, and `shlex.split(...)` provide pure POSIX-shell spelling and tokenization helpers. The iterable `shlex.shlex(...)` tokenizer accepts strings and already-authorized readable text handles, with Python-compatible token pushback, line tracking, POSIX/non-POSIX behavior, punctuation grouping, and mutable character classes. Automatic filename-based source inclusion is explicitly unsupported; `push_source(...)` accepts only a supplied string or readable text handle. None of these helpers invokes a shell or infers host-platform command syntax.
 
-`time.time()`, `time.time_ns()`, calendar conversions, formatting, and parsing use the host's explicit UTC and local wall-clock values. `time.struct_time` is tuple-compatible and exposes Python's named calendar, weekday, year-day, DST, zone, and offset fields. The local timezone model is the host's current fixed offset, reported through `timezone`, `altzone`, `daylight`, and `tzname`; Lython does not consult an ambient OS timezone database, and `tzset()` is explicitly unsupported.
+`time.time()`, `time.time_ns()`, calendar conversions, formatting, and parsing use the host's explicit UTC and local wall-clock values. `time.struct_time` is tuple-compatible and exposes Python's named calendar, weekday, year-day, DST, zone, and offset fields. The local timezone model is the host's current fixed offset, reported through `timezone`, `altzone`, `daylight`, and `tzname`; Lython does not consult an ambient OS timezone database, and `tzset()` is explicitly unsupported. Hosts may separately provide `ILythonTiming` for `monotonic`, `perf_counter`, their integral nanosecond forms, `sleep`, and corresponding `get_clock_info` metadata. Without that capability these calls fail explicitly; Lython never substitutes ambient `Stopwatch` or `Task.Delay`. Process/thread CPU clocks, platform clock IDs, and clock mutation remain unsupported.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 
@@ -238,6 +238,7 @@ All host effects are async and receive the run cancellation token. That base sur
 - bounded binary reads/writes, used by contained binary-aware modules and non-UTF-8 text codecs
 - `WalkAsync(...)` for `os.walk`
 - `SubprocessRunner` for the host-mediated `subprocess` module surface
+- `Timing` for host-defined monotonic nanoseconds and cancellable delays
 
 The stream capability is deliberately text-shaped:
 
@@ -250,6 +251,8 @@ When those are provided:
 - `input()` reads from host stdin
 - `print()` writes to `sys.stdout`
 - `print(..., file=sys.stderr)` works naturally
+
+[`ILythonTiming`](src/Lokad.Lython/Host/ILythonTiming.cs) is the optional timing authority. Its monotonic epoch is intentionally opaque, its resolution is reported in nanoseconds, and its delay receives the run cancellation token. Every clock read, resolution query, and delay counts against the host-call budget. Synchronous execution accepts a delay only when the host completes it synchronously; an asynchronous timing provider is consumed through `RunAsync(...)`.
 
 Process execution is also optional and host-mediated. [`ILythonSubprocessRunner`](src/Lokad.Lython/Host/ILythonSubprocessRunner.cs) receives a [`LythonSubprocessRequest`](src/Lokad.Lython/Host/LythonSubprocessRequest.cs) with:
 

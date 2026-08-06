@@ -116,7 +116,8 @@ internal readonly record struct StaticCallShapeContract(
     string[]? ParameterNames = null,
     int? MaxPositionalCount = null,
     bool AllowsExtraKeywords = false,
-    bool AllowsExtraPositional = false)
+    bool AllowsExtraPositional = false,
+    int PositionalOnlyCount = 0)
 {
     public StaticCallShapeContract(LythonCallableSignature signature)
         : this(
@@ -125,7 +126,8 @@ internal readonly record struct StaticCallShapeContract(
             signature.ParameterNames,
             signature.AllowsExtraPositional ? null : signature.MaxPositionalCount ?? signature.ParameterNames?.Length,
             signature.AllowsExtraKeywords,
-            signature.AllowsExtraPositional)
+            signature.AllowsExtraPositional,
+            signature.PositionalOnlyCount)
     {
     }
 
@@ -193,6 +195,13 @@ internal readonly record struct StaticCallShapeContract(
                 }
 
                 reason = $"callable argument contract rejected unexpected keyword '{keyword.Key}'";
+                offendingExpression = keyword.Value;
+                return true;
+            }
+
+            if (index < PositionalOnlyCount)
+            {
+                reason = $"callable argument contract rejected positional-only keyword '{keyword.Key}'";
                 offendingExpression = keyword.Value;
                 return true;
             }

@@ -480,6 +480,22 @@ internal static class LythonKnownCallableSignatures
 
     public static readonly LythonCallableSignature TimeTime = new("time.time", []);
     public static readonly LythonCallableSignature TimeTimeNs = new("time.time_ns", []);
+    public static readonly LythonCallableSignature TimeMonotonic = new("time.monotonic", []);
+    public static readonly LythonCallableSignature TimeMonotonicNs = new("time.monotonic_ns", []);
+    public static readonly LythonCallableSignature TimePerfCounter = new("time.perf_counter", []);
+    public static readonly LythonCallableSignature TimePerfCounterNs = new("time.perf_counter_ns", []);
+    public static readonly LythonCallableSignature TimeSleep = new("time.sleep", ["secs"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeGetClockInfo = new("time.get_clock_info", ["name"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeProcessTime = new("time.process_time", []);
+    public static readonly LythonCallableSignature TimeProcessTimeNs = new("time.process_time_ns", []);
+    public static readonly LythonCallableSignature TimeThreadTime = new("time.thread_time", []);
+    public static readonly LythonCallableSignature TimeThreadTimeNs = new("time.thread_time_ns", []);
+    public static readonly LythonCallableSignature TimeClockGetTime = new("time.clock_gettime", ["clk_id"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockGetTimeNs = new("time.clock_gettime_ns", ["clk_id"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockGetRes = new("time.clock_getres", ["clk_id"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockSetTime = new("time.clock_settime", ["clk_id", "time"], PositionalOnlyCount: 2);
+    public static readonly LythonCallableSignature TimeClockSetTimeNs = new("time.clock_settime_ns", ["clk_id", "time_ns"], PositionalOnlyCount: 2);
+    public static readonly LythonCallableSignature TimePthreadGetCpuClockId = new("time.pthread_getcpuclockid", ["thread_id"], PositionalOnlyCount: 1);
     public static readonly LythonCallableSignature TimeGmtime = new("time.gmtime", ["secs"], RequiredCount: 0);
     public static readonly LythonCallableSignature TimeLocaltime = new("time.localtime", ["secs"], RequiredCount: 0);
     public static readonly LythonCallableSignature TimeCtime = new("time.ctime", ["secs"], RequiredCount: 0);

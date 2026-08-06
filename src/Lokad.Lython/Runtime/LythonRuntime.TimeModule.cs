@@ -16,6 +16,22 @@ internal sealed partial class LythonRuntime
         [
             "time",
             "time_ns",
+            "monotonic",
+            "monotonic_ns",
+            "perf_counter",
+            "perf_counter_ns",
+            "sleep",
+            "get_clock_info",
+            "process_time",
+            "process_time_ns",
+            "thread_time",
+            "thread_time_ns",
+            "clock_gettime",
+            "clock_gettime_ns",
+            "clock_getres",
+            "clock_settime",
+            "clock_settime_ns",
+            "pthread_getcpuclockid",
             "gmtime",
             "localtime",
             "ctime",
@@ -45,6 +61,22 @@ internal sealed partial class LythonRuntime
             {
                 "time" => new BuiltinCallable(LythonKnownCallableSignatures.TimeTime, CurrentTime),
                 "time_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimeTimeNs, CurrentTimeNanoseconds),
+                "monotonic" => new BuiltinCallable(LythonKnownCallableSignatures.TimeMonotonic, Monotonic),
+                "monotonic_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimeMonotonicNs, MonotonicNanoseconds),
+                "perf_counter" => new BuiltinCallable(LythonKnownCallableSignatures.TimePerfCounter, Monotonic),
+                "perf_counter_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimePerfCounterNs, MonotonicNanoseconds),
+                "sleep" => new BuiltinCallable(LythonKnownCallableSignatures.TimeSleep, Sleep, SleepAsync),
+                "get_clock_info" => new BuiltinCallable(LythonKnownCallableSignatures.TimeGetClockInfo, GetClockInfo),
+                "process_time" => Unsupported(LythonKnownCallableSignatures.TimeProcessTime, "process CPU clocks"),
+                "process_time_ns" => Unsupported(LythonKnownCallableSignatures.TimeProcessTimeNs, "process CPU clocks"),
+                "thread_time" => Unsupported(LythonKnownCallableSignatures.TimeThreadTime, "thread CPU clocks"),
+                "thread_time_ns" => Unsupported(LythonKnownCallableSignatures.TimeThreadTimeNs, "thread CPU clocks"),
+                "clock_gettime" => Unsupported(LythonKnownCallableSignatures.TimeClockGetTime, "platform clock IDs"),
+                "clock_gettime_ns" => Unsupported(LythonKnownCallableSignatures.TimeClockGetTimeNs, "platform clock IDs"),
+                "clock_getres" => Unsupported(LythonKnownCallableSignatures.TimeClockGetRes, "platform clock IDs"),
+                "clock_settime" => Unsupported(LythonKnownCallableSignatures.TimeClockSetTime, "clock mutation"),
+                "clock_settime_ns" => Unsupported(LythonKnownCallableSignatures.TimeClockSetTimeNs, "clock mutation"),
+                "pthread_getcpuclockid" => Unsupported(LythonKnownCallableSignatures.TimePthreadGetCpuClockId, "platform thread clocks"),
                 "gmtime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeGmtime, Gmtime),
                 "localtime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeLocaltime, Localtime),
                 "ctime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeCtime, Ctime),
@@ -98,6 +130,101 @@ internal sealed partial class LythonRuntime
             var ticks = context.Host.UtcNow.UtcDateTime.Ticks - DateTime.UnixEpoch.Ticks;
             return new BigInteger(ticks) * 100;
         }
+
+        private static object Monotonic(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            return context.ReadHostMonotonicNanoseconds(span) / 1_000_000_000d;
+        }
+
+        private static object MonotonicNanoseconds(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = arguments;
+            return new BigInteger(context.ReadHostMonotonicNanoseconds(span));
+        }
+
+        private static object Sleep(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var duration = ReadSleepDuration(arguments[0], span);
+            context.DelayHost(duration, span);
+            return PyNone.Instance;
+        }
+
+        private static async ValueTask<object> SleepAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var duration = ReadSleepDuration(arguments[0], span);
+            await context.DelayHostAsync(duration, span).ConfigureAwait(false);
+            return PyNone.Instance;
+        }
+
+        private static object GetClockInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (!PyStringOps.TryAsString(arguments[0], out var nameValue))
+            {
+                throw new LythonRuntimeException("TypeError", "time.get_clock_info(name) expects a string.", span);
+            }
+
+            var name = nameValue.AsString();
+            return name switch
+            {
+                "time" => new TimeClockInfoValue(
+                    adjustable: true,
+                    implementation: "Lython host UTC wall clock",
+                    monotonic: false,
+                    resolution: 1d / TimeSpan.TicksPerSecond),
+                "monotonic" or "perf_counter" => new TimeClockInfoValue(
+                    adjustable: false,
+                    implementation: "Lython host monotonic clock",
+                    monotonic: true,
+                    resolution: context.ReadHostMonotonicResolutionNanoseconds(span) / 1_000_000_000d),
+                "process_time" or "thread_time" => throw new LythonRuntimeException(
+                    "NotImplementedError",
+                    $"time.get_clock_info('{name}') is unsupported because Lython has no host {name.Replace('_', ' ')} capability.",
+                    span),
+                _ => throw new LythonRuntimeException("ValueError", $"unknown clock: {name}", span),
+            };
+        }
+
+        private static TimeSpan ReadSleepDuration(object value, LythonSourceSpan span)
+        {
+            if (!PyNumberOps.TryAsNumber(value, out var number))
+            {
+                throw new LythonRuntimeException("TypeError", "time.sleep(seconds) expects a real number.", span);
+            }
+
+            var seconds = number.ToDouble();
+            if (double.IsNaN(seconds))
+            {
+                throw new LythonRuntimeException("ValueError", "Invalid value NaN (not a number)", span);
+            }
+
+            if (seconds < 0)
+            {
+                throw new LythonRuntimeException("ValueError", "sleep length must be non-negative", span);
+            }
+
+            if (!double.IsFinite(seconds) || seconds > TimeSpan.MaxValue.TotalSeconds)
+            {
+                throw new LythonRuntimeException("OverflowError", "timestamp out of range for platform time_t", span);
+            }
+
+            try
+            {
+                return TimeSpan.FromSeconds(seconds);
+            }
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", ex.Message, span);
+            }
+        }
+
+        private static BuiltinCallable Unsupported(LythonCallableSignature signature, string capability)
+            => new(
+                signature,
+                (_, span, _) => throw new LythonRuntimeException(
+                    "NotImplementedError",
+                    $"{signature.Name}() is unsupported because Lython has no host {capability} capability.",
+                    span));
 
         private static object Gmtime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -382,6 +509,43 @@ internal sealed partial class LythonRuntime
             object GmtOffset);
     }
 
+    private sealed class TimeClockInfoValue(
+        bool adjustable,
+        string implementation,
+        bool monotonic,
+        double resolution) : IPyDynamicAttributes, IPyRenderableValue
+    {
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "adjustable" => adjustable,
+                "implementation" => PyString.FromString(implementation),
+                "monotonic" => monotonic,
+                "resolution" => resolution,
+                _ => null!,
+            };
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+            => PyString.FromString(
+                "namespace(" +
+                $"adjustable={PyRendering.ToPythonString(adjustable, context)}, " +
+                $"implementation={PyRendering.ToPythonString(PyString.FromString(implementation), context)}, " +
+                $"monotonic={PyRendering.ToPythonString(monotonic, context)}, " +
+                $"resolution={PyRendering.ToPythonString(resolution, context)})");
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
     internal sealed class TimeStructTimeType : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
     {
         public static readonly TimeStructTimeType Instance = new();
@@ -633,5 +797,59 @@ internal sealed partial class LythonRuntime
             var normalized = integer < 0 ? integer + 9 : integer;
             return (int)BigInteger.Clamp(normalized, BigInteger.Zero, new BigInteger(9));
         }
+    }
+
+    internal sealed partial class ExecutionContext
+    {
+        public long ReadHostMonotonicNanoseconds(LythonSourceSpan? span)
+        {
+            var timing = RequireHostTiming(span);
+            RegisterHostCall(span);
+            var value = AwaitHost(
+                () => ValueTask.FromResult(timing.MonotonicNanoseconds),
+                "time.monotonic",
+                span);
+            if (value < 0)
+            {
+                throw RuntimeErrors.Runtime("host timing capability returned a negative monotonic reading.", span);
+            }
+
+            return value;
+        }
+
+        public long ReadHostMonotonicResolutionNanoseconds(LythonSourceSpan? span)
+        {
+            var timing = RequireHostTiming(span);
+            RegisterHostCall(span);
+            var value = AwaitHost(
+                () => ValueTask.FromResult(timing.MonotonicResolutionNanoseconds),
+                "time.get_clock_info",
+                span);
+            if (value <= 0)
+            {
+                throw RuntimeErrors.Runtime("host timing capability returned a non-positive monotonic resolution.", span);
+            }
+
+            return value;
+        }
+
+        public void DelayHost(TimeSpan duration, LythonSourceSpan? span)
+        {
+            var timing = RequireHostTiming(span);
+            RegisterHostCall(span);
+            AwaitHost(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+        }
+
+        public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
+        {
+            var timing = RequireHostTiming(span);
+            RegisterHostCall(span);
+            return AwaitHostAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+        }
+
+        private ILythonTiming RequireHostTiming(LythonSourceSpan? span)
+            => Host.Timing ?? throw RuntimeErrors.Runtime(
+                "host timing/sleep capability is not available in this host.",
+                span);
     }
 }
