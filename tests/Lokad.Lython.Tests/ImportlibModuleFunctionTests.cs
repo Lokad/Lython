@@ -34,7 +34,7 @@ checks = [
     package_spec.loader.is_package() is True,
     len(package_spec.submodule_search_locations) == 0,
     importlib.util.find_spec("socket") is None,
-    importlib.util.find_spec("hashlib") is None,
+    importlib.util.find_spec("hashlib") is not None,
     "importlib" in sys.builtin_module_names,
     "importlib.util" in sys.stdlib_module_names,
     "find_spec" in dir(importlib.util),

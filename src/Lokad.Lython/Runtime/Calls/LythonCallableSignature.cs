@@ -461,6 +461,14 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature FilecmpClearCache = new("filecmp.clear_cache", []);
     public static readonly LythonCallableSignature FilecmpDircmp = new("filecmp.dircmp", ["a", "b", "ignore", "hide"], RequiredCount: 2);
 
+    public static readonly LythonCallableSignature HashlibMd5 = new("hashlib.md5", ["string", "usedforsecurity"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature HashlibSha1 = new("hashlib.sha1", ["string", "usedforsecurity"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature HashlibSha256 = new("hashlib.sha256", ["string", "usedforsecurity"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature HashlibSha384 = new("hashlib.sha384", ["string", "usedforsecurity"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature HashlibSha512 = new("hashlib.sha512", ["string", "usedforsecurity"], RequiredCount: 0, MaxPositionalCount: 1);
+    public static readonly LythonCallableSignature HashlibNew = new("hashlib.new", ["name", "data", "usedforsecurity"], RequiredCount: 1, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature HashlibFileDigest = new("hashlib.file_digest", ["fileobj", "digest", "_bufsize"], RequiredCount: 2, MaxPositionalCount: 2);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);
