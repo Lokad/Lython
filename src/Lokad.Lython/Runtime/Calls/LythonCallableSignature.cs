@@ -449,6 +449,14 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature PkgutilGetData = new("pkgutil.get_data", ["package", "resource"]);
     public static readonly LythonCallableSignature PkgutilReadCode = new("pkgutil.read_code", ["stream"]);
 
+    public static readonly LythonCallableSignature ImportlibImportModule = new("importlib.import_module", ["name", "package"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ImportlibInvalidateCaches = new("importlib.invalidate_caches", []);
+    public static readonly LythonCallableSignature ImportlibUtilFindSpec = new("importlib.util.find_spec", ["name", "package"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ImportlibUtilResolveName = new("importlib.util.resolve_name", ["name", "package"]);
+    public static readonly LythonCallableSignature ImportlibUtilModuleFromSpec = new("importlib.util.module_from_spec", ["spec"]);
+    public static readonly LythonCallableSignature ImportlibUtilSpecFromFileLocation = new("importlib.util.spec_from_file_location", ["name", "location", "loader", "submodule_search_locations"], RequiredCount: 2, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature ImportlibUtilSpecFromLoader = new("importlib.util.spec_from_loader", ["name", "loader", "origin", "is_package"], RequiredCount: 2, MaxPositionalCount: 2);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);

@@ -301,7 +301,7 @@ The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `builtins`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `fnmatch`,
-`functools`, `glob`, `itertools`, `json`, `math`, `operator`, `os`,
+`functools`, `glob`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
 `pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
 when host-enabled, `sys`, `typing`, and related contained helpers.
 
@@ -1341,6 +1341,18 @@ Importer and resource helpers that would expose ambient import machinery or
 binary resource reads remain unsupported by Lython: `get_importer`,
 `iter_importers`, `iter_importer_modules`, `iter_zipimport_modules`,
 `get_data`, and `read_code`.
+
+Contained dynamic imports and spec discovery are also available through
+`importlib` and `importlib.util`. `importlib.import_module(...)` must use the
+same builtin inventory and `AllowedLocalModules` rules as an import statement,
+including cached module identity and relative-name resolution.
+`importlib.util.find_spec(...)` may inspect only that contained inventory. It
+returns `None` for unavailable names and a Python-shaped `ModuleSpec` for
+available modules, with truthful name, loader, origin, parent, package search
+locations, location, cache, and loader-state fields. Discovery must not execute
+the target module. Cache invalidation is a contained no-op because Lython does
+not maintain ambient importer caches. Helpers that construct specs from
+arbitrary files/loaders or execute arbitrary loaders must fail explicitly.
 
 ### 11.15 Runtime Metadata
 

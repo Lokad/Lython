@@ -98,6 +98,8 @@ internal static partial class StaticContracts
             "iter_zipimport_modules",
             "get_data",
             "read_code"),
+        ["importlib"] = Members("import_module", "invalidate_caches", "util"),
+        ["importlib.util"] = Members("find_spec", "resolve_name", "module_from_spec", "spec_from_file_location", "spec_from_loader"),
         ["collections"] = Members("defaultdict", "Counter", "deque", "namedtuple", "OrderedDict", "ChainMap", "UserDict", "UserList", "UserString", "abc"),
         ["collections.abc"] = Members("Iterable", "Iterator", "Sequence", "MutableSequence", "Mapping", "MutableMapping", "Set", "MutableSet", "Callable"),
         ["itertools"] = Members(
@@ -471,6 +473,13 @@ internal static partial class StaticContracts
             string.Equals(memberName, "path", StringComparison.Ordinal))
         {
             value = AbstractValue.Module("os.path", span);
+            return true;
+        }
+
+        if (string.Equals(moduleName, "importlib", StringComparison.Ordinal) &&
+            string.Equals(memberName, "util", StringComparison.Ordinal))
+        {
+            value = AbstractValue.Module("importlib.util", span);
             return true;
         }
 

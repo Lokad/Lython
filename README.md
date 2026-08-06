@@ -99,6 +99,7 @@ The builtin module surface is explicitly allowlisted:
 - `fnmatch`
 - `functools`
 - `glob`
+- `importlib`
 - `itertools`
 - `json`
 - `math`
@@ -118,6 +119,8 @@ The builtin module surface is explicitly allowlisted:
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
+
+`importlib` and `importlib.util` provide contained dynamic import and discovery. `import_module(...)` reuses Lython's normal builtin/allowlisted import path, while `find_spec(...)` returns Python-shaped module metadata without executing the target. Discovery never inspects ambient runtimes, `PATH`, arbitrary files, extension modules, or native loaders; APIs that would construct or execute arbitrary loaders fail explicitly.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 
