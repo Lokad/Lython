@@ -350,6 +350,12 @@ internal static class StaticAbstractValueResolver
             return true;
         }
 
+        if (binary.Operator == BinaryOperatorSyntax.Modulo && left.IsStringLike)
+        {
+            value = AbstractValue.StringType(binary.Span);
+            return true;
+        }
+
         if (TryResolveStatisticsBinaryAbstractValue(binary.Operator, left, right, binary.Span, out value))
         {
             return true;

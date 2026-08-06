@@ -394,8 +394,10 @@ internal static class StaticStructuralDiagnostics
                 left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)) ||
                 left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
-            BinaryOperatorSyntax.FloorDivide or
-            BinaryOperatorSyntax.Modulo => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+            BinaryOperatorSyntax.FloorDivide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)),
+            BinaryOperatorSyntax.Modulo => CanApplyStringModulo(left, right) ||
+                StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)),
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
             BinaryOperatorSyntax.BitwiseOr or
@@ -405,6 +407,141 @@ internal static class StaticStructuralDiagnostics
             BinaryOperatorSyntax.RightShift => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right),
             _ => true
         };
+    }
+
+    private static bool CanApplyStringModulo(AbstractValue left, AbstractValue right)
+    {
+        if (!left.IsStringLike)
+        {
+            return false;
+        }
+
+        if (left.Kind != AbstractValueKind.String)
+        {
+            return true;
+        }
+
+        if (!TryInspectPercentFormat((string)left.Value, out var positionalCount, out var hasMapping))
+        {
+            return false;
+        }
+
+        if (right.Kind == AbstractValueKind.Tuple)
+        {
+            return !hasMapping && ((IReadOnlyList<AbstractValue>)right.Value).Count == positionalCount;
+        }
+
+        if (hasMapping && positionalCount == 0)
+        {
+            return right.Kind is AbstractValueKind.Dict or
+                AbstractValueKind.CollectionsDefaultDict or
+                AbstractValueKind.CollectionsCounter or
+                AbstractValueKind.CollectionsChainMap;
+        }
+
+        return positionalCount == 1 || hasMapping;
+    }
+
+    private static bool TryInspectPercentFormat(string format, out int positionalCount, out bool hasMapping)
+    {
+        positionalCount = 0;
+        hasMapping = false;
+        for (var index = 0; index < format.Length; index++)
+        {
+            if (format[index] != '%')
+            {
+                continue;
+            }
+
+            index++;
+            if (index >= format.Length)
+            {
+                return false;
+            }
+
+            if (format[index] == '%')
+            {
+                continue;
+            }
+
+            var mapping = false;
+            if (format[index] == '(')
+            {
+                mapping = true;
+                hasMapping = true;
+                var depth = 1;
+                while (++index < format.Length)
+                {
+                    if (format[index] == '(')
+                    {
+                        depth++;
+                    }
+                    else if (format[index] == ')' && --depth == 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (index >= format.Length)
+                {
+                    return false;
+                }
+
+                index++;
+            }
+
+            while (index < format.Length && format[index] is '#' or '0' or '-' or '+' or ' ')
+            {
+                index++;
+            }
+
+            if (index < format.Length && format[index] == '*')
+            {
+                positionalCount++;
+                index++;
+            }
+            else
+            {
+                while (index < format.Length && char.IsAsciiDigit(format[index]))
+                {
+                    index++;
+                }
+            }
+
+            if (index < format.Length && format[index] == '.')
+            {
+                index++;
+                if (index < format.Length && format[index] == '*')
+                {
+                    positionalCount++;
+                    index++;
+                }
+                else
+                {
+                    while (index < format.Length && char.IsAsciiDigit(format[index]))
+                    {
+                        index++;
+                    }
+                }
+            }
+
+            while (index < format.Length && format[index] is 'h' or 'l' or 'L')
+            {
+                index++;
+            }
+
+            if (index >= format.Length || format[index] is not ('s' or 'r' or 'a' or 'd' or 'i' or 'u' or 'o' or 'x' or 'X' or 'e' or 'E' or 'f' or 'F' or 'g' or 'G' or 'c'))
+            {
+                return false;
+            }
+
+            if (!mapping)
+            {
+                positionalCount++;
+            }
+        }
+
+        return true;
     }
 
     private static bool CanApplyAdd(AbstractValue left, AbstractValue right)

@@ -1378,7 +1378,7 @@ Path("/repo") + "child"
 "text" * "x"
 "text" / "x"
 "text" // 1
-"text" % 1
+"text" & 1
 "text" ** 2
 b"a" + b"b"
 1.5 | 2

@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                 "mul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
                 "truediv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, _) => Binary(arguments, span, EvaluateDivide)),
                 "floordiv" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, _) => Binary(arguments, span, EvaluateFloorDivide)),
-                "mod" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMod, (arguments, span, _) => Binary(arguments, span, EvaluateModulo)),
+                "mod" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMod, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateModulo(left, right, context, innerSpan))),
                 "pow" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorPow, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluatePower(left, right, context, innerSpan))),
                 "matmul" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorMatMul, (arguments, span, _) => Binary(arguments, span, UnsupportedMatMul)),
                 "lshift" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorLShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateLeftShift(left, right, context, innerSpan))),

@@ -69,6 +69,18 @@ internal sealed class Utf8ValueBuilder
 
     public void Append(PyString value) => Append(value.Utf8Bytes.Span);
 
+    public void AppendRepeated(byte value, int count)
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        EnsureAdditionalCapacity(count);
+        _buffer.AsSpan(_length, count).Fill(value);
+        _length += count;
+    }
+
     public void AppendAscii(string text)
     {
         ArgumentNullException.ThrowIfNull(text);

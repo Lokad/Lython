@@ -469,7 +469,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
             BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
             BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, binary.Span),
+            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
             BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
             BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
             BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),
@@ -1077,7 +1077,7 @@ internal sealed partial class LythonRuntime
             AugmentedAssignmentOperatorSyntax.Multiply => EvaluateMultiply(currentValue, right, context, span),
             AugmentedAssignmentOperatorSyntax.Divide => EvaluateDivide(currentValue, right, span),
             AugmentedAssignmentOperatorSyntax.FloorDivide => EvaluateFloorDivide(currentValue, right, span),
-            AugmentedAssignmentOperatorSyntax.Modulo => EvaluateModulo(currentValue, right, span),
+            AugmentedAssignmentOperatorSyntax.Modulo => EvaluateModulo(currentValue, right, context, span),
             AugmentedAssignmentOperatorSyntax.Power => EvaluatePower(currentValue, right, context, span),
             AugmentedAssignmentOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(currentValue, right, span),
             AugmentedAssignmentOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(currentValue, right, span),
@@ -1805,8 +1805,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateModulo(object left, object right, LythonSourceSpan span)
+    private static object EvaluateModulo(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
+        if (left is PyString template)
+        {
+            return FormatPercentString(template, right, context, span);
+        }
+
         if (left is PyDecimal || right is PyDecimal)
         {
             return PyDecimalOps.Modulo(left, right, span);
@@ -3280,6 +3285,12 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         out object result)
     {
+        if (op == BinaryOperatorSyntax.Modulo && left is PyString)
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+
         var methods = op switch
         {
             BinaryOperatorSyntax.Add => ("__add__", "__radd__"),

@@ -2387,7 +2387,7 @@ internal sealed partial class LythonRuntime
         return new PyTuple(
             [
                 EvaluateFloorDivide(arguments[0], arguments[1], span),
-                EvaluateModulo(arguments[0], arguments[1], span)
+                EvaluateModulo(arguments[0], arguments[1], context, span)
             ],
             context.MemoryGovernor,
             span);

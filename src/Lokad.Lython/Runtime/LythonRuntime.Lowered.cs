@@ -903,7 +903,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
             BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
             BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, binary.Span),
+            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
             BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
             BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
             BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),

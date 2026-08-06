@@ -1417,7 +1417,7 @@ internal sealed partial class LythonRuntime
             ExecutableBinaryOperator.Multiply => EvaluateMultiply(left, right, context, span),
             ExecutableBinaryOperator.Divide => EvaluateDivide(left, right, span),
             ExecutableBinaryOperator.FloorDivide => EvaluateFloorDivide(left, right, span),
-            ExecutableBinaryOperator.Modulo => EvaluateModulo(left, right, span),
+            ExecutableBinaryOperator.Modulo => EvaluateModulo(left, right, context, span),
             ExecutableBinaryOperator.Power => EvaluatePower(left, right, context, span),
             ExecutableBinaryOperator.BitwiseOr => EvaluateBitwiseOr(left, right, span),
             ExecutableBinaryOperator.BitwiseXor => EvaluateBitwiseXor(left, right, span),
@@ -1470,6 +1470,12 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         out object result)
     {
+        if (op == ExecutableBinaryOperator.Modulo && left is PyString)
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+
         var methods = op switch
         {
             ExecutableBinaryOperator.Add => ("__add__", "__radd__"),

@@ -645,6 +645,8 @@ The `collections` module supports the common contained container helpers:
 
 Strings must behave as Python Unicode strings, not as byte arrays.
 
+For the supported old-style interpolation surface, `str % value` follows Python's scalar, tuple, and mapping argument selection; supports escaped percent signs, flags, width, precision, and the ordinary `s`, `r`, `a`, integer, floating-point, and character conversions; and raises Python-shaped errors for malformed formats and incompatible values. Generated text is charged to the execution memory governor. Bytes interpolation is not part of this surface.
+
 ### 9.8 Iteration
 
 The initial subset must support iteration over:
