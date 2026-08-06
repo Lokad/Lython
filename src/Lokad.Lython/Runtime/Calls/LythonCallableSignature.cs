@@ -471,6 +471,7 @@ internal static class LythonKnownCallableSignatures
 
     public static readonly LythonCallableSignature GzipCompress = new("gzip.compress", ["data", "compresslevel", "mtime"], RequiredCount: 1, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature GzipDecompress = new("gzip.decompress", ["data"]);
+    public static readonly LythonCallableSignature GzipOpen = new("gzip.open", ["filename", "mode", "compresslevel", "encoding", "errors", "newline"], RequiredCount: 1);
 
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);

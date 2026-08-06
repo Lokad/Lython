@@ -410,6 +410,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.HashlibFileDigest, "LA3151", "hashlib.file_digest(fileobj, digest, *, _bufsize=...) expects two positional arguments."),
         new(LythonKnownCallableSignatures.GzipCompress, "LA3151", "gzip.compress(data[, compresslevel], *, mtime=...) expects one or two positional arguments."),
         new(LythonKnownCallableSignatures.GzipDecompress, "LA3151", "gzip.decompress(data) expects one argument."),
+        new(LythonKnownCallableSignatures.GzipOpen, "LA3151", "gzip.open(filename[, mode[, compresslevel[, encoding[, errors[, newline]]]]]) expects one to six arguments."),
         new(LythonKnownCallableSignatures.ItertoolsChain, "LA3151", "itertools.chain(*iterables) expects positional iterable arguments."),
         new(LythonKnownCallableSignatures.ItertoolsCount, "LA3151", "itertools.count([start][, step]) expects zero to two arguments."),
         new(LythonKnownCallableSignatures.ItertoolsRepeat, "LA3151", "itertools.repeat(object[, times]) expects one or two arguments."),

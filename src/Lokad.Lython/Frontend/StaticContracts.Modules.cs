@@ -102,7 +102,7 @@ internal static partial class StaticContracts
         ["importlib.util"] = Members("find_spec", "resolve_name", "module_from_spec", "spec_from_file_location", "spec_from_loader"),
         ["filecmp"] = Members("cmp", "clear_cache", "dircmp"),
         ["hashlib"] = Members("md5", "sha1", "sha256", "sha384", "sha512", "new", "algorithms_available", "algorithms_guaranteed", "file_digest"),
-        ["gzip"] = Members("compress", "decompress", "BadGzipFile"),
+        ["gzip"] = Members("open", "compress", "decompress", "BadGzipFile"),
         ["collections"] = Members("defaultdict", "Counter", "deque", "namedtuple", "OrderedDict", "ChainMap", "UserDict", "UserList", "UserString", "abc"),
         ["collections.abc"] = Members("Iterable", "Iterator", "Sequence", "MutableSequence", "Mapping", "MutableMapping", "Set", "MutableSet", "Callable"),
         ["itertools"] = Members(
