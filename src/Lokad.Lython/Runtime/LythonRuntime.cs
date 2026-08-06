@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
                     returnValue: null,
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: null,
+                    exitCode: 1,
                     diagnostics: Array.Empty<LythonDiagnostic>(),
                     failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
             }
@@ -270,7 +270,7 @@ internal sealed partial class LythonRuntime
     {
         if (!string.Equals(exception.ExceptionType, "SystemExit", StringComparison.Ordinal))
         {
-            return null;
+            return 1;
         }
 
         return exception.Payload switch
@@ -1857,7 +1857,7 @@ internal sealed partial class LythonRuntime
                     returnValue: null,
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: null,
+                    exitCode: 1,
                     diagnostics: Array.Empty<LythonDiagnostic>(),
                     failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
             }

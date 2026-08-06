@@ -1452,6 +1452,14 @@ Errors must be:
 - concise
 - structured enough for machines to consume
 
+### 13.5 Execution Result Status
+
+Every unsuccessful public execution result must carry a non-zero process-compatible
+exit code, including parse diagnostics, static diagnostics, missing host capabilities,
+projection failures, and unhandled runtime exceptions. Explicit `SystemExit` values
+retain Python exit-code semantics, including zero when no code is supplied. Successful
+fall-through and return values do not imply that the script called `sys.exit`.
+
 ---
 
 ## 14. Determinism and Resource Control

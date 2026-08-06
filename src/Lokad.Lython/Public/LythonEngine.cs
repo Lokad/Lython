@@ -42,7 +42,7 @@ public sealed class LythonEngine
                         returnValue: null,
                         standardOutput: string.Empty,
                         standardError: string.Empty,
-                        exitCode: null,
+                        exitCode: 1,
                         diagnostics: diagnostics,
                         failure: null);
                 }
@@ -58,7 +58,7 @@ public sealed class LythonEngine
                             returnValue: null,
                             standardOutput: string.Empty,
                             standardError: string.Empty,
-                            exitCode: null,
+                            exitCode: 1,
                             diagnostics: allDiagnostics,
                             failure: null);
                     }
@@ -78,7 +78,7 @@ public sealed class LythonEngine
                         returnValue: null,
                         standardOutput: string.Empty,
                         standardError: string.Empty,
-                        exitCode: null,
+                        exitCode: 1,
                         diagnostics: diagnostics,
                         failure: null);
                 }
@@ -94,7 +94,7 @@ public sealed class LythonEngine
                             returnValue: null,
                             standardOutput: string.Empty,
                             standardError: string.Empty,
-                            exitCode: null,
+                            exitCode: 1,
                             diagnostics: allDiagnostics,
                             failure: null);
                     }

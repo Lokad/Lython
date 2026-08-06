@@ -173,6 +173,8 @@ The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs
 - CLI-style arguments, script origin, and a contained environment map can be passed through `LythonRunOptions`
 - `print(...)` is captured deterministically through `LythonExecutionResult.StandardOutput`
 - `stderr` is captured through `LythonExecutionResult.StandardError`
+- unsuccessful results carry a process-compatible non-zero `ExitCode`; explicit
+  `SystemExit` values retain their Python exit-code semantics
 - projected return values stay CLR-friendly, including `byte[]` for Python bytes values
 - execution limits are configured through `LythonRunOptions`
 
