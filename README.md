@@ -174,6 +174,8 @@ When a construct is outside the supported subset, Lython fails explicitly rather
 
 It is aimed at the failures coding agents are most likely to introduce in small automation scripts: unsupported imports, bad call shapes, wrong statically-known argument types for supported built-ins and modules, sealed member typos, dataclass and argparse shape mistakes, regex match/group misuse, and exact literal dictionary key misses. Unknown or data-dependent cases are left to runtime instead of guessed.
 
+Branch analysis follows Python's short-circuit paths. In `and`, `or`, `not`, conditional expressions, assertions, loops, and comprehension filters, checks such as `value is None` and `value is not None` refine general optional values only on paths where the corresponding expression can run. This permits ordinary guarded indexing and member access while retaining diagnostics for unsafe operand orderings.
+
 ## Public API
 
 The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs). The public surface is intentionally small:

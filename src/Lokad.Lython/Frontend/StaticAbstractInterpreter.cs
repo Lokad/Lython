@@ -166,11 +166,16 @@ internal static class StaticAbstractInterpreter
             case WhileStatementSyntax whileStatement:
                 AnalyzeExpression(whileStatement.Condition, diagnostics, bindings);
                 var whileBodyBindings = bindings.Clone();
-                AnalyzeStatements(whileStatement.Body, diagnostics, whileBodyBindings);
+                if (!TryResolveConditionTruth(whileStatement.Condition, bindings, out var whileTruth) || whileTruth)
+                {
+                    StaticConditionRefinements.Apply(whileStatement.Condition, assumedTruth: true, whileBodyBindings);
+                    AnalyzeStatements(whileStatement.Body, diagnostics, whileBodyBindings);
+                }
                 var whileMergedBindings = AbstractState.Merge(bindings, whileBodyBindings);
                 if (whileStatement.ElseStatements is not null)
                 {
                     var whileElseBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(whileStatement.Condition, assumedTruth: false, whileElseBindings);
                     AnalyzeStatements(whileStatement.ElseStatements, diagnostics, whileElseBindings);
                     whileMergedBindings = AbstractState.Merge(whileMergedBindings, whileElseBindings);
                 }
@@ -184,12 +189,13 @@ internal static class StaticAbstractInterpreter
                 var hasMatchCase = false;
                 foreach (var matchCase in matchStatement.Cases)
                 {
+                    var caseBindings = bindings.Clone();
                     if (matchCase.Guard is not null)
                     {
                         AnalyzeExpression(matchCase.Guard, diagnostics, bindings);
+                        StaticConditionRefinements.Apply(matchCase.Guard, assumedTruth: true, caseBindings);
                     }
 
-                    var caseBindings = bindings.Clone();
                     AnalyzeStatements(matchCase.Body, diagnostics, caseBindings);
                     mergedMatchBindings = hasMatchCase
                         ? AbstractState.Merge(mergedMatchBindings, caseBindings)
@@ -348,15 +354,21 @@ internal static class StaticAbstractInterpreter
 
             case ListComprehensionExpressionSyntax listComprehension:
             {
-                var comprehensionBindings = AnalyzeComprehensionClauses(listComprehension.Clauses, diagnostics, bindings);
-                AnalyzeExpression(listComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                var comprehensionBindings = AnalyzeComprehensionClauses(listComprehension.Clauses, diagnostics, bindings, out var reachable);
+                if (reachable)
+                {
+                    AnalyzeExpression(listComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                }
                 break;
             }
 
             case GeneratorExpressionSyntax generator:
             {
-                var comprehensionBindings = AnalyzeComprehensionClauses(generator.Clauses, diagnostics, bindings);
-                AnalyzeExpression(generator.ItemExpression, diagnostics, comprehensionBindings);
+                var comprehensionBindings = AnalyzeComprehensionClauses(generator.Clauses, diagnostics, bindings, out var reachable);
+                if (reachable)
+                {
+                    AnalyzeExpression(generator.ItemExpression, diagnostics, comprehensionBindings);
+                }
                 break;
             }
 
@@ -377,16 +389,22 @@ internal static class StaticAbstractInterpreter
 
             case SetComprehensionExpressionSyntax setComprehension:
             {
-                var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings);
-                AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings, out var reachable);
+                if (reachable)
+                {
+                    AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                }
                 break;
             }
 
             case DictComprehensionExpressionSyntax dictComprehension:
             {
-                var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings);
-                AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
-                AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
+                var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings, out var reachable);
+                if (reachable)
+                {
+                    AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
+                    AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
+                }
                 break;
             }
 
@@ -428,7 +446,20 @@ internal static class StaticAbstractInterpreter
 
             case BinaryExpressionSyntax binary:
                 AnalyzeExpression(binary.Left, diagnostics, bindings);
-                AnalyzeExpression(binary.Right, diagnostics, bindings);
+                if (binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
+                {
+                    var continueTruth = binary.Operator == BinaryOperatorSyntax.And;
+                    if (!TryResolveConditionTruth(binary.Left, bindings, out var leftTruth) || leftTruth == continueTruth)
+                    {
+                        var rightBindings = bindings.Clone();
+                        StaticConditionRefinements.Apply(binary.Left, continueTruth, rightBindings);
+                        AnalyzeExpression(binary.Right, diagnostics, rightBindings);
+                    }
+                }
+                else
+                {
+                    AnalyzeExpression(binary.Right, diagnostics, bindings);
+                }
                 StaticStructuralDiagnostics.AnalyzeBinaryOperation(binary, diagnostics, bindings);
                 break;
 
@@ -444,8 +475,24 @@ internal static class StaticAbstractInterpreter
 
             case ConditionalExpressionSyntax conditional:
                 AnalyzeExpression(conditional.Condition, diagnostics, bindings);
-                AnalyzeExpression(conditional.Consequent, diagnostics, bindings);
-                AnalyzeExpression(conditional.Alternative, diagnostics, bindings);
+                if (TryResolveConditionTruth(conditional.Condition, bindings, out var conditionalTruth))
+                {
+                    var selectedBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, conditionalTruth, selectedBindings);
+                    AnalyzeExpression(
+                        conditionalTruth ? conditional.Consequent : conditional.Alternative,
+                        diagnostics,
+                        selectedBindings);
+                }
+                else
+                {
+                    var consequentBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: true, consequentBindings);
+                    AnalyzeExpression(conditional.Consequent, diagnostics, consequentBindings);
+                    var alternativeBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: false, alternativeBindings);
+                    AnalyzeExpression(conditional.Alternative, diagnostics, alternativeBindings);
+                }
                 break;
 
             case AssignmentExpressionSyntax assignment:
@@ -470,9 +517,14 @@ internal static class StaticAbstractInterpreter
         }
     }
 
-    private static AbstractState AnalyzeComprehensionClauses(IReadOnlyList<ComprehensionClauseSyntax> clauses, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    private static AbstractState AnalyzeComprehensionClauses(
+        IReadOnlyList<ComprehensionClauseSyntax> clauses,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        out bool reachable)
     {
         var comprehensionBindings = bindings.Clone();
+        reachable = true;
         foreach (var clause in clauses)
         {
             AnalyzeExpression(clause.Iterable, diagnostics, comprehensionBindings);
@@ -481,6 +533,13 @@ internal static class StaticAbstractInterpreter
             if (clause.Condition is not null)
             {
                 AnalyzeExpression(clause.Condition, diagnostics, comprehensionBindings);
+                if (TryResolveConditionTruth(clause.Condition, comprehensionBindings, out var conditionTruth) && !conditionTruth)
+                {
+                    reachable = false;
+                    return comprehensionBindings;
+                }
+
+                StaticConditionRefinements.Apply(clause.Condition, assumedTruth: true, comprehensionBindings);
             }
         }
 
@@ -588,16 +647,57 @@ internal static class StaticAbstractInterpreter
 
     private static bool TryResolveConditionTruth(ExpressionSyntax condition, AbstractState bindings, out bool truth)
     {
+        while (condition is ParenthesizedExpressionSyntax parenthesized)
+        {
+            condition = parenthesized.Inner;
+        }
+
+        if (condition is UnaryExpressionSyntax { Operator: UnaryOperatorSyntax.Not, Operand: var operand } &&
+            TryResolveConditionTruth(operand, bindings, out var operandTruth))
+        {
+            truth = !operandTruth;
+            return true;
+        }
+
+        if (condition is BinaryExpressionSyntax
+            {
+                Operator: BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And,
+                Left: var logicalLeft,
+                Right: var logicalRight
+            } logical)
+        {
+            var continueTruth = logical.Operator == BinaryOperatorSyntax.And;
+            if (TryResolveConditionTruth(logicalLeft, bindings, out var leftTruth))
+            {
+                if (leftTruth != continueTruth)
+                {
+                    truth = leftTruth;
+                    return true;
+                }
+
+                var rightBindings = bindings.Clone();
+                StaticConditionRefinements.Apply(logicalLeft, continueTruth, rightBindings);
+                return TryResolveConditionTruth(logicalRight, rightBindings, out truth);
+            }
+
+            var conditionalRightBindings = bindings.Clone();
+            StaticConditionRefinements.Apply(logicalLeft, continueTruth, conditionalRightBindings);
+            if (TryResolveConditionTruth(logicalRight, conditionalRightBindings, out var rightTruth) &&
+                rightTruth != continueTruth)
+            {
+                truth = rightTruth;
+                return true;
+            }
+
+            truth = false;
+            return false;
+        }
+
         if (StaticAbstractValueResolver.TryResolve(condition, bindings, out var value))
         {
-            switch (value.Kind)
+            if (StaticAbstractFacts.TryGetTruthiness(value, out truth))
             {
-                case AbstractValueKind.Boolean:
-                    truth = (bool)value.Value;
-                    return true;
-                case AbstractValueKind.None:
-                    truth = false;
-                    return true;
+                return true;
             }
         }
 

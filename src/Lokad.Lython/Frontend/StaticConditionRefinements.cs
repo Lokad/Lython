@@ -15,14 +15,42 @@ internal static class StaticConditionRefinements
             return;
         }
 
-        if (condition is IdentifierExpressionSyntax identifier &&
-            bindings.TryGet(identifier.Name, out var identifierValue) &&
-            identifierValue.Kind == AbstractValueKind.MaybeRegexMatch)
+        if (condition is BinaryExpressionSyntax
+            {
+                Operator: BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And,
+                Left: var logicalLeft,
+                Right: var logicalRight
+            } logical)
         {
-            bindings.Set(identifier.Name, assumedTruth
-                ? AbstractValue.RegexMatch((AbstractRegexMatchSummary)identifierValue.Value, identifier.Span)
-                : AbstractValue.None(identifier.Span));
+            ApplyLogical(logical.Operator, logicalLeft, logicalRight, assumedTruth, bindings);
             return;
+        }
+
+        if (condition is IdentifierExpressionSyntax identifier &&
+            bindings.TryGet(identifier.Name, out var identifierValue))
+        {
+            if (identifierValue.Kind == AbstractValueKind.MaybeRegexMatch)
+            {
+                bindings.Set(identifier.Name, assumedTruth
+                    ? AbstractValue.RegexMatch((AbstractRegexMatchSummary)identifierValue.Value, identifier.Span)
+                    : AbstractValue.None(identifier.Span));
+                return;
+            }
+
+            if (identifierValue.Kind == AbstractValueKind.MaybeNone)
+            {
+                var nonNoneValue = ((AbstractValue)identifierValue.Value).WithSpan(identifier.Span);
+                if (assumedTruth)
+                {
+                    bindings.Set(identifier.Name, nonNoneValue);
+                }
+                else if (StaticAbstractFacts.TryGetTruthiness(nonNoneValue, out var innerTruth) && innerTruth)
+                {
+                    bindings.Set(identifier.Name, AbstractValue.None(identifier.Span));
+                }
+
+                return;
+            }
         }
 
         if (condition is BinaryExpressionSyntax
@@ -34,6 +62,31 @@ internal static class StaticConditionRefinements
         {
             ApplyNoneComparison(binary.Operator, left, right, assumedTruth, bindings);
         }
+    }
+
+    private static void ApplyLogical(
+        BinaryOperatorSyntax op,
+        ExpressionSyntax left,
+        ExpressionSyntax right,
+        bool assumedTruth,
+        AbstractState bindings)
+    {
+        if (op == BinaryOperatorSyntax.Or && !assumedTruth ||
+            op == BinaryOperatorSyntax.And && assumedTruth)
+        {
+            Apply(left, assumedTruth, bindings);
+            Apply(right, assumedTruth, bindings);
+            return;
+        }
+
+        var shortCircuitBindings = bindings.Clone();
+        Apply(left, assumedTruth, shortCircuitBindings);
+
+        var rightBindings = bindings.Clone();
+        Apply(left, !assumedTruth, rightBindings);
+        Apply(right, assumedTruth, rightBindings);
+
+        bindings.MergeFrom(shortCircuitBindings, rightBindings);
     }
 
     private static void ApplyNoneComparison(
@@ -79,14 +132,24 @@ internal static class StaticConditionRefinements
 
     private static void ApplyNoneRefinement(IdentifierExpressionSyntax identifier, bool meansNone, AbstractState bindings)
     {
-        if (!bindings.TryGet(identifier.Name, out var value) ||
-            value.Kind != AbstractValueKind.MaybeRegexMatch)
+        if (!bindings.TryGet(identifier.Name, out var value))
         {
             return;
         }
 
-        bindings.Set(identifier.Name, meansNone
-            ? AbstractValue.None(identifier.Span)
-            : AbstractValue.RegexMatch((AbstractRegexMatchSummary)value.Value, identifier.Span));
+        if (value.Kind == AbstractValueKind.MaybeRegexMatch)
+        {
+            bindings.Set(identifier.Name, meansNone
+                ? AbstractValue.None(identifier.Span)
+                : AbstractValue.RegexMatch((AbstractRegexMatchSummary)value.Value, identifier.Span));
+            return;
+        }
+
+        if (value.Kind == AbstractValueKind.MaybeNone)
+        {
+            bindings.Set(identifier.Name, meansNone
+                ? AbstractValue.None(identifier.Span)
+                : ((AbstractValue)value.Value).WithSpan(identifier.Span));
+        }
     }
 }

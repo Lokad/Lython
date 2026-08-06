@@ -15,6 +15,7 @@ internal enum AbstractValueKind
     Boolean,
     BooleanType,
     None,
+    MaybeNone,
     List,
     ListType,
     Tuple,
@@ -177,6 +178,13 @@ internal readonly record struct AbstractValue(
     public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, value, span);
     public static AbstractValue BooleanType(LythonSourceSpan span) => new(AbstractValueKind.BooleanType, "bool", span);
     public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, new object(), span);
+    public static AbstractValue MaybeNone(AbstractValue nonNoneValue, LythonSourceSpan span)
+        => nonNoneValue.Kind switch
+        {
+            AbstractValueKind.None => None(span),
+            AbstractValueKind.MaybeNone => nonNoneValue.WithSpan(span),
+            _ => new(AbstractValueKind.MaybeNone, nonNoneValue.WithSpan(span), span)
+        };
     public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, item, span);
     public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, item, span);
     public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, pairs, span);
@@ -277,6 +285,7 @@ internal readonly record struct AbstractValue(
     public bool IsDefinitelyNonStringLike =>
         Kind is not AbstractValueKind.Unknown and
             not AbstractValueKind.Never and
+            not AbstractValueKind.MaybeNone and
             not AbstractValueKind.String and
             not AbstractValueKind.StringType;
 
@@ -300,6 +309,30 @@ internal readonly record struct AbstractValue(
         if (left.Kind == AbstractValueKind.Unknown || right.Kind == AbstractValueKind.Unknown)
         {
             return Unknown(span);
+        }
+
+        if (left.Kind == AbstractValueKind.None)
+        {
+            return right.Kind switch
+            {
+                AbstractValueKind.None => None(span),
+                AbstractValueKind.MaybeRegexMatch => right.WithSpan(span),
+                _ => MaybeNone(right, span)
+            };
+        }
+
+        if (right.Kind == AbstractValueKind.None)
+        {
+            return left.Kind == AbstractValueKind.MaybeRegexMatch
+                ? left.WithSpan(span)
+                : MaybeNone(left, span);
+        }
+
+        if (left.Kind == AbstractValueKind.MaybeNone || right.Kind == AbstractValueKind.MaybeNone)
+        {
+            var leftValue = left.Kind == AbstractValueKind.MaybeNone ? (AbstractValue)left.Value : left;
+            var rightValue = right.Kind == AbstractValueKind.MaybeNone ? (AbstractValue)right.Value : right;
+            return MaybeNone(Join(leftValue, rightValue, span), span);
         }
 
         if (left.Kind == right.Kind)
@@ -354,6 +387,7 @@ internal readonly record struct AbstractValue(
             AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
             AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
             AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
+            AbstractValueKind.MaybeNone => MaybeNone(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
             AbstractValueKind.List => JoinLiteralLists(left, right, span),
             AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
             AbstractValueKind.SetType => SetOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),

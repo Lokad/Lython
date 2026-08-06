@@ -470,6 +470,8 @@ Boolean operators for the supported subset must follow Python semantics, includi
 
 `and` and `or` must short-circuit exactly as in Python.
 
+Static analysis of boolean conditions must respect the same reachability. Facts established by `None` identity checks, truthiness, `not`, and nested `and`/`or` expressions apply only to the branches and right operands they logically imply; branch merges must conservatively retain a general `T | None` fact when both outcomes remain possible.
+
 ### 9.3 `None`, Comparison, Membership, and Indexing
 
 The initial subset must include the value `None`.

@@ -167,6 +167,10 @@ internal static class StaticBindingEngine
         foreach (var clause in clauses)
         {
             BindLoopTargetFromIterable(clause.Target, clause.Iterable, comprehensionBindings);
+            if (clause.Condition is not null)
+            {
+                StaticConditionRefinements.Apply(clause.Condition, assumedTruth: true, comprehensionBindings);
+            }
         }
 
         return comprehensionBindings;

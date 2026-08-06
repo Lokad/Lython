@@ -733,6 +733,7 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.Float or AbstractValueKind.FloatType => "float",
             AbstractValueKind.Boolean or AbstractValueKind.BooleanType => "bool",
             AbstractValueKind.None => "NoneType",
+            AbstractValueKind.MaybeNone => DescribeValue((AbstractValue)value.Value) + " | None",
             AbstractValueKind.List or AbstractValueKind.ListType => "list",
             AbstractValueKind.Tuple => "tuple",
             AbstractValueKind.Dict => "dict",

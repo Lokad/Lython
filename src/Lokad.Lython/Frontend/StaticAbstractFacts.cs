@@ -5,7 +5,9 @@ namespace Lokad.Lython.Frontend;
 internal static class StaticAbstractFacts
 {
     public static bool IsDefinitelyNonCallable(AbstractValue value)
-        => value.Kind is AbstractValueKind.String or
+        => value.Kind == AbstractValueKind.MaybeNone
+            ? IsDefinitelyNonCallable((AbstractValue)value.Value)
+            : value.Kind is AbstractValueKind.String or
             AbstractValueKind.StringType or
             AbstractValueKind.Bytes or
             AbstractValueKind.BytesType or
@@ -106,7 +108,9 @@ internal static class StaticAbstractFacts
         => StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) && IsDefinitelyNonIterable(value);
 
     public static bool IsDefinitelyNonIterable(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or
+        => value.Kind == AbstractValueKind.MaybeNone
+            ? IsDefinitelyNonIterable((AbstractValue)value.Value)
+            : value.Kind is AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
             AbstractValueKind.Float or
             AbstractValueKind.FloatType or
@@ -173,7 +177,9 @@ internal static class StaticAbstractFacts
         => StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) && IsDefinitelyNonSized(value);
 
     public static bool IsDefinitelyNonSized(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or
+        => value.Kind == AbstractValueKind.MaybeNone
+            ? IsDefinitelyNonSized((AbstractValue)value.Value)
+            : value.Kind is AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
             AbstractValueKind.Float or
             AbstractValueKind.FloatType or
@@ -261,7 +267,9 @@ internal static class StaticAbstractFacts
             AbstractValueKind.CollectionsChainMap;
 
     public static bool IsDefinitelyNonSubscriptable(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or
+        => value.Kind == AbstractValueKind.MaybeNone
+            ? IsDefinitelyNonSubscriptable((AbstractValue)value.Value)
+            : value.Kind is AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
             AbstractValueKind.Float or
             AbstractValueKind.FloatType or
@@ -347,6 +355,7 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyNonIntegerLike(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
             not AbstractValueKind.Never and
+            not AbstractValueKind.MaybeNone and
             not AbstractValueKind.Integer and
             not AbstractValueKind.IntegerType and
             not AbstractValueKind.Boolean and
@@ -367,8 +376,59 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyNonNone(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
             not AbstractValueKind.Never and
+            not AbstractValueKind.MaybeNone and
             not AbstractValueKind.MaybeRegexMatch and
             not AbstractValueKind.None;
+
+    public static bool TryGetTruthiness(AbstractValue value, out bool truth)
+    {
+        switch (value.Kind)
+        {
+            case AbstractValueKind.None:
+                truth = false;
+                return true;
+            case AbstractValueKind.Boolean:
+                truth = (bool)value.Value;
+                return true;
+            case AbstractValueKind.String:
+                truth = ((string)value.Value).Length != 0;
+                return true;
+            case AbstractValueKind.Bytes:
+                truth = ((byte[])value.Value).Length != 0;
+                return true;
+            case AbstractValueKind.Integer when System.Numerics.BigInteger.TryParse(
+                ((string)value.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var integer):
+                truth = !integer.IsZero;
+                return true;
+            case AbstractValueKind.Float when double.TryParse(
+                ((string)value.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out var floating):
+                truth = floating != 0.0;
+                return true;
+            case AbstractValueKind.List:
+            case AbstractValueKind.Tuple:
+            case AbstractValueKind.Set:
+                truth = ((IReadOnlyList<AbstractValue>)value.Value).Count != 0;
+                return true;
+            case AbstractValueKind.Dict:
+                truth = ((IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)value.Value).Count != 0;
+                return true;
+            case AbstractValueKind.RegexMatch:
+                truth = true;
+                return true;
+            case AbstractValueKind.MaybeNone when TryGetTruthiness((AbstractValue)value.Value, out var innerTruth) && !innerTruth:
+                truth = false;
+                return true;
+            default:
+                truth = false;
+                return false;
+        }
+    }
 
     public static bool TryGetNonNegativeInt32(AbstractValue value, out int integer)
     {
@@ -520,6 +580,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Module => $"module '{value.Value}'",
             AbstractValueKind.KnownCallable => $"callable '{value.Value}'",
             AbstractValueKind.RegexPattern => "re.Pattern",
+            AbstractValueKind.MaybeNone => DescribeLiteralType((AbstractValue)value.Value) + " | None",
             AbstractValueKind.MaybeRegexMatch => "re.Match | None",
             AbstractValueKind.RegexMatch => "re.Match",
             AbstractValueKind.ArgparseParser => "argparse.ArgumentParser",
