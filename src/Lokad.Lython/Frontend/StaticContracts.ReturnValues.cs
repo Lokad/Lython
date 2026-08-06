@@ -66,6 +66,7 @@ internal static partial class StaticContracts
             StaticReturnShape.ListOfPkgutilModuleInfo => AbstractValue.ListOf(AbstractValue.PkgutilModuleInfo(span), span),
             StaticReturnShape.ListOfBytes => AbstractValue.ListOf(AbstractValue.BytesType(span), span),
             StaticReturnShape.SubprocessCompletedProcess => AbstractValue.SubprocessCompletedProcess(span),
+            StaticReturnShape.SubprocessPopen => AbstractValue.SubprocessPopen(span),
             StaticReturnShape.ListOfListOfString => AbstractValue.ListOf(AbstractValue.ListOf(AbstractValue.StringType(span), span), span),
             StaticReturnShape.OpenPyxlWorkbook => AbstractValue.OpenPyxlWorkbook(span),
             StaticReturnShape.OpenPyxlWorksheet => AbstractValue.OpenPyxlWorksheet(span),

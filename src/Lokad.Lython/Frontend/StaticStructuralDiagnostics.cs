@@ -853,6 +853,7 @@ internal static class StaticStructuralDiagnostics
             AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
             AbstractValueKind.PkgutilLoader => "pkgutil.Loader",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
+            AbstractValueKind.SubprocessPopen => "subprocess.Popen",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.OpenPyxlWorkbook => "openpyxl.Workbook",
             AbstractValueKind.OpenPyxlWorksheet => "openpyxl.worksheet.worksheet.Worksheet",

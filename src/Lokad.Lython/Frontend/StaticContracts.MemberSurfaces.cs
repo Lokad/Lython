@@ -757,6 +757,25 @@ internal static partial class StaticContracts
         "update",
     };
 
+    private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
+    {
+        "args",
+        "stdin",
+        "stdout",
+        "stderr",
+        "returncode",
+        "encoding",
+        "errors",
+        "universal_newlines",
+        "communicate",
+        "wait",
+        "poll",
+        "send_signal",
+        "terminate",
+        "kill",
+        "pid",
+    };
+
     private static readonly HashSet<string> CollectionsDefaultDictMembers = new(StringComparer.Ordinal)
     {
         "default_factory",
@@ -1059,6 +1078,7 @@ internal static partial class StaticContracts
             AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
+            AbstractValueKind.SubprocessPopen or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -1154,6 +1174,7 @@ internal static partial class StaticContracts
             AbstractValueKind.PkgutilModuleInfo => PkgutilModuleInfoMembers.Contains(memberName),
             AbstractValueKind.PkgutilLoader => PkgutilLoaderMembers.Contains(memberName),
             AbstractValueKind.SubprocessCompletedProcess => CompletedProcessMembers.Contains(memberName),
+            AbstractValueKind.SubprocessPopen => PopenMembers.Contains(memberName),
             AbstractValueKind.DataclassField => DataclassFieldMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlWorkbook => OpenPyxlWorkbookMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlWorksheet => OpenPyxlWorksheetMembers.Contains(memberName),

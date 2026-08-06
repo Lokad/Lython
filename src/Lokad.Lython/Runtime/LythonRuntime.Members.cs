@@ -1357,6 +1357,14 @@ internal sealed partial class LythonRuntime
                 return new PyTuple([returnCode, command]);
             }
 
+            if (string.Equals(exception.TypeName, "TimeoutExpired", StringComparison.Ordinal) &&
+                exception.Value is PyDict timeoutPayload &&
+                timeoutPayload.TryGetValue(PyString.FromString("cmd"), out var timeoutCommand) &&
+                timeoutPayload.TryGetValue(PyString.FromString("timeout"), out var timeout))
+            {
+                return new PyTuple([timeoutCommand, timeout]);
+            }
+
             return exception.Value switch
             {
                 PyNone => PyTuple.Empty,

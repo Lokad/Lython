@@ -20,6 +20,23 @@ internal static class StaticProcessContractFamily
     private const int ErrorsIndex = 12;
     private const int EnvIndex = 13;
     private const int UniversalNewlinesIndex = 14;
+    private const int PopenBufsizeIndex = 1;
+    private const int PopenStdinIndex = 3;
+    private const int PopenStdoutIndex = 4;
+    private const int PopenStderrIndex = 5;
+    private const int PopenCloseFdsIndex = 7;
+    private const int PopenShellIndex = 8;
+    private const int PopenCwdIndex = 9;
+    private const int PopenEnvIndex = 10;
+    private const int PopenUniversalNewlinesIndex = 11;
+    private const int PopenCreationFlagsIndex = 13;
+    private const int PopenRestoreSignalsIndex = 14;
+    private const int PopenStartNewSessionIndex = 15;
+    private const int PopenEncodingIndex = 20;
+    private const int PopenErrorsIndex = 21;
+    private const int PopenTextIndex = 22;
+    private const int PopenUmaskIndex = 23;
+    private const int PopenPipeSizeIndex = 24;
 
     public static bool AnalyzeKnownCallArgumentTypes(
         string targetName,
@@ -36,6 +53,11 @@ internal static class StaticProcessContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessList2Cmdline.Name, StringComparison.Ordinal))
         {
             return AnalyzeIterableOfStringsArgument(arguments, 0, "seq", "subprocess.list2cmdline(seq) expects an iterable of strings.", diagnostics, bindings, rejectSingleString: true);
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.SubprocessPopen.Name, StringComparison.Ordinal))
+        {
+            return AnalyzePopenArguments(arguments, diagnostics, bindings);
         }
 
         if (!IsSubprocessKnownCall(targetName))
@@ -84,14 +106,15 @@ internal static class StaticProcessContractFamily
         ConcreteCallArguments arguments,
         string owner,
         List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
+        AbstractState bindings,
+        int shellIndex = ShellIndex)
     {
         if (!arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
         {
             return false;
         }
 
-        if (IsShellKnownTrue(arguments, bindings))
+        if (IsShellKnownTrue(arguments, bindings, shellIndex))
         {
             var value = StaticAbstractValueResolver.ResolveOrUnknown(argsExpression, bindings);
             if (value.IsStringLike || value.Kind == AbstractValueKind.Path || StaticKnownCallArgumentChecks.IsUnknown(value))
@@ -109,9 +132,10 @@ internal static class StaticProcessContractFamily
         ConcreteCallArguments arguments,
         string owner,
         List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
+        AbstractState bindings,
+        int envIndex = EnvIndex)
     {
-        if (!arguments.TryGetValue(EnvIndex, "env", out var envExpression) ||
+        if (!arguments.TryGetValue(envIndex, "env", out var envExpression) ||
             envExpression is NoneLiteralExpressionSyntax)
         {
             return false;
@@ -324,9 +348,9 @@ internal static class StaticProcessContractFamily
     private static bool IsSubprocessMemberName(string memberName)
         => memberName is "run" or "call" or "check_call" or "check_output";
 
-    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings)
+    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings, int shellIndex = ShellIndex)
     {
-        if (!arguments.TryGetValue(ShellIndex, "shell", out var shellExpression))
+        if (!arguments.TryGetValue(shellIndex, "shell", out var shellExpression))
         {
             return false;
         }
@@ -334,6 +358,35 @@ internal static class StaticProcessContractFamily
         return StaticAbstractValueResolver.TryResolve(shellExpression, bindings, out var value) &&
             value.Kind == AbstractValueKind.Boolean &&
             value.Value is true;
+    }
+
+    private static bool AnalyzePopenArguments(
+        ConcreteCallArguments arguments,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        const string owner = "subprocess.Popen";
+        var emitted = AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings, PopenShellIndex);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenBufsizeIndex, "bufsize", $"{owner}(..., bufsize=...) expects an integer.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenStdinIndex, "stdin", $"{owner}(..., stdin=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenStdoutIndex, "stdout", $"{owner}(..., stdout=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenStderrIndex, "stderr", $"{owner}(..., stderr=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenCloseFdsIndex, "close_fds", $"{owner}(..., close_fds=...) expects a bool.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenShellIndex, "shell", $"{owner}(..., shell=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzePathLikeOrNoneArgument(arguments, PopenCwdIndex, "cwd", $"{owner}(..., cwd=...) expects a string, Path, or None.", diagnostics, bindings);
+        emitted |= AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings, PopenEnvIndex);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenUniversalNewlinesIndex, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenCreationFlagsIndex, "creationflags", $"{owner}(..., creationflags=...) expects an integer.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenRestoreSignalsIndex, "restore_signals", $"{owner}(..., restore_signals=...) expects a bool.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenStartNewSessionIndex, "start_new_session", $"{owner}(..., start_new_session=...) expects a bool.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, PopenEncodingIndex, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, PopenErrorsIndex, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, PopenTextIndex, "text", $"{owner}(..., text=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenUmaskIndex, "umask", $"{owner}(..., umask=...) expects an integer.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenPipeSizeIndex, "pipesize", $"{owner}(..., pipesize=...) expects an integer.", diagnostics, bindings);
+        emitted |= AnalyzeUtf8Encoding(arguments, PopenEncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        emitted |= AnalyzeTextErrors(arguments, PopenErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        return emitted;
     }
 
     private static void AnalyzeKnownPathLikeOrNoneArgument(

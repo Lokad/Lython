@@ -352,12 +352,15 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature TypingTypedDict = new("typing.TypedDict", ["typename", "fields"], RequiredCount: 1, AllowsExtraKeywords: true);
 
     private static readonly string[] SubprocessParameters = ["args", "input", "cwd", "timeout", "check", "capture_output", "stdin", "stdout", "stderr", "shell", "text", "encoding", "errors", "env", "universal_newlines"];
+    private static readonly string[] SubprocessPopenParameters = ["args", "bufsize", "executable", "stdin", "stdout", "stderr", "preexec_fn", "close_fds", "shell", "cwd", "env", "universal_newlines", "startupinfo", "creationflags", "restore_signals", "start_new_session", "pass_fds", "user", "group", "extra_groups", "encoding", "errors", "text", "umask", "pipesize", "process_group"];
 
     public static readonly LythonCallableSignature SubprocessRun = new("subprocess.run", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
     public static readonly LythonCallableSignature SubprocessCall = new("subprocess.call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
     public static readonly LythonCallableSignature SubprocessCheckCall = new("subprocess.check_call", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
     public static readonly LythonCallableSignature SubprocessCheckOutput = new("subprocess.check_output", SubprocessParameters, RequiredCount: 1, MaxPositionalCount: 6);
+    public static readonly LythonCallableSignature SubprocessPopen = new("subprocess.Popen", SubprocessPopenParameters, RequiredCount: 1, MaxPositionalCount: 17);
     public static readonly LythonCallableSignature SubprocessCompletedProcess = new("subprocess.CompletedProcess", ["args", "returncode", "stdout", "stderr"], RequiredCount: 2);
+    public static readonly LythonCallableSignature SubprocessTimeoutExpired = new("subprocess.TimeoutExpired", ["cmd", "timeout", "output", "stderr"], RequiredCount: 2);
     public static readonly LythonCallableSignature SubprocessList2Cmdline = new("subprocess.list2cmdline", ["seq"]);
     public static readonly LythonCallableSignature SubprocessUnsupported = new("subprocess.unsupported", RequiredCount: 0, AllowsExtraKeywords: true, AllowsExtraPositional: true);
 

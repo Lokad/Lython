@@ -223,10 +223,6 @@ except subprocess.CalledProcessError as err:
 vals.append(made.type + ":" + str(made.returncode) + ":" + made.output + ":" + made.stderr)
 vals.append(subprocess.list2cmdline(["a b", "c\"d", "tail\\"]))
 try:
-    subprocess.Popen(["cmd"])
-except NotImplementedError as err:
-    vals.append(err.type)
-try:
     subprocess.getoutput("cmd")
 except NotImplementedError as err:
     vals.append(err.type)
@@ -237,7 +233,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("CalledProcessError:4:o:e|CalledProcessError:5:out:err|\"a b\" \"c\\\"d\" tail\\|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("CalledProcessError:4:o:e|CalledProcessError:5:out:err|\"a b\" \"c\\\"d\" tail\\|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Theory]

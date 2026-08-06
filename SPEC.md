@@ -1282,7 +1282,9 @@ When the host provides a subprocess capability, Lython may expose a contained su
 - `subprocess.check_output(...)`
 - `subprocess.CompletedProcess(args, returncode, stdout=None, stderr=None)`
 - `subprocess.CalledProcessError`
+- `subprocess.TimeoutExpired`
 - `subprocess.SubprocessError`
+- a contained `subprocess.Popen(...)` facade
 - `subprocess.list2cmdline(seq)`
 - `subprocess.PIPE`
 - `subprocess.STDOUT`
@@ -1292,7 +1294,9 @@ The subprocess request sent to the host must carry the command arguments, option
 
 Checked failures must raise catchable `CalledProcessError` with `returncode`, `cmd`, `output`, `stdout`, and `stderr` fields. `CompletedProcess.check_returncode()` must raise the same exception type for non-zero return codes. `SubprocessError` catches subprocess-specific checked failures.
 
-The supported subprocess surface does not include `Popen`, `TimeoutExpired`, `getoutput`, `getstatusoutput`, background processes, unmanaged pipes, or ambient shell authority. Unsupported helpers must fail explicitly without broadening shell integration.
+`Popen` must remain a lazy buffered facade rather than a claim of live-process ownership. Construction parses the shared command, stream, cwd, environment, shell, text, encoding, and error options without issuing a host request. A `PIPE` stdin endpoint buffers governed text. `PIPE` stdout/stderr endpoints provide sequential text reads and iteration. The first `communicate`, `wait`, output-stream read, or context exit finalizes stdin and issues exactly one bounded `ILythonSubprocessRunner` request; later completion calls reuse its result. `returncode` and `poll()` remain `None` before that boundary. Both sync and async execution use the same request, while an asynchronously completing host requires `RunAsync`. Host timeouts represented by `TimeoutException` become catchable `TimeoutExpired` values carrying `cmd`, `timeout`, `output`/`stdout`, and `stderr` fields.
+
+The contained facade does not expose a PID, live signals, background execution, unmanaged handles, file descriptors, or OS pipe ownership. `send_signal`, `terminate`, `kill`, descriptor/session/user/group/process mutation options, `getoutput`, and `getstatusoutput` fail explicitly. Directly composing one facade's stdout as another facade's stdin is specified separately; until that composition is enabled, stdin accepts only the documented constants and buffered text input. Ambient shell authority remains unavailable.
 
 ### 11.13 Line Diffs
 

@@ -57,6 +57,7 @@ internal enum StaticReturnShape
     ListOfPkgutilModuleInfo,
     ListOfBytes,
     SubprocessCompletedProcess,
+    SubprocessPopen,
     ListOfListOfString,
     OpenPyxlWorkbook,
     OpenPyxlWorksheet,

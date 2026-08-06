@@ -58,6 +58,7 @@ internal enum AbstractValueKind
     PkgutilModuleInfo,
     PkgutilLoader,
     SubprocessCompletedProcess,
+    SubprocessPopen,
     DataclassField,
     OpenPyxlWorkbook,
     OpenPyxlWorksheet,
@@ -230,6 +231,7 @@ internal readonly record struct AbstractValue(
     public static AbstractValue PkgutilModuleInfo(LythonSourceSpan span) => new(AbstractValueKind.PkgutilModuleInfo, "pkgutil.ModuleInfo", span);
     public static AbstractValue PkgutilLoader(LythonSourceSpan span) => new(AbstractValueKind.PkgutilLoader, "pkgutil.Loader", span);
     public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
+    public static AbstractValue SubprocessPopen(LythonSourceSpan span) => new(AbstractValueKind.SubprocessPopen, "subprocess.Popen", span);
     public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
     public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbook, "openpyxl.Workbook", span);
     public static AbstractValue OpenPyxlWorksheet(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorksheet, "openpyxl.worksheet.worksheet.Worksheet", span);

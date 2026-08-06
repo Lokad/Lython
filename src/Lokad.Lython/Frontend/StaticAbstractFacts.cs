@@ -55,6 +55,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
+            AbstractValueKind.SubprocessPopen or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -142,6 +143,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
+            AbstractValueKind.SubprocessPopen or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorksheet or
             AbstractValueKind.OpenPyxlCell or
@@ -212,6 +214,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
+            AbstractValueKind.SubprocessPopen or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.OpenPyxlWorksheet or
@@ -304,6 +307,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DifflibSequenceMatcher or
             AbstractValueKind.PkgutilLoader or
             AbstractValueKind.SubprocessCompletedProcess or
+            AbstractValueKind.SubprocessPopen or
             AbstractValueKind.DataclassField or
             AbstractValueKind.OpenPyxlCell or
             AbstractValueKind.OpenPyxlHyperlink or
@@ -616,6 +620,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
             AbstractValueKind.PkgutilLoader => "pkgutil.Loader",
             AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
+            AbstractValueKind.SubprocessPopen => "subprocess.Popen",
             AbstractValueKind.DataclassField => "dataclasses.Field",
             AbstractValueKind.Function => "function",
             AbstractValueKind.UserClass => ((AbstractClassSummary)value.Value).Name,

@@ -44,8 +44,8 @@ internal sealed partial class LythonRuntime
                 "CompletedProcess" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessCompletedProcess, CompletedProcess),
                 "CalledProcessError" => SubprocessCalledProcessErrorType.Instance,
                 "SubprocessError" => new ExceptionTypeValue("SubprocessError"),
-                "TimeoutExpired" => new UnsupportedSubprocessCallable("subprocess.TimeoutExpired", "subprocess.TimeoutExpired is not supported by Lython; host timeout results are reported as RuntimeError."),
-                "Popen" => new UnsupportedSubprocessCallable("subprocess.Popen", "subprocess.Popen is not supported by Lython; use host-mediated subprocess.run()."),
+                "TimeoutExpired" => SubprocessTimeoutExpiredType.Instance,
+                "Popen" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessPopen, Popen),
                 "list2cmdline" => new BuiltinCallable(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline),
                 "getoutput" => new UnsupportedSubprocessCallable("subprocess.getoutput", "subprocess.getoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "getstatusoutput" => new UnsupportedSubprocessCallable("subprocess.getstatusoutput", "subprocess.getstatusoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
@@ -486,6 +486,68 @@ internal sealed partial class LythonRuntime
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private sealed class SubprocessTimeoutExpiredType : ICallable, IPyDynamicAttributes, IPyRenderableValue
+    {
+        public static readonly SubprocessTimeoutExpiredType Instance = new();
+
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name switch
+            {
+                "__name__" => PyString.FromString("TimeoutExpired"),
+                "type" => PyString.FromString("TimeoutExpired"),
+                _ => null!,
+            };
+            return value is not null;
+        }
+
+        public bool TrySetMember(string name, object value)
+        {
+            _ = name;
+            _ = value;
+            return false;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var bound = CallBinder.BindNamedArguments(
+                arguments,
+                span,
+                LythonKnownCallableSignatures.SubprocessTimeoutExpired,
+                "Builtin");
+            return new PyException(
+                "TimeoutExpired",
+                $"Command timed out after {bound[1]}.",
+                CreateTimeoutExpiredPayload(bound[0], bound[1], GetArgument(bound, 2), GetArgument(bound, 3), context, span));
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class 'subprocess.TimeoutExpired'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
+
+    private static PyDict CreateTimeoutExpiredPayload(
+        object command,
+        object timeout,
+        object output,
+        object stderr,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var payload = new PyDict(context.MemoryGovernor, span);
+        payload.SetItem(PyString.FromString("cmd"), command);
+        payload.SetItem(PyString.FromString("timeout"), timeout);
+        payload.SetItem(PyString.FromString("output"), output);
+        payload.SetItem(PyString.FromString("stdout"), output);
+        payload.SetItem(PyString.FromString("stderr"), stderr);
+        return payload;
     }
 
     private readonly record struct SubprocessInvocation(

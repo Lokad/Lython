@@ -440,7 +440,11 @@ internal sealed class MockLythonHost : ILythonHost
         _subprocess.SeedResult(args, returnCode, stdout, stderr);
     }
 
+    public void SeedSubprocessTimeout(IReadOnlyList<string> args) => _subprocess.SeedTimeout(args);
+
     public LythonSubprocessRequest? LastSubprocessRequest => _subprocess.LastRequest;
+
+    public IReadOnlyList<LythonSubprocessRequest> SubprocessRequests => _subprocess.Requests;
 
     public bool SubprocessCompletedAsynchronously => _subprocess.CompletedAsynchronously;
 
@@ -616,6 +620,8 @@ internal sealed class MockLythonHost : ILythonHost
     private sealed class MockSubprocessRunner : ILythonSubprocessRunner
     {
         private readonly Dictionary<string, LythonSubprocessResult> _results = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _timeouts = new(StringComparer.Ordinal);
+        private readonly List<LythonSubprocessRequest> _requests = [];
 
         public bool Enabled { get; set; }
 
@@ -625,10 +631,14 @@ internal sealed class MockLythonHost : ILythonHost
 
         public LythonSubprocessRequest? LastRequest { get; private set; }
 
+        public IReadOnlyList<LythonSubprocessRequest> Requests => _requests;
+
         public void SeedResult(IReadOnlyList<string> args, int returnCode, string stdout, string stderr)
         {
             _results[Key(args)] = new LythonSubprocessResult(returnCode, Utf8.GetBytes(stdout), Utf8.GetBytes(stderr));
         }
+
+        public void SeedTimeout(IReadOnlyList<string> args) => _timeouts.Add(Key(args));
 
         public ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
@@ -651,6 +661,12 @@ internal sealed class MockLythonHost : ILythonHost
         private LythonSubprocessResult Run(LythonSubprocessRequest request)
         {
             LastRequest = request;
+            _requests.Add(request);
+            if (_timeouts.Contains(Key(request.Args)))
+            {
+                throw new TimeoutException("mock subprocess timeout");
+            }
+
             if (!_results.TryGetValue(Key(request.Args), out var result))
             {
                 throw new InvalidOperationException($"No subprocess result seeded for: {Key(request.Args)}");

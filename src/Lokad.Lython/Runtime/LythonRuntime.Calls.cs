@@ -149,6 +149,7 @@ internal sealed partial class LythonRuntime
             ["BadGzipFile"] = ["OSError"],
             ["SubprocessError"] = ["Exception"],
             ["CalledProcessError"] = ["SubprocessError"],
+            ["TimeoutExpired"] = ["SubprocessError"],
         };
 
     private static bool MatchesExceptionTypeName(string caughtTypeName, string thrownTypeName)
@@ -511,6 +512,7 @@ internal sealed partial class LythonRuntime
                             PyNone => null,
                             ExecutionContext.TextFileHandle handle => handle,
                             HostTextOutputHandle handle => handle,
+                            PopenInputStream handle => handle,
                             _ => throw new LythonRuntimeException(
                                 "TypeError",
                                 "print(..., file=...) expects a writable Lython text stream, writable file handle, or None.",
@@ -616,6 +618,7 @@ internal sealed partial class LythonRuntime
                             PyNone => null,
                             ExecutionContext.TextFileHandle handle => handle,
                             HostTextOutputHandle handle => handle,
+                            PopenInputStream handle => handle,
                             _ => throw new LythonRuntimeException(
                                 "TypeError",
                                 "print(..., file=...) expects a writable Lython text stream, writable file handle, or None.",
@@ -674,6 +677,10 @@ internal sealed partial class LythonRuntime
             {
                 _ = outputHandle.Write(value, span);
             }
+            else if (outputTarget is PopenInputStream popenInput)
+            {
+                _ = popenInput.Write(value, span);
+            }
         }
 
         private static void FlushOutput(ExecutionContext context, object? outputTarget, LythonSourceSpan span)
@@ -689,6 +696,10 @@ internal sealed partial class LythonRuntime
             else if (outputTarget is HostTextOutputHandle outputHandle)
             {
                 _ = outputHandle.Flush(span);
+            }
+            else if (outputTarget is PopenInputStream popenInput)
+            {
+                popenInput.FlushValue(span);
             }
         }
 
@@ -708,6 +719,10 @@ internal sealed partial class LythonRuntime
             {
                 _ = await outputHandle.WriteAsync(value, span).ConfigureAwait(false);
             }
+            else if (outputTarget is PopenInputStream popenInput)
+            {
+                _ = popenInput.Write(value, span);
+            }
         }
 
         private static async ValueTask FlushOutputAsync(ExecutionContext context, object? outputTarget, LythonSourceSpan span)
@@ -723,6 +738,10 @@ internal sealed partial class LythonRuntime
             else if (outputTarget is HostTextOutputHandle outputHandle)
             {
                 _ = await outputHandle.FlushAsync(span).ConfigureAwait(false);
+            }
+            else if (outputTarget is PopenInputStream popenInput)
+            {
+                popenInput.FlushValue(span);
             }
         }
     }

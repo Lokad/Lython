@@ -271,16 +271,17 @@ and returns a [`LythonSubprocessResult`](src/Lokad.Lython/Host/LythonSubprocessR
 The subprocess contract remains host-mediated:
 
 - `subprocess.run(...)`, `subprocess.call(...)`, `subprocess.check_call(...)`, and `subprocess.check_output(...)`
-- `subprocess.CompletedProcess`, `subprocess.CalledProcessError`, and `subprocess.SubprocessError`
+- `subprocess.CompletedProcess`, `subprocess.CalledProcessError`, `subprocess.TimeoutExpired`, and `subprocess.SubprocessError`
+- a lazy, buffered `subprocess.Popen` facade with `stdin`/`stdout`/`stderr` text pipes, `communicate`, `wait`, `poll`, and context management
 - `subprocess.PIPE`, `subprocess.STDOUT`, and `subprocess.DEVNULL`
 - `subprocess.list2cmdline(...)`
 - string and `pathlib.Path` command parts
 - `shell=True` as an explicit host request, not ambient shell authority
 - text-oriented captured I/O
-- no `Popen`, `TimeoutExpired`, `getoutput`, or `getstatusoutput`
-- no background or async process model
+- no live PID, signals, unmanaged handles, or background process model behind `Popen`
+- no `getoutput` or `getstatusoutput`
 
-This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
+`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Captured output stays bounded by the run's output/string limit; async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
 
 `import openpyxl` provides a vanilla-Python-shaped subset for common `.xlsx`
 workbook automation. Workbook load/save uses host-mediated binary file
