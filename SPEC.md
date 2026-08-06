@@ -891,9 +891,9 @@ For path and text-resource manipulation, scripts must use Python-shaped APIs:
 host-mediated through `ILythonHost`; Lython-specific global filesystem helper
 names are not part of the supported script surface.
 
-`pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. They accept Python-shaped UTF-8 options: `encoding` may be `None`, `utf-8`, or `utf-8-sig`; `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly.
+`pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. `encoding` may be `None`, `utf-8`, `utf-8-sig`, or the Latin-1 aliases `latin-1`, `latin1`, and `iso-8859-1`; `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly. Latin-1 input decodes every byte losslessly, while strict Latin-1 encoding raises `UnicodeEncodeError` for code points outside the byte range.
 
-Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as UTF-8 text-handle helpers. The signatures include CPython-compatible `buffering`, `encoding`, `errors`, and `newline` slots, while `closefd=False`, custom `opener`, binary modes, and updating modes remain explicitly unsupported. Text handles expose ordinary inspection such as `name`, `mode`, `encoding`, `errors`, `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, sized `read(...)`/`readline(...)`/`readlines(...)`, and iteration. Random access must fail explicitly.
+Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as text-handle helpers for the same UTF-8 and Latin-1 codecs. The signatures include CPython-compatible `buffering`, `encoding`, `errors`, and `newline` slots, while `closefd=False`, custom `opener`, binary modes, and updating modes remain explicitly unsupported. Text handles expose ordinary inspection such as `name`, `mode`, `encoding`, `errors`, `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, sized `read(...)`/`readline(...)`/`readlines(...)`, and iteration. Random access must fail explicitly.
 
 `pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 
@@ -1432,6 +1432,7 @@ Run options may include a contained environment mapping. That mapping is script-
 
 Optional capabilities are limited to:
 
+- bounded binary reads and writes
 - globbing
 - patch application
 - streams
@@ -1596,9 +1597,9 @@ Lython is text-first.
 
 Scripts are UTF-8 text.
 
-Text-resource operations must use UTF-8.
+UTF-8 is the default and canonical text-resource encoding. The supported Latin-1 compatibility codec is converted explicitly at the runtime boundary.
 
-The canonical host-I/O boundary for text resources is UTF-8 bytes. A host implementation may internally decode or encode however it likes, but the observable contract with Lython is UTF-8 text interchange rather than host-native string transport.
+The canonical host-I/O boundary for text resources is UTF-8 bytes. A host implementation may internally decode or encode however it likes, but the observable text contract with Lython is UTF-8 interchange rather than host-native string transport. A non-UTF-8 codec must use the separate bounded binary capability and fail explicitly when that optional capability is unavailable; this does not expose a generic binary file API to scripts.
 
 ### 15.2 Newline Behavior
 
@@ -1615,7 +1616,7 @@ Lython string values are Unicode text values. UTF-8 is the canonical script and 
 This distinction is important:
 
 - language-level `str` values are text values
-- host text-resource transport is UTF-8
+- canonical host text-resource transport is UTF-8; explicitly requested legacy codecs use bounded byte transport
 
 Lython must not collapse these two concerns into an implementation-defined host string abstraction.
 
@@ -1652,8 +1653,8 @@ Lython exposes a limited public `bytes` value model.
 Supported bytes behavior includes:
 
 - bytes literals
-- `bytes([iterable])` and UTF-8 string encoding forms
-- `bytes.decode(...)` and `str.encode(...)` for the supported UTF-8 codec policy
+- `bytes([iterable])` plus UTF-8 and Latin-1 string encoding forms
+- `bytes.decode(...)` and `str.encode(...)` for the supported UTF-8 and Latin-1 codec policy
 - truthiness
 - equality and hashing
 - `len(...)`

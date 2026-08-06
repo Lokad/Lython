@@ -31,8 +31,8 @@ internal static class StaticArgparseContractFamily
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "bufsize", "argparse.FileType(..., bufsize=...) expects an integer or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "encoding", "argparse.FileType(..., encoding=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "errors", "argparse.FileType(..., errors=...) expects a string or None.", diagnostics, bindings);
-            emitted |= AnalyzeUtf8Encoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-            emitted |= AnalyzeTextErrors(arguments, 3, "errors", "argparse.FileType only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+            emitted |= AnalyzeTextEncoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.", diagnostics, bindings);
+            emitted |= AnalyzeTextErrors(arguments, 3, "errors", "argparse.FileType only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
             return emitted;
         }
 
@@ -229,7 +229,7 @@ internal static class StaticArgparseContractFamily
                literal > 0;
     }
 
-    private static bool AnalyzeUtf8Encoding(
+    private static bool AnalyzeTextEncoding(
         ConcreteCallArguments arguments,
         int position,
         string keyword,
@@ -241,7 +241,10 @@ internal static class StaticArgparseContractFamily
             expression is NoneLiteralExpressionSyntax ||
             !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
             text.Equals("utf-8", StringComparison.OrdinalIgnoreCase) ||
-            text.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase))
+            text.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("latin-1", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("latin1", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("iso-8859-1", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

@@ -10,7 +10,7 @@ public sealed class StaticErrorDiagnosticsTests
         var compiled = new LythonEngine().Compile(
             """
 open("/repo/in.txt", "rb")
-open("/repo/in.txt", encoding="latin-1")
+open("/repo/in.txt", encoding="utf-16")
 open("/repo/in.txt", newline="bad")
 open("/repo/in.txt", errors="surrogateescape")
 """);
@@ -194,7 +194,7 @@ from pathlib import Path
 from collections import defaultdict
 import argparse
 
-Path("/repo/input.txt").read_text(encoding="latin-1")
+Path("/repo/input.txt").read_text(encoding="utf-16")
 defaultdict(1)
 parser = argparse.ArgumentParser()
 parser.add_argument("--count", type="int")
@@ -217,7 +217,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--flag", action="explode")
 parser.add_argument("--count", nargs=0)
-Path("/repo/output.txt").write_text("alpha", encoding="latin-1", newline="bad")
+Path("/repo/output.txt").write_text("alpha", encoding="utf-16", newline="bad")
 """);
 
         Assert.False(compiled.IsValid);
@@ -240,7 +240,7 @@ parser.add_argument(1, dest=2, action=3, help=4, choices=1)
 parser.add_argument("   ")
 Path("/repo/input.txt").open(1)
 Path("/repo/input.txt").open("x")
-Path("/repo/input.txt").open("rb", -1, "latin-1")
+Path("/repo/input.txt").open("rb", -1, "utf-16")
 """);
 
         Assert.False(compiled.IsValid);
@@ -267,7 +267,7 @@ path = Path("/repo/input.txt")
 same_path = path
 
 same_path.open("rb")
-same_path.read_text(encoding="latin-1")
+same_path.read_text(encoding="utf-16")
 same_path.write_text(b"abc")
 same_path.write_bytes(b"abc")
 """);
@@ -598,7 +598,7 @@ resolved_parent = path.resolve().parent
 
 name.find(1)
 suffix.startswith(1)
-parent.read_text(encoding="latin-1")
+parent.read_text(encoding="utf-16")
 resolved_parent.not_a_path_member
 """);
 
@@ -1531,7 +1531,7 @@ Path("/repo/out.txt").write_text(1)
 from pathlib import Path
 import fnmatch
 
-enc1 = "latin-1"
+enc1 = "utf-16"
 enc2 = enc1
 Path("/repo/in.txt").read_text(encoding=enc2)
 
@@ -1923,7 +1923,7 @@ __lython_file.close()
             """
 from pathlib import Path
 
-enc1 = "latin-1"
+enc1 = "utf-16"
 enc2 = enc1
 Path("/repo/in.txt").read_text(encoding=enc2)
 __lython_file = open("/repo/created.txt", "w")

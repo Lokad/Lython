@@ -1991,18 +1991,20 @@ internal sealed partial class LythonRuntime
                 }, "Path.read_text", ["encoding", "errors", "newline"], 0),
                 "write_text" => new BoundCallable((arguments, span, context) =>
                 {
-                    var (text, encodingMode, _, newline) = ParsePathWriteTextArguments(arguments, span);
+                    var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                     context.ObserveString(text, span);
+                    var payload = EncodePathText(text, encodingMode, errors, newline, context, span);
                     context.RegisterHostCall(span);
-                    context.WriteTextUtf8(path.Value.AsString(), EncodePathText(text, encodingMode, newline), span);
+                    WriteEncodedHostText(path.Value.AsString(), payload, encodingMode, context, span);
                     return new BigInteger(text.Length);
                 },
                 async (arguments, span, context) =>
                 {
-                    var (text, encodingMode, _, newline) = ParsePathWriteTextArguments(arguments, span);
+                    var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                     context.ObserveString(text, span);
+                    var payload = EncodePathText(text, encodingMode, errors, newline, context, span);
                     context.RegisterHostCall(span);
-                    await context.WriteTextUtf8Async(path.Value.AsString(), EncodePathText(text, encodingMode, newline), span).ConfigureAwait(false);
+                    await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
                     return new BigInteger(text.Length);
                 }, "Path.write_text", ["text", "encoding", "errors", "newline"], 1),
                 "rglob" => new BoundCallable((arguments, span, context) =>
@@ -2518,7 +2520,9 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            var text = StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
+            var text = encodingMode == TextEncodingMode.Latin1
+                ? DecodeText(ReadGovernedHostBytes(path, context, span), encodingMode, context, span, errors, newline)
+                : StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
             context.ObserveString(text, span);
             return text;
         }
@@ -2531,7 +2535,17 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            var text = StripUtf8Bom(await ReadGovernedHostTextAsync(path, context, span, errors, newline).ConfigureAwait(false), encodingMode);
+            var text = encodingMode == TextEncodingMode.Latin1
+                ? DecodeText(
+                    await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false),
+                    encodingMode,
+                    context,
+                    span,
+                    errors,
+                    newline)
+                : StripUtf8Bom(
+                    await ReadGovernedHostTextAsync(path, context, span, errors, newline).ConfigureAwait(false),
+                    encodingMode);
             context.ObserveString(text, span);
             return text;
         }
@@ -2549,8 +2563,41 @@ internal sealed partial class LythonRuntime
                 : text;
         }
 
-        private static byte[] EncodePathText(PyString text, TextEncodingMode encodingMode, TextNewlineMode newline)
-            => EncodeUtf8Text(text, encodingMode, newline);
+        private static byte[] EncodePathText(
+            PyString text,
+            TextEncodingMode encodingMode,
+            TextErrorMode errors,
+            TextNewlineMode newline,
+            ExecutionContext context,
+            LythonSourceSpan span)
+            => EncodeText(text, encodingMode, errors, newline, context, span);
+
+        private static void WriteEncodedHostText(
+            string path,
+            ReadOnlyMemory<byte> payload,
+            TextEncodingMode encoding,
+            ExecutionContext context,
+            LythonSourceSpan span)
+        {
+            if (encoding == TextEncodingMode.Latin1)
+            {
+                context.WriteHostBytes(path, payload, span);
+            }
+            else
+            {
+                context.WriteTextUtf8(path, payload, span);
+            }
+        }
+
+        private static ValueTask WriteEncodedHostTextAsync(
+            string path,
+            ReadOnlyMemory<byte> payload,
+            TextEncodingMode encoding,
+            ExecutionContext context,
+            LythonSourceSpan span)
+            => encoding == TextEncodingMode.Latin1
+                ? context.WriteHostBytesAsync(path, payload, span)
+                : context.WriteTextUtf8Async(path, payload, span);
 
         private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)
         {

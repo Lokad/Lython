@@ -98,7 +98,7 @@ internal static class StaticTextIoContractFamily
             {
                 if (modeText.Contains('b', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3001", "open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3001", "open() only supports text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
                 }
                 else if (modeText.Contains('+', StringComparison.Ordinal))
                 {
@@ -112,8 +112,8 @@ internal static class StaticTextIoContractFamily
         }
 
         StaticKnownCallArgumentChecks.AnalyzeIntegerOrNoneArgument(arguments, 2, "buffering", "open(..., buffering=...) expects an integer or None.", diagnostics, bindings);
-        AnalyzeEncodingArgument(arguments, 3, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', or None when it is statically known.", "open() only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        AnalyzeErrorsArgument(arguments, 4, "errors", "LA3005", "open(..., errors=...) must be 'strict', 'ignore', 'replace', 'backslashreplace', or None when it is statically known.", "open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        AnalyzeEncodingArgument(arguments, 3, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', 'latin-1', or None when it is statically known.", "open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.", diagnostics, bindings);
+        AnalyzeErrorsArgument(arguments, 4, "errors", "LA3005", "open(..., errors=...) must be 'strict', 'ignore', 'replace', 'backslashreplace', or None when it is statically known.", "open() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         AnalyzeNewlineArgument(arguments, 5, "newline", "LA3004", "open(..., newline=...) must be None, '', '\\n', '\\r', or '\\r\\n' when it is statically known.", "open() newline must be None, '', '\\n', '\\r', or '\\r\\n'.", diagnostics, bindings);
         StaticKnownCallArgumentChecks.AnalyzeBooleanOrNoneArgument(arguments, 6, "closefd", "open(..., closefd=...) expects a bool or None.", diagnostics, bindings);
         AnalyzeCloseFdArgument(arguments, diagnostics, bindings);
@@ -174,8 +174,8 @@ internal static class StaticTextIoContractFamily
             0,
             "encoding",
             "LA3049",
-            "Path.read_text() only supports encoding='utf-8' or 'utf-8-sig'.",
-            "Path.read_text() only supports encoding='utf-8' or 'utf-8-sig'.",
+            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(
@@ -183,8 +183,8 @@ internal static class StaticTextIoContractFamily
             1,
             "errors",
             "LA3049",
-            "Path.read_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
-            "Path.read_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.read_text() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.read_text() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
             diagnostics,
             bindings);
         AnalyzeNewlineArgument(
@@ -214,8 +214,8 @@ internal static class StaticTextIoContractFamily
             1,
             "encoding",
             "LA3053",
-            "Path.write_text() only supports encoding='utf-8' or 'utf-8-sig'.",
-            "Path.write_text() only supports encoding='utf-8' or 'utf-8-sig'.",
+            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(
@@ -223,8 +223,8 @@ internal static class StaticTextIoContractFamily
             2,
             "errors",
             "LA3053",
-            "Path.write_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
-            "Path.write_text() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.write_text() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.write_text() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
             diagnostics,
             bindings);
         AnalyzeNewlineArgument(
@@ -257,7 +257,7 @@ internal static class StaticTextIoContractFamily
             {
                 if (modeText.Contains('b', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3061", "Path.open() only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3061", "Path.open() only supports text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
                 }
                 else if (modeText.Contains('+', StringComparison.Ordinal))
                 {
@@ -276,8 +276,8 @@ internal static class StaticTextIoContractFamily
             2,
             "encoding",
             "LA3063",
-            "Path.open() only supports encoding='utf-8' or 'utf-8-sig'.",
-            "Path.open() only supports encoding='utf-8' or 'utf-8-sig'.",
+            "Path.open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(
@@ -285,8 +285,8 @@ internal static class StaticTextIoContractFamily
             3,
             "errors",
             "LA3063",
-            "Path.open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
-            "Path.open() only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.open() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            "Path.open() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
             diagnostics,
             bindings);
         AnalyzeNewlineArgument(
@@ -444,7 +444,10 @@ internal static class StaticTextIoContractFamily
         if (encodingExpression is not NoneLiteralExpressionSyntax &&
             StaticAbstractValueResolver.TryResolveKnownString(encodingExpression, bindings, out var encodingText) &&
             !encodingText.Equals("utf-8", StringComparison.OrdinalIgnoreCase) &&
-            !encodingText.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase))
+            !encodingText.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase) &&
+            !encodingText.Equals("latin-1", StringComparison.OrdinalIgnoreCase) &&
+            !encodingText.Equals("latin1", StringComparison.OrdinalIgnoreCase) &&
+            !encodingText.Equals("iso-8859-1", StringComparison.OrdinalIgnoreCase))
         {
             AddDiagnostic(diagnostics, code, unsupportedEncodingMessage, encodingExpression.Span);
         }

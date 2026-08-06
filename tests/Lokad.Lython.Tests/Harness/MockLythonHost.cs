@@ -396,10 +396,14 @@ internal sealed class MockLythonHost : ILythonHost
         WriteBytesAsync(path, payload, CancellationToken.None).GetAwaiter().GetResult();
     }
 
+    public void SeedBytes(string path, byte[] payload) => SeedWorkbook(path, payload);
+
     public byte[] ReadWorkbook(string path)
     {
         return ReadBytesAsync(path, CancellationToken.None).GetAwaiter().GetResult().ToArray();
     }
+
+    public byte[] ReadBytes(string path) => ReadWorkbook(path);
 
     public void FailListDir(string path, string message)
     {

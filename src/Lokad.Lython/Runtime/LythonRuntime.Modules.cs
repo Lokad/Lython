@@ -2497,7 +2497,7 @@ internal sealed partial class LythonRuntime
                 : "r";
             if (mode.Contains('b'))
             {
-                throw new LythonRuntimeException("ValueError", "argparse.FileType only supports host-mediated UTF-8 text modes.", span);
+                throw new LythonRuntimeException("ValueError", "argparse.FileType only supports host-mediated text modes.", span);
             }
 
             mode = ParseTextOpenMode(PyString.FromString(mode), "argparse.FileType", span);
@@ -2517,7 +2517,14 @@ internal sealed partial class LythonRuntime
             var errorsMode = arguments.Length >= 4
                 ? ParseTextErrors(arguments[3], "argparse.FileType", span)
                 : TextErrorMode.Strict;
-            var encoding = arguments.Length >= 3 ? (encodingMode == TextEncodingMode.Utf8Bom ? "utf-8-sig" : "utf-8") : null;
+            var encoding = arguments.Length >= 3
+                ? encodingMode switch
+                {
+                    TextEncodingMode.Utf8Bom => "utf-8-sig",
+                    TextEncodingMode.Latin1 => "latin-1",
+                    _ => "utf-8"
+                }
+                : null;
             var errors = arguments.Length >= 4
                 ? errorsMode switch
                 {
@@ -4567,10 +4574,13 @@ internal sealed partial class LythonRuntime
                     var encoding = arguments.Length >= 1
                         ? ParseTextEncoding(arguments[0], "str.encode()", span)
                         : TextEncodingMode.Utf8;
-                    _ = arguments.Length == 2
+                    var errors = arguments.Length == 2
                         ? ParseTextErrors(arguments[1], "str.encode()", span)
                         : TextErrorMode.Strict;
-                    return CreateBytes(EncodeUtf8Text(text, encoding, TextNewlineMode.PreserveUniversal), context, span);
+                    return CreateBytes(
+                        EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span),
+                        context,
+                        span);
                 }, "str.encode", ["encoding", "errors"], 0),
                 "replace" => new BoundCallable((arguments, span, _) =>
                 {
@@ -5356,17 +5366,7 @@ internal sealed partial class LythonRuntime
                     var errors = arguments.Length == 2
                         ? ParseTextErrors(arguments[1], "bytes.decode()", span)
                         : TextErrorMode.Strict;
-                    var text = DecodeUtf8Text(bytes.ToArray(), context, span, errors, TextNewlineMode.PreserveUniversal);
-                    if (encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        var decoded = text.AsString();
-                        if (decoded.Length > 0 && decoded[0] == '\uFEFF')
-                        {
-                            return PyString.FromString(decoded[1..], context.MemoryGovernor, span);
-                        }
-                    }
-
-                    return text;
+                    return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, "bytes.decode", ["encoding", "errors"], 0),
                 _ => null!
             };

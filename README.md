@@ -155,7 +155,7 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `glob` is host-mediated over the same contained path model. Module-level `glob.glob(...)` returns Python strings, `glob.iglob(...)` returns a one-shot iterator over materialized string results, and relative patterns return relative paths. `root_dir`, `recursive`, `include_hidden`, `escape`, `has_magic`, and `translate` are supported; `dir_fd`, `glob0`, and `glob1` fail explicitly.
 
-`pathlib` uses Lython's normalized `/`-separated path model over host-mediated files and directories. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, globbing APIs materialize lists eagerly, and file handles are UTF-8 text-only with explicit unsupported diagnostics for binary, symlink, permission, and random-access operations.
+`pathlib` uses Lython's normalized `/`-separated path model over host-mediated files and directories. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, and globbing APIs materialize lists eagerly. Text files support UTF-8, UTF-8 with BOM, and Latin-1 (`latin-1`, `latin1`, or `iso-8859-1`); Latin-1 uses the host's bounded binary read/write capability because the text transport is UTF-8-shaped. Generic binary handles, symlink operations, permission operations, and random access remain explicitly unsupported.
 
 `argparse` covers ordinary agent-authored CLI scripts: `ArgumentParser`, `Namespace`, text-only `FileType`, common formatter classes and constants, `parse_args`, `parse_known_args`, defaults, help/error formatting, short and long options, `--name=value`, compact short flags, choices, required options, typed values, and the usual `store`, `append`, `store_const`, `store_true`, `store_false`, `count`, and `version` actions. Advanced parser composition features such as from-file expansion, parent parsers, subparsers, conflict handlers, and custom `Action` subclasses are rejected explicitly.
 
@@ -211,12 +211,13 @@ Unless `DisableDefaultLimits` is set, Lython applies practical defaults, includi
 `ILythonHost` is the authority boundary of the runtime. Core filesystem and clock operations stay small:
 
 - current working directory and wall-clock access
-- UTF-8 text reads/writes/appends and binary reads/writes
+- UTF-8 text reads/writes/appends
 - existence, stat, directory listing, mkdir, remove, copy, and move
 
 All host effects are async and receive the run cancellation token. That base surface is enough for the built-in text/file/path workflows. The richer host-mediated features are optional and exposed through default interface members:
 
 - `StandardInput`, `StandardOutput`, and `StandardError`
+- bounded binary reads/writes, used by contained binary-aware modules and non-UTF-8 text codecs
 - `WalkAsync(...)` for `os.walk`
 - `SubprocessRunner` for the host-mediated `subprocess` module surface
 

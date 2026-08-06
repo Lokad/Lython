@@ -566,7 +566,15 @@ internal sealed partial class LythonRuntime
         }
 
         var encodingMode = ParseTextEncoding(value, owner, span);
-        return encodingMode == TextEncodingMode.Utf8Bom ? "utf-8-sig" : "utf-8";
+        return encodingMode switch
+        {
+            TextEncodingMode.Utf8Bom => "utf-8-sig",
+            TextEncodingMode.Latin1 => throw new LythonRuntimeException(
+                "ValueError",
+                $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig' because the subprocess host boundary is UTF-8-shaped.",
+                span),
+            _ => "utf-8"
+        };
     }
 
     private static string? ParseSubprocessErrors(object[] arguments, string owner, LythonSourceSpan span)

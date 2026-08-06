@@ -498,10 +498,10 @@ with open("/repo/out.txt", "w", -1, "utf-8", "strict", "") as writer:
     [Theory]
     [InlineData(
         """
-open("/repo/input.txt", "r", encoding="latin-1")
+open("/repo/input.txt", "r", encoding="utf-16")
 open("/repo/created.txt", "w").write("created")
 """,
-        "open() only supports encoding='utf-8' or 'utf-8-sig'.")]
+        "open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.")]
     [InlineData(
         """
 open("/repo/input.txt", "r", errors="surrogateescape")
@@ -780,24 +780,24 @@ with open("/repo/in.txt", "rb") as handle:
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.txt").read_text(encoding="latin-1")
+Path("/repo/input.txt").read_text(encoding="utf-16")
 """,
         "compile",
-        "only supports encoding='utf-8'")]
+        "only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'")]
     [InlineData(
         """
 from pathlib import Path
 Path("/repo/input.txt").read_text(errors="surrogateescape")
 """,
         "compile",
-        "UTF-8 error handlers")]
+        "text error handlers")]
     [InlineData(
         """
 from pathlib import Path
 Path("/repo/output.txt").write_text("alpha", encoding="utf-8", errors="surrogateescape")
 """,
         "compile",
-        "UTF-8 error handlers")]
+        "text error handlers")]
     [InlineData(
         """
 from pathlib import Path

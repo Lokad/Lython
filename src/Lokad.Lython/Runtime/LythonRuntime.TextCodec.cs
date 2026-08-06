@@ -36,16 +36,23 @@ internal sealed partial class LythonRuntime
 
         if (!PyStringOps.TryAsString(value, out var encoding))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner} only supports encoding='utf-8' or 'utf-8-sig'.", span);
+            throw UnsupportedTextEncoding(owner, span);
         }
 
         return encoding.AsString().ToLowerInvariant() switch
         {
             "utf-8" or "utf8" => TextEncodingMode.Utf8,
             "utf-8-sig" => TextEncodingMode.Utf8Bom,
-            _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports encoding='utf-8' or 'utf-8-sig'.", span)
+            "latin-1" or "latin1" or "iso-8859-1" => TextEncodingMode.Latin1,
+            _ => throw UnsupportedTextEncoding(owner, span)
         };
     }
+
+    private static LythonRuntimeException UnsupportedTextEncoding(string owner, LythonSourceSpan span)
+        => new(
+            "ValueError",
+            $"{owner} only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            span);
 
     private static TextErrorMode ParseTextErrors(object value, string owner, LythonSourceSpan span)
     {
@@ -56,7 +63,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyStringOps.TryAsString(value, out var errors))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner} only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span);
+            throw new LythonRuntimeException("ValueError", $"{owner} only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span);
         }
 
         return errors.AsString().ToLowerInvariant() switch
@@ -66,7 +73,7 @@ internal sealed partial class LythonRuntime
             "replace" => TextErrorMode.Replace,
             "backslashreplace" => TextErrorMode.BackslashReplace,
             "surrogateescape" or "surrogatepass" => throw new LythonRuntimeException("NotImplementedError", $"{owner} does not support surrogate error handlers because Lython strings are UTF-8 scalar values.", span),
-            _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span)
+            _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span)
         };
     }
 
@@ -97,7 +104,7 @@ internal sealed partial class LythonRuntime
         var text = mode.AsString();
         if (text.Contains('b', StringComparison.Ordinal))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner} only supports UTF-8 text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
+            throw new LythonRuntimeException("ValueError", $"{owner} only supports text modes; binary modes like 'rb' and 'wb' are unsupported.", span);
         }
 
         if (text.Contains('+', StringComparison.Ordinal))
@@ -179,16 +186,156 @@ internal sealed partial class LythonRuntime
             : PyString.FromString(decoded, governor, span);
     }
 
-    private static byte[] EncodeUtf8Text(
-        PyString text,
+    private static PyString DecodeText(
+        ReadOnlyMemory<byte> payload,
         TextEncodingMode encoding,
+        ExecutionContext context,
+        LythonSourceSpan? span,
+        TextErrorMode errors = TextErrorMode.Strict,
         TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
     {
+        if (encoding != TextEncodingMode.Latin1)
+        {
+            var text = DecodeUtf8Text(payload, context, span, errors, newline);
+            if (encoding != TextEncodingMode.Utf8Bom)
+            {
+                return text;
+            }
+
+            var decoded = text.AsString();
+            return decoded.Length > 0 && decoded[0] == '\uFEFF'
+                ? CreateString(decoded[1..], context, span)
+                : text;
+        }
+
+        if (payload.Length == 0)
+        {
+            return PyString.Empty;
+        }
+
+        var chars = new char[payload.Length];
+        var bytes = payload.Span;
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            chars[i] = (char)bytes[i];
+        }
+
+        var decodedLatin1 = ApplyReadNewlineMode(new string(chars), newline);
+        return decodedLatin1.Length == 0
+            ? PyString.Empty
+            : CreateString(decodedLatin1, context, span);
+    }
+
+    private static PyString StripUtf8Bom(PyString text, TextEncodingMode encoding)
+    {
+        if (encoding != TextEncodingMode.Utf8Bom)
+        {
+            return text;
+        }
+
+        var decoded = text.AsString();
+        return decoded.Length > 0 && decoded[0] == '\uFEFF'
+            ? PyString.FromString(decoded[1..])
+            : text;
+    }
+
+    private static byte[] EncodeText(
+        PyString text,
+        TextEncodingMode encoding,
+        TextErrorMode errors,
+        TextNewlineMode newline,
+        ExecutionContext context,
+        LythonSourceSpan? span)
+    {
         var output = ApplyWriteNewlineMode(text.AsString(), newline);
+        if (encoding == TextEncodingMode.Latin1)
+        {
+            return EncodeLatin1(output, errors, context, span);
+        }
+
+        var byteCount = StrictUtf8.GetByteCount(output) + (encoding == TextEncodingMode.Utf8Bom ? 3 : 0);
+        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
         var utf8 = StrictUtf8.GetBytes(output);
         return encoding == TextEncodingMode.Utf8Bom
             ? [0xEF, 0xBB, 0xBF, .. utf8]
             : utf8;
+    }
+
+    private static byte[] EncodeLatin1(
+        string text,
+        TextErrorMode errors,
+        ExecutionContext context,
+        LythonSourceSpan? span)
+    {
+        var byteCount = 0;
+        var position = 0;
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if (rune.Value <= byte.MaxValue)
+            {
+                byteCount++;
+            }
+            else
+            {
+                byteCount = errors switch
+                {
+                    TextErrorMode.Ignore => byteCount,
+                    TextErrorMode.Replace => checked(byteCount + 1),
+                    TextErrorMode.BackslashReplace => checked(byteCount + (rune.Value <= 0xFFFF ? 6 : 10)),
+                    _ => throw Latin1EncodeError(rune, position, span)
+                };
+            }
+
+            position++;
+        }
+
+        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
+        if (byteCount == 0)
+        {
+            return [];
+        }
+
+        var bytes = new byte[byteCount];
+        var offset = 0;
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if (rune.Value <= byte.MaxValue)
+            {
+                bytes[offset++] = (byte)rune.Value;
+                continue;
+            }
+
+            switch (errors)
+            {
+                case TextErrorMode.Ignore:
+                    break;
+                case TextErrorMode.Replace:
+                    bytes[offset++] = (byte)'?';
+                    break;
+                case TextErrorMode.BackslashReplace:
+                    var escaped = rune.Value <= 0xFFFF
+                        ? $"\\u{rune.Value:x4}"
+                        : $"\\U{rune.Value:x8}";
+                    foreach (var character in escaped)
+                    {
+                        bytes[offset++] = (byte)character;
+                    }
+                    break;
+            }
+        }
+
+        return bytes;
+    }
+
+    private static LythonRuntimeException Latin1EncodeError(Rune rune, int position, LythonSourceSpan? span)
+    {
+        var escaped = rune.Value <= 0xFFFF
+            ? $"\\u{rune.Value:x4}"
+            : $"\\U{rune.Value:x8}";
+        return new LythonRuntimeException(
+            "UnicodeEncodeError",
+            $"'latin-1' codec can't encode character '{escaped}' in position {position}: ordinal not in range(256)",
+            span);
     }
 
     private static string DecodeUtf8ToString(ReadOnlySpan<byte> utf8, TextErrorMode errors, LythonSourceSpan? span)
