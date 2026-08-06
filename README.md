@@ -176,6 +176,8 @@ It is aimed at the failures coding agents are most likely to introduce in small 
 
 Branch analysis follows Python's short-circuit paths. In `and`, `or`, `not`, conditional expressions, assertions, loops, and comprehension filters, checks such as `value is None` and `value is not None` refine general optional values only on paths where the corresponding expression can run. This permits ordinary guarded indexing and member access while retaining diagnostics for unsafe operand orderings.
 
+For statically known sized values, comparisons such as `len(items) >= 1` also establish conservative branch-local minimum and maximum lengths. These facts cover reversed and negated comparisons and Python's negative indexes; mutable-sequence facts are widened after a known mutation so aliases cannot leave stale out-of-range diagnostics. Data-dependent lengths remain runtime concerns.
+
 ## Public API
 
 The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs). The public surface is intentionally small:

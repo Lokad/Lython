@@ -347,6 +347,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
+            AbstractValueKind.CollectionsDeque or
             AbstractValueKind.DecimalTuple or
             AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.DifflibMatch or
@@ -432,13 +433,23 @@ internal static class StaticAbstractFacts
 
     public static bool TryGetNonNegativeInt32(AbstractValue value, out int integer)
     {
+        if (TryGetInt32(value, out integer) && integer >= 0)
+        {
+            return true;
+        }
+
+        integer = 0;
+        return false;
+    }
+
+    public static bool TryGetInt32(AbstractValue value, out int integer)
+    {
         if (value.Kind == AbstractValueKind.Integer &&
             int.TryParse(
                 ((string)value.Value).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
-                out integer) &&
-            integer >= 0)
+                out integer))
         {
             return true;
         }

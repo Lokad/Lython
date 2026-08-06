@@ -472,6 +472,8 @@ Boolean operators for the supported subset must follow Python semantics, includi
 
 Static analysis of boolean conditions must respect the same reachability. Facts established by `None` identity checks, truthiness, `not`, and nested `and`/`or` expressions apply only to the branches and right operands they logically imply; branch merges must conservatively retain a general `T | None` fact when both outcomes remain possible.
 
+For supported statically known sized values, comparison of `len(value)` with a known integer may refine conservative minimum and maximum length bounds on the corresponding branch. Refinement must account for reversed comparisons, negation, and negative indexes. A known sequence mutation must invalidate or widen facts for possible aliases; an unknown length must not become a static out-of-range error. Exact literal bounds continue to justify diagnostics for definitely invalid positive or negative indexes.
+
 ### 9.3 `None`, Comparison, Membership, and Indexing
 
 The initial subset must include the value `None`.

@@ -7,6 +7,11 @@ internal static class StaticBindingEngine
     public static void UpdateBindings(StatementSyntax statement, AbstractState bindings)
     {
         var mutatedReceivers = CollectMutatedReceiverNames(statement, bindings);
+        if (mutatedReceivers.Any(bindings.IsKnownMutableSequence) ||
+            MutatesKnownMutableSequenceThroughAssignment(statement, bindings))
+        {
+            bindings.InvalidateMutableSequenceFacts();
+        }
 
         switch (statement)
         {
@@ -134,6 +139,28 @@ internal static class StaticBindingEngine
         {
             bindings.Remove(receiver);
         }
+    }
+
+    private static bool MutatesKnownMutableSequenceThroughAssignment(StatementSyntax statement, AbstractState bindings)
+    {
+        return statement switch
+        {
+            SubscriptAssignmentStatementSyntax { Target: IdentifierExpressionSyntax identifier } =>
+                bindings.IsKnownMutableSequence(identifier.Name),
+            SliceAssignmentStatementSyntax { Target: IdentifierExpressionSyntax identifier } =>
+                bindings.IsKnownMutableSequence(identifier.Name),
+            AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax identifier } =>
+                bindings.IsKnownMutableSequence(identifier.Name),
+            AugmentedAssignmentStatementSyntax
+            {
+                Target: SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax identifier }
+            } => bindings.IsKnownMutableSequence(identifier.Name),
+            AugmentedAssignmentStatementSyntax
+            {
+                Target: SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax identifier }
+            } => bindings.IsKnownMutableSequence(identifier.Name),
+            _ => false
+        };
     }
 
     private static bool IsStarImport(IReadOnlyList<ImportedMemberSyntax> members)

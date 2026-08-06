@@ -53,9 +53,29 @@ internal static class StaticStructuralDiagnostics
             return;
         }
 
+        if (!TryGetKnownIndex(subscript.Index, index, bindings, out var indexValue))
+        {
+            return;
+        }
+
+        if (TryGetSequenceName(subscript.Target, out var sequenceName) &&
+            bindings.TryGetSequenceLength(sequenceName, out var bounds))
+        {
+            if (bounds.IsImpossible || IsIndexDefinitelyValid(indexValue, bounds.MinimumLength))
+            {
+                return;
+            }
+
+            if (IsIndexDefinitelyInvalid(indexValue, bounds.MaximumLength))
+            {
+                AddDiagnostic(diagnostics, "LA3117", "Index is out of range.", subscript.Index.Span);
+            }
+
+            return;
+        }
+
         if (TryGetExactSequenceLength(target, out var length) &&
-            StaticAbstractFacts.TryGetNonNegativeInt32(index, out var indexValue) &&
-            indexValue >= length)
+            IsIndexDefinitelyInvalid(indexValue, length))
         {
             AddDiagnostic(diagnostics, "LA3117", "Index is out of range.", subscript.Index.Span);
         }
@@ -632,6 +652,65 @@ internal static class StaticStructuralDiagnostics
                 return false;
         }
     }
+
+    private static bool TryGetSequenceName(ExpressionSyntax expression, out string name)
+    {
+        while (expression is ParenthesizedExpressionSyntax parenthesized)
+        {
+            expression = parenthesized.Inner;
+        }
+
+        if (expression is IdentifierExpressionSyntax identifier)
+        {
+            name = identifier.Name;
+            return true;
+        }
+
+        name = string.Empty;
+        return false;
+    }
+
+    private static bool TryGetKnownIndex(
+        ExpressionSyntax expression,
+        AbstractValue value,
+        AbstractState bindings,
+        out int index)
+    {
+        while (expression is ParenthesizedExpressionSyntax parenthesized)
+        {
+            expression = parenthesized.Inner;
+        }
+
+        if (StaticAbstractFacts.TryGetInt32(value, out index))
+        {
+            return true;
+        }
+
+        if (expression is UnaryExpressionSyntax
+            {
+                Operator: UnaryOperatorSyntax.Minus,
+                Operand: var operand
+            } &&
+            StaticAbstractValueResolver.TryResolve(operand, bindings, out var unsignedValue) &&
+            StaticAbstractFacts.TryGetInt32(unsignedValue, out var unsignedIndex) &&
+            unsignedIndex != int.MinValue)
+        {
+            index = -unsignedIndex;
+            return true;
+        }
+
+        index = 0;
+        return false;
+    }
+
+    private static bool IsIndexDefinitelyValid(int index, int? minimumLength)
+        => minimumLength is int minimum && minimum >= RequiredLength(index);
+
+    private static bool IsIndexDefinitelyInvalid(int index, int? maximumLength)
+        => maximumLength is int maximum && maximum < RequiredLength(index);
+
+    private static long RequiredLength(int index)
+        => index >= 0 ? (long)index + 1 : -(long)index;
 
     private static bool TryAbstractValuesEqual(AbstractValue left, AbstractValue right, out bool equal)
     {

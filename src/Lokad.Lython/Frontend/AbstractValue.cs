@@ -722,21 +722,59 @@ internal readonly record struct AbstractValue(
     }
 }
 
+internal readonly record struct AbstractSequenceLengthBounds(
+    int? MinimumLength,
+    int? MaximumLength,
+    bool IsImpossible = false)
+{
+    public static AbstractSequenceLengthBounds Exact(int length) => new(length, length);
+
+    public static AbstractSequenceLengthBounds Impossible => new(null, null, IsImpossible: true);
+
+    public static AbstractSequenceLengthBounds Union(
+        AbstractSequenceLengthBounds left,
+        AbstractSequenceLengthBounds right)
+    {
+        if (left.IsImpossible)
+        {
+            return right;
+        }
+
+        if (right.IsImpossible)
+        {
+            return left;
+        }
+
+        return new AbstractSequenceLengthBounds(
+            left.MinimumLength is int leftMinimum && right.MinimumLength is int rightMinimum
+                ? Math.Min(leftMinimum, rightMinimum)
+                : null,
+            left.MaximumLength is int leftMaximum && right.MaximumLength is int rightMaximum
+                ? Math.Max(leftMaximum, rightMaximum)
+                : null);
+    }
+}
+
 internal sealed class AbstractState
 {
     private readonly Dictionary<ExpressionSyntax, CachedAbstractValue> _abstractValueCache;
+    private readonly Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private readonly Dictionary<string, AbstractValue> _values;
     private int _version;
 
     public AbstractState()
     {
         _values = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
+        _sequenceLengths = new Dictionary<string, AbstractSequenceLengthBounds>(StringComparer.Ordinal);
         _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
     }
 
-    private AbstractState(Dictionary<string, AbstractValue> values)
+    private AbstractState(
+        Dictionary<string, AbstractValue> values,
+        Dictionary<string, AbstractSequenceLengthBounds> sequenceLengths)
     {
         _values = values;
+        _sequenceLengths = sequenceLengths;
         _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
     }
 
@@ -747,18 +785,70 @@ internal sealed class AbstractState
     public void Set(string name, AbstractValue value)
     {
         _values[name] = value;
+        if (TryGetExactSequenceLength(value, out var length))
+        {
+            _sequenceLengths[name] = AbstractSequenceLengthBounds.Exact(length);
+        }
+        else
+        {
+            _sequenceLengths.Remove(name);
+        }
+
+        InvalidateCachedFacts();
+    }
+
+    public bool TryGetSequenceLength(string name, out AbstractSequenceLengthBounds bounds)
+        => _sequenceLengths.TryGetValue(name, out bounds);
+
+    public void SetSequenceLength(string name, AbstractSequenceLengthBounds bounds)
+    {
+        _sequenceLengths[name] = bounds;
         InvalidateCachedFacts();
     }
 
     public void Remove(string name)
     {
-        if (_values.Remove(name))
+        if (_values.Remove(name) | _sequenceLengths.Remove(name))
         {
             InvalidateCachedFacts();
         }
     }
 
-    public AbstractState Clone() => new(new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal));
+    public bool IsKnownMutableSequence(string name)
+        => _values.TryGetValue(name, out var value) &&
+           value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque;
+
+    public void InvalidateMutableSequenceFacts()
+    {
+        var changed = false;
+        foreach (var name in _values.Keys.ToArray())
+        {
+            var value = _values[name];
+            if (value.Kind == AbstractValueKind.List)
+            {
+                var items = (IReadOnlyList<AbstractValue>)value.Value;
+                var item = items.Count == 0
+                    ? AbstractValue.Unknown(value.Span)
+                    : items.Skip(1).Aggregate(items[0], (joined, next) => AbstractValue.Join(joined, next, value.Span));
+                _values[name] = AbstractValue.ListOf(item, value.Span);
+                changed = true;
+            }
+
+            if (value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque)
+            {
+                changed |= _sequenceLengths.Remove(name);
+            }
+        }
+
+        if (changed)
+        {
+            InvalidateCachedFacts();
+        }
+    }
+
+    public AbstractState Clone() => new(
+        new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
+        new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal));
 
     public void ReplaceWith(AbstractState other)
     {
@@ -766,6 +856,12 @@ internal sealed class AbstractState
         foreach (var (name, value) in other._values)
         {
             _values[name] = value;
+        }
+
+        _sequenceLengths.Clear();
+        foreach (var (name, bounds) in other._sequenceLengths)
+        {
+            _sequenceLengths[name] = bounds;
         }
 
         InvalidateCachedFacts();
@@ -781,6 +877,14 @@ internal sealed class AbstractState
             {
                 _values[name] = AbstractValue.Join(leftValue, rightValue);
             }
+        }
+
+        _sequenceLengths.Clear();
+        foreach (var name in left._sequenceLengths.Keys.Intersect(right._sequenceLengths.Keys, StringComparer.Ordinal))
+        {
+            _sequenceLengths[name] = AbstractSequenceLengthBounds.Union(
+                left._sequenceLengths[name],
+                right._sequenceLengths[name]);
         }
 
         InvalidateCachedFacts();
@@ -816,6 +920,26 @@ internal sealed class AbstractState
     {
         _version++;
         _abstractValueCache.Clear();
+    }
+
+    private static bool TryGetExactSequenceLength(AbstractValue value, out int length)
+    {
+        switch (value.Kind)
+        {
+            case AbstractValueKind.String:
+                length = ((string)value.Value).Length;
+                return true;
+            case AbstractValueKind.Bytes:
+                length = ((byte[])value.Value).Length;
+                return true;
+            case AbstractValueKind.List:
+            case AbstractValueKind.Tuple:
+                length = ((IReadOnlyList<AbstractValue>)value.Value).Count;
+                return true;
+            default:
+                length = 0;
+                return false;
+        }
     }
 
     private readonly record struct CachedAbstractValue(int Version, bool Success, AbstractValue Value);
