@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime.Text;
 
-internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
+internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 

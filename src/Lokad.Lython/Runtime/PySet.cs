@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
+internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
 {
     private HashSet<object> _items;
     private MemoryGovernor? _memoryGovernor;
@@ -59,6 +59,8 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     }
 
     public int Count => _items.Count;
+
+    public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 

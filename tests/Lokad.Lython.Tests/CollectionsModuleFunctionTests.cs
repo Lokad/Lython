@@ -118,6 +118,47 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_CounterLengthCountsStoredDistinctKeys()
+    {
+        var result = new LythonEngine().Run(
+            """
+from collections import ChainMap, Counter, defaultdict
+
+counter = Counter([1, 1, 2])
+lengths = [len(counter)]
+counter[3] = 0
+lengths.append(len(counter))
+counter.subtract([4, 4])
+lengths.append(len(counter))
+copy = counter.copy()
+del counter[2]
+lengths.append(len(counter))
+lengths.append(len(copy))
+counter.clear()
+lengths.append(len(counter))
+lengths.append(len(defaultdict(int, {"a": 1})))
+lengths.append(len(ChainMap({"a": 1}, {"a": 2, "b": 3})))
+return lengths
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            new object?[]
+            {
+                new System.Numerics.BigInteger(2),
+                new System.Numerics.BigInteger(3),
+                new System.Numerics.BigInteger(4),
+                new System.Numerics.BigInteger(3),
+                new System.Numerics.BigInteger(4),
+                System.Numerics.BigInteger.Zero,
+                System.Numerics.BigInteger.One,
+                new System.Numerics.BigInteger(2)
+            },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
     public void Collections_Deque_HasDirectCoverage()
     {
         var host = new MockLythonHost();

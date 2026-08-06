@@ -630,7 +630,7 @@ The initial subset must support:
 The `collections` module supports the common contained container helpers:
 
 - `defaultdict`, including mapping/keyword initialization and mutable `default_factory`
-- `Counter`, including `total()`, keyword updates/subtractions, positive-count arithmetic, unary `+`/`-`, `&`, `|`, and missing-count equality semantics
+- `Counter`, including stored-key `len`, `total()`, keyword updates/subtractions, positive-count arithmetic, unary `+`/`-`, `&`, `|`, and missing-count equality semantics
 - `deque`, including `maxlen`, bounded eviction, indexing, assignment, `index`, `insert`, `remove`, `rotate`, and copy/clear/reverse helpers
 - `namedtuple`, including generated callable tuple-like records, field attributes, `_fields`, `_field_defaults`, `_make`, `_asdict`, and `_replace`
 - insertion-ordered `OrderedDict` as a dict-shaped alias

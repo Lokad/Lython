@@ -254,7 +254,11 @@ internal static class StaticAbstractFacts
             AbstractValueKind.PkgutilModuleInfo or
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
-            AbstractValueKind.SetType;
+            AbstractValueKind.SetType or
+            AbstractValueKind.CollectionsDefaultDict or
+            AbstractValueKind.CollectionsCounter or
+            AbstractValueKind.CollectionsDeque or
+            AbstractValueKind.CollectionsChainMap;
 
     public static bool IsDefinitelyNonSubscriptable(AbstractValue value)
         => value.Kind is AbstractValueKind.Integer or

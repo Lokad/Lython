@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyIndexableValue, IPyGovernedValue
+internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyIndexableValue, IPyGovernedValue, IPySizedValue
 {
     private readonly byte[] _bytes;
     private readonly MemoryGovernor? _memoryGovernor;

@@ -122,7 +122,7 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `sys` is also contained: metadata, `path`, `modules`, builtin module names, `exc_info()`, `getsizeof(...)`, and std streams describe Lython and host-mediated handles rather than the host process or an ambient CPython installation.
 
-`collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `Counter` arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.
+`collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `len(Counter(...))` counts stored distinct keys, including zero and negative counts; arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.
 
 `copy` supports `copy`, `deepcopy(x, memo=None)`, `copy.replace(obj, **changes)`, `Error`/`error`, and a compatibility `dispatch_table`. Deep copies preserve cycles and explicit memo dictionaries, `replace` works for dataclasses, namedtuple-like values, and `__replace__` hooks, and pickle-style reduce/state protocols fail explicitly unless a direct copy hook is provided.
 

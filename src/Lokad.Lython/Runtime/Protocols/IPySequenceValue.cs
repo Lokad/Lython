@@ -1,6 +1,6 @@
 namespace Lokad.Lython.Runtime;
 
-internal interface IPySequenceValue : IReadOnlyList<object>
+internal interface IPySequenceValue : IReadOnlyList<object>, IPySizedValue
 {
     object GetItem(int index);
 

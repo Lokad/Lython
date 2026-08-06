@@ -1898,14 +1898,9 @@ internal sealed partial class LythonRuntime
 
         return arguments[0] switch
         {
-            PyString text => new BigInteger(text.Length),
-            PyBytes bytes => new BigInteger(bytes.Length),
+            IPySizedValue sized => new BigInteger(sized.Length),
             string text => new BigInteger(PyString.FromString(text).Length),
-            ReFindAllResult matches => new BigInteger(matches.Items.Count),
-            PySet set => new BigInteger(set.Count),
-            PyChainMap chainMap => new BigInteger(chainMap.Count),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
-            PyDict dict => new BigInteger(dict.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
             PyInstance instance => GetInstanceLength(instance, context, span),
             _ => throw new LythonRuntimeException("TypeError", "Object has no len().", span)

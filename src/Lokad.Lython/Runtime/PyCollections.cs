@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyDynamicAttributes
+internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyDynamicAttributes, IPySizedValue
 {
     private readonly PyDict _items;
 
@@ -30,6 +30,8 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
     public object? DefaultFactory { get; private set; }
 
     public int Count => _items.Count;
+
+    public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _items.OwnerMemoryGovernor;
 
@@ -128,7 +130,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
         };
 }
 
-internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
+internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
 {
     private readonly PyDict _items;
 
@@ -153,6 +155,8 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     }
 
     public int Count => _items.Count;
+
+    public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _items.OwnerMemoryGovernor;
 
@@ -830,7 +834,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     }
 }
 
-internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes
+internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPySizedValue
 {
     private readonly List<PyDict> _maps;
 
@@ -844,6 +848,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     }
 
     public int Count => BuildMergedKeys().Count;
+
+    public int Length => Count;
 
     public bool IsTruthy() => Count != 0;
 
