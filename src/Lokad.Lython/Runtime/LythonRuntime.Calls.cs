@@ -146,6 +146,7 @@ internal sealed partial class LythonRuntime
             ["UnicodeDecodeError"] = ["UnicodeError"],
             ["UnicodeTranslateError"] = ["UnicodeError"],
             ["JSONDecodeError"] = ["ValueError"],
+            ["BadGzipFile"] = ["OSError"],
             ["SubprocessError"] = ["Exception"],
             ["CalledProcessError"] = ["SubprocessError"],
         };

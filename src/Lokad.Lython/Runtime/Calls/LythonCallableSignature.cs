@@ -469,6 +469,9 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature HashlibNew = new("hashlib.new", ["name", "data", "usedforsecurity"], RequiredCount: 1, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature HashlibFileDigest = new("hashlib.file_digest", ["fileobj", "digest", "_bufsize"], RequiredCount: 2, MaxPositionalCount: 2);
 
+    public static readonly LythonCallableSignature GzipCompress = new("gzip.compress", ["data", "compresslevel", "mtime"], RequiredCount: 1, MaxPositionalCount: 2);
+    public static readonly LythonCallableSignature GzipDecompress = new("gzip.decompress", ["data"]);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);

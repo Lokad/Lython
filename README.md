@@ -100,6 +100,7 @@ The builtin module surface is explicitly allowlisted:
 - `fnmatch`
 - `functools`
 - `glob`
+- `gzip`
 - `hashlib`
 - `importlib`
 - `itertools`
@@ -127,6 +128,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `filecmp.cmp(...)` compares host-mediated files by contained metadata and, when required, bounded exact byte reads. Shallow comparison follows Python's type/size/mtime signature shortcut; exact comparison never exposes the file bytes to the script. Recursive `dircmp` remains explicitly unsupported.
 
 `hashlib` provides deterministic managed `md5`, `sha1`, `sha256`, `sha384`, and `sha512` objects for in-memory bytes, including incremental updates, copies, raw digests, and hexadecimal digests. Its algorithm inventories list only those managed implementations. `file_digest(...)` remains explicitly unsupported because Lython does not expose generic binary file handles.
+
+`gzip.compress(...)` and `gzip.decompress(...)` provide bounded in-memory gzip framing over bytes, including concatenated members and validated CRC/truncation failures. Compression emits a deterministic Python-compatible header; omitted or `None` `mtime` is normalized to zero rather than reading an ambient clock. This pure surface does not access paths.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 

@@ -301,7 +301,7 @@ The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `builtins`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `filecmp`, `fnmatch`,
-`functools`, `glob`, `hashlib`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
+`functools`, `glob`, `gzip`, `hashlib`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
 `pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
 when host-enabled, `sys`, `typing`, and related contained helpers.
 
@@ -898,6 +898,8 @@ Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as tex
 `filecmp.cmp(f1, f2, shallow=True)` compares strings and path-like values through the same contained host path model. A shallow comparison may return from equal file-type, size, and modification-time signatures. Otherwise it compares exact content using bounded host byte reads without exposing those bytes through a script file handle. Missing paths raise `FileNotFoundError`, non-file paths compare unequal, and hosts without the optional binary capability fail explicitly when exact reads are required. `clear_cache()` is a no-op because Lython does not cache comparison results; recursive `dircmp` remains unsupported.
 
 `hashlib` exposes managed, deterministic `md5`, `sha1`, `sha256`, `sha384`, and `sha512` implementations. Constructors and `new(...)` accept bytes-like input and the keyword-only `usedforsecurity` compatibility argument. Hash objects retain governed incremental input and expose `update`, `digest`, `hexdigest`, `copy`, `name`, `digest_size`, and `block_size`; copies independently retain and account for their state. `algorithms_available` and `algorithms_guaranteed` list exactly the supported managed algorithms rather than ambient cryptographic providers. `file_digest(...)` must fail explicitly while generic binary file handles remain outside the scripting surface.
+
+The pure `gzip.compress(data, compresslevel=9, *, mtime=...)` and `gzip.decompress(data)` helpers operate only on governed bytes. Compression accepts levels `-1` through `9`, emits deterministic RFC 1952 headers with OS byte `255`, and normalizes omitted or `None` modification times to zero rather than consulting a clock. Decompression accepts concatenated members, validates headers, trailers, CRCs, and uncompressed lengths, and checks the execution-memory budget while expanding so compressed inputs cannot bypass it. Invalid streams raise catchable `gzip.BadGzipFile`, an `OSError` subtype. These helpers perform no host I/O.
 
 `pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 
