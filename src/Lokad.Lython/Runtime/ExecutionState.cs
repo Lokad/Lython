@@ -2,6 +2,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class ExecutionState
 {
+    private Dictionary<string, object>? _builtinVariables;
+
     public static readonly HashSet<string> BuiltinNames =
     [
         "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",
@@ -74,6 +76,9 @@ internal sealed class ExecutionState
 
     public Dictionary<string, PyModule> ImportedModules { get; }
 
+    public Dictionary<string, object> BuiltinVariables
+        => _builtinVariables ?? throw new InvalidOperationException("Builtin variables are not initialized.");
+
     public HashSet<string> LoadingModules { get; }
 
     public Text.Utf8ValueBuilder StandardOutput { get; }
@@ -85,4 +90,14 @@ internal sealed class ExecutionState
     public HostTextOutputHandle Stdout { get; }
 
     public HostTextOutputHandle Stderr { get; }
+
+    public void InitializeBuiltinVariables(Dictionary<string, object> builtinVariables)
+    {
+        if (_builtinVariables is not null)
+        {
+            throw new InvalidOperationException("Builtin variables are already initialized.");
+        }
+
+        _builtinVariables = builtinVariables;
+    }
 }

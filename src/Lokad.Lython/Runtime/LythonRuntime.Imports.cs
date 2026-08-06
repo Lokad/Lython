@@ -9,6 +9,7 @@ internal sealed partial class LythonRuntime
     [
         "__future__",
         "argparse",
+        "builtins",
         "collections",
         "collections.abc",
         "copy",
@@ -496,6 +497,7 @@ internal sealed partial class LythonRuntime
         return moduleName switch
         {
             "__future__" => FutureModule.Instance,
+            "builtins" => new BuiltinsModule(context),
             "sys" => new SysModule(context),
             "argparse" => ArgparseModule.Instance,
             "dataclasses" => DataclassesModule.Instance,

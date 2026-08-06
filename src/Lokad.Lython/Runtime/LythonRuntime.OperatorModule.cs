@@ -21,8 +21,8 @@ internal sealed partial class LythonRuntime
             {
                 "truth" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorTruth, (arguments, span, _) => Unary(arguments, span, static (value, _) => IsTruthy(value))),
                 "not_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
-                "is_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => ReferenceEquals(left, right))),
-                "is_not" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !ReferenceEquals(left, right))),
+                "is_" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreIdentical(left, right))),
+                "is_not" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
                 "abs" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, _) => Unary(arguments, span, EvaluateAbsolute)),
                 "neg" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryMinus)),
                 "pos" => new BuiltinCallable(LythonKnownCallableSignatures.OperatorPos, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryPlus)),

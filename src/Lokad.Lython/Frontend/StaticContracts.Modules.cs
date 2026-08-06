@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
@@ -5,6 +7,7 @@ internal static partial class StaticContracts
     private static readonly Dictionary<string, HashSet<string>> ModuleMembers = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
+        ["builtins"] = BuiltinModuleMembers(),
         ["sys"] = Members(
             "argv",
             "stdin",
@@ -650,6 +653,10 @@ internal static partial class StaticContracts
         value = (moduleName, memberName) switch
         {
             ("__future__", "annotations") => AbstractValue.None(span),
+            ("builtins", "__name__") => AbstractValue.String("builtins", span),
+            ("builtins", "__debug__") or ("builtins", "True") => AbstractValue.Boolean(true, span),
+            ("builtins", "False") => AbstractValue.Boolean(false, span),
+            ("builtins", "None") => AbstractValue.None(span),
             ("typing", "TYPE_CHECKING") => AbstractValue.Boolean(false, span),
             ("sys", "argv") => AbstractValue.ListOf(AbstractValue.StringType(span), span),
             ("sys", "stdin") => AbstractValue.TextFileHandle(AbstractTextFileMode.Read, span),
@@ -713,4 +720,9 @@ internal static partial class StaticContracts
 
     private static HashSet<string> Members(params string[] names)
         => new(names, StringComparer.Ordinal);
+
+    private static HashSet<string> BuiltinModuleMembers()
+        => new(
+            ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"]),
+            StringComparer.Ordinal);
 }

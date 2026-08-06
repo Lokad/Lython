@@ -299,7 +299,7 @@ The initial subset does not support:
 
 The runtime supports an explicit allowlist of built-in modules and host-allowed
 local script modules. The built-in allowlist includes the standard-library
-subsets specified in this document, including `argparse`, `collections`,
+subsets specified in this document, including `argparse`, `builtins`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `fnmatch`,
 `functools`, `glob`, `itertools`, `json`, `math`, `operator`, `os`,
 `pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
@@ -312,6 +312,15 @@ binds the resolved leaf. Resolving a dotted name loads and caches each allowed
 ancestor, then attaches each child module to its parent package. The runtime
 must reject imports outside the allowlist and local imports not explicitly
 permitted by the embedder.
+
+The `builtins` module exposes exactly the builtin functions, types, constants,
+and exception classes installed by Lython. Module attributes and unqualified
+builtin names must share object identity across the main script and allowed
+local modules. `builtins.__name__` is `"builtins"`; per-script metadata such as
+`__file__` is not a builtin-module attribute. Unsupported CPython builtins are
+absent rather than present as misleading placeholders. Exception compatibility
+aliases such as `IOError` and `EnvironmentError` refer to the same supported
+`OSError` type object.
 
 The `datetime` subset is fixed-offset and host-mediated. `date`, `time`,
 `datetime`, `timedelta`, `timezone`, `tzinfo`, ISO parsing, formatting, and

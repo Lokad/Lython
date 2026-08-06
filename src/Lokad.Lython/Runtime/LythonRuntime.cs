@@ -16,6 +16,9 @@ internal sealed partial class LythonRuntime
 {
     internal static object RuntimeValue(object? value) => value ?? PyNone.Instance;
 
+    private static bool AreIdentical(object left, object right)
+        => ReferenceEquals(left, right) || left is bool leftBoolean && right is bool rightBoolean && leftBoolean == rightBoolean;
+
     internal static PyString ReadGovernedHostText(
         string path,
         ExecutionContext context,
@@ -480,8 +483,8 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, binary.Span, static value => value <= 0),
             BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, binary.Span, static value => value > 0),
             BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, binary.Span, static value => value >= 0),
-            BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
-            BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
+            BinaryOperatorSyntax.Is => AreIdentical(left, right),
+            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, context, binary.Span),
             BinaryOperatorSyntax.NotIn => !Contains(right, left, context, binary.Span),
             BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, binary.Span),
@@ -610,8 +613,8 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, span, static value => value <= 0),
             BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, span, static value => value > 0),
             BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, span, static value => value >= 0),
-            BinaryOperatorSyntax.Is => ReferenceEquals(left, right),
-            BinaryOperatorSyntax.IsNot => !ReferenceEquals(left, right),
+            BinaryOperatorSyntax.Is => AreIdentical(left, right),
+            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, span),
             BinaryOperatorSyntax.NotIn => !Contains(right, left, span),
             BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, span),
@@ -3650,7 +3653,9 @@ internal sealed partial class LythonRuntime
             Services = new ExecutionServices(new ExecutionState(host, options));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
-            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath, "__main__"));
+            var builtinVariables = CreateBuiltinVariables();
+            State.InitializeBuiltinVariables(builtinVariables);
+            Frame = new ExecutionFrame(parent: null, CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -3699,7 +3704,9 @@ internal sealed partial class LythonRuntime
             _ = moduleScope;
             Services = template.Services;
             SourcePath = sourcePath;
-            Frame = new ExecutionFrame(parent: null, CreateBuiltinVariables(sourcePath, moduleName ?? "__main__"));
+            Frame = new ExecutionFrame(
+                parent: null,
+                CreateModuleVariables(State.BuiltinVariables, sourcePath, moduleName ?? "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -4042,7 +4049,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private Dictionary<string, object> CreateBuiltinVariables(string? sourcePath, string moduleName)
+        private Dictionary<string, object> CreateBuiltinVariables()
         {
             var objectMembers = new Dictionary<string, object>(StringComparer.Ordinal)
             {
@@ -4058,9 +4065,10 @@ internal sealed partial class LythonRuntime
             objectType.SetMetaType(typeType);
             typeType.SetMetaType(typeType);
 
+            var osErrorType = new ExceptionTypeValue("OSError");
+
             var builtins = new Dictionary<string, object>(StringComparer.Ordinal)
             {
-                ["__name__"] = PyString.FromString(moduleName),
                 ["object"] = objectType,
                 ["type"] = typeType,
                 ["open"] = new OpenCallable(),
@@ -4118,9 +4126,9 @@ internal sealed partial class LythonRuntime
                 ["NotADirectoryError"] = new ExceptionTypeValue("NotADirectoryError"),
                 ["PermissionError"] = new ExceptionTypeValue("PermissionError"),
                 ["TimeoutError"] = new ExceptionTypeValue("TimeoutError"),
-                ["IOError"] = new ExceptionTypeValue("IOError"),
-                ["EnvironmentError"] = new ExceptionTypeValue("EnvironmentError"),
-                ["OSError"] = new ExceptionTypeValue("OSError"),
+                ["IOError"] = osErrorType,
+                ["EnvironmentError"] = osErrorType,
+                ["OSError"] = osErrorType,
                 ["StopIteration"] = new ExceptionTypeValue("StopIteration"),
                 ["ZeroDivisionError"] = new ExceptionTypeValue("ZeroDivisionError"),
                 ["NotImplementedError"] = new ExceptionTypeValue("NotImplementedError"),
@@ -4155,12 +4163,25 @@ internal sealed partial class LythonRuntime
                 ["set"] = new BuiltinCallable(new LythonCallableSignature("set", ["iterable"], RequiredCount: 0, PositionalOnlyCount: 1), Set, SetAsync),
             };
 
+            return builtins;
+        }
+
+        private static Dictionary<string, object> CreateModuleVariables(
+            Dictionary<string, object> builtinVariables,
+            string? sourcePath,
+            string moduleName)
+        {
+            var variables = new Dictionary<string, object>(builtinVariables, StringComparer.Ordinal)
+            {
+                ["__name__"] = PyString.FromString(moduleName)
+            };
+
             if (!string.IsNullOrWhiteSpace(sourcePath))
             {
-                builtins["__file__"] = PyString.FromString(PathOps.Normalize(sourcePath));
+                variables["__file__"] = PyString.FromString(PathOps.Normalize(sourcePath));
             }
 
-            return builtins;
+            return variables;
         }
 
         private static object NormalizeRuntimeValue(object? value, ExecutionContext context)

@@ -88,6 +88,7 @@ Dotted imports use Python's package binding rules: `import os.path` binds `os`, 
 The builtin module surface is explicitly allowlisted:
 
 - `argparse`
+- `builtins`
 - `collections`
 - `copy`
 - `csv`
@@ -117,6 +118,8 @@ The builtin module surface is explicitly allowlisted:
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
+
+`builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 
 `datetime` covers the common `date`, `time`, `datetime`, `timedelta`, `timezone`, and `tzinfo` surface with CPython-shaped formatting and ISO parsing for fixed-offset timezones. Host-clock APIs such as `today()`, `now()`, `fromtimestamp()`, `timestamp()` for naive values, and `astimezone()` are mediated through `ILythonHost`; Lython does not expose an ambient IANA timezone database.
 
