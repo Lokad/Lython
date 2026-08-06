@@ -473,6 +473,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature GzipDecompress = new("gzip.decompress", ["data"]);
     public static readonly LythonCallableSignature GzipOpen = new("gzip.open", ["filename", "mode", "compresslevel", "encoding", "errors", "newline"], RequiredCount: 1);
 
+    public static readonly LythonCallableSignature ShlexQuote = new("shlex.quote", ["s"]);
+    public static readonly LythonCallableSignature ShlexJoin = new("shlex.join", ["split_command"]);
+    public static readonly LythonCallableSignature ShlexSplit = new("shlex.split", ["s", "comments", "posix"], RequiredCount: 1);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);

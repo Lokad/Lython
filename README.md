@@ -113,6 +113,7 @@ The builtin module surface is explicitly allowlisted:
 - `pkgutil`
 - `random`
 - `re`
+- `shlex`
 - `shutil`
 - `statistics`
 - `subprocess` when the host provides a subprocess capability
@@ -130,6 +131,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `hashlib` provides deterministic managed `md5`, `sha1`, `sha256`, `sha384`, and `sha512` objects for in-memory bytes, including incremental updates, copies, raw digests, and hexadecimal digests. Its algorithm inventories list only those managed implementations. `file_digest(...)` remains explicitly unsupported because Lython does not expose generic binary file handles.
 
 `gzip.compress(...)` and `gzip.decompress(...)` provide bounded in-memory gzip framing over bytes, including concatenated members and validated CRC/truncation failures. Compression emits a deterministic Python-compatible header; omitted or `None` `mtime` is normalized to zero rather than reading an ambient clock. `gzip.open(...)` adds host-mediated sequential `r`, `w`, and `a` handles in binary or text mode, with the same contained codecs and newline behavior as text `open`. Gzip paths accept strings and path-like values, while random access, arbitrary file objects, and generic binary `open` remain explicitly unsupported.
+
+`shlex.quote(...)`, `shlex.join(...)`, and `shlex.split(...)` provide pure POSIX-shell spelling and tokenization helpers. They support Python-compatible whitespace, quotes, escapes, comments, Unicode text, and the legacy `posix=False` split call shape, but never invoke a shell or infer host-platform command syntax.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 

@@ -302,7 +302,7 @@ local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `builtins`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `filecmp`, `fnmatch`,
 `functools`, `glob`, `gzip`, `hashlib`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
-`pathlib`, `pkgutil`, `random`, `re`, `shutil`, `statistics`, `subprocess`
+`pathlib`, `pkgutil`, `random`, `re`, `shlex`, `shutil`, `statistics`, `subprocess`
 when host-enabled, `sys`, `typing`, and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
@@ -902,6 +902,8 @@ Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as tex
 The pure `gzip.compress(data, compresslevel=9, *, mtime=...)` and `gzip.decompress(data)` helpers operate only on governed bytes. Compression accepts levels `-1` through `9`, emits deterministic RFC 1952 headers with OS byte `255`, and normalizes omitted or `None` modification times to zero rather than consulting a clock. Decompression accepts concatenated members, validates headers, trailers, CRCs, and uncompressed lengths, and checks the execution-memory budget while expanding so compressed inputs cannot bypass it. Invalid streams raise catchable `gzip.BadGzipFile`, an `OSError` subtype. These helpers perform no host I/O.
 
 `gzip.open(filename, mode="rb", compresslevel=9, encoding=None, errors=None, newline=None)` uses the optional bounded host binary-file capability and accepts contained strings and path-like values. It exposes sequential read, write, and append handles in binary or text mode, including context management, iteration, flushing, synchronous and asynchronous host parity, the shared contained codec set, and Python newline translation. Reads validate all gzip members before exposing decompressed data. Writes validate and compress the complete governed output before replacing the host file, so a script-side encoding or type failure cannot partially update it; append preserves the existing compressed members and adds a new member. Missing binary host capability fails explicitly. Random access, arbitrary gzip file objects or descriptors, exclusive creation, and update modes remain unsupported rather than escaping host mediation.
+
+The pure `shlex` subset exposes `quote(s)`, `join(split_command)`, and `split(s, comments=False, posix=True)`. Quoting uses Python's portable POSIX-shell spelling, including empty strings and embedded single quotes; joining applies that spelling to each string in the iterable. Splitting follows Python's ASCII shell-whitespace, quote, backslash, optional `#` comment, empty quoted-token, Unicode-text, and unterminated-token behavior. The legacy `posix=False` call shape is supported. These helpers only transform text: they do not execute commands, consult a host shell, or select platform-specific quoting rules.
 
 `pathlib` follows Lython's normalized `/`-separated path model. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` produce the same contained path values. `WindowsPath` and `PureWindowsPath` must fail explicitly because no Windows-specific path semantics are exposed through the language surface.
 
