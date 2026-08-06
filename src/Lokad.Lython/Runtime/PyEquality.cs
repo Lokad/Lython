@@ -159,6 +159,9 @@ internal static class PyEquality
             case PyTypingNamedTupleObject typingNamedTuple:
                 sequence = typingNamedTuple;
                 return true;
+            case LythonRuntime.TimeStructTimeValue structTime:
+                sequence = structTime;
+                return true;
             default:
                 sequence = Array.Empty<object>();
                 return false;

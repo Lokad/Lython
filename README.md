@@ -118,6 +118,7 @@ The builtin module surface is explicitly allowlisted:
 - `statistics`
 - `subprocess` when the host provides a subprocess capability
 - `sys`
+- `time`
 - `typing`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
@@ -133,6 +134,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `gzip.compress(...)` and `gzip.decompress(...)` provide bounded in-memory gzip framing over bytes, including concatenated members and validated CRC/truncation failures. Compression emits a deterministic Python-compatible header; omitted or `None` `mtime` is normalized to zero rather than reading an ambient clock. `gzip.open(...)` adds host-mediated sequential `r`, `w`, and `a` handles in binary or text mode, with the same contained codecs and newline behavior as text `open`. Gzip paths accept strings and path-like values, while random access, arbitrary file objects, and generic binary `open` remain explicitly unsupported.
 
 `shlex.quote(...)`, `shlex.join(...)`, and `shlex.split(...)` provide pure POSIX-shell spelling and tokenization helpers. The iterable `shlex.shlex(...)` tokenizer accepts strings and already-authorized readable text handles, with Python-compatible token pushback, line tracking, POSIX/non-POSIX behavior, punctuation grouping, and mutable character classes. Automatic filename-based source inclusion is explicitly unsupported; `push_source(...)` accepts only a supplied string or readable text handle. None of these helpers invokes a shell or infers host-platform command syntax.
+
+`time.time()`, `time.time_ns()`, calendar conversions, formatting, and parsing use the host's explicit UTC and local wall-clock values. `time.struct_time` is tuple-compatible and exposes Python's named calendar, weekday, year-day, DST, zone, and offset fields. The local timezone model is the host's current fixed offset, reported through `timezone`, `altzone`, `daylight`, and `tzname`; Lython does not consult an ambient OS timezone database, and `tzset()` is explicitly unsupported.
 
 `builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
 

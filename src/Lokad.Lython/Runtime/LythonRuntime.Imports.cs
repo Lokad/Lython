@@ -59,6 +59,7 @@ internal sealed partial class LythonRuntime
         "shutil",
         "statistics",
         "sys",
+        "time",
         "typing",
     ];
 
@@ -524,6 +525,7 @@ internal sealed partial class LythonRuntime
             "math" => MathModule.Instance,
             "datetime" => DatetimeModule.Instance,
             "statistics" => StatisticsModule.Instance,
+            "time" => TimeModule.Instance,
             "random" => new RandomModule(context.State.RandomState),
             "copy" => CopyModule.Instance,
             "operator" => OperatorModule.Instance,

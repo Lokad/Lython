@@ -20,6 +20,7 @@ internal static class PublicProjection
             PyTimezone timezone => ProjectTimezone(timezone),
             PyList list => ProjectList(list, budget),
             PyTuple tuple => ProjectTuple(tuple, budget),
+            LythonRuntime.TimeStructTimeValue structTime => ProjectStructTime(structTime, budget),
             PyDict dict => ProjectDictionary(dict, budget),
             PySet set => ProjectSet(set, budget),
             LythonRuntime.ReFindAllResult matches => ProjectFindAllResult(matches, budget),
@@ -116,6 +117,12 @@ internal static class PublicProjection
         }
 
         return normalized;
+    }
+
+    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget = null)
+    {
+        budget?.Reserve(48L + (16L * value.Count));
+        return value.Select(item => NormalizeValue(item, budget)).ToArray();
     }
 
     public static HashSet<object?> ProjectSet(PySet set, ProjectionBudget? budget = null)

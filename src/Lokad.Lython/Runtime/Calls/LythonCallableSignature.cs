@@ -478,6 +478,18 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature ShlexSplit = new("shlex.split", ["s", "comments", "posix"], RequiredCount: 1);
     public static readonly LythonCallableSignature ShlexClass = new("shlex.shlex", ["instream", "infile", "posix", "punctuation_chars"], RequiredCount: 0);
 
+    public static readonly LythonCallableSignature TimeTime = new("time.time", []);
+    public static readonly LythonCallableSignature TimeTimeNs = new("time.time_ns", []);
+    public static readonly LythonCallableSignature TimeGmtime = new("time.gmtime", ["secs"], RequiredCount: 0);
+    public static readonly LythonCallableSignature TimeLocaltime = new("time.localtime", ["secs"], RequiredCount: 0);
+    public static readonly LythonCallableSignature TimeCtime = new("time.ctime", ["secs"], RequiredCount: 0);
+    public static readonly LythonCallableSignature TimeMktime = new("time.mktime", ["t"]);
+    public static readonly LythonCallableSignature TimeAsctime = new("time.asctime", ["t"], RequiredCount: 0);
+    public static readonly LythonCallableSignature TimeStrftime = new("time.strftime", ["format", "t"], RequiredCount: 1);
+    public static readonly LythonCallableSignature TimeStrptime = new("time.strptime", ["string", "format"], RequiredCount: 1);
+    public static readonly LythonCallableSignature TimeStructTime = new("time.struct_time", ["sequence"], PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeTzset = new("time.tzset", []);
+
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsRepeat = new("itertools.repeat", ["object", "times"], RequiredCount: 1);
