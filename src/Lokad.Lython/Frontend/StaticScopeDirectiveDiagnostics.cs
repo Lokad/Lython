@@ -366,7 +366,10 @@ internal static class StaticScopeDirectiveDiagnostics
                 foreach (var item in dict.Items)
                 {
                     CollectSeenNames(item.Key, names);
-                    CollectSeenNames(item.Value, names);
+                    if (!item.IsUnpacking)
+                    {
+                        CollectSeenNames(item.Value, names);
+                    }
                 }
                 break;
             case ParenthesizedExpressionSyntax parenthesized:

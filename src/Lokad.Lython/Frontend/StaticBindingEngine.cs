@@ -1022,7 +1022,10 @@ internal static class StaticBindingEngine
                 foreach (var item in dict.Items)
                 {
                     CollectMutatedReceiverNames(item.Key, bindings, names);
-                    CollectMutatedReceiverNames(item.Value, bindings, names);
+                    if (!item.IsUnpacking)
+                    {
+                        CollectMutatedReceiverNames(item.Value, bindings, names);
+                    }
                 }
                 break;
 

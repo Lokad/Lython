@@ -139,13 +139,13 @@ internal static class StaticAbstractValueResolver
                 value = AbstractValue.Path(call.Span);
                 return true;
             case ListLiteralExpressionSyntax list:
-                value = ResolveAbstractValueList(list.Items, list.Span, AbstractValueKind.List, bindings);
+                value = ResolveAbstractValueList(list.Items, list.UnpackingFlags, list.Span, AbstractValueKind.List, bindings);
                 return true;
             case TupleLiteralExpressionSyntax tuple:
-                value = ResolveAbstractValueList(tuple.Items, tuple.Span, AbstractValueKind.Tuple, bindings);
+                value = ResolveAbstractValueList(tuple.Items, tuple.UnpackingFlags, tuple.Span, AbstractValueKind.Tuple, bindings);
                 return true;
             case SetLiteralExpressionSyntax set:
-                value = ResolveAbstractValueList(set.Items, set.Span, AbstractValueKind.Set, bindings);
+                value = ResolveAbstractValueList(set.Items, set.UnpackingFlags, set.Span, AbstractValueKind.Set, bindings);
                 return true;
             case DictLiteralExpressionSyntax dict:
                 value = ResolveAbstractDictValue(dict, bindings);
@@ -223,14 +223,42 @@ internal static class StaticAbstractValueResolver
 
     private static AbstractValue ResolveAbstractValueList(
         IReadOnlyList<ExpressionSyntax> expressions,
+        IReadOnlyList<bool> unpackingFlags,
         LythonSourceSpan span,
         AbstractValueKind kind,
         AbstractState bindings)
     {
         var items = new List<AbstractValue>(expressions.Count);
-        foreach (var expression in expressions)
+        for (var i = 0; i < expressions.Count; i++)
         {
-            items.Add(ResolveOrUnknown(expression, bindings));
+            var resolved = ResolveOrUnknown(expressions[i], bindings);
+            if (!unpackingFlags[i])
+            {
+                items.Add(resolved);
+                continue;
+            }
+
+            switch (resolved.Kind)
+            {
+                case AbstractValueKind.List:
+                case AbstractValueKind.Tuple:
+                case AbstractValueKind.Set:
+                    items.AddRange((IReadOnlyList<AbstractValue>)resolved.Value);
+                    break;
+                case AbstractValueKind.String:
+                    items.AddRange(((string)resolved.Value).Select(character =>
+                        AbstractValue.String(character.ToString(), expressions[i].Span)));
+                    break;
+                case AbstractValueKind.Bytes:
+                    items.AddRange(((byte[])resolved.Value).Select(value =>
+                        AbstractValue.Integer(value.ToString(System.Globalization.CultureInfo.InvariantCulture), expressions[i].Span)));
+                    break;
+                case AbstractValueKind.Dict:
+                    items.AddRange(((IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)resolved.Value).Select(pair => pair.Key));
+                    break;
+                default:
+                    return AbstractValue.Unknown(span);
+            }
         }
 
         return new AbstractValue(kind, items, span);
@@ -241,6 +269,18 @@ internal static class StaticAbstractValueResolver
         var pairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(dict.Items.Count);
         foreach (var item in dict.Items)
         {
+            if (item is DictionaryUnpackingItemSyntax unpacking)
+            {
+                var mapping = ResolveOrUnknown(unpacking.Mapping, bindings);
+                if (mapping.Kind != AbstractValueKind.Dict)
+                {
+                    return AbstractValue.Unknown(dict.Span);
+                }
+
+                pairs.AddRange((IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)mapping.Value);
+                continue;
+            }
+
             pairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
                 ResolveOrUnknown(item.Key, bindings),
                 ResolveOrUnknown(item.Value, bindings)));

@@ -385,6 +385,7 @@ The initial subset must support exactly the following literal forms:
 - `None`
 - list literals
 - dictionary literals
+- set literals
 - tuple literals
 
 Tuple expression lists may omit parentheses in assignment values, `return`
@@ -392,10 +393,17 @@ statements, expression statements, and `for` iterable expressions. Their items
 are evaluated from left to right, a trailing comma produces a one-item tuple,
 and chained assignment evaluates and shares its final tuple value once.
 
+List, tuple, and set displays support iterable unpacking with `*`; dictionary
+displays support mapping unpacking with `**`. Display operands and ordinary
+entries are evaluated exactly once from left to right. Later dictionary entries
+replace an earlier value for an equal key without changing that key's insertion
+position. Expanded results remain subject to execution memory and collection
+limits. A non-iterable `*` operand, non-mapping `**` operand, or unhashable
+dictionary/set key raises `TypeError`.
+
 The initial subset does not support:
 
 - bytes literals
-- set literals
 - formatted string literals
 - complex-number literals
 

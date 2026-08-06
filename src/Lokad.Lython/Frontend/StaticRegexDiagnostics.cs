@@ -356,7 +356,10 @@ internal static class StaticRegexDiagnostics
                 foreach (var item in dict.Items)
                 {
                     AnalyzeRegexStaticExpression(item.Key, diagnostics, stringBindings, localeFlagBindings);
-                    AnalyzeRegexStaticExpression(item.Value, diagnostics, stringBindings, localeFlagBindings);
+                    if (!item.IsUnpacking)
+                    {
+                        AnalyzeRegexStaticExpression(item.Value, diagnostics, stringBindings, localeFlagBindings);
+                    }
                 }
                 break;
 

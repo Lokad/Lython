@@ -231,9 +231,17 @@ internal sealed class LoweredScript
                 comprehension.Clauses.Select(LowerComprehensionClause).ToArray()),
             DictLiteralExpressionSyntax dict => new LoweredDictLiteralExpression(
                 dict,
-                dict.Items.Select(item => new KeyValuePair<LoweredExpression, LoweredExpression>(
-                    LowerExpression(item.Key),
-                    LowerExpression(item.Value))).ToArray()),
+                dict.Items.Select(item => item switch
+                {
+                    DictionaryKeyValueItemSyntax pair => (LoweredDictionaryDisplayItem)new LoweredDictionaryKeyValueItem(
+                        pair,
+                        LowerExpression(pair.Key),
+                        LowerExpression(pair.Value)),
+                    DictionaryUnpackingItemSyntax unpacking => new LoweredDictionaryUnpackingItem(
+                        unpacking,
+                        LowerExpression(unpacking.Mapping)),
+                    _ => throw new InvalidOperationException($"Unknown dictionary display item: {item.GetType().Name}")
+                }).ToArray()),
             DictComprehensionExpressionSyntax comprehension => new LoweredDictComprehensionExpression(
                 comprehension,
                 LowerExpression(comprehension.KeyExpression),

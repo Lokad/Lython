@@ -189,7 +189,10 @@ internal static class StaticHostRequirementDiagnostics
                 foreach (var item in dict.Items)
                 {
                     AnalyzeHostExecutableExpression(item.Key, context, host);
-                    AnalyzeHostExecutableExpression(item.Value, context, host);
+                    if (!item.IsUnpacking)
+                    {
+                        AnalyzeHostExecutableExpression(item.Value, context, host);
+                    }
                 }
                 break;
 

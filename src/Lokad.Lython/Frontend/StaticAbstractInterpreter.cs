@@ -364,7 +364,10 @@ internal static class StaticAbstractInterpreter
                 foreach (var item in dict.Items)
                 {
                     AnalyzeExpression(item.Key, diagnostics, bindings);
-                    AnalyzeExpression(item.Value, diagnostics, bindings);
+                    if (!item.IsUnpacking)
+                    {
+                        AnalyzeExpression(item.Value, diagnostics, bindings);
+                    }
                 }
                 break;
 

@@ -645,12 +645,7 @@ internal sealed partial class LythonRuntime
                 LoweredListComprehensionExpression comprehension => await EvaluateLoweredListComprehensionAsync(comprehension, context).ConfigureAwait(false),
                 LoweredGeneratorExpression generator => new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span),
                 LoweredTupleLiteralExpression tuple => ValidateLoweredCollection(
-                    await CreateTupleAsync(
-                            tuple.Items.Count,
-                            async i => RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i], context).ConfigureAwait(false)),
-                            context,
-                            tuple.Span)
-                        .ConfigureAwait(false),
+                    await CreateLoweredTupleLiteralAsync(tuple, context).ConfigureAwait(false),
                     context,
                     tuple.Span),
                 LoweredSetLiteralExpression set => await EvaluateLoweredSetLiteralAsync(set, context).ConfigureAwait(false),
@@ -689,6 +684,29 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<PyList> CreateLoweredListLiteralAsync(LoweredListLiteralExpression list, ExecutionContext context)
     {
+        if (list.List.UnpackingFlags.Any(flag => flag))
+        {
+            var expanded = new PyList([], context.MemoryGovernor, list.Span);
+            for (var i = 0; i < list.Items.Count; i++)
+            {
+                var value = RuntimeValue(await EvaluateLoweredExpressionAsync(list.Items[i], context).ConfigureAwait(false));
+                if (!list.List.UnpackingFlags[i])
+                {
+                    expanded.Add(value);
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                    continue;
+                }
+
+                await foreach (var item in ToSequenceAsync(value, list.Items[i].Span).ConfigureAwait(false))
+                {
+                    expanded.Add(RuntimeValue(item));
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                }
+            }
+
+            return expanded;
+        }
+
         context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
         var items = new object[list.Items.Count];
         for (var i = 0; i < list.Items.Count; i++)
@@ -699,29 +717,88 @@ internal sealed partial class LythonRuntime
         return new PyList(items, context.MemoryGovernor, list.Span);
     }
 
+    private static async ValueTask<PyTuple> CreateLoweredTupleLiteralAsync(
+        LoweredTupleLiteralExpression tuple,
+        ExecutionContext context)
+    {
+        if (!tuple.Tuple.UnpackingFlags.Any(flag => flag))
+        {
+            return await CreateTupleAsync(
+                    tuple.Items.Count,
+                    async i => RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i], context).ConfigureAwait(false)),
+                    context,
+                    tuple.Span)
+                .ConfigureAwait(false);
+        }
+
+        var expanded = new List<object>();
+        for (var i = 0; i < tuple.Items.Count; i++)
+        {
+            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i], context).ConfigureAwait(false));
+            if (!tuple.Tuple.UnpackingFlags[i])
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(value);
+                continue;
+            }
+
+            await foreach (var item in ToSequenceAsync(value, tuple.Items[i].Span).ConfigureAwait(false))
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(RuntimeValue(item));
+            }
+        }
+
+        return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+    }
+
     private static async ValueTask<object> EvaluateLoweredDictLiteralAsync(LoweredDictLiteralExpression dict, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, dict.Span);
         foreach (var item in dict.Items)
         {
-            var key = ValidateDictionaryKey(await EvaluateLoweredExpressionAsync(item.Key, context).ConfigureAwait(false), item.Key.Span, context.MemoryGovernor);
-            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(item.Value, context).ConfigureAwait(false));
+            if (item is LoweredDictionaryUnpackingItem unpacking)
+            {
+                var mapping = RuntimeValue(await EvaluateLoweredExpressionAsync(unpacking.Mapping, context).ConfigureAwait(false));
+                foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
+                {
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    context.ObserveCollectionCount(result.Count, dict.Span);
+                }
+
+                continue;
+            }
+
+            var keyValue = (LoweredDictionaryKeyValueItem)item;
+            var key = ValidateDictionaryKey(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false), keyValue.Key.Span, context.MemoryGovernor);
+            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Value, context).ConfigureAwait(false));
             result.SetItem(key, value);
+            context.ObserveCollectionCount(result.Count, dict.Span);
         }
 
-        context.ObserveCollectionCount(result.Count, dict.Span);
         return result;
     }
 
     private static async ValueTask<object> EvaluateLoweredSetLiteralAsync(LoweredSetLiteralExpression set, ExecutionContext context)
     {
         var items = new PySet(context.MemoryGovernor, set.Span);
-        foreach (var item in set.Items)
+        for (var i = 0; i < set.Items.Count; i++)
         {
-            items.Add(ValidateSetItem(await EvaluateLoweredExpressionAsync(item, context).ConfigureAwait(false), item.Span, context.MemoryGovernor));
+            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i], context).ConfigureAwait(false));
+            if (!set.Set.UnpackingFlags[i])
+            {
+                items.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(items.Count, set.Span);
+                continue;
+            }
+
+            await foreach (var item in ToSequenceAsync(value, set.Items[i].Span).ConfigureAwait(false))
+            {
+                items.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(items.Count, set.Span);
+            }
         }
 
-        context.ObserveCollectionCount(items.Count, set.Span);
         return items;
     }
 

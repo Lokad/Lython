@@ -446,7 +446,10 @@ internal static class ScopeDirectiveFactsCollector
                 foreach (var item in dict.Items)
                 {
                     CollectExpressionBindings(item.Key, names);
-                    CollectExpressionBindings(item.Value, names);
+                    if (!item.IsUnpacking)
+                    {
+                        CollectExpressionBindings(item.Value, names);
+                    }
                 }
                 break;
         }

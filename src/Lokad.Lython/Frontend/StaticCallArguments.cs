@@ -210,6 +210,11 @@ internal static class StaticCallArguments
         {
             foreach (var item in dict.Items)
             {
+                if (item.IsUnpacking)
+                {
+                    return false;
+                }
+
                 if (!StaticAbstractValueResolver.TryResolveKnownString(item.Key, bindings, out var key))
                 {
                     return false;

@@ -125,9 +125,24 @@ internal sealed record LoweredGeneratorExpression(
     public override ExpressionSyntax Syntax => Generator;
 }
 
+internal abstract record LoweredDictionaryDisplayItem(
+    DictionaryDisplayItemSyntax Syntax,
+    LoweredExpression Key,
+    LoweredExpression Value,
+    bool IsUnpacking);
+
+internal sealed record LoweredDictionaryKeyValueItem(
+    DictionaryKeyValueItemSyntax Item,
+    LoweredExpression Key,
+    LoweredExpression Value) : LoweredDictionaryDisplayItem(Item, Key, Value, false);
+
+internal sealed record LoweredDictionaryUnpackingItem(
+    DictionaryUnpackingItemSyntax Item,
+    LoweredExpression Mapping) : LoweredDictionaryDisplayItem(Item, Mapping, Mapping, true);
+
 internal sealed record LoweredDictLiteralExpression(
     DictLiteralExpressionSyntax Dict,
-    IReadOnlyList<KeyValuePair<LoweredExpression, LoweredExpression>> Items) : LoweredExpression
+    IReadOnlyList<LoweredDictionaryDisplayItem> Items) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Dict;
 }

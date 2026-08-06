@@ -381,7 +381,10 @@ internal static class StaticNameBindingDiagnostics
                 foreach (var item in dict.Items)
                 {
                     AnalyzeExpression(item.Key, context, localNames, maybeAssigned);
-                    AnalyzeExpression(item.Value, context, localNames, maybeAssigned);
+                    if (!item.IsUnpacking)
+                    {
+                        AnalyzeExpression(item.Value, context, localNames, maybeAssigned);
+                    }
                 }
                 break;
 
@@ -753,7 +756,10 @@ internal static class StaticNameBindingDiagnostics
                 foreach (var item in dict.Items)
                 {
                     CollectLocalAssignments(item.Key, localNames);
-                    CollectLocalAssignments(item.Value, localNames);
+                    if (!item.IsUnpacking)
+                    {
+                        CollectLocalAssignments(item.Value, localNames);
+                    }
                 }
                 break;
             case SetLiteralExpressionSyntax set:

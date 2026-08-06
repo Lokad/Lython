@@ -327,11 +327,7 @@ internal sealed partial class LythonRuntime
                 SetLiteralExpressionSyntax set => EvaluateSetLiteral(set, context),
                 SetComprehensionExpressionSyntax setComprehension => EvaluateSetComprehension(setComprehension, context),
                 DictComprehensionExpressionSyntax dictComprehension => EvaluateDictComprehension(dictComprehension, context),
-                TupleLiteralExpressionSyntax tuple => CreateTuple(
-                    tuple.Items.Count,
-                    i => RuntimeValue(EvaluateExpression(tuple.Items[i], context)),
-                    context,
-                    tuple.Span),
+                TupleLiteralExpressionSyntax tuple => CreateTupleLiteral(tuple, context),
                 ParenthesizedExpressionSyntax parenthesized => EvaluateExpression(parenthesized.Inner, context),
                 BytesLiteralExpressionSyntax bytes => CreateBytes(bytes.Value.ToArray(), context, bytes.Span),
                 MemberExpressionSyntax member => ResolveMember(member, context),
@@ -369,6 +365,29 @@ internal sealed partial class LythonRuntime
 
     private static PyList CreateListLiteral(ListLiteralExpressionSyntax list, ExecutionContext context)
     {
+        if (list.UnpackingFlags.Any(flag => flag))
+        {
+            var expanded = new PyList([], context.MemoryGovernor, list.Span);
+            for (var i = 0; i < list.Items.Count; i++)
+            {
+                var value = RuntimeValue(EvaluateExpression(list.Items[i], context));
+                if (!list.UnpackingFlags[i])
+                {
+                    expanded.Add(value);
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                    continue;
+                }
+
+                foreach (var item in ToSequence(value, list.Items[i].Span, context))
+                {
+                    expanded.Add(RuntimeValue(item));
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                }
+            }
+
+            return expanded;
+        }
+
         context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
         var items = new object[list.Items.Count];
         for (var i = 0; i < list.Items.Count; i++)
@@ -377,6 +396,45 @@ internal sealed partial class LythonRuntime
         }
 
         return new PyList(items, context.MemoryGovernor, list.Span);
+    }
+
+    private static PyTuple CreateTupleLiteral(TupleLiteralExpressionSyntax tuple, ExecutionContext context)
+    {
+        if (!tuple.UnpackingFlags.Any(flag => flag))
+        {
+            return CreateTuple(
+                tuple.Items.Count,
+                i => RuntimeValue(EvaluateExpression(tuple.Items[i], context)),
+                context,
+                tuple.Span);
+        }
+
+        var expanded = new List<object>();
+        for (var i = 0; i < tuple.Items.Count; i++)
+        {
+            var value = RuntimeValue(EvaluateExpression(tuple.Items[i], context));
+            if (!tuple.UnpackingFlags[i])
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(value);
+                continue;
+            }
+
+            foreach (var item in ToSequence(value, tuple.Items[i].Span, context))
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(RuntimeValue(item));
+            }
+        }
+
+        context.ObserveCollectionCount(expanded.Count, tuple.Span);
+        return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+    }
+
+    private static void EnsureTupleExpansionCapacity(int count, ExecutionContext context, LythonSourceSpan span)
+    {
+        context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(count), span);
+        context.ObserveCollectionCount(count, span);
     }
 
     private static object EvaluateBinary(BinaryExpressionSyntax binary, ExecutionContext context)
@@ -2319,9 +2377,23 @@ internal sealed partial class LythonRuntime
         var result = new PyDict(context.MemoryGovernor, dict.Span);
         foreach (var item in dict.Items)
         {
+            if (item is DictionaryUnpackingItemSyntax unpacking)
+            {
+                var mapping = RuntimeValue(EvaluateExpression(unpacking.Mapping, context));
+                foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Span))
+                {
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    context.ObserveCollectionCount(result.Count, dict.Span);
+                }
+
+                continue;
+            }
+
+            var keyValue = (DictionaryKeyValueItemSyntax)item;
             result.SetItem(
-                ValidateDictionaryKey(EvaluateExpression(item.Key, context), item.Key.Span, context.MemoryGovernor),
-                EvaluateExpression(item.Value, context));
+                ValidateDictionaryKey(EvaluateExpression(keyValue.Key, context), keyValue.Key.Span, context.MemoryGovernor),
+                RuntimeValue(EvaluateExpression(keyValue.Value, context)));
+            context.ObserveCollectionCount(result.Count, dict.Span);
         }
 
         return result;
@@ -2330,13 +2402,54 @@ internal sealed partial class LythonRuntime
     private static object EvaluateSetLiteral(SetLiteralExpressionSyntax set, ExecutionContext context)
     {
         var result = new PySet(context.MemoryGovernor, set.Span);
-        foreach (var item in set.Items)
+        for (var i = 0; i < set.Items.Count; i++)
         {
-            result.Add(ValidateSetItem(EvaluateExpression(item, context), set.Span, context.MemoryGovernor));
+            var value = RuntimeValue(EvaluateExpression(set.Items[i], context));
+            if (!set.UnpackingFlags[i])
+            {
+                result.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(result.Count, set.Span);
+                continue;
+            }
+
+            foreach (var item in ToSequence(value, set.Items[i].Span, context))
+            {
+                result.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(result.Count, set.Span);
+            }
         }
 
-        context.ObserveCollectionCount(result.Count, set.Span);
         return result;
+    }
+
+    private static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
+        object mapping,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        switch (mapping)
+        {
+            case PyDict dict:
+                return dict.Items;
+            case PyDefaultDict defaultDict:
+                return defaultDict.Items;
+            case PyCounter counter:
+                return counter.Items;
+            case PyChainMap chainMap:
+                return chainMap.Iterate().Select(key =>
+                    new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
+            case PyInstance instance:
+                if (!TryResolveRuntimeMember(instance, "keys", context, span, out var keysMember))
+                {
+                    break;
+                }
+
+                var keys = InvokeCallableTarget(keysMember, span, span, context, () => []);
+                return ToSequence(keys, span, context).Select(key =>
+                    new KeyValuePair<object, object>(key, GetUserItem(instance, key, context, span)));
+        }
+
+        throw new LythonRuntimeException("TypeError", "Object is not a mapping.", span);
     }
 
     private static object EvaluateFormattedString(FormattedStringExpressionSyntax formatted, ExecutionContext context)

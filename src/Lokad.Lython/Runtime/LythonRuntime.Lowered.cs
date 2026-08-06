@@ -557,11 +557,7 @@ internal sealed partial class LythonRuntime
                 LoweredListComprehensionExpression comprehension => EvaluateLoweredListComprehension(comprehension, context),
                 LoweredGeneratorExpression generator => new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span),
                 LoweredTupleLiteralExpression tuple => ValidateLoweredCollection(
-                    CreateTuple(
-                        tuple.Items.Count,
-                        i => RuntimeValue(EvaluateLoweredExpression(tuple.Items[i], context)),
-                        context,
-                        tuple.Span),
+                    CreateLoweredTupleLiteral(tuple, context),
                     context,
                     tuple.Span),
                 LoweredSetLiteralExpression set => EvaluateLoweredSetLiteral(set, context),
@@ -597,6 +593,29 @@ internal sealed partial class LythonRuntime
 
     private static PyList CreateLoweredListLiteral(LoweredListLiteralExpression list, ExecutionContext context)
     {
+        if (list.List.UnpackingFlags.Any(flag => flag))
+        {
+            var expanded = new PyList([], context.MemoryGovernor, list.Span);
+            for (var i = 0; i < list.Items.Count; i++)
+            {
+                var value = RuntimeValue(EvaluateLoweredExpression(list.Items[i], context));
+                if (!list.List.UnpackingFlags[i])
+                {
+                    expanded.Add(value);
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                    continue;
+                }
+
+                foreach (var item in ToSequence(value, list.Items[i].Span, context))
+                {
+                    expanded.Add(RuntimeValue(item));
+                    context.ObserveCollectionCount(expanded.Count, list.Span);
+                }
+            }
+
+            return expanded;
+        }
+
         context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
         var items = new object[list.Items.Count];
         for (var i = 0; i < list.Items.Count; i++)
@@ -607,29 +626,85 @@ internal sealed partial class LythonRuntime
         return new PyList(items, context.MemoryGovernor, list.Span);
     }
 
+    private static PyTuple CreateLoweredTupleLiteral(LoweredTupleLiteralExpression tuple, ExecutionContext context)
+    {
+        if (!tuple.Tuple.UnpackingFlags.Any(flag => flag))
+        {
+            return CreateTuple(
+                tuple.Items.Count,
+                i => RuntimeValue(EvaluateLoweredExpression(tuple.Items[i], context)),
+                context,
+                tuple.Span);
+        }
+
+        var expanded = new List<object>();
+        for (var i = 0; i < tuple.Items.Count; i++)
+        {
+            var value = RuntimeValue(EvaluateLoweredExpression(tuple.Items[i], context));
+            if (!tuple.Tuple.UnpackingFlags[i])
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(value);
+                continue;
+            }
+
+            foreach (var item in ToSequence(value, tuple.Items[i].Span, context))
+            {
+                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
+                expanded.Add(RuntimeValue(item));
+            }
+        }
+
+        return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+    }
+
     private static object EvaluateLoweredDictLiteral(LoweredDictLiteralExpression dict, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, dict.Span);
         foreach (var item in dict.Items)
         {
-            var key = ValidateDictionaryKey(EvaluateLoweredExpression(item.Key, context), item.Key.Span, context.MemoryGovernor);
-            var value = RuntimeValue(EvaluateLoweredExpression(item.Value, context));
+            if (item is LoweredDictionaryUnpackingItem unpacking)
+            {
+                var mapping = RuntimeValue(EvaluateLoweredExpression(unpacking.Mapping, context));
+                foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
+                {
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    context.ObserveCollectionCount(result.Count, dict.Span);
+                }
+
+                continue;
+            }
+
+            var keyValue = (LoweredDictionaryKeyValueItem)item;
+            var key = ValidateDictionaryKey(EvaluateLoweredExpression(keyValue.Key, context), keyValue.Key.Span, context.MemoryGovernor);
+            var value = RuntimeValue(EvaluateLoweredExpression(keyValue.Value, context));
             result.SetItem(key, value);
+            context.ObserveCollectionCount(result.Count, dict.Span);
         }
 
-        context.ObserveCollectionCount(result.Count, dict.Span);
         return result;
     }
 
     private static object EvaluateLoweredSetLiteral(LoweredSetLiteralExpression set, ExecutionContext context)
     {
         var items = new PySet(context.MemoryGovernor, set.Span);
-        foreach (var item in set.Items)
+        for (var i = 0; i < set.Items.Count; i++)
         {
-            items.Add(ValidateSetItem(EvaluateLoweredExpression(item, context), item.Span, context.MemoryGovernor));
+            var value = RuntimeValue(EvaluateLoweredExpression(set.Items[i], context));
+            if (!set.Set.UnpackingFlags[i])
+            {
+                items.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(items.Count, set.Span);
+                continue;
+            }
+
+            foreach (var item in ToSequence(value, set.Items[i].Span, context))
+            {
+                items.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
+                context.ObserveCollectionCount(items.Count, set.Span);
+            }
         }
 
-        context.ObserveCollectionCount(items.Count, set.Span);
         return items;
     }
 

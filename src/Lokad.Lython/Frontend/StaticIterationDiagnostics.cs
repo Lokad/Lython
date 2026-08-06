@@ -29,13 +29,13 @@ internal static class StaticIterationDiagnostics
 
         switch (iterableExpression)
         {
-            case ListLiteralExpressionSyntax { Items: var listItems }:
+            case ListLiteralExpressionSyntax { Items: var listItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
                 AnalyzeTupleLoopItems(tupleTarget, listItems, span, diagnostics, bindings);
                 break;
-            case TupleLiteralExpressionSyntax { Items: var tupleItems }:
+            case TupleLiteralExpressionSyntax { Items: var tupleItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
                 AnalyzeTupleLoopItems(tupleTarget, tupleItems, span, diagnostics, bindings);
                 break;
-            case SetLiteralExpressionSyntax { Items: var setItems }:
+            case SetLiteralExpressionSyntax { Items: var setItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
                 AnalyzeTupleLoopItems(tupleTarget, setItems, span, diagnostics, bindings);
                 break;
         }

@@ -2486,13 +2486,31 @@ internal sealed class Parser
 
     private ExpressionSyntax? ParseExpressionList()
     {
-        var first = ParseExpression();
-        if (first is null || CurrentToken != Token.Comma)
+        var firstIsUnpacking = CurrentToken == Token.Star;
+        if (firstIsUnpacking)
         {
+            ReadToken();
+        }
+
+        var first = ParseExpression();
+        if (first is null)
+        {
+            return null;
+        }
+
+        if (CurrentToken != Token.Comma)
+        {
+            if (firstIsUnpacking)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'bare starred expression'.", first.Span);
+                return null;
+            }
+
             return first;
         }
 
         var items = new List<ExpressionSyntax> { first };
+        var unpackingFlags = new List<bool> { firstIsUnpacking };
         var endSpan = first.Span;
         while (CurrentToken == Token.Comma)
         {
@@ -2503,6 +2521,12 @@ internal sealed class Parser
                 break;
             }
 
+            var isUnpacking = CurrentToken == Token.Star;
+            if (isUnpacking)
+            {
+                ReadToken();
+            }
+
             var item = ParseExpression();
             if (item is null)
             {
@@ -2511,10 +2535,11 @@ internal sealed class Parser
             }
 
             items.Add(item);
+            unpackingFlags.Add(isUnpacking);
             endSpan = item.Span;
         }
 
-        return new TupleLiteralExpressionSyntax(items, Merge(first.Span, endSpan));
+        return new TupleLiteralExpressionSyntax(items, unpackingFlags, Merge(first.Span, endSpan));
     }
 
     private ExpressionSyntax? ParseOrExpression()
@@ -3098,6 +3123,7 @@ internal sealed class Parser
 
                     start = new TupleLiteralExpressionSyntax(
                         items,
+                        Enumerable.Repeat(false, items.Count).ToArray(),
                         Merge(items[0].Span, items[^1].Span));
                 }
 
@@ -3305,6 +3331,7 @@ internal sealed class Parser
     {
         var openBracket = ReadToken();
         var items = new List<ExpressionSyntax>();
+        var unpackingFlags = new List<bool>();
         SkipGroupedExpressionTrivia();
 
         if (CurrentToken == Token.End)
@@ -3323,6 +3350,12 @@ internal sealed class Parser
                     return null;
                 }
 
+                var isUnpacking = CurrentToken == Token.Star;
+                if (isUnpacking)
+                {
+                    ReadToken();
+                }
+
                 var item = ParseExpression();
                 if (item is null)
                 {
@@ -3330,13 +3363,14 @@ internal sealed class Parser
                 }
 
                 items.Add(item);
+                unpackingFlags.Add(isUnpacking);
                 SkipGroupedExpressionTrivia();
 
                 if (CurrentToken == Token.For)
                 {
-                    if (items.Count != 1)
+                    if (items.Count != 1 || isUnpacking)
                     {
-                        AddDiagnostic("LA2000", "Unsupported Python construct 'comprehension'.", _position);
+                        AddDiagnostic("LA2000", "Unsupported Python construct 'iterable unpacking in comprehension'.", _position);
                         return null;
                     }
 
@@ -3379,7 +3413,7 @@ internal sealed class Parser
             return null;
         }
 
-        return new ListLiteralExpressionSyntax(items, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
+        return new ListLiteralExpressionSyntax(items, unpackingFlags, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
     }
 
     private ExpressionSyntax? ParseTupleOrParenthesized()
@@ -3396,7 +3430,13 @@ internal sealed class Parser
         if (CurrentToken == Token.CloseParen)
         {
             var closeEmpty = ReadToken();
-            return new TupleLiteralExpressionSyntax(Array.Empty<ExpressionSyntax>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
+            return new TupleLiteralExpressionSyntax(Array.Empty<ExpressionSyntax>(), Array.Empty<bool>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
+        }
+
+        var firstIsUnpacking = CurrentToken == Token.Star;
+        if (firstIsUnpacking)
+        {
+            ReadToken();
         }
 
         var first = ParseExpression();
@@ -3408,6 +3448,12 @@ internal sealed class Parser
 
         if (CurrentToken != Token.Comma)
         {
+            if (firstIsUnpacking)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'bare starred expression'.", first.Span);
+                return null;
+            }
+
             if (CurrentToken == Token.For)
             {
                 if (!TryParseComprehensionClauses(out var clauses, out _))
@@ -3439,6 +3485,7 @@ internal sealed class Parser
         }
 
         var items = new List<ExpressionSyntax> { first };
+        var unpackingFlags = new List<bool> { firstIsUnpacking };
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
@@ -3454,6 +3501,12 @@ internal sealed class Parser
                 return null;
             }
 
+            var isUnpacking = CurrentToken == Token.Star;
+            if (isUnpacking)
+            {
+                ReadToken();
+            }
+
             var item = ParseExpression();
             if (item is null)
             {
@@ -3461,6 +3514,7 @@ internal sealed class Parser
             }
 
             items.Add(item);
+            unpackingFlags.Add(isUnpacking);
             SkipGroupedExpressionTrivia();
         }
 
@@ -3471,14 +3525,15 @@ internal sealed class Parser
             return null;
         }
 
-        return new TupleLiteralExpressionSyntax(items, Merge(SpanOf(openParen), SpanOf(closeTuple)));
+        return new TupleLiteralExpressionSyntax(items, unpackingFlags, Merge(SpanOf(openParen), SpanOf(closeTuple)));
     }
 
     private ExpressionSyntax? ParseDictLiteral()
     {
         var openBrace = ReadToken();
-        var items = new List<KeyValuePair<ExpressionSyntax, ExpressionSyntax>>();
+        var dictionaryItems = new List<DictionaryDisplayItemSyntax>();
         var setItems = new List<ExpressionSyntax>();
+        var setUnpackingFlags = new List<bool>();
         SkipGroupedExpressionTrivia();
 
         if (CurrentToken == Token.End)
@@ -3497,115 +3552,135 @@ internal sealed class Parser
                     return null;
                 }
 
-                var key = ParseExpression();
-                if (key is null)
+                if (CurrentToken == Token.StarStar)
                 {
-                    return null;
-                }
-                SkipGroupedExpressionTrivia();
-
-                if (!TryRead(Token.Colon, out var colonToken))
-                {
-                    if (CurrentToken == Token.For)
+                    if (setItems.Count != 0)
                     {
-                        if (!TryParseComprehensionClauses(out var clauses, out _))
-                        {
-                            return null;
-                        }
-
-                        SkipGroupedExpressionTrivia();
-                        if (!TryRead(Token.CloseBrace, out var closeComprehension))
-                        {
-                            AddDiagnostic("LA1026", "Expected '}' after set comprehension.", openBrace);
-                            return null;
-                        }
-
-                        return new SetComprehensionExpressionSyntax(
-                            key,
-                            clauses,
-                            Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
+                        AddDiagnostic("LA2000", "Unsupported Python construct 'dictionary unpacking in set display'.", _position);
+                        return null;
                     }
-                    else if (CurrentToken is Token.Comma or Token.CloseBrace)
+
+                    var unpackToken = ReadToken();
+                    SkipGroupedExpressionTrivia();
+                    var mapping = ParseExpression();
+                    if (mapping is null)
                     {
-                        setItems.Add(key);
-                        while (CurrentToken == Token.Comma)
+                        AddDiagnostic("LA1025", "Expected mapping after '**' in dictionary literal.", unpackToken);
+                        return null;
+                    }
+
+                    dictionaryItems.Add(new DictionaryUnpackingItemSyntax(
+                        mapping,
+                        Merge(SpanOf(unpackToken), mapping.Span)));
+                    SkipGroupedExpressionTrivia();
+                }
+                else
+                {
+                    var isSetUnpacking = CurrentToken == Token.Star;
+                    if (isSetUnpacking)
+                    {
+                        if (dictionaryItems.Count != 0)
                         {
-                            ReadToken();
-                            SkipGroupedExpressionTrivia();
-                            if (CurrentToken == Token.CloseBrace)
-                            {
-                                break;
-                            }
-
-                            if (CurrentToken == Token.End)
-                            {
-                                AddDiagnostic("LA1026", "Unexpected end of file while parsing set literal; expected '}'.", openBrace);
-                                return null;
-                            }
-
-                            var setItem = ParseExpression();
-                            if (setItem is null)
-                            {
-                                return null;
-                            }
-
-                            setItems.Add(setItem);
-                            SkipGroupedExpressionTrivia();
-                        }
-
-                        SkipGroupedExpressionTrivia();
-                        if (!TryRead(Token.CloseBrace, out var closeSet))
-                        {
-                            AddDiagnostic("LA1026", "Expected '}' after set literal.", openBrace);
+                            AddDiagnostic("LA2000", "Unsupported Python construct 'set unpacking in dictionary display'.", _position);
                             return null;
                         }
 
-                        return new SetLiteralExpressionSyntax(setItems, Merge(SpanOf(openBrace), SpanOf(closeSet)));
+                        ReadToken();
+                    }
+
+                    var key = ParseExpression();
+                    if (key is null)
+                    {
+                        return null;
+                    }
+                    SkipGroupedExpressionTrivia();
+
+                    if (TryRead(Token.Colon, out var colonToken))
+                    {
+                        if (isSetUnpacking || setItems.Count != 0)
+                        {
+                            AddDiagnostic("LA1024", "Cannot mix set items with dictionary entries.", key.Span);
+                            return null;
+                        }
+
+                        SkipGroupedExpressionTrivia();
+                        var value = ParseExpression();
+                        if (value is null)
+                        {
+                            AddDiagnostic("LA1025", "Expected value in dictionary literal.", colonToken);
+                            return null;
+                        }
+                        SkipGroupedExpressionTrivia();
+
+                        dictionaryItems.Add(new DictionaryKeyValueItemSyntax(
+                            key,
+                            value,
+                            Merge(key.Span, value.Span)));
+
+                        if (CurrentToken == Token.For)
+                        {
+                            if (dictionaryItems.Count != 1 || dictionaryItems[0] is not DictionaryKeyValueItemSyntax)
+                            {
+                                AddDiagnostic("LA2000", "Unsupported Python construct 'comprehension'.", _position);
+                                return null;
+                            }
+
+                            if (!TryParseComprehensionClauses(out var clauses, out _))
+                            {
+                                return null;
+                            }
+
+                            SkipGroupedExpressionTrivia();
+                            if (!TryRead(Token.CloseBrace, out var closeComprehension))
+                            {
+                                AddDiagnostic("LA1026", "Expected '}' after dictionary literal.", openBrace);
+                                return null;
+                            }
+
+                            return new DictComprehensionExpressionSyntax(
+                                key,
+                                value,
+                                clauses,
+                                Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
+                        }
                     }
                     else
                     {
-                        AddDiagnostic("LA1024", "Expected ':' in dictionary literal.", key.Span);
+                        if (dictionaryItems.Count != 0)
+                        {
+                            AddDiagnostic("LA1024", "Expected ':' in dictionary literal.", key.Span);
+                            return null;
+                        }
+
+                        if (CurrentToken == Token.For)
+                        {
+                            if (isSetUnpacking || setItems.Count != 0)
+                            {
+                                AddDiagnostic("LA2000", "Unsupported Python construct 'iterable unpacking in comprehension'.", _position);
+                                return null;
+                            }
+
+                            if (!TryParseComprehensionClauses(out var clauses, out _))
+                            {
+                                return null;
+                            }
+
+                            SkipGroupedExpressionTrivia();
+                            if (!TryRead(Token.CloseBrace, out var closeComprehension))
+                            {
+                                AddDiagnostic("LA1026", "Expected '}' after set comprehension.", openBrace);
+                                return null;
+                            }
+
+                            return new SetComprehensionExpressionSyntax(
+                                key,
+                                clauses,
+                                Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
+                        }
+
+                        setItems.Add(key);
+                        setUnpackingFlags.Add(isSetUnpacking);
                     }
-
-                    return null;
-                }
-
-                SkipGroupedExpressionTrivia();
-                var value = ParseExpression();
-                if (value is null)
-                {
-                    AddDiagnostic("LA1025", "Expected value in dictionary literal.", colonToken);
-                    return null;
-                }
-                SkipGroupedExpressionTrivia();
-
-                items.Add(new KeyValuePair<ExpressionSyntax, ExpressionSyntax>(key, value));
-
-                if (CurrentToken == Token.For)
-                {
-                    if (items.Count != 1)
-                    {
-                        AddDiagnostic("LA2000", "Unsupported Python construct 'comprehension'.", _position);
-                        return null;
-                    }
-
-                    if (!TryParseComprehensionClauses(out var clauses, out _))
-                    {
-                        return null;
-                    }
-
-                    SkipGroupedExpressionTrivia();
-                    if (!TryRead(Token.CloseBrace, out var closeComprehension))
-                    {
-                        AddDiagnostic("LA1026", "Expected '}' after dictionary literal.", openBrace);
-                        return null;
-                    }
-
-                    return new DictComprehensionExpressionSyntax(
-                        key,
-                        value,
-                        clauses,
-                        Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
                 }
 
                 if (CurrentToken != Token.Comma)
@@ -3629,7 +3704,9 @@ internal sealed class Parser
             return null;
         }
 
-        return new DictLiteralExpressionSyntax(items, Merge(SpanOf(openBrace), SpanOf(closeBrace)));
+        return setItems.Count != 0
+            ? new SetLiteralExpressionSyntax(setItems, setUnpackingFlags, Merge(SpanOf(openBrace), SpanOf(closeBrace)))
+            : new DictLiteralExpressionSyntax(dictionaryItems, Merge(SpanOf(openBrace), SpanOf(closeBrace)));
     }
 
     private bool TryParseComprehensionClauses(

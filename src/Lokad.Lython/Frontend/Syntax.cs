@@ -321,6 +321,7 @@ internal static class FormattedStringSyntaxTraversal
 
 internal sealed record ListLiteralExpressionSyntax(
     IReadOnlyList<ExpressionSyntax> Items,
+    IReadOnlyList<bool> UnpackingFlags,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record ListComprehensionExpressionSyntax(
@@ -341,12 +342,28 @@ internal sealed record LoopNameTargetSyntax(
 internal sealed record LoopTupleTargetSyntax(
     IReadOnlyList<LoopTargetSyntax> Items) : LoopTargetSyntax;
 
+internal abstract record DictionaryDisplayItemSyntax(
+    ExpressionSyntax Key,
+    ExpressionSyntax Value,
+    bool IsUnpacking,
+    LythonSourceSpan Span);
+
+internal sealed record DictionaryKeyValueItemSyntax(
+    ExpressionSyntax Key,
+    ExpressionSyntax Value,
+    LythonSourceSpan Span) : DictionaryDisplayItemSyntax(Key, Value, false, Span);
+
+internal sealed record DictionaryUnpackingItemSyntax(
+    ExpressionSyntax Mapping,
+    LythonSourceSpan Span) : DictionaryDisplayItemSyntax(Mapping, Mapping, true, Span);
+
 internal sealed record DictLiteralExpressionSyntax(
-    IReadOnlyList<KeyValuePair<ExpressionSyntax, ExpressionSyntax>> Items,
+    IReadOnlyList<DictionaryDisplayItemSyntax> Items,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record SetLiteralExpressionSyntax(
     IReadOnlyList<ExpressionSyntax> Items,
+    IReadOnlyList<bool> UnpackingFlags,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record SetComprehensionExpressionSyntax(
@@ -368,6 +385,7 @@ internal sealed record DictComprehensionExpressionSyntax(
 
 internal sealed record TupleLiteralExpressionSyntax(
     IReadOnlyList<ExpressionSyntax> Items,
+    IReadOnlyList<bool> UnpackingFlags,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record ParenthesizedExpressionSyntax(

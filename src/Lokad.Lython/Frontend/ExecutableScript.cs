@@ -1181,6 +1181,12 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredListLiteralExpression list:
+                    if (list.List.UnpackingFlags.Any(flag => flag))
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(list), list.Span));
+                        return;
+                    }
+
                     foreach (var item in list.Items)
                     {
                         CompileExpression(item, currentBlock);
@@ -1189,6 +1195,12 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredTupleLiteralExpression tuple:
+                    if (tuple.Tuple.UnpackingFlags.Any(flag => flag))
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(tuple), tuple.Span));
+                        return;
+                    }
+
                     foreach (var item in tuple.Items)
                     {
                         CompileExpression(item, currentBlock);
@@ -1197,6 +1209,12 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredSetLiteralExpression set:
+                    if (set.Set.UnpackingFlags.Any(flag => flag))
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(set), set.Span));
+                        return;
+                    }
+
                     foreach (var item in set.Items)
                     {
                         CompileExpression(item, currentBlock);
@@ -1205,6 +1223,12 @@ internal sealed class ExecutableScript
                     return;
 
                 case LoweredDictLiteralExpression dict:
+                    if (dict.Items.Any(item => item.IsUnpacking))
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(dict), dict.Span));
+                        return;
+                    }
+
                     foreach (var item in dict.Items)
                     {
                         CompileExpression(item.Key, currentBlock);

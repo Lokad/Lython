@@ -73,6 +73,8 @@ Parenthesized, bracketed, and braced expressions may span physical lines using P
 
 Tuple expression lists follow ordinary Python spelling in statement contexts: assignment values, `return`, expression statements, and `for` iterables may omit parentheses, including the one-item trailing-comma form.
 
+Collection displays support Python's iterable and mapping unpacking forms: `[*items]`, `(*items,)`, `{*items}`, and `{**mapping}`. Mixed entries are evaluated once from left to right, with later dictionary values replacing earlier values without moving their keys.
+
 Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
 
 `typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.
