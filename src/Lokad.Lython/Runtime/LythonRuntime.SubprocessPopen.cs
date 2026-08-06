@@ -44,11 +44,14 @@ internal sealed partial class LythonRuntime
         }
 
         ValidatePopenCompatibilityOptions(arguments, span);
+        var pipelineInput = GetArgument(arguments, PopenStdinIndex) as PopenOutputStream;
         var shared = new object[15];
         Array.Fill(shared, PyNone.Instance);
         shared[SubprocessArgsIndex] = GetArgument(arguments, PopenArgsIndex);
         shared[SubprocessCwdIndex] = GetArgument(arguments, PopenCwdIndex);
-        shared[SubprocessStdinIndex] = GetArgument(arguments, PopenStdinIndex);
+        shared[SubprocessStdinIndex] = pipelineInput is null
+            ? GetArgument(arguments, PopenStdinIndex)
+            : new BigInteger(SubprocessPipe);
         shared[SubprocessStdoutIndex] = GetArgument(arguments, PopenStdoutIndex);
         shared[SubprocessStderrIndex] = GetArgument(arguments, PopenStderrIndex);
         shared[SubprocessShellIndex] = GetArgument(arguments, PopenShellIndex);
@@ -71,7 +74,7 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(args.Count, span);
-        return new PyPopen(invocation.Request, args, context, span);
+        return new PyPopen(invocation.Request, args, pipelineInput, context, span);
     }
 
     private static void ValidatePopenCompatibilityOptions(object[] arguments, LythonSourceSpan span)
@@ -195,21 +198,29 @@ internal sealed partial class LythonRuntime
         private readonly PopenInputStream? _stdin;
         private readonly PopenOutputStream? _stdout;
         private readonly PopenOutputStream? _stderr;
+        private readonly PopenOutputStream? _pipelineInput;
         private LythonSubprocessResult? _result;
         private PyString? _decodedStdout;
         private PyString? _decodedStderr;
         private Exception? _completionFailure;
         private bool _completionStarted;
+        private long _cumulativePipelineOutputBytes;
         private bool _hasCommunicated;
         private object _communicatedStdout = PyNone.Instance;
         private object _communicatedStderr = PyNone.Instance;
 
-        public PyPopen(LythonSubprocessRequest request, PyList args, ExecutionContext context, LythonSourceSpan span)
+        public PyPopen(
+            LythonSubprocessRequest request,
+            PyList args,
+            PopenOutputStream? pipelineInput,
+            ExecutionContext context,
+            LythonSourceSpan span)
         {
             _request = request;
             _args = args;
             _context = context;
-            _stdin = request.StandardInput == LythonSubprocessStreamMode.Pipe
+            _pipelineInput = pipelineInput;
+            _stdin = request.StandardInput == LythonSubprocessStreamMode.Pipe && pipelineInput is null
                 ? new PopenInputStream(this, context)
                 : null;
             _stdout = request.StandardOutput == LythonSubprocessStreamMode.Pipe
@@ -219,6 +230,7 @@ internal sealed partial class LythonRuntime
                 ? new PopenOutputStream(this, isStandardError: true, context)
                 : null;
             context.ObserveCollectionCount(args.Count, span);
+            pipelineInput?.AttachAsPipelineInput(context, span);
         }
 
         public bool IsCompleted => _result is not null;
@@ -321,6 +333,26 @@ internal sealed partial class LythonRuntime
             return standardError ? _decodedStderr ?? PyString.Empty : _decodedStdout ?? PyString.Empty;
         }
 
+        public PipelinePayload CompleteForPipeline(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
+        {
+            _ = Complete(timeoutMilliseconds, span, completionPath);
+            var output = _decodedStdout ?? PyString.Empty;
+            return new PipelinePayload(output.Utf8Bytes, _cumulativePipelineOutputBytes);
+        }
+
+        public async ValueTask<PipelinePayload> CompleteForPipelineAsync(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
+        {
+            _ = await CompleteAsync(timeoutMilliseconds, span, completionPath).ConfigureAwait(false);
+            var output = _decodedStdout ?? PyString.Empty;
+            return new PipelinePayload(output.Utf8Bytes, _cumulativePipelineOutputBytes);
+        }
+
         private object Communicate(object[] arguments, LythonSourceSpan span)
         {
             var input = GetArgument(arguments, 0);
@@ -396,6 +428,12 @@ internal sealed partial class LythonRuntime
         }
 
         private LythonSubprocessResult Complete(int? timeoutMilliseconds, LythonSourceSpan? span)
+            => Complete(timeoutMilliseconds, span, new HashSet<PyPopen>());
+
+        private LythonSubprocessResult Complete(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
         {
             if (_result is not null)
             {
@@ -403,14 +441,20 @@ internal sealed partial class LythonRuntime
             }
 
             RethrowCompletionFailure();
+            if (!completionPath.Add(this))
+            {
+                throw new LythonRuntimeException("ValueError", "Popen pipeline contains a cycle.", span);
+            }
+
             _completionStarted = true;
-            var request = BuildCompletionRequest(timeoutMilliseconds, span);
             try
             {
+                var request = BuildCompletionRequest(timeoutMilliseconds, span, completionPath);
                 _context.RegisterHostCall(span);
-                _result = _context.RunSubprocess(request, span);
-                DecodeCompletion(_result, span ?? PopenSyntheticSpan);
-                return _result;
+                var result = _context.RunSubprocess(request, span);
+                DecodeCompletion(result, span ?? PopenSyntheticSpan);
+                _result = result;
+                return result;
             }
             catch (LythonRuntimeException ex) when (ex.InnerException is TimeoutException)
             {
@@ -422,10 +466,20 @@ internal sealed partial class LythonRuntime
             {
                 _completionFailure = ex;
                 throw;
+            }
+            finally
+            {
+                completionPath.Remove(this);
             }
         }
 
         private async ValueTask<LythonSubprocessResult> CompleteAsync(int? timeoutMilliseconds, LythonSourceSpan? span)
+            => await CompleteAsync(timeoutMilliseconds, span, new HashSet<PyPopen>()).ConfigureAwait(false);
+
+        private async ValueTask<LythonSubprocessResult> CompleteAsync(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
         {
             if (_result is not null)
             {
@@ -433,14 +487,20 @@ internal sealed partial class LythonRuntime
             }
 
             RethrowCompletionFailure();
+            if (!completionPath.Add(this))
+            {
+                throw new LythonRuntimeException("ValueError", "Popen pipeline contains a cycle.", span);
+            }
+
             _completionStarted = true;
-            var request = BuildCompletionRequest(timeoutMilliseconds, span);
             try
             {
+                var request = await BuildCompletionRequestAsync(timeoutMilliseconds, span, completionPath).ConfigureAwait(false);
                 _context.RegisterHostCall(span);
-                _result = await _context.RunSubprocessAsync(request, span).ConfigureAwait(false);
-                DecodeCompletion(_result, span ?? PopenSyntheticSpan);
-                return _result;
+                var result = await _context.RunSubprocessAsync(request, span).ConfigureAwait(false);
+                DecodeCompletion(result, span ?? PopenSyntheticSpan);
+                _result = result;
+                return result;
             }
             catch (LythonRuntimeException ex) when (ex.InnerException is TimeoutException)
             {
@@ -453,11 +513,55 @@ internal sealed partial class LythonRuntime
                 _completionFailure = ex;
                 throw;
             }
+            finally
+            {
+                completionPath.Remove(this);
+            }
         }
 
-        private LythonSubprocessRequest BuildCompletionRequest(int? timeoutMilliseconds, LythonSourceSpan? span)
+        private LythonSubprocessRequest BuildCompletionRequest(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
         {
-            var input = _stdin?.SnapshotAndClose(span) ?? ReadOnlyMemory<byte>.Empty;
+            ReadOnlyMemory<byte> input;
+            if (_pipelineInput is null)
+            {
+                input = _stdin?.SnapshotAndClose(span) ?? ReadOnlyMemory<byte>.Empty;
+            }
+            else
+            {
+                var pipeline = _pipelineInput.TakePipelinePayload(timeoutMilliseconds, span, completionPath);
+                input = pipeline.Input;
+                _cumulativePipelineOutputBytes = pipeline.CumulativeOutputBytes;
+            }
+
+            return _request with
+            {
+                StandardInputUtf8 = input,
+                TimeoutMilliseconds = timeoutMilliseconds,
+            };
+        }
+
+        private async ValueTask<LythonSubprocessRequest> BuildCompletionRequestAsync(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
+        {
+            ReadOnlyMemory<byte> input;
+            if (_pipelineInput is null)
+            {
+                input = _stdin?.SnapshotAndClose(span) ?? ReadOnlyMemory<byte>.Empty;
+            }
+            else
+            {
+                var pipeline = await _pipelineInput
+                    .TakePipelinePayloadAsync(timeoutMilliseconds, span, completionPath)
+                    .ConfigureAwait(false);
+                input = pipeline.Input;
+                _cumulativePipelineOutputBytes = pipeline.CumulativeOutputBytes;
+            }
+
             return _request with
             {
                 StandardInputUtf8 = input,
@@ -475,6 +579,15 @@ internal sealed partial class LythonRuntime
             if (_stderr is not null)
             {
                 _decodedStderr = DecodeSubprocessOutput(result.StandardErrorUtf8, _request.Encoding, _request.Errors, _context, span);
+            }
+
+            var ownCapturedBytes =
+                (_request.StandardOutput == LythonSubprocessStreamMode.Pipe ? (long)result.StandardOutputUtf8.Length : 0L) +
+                (_request.StandardError == LythonSubprocessStreamMode.Pipe ? (long)result.StandardErrorUtf8.Length : 0L);
+            _cumulativePipelineOutputBytes = checked(_cumulativePipelineOutputBytes + ownCapturedBytes);
+            if (_context.Limits.MaxStringLength is { } maximum && _cumulativePipelineOutputBytes > maximum)
+            {
+                throw RuntimeErrors.Runtime($"maximum cumulative Popen pipeline output exceeded ({maximum})", span);
             }
         }
 
@@ -721,6 +834,7 @@ internal sealed partial class LythonRuntime
         private readonly bool _isStandardError;
         private readonly ExecutionContext _context;
         private int _cursorByte;
+        private bool _claimedByPipeline;
 
         public PopenOutputStream(PyPopen owner, bool isStandardError, ExecutionContext context)
         {
@@ -730,6 +844,74 @@ internal sealed partial class LythonRuntime
         }
 
         public bool IsClosed { get; private set; }
+
+        public void AttachAsPipelineInput(ExecutionContext context, LythonSourceSpan span)
+        {
+            if (!ReferenceEquals(context, _context))
+            {
+                throw new LythonRuntimeException("ValueError", "Popen pipeline endpoints must belong to the same execution.", span);
+            }
+
+            if (_isStandardError)
+            {
+                throw new LythonRuntimeException("ValueError", "Popen(..., stdin=...) accepts a prior stdout pipe, not stderr.", span);
+            }
+
+            if (IsClosed)
+            {
+                throw new LythonRuntimeException("ValueError", "Cannot use a closed Popen stdout pipe as stdin.", span);
+            }
+
+            if (_claimedByPipeline)
+            {
+                throw new LythonRuntimeException("ValueError", "Popen stdout pipe is already connected to another process.", span);
+            }
+
+            if (_cursorByte != 0)
+            {
+                throw new LythonRuntimeException("ValueError", "Cannot connect a Popen stdout pipe after reading from it.", span);
+            }
+
+            _claimedByPipeline = true;
+        }
+
+        public PipelinePayload TakePipelinePayload(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
+        {
+            try
+            {
+                var payload = _owner.CompleteForPipeline(timeoutMilliseconds, span, completionPath);
+                MarkPipelineConsumed(payload.Input.Length);
+                return payload;
+            }
+            catch
+            {
+                IsClosed = true;
+                throw;
+            }
+        }
+
+        public async ValueTask<PipelinePayload> TakePipelinePayloadAsync(
+            int? timeoutMilliseconds,
+            LythonSourceSpan? span,
+            HashSet<PyPopen> completionPath)
+        {
+            try
+            {
+                var payload = await _owner
+                    .CompleteForPipelineAsync(timeoutMilliseconds, span, completionPath)
+                    .ConfigureAwait(false);
+                MarkPipelineConsumed(payload.Input.Length);
+                return payload;
+            }
+            catch
+            {
+                IsClosed = true;
+                throw;
+            }
+        }
 
         public bool TryGetMember(string name, out object value)
         {
@@ -797,6 +979,7 @@ internal sealed partial class LythonRuntime
 
         public bool TryMoveNext(out object value)
         {
+            EnsureOpen(PopenSyntheticSpan);
             var line = ReadLineCore(_owner.GetOutput(_isStandardError, PopenSyntheticSpan), -1, PopenSyntheticSpan);
             if (line.Length == 0)
             {
@@ -810,6 +993,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
         {
+            EnsureOpen(PopenSyntheticSpan);
             var content = await _owner.GetOutputAsync(_isStandardError, PopenSyntheticSpan).ConfigureAwait(false);
             var line = ReadLineCore(content, -1, PopenSyntheticSpan);
             return line.Length == 0 ? (false, PyNone.Instance) : (true, line);
@@ -838,7 +1022,10 @@ internal sealed partial class LythonRuntime
         public void Close() => IsClosed = true;
 
         public PyString ReadRemainingAfterCompletion(LythonSourceSpan span)
-            => ReadCore(_owner.GetOutput(_isStandardError, span), -1, span);
+        {
+            EnsureOpen(span);
+            return ReadCore(_owner.GetOutput(_isStandardError, span), -1, span);
+        }
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -851,12 +1038,14 @@ internal sealed partial class LythonRuntime
         private object Read(object[] arguments, LythonSourceSpan span)
         {
             var size = ReadSize(arguments, "Popen pipe.read", span);
+            EnsureOpen(span);
             return ReadCore(_owner.GetOutput(_isStandardError, span), size, span);
         }
 
         private async ValueTask<object> ReadAsync(object[] arguments, LythonSourceSpan span)
         {
             var size = ReadSize(arguments, "Popen pipe.read", span);
+            EnsureOpen(span);
             var content = await _owner.GetOutputAsync(_isStandardError, span).ConfigureAwait(false);
             return ReadCore(content, size, span);
         }
@@ -864,12 +1053,14 @@ internal sealed partial class LythonRuntime
         private object ReadLine(object[] arguments, LythonSourceSpan span)
         {
             var size = ReadSize(arguments, "Popen pipe.readline", span);
+            EnsureOpen(span);
             return ReadLineCore(_owner.GetOutput(_isStandardError, span), size, span);
         }
 
         private async ValueTask<object> ReadLineAsync(object[] arguments, LythonSourceSpan span)
         {
             var size = ReadSize(arguments, "Popen pipe.readline", span);
+            EnsureOpen(span);
             var content = await _owner.GetOutputAsync(_isStandardError, span).ConfigureAwait(false);
             return ReadLineCore(content, size, span);
         }
@@ -877,12 +1068,14 @@ internal sealed partial class LythonRuntime
         private object ReadLines(object[] arguments, LythonSourceSpan span)
         {
             var hint = ReadSize(arguments, "Popen pipe.readlines", span);
+            EnsureOpen(span);
             return ReadLinesCore(_owner.GetOutput(_isStandardError, span), hint, span);
         }
 
         private async ValueTask<object> ReadLinesAsync(object[] arguments, LythonSourceSpan span)
         {
             var hint = ReadSize(arguments, "Popen pipe.readlines", span);
+            EnsureOpen(span);
             var content = await _owner.GetOutputAsync(_isStandardError, span).ConfigureAwait(false);
             return ReadLinesCore(content, hint, span);
         }
@@ -967,6 +1160,17 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("ValueError", "I/O operation on closed file", span);
             }
+
+            if (_claimedByPipeline)
+            {
+                throw new LythonRuntimeException("ValueError", "Popen stdout pipe is connected to another process.", span);
+            }
+        }
+
+        private void MarkPipelineConsumed(int byteLength)
+        {
+            _cursorByte = byteLength;
+            IsClosed = true;
         }
 
         private static int ReadSize(object[] arguments, string owner, LythonSourceSpan span)
@@ -995,6 +1199,8 @@ internal sealed partial class LythonRuntime
             return content.GetByteIndexForRuneBoundary(currentRune + runeCount);
         }
     }
+
+    private readonly record struct PipelinePayload(ReadOnlyMemory<byte> Input, long CumulativeOutputBytes);
 
     private static void RequirePopenNoArguments(object[] arguments, string owner, LythonSourceSpan span)
     {
