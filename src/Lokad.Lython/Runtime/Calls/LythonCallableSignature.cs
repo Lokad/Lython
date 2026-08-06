@@ -476,6 +476,7 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature ShlexQuote = new("shlex.quote", ["s"]);
     public static readonly LythonCallableSignature ShlexJoin = new("shlex.join", ["split_command"]);
     public static readonly LythonCallableSignature ShlexSplit = new("shlex.split", ["s", "comments", "posix"], RequiredCount: 1);
+    public static readonly LythonCallableSignature ShlexClass = new("shlex.shlex", ["instream", "infile", "posix", "punctuation_chars"], RequiredCount: 0);
 
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);
     public static readonly LythonCallableSignature ItertoolsCount = new("itertools.count", ["start", "step"], RequiredCount: 0);

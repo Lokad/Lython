@@ -103,7 +103,7 @@ internal static partial class StaticContracts
         ["filecmp"] = Members("cmp", "clear_cache", "dircmp"),
         ["hashlib"] = Members("md5", "sha1", "sha256", "sha384", "sha512", "new", "algorithms_available", "algorithms_guaranteed", "file_digest"),
         ["gzip"] = Members("open", "compress", "decompress", "BadGzipFile"),
-        ["shlex"] = Members("quote", "join", "split"),
+        ["shlex"] = Members("shlex", "quote", "join", "split"),
         ["collections"] = Members("defaultdict", "Counter", "deque", "namedtuple", "OrderedDict", "ChainMap", "UserDict", "UserList", "UserString", "abc"),
         ["collections.abc"] = Members("Iterable", "Iterator", "Sequence", "MutableSequence", "Mapping", "MutableMapping", "Set", "MutableSet", "Callable"),
         ["itertools"] = Members(

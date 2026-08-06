@@ -414,6 +414,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.ShlexQuote, "LA3151", "shlex.quote(s) expects one string argument.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.ShlexJoin, "LA3151", "shlex.join(split_command) expects one iterable of strings.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.ShlexSplit, "LA3151", "shlex.split(s[, comments[, posix]]) expects one to three arguments.", StaticReturnShape.ListOfString),
+        new(LythonKnownCallableSignatures.ShlexClass, "LA3151", "shlex.shlex([instream[, infile[, posix[, punctuation_chars]]]]) expects zero to four arguments."),
         new(LythonKnownCallableSignatures.ItertoolsChain, "LA3151", "itertools.chain(*iterables) expects positional iterable arguments."),
         new(LythonKnownCallableSignatures.ItertoolsCount, "LA3151", "itertools.count([start][, step]) expects zero to two arguments."),
         new(LythonKnownCallableSignatures.ItertoolsRepeat, "LA3151", "itertools.repeat(object[, times]) expects one or two arguments."),

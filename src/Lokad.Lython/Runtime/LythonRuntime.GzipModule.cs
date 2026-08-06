@@ -371,6 +371,19 @@ internal sealed partial class LythonRuntime
 
         public bool IsClosed { get; private set; }
 
+        public PyString ReadRemainingTextForLexer(LythonSourceSpan span)
+        {
+            EnsureReadable(span);
+            if (!_options.Text)
+            {
+                throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a readable text handle, not a binary gzip handle.", span);
+            }
+
+            return (PyString)Read(-1, span);
+        }
+
+        public void ClosePushedLexerSource(LythonSourceSpan span) => Close(span);
+
         public static GzipFileHandle ForRead(
             GzipOpenOptions options,
             PyBytes decompressed,
