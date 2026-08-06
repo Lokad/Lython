@@ -88,11 +88,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NoModuleNamed(statement.ModuleName, statement.Span);
         }
 
-        var module = ResolveImportedModule(statement.ModuleName, context, statement.Span);
+        var module = ResolveImportedModuleHierarchy(statement.ModuleName, context, statement.Span);
 
         if (statement.ImportedMembers is null)
         {
-            StoreName(statement.BindingName, module, context, statement.Span);
+            var boundModule = string.Equals(statement.BoundModuleName, statement.ModuleName, StringComparison.Ordinal)
+                ? module
+                : ResolveImportedModule(statement.BoundModuleName, context, statement.Span);
+            StoreName(statement.BindingName, boundModule, context, statement.Span);
             return;
         }
 
@@ -115,15 +118,16 @@ internal sealed partial class LythonRuntime
 
     private static PyModule ResolveImportedModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
-        var builtin = ResolveBuiltinModule(moduleName, context);
-        if (builtin is not null)
-        {
-            return builtin;
-        }
-
         if (context.State.ImportedModules.TryGetValue(moduleName, out var cached))
         {
             return cached;
+        }
+
+        var builtin = ResolveBuiltinModule(moduleName, context);
+        if (builtin is not null)
+        {
+            context.State.ImportedModules[moduleName] = builtin;
+            return builtin;
         }
 
         if (!TryResolveLocalImportPath(moduleName, context, span, out var path, out _))
@@ -179,17 +183,38 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask<PyModule> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    private static PyModule ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
-        var builtin = ResolveBuiltinModule(moduleName, context);
-        if (builtin is not null)
+        var parts = moduleName.Split('.');
+        PyModule? parent = null;
+        PyModule? resolved = null;
+        for (var i = 0; i < parts.Length; i++)
         {
-            return builtin;
+            var qualifiedName = string.Join('.', parts, 0, i + 1);
+            resolved = ResolveImportedModule(qualifiedName, context, span);
+            if (parent is not null)
+            {
+                AttachImportedChild(parent, parts[i], resolved, span);
+            }
+
+            parent = resolved;
         }
 
+        return resolved!;
+    }
+
+    private static async ValueTask<PyModule> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    {
         if (context.State.ImportedModules.TryGetValue(moduleName, out var cached))
         {
             return cached;
+        }
+
+        var builtin = ResolveBuiltinModule(moduleName, context);
+        if (builtin is not null)
+        {
+            context.State.ImportedModules[moduleName] = builtin;
+            return builtin;
         }
 
         var localImport = await TryResolveLocalImportPathAsync(moduleName, context, span).ConfigureAwait(false);
@@ -248,6 +273,49 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static async ValueTask<PyModule> ResolveImportedModuleHierarchyAsync(
+        string moduleName,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var parts = moduleName.Split('.');
+        PyModule? parent = null;
+        PyModule? resolved = null;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var qualifiedName = string.Join('.', parts, 0, i + 1);
+            resolved = await ResolveImportedModuleAsync(qualifiedName, context, span).ConfigureAwait(false);
+            if (parent is not null)
+            {
+                AttachImportedChild(parent, parts[i], resolved, span);
+            }
+
+            parent = resolved;
+        }
+
+        return resolved!;
+    }
+
+    private static void AttachImportedChild(PyModule parent, string childName, PyModule child, LythonSourceSpan span)
+    {
+        if (parent.TrySetMember(childName, child))
+        {
+            return;
+        }
+
+        if (parent.TryGetMember(childName, out var existing) &&
+            existing is PyModule existingModule &&
+            string.Equals(existingModule.Name, child.Name, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        throw new LythonRuntimeException(
+            "ImportError",
+            $"Cannot attach imported module '{child.Name}' to parent package '{parent.Name}'.",
+            span);
+    }
+
     private static async ValueTask ExecuteImportAsync(ImportStatementSyntax statement, ExecutionContext context)
     {
         if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal))
@@ -261,11 +329,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NoModuleNamed(statement.ModuleName, statement.Span);
         }
 
-        var module = await ResolveImportedModuleAsync(statement.ModuleName, context, statement.Span).ConfigureAwait(false);
+        var module = await ResolveImportedModuleHierarchyAsync(statement.ModuleName, context, statement.Span).ConfigureAwait(false);
 
         if (statement.ImportedMembers is null)
         {
-            StoreName(statement.BindingName, module, context, statement.Span);
+            var boundModule = string.Equals(statement.BoundModuleName, statement.ModuleName, StringComparison.Ordinal)
+                ? module
+                : await ResolveImportedModuleAsync(statement.BoundModuleName, context, statement.Span).ConfigureAwait(false);
+            StoreName(statement.BindingName, boundModule, context, statement.Span);
             return;
         }
 

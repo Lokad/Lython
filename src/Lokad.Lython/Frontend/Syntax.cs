@@ -13,6 +13,7 @@ internal abstract record StatementSyntax(
 internal sealed record ImportStatementSyntax(
     string ModuleName,
     string BindingName,
+    string BoundModuleName,
     IReadOnlyList<ImportedMemberSyntax>? ImportedMembers,
     LythonSourceSpan Span) : StatementSyntax(Span);
 

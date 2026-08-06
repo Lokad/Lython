@@ -935,12 +935,15 @@ internal sealed partial class LythonRuntime
     {
         if (importBinding.ImportedMembers is null)
         {
-            var module = ResolveImportedModule(importBinding.ModuleName, context, importBinding.Span);
-            AssignExecutableBoundName(codeObject, locals, localCells, importBinding.BindingName, module, context, importBinding.Span);
+            var module = ResolveImportedModuleHierarchy(importBinding.ModuleName, context, importBinding.Span);
+            var boundModule = string.Equals(importBinding.BoundModuleName, importBinding.ModuleName, StringComparison.Ordinal)
+                ? module
+                : ResolveImportedModule(importBinding.BoundModuleName, context, importBinding.Span);
+            AssignExecutableBoundName(codeObject, locals, localCells, importBinding.BindingName, boundModule, context, importBinding.Span);
             return;
         }
 
-        var importedModule = ResolveImportedModule(importBinding.ModuleName, context, importBinding.Span);
+        var importedModule = ResolveImportedModuleHierarchy(importBinding.ModuleName, context, importBinding.Span);
         if (IsStarImport(importBinding.ImportedMembers))
         {
             foreach (var name in importedModule.ExportedNames)

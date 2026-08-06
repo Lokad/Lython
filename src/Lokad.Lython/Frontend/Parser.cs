@@ -1738,18 +1738,23 @@ internal sealed class Parser
         }
 
         var importToken = ReadToken();
-        if (!TryRead(Token.Identifier, out var moduleToken))
-        {
-            AddDiagnostic("LA1001", "Expected module name after 'import'.", importToken);
-            return null;
-        }
-
         var statements = new List<StatementSyntax>();
         while (true)
         {
-            var moduleName = IdentifierText(moduleToken);
-            var bindingName = moduleName;
-            var endToken = moduleToken;
+            if (!TryReadDottedModuleName(
+                    "LA1001",
+                    statements.Count == 0 ? "Expected module name after 'import'." : "Expected module name after ','.",
+                    importToken,
+                    out var moduleName,
+                    out var moduleStartToken,
+                    out var moduleEndToken))
+            {
+                return null;
+            }
+
+            var boundModuleName = moduleName.Split('.')[0];
+            var bindingName = boundModuleName;
+            var endToken = moduleEndToken;
 
             if (CurrentToken == Token.As)
             {
@@ -1761,18 +1766,20 @@ internal sealed class Parser
                 }
 
                 bindingName = IdentifierText(aliasToken);
+                boundModuleName = moduleName;
                 endToken = aliasToken;
             }
 
             if (!IsSupportedImport(moduleName))
             {
-                AddDiagnostic("LA1002", $"Unsupported module '{moduleName}'.", moduleToken);
+                AddDiagnostic("LA1002", $"Unsupported module '{moduleName}'.", moduleStartToken);
                 return null;
             }
 
             statements.Add(new ImportStatementSyntax(
                 moduleName,
                 bindingName,
+                boundModuleName,
                 null,
                 Merge(importToken, endToken)));
 
@@ -1782,11 +1789,6 @@ internal sealed class Parser
             }
 
             ReadToken();
-            if (!TryRead(Token.Identifier, out moduleToken))
-            {
-                AddDiagnostic("LA1001", "Expected module name after ','.", _position);
-                return null;
-            }
         }
 
         for (var i = 1; i < statements.Count; i++)
@@ -1849,6 +1851,7 @@ internal sealed class Parser
             return new ImportStatementSyntax(
                 moduleName,
                 moduleName,
+                moduleName,
                 importedMembers,
                 Merge(fromToken, starToken));
         }
@@ -1905,6 +1908,7 @@ internal sealed class Parser
         }
 
         return new ImportStatementSyntax(
+            moduleName,
             moduleName,
             moduleName,
             importedMembers,

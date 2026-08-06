@@ -13,9 +13,9 @@ internal static class StaticBindingEngine
             case ImportStatementSyntax importStatement:
                 if (importStatement.ImportedMembers is null)
                 {
-                    if (StaticContracts.IsKnownBuiltinModule(importStatement.ModuleName))
+                    if (StaticContracts.IsKnownBuiltinModule(importStatement.BoundModuleName))
                     {
-                        bindings.Set(importStatement.BindingName, AbstractValue.Module(importStatement.ModuleName, importStatement.Span));
+                        bindings.Set(importStatement.BindingName, AbstractValue.Module(importStatement.BoundModuleName, importStatement.Span));
                     }
                     else
                     {

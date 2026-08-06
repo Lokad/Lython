@@ -47,6 +47,101 @@ return json.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span())
     }
 
     [Fact]
+    public void DottedBuiltinImports_FollowPythonPackageBindingRules()
+    {
+        var result = new LythonEngine().Run(
+            """
+import os.path, openpyxl.styles as styles
+import os
+import sys
+return [
+    os.path.basename("/repo/file.txt"),
+    os.__name__,
+    styles.__name__,
+    os.path is sys.modules["os.path"],
+    styles is sys.modules["openpyxl.styles"],
+]
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            new object?[] { "file.txt", "os", "openpyxl.styles", true, true },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
+    public void DottedLocalImports_LoadCacheAndAttachAllowedPackageModules()
+    {
+        var host = new CountingHost();
+        host.SeedFile("/repo/pkg/__init__.py", "package_value = 1\n");
+        host.SeedFile("/repo/pkg/child.py", "value = 42\n");
+
+        var result = new LythonEngine().Run(
+            """
+import pkg.child
+import pkg.child as leaf
+import sys
+return [pkg.package_value, pkg.child.value, leaf is pkg.child, leaf is sys.modules["pkg.child"]]
+""",
+            host,
+            new LythonRunOptions
+            {
+                SourcePath = "/repo/main.py",
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    "pkg",
+                    "pkg.child",
+                    "/repo/pkg/__init__.py",
+                    "/repo/pkg/child.py"
+                }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            new object?[] { new System.Numerics.BigInteger(1), new System.Numerics.BigInteger(42), true, true },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+        Assert.Equal(1, host.ReadCalls["/repo/pkg/__init__.py"]);
+        Assert.Equal(1, host.ReadCalls["/repo/pkg/child.py"]);
+    }
+
+    [Fact]
+    public async Task DottedLocalImports_RunThroughAsyncPackageLoading()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/repo/pkg/__init__.py", "package_value = 1\n");
+        host.SeedFile("/repo/pkg/child.py", "value = 42\n");
+
+        var result = await new LythonEngine().RunAsync(
+            "import pkg.child as leaf\nreturn leaf.value\n",
+            host,
+            new LythonRunOptions
+            {
+                SourcePath = "/repo/main.py",
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    "pkg",
+                    "pkg.child",
+                    "/repo/pkg/__init__.py",
+                    "/repo/pkg/child.py"
+                }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(new System.Numerics.BigInteger(42), result.ReturnValue);
+    }
+
+    [Fact]
+    public void DottedImports_ReportMalformedNamesAtCompileTime()
+    {
+        var result = new LythonEngine().Compile("import os.\n");
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Code == "LA1001" && diagnostic.Message.Contains("after '.'", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void LocalModuleImports_AreCachedWithinRun_ButReloadAcrossRuns()
     {
         var host = new CountingHost();

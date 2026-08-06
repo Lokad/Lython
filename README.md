@@ -79,6 +79,8 @@ Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrap
 
 `typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.
 
+Dotted imports use Python's package binding rules: `import os.path` binds `os`, while `import openpyxl.styles as styles` binds the resolved leaf module to `styles`. Allowed local packages load and cache their ancestors and expose loaded children on the parent package.
+
 The builtin module surface is explicitly allowlisted:
 
 - `argparse`

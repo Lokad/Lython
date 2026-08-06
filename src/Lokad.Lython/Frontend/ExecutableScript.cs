@@ -246,6 +246,7 @@ internal sealed record ExecutableExceptionRegion(
 internal sealed record ExecutableImportBinding(
     string ModuleName,
     string BindingName,
+    string BoundModuleName,
     IReadOnlyList<ImportedMemberSyntax>? ImportedMembers,
     LythonSourceSpan Span);
 
@@ -1629,6 +1630,7 @@ internal sealed class ExecutableScript
             _imports.Add(new ExecutableImportBinding(
                 importStatement.Syntax.ModuleName,
                 importStatement.Syntax.BindingName,
+                importStatement.Syntax.BoundModuleName,
                 importStatement.Syntax.ImportedMembers,
                 importStatement.Span));
             return _imports.Count - 1;

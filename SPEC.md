@@ -306,8 +306,12 @@ subsets specified in this document, including `argparse`, `collections`,
 when host-enabled, `sys`, `typing`, and related contained helpers.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
-allowlisted modules and members. The runtime must reject imports outside the
-allowlist and local imports not explicitly permitted by the embedder.
+allowlisted modules and members, including comma-separated dotted imports.
+An unaliased dotted import binds its top-level package; an aliased dotted import
+binds the resolved leaf. Resolving a dotted name loads and caches each allowed
+ancestor, then attaches each child module to its parent package. The runtime
+must reject imports outside the allowlist and local imports not explicitly
+permitted by the embedder.
 
 The `datetime` subset is fixed-offset and host-mediated. `date`, `time`,
 `datetime`, `timedelta`, `timezone`, `tzinfo`, ISO parsing, formatting, and
