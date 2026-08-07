@@ -1,5 +1,11 @@
 namespace Lokad.Lython.Runtime;
 
+internal readonly record struct PyIterationResult(bool HasValue, object Value)
+{
+    public static implicit operator PyIterationResult((bool HasValue, object Value) result)
+        => new(result.HasValue, result.Value);
+}
+
 internal interface IPyIterableValue
 {
     IEnumerable<object> Iterate();
@@ -17,5 +23,5 @@ internal interface IPyIteratorValue : IPyIterableValue
 
 internal interface IPyAsyncIteratorValue : IPyIteratorValue, IPyAsyncIterableValue
 {
-    ValueTask<(bool HasValue, object Value)> TryMoveNextAsync();
+    ValueTask<PyIterationResult> TryMoveNextAsync();
 }

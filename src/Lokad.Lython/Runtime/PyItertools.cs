@@ -31,8 +31,8 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
     public abstract bool TryMoveNext([MaybeNullWhen(false)] out object value);
 
     /// <summary>Provides async iteration with semantics identical to <see cref="TryMoveNext"/>.</summary>
-    public virtual ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
-        => ValueTask.FromResult(
+    public virtual ValueTask<PyIterationResult> TryMoveNextAsync()
+        => ValueTask.FromResult<PyIterationResult>(
             TryMoveNext(out var value)
                 ? (true, value)
                 : (false, (object)PyNone.Instance));
@@ -90,7 +90,7 @@ internal sealed class PyChainIterator : PyIteratorBase
         }
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (true)
         {
@@ -213,7 +213,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (!await SkipStartAsync().ConfigureAwait(false) || _stop is { } stop && _position >= stop)
         {
@@ -430,7 +430,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (_done || _iterators.Length == 0)
         {
@@ -582,7 +582,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         if (!_sourceExhausted)
@@ -925,7 +925,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         if (!_started)
@@ -989,7 +989,7 @@ internal sealed class PyCompressIterator : PyIteratorBase
         return false;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (true)
         {
@@ -1097,7 +1097,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         return false;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         if (_done)
@@ -1196,7 +1196,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
@@ -1257,7 +1257,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (!_hasPrevious)
         {
@@ -1330,7 +1330,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         if (_activeGroup is not null)
@@ -1461,7 +1461,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
             return false;
         }
 
-        public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+        public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             if (_done || _parent._activeGroupId != _id)
             {
@@ -1527,7 +1527,7 @@ internal sealed class PyTeeIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value) => _state.TryGetNext(_index, out value);
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         => await _state.TryGetNextAsync(_index).ConfigureAwait(false);
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools._tee object>");
@@ -1599,7 +1599,7 @@ internal sealed class PyTeeSharedState
         return true;
     }
 
-    public async ValueTask<(bool HasValue, object Value)> TryGetNextAsync(int index)
+    public async ValueTask<PyIterationResult> TryGetNextAsync(int index)
     {
         _context.CheckExecutionBudget(_span);
         var ownQueue = _queues[index];
@@ -1686,7 +1686,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var items = new object[_size];
         var count = 0;

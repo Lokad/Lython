@@ -78,7 +78,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         }
     }
 
-    public async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         if (_iterator is not null)
         {

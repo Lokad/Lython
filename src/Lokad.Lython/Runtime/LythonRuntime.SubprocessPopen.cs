@@ -1016,7 +1016,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             EnsureOpen(PopenSyntheticSpan);
             var content = await _owner.GetOutputAsync(_isStandardError, PopenSyntheticSpan).ConfigureAwait(false);

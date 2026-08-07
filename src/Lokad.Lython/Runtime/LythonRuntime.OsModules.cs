@@ -1892,7 +1892,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             while (_frames.Count != 0)
             {

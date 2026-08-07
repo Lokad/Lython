@@ -27,7 +27,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
         return false;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var (hasValue, value) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         return hasValue
@@ -75,7 +75,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecutionBudget(_span);
         var result = LythonRuntime.RuntimeValue(await _callable.InvokeAsync([], _span, _context).ConfigureAwait(false));
@@ -167,7 +167,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         return true;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var arguments = new CallArgumentValue[_iterators.Length];
         for (var i = 0; i < _iterators.Length; i++)
@@ -231,7 +231,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
         return false;
     }
 
-    public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         while (true)
         {

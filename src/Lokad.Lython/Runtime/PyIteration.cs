@@ -106,7 +106,7 @@ internal static class PyIteration
             return false;
         }
 
-        public async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             if (_value is IPyAsyncIteratorValue asyncIterator)
             {
