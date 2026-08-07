@@ -328,6 +328,333 @@ internal sealed partial class LythonRuntime
             var callCaches = new ExecutableCallCache[codeObject.CallCacheCount];
             var blockEntryStackDepths = new int?[codeObject.Blocks.Count];
 
+            void PushObserved(object value, LythonSourceSpan span)
+            {
+                context.ObserveValue(value, span);
+                stack.Push(value);
+            }
+
+            void ExecuteDefinitionOrFallback(ExecutableInstruction instruction)
+            {
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.Import:
+                        ExecuteExecutableImport(codeObject, codeObject.Imports[instruction.ImportIndex], locals, localCells, context);
+                        break;
+
+                    case ExecutableOpCode.DefineFunction:
+                        ExecuteExecutableFunctionDefinition(codeObject, codeObject.Functions[instruction.FunctionIndex], locals, localCells, context);
+                        break;
+
+                    case ExecutableOpCode.ExecuteFallbackStatement:
+                        DispatchLoweredStatementAsync(
+                            codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
+                            context,
+                            SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
+                        SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                        break;
+                }
+            }
+
+            void ExecuteStackTransfer(ExecutableInstruction instruction)
+            {
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.LoadConst:
+                        var constant = RuntimeValue(codeObject.Constants[instruction.ConstantIndex]);
+                        context.ObserveValue(constant, instruction.Span);
+                        stack.Push(constant);
+                        break;
+
+                    case ExecutableOpCode.LoadLocal:
+                        stack.Push(LoadLocal(codeObject, locals, instruction.LocalSlot, instruction.Span));
+                        break;
+
+                    case ExecutableOpCode.LoadClosure:
+                        stack.Push(LoadClosure(codeObject, context, instruction.ClosureSlot, instruction.Span));
+                        break;
+
+                    case ExecutableOpCode.LoadGlobal:
+                        stack.Push(ResolveExecutableGlobal(codeObject.Names[instruction.NameIndex], instruction.Span, context));
+                        break;
+
+                    case ExecutableOpCode.LoadName:
+                        stack.Push(ResolveExecutableName(codeObject.Names[instruction.NameIndex], instruction.Span, context));
+                        break;
+
+                    case ExecutableOpCode.EvaluateFallbackExpression:
+                        var fallback = EvaluateLoweredExpression(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context);
+                        context.ObserveValue(fallback, instruction.Span);
+                        stack.Push(fallback);
+                        break;
+
+                    case ExecutableOpCode.LoadMember:
+                        var target = Pop(stack, instruction.Span);
+                        var memberName = codeObject.Names[instruction.NameIndex];
+                        var memberCache = memberCaches[instruction.MemberCacheIndex] ??= new ExecutableMemberCache();
+                        if (!TryReadExecutableMemberCache(target, memberCache, out var memberValue))
+                        {
+                            if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out memberValue))
+                            {
+                                throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
+                            }
+
+                            TryWriteExecutableMemberCache(target, memberValue, memberCache);
+                        }
+
+                        if (memberValue is null)
+                        {
+                            throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
+                        }
+
+                        context.ObserveValue(memberValue, instruction.Span);
+                        stack.Push(memberValue);
+                        break;
+
+                    case ExecutableOpCode.StoreLocal:
+                        var local = Pop(stack, instruction.Span);
+                        locals[instruction.LocalSlot] = local;
+                        if (localCells?[instruction.LocalSlot] is ExecutableCell localCell)
+                        {
+                            localCell.Value = local;
+                        }
+
+                        if (codeObject.RequiresLocalVariableMirroring)
+                        {
+                            context.Variables[codeObject.LocalNames[instruction.LocalSlot]] = local;
+                        }
+                        break;
+
+                    case ExecutableOpCode.StoreClosure:
+                        StoreExecutableClosure(
+                            codeObject,
+                            context,
+                            instruction.ClosureSlot,
+                            Pop(stack, instruction.Span),
+                            instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.StoreGlobal:
+                        StoreName(
+                            codeObject.Names[instruction.NameIndex],
+                            Pop(stack, instruction.Span),
+                            context,
+                            instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.StoreName:
+                        AssignExecutableBoundName(
+                            codeObject,
+                            locals,
+                            localCells,
+                            codeObject.Names[instruction.NameIndex],
+                            Pop(stack, instruction.Span),
+                            context,
+                            instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Dup:
+                        stack.Push(Peek(stack, instruction.Span));
+                        break;
+
+                    case ExecutableOpCode.PopTop:
+                        _ = Pop(stack, instruction.Span);
+                        break;
+                }
+            }
+
+            bool ExecuteStructure(ExecutableInstruction instruction)
+            {
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.MakeList:
+                        PushObserved(CreateListFromStack(stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.MakeTuple:
+                        PushObserved(CreateTupleFromStack(stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.MakeSet:
+                        PushObserved(ExecuteExecutableMakeSet(stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.MakeDict:
+                        PushObserved(ExecuteExecutableMakeDict(stack, instruction.PairCount, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.ResolveContextManager:
+                        var managerValue = Pop(stack, instruction.Span);
+                        stack.Push(PyContextManagers.Resolve(managerValue, instruction.Span, context));
+                        break;
+
+                    case ExecutableOpCode.EnterContextManager:
+                        var enteringManager = PopContextManager(stack, instruction.Span);
+                        PushObserved(enteringManager.Enter(), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.ExitContextManager:
+                        var exitingManager = PopContextManager(stack, instruction.Span);
+                        // Only exceptions are suppressible. Return/break/continue
+                        // are normal exits to __exit__ and remain pending afterward.
+                        if (pendingAbrupt?.Exception is { } exception)
+                        {
+                            if (exitingManager.Exit(exception.ExceptionType, exception, PyNone.Instance))
+                            {
+                                pendingAbrupt = null;
+                            }
+                        }
+                        else
+                        {
+                            _ = exitingManager.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+                        }
+                        break;
+
+                    case ExecutableOpCode.MatchCase:
+                        var subject = Pop(stack, instruction.Span);
+                        if (!TryExecuteExecutableMatchCase(
+                                codeObject.MatchCases[instruction.MatchCaseIndex],
+                                subject,
+                                context,
+                                locals,
+                                localCells))
+                        {
+                            currentBlockIndex = instruction.FailureBlockIndex;
+                            return true;
+                        }
+                        break;
+                }
+
+                return false;
+            }
+
+            bool ExecuteValueOperation(ExecutableInstruction instruction)
+            {
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.GetIter:
+                        var iterable = Pop(stack, instruction.Span);
+                        stack.Push(ToSequence(iterable, instruction.Span, context).GetEnumerator());
+                        break;
+
+                    case ExecutableOpCode.ForNext:
+                        var iterator = PeekIterator(stack, instruction.Span);
+                        if (!iterator.MoveNext())
+                        {
+                            _ = Pop(stack, instruction.Span);
+                            currentBlockIndex = instruction.TargetBlockIndex;
+                            return true;
+                        }
+
+                        stack.Push(iterator.Current);
+                        break;
+
+                    case ExecutableOpCode.AssignLoopTarget:
+                        var loopBinding = codeObject.LoopTargets[instruction.LoopTargetIndex];
+                        AssignLoopTarget(loopBinding.Target, Pop(stack, instruction.Span), loopBinding.Span, context);
+                        break;
+
+                    case ExecutableOpCode.AssignUnpackingTargets:
+                        var unpackingBinding = codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
+                        AssignTargets(unpackingBinding.Targets, Pop(stack, instruction.Span), unpackingBinding.Span, context);
+                        break;
+
+                    case ExecutableOpCode.Call:
+                        PushObserved(ExecuteExecutableCall(
+                            codeObject.CallSites[instruction.CallSiteIndex],
+                            stack,
+                            context,
+                            callCaches[instruction.CallCacheIndex] ??= new ExecutableCallCache()), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Subscript:
+                        var index = Pop(stack, instruction.Span);
+                        var target = Pop(stack, instruction.Span);
+                        PushObserved(ExecuteExecutableSubscript(target, index, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Slice:
+                        PushObserved(ExecuteExecutableSlice(stack, instruction.SliceParts, instruction.Span, context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Binary:
+                        var binaryRight = Pop(stack, instruction.Span);
+                        var binaryLeft = Pop(stack, instruction.Span);
+                        PushObserved(EvaluateExecutableBinary(
+                            instruction.BinaryOperator,
+                            binaryLeft,
+                            binaryRight,
+                            instruction.Span,
+                            context), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Augmented:
+                        var augmentedRight = Pop(stack, instruction.Span);
+                        var augmentedLeft = Pop(stack, instruction.Span);
+                        PushObserved(EvaluateExecutableAugmented(
+                            instruction.AugmentedOperator,
+                            augmentedLeft,
+                            augmentedRight,
+                            context,
+                            instruction.Span), instruction.Span);
+                        break;
+
+                    case ExecutableOpCode.Unary:
+                        PushObserved(EvaluateExecutableUnary(
+                            instruction.UnaryOperator,
+                            Pop(stack, instruction.Span),
+                            context,
+                            instruction.Span), instruction.Span);
+                        break;
+                }
+
+                return false;
+            }
+
+            bool ExecuteControlFlow(ExecutableInstruction instruction)
+            {
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.JumpIfFalse:
+                        if (!IsTruthy(Pop(stack, instruction.Span), context, instruction.Span))
+                        {
+                            currentBlockIndex = instruction.TargetBlockIndex;
+                            return true;
+                        }
+                        return false;
+
+                    case ExecutableOpCode.Jump:
+                        currentBlockIndex = instruction.TargetBlockIndex;
+                        return true;
+
+                    case ExecutableOpCode.ClearException:
+                        if (instruction.ExceptionNameIndex >= 0)
+                        {
+                            _ = DeleteName(codeObject.Names[instruction.ExceptionNameIndex], context, instruction.Span);
+                        }
+                        context.Services.SetCurrentException(null);
+                        return false;
+
+                    case ExecutableOpCode.EndFinally:
+                        if (pendingAbrupt is not null)
+                        {
+                            PropagatePendingAbrupt(pendingAbrupt);
+                        }
+
+                        currentBlockIndex = instruction.TargetBlockIndex;
+                        return true;
+
+                    case ExecutableOpCode.Return:
+                        throw new ReturnSignal(Pop(stack, instruction.Span));
+
+                    case ExecutableOpCode.ReturnNone:
+                        throw new ReturnSignal(PyNone.Instance);
+
+                    default:
+                        throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
+                }
+            }
+
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
             // below validates later arrivals. Abrupt signals remain separate so
@@ -346,342 +673,60 @@ internal sealed partial class LythonRuntime
                     {
                         switch (instruction.OpCode)
                         {
-                            case ExecutableOpCode.Import:
-                                ExecuteExecutableImport(codeObject, codeObject.Imports[instruction.ImportIndex], locals, localCells, context);
+                            case ExecutableOpCode.Import or
+                                 ExecutableOpCode.DefineFunction or
+                                 ExecutableOpCode.ExecuteFallbackStatement:
+                                ExecuteDefinitionOrFallback(instruction);
                                 break;
 
-                            case ExecutableOpCode.DefineFunction:
-                                ExecuteExecutableFunctionDefinition(codeObject, codeObject.Functions[instruction.FunctionIndex], locals, localCells, context);
+                            case ExecutableOpCode.LoadConst or
+                                 ExecutableOpCode.LoadLocal or
+                                 ExecutableOpCode.LoadClosure or
+                                 ExecutableOpCode.LoadGlobal or
+                                 ExecutableOpCode.LoadName or
+                                 ExecutableOpCode.EvaluateFallbackExpression or
+                                 ExecutableOpCode.LoadMember or
+                                 ExecutableOpCode.StoreLocal or
+                                 ExecutableOpCode.StoreClosure or
+                                 ExecutableOpCode.StoreGlobal or
+                                 ExecutableOpCode.StoreName or
+                                 ExecutableOpCode.Dup or
+                                 ExecutableOpCode.PopTop:
+                                ExecuteStackTransfer(instruction);
                                 break;
 
-                            case ExecutableOpCode.ExecuteFallbackStatement:
-                                DispatchLoweredStatementAsync(
-                                    codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
-                                    context,
-                                    SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
-                                SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                            case ExecutableOpCode.MakeList or
+                                 ExecutableOpCode.MakeTuple or
+                                 ExecutableOpCode.MakeSet or
+                                 ExecutableOpCode.MakeDict or
+                                 ExecutableOpCode.ResolveContextManager or
+                                 ExecutableOpCode.EnterContextManager or
+                                 ExecutableOpCode.ExitContextManager or
+                                 ExecutableOpCode.MatchCase:
+                                jumped = ExecuteStructure(instruction);
                                 break;
 
-                            case ExecutableOpCode.LoadConst:
-                                {
-                                    var value = RuntimeValue(codeObject.Constants[instruction.ConstantIndex]);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.LoadLocal:
-                                stack.Push(LoadLocal(codeObject, locals, instruction.LocalSlot, instruction.Span));
+                            case ExecutableOpCode.GetIter or
+                                 ExecutableOpCode.ForNext or
+                                 ExecutableOpCode.AssignLoopTarget or
+                                 ExecutableOpCode.AssignUnpackingTargets or
+                                 ExecutableOpCode.Call or
+                                 ExecutableOpCode.Subscript or
+                                 ExecutableOpCode.Slice or
+                                 ExecutableOpCode.Binary or
+                                 ExecutableOpCode.Augmented or
+                                 ExecutableOpCode.Unary:
+                                jumped = ExecuteValueOperation(instruction);
                                 break;
 
-                            case ExecutableOpCode.LoadClosure:
-                                stack.Push(LoadClosure(codeObject, context, instruction.ClosureSlot, instruction.Span));
+                            case ExecutableOpCode.JumpIfFalse or
+                                 ExecutableOpCode.Jump or
+                                 ExecutableOpCode.ClearException or
+                                 ExecutableOpCode.EndFinally or
+                                 ExecutableOpCode.Return or
+                                 ExecutableOpCode.ReturnNone:
+                                jumped = ExecuteControlFlow(instruction);
                                 break;
-
-                            case ExecutableOpCode.LoadGlobal:
-                                stack.Push(ResolveExecutableGlobal(codeObject.Names[instruction.NameIndex], instruction.Span, context));
-                                break;
-
-                            case ExecutableOpCode.LoadName:
-                                stack.Push(ResolveExecutableName(codeObject.Names[instruction.NameIndex], instruction.Span, context));
-                                break;
-
-                            case ExecutableOpCode.EvaluateFallbackExpression:
-                                {
-                                    var value = EvaluateLoweredExpression(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.LoadMember:
-                                {
-                                    var target = Pop(stack, instruction.Span);
-                                    var memberName = codeObject.Names[instruction.NameIndex];
-                                    var memberCache = memberCaches[instruction.MemberCacheIndex] ??= new ExecutableMemberCache();
-                                    if (!TryReadExecutableMemberCache(target, memberCache, out var memberValue))
-                                    {
-                                        if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out memberValue))
-                                        {
-                                            throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
-                                        }
-
-                                        TryWriteExecutableMemberCache(target, memberValue, memberCache);
-                                    }
-
-                                    if (memberValue is null)
-                                    {
-                                        throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
-                                    }
-
-                                    context.ObserveValue(memberValue, instruction.Span);
-                                    stack.Push(memberValue);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.StoreLocal:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    locals[instruction.LocalSlot] = value;
-                                    if (localCells?[instruction.LocalSlot] is ExecutableCell localCell)
-                                    {
-                                        localCell.Value = value;
-                                    }
-
-                                    if (codeObject.RequiresLocalVariableMirroring)
-                                    {
-                                        context.Variables[codeObject.LocalNames[instruction.LocalSlot]] = value;
-                                    }
-                                    break;
-                                }
-
-                            case ExecutableOpCode.StoreClosure:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    StoreExecutableClosure(codeObject, context, instruction.ClosureSlot, value, instruction.Span);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.StoreGlobal:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    var name = codeObject.Names[instruction.NameIndex];
-                                    StoreName(name, value, context, instruction.Span);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.StoreName:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    var name = codeObject.Names[instruction.NameIndex];
-                                    AssignExecutableBoundName(codeObject, locals, localCells, name, value, context, instruction.Span);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Dup:
-                                stack.Push(Peek(stack, instruction.Span));
-                                break;
-
-                            case ExecutableOpCode.PopTop:
-                                _ = Pop(stack, instruction.Span);
-                                break;
-
-                            case ExecutableOpCode.MakeList:
-                                {
-                                    var value = CreateListFromStack(stack, instruction.ItemCount, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.MakeTuple:
-                                {
-                                    var value = CreateTupleFromStack(stack, instruction.ItemCount, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.MakeSet:
-                                {
-                                    var value = ExecuteExecutableMakeSet(stack, instruction.ItemCount, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.MakeDict:
-                                {
-                                    var value = ExecuteExecutableMakeDict(stack, instruction.PairCount, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.ResolveContextManager:
-                                {
-                                    var manager = Pop(stack, instruction.Span);
-                                    stack.Push(PyContextManagers.Resolve(manager, instruction.Span, context));
-                                    break;
-                                }
-
-                            case ExecutableOpCode.EnterContextManager:
-                                {
-                                    var manager = PopContextManager(stack, instruction.Span);
-                                    var entered = manager.Enter();
-                                    context.ObserveValue(entered, instruction.Span);
-                                    stack.Push(entered);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.ExitContextManager:
-                                {
-                                    var manager = PopContextManager(stack, instruction.Span);
-                                    // Only exceptions are suppressible. Return/break/continue
-                                    // are normal exits to __exit__ and remain pending afterward.
-                                    if (pendingAbrupt?.Exception is { } exception)
-                                    {
-                                        if (manager.Exit(exception.ExceptionType, exception, PyNone.Instance))
-                                        {
-                                            pendingAbrupt = null;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        _ = manager.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
-                                    }
-
-                                    break;
-                                }
-
-                            case ExecutableOpCode.MatchCase:
-                                {
-                                    var subject = Pop(stack, instruction.Span);
-                                    if (!TryExecuteExecutableMatchCase(
-                                            codeObject.MatchCases[instruction.MatchCaseIndex],
-                                            subject,
-                                            context,
-                                            locals,
-                                            localCells))
-                                    {
-                                        currentBlockIndex = instruction.FailureBlockIndex;
-                                        jumped = true;
-                                    }
-                                    break;
-                                }
-
-                            case ExecutableOpCode.GetIter:
-                                {
-                                    var iterable = Pop(stack, instruction.Span);
-                                    stack.Push(ToSequence(iterable, instruction.Span, context).GetEnumerator());
-                                    break;
-                                }
-
-                            case ExecutableOpCode.ForNext:
-                                {
-                                    var iterator = PeekIterator(stack, instruction.Span);
-                                    if (!iterator.MoveNext())
-                                    {
-                                        _ = Pop(stack, instruction.Span);
-                                        currentBlockIndex = instruction.TargetBlockIndex;
-                                        jumped = true;
-                                        break;
-                                    }
-
-                                    stack.Push(iterator.Current);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.AssignLoopTarget:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    var binding = codeObject.LoopTargets[instruction.LoopTargetIndex];
-                                    AssignLoopTarget(binding.Target, value, binding.Span, context);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.AssignUnpackingTargets:
-                                {
-                                    var value = Pop(stack, instruction.Span);
-                                    var binding = codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
-                                    AssignTargets(binding.Targets, value, binding.Span, context);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Call:
-                                {
-                                    var value = ExecuteExecutableCall(codeObject.CallSites[instruction.CallSiteIndex], stack, context, callCaches[instruction.CallCacheIndex] ??= new ExecutableCallCache());
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Subscript:
-                                {
-                                    var index = Pop(stack, instruction.Span);
-                                    var target = Pop(stack, instruction.Span);
-                                    var value = ExecuteExecutableSubscript(target, index, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Slice:
-                                {
-                                    var value = ExecuteExecutableSlice(stack, instruction.SliceParts, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Binary:
-                                {
-                                    var right = Pop(stack, instruction.Span);
-                                    var left = Pop(stack, instruction.Span);
-                                    var value = EvaluateExecutableBinary(instruction.BinaryOperator, left, right, instruction.Span, context);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Augmented:
-                                {
-                                    var right = Pop(stack, instruction.Span);
-                                    var left = Pop(stack, instruction.Span);
-                                    var value = EvaluateExecutableAugmented(instruction.AugmentedOperator, left, right, context, instruction.Span);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Unary:
-                                {
-                                    var operand = Pop(stack, instruction.Span);
-                                    var value = EvaluateExecutableUnary(instruction.UnaryOperator, operand, context, instruction.Span);
-                                    context.ObserveValue(value, instruction.Span);
-                                    stack.Push(value);
-                                    break;
-                                }
-
-                            case ExecutableOpCode.JumpIfFalse:
-                                {
-                                    var condition = Pop(stack, instruction.Span);
-                                    if (!IsTruthy(condition, context, instruction.Span))
-                                    {
-                                        currentBlockIndex = instruction.TargetBlockIndex;
-                                        jumped = true;
-                                    }
-                                    break;
-                                }
-
-                            case ExecutableOpCode.Jump:
-                                currentBlockIndex = instruction.TargetBlockIndex;
-                                jumped = true;
-                                break;
-
-                            case ExecutableOpCode.ClearException:
-                                if (instruction.ExceptionNameIndex >= 0)
-                                {
-                                    _ = DeleteName(codeObject.Names[instruction.ExceptionNameIndex], context, instruction.Span);
-                                }
-                                context.Services.SetCurrentException(null);
-                                break;
-
-                            case ExecutableOpCode.EndFinally:
-                                if (pendingAbrupt is not null)
-                                {
-                                    PropagatePendingAbrupt(pendingAbrupt);
-                                }
-
-                                currentBlockIndex = instruction.TargetBlockIndex;
-                                jumped = true;
-                                break;
-
-                            case ExecutableOpCode.Return:
-                                throw new ReturnSignal(Pop(stack, instruction.Span));
-
-                            case ExecutableOpCode.ReturnNone:
-                                throw new ReturnSignal(PyNone.Instance);
 
                             default:
                                 throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
