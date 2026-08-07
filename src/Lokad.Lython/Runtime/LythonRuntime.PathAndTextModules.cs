@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
                 path = path is null ? segment : PathOps.Join(path, segment);
             }
 
-            return new PyPath(PathOps.Normalize(path.RequireNotNull()));
+            return new PyPath(PathOps.NormalizeLexical(path.RequireNotNull()));
         }
 
         private sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable

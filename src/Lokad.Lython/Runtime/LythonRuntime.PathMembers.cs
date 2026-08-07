@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Path.absolute() expects no arguments.", span);
                     }
 
-                    return new PyPath(PathOps.Normalize(path.Value, PyString.FromString(context.Host.Cwd)));
+                    return new PyPath(PathOps.MakeAbsoluteLexical(path.Value, PyString.FromString(context.Host.Cwd)));
                 }),
                 "relative_to" => new BoundCallable((arguments, span, _) =>
                 {
@@ -844,7 +844,7 @@ internal sealed partial class LythonRuntime
             return value switch
             {
                 PyPath path => path,
-                _ when PyStringOps.TryAsString(value, out var text) => new PyPath(PathOps.Normalize(text)),
+                _ when PyStringOps.TryAsString(value, out var text) => new PyPath(PathOps.NormalizeLexical(text)),
                 _ => throw new LythonRuntimeException("TypeError", $"{signature} expects a Path or string argument.", span)
             };
         }

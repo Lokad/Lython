@@ -5,6 +5,27 @@ namespace Lokad.Lython.Tests;
 public sealed class PathlibModuleFunctionTests
 {
     [Fact]
+    public void PathlibModule_PreservesLexicalParentSegmentsUntilResolution()
+    {
+        var result = new LythonEngine().Run(
+            """
+from pathlib import Path, PurePosixPath
+
+pure = PurePosixPath("a/../b")
+concrete = Path("a/../b")
+print(pure)
+print(pure.parts)
+print(pure.parent)
+print(concrete.absolute())
+print(concrete.resolve())
+""",
+            new MockLythonHost("/repo"));
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("a/../b\n('a', '..', 'b')\na/..\n/repo/a/../b\n/repo/b\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void PathlibModule_EmptyComponents_AreCurrentDirectoryPaths()
     {
         var result = new LythonEngine().Run(

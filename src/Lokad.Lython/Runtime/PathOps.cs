@@ -4,6 +4,42 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PathOps
 {
+    public static PyString NormalizeLexical(PyString path)
+        => PyString.FromString(NormalizeLexical(path.AsString()));
+
+    public static string NormalizeLexical(string path)
+    {
+        if (path.Length == 0)
+        {
+            path = ".";
+        }
+
+        var isAbsolute = path.StartsWith("/", StringComparison.Ordinal);
+        var parts = new List<string>();
+        foreach (var part in path.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (part != ".")
+            {
+                parts.Add(part);
+            }
+        }
+
+        if (isAbsolute)
+        {
+            return "/" + string.Join("/", parts);
+        }
+
+        return parts.Count == 0 ? "." : string.Join("/", parts);
+    }
+
+    public static PyString MakeAbsoluteLexical(PyString path, PyString basePath)
+        => PyString.FromString(MakeAbsoluteLexical(path.AsString(), basePath.AsString()));
+
+    public static string MakeAbsoluteLexical(string path, string basePath)
+        => path.StartsWith("/", StringComparison.Ordinal)
+            ? NormalizeLexical(path)
+            : NormalizeLexical(Combine(basePath, path));
+
     public static PyString Normalize(PyString path)
         => Normalize(path, null);
 
@@ -67,10 +103,10 @@ internal static class PathOps
     {
         if (right.StartsWith("/", StringComparison.Ordinal))
         {
-            return Normalize(right);
+            return NormalizeLexical(right);
         }
 
-        return Normalize(Combine(left, right));
+        return NormalizeLexical(Combine(left, right));
     }
 
     public static string Combine(string left, string right)
@@ -94,7 +130,7 @@ internal static class PathOps
 
     public static string Parent(string path)
     {
-        var normalized = Normalize(path);
+        var normalized = NormalizeLexical(path);
         if (normalized == "/" || normalized == ".")
         {
             return normalized;
@@ -117,7 +153,7 @@ internal static class PathOps
 
     public static string BaseName(string path)
     {
-        var normalized = Normalize(path);
+        var normalized = NormalizeLexical(path);
         if (normalized == "/" || normalized == ".")
         {
             return string.Empty;
@@ -149,7 +185,7 @@ internal static class PathOps
             throw new InvalidOperationException("Invalid suffix.");
         }
 
-        var normalized = Normalize(path);
+        var normalized = NormalizeLexical(path);
         var parent = Parent(normalized);
         var stem = Stem(normalized);
         var nextName = stem + suffix;
@@ -168,7 +204,7 @@ internal static class PathOps
             throw new InvalidOperationException("Invalid name.");
         }
 
-        var normalized = Normalize(path);
+        var normalized = NormalizeLexical(path);
         var parent = Parent(normalized);
         return parent switch
         {
@@ -178,11 +214,11 @@ internal static class PathOps
         };
     }
 
-    public static bool IsAbsolute(string path) => Normalize(path).StartsWith("/", StringComparison.Ordinal);
+    public static bool IsAbsolute(string path) => path.StartsWith("/", StringComparison.Ordinal);
 
     public static bool Match(string path, string pattern)
     {
-        var normalized = Normalize(path);
+        var normalized = NormalizeLexical(path);
         var pathIsAbsolute = normalized.StartsWith("/", StringComparison.Ordinal);
         var patternIsAbsolute = pattern.StartsWith("/", StringComparison.Ordinal);
         if (patternIsAbsolute != pathIsAbsolute && patternIsAbsolute)
@@ -214,8 +250,8 @@ internal static class PathOps
 
     public static string RelativeTo(string path, string parent)
     {
-        var normalizedPath = Normalize(path);
-        var normalizedParent = Normalize(parent);
+        var normalizedPath = NormalizeLexical(path);
+        var normalizedParent = NormalizeLexical(parent);
         var prefix = normalizedParent == "/" ? "/" : normalizedParent + "/";
 
         if (normalizedPath == normalizedParent)
@@ -268,7 +304,7 @@ internal static class PathOps
 
     public static PyTuple Parts(PyString path, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        var normalized = Normalize(path.AsString());
+        var normalized = NormalizeLexical(path.AsString());
         if (normalized == ".")
         {
             return governor is null ? new PyTuple([]) : new PyTuple([], governor, span);
