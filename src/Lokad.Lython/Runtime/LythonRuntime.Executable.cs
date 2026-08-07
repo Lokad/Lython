@@ -355,7 +355,10 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.ExecuteFallbackStatement:
-                                ExecuteLoweredStatement(codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement, context);
+                                DispatchLoweredStatementAsync(
+                                    codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
+                                    context,
+                                    SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
                                 SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
                                 break;
 

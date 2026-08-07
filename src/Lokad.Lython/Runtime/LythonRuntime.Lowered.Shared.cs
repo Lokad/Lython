@@ -6,14 +6,86 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private delegate ValueTask<ControlSignal?> LoweredStatementExecutor(
+    private delegate ValueTask<ControlSignal?> LoweredStatementBlockExecutor(
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
+
+    private static async ValueTask DispatchLoweredStatementAsync(
+        LoweredStatement statement,
+        ExecutionContext context,
+        ILoweredStatementExecution execution)
+    {
+        switch (statement)
+        {
+            case LoweredImportStatement importStatement:
+                await execution.ExecuteImportAsync(importStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredScopeDirectiveStatement:
+                return;
+            case LoweredFunctionDefinitionStatement functionDefinition:
+                await execution.ExecuteFunctionDefinitionAsync(functionDefinition, context).ConfigureAwait(false);
+                return;
+            case LoweredClassDefinitionStatement classDefinition:
+                await execution.ExecuteClassDefinitionAsync(classDefinition, context).ConfigureAwait(false);
+                return;
+            case LoweredAssignmentStatement assignment:
+                await execution.ExecuteAssignmentAsync(assignment, context).ConfigureAwait(false);
+                return;
+            case LoweredExpressionStatement expression:
+                _ = await execution.EvaluateExpressionAsync(expression.Expression, context).ConfigureAwait(false);
+                return;
+            case LoweredIfStatement ifStatement:
+                await execution.ExecuteIfAsync(ifStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredForStatement forStatement:
+                await execution.ExecuteForAsync(forStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredWhileStatement whileStatement:
+                await execution.ExecuteWhileAsync(whileStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredMatchStatement matchStatement:
+                await execution.ExecuteMatchAsync(matchStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredWithStatement withStatement:
+                await execution.ExecuteWithAsync(withStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredTryStatement tryStatement:
+                await execution.ExecuteTryAsync(tryStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredPassStatement:
+                return;
+            case LoweredBreakStatement:
+                throw new BreakSignal();
+            case LoweredContinueStatement:
+                throw new ContinueSignal();
+            case LoweredAssertStatement assertStatement:
+                await execution.ExecuteAssertAsync(assertStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredDeleteStatement deleteStatement:
+                await execution.ExecuteDeleteAsync(deleteStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredReturnStatement returnStatement:
+                if (returnStatement.Expression is null)
+                {
+                    throw new ReturnSignal(PyNone.Instance);
+                }
+
+                var returnValue = await execution.EvaluateExpressionAsync(returnStatement.Expression, context).ConfigureAwait(false);
+                throw new ReturnSignal(RuntimeValue(returnValue));
+            case LoweredRaiseStatement raiseStatement:
+                await execution.ExecuteRaiseAsync(raiseStatement, context).ConfigureAwait(false);
+                return;
+            case LoweredOtherStatement other:
+                throw new InvalidOperationException($"Generic lowered statement fallback reached for supported execution: {other.Syntax.GetType().Name}");
+            default:
+                throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}");
+        }
+    }
 
     private static async ValueTask ExecuteTryStatementCoreAsync(
         LoweredTryStatement statement,
         ExecutionContext context,
-        LoweredStatementExecutor executeStatements)
+        LoweredStatementBlockExecutor executeStatements)
     {
         ControlSignal? pendingControl = null;
         ReturnSignal? pendingReturn = null;

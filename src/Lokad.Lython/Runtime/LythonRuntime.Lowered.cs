@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var statement in statements)
             {
-                ExecuteLoweredStatement(statement, context);
+                DispatchLoweredStatementAsync(statement, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
             }
 
             return null;
@@ -26,71 +26,6 @@ internal sealed partial class LythonRuntime
         catch (ControlSignal signal)
         {
             return signal;
-        }
-    }
-
-    private static void ExecuteLoweredStatement(LoweredStatement statement, ExecutionContext context)
-    {
-        switch (statement)
-        {
-            case LoweredImportStatement importStatement:
-                ExecuteLoweredImport(importStatement, context);
-                return;
-            case LoweredScopeDirectiveStatement:
-                return;
-            case LoweredFunctionDefinitionStatement functionDefinition:
-                ExecuteLoweredFunctionDefinition(functionDefinition, context);
-                return;
-            case LoweredClassDefinitionStatement classDefinition:
-                ExecuteLoweredClassDefinition(classDefinition, context);
-                return;
-            case LoweredAssignmentStatement assignment:
-                ExecuteLoweredAssignment(assignment, context);
-                return;
-            case LoweredExpressionStatement expression:
-                _ = EvaluateLoweredExpression(expression.Expression, context);
-                return;
-            case LoweredIfStatement ifStatement:
-                ExecuteLoweredIfStatement(ifStatement, context);
-                return;
-            case LoweredForStatement forStatement:
-                ExecuteLoweredForStatement(forStatement, context);
-                return;
-            case LoweredWhileStatement whileStatement:
-                ExecuteLoweredWhileStatement(whileStatement, context);
-                return;
-            case LoweredMatchStatement matchStatement:
-                ExecuteLoweredMatchStatement(matchStatement, context);
-                return;
-            case LoweredWithStatement withStatement:
-                ExecuteLoweredWithStatement(withStatement, context);
-                return;
-            case LoweredTryStatement tryStatement:
-                ExecuteLoweredTryStatement(tryStatement, context);
-                return;
-            case LoweredPassStatement:
-                return;
-            case LoweredBreakStatement:
-                throw new BreakSignal();
-            case LoweredContinueStatement:
-                throw new ContinueSignal();
-            case LoweredAssertStatement assertStatement:
-                ExecuteLoweredAssertStatement(assertStatement, context);
-                return;
-            case LoweredDeleteStatement deleteStatement:
-                ExecuteLoweredDeleteStatement(deleteStatement, context);
-                return;
-            case LoweredReturnStatement returnStatement:
-                throw new ReturnSignal(returnStatement.Expression is null
-                    ? PyNone.Instance
-                    : RuntimeValue(EvaluateLoweredExpression(returnStatement.Expression, context)));
-            case LoweredRaiseStatement raiseStatement:
-                ExecuteLoweredRaiseStatement(raiseStatement, context);
-                return;
-            case LoweredOtherStatement other:
-                throw new InvalidOperationException($"Generic lowered statement fallback reached for supported execution: {other.Syntax.GetType().Name}");
-            default:
-                throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}");
         }
     }
 

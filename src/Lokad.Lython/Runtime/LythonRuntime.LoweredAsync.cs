@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var statement in statements)
             {
-                await ExecuteLoweredStatementAsync(statement, context).ConfigureAwait(false);
+                await DispatchLoweredStatementAsync(statement, context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
             }
 
             return null;
@@ -25,71 +25,6 @@ internal sealed partial class LythonRuntime
         catch (ControlSignal signal)
         {
             return signal;
-        }
-    }
-
-    private static async ValueTask ExecuteLoweredStatementAsync(LoweredStatement statement, ExecutionContext context)
-    {
-        switch (statement)
-        {
-            case LoweredImportStatement importStatement:
-                await ExecuteImportAsync(importStatement.Syntax, context).ConfigureAwait(false);
-                return;
-            case LoweredScopeDirectiveStatement:
-                return;
-            case LoweredFunctionDefinitionStatement functionDefinition:
-                await ExecuteLoweredFunctionDefinitionAsync(functionDefinition, context).ConfigureAwait(false);
-                return;
-            case LoweredClassDefinitionStatement classDefinition:
-                await ExecuteLoweredClassDefinitionAsync(classDefinition, context).ConfigureAwait(false);
-                return;
-            case LoweredAssignmentStatement assignment:
-                await ExecuteLoweredAssignmentAsync(assignment, context).ConfigureAwait(false);
-                return;
-            case LoweredExpressionStatement expression:
-                _ = await EvaluateLoweredExpressionAsync(expression.Expression, context).ConfigureAwait(false);
-                return;
-            case LoweredIfStatement ifStatement:
-                await ExecuteLoweredIfStatementAsync(ifStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredForStatement forStatement:
-                await ExecuteLoweredForStatementAsync(forStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredWhileStatement whileStatement:
-                await ExecuteLoweredWhileStatementAsync(whileStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredMatchStatement matchStatement:
-                await ExecuteLoweredMatchStatementAsync(matchStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredWithStatement withStatement:
-                await ExecuteLoweredWithStatementAsync(withStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredTryStatement tryStatement:
-                await ExecuteLoweredTryStatementAsync(tryStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredPassStatement:
-                return;
-            case LoweredBreakStatement:
-                throw new BreakSignal();
-            case LoweredContinueStatement:
-                throw new ContinueSignal();
-            case LoweredAssertStatement assertStatement:
-                await ExecuteLoweredAssertStatementAsync(assertStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredDeleteStatement deleteStatement:
-                await ExecuteLoweredDeleteStatementAsync(deleteStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredReturnStatement returnStatement:
-                throw new ReturnSignal(returnStatement.Expression is null
-                    ? PyNone.Instance
-                    : RuntimeValue(await EvaluateLoweredExpressionAsync(returnStatement.Expression, context).ConfigureAwait(false)));
-            case LoweredRaiseStatement raiseStatement:
-                await ExecuteLoweredRaiseStatementAsync(raiseStatement, context).ConfigureAwait(false);
-                return;
-            case LoweredOtherStatement other:
-                throw new InvalidOperationException($"Generic lowered statement fallback reached for supported execution: {other.Syntax.GetType().Name}");
-            default:
-                throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}");
         }
     }
 
