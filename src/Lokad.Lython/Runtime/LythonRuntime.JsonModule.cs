@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dump(obj, fp, *, ...) expects an object and writable text file handle.", span);
             }
 
-            var text = SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, dumpsForm: false, span), context, span);
+            var text = SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dump, span), context, span);
             _ = file.Write(text);
             return PyNone.Instance;
         }
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
             }
 
-            return SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, dumpsForm: true, span), context, span);
+            return SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dumps, span), context, span);
         }
 
         private object ParseJsonText(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
@@ -208,9 +208,12 @@ internal sealed partial class LythonRuntime
                 OptionalJsonCallable(GetOptional(arguments, 6), "object_pairs_hook", span));
         }
 
-        private static JsonDumpOptions ParseJsonDumpOptions(object[] arguments, bool dumpsForm, LythonSourceSpan span)
+        private static JsonDumpOptions ParseJsonDumpOptions(
+            object[] arguments,
+            JsonDumpCallForm callForm,
+            LythonSourceSpan span)
         {
-            var offset = dumpsForm ? 0 : 1;
+            var offset = callForm == JsonDumpCallForm.Dumps ? 0 : 1;
             EnsureUnsupportedJsonClassIsNone(GetOptional(arguments, offset + 5), "cls", span);
             var skipKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 1), defaultValue: false);
             var ensureAscii = ParseJsonBoolOption(GetOptional(arguments, offset + 2), defaultValue: true);
@@ -597,13 +600,13 @@ internal sealed partial class LythonRuntime
                 exception.BytePositionInLine.GetValueOrDefault());
             var bytePosition = NormalizeJsonErrorBytePosition(document.Utf8Bytes.Span, reportedBytePosition, exception.Message);
             var position = document.ByteIndexToRuneIndex(bytePosition);
-            var (line, column) = ComputeJsonErrorLineAndColumn(document, bytePosition);
+            var location = ComputeJsonErrorLocation(document, bytePosition);
             var payload = new PyDict(context.MemoryGovernor, span);
             payload.SetItem(PyString.FromString("msg"), CreateString(exception.Message, context, span));
             payload.SetItem(PyString.FromString("doc"), document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
-            payload.SetItem(PyString.FromString("lineno"), new BigInteger(line));
-            payload.SetItem(PyString.FromString("colno"), new BigInteger(column));
+            payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
+            payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
             return new LythonRuntimeException("JSONDecodeError", exception.Message, span, exception, payload);
         }
 
@@ -716,7 +719,7 @@ internal sealed partial class LythonRuntime
             return openingQuote;
         }
 
-        private static (int Line, int Column) ComputeJsonErrorLineAndColumn(PyString document, int bytePosition)
+        private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition)
         {
             var line = 1;
             var lineStart = 0;
@@ -731,7 +734,7 @@ internal sealed partial class LythonRuntime
             }
 
             var column = document.ByteIndexToRuneIndex(bytePosition) - document.ByteIndexToRuneIndex(lineStart) + 1;
-            return (line, column);
+            return new JsonSourceLocation(line, column);
         }
 
         private static bool IsAsciiLetter(byte value)
@@ -801,11 +804,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
         }
 
-        private static (string ItemSeparator, string KeySeparator) ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span)
+        private static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
-                return pretty ? (",", ": ") : (", ", ": ");
+                return pretty ? new JsonSeparators(",", ": ") : new JsonSeparators(", ", ": ");
             }
 
             if (value is not PyTuple and not PyList)
@@ -821,7 +824,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings.", span);
             }
 
-            return (itemSeparator.AsString(), keySeparator.AsString());
+            return new JsonSeparators(itemSeparator.AsString(), keySeparator.AsString());
         }
 
         private static object GetOptional(object[] arguments, int index)
@@ -833,6 +836,16 @@ internal sealed partial class LythonRuntime
             object? ParseInt,
             object? ParseConstant,
             object? ObjectPairsHook);
+
+        private enum JsonDumpCallForm
+        {
+            Dump,
+            Dumps
+        }
+
+        private readonly record struct JsonSeparators(string ItemSeparator, string KeySeparator);
+
+        private readonly record struct JsonSourceLocation(int Line, int Column);
 
         private sealed record JsonDumpOptions(
             bool SkipKeys,

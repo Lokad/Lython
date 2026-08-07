@@ -17,11 +17,11 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             if (arguments.Length == 1 && arguments[0].Name is null && arguments[0].Value is ICallable callable)
             {
-                return CreateCacheWrapper(callable, maxSize: 128, typed: false, context, span);
+                return CreateCacheWrapper(callable, maxSize: 128, CacheKeyMode.ValuesOnly, context, span);
             }
 
             var parameters = ParseLruCacheParameters(arguments, defaultMaxSize: 128, span);
-            return new LruCacheDecorator(parameters.MaxSize, parameters.Typed);
+            return new LruCacheDecorator(parameters.MaxSize, parameters.KeyMode);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.cache(user_function) expects one callable argument.", span);
             }
 
-            return CreateCacheWrapper(callable, maxSize: null, typed: false, context, span);
+            return CreateCacheWrapper(callable, maxSize: null, CacheKeyMode.ValuesOnly, context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -62,12 +62,12 @@ internal sealed partial class LythonRuntime
     private sealed class LruCacheDecorator : ICallable, IPyRenderableValue
     {
         private readonly int? _maxSize;
-        private readonly bool _typed;
+        private readonly CacheKeyMode _keyMode;
 
-        public LruCacheDecorator(int? maxSize, bool typed)
+        public LruCacheDecorator(int? maxSize, CacheKeyMode keyMode)
         {
             _maxSize = maxSize;
-            _typed = typed;
+            _keyMode = keyMode;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.lru_cache(...)(user_function) expects one callable argument.", span);
             }
 
-            return CreateCacheWrapper(callable, _maxSize, _typed, context, span);
+            return CreateCacheWrapper(callable, _maxSize, _keyMode, context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -89,4 +89,12 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
+
+    private enum CacheKeyMode
+    {
+        ValuesOnly,
+        ValuesAndTypes
+    }
+
+    private readonly record struct LruCacheParameters(int? MaxSize, CacheKeyMode KeyMode);
 }

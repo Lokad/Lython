@@ -476,24 +476,24 @@ internal sealed partial class LythonRuntime
     {
         private readonly ICallable _callable;
         private readonly int? _maxSize;
-        private readonly bool _typed;
+        private readonly CacheKeyMode _keyMode;
         private readonly Dictionary<object, CacheEntry> _cache = new(PyValueComparer.Instance);
         private readonly LinkedList<object> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
         private BigInteger _hits;
         private BigInteger _misses;
 
-        public PyLruCacheWrapper(ICallable callable, int? maxSize, bool typed)
+        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode)
         {
             _callable = callable;
             _maxSize = maxSize;
-            _typed = typed;
+            _keyMode = keyMode;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var key = BuildCacheKey(arguments, _typed, context, span);
+            var key = BuildCacheKey(arguments, _keyMode, context, span);
             if (_maxSize != 0 && _cache.TryGetValue(key, out var cached))
             {
                 _hits++;
@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
         {
             var dict = new PyDict(governor, span);
             dict.SetItem(PyString.FromString("maxsize"), _maxSize is int limit ? new BigInteger(limit) : PyNone.Instance);
-            dict.SetItem(PyString.FromString("typed"), _typed);
+            dict.SetItem(PyString.FromString("typed"), _keyMode == CacheKeyMode.ValuesAndTypes);
             return dict;
         }
 
@@ -1766,9 +1766,14 @@ internal sealed partial class LythonRuntime
     private static PyTuple CreateStringTuple(IReadOnlyList<string> values)
         => new(values.Select(PyString.FromString).Cast<object>());
 
-    private static PyLruCacheWrapper CreateCacheWrapper(ICallable callable, int? maxSize, bool typed, ExecutionContext context, LythonSourceSpan span)
+    private static PyLruCacheWrapper CreateCacheWrapper(
+        ICallable callable,
+        int? maxSize,
+        CacheKeyMode keyMode,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, typed);
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode);
         ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
         return wrapper;
     }
@@ -1948,7 +1953,10 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static (int? MaxSize, bool Typed) ParseLruCacheParameters(CallArgumentValue[] arguments, int? defaultMaxSize, LythonSourceSpan span)
+    private static LruCacheParameters ParseLruCacheParameters(
+        CallArgumentValue[] arguments,
+        int? defaultMaxSize,
+        LythonSourceSpan span)
     {
         object maxSizeValue = defaultMaxSize is int maxSize ? new BigInteger(maxSize) : PyNone.Instance;
         object typedValue = false;
@@ -2012,7 +2020,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return (ParseCacheMaxSize(maxSizeValue, span), IsTruthy(typedValue));
+        var keyMode = IsTruthy(typedValue) ? CacheKeyMode.ValuesAndTypes : CacheKeyMode.ValuesOnly;
+        return new LruCacheParameters(ParseCacheMaxSize(maxSizeValue, span), keyMode);
     }
 
     private static int? ParseCacheMaxSize(object value, LythonSourceSpan span)
@@ -2040,7 +2049,11 @@ internal sealed partial class LythonRuntime
         return (int)integer;
     }
 
-    private static object BuildCacheKey(CallArgumentValue[] arguments, bool typed, ExecutionContext context, LythonSourceSpan span)
+    private static object BuildCacheKey(
+        CallArgumentValue[] arguments,
+        CacheKeyMode keyMode,
+        ExecutionContext context,
+        LythonSourceSpan span)
     {
         try
         {
@@ -2058,7 +2071,7 @@ internal sealed partial class LythonRuntime
                 parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
             }
 
-            if (typed)
+            if (keyMode == CacheKeyMode.ValuesAndTypes)
             {
                 parts.Add(CacheKeyMarker.Typed);
                 foreach (var argument in arguments)

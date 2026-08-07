@@ -38,38 +38,19 @@ internal sealed partial class LythonRuntime
 
         private static object CompareFiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (first, second, shallow) = ParseCompareArguments(arguments, span, context);
+            var request = ParseCompareArguments(arguments, span, context);
             context.RegisterHostCall(span);
-            var firstStat = context.HostStat(first, span);
+            var firstStat = context.HostStat(request.First, span);
             context.RegisterHostCall(span);
-            var secondStat = context.HostStat(second, span);
-            if (!firstStat.Exists)
+            var secondStat = context.HostStat(request.Second, span);
+            var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
+            if (metadataResult != FileComparisonDisposition.CompareContents)
             {
-                throw MissingFile(first, span);
+                return metadataResult == FileComparisonDisposition.Equal;
             }
 
-            if (!secondStat.Exists)
-            {
-                throw MissingFile(second, span);
-            }
-
-            if (!firstStat.IsFile || !secondStat.IsFile)
-            {
-                return false;
-            }
-
-            if (shallow && HaveEqualStatSignature(firstStat, secondStat))
-            {
-                return true;
-            }
-
-            if (firstStat.Size != secondStat.Size)
-            {
-                return false;
-            }
-
-            using var firstBytes = ReadGovernedHostBytes(first, context, span);
-            using var secondBytes = ReadGovernedHostBytes(second, context, span);
+            using var firstBytes = ReadGovernedHostBytes(request.First, context, span);
+            using var secondBytes = ReadGovernedHostBytes(request.Second, context, span);
             return firstBytes.Span.SequenceEqual(secondBytes.Span);
         }
 
@@ -78,42 +59,23 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var (first, second, shallow) = ParseCompareArguments(arguments, span, context);
+            var request = ParseCompareArguments(arguments, span, context);
             context.RegisterHostCall(span);
-            var firstStat = await context.HostStatAsync(first, span).ConfigureAwait(false);
+            var firstStat = await context.HostStatAsync(request.First, span).ConfigureAwait(false);
             context.RegisterHostCall(span);
-            var secondStat = await context.HostStatAsync(second, span).ConfigureAwait(false);
-            if (!firstStat.Exists)
+            var secondStat = await context.HostStatAsync(request.Second, span).ConfigureAwait(false);
+            var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
+            if (metadataResult != FileComparisonDisposition.CompareContents)
             {
-                throw MissingFile(first, span);
+                return metadataResult == FileComparisonDisposition.Equal;
             }
 
-            if (!secondStat.Exists)
-            {
-                throw MissingFile(second, span);
-            }
-
-            if (!firstStat.IsFile || !secondStat.IsFile)
-            {
-                return false;
-            }
-
-            if (shallow && HaveEqualStatSignature(firstStat, secondStat))
-            {
-                return true;
-            }
-
-            if (firstStat.Size != secondStat.Size)
-            {
-                return false;
-            }
-
-            using var firstBytes = await ReadGovernedHostBytesAsync(first, context, span).ConfigureAwait(false);
-            using var secondBytes = await ReadGovernedHostBytesAsync(second, context, span).ConfigureAwait(false);
+            using var firstBytes = await ReadGovernedHostBytesAsync(request.First, context, span).ConfigureAwait(false);
+            using var secondBytes = await ReadGovernedHostBytesAsync(request.Second, context, span).ConfigureAwait(false);
             return firstBytes.Span.SequenceEqual(secondBytes.Span);
         }
 
-        private static (string First, string Second, bool Shallow) ParseCompareArguments(
+        private static FileComparisonRequest ParseCompareArguments(
             object[] arguments,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -124,8 +86,54 @@ internal sealed partial class LythonRuntime
             var second = PathOps.Normalize(
                 CoercePathLike(arguments[1], context, span, "filecmp.cmp(f1, f2, shallow=True)").AsString(),
                 context.Host.Cwd);
-            var shallow = arguments.Length < 3 || IsTruthy(arguments[2]);
-            return (first, second, shallow);
+            var mode = arguments.Length < 3 || IsTruthy(arguments[2])
+                ? FileComparisonMode.Shallow
+                : FileComparisonMode.Exact;
+            return new FileComparisonRequest(first, second, mode);
+        }
+
+        private enum FileComparisonMode
+        {
+            Exact,
+            Shallow
+        }
+
+        private enum FileComparisonDisposition
+        {
+            Different,
+            Equal,
+            CompareContents
+        }
+
+        private readonly record struct FileComparisonRequest(
+            string First,
+            string Second,
+            FileComparisonMode Mode);
+
+        private static FileComparisonDisposition CompareMetadata(
+            FileComparisonRequest request,
+            LythonPathStat first,
+            LythonPathStat second,
+            LythonSourceSpan span)
+        {
+            if (!first.Exists)
+            {
+                throw MissingFile(request.First, span);
+            }
+
+            if (!second.Exists)
+            {
+                throw MissingFile(request.Second, span);
+            }
+
+            if (!first.IsFile || !second.IsFile || first.Size != second.Size)
+            {
+                return FileComparisonDisposition.Different;
+            }
+
+            return request.Mode == FileComparisonMode.Shallow && HaveEqualStatSignature(first, second)
+                ? FileComparisonDisposition.Equal
+                : FileComparisonDisposition.CompareContents;
         }
 
         private static bool HaveEqualStatSignature(LythonPathStat first, LythonPathStat second)
