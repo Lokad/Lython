@@ -29,7 +29,7 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Tightened public state contracts, nullability invariants, host implementor documentation, and optional-parameter usage to follow the repository's C# guidelines.
 - Removed friend-assembly access and unnecessary unsafe compilation, enabled warnings as errors, made benchmarks part of the solution, and normalized source formatting.
 - Consolidated shared sync/async execution semantics, removed the duplicate memory estimator, and cached stable builtin member bindings per execution.
-- Split black-box public compatibility tests from the source-linked white-box suite so agent-facing behavior is exercised against the production assembly.
+- Introduced a black-box public-assembly smoke suite alongside the source-linked white-box suite, establishing the boundary that later compatibility scenarios can exercise without source linking.
 
 ## 0.7.0 - 2026-07-02
 

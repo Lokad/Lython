@@ -290,10 +290,9 @@ Physical newlines and continuation indentation inside those delimiters do not
 terminate the logical line or alter suite indentation, including when the
 delimited expression appears in a compound-statement header.
 
-The initial subset does not support:
-
-- loop `else`
-- nested function definitions
+`for` and `while` support Python-style `else` suites. Nested function
+definitions are supported, including closure cells, `nonlocal`, and evaluation
+of defaults at definition time.
 
 ### 8.2 Supported Import Surface
 
@@ -414,34 +413,25 @@ position. Expanded results remain subject to execution memory and collection
 limits. A non-iterable `*` operand, non-mapping `**` operand, or unhashable
 dictionary/set key raises `TypeError`.
 
-The initial subset does not support:
+Bytes literals and formatted string literals are supported. Formatted strings
+support conversions, format specifications, nested replacement fields inside a
+format specification, and debug expressions within the implemented expression
+subset.
 
-- bytes literals
-- formatted string literals
-- complex-number literals
+Complex-number literals are not supported and must be rejected explicitly.
 
-### 8.4 Unsupported Python Surface
+### 8.4 Deliberately Unsupported Python Surface
 
-The following Python features are outside the initial subset and must be rejected explicitly if encountered:
+Classes, comprehensions, generator expressions, lambdas, decorators, context
+managers, structural pattern matching, assertions, deletion, keyword and
+variadic arguments, default parameter values, and conditional expressions are
+part of the supported subset. Their feature-specific limitations are normative
+where described elsewhere in this document.
 
-- classes
-- comprehensions
-- generator expressions
-- lambdas
-- decorators
-- `with`
-- `yield`
-- `async`
-- `await`
-- pattern matching
-- `assert`
-- `del`
-- keyword arguments
-- default parameter values
-- variadic parameters
-- conditional expressions
-
-These features are unsupported in the initial subset. If any of them are added later, they must not be half-supported.
+Generator functions using `yield`, asynchronous functions, `await`, `async for`,
+and `async with` are outside the current language subset. These forms must
+be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
+host effects; it does not make Python asynchronous syntax available to scripts.
 
 ---
 
@@ -502,7 +492,9 @@ The initial subset must support Python comparison semantics for the supported su
 - `in`
 - `not in`
 
-The initial subset does not support chained comparisons.
+Chained comparisons are supported. Operands are evaluated from left to right,
+each middle operand is evaluated once, and evaluation stops at the first false
+comparison.
 
 Membership semantics must follow Python for the supported subset:
 
@@ -715,15 +707,10 @@ The initial subset must support:
 - `try` / `except ExceptionType as name`
 - `finally`
 
-The initial subset does not support:
-
-- bare `except`
-- exception tuples in `except`
-- `else` on `try`
-
-The initial subset does not support user-defined exception classes.
-
-An `except ExceptionType as name` clause must match exactly the named builtin exception class. Subclass-based matching is not part of the initial subset.
+Bare `except`, tuples of exception types, and `else` suites on `try` are
+supported. A named handler matches the named built-in exception class and the
+supported built-in subclasses beneath it. User-defined exception classes are
+not part of the current subset.
 
 If an uncaught exception reaches the top level of the script, execution must fail.
 
@@ -1060,9 +1047,11 @@ The initial subset must support the following dictionary methods:
 
 `dict.items()` must return an iterable view of `(key, value)` tuples.
 
-`str.format(...)` must support positional formatting fields only.
-
-The initial subset does not support named formatting fields or format-spec mini-language extensions beyond the default behavior.
+`str.format(...)` supports automatic and explicit positional fields, named
+fields, item and attribute traversal, and the supported format-spec
+mini-language. `str.format_map(...)` supports the corresponding mapping-based
+named fields. Unsupported conversions or format-spec combinations must fail
+explicitly rather than silently degrading to default formatting.
 
 ### 11.7 Regular Expressions
 
