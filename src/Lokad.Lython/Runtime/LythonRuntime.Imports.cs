@@ -5,63 +5,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly string[] AlwaysDiscoverableBuiltinModuleNames =
-    [
-        "__future__",
-        "argparse",
-        "builtins",
-        "collections",
-        "collections.abc",
-        "copy",
-        "csv",
-        "dataclasses",
-        "datetime",
-        "decimal",
-        "difflib",
-        "filecmp",
-        "fnmatch",
-        "functools",
-        "glob",
-        "gzip",
-        "hashlib",
-        "importlib",
-        "importlib.util",
-        "itertools",
-        "json",
-        "math",
-        "operator",
-        "openpyxl",
-        "openpyxl.reader",
-        "openpyxl.reader.excel",
-        "openpyxl.utils",
-        "openpyxl.utils.cell",
-        "openpyxl.utils.exceptions",
-        "openpyxl.workbook",
-        "openpyxl.cell",
-        "openpyxl.cell.cell",
-        "openpyxl.styles",
-        "openpyxl.styles.colors",
-        "openpyxl.comments",
-        "openpyxl.chart",
-        "openpyxl.worksheet",
-        "openpyxl.worksheet.worksheet",
-        "openpyxl.worksheet.table",
-        "openpyxl.worksheet.datavalidation",
-        "openpyxl.drawing",
-        "openpyxl.drawing.image",
-        "os",
-        "os.path",
-        "pathlib",
-        "pkgutil",
-        "random",
-        "re",
-        "shlex",
-        "shutil",
-        "statistics",
-        "sys",
-        "time",
-        "typing",
-    ];
+    private static readonly string[] AlwaysDiscoverableBuiltinModuleNames = StaticContracts
+        .GetKnownBuiltinModuleNames()
+        .Where(static name => name != "subprocess")
+        .ToArray();
 
     private sealed class FutureModule : PyModule
     {
@@ -499,7 +446,7 @@ internal sealed partial class LythonRuntime
              allowedModules.Contains(moduleName));
     }
 
-    private static PyModule? ResolveBuiltinModule(string moduleName, ExecutionContext context)
+    internal static PyModule? ResolveBuiltinModule(string moduleName, ExecutionContext context)
     {
         return moduleName switch
         {

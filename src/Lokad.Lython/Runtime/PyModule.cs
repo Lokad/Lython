@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
@@ -21,10 +22,12 @@ internal abstract class PyModule
     public string Name { get; }
 
     /// <summary>Gets names exported by <c>from module import *</c>.</summary>
-    public virtual IReadOnlyList<string> ExportedNames => [];
+    public virtual IReadOnlyList<string> ExportedNames
+        => StaticContracts.GetModuleExportedMemberNames(Name);
 
     /// <summary>Gets names exposed through module introspection.</summary>
-    public virtual IReadOnlyList<string> MemberNames => ExportedNames;
+    public virtual IReadOnlyList<string> MemberNames
+        => StaticContracts.GetModuleMemberNames(Name);
 
     /// <summary>Resolves a module member and returns <see langword="false"/> without throwing when absent.</summary>
     public abstract bool TryGetMember(string name, [MaybeNullWhen(false)] out object value);

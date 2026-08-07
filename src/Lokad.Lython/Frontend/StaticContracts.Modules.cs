@@ -460,6 +460,14 @@ internal static partial class StaticContracts
     public static bool IsKnownBuiltinModule(string moduleName)
         => ModuleMembers.ContainsKey(moduleName);
 
+    public static IReadOnlyList<string> GetKnownBuiltinModuleNames()
+        => ModuleMembers.Keys.Order(StringComparer.Ordinal).ToArray();
+
+    public static IReadOnlyList<string> GetModuleMemberNames(string moduleName)
+        => ModuleMembers.TryGetValue(moduleName, out var members)
+            ? members.Order(StringComparer.Ordinal).ToArray()
+            : [];
+
     public static IReadOnlyList<string> GetModuleExportedMemberNames(string moduleName)
         => ModuleMembers.TryGetValue(moduleName, out var members)
             ? members.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray()
