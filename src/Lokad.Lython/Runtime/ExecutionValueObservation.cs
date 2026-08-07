@@ -14,15 +14,13 @@ internal sealed class ExecutionValueObservation
 
     public LythonRuntime.ExecutionLimits Limits => State.Limits;
 
-    public LegacyApproximateMemoryDiagnostics LegacyApproximateMemoryDiagnostics => State.LegacyApproximateMemoryDiagnostics;
-
     public void ObserveString(PyString text, LythonSourceSpan? span)
     {
         EnforceStringLengthLimit(text, span);
 
         if (text.OwnerMemoryGovernor is null)
         {
-            TrackLegacyApproximateBytes(32L + text.Utf8Bytes.Length, span);
+            State.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(text.Utf8Bytes.Length), span);
         }
     }
 
@@ -35,20 +33,10 @@ internal sealed class ExecutionValueObservation
     {
         EnforceValueLimits(value, span);
 
-        if (ShouldTrackApproximateValue(value))
+        if (RequiresTransientSizeCheck(value))
         {
-            TrackLegacyApproximateBytes(EstimateApproximateValueBytes(value), span);
+            State.MemoryGovernor.EnsureCanReserve(EstimateApproximateValueBytes(value), span);
         }
-    }
-
-    private void TrackLegacyApproximateBytes(long bytes, LythonSourceSpan? span)
-    {
-        if (bytes <= 0)
-        {
-            return;
-        }
-
-        LegacyApproximateMemoryDiagnostics.TrackBytes(bytes, span);
     }
 
     private void EnforceStringLengthLimit(PyString text, LythonSourceSpan? span)
@@ -94,7 +82,7 @@ internal sealed class ExecutionValueObservation
         }
     }
 
-    private static bool ShouldTrackApproximateValue(object value)
+    private static bool RequiresTransientSizeCheck(object value)
     {
         return value switch
         {
@@ -119,11 +107,17 @@ internal sealed class ExecutionValueObservation
 
     internal static long EstimateApproximateValueBytes(object value)
     {
+        if (!IsReferenceTracked(value))
+        {
+            return EstimateApproximateValueBytesCore(value, null);
+        }
+
         var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        visited.Add(value);
         return EstimateApproximateValueBytesCore(value, visited);
     }
 
-    private static long EstimateApproximateValueBytesCore(object value, HashSet<object> visited)
+    private static long EstimateApproximateValueBytesCore(object value, HashSet<object>? visited)
     {
         return value switch
         {
@@ -143,7 +137,7 @@ internal sealed class ExecutionValueObservation
         };
     }
 
-    private static long EstimateApproximateListBytes(IEnumerable<object> items, HashSet<object> visited)
+    private static long EstimateApproximateListBytes(IEnumerable<object> items, HashSet<object>? visited)
     {
         long total = 64;
         foreach (var item in items)
@@ -155,7 +149,7 @@ internal sealed class ExecutionValueObservation
         return total;
     }
 
-    private static long EstimateApproximateTupleBytes(PyTuple tuple, HashSet<object> visited)
+    private static long EstimateApproximateTupleBytes(PyTuple tuple, HashSet<object>? visited)
     {
         long total = 48;
         foreach (var item in tuple)
@@ -167,7 +161,7 @@ internal sealed class ExecutionValueObservation
         return total;
     }
 
-    private static long EstimateApproximateDictionaryBytes(PyDict dict, HashSet<object> visited)
+    private static long EstimateApproximateDictionaryBytes(PyDict dict, HashSet<object>? visited)
     {
         long total = 96;
         foreach (var pair in dict)
@@ -180,7 +174,7 @@ internal sealed class ExecutionValueObservation
         return total;
     }
 
-    private static long EstimateApproximateSetBytes(PySet set, HashSet<object> visited)
+    private static long EstimateApproximateSetBytes(PySet set, HashSet<object>? visited)
     {
         long total = 80;
         foreach (var item in set)
@@ -192,14 +186,14 @@ internal sealed class ExecutionValueObservation
         return total;
     }
 
-    private static long EstimateApproximateNestedValueBytes(object value, HashSet<object> visited)
+    private static long EstimateApproximateNestedValueBytes(object value, HashSet<object>? visited)
     {
         if (!IsReferenceTracked(value))
         {
             return EstimateApproximateValueBytesCore(value, visited);
         }
 
-        if (!visited.Add(value))
+        if (visited is null || !visited.Add(value))
         {
             return 0;
         }

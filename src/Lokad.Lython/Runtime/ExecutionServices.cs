@@ -25,8 +25,6 @@ internal sealed class ExecutionServices
 
     public MemoryGovernor MemoryGovernor => State.MemoryGovernor;
 
-    public LegacyApproximateMemoryDiagnostics LegacyApproximateMemoryDiagnostics => State.LegacyApproximateMemoryDiagnostics;
-
     public void CheckExecutionBudget(LythonSourceSpan? span) => BudgetGuards.CheckExecutionBudget(span);
 
     public void RegisterHostCall(LythonSourceSpan? span) => BudgetGuards.RegisterHostCall(span);

@@ -110,6 +110,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     {
         var governor = _memoryGovernor ?? other._memoryGovernor;
         var allocationSpan = _allocationSpan ?? other._allocationSpan;
+        return ConcatCore(other, governor, allocationSpan);
+    }
+
+    public PyString Concat(PyString other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        => ConcatCore(other, governor, allocationSpan);
+
+    private PyString ConcatCore(PyString other, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    {
         var resultLength = CheckedByteLength(
             RuntimeMemoryEstimates.SaturatingAdd(_utf8.Length, other._utf8.Length),
             allocationSpan);
@@ -123,6 +131,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public PyString Repeat(int count)
     {
+        return RepeatCore(count, _memoryGovernor, _allocationSpan);
+    }
+
+    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        => RepeatCore(count, governor, allocationSpan);
+
+    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    {
         if (count <= 0 || _utf8.Length == 0)
         {
             return Empty;
@@ -130,16 +146,16 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         var resultLength = CheckedByteLength(
             RuntimeMemoryEstimates.SaturatingMultiply(_utf8.Length, count),
-            _allocationSpan);
-        var result = _memoryGovernor is null
+            allocationSpan);
+        var result = governor is null
             ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, _memoryGovernor, _allocationSpan);
+            : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
         for (var i = 0; i < count; i++)
         {
             Buffer.BlockCopy(_utf8, 0, result, i * _utf8.Length, _utf8.Length);
         }
 
-        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
+        return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan);
     }
 
     public PyString Slice(IReadOnlyList<int> runeIndices)

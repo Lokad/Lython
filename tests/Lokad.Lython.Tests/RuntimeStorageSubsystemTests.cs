@@ -136,22 +136,18 @@ public sealed class RuntimeStorageSubsystemTests
     public void MemoryGovernor_TracksExplicitReserveCommitReleaseCounters()
     {
         var governor = new MemoryGovernor(256);
-        var diagnostics = new LegacyApproximateMemoryDiagnostics(256);
 
         governor.Reserve(80, null);
         governor.Commit(48);
         governor.Commit(16);
         governor.Release(24);
-        diagnostics.TrackBytes(32, null);
 
         Assert.Equal(16, governor.CurrentReservedBytes);
         Assert.Equal(80, governor.PeakReservedBytes);
         Assert.Equal(40, governor.CurrentCommittedBytes);
         Assert.Equal(64, governor.PeakCommittedBytes);
-        Assert.Equal(56, governor.CurrentLiveBytes);
-        Assert.Equal(80, governor.PeakLiveBytes);
-        Assert.Equal(32, diagnostics.CurrentBytes);
-        Assert.Equal(32, diagnostics.PeakBytes);
+        Assert.Equal(56, governor.CurrentAccountedBytes);
+        Assert.Equal(80, governor.PeakAccountedBytes);
     }
 
     [Fact]
@@ -170,7 +166,7 @@ public sealed class RuntimeStorageSubsystemTests
         Assert.True(governor.CurrentCommittedBytes > 0);
         Assert.True(governor.PeakCommittedBytes >= governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.True(governor.CurrentLiveBytes >= governor.CurrentCommittedBytes);
+        Assert.True(governor.CurrentAccountedBytes >= governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -307,13 +303,13 @@ public sealed class RuntimeStorageSubsystemTests
             _ = handle.Write(PyString.FromString("x"));
         }
 
-        Assert.Equal(0, context.State.LegacyApproximateMemoryDiagnostics.CurrentBytes);
+        Assert.True(context.MemoryGovernor.CurrentAccountedBytes > 0);
         _ = handle.Exit();
         Assert.Equal(new string('x', 200), host.ReadText("/output.txt"));
     }
 
     [Fact]
-    public void ExecutionServices_GovernedValuesDoNotInflateLegacyApproximateDiagnostics()
+    public void ExecutionServices_GovernedValuesDoNotDoubleChargeMemoryGovernor()
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
@@ -321,15 +317,19 @@ public sealed class RuntimeStorageSubsystemTests
         });
         var services = new ExecutionServices(state);
 
-        services.ObserveString(PyString.FromString("governed", state.MemoryGovernor, null), null);
-        services.ObserveValue(new PyList([new BigInteger(1), new BigInteger(2)], state.MemoryGovernor, null), null);
+        var text = PyString.FromString("governed", state.MemoryGovernor, null);
+        var list = new PyList([new BigInteger(1), new BigInteger(2)], state.MemoryGovernor, null);
+        var accounted = state.MemoryGovernor.CurrentAccountedBytes;
+
+        services.ObserveString(text, null);
+        services.ObserveValue(list, null);
         services.ObserveCollectionCount(64, null);
 
-        Assert.Equal(0, state.LegacyApproximateMemoryDiagnostics.CurrentBytes);
+        Assert.Equal(accounted, state.MemoryGovernor.CurrentAccountedBytes);
     }
 
     [Fact]
-    public void ExecutionServices_UngovernedValuesStillUseLegacyApproximateDiagnostics()
+    public void ExecutionServices_UngovernedValuesAreCheckedWithoutBeingRetained()
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
@@ -337,10 +337,16 @@ public sealed class RuntimeStorageSubsystemTests
         });
         var services = new ExecutionServices(state);
 
-        services.ObserveString(PyString.FromString("plain"), null);
-        services.ObserveValue(new PyList([new BigInteger(1), new BigInteger(2)]), null);
+        for (var i = 0; i < 100; i++)
+        {
+            services.ObserveString(PyString.FromString("plain"), null);
+            services.ObserveValue(new BigInteger(1), null);
+        }
 
-        Assert.True(state.LegacyApproximateMemoryDiagnostics.CurrentBytes > 0);
-        Assert.Equal(state.LegacyApproximateMemoryDiagnostics.CurrentBytes, state.LegacyApproximateMemoryDiagnostics.PeakBytes);
+        Assert.Equal(0, state.MemoryGovernor.CurrentAccountedBytes);
+
+        var exception = Assert.Throws<LythonRuntimeException>(
+            () => services.ObserveValue(new PyList(Enumerable.Repeat<object>(new BigInteger(1), 256)), null));
+        Assert.Equal("MemoryError", exception.ExceptionType);
     }
 }

@@ -1985,16 +1985,7 @@ internal sealed partial class LythonRuntime
 
     private static void GuardIntegerResultBytes(long estimatedBytes, ExecutionContext context, LythonSourceSpan span)
     {
-        if (context.Limits.MaxExecutionMemoryBytes is not { } maxBytes)
-        {
-            return;
-        }
-
-        var current = context.Services.LegacyApproximateMemoryDiagnostics.CurrentBytes;
-        if (RuntimeMemoryEstimates.SaturatingAdd(current, estimatedBytes) > maxBytes)
-        {
-            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxBytes})", span);
-        }
+        context.MemoryGovernor.EnsureCanReserve(estimatedBytes, span);
     }
 
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
@@ -2325,7 +2316,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
         }
 
-        return left.Concat(right);
+        return left.Concat(right, context.MemoryGovernor, span);
     }
 
     private static PyString RepeatString(PyString text, BigInteger count, ExecutionContext context, LythonSourceSpan span)
@@ -2346,7 +2337,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
         }
 
-        return text.Repeat((int)count);
+        return text.Repeat((int)count, context.MemoryGovernor, span);
     }
 
     private static PyList RepeatList(PyList list, BigInteger count, ExecutionContext context, LythonSourceSpan span)

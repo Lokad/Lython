@@ -436,6 +436,27 @@ while True:
     }
 
     [Fact]
+    public void ExecutionMemoryBudget_DoesNotAccumulateRepeatedConstantObservations()
+    {
+        var result = new LythonEngine().Run(
+            """
+i = 0
+while i < 1000:
+    value = "constant"
+    i += 1
+return value
+""",
+            new MockLythonHost(),
+            new LythonRunOptions
+            {
+                MaxExecutionMemoryBytes = 96
+            });
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("constant", result.ReturnValue);
+    }
+
+    [Fact]
     public void ExecutionMemoryBudget_IsEnforcedForTupleLiteralMaterialization()
     {
         var result = new LythonEngine().Run(
@@ -960,7 +981,7 @@ value = p.keywords
     }
 
     [Fact]
-    public void ExecutionMemoryBudget_IsEnforcedForGovernedListSliceMaterialization()
+    public void ExecutionMemoryBudget_RangeSliceDoesNotMaterializeAList()
     {
         var result = new LythonEngine().Run(
             """
@@ -973,10 +994,7 @@ tail = values[1:]
                 MaxExecutionMemoryBytes = 128
             });
 
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Failure?.Message);
     }
 
     [Fact]

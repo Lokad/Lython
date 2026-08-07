@@ -29,7 +29,6 @@ internal sealed class ExecutionState
         Host = host;
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
-        LegacyApproximateMemoryDiagnostics = new LegacyApproximateMemoryDiagnostics(Limits.MaxExecutionMemoryBytes);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
@@ -64,8 +63,6 @@ internal sealed class ExecutionState
     public LythonRuntime.ExecutionLimits Limits { get; }
 
     public MemoryGovernor MemoryGovernor { get; }
-
-    public LegacyApproximateMemoryDiagnostics LegacyApproximateMemoryDiagnostics { get; }
 
     public PyRandomState RandomState { get; }
 

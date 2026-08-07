@@ -1937,7 +1937,10 @@ internal sealed partial class LythonRuntime
                         context.CheckExecutionBudget(span);
                         if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                         {
-                            results.Add(new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
+                            results.Add(new PyPath(PyString.FromString(
+                                PathOps.Join(path.Value.AsString(), name),
+                                context.MemoryGovernor,
+                                span)));
                             context.ObserveCollectionCount(results.Count, span);
                         }
                     }
@@ -1956,7 +1959,10 @@ internal sealed partial class LythonRuntime
                         context.CheckExecutionBudget(span);
                         if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                         {
-                            results.Add(new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
+                            results.Add(new PyPath(PyString.FromString(
+                                PathOps.Join(path.Value.AsString(), name),
+                                context.MemoryGovernor,
+                                span)));
                             context.ObserveCollectionCount(results.Count, span);
                         }
                     }

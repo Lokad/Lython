@@ -2,12 +2,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class MemoryGovernor
 {
-    public MemoryGovernor(long? maxReservedBytes)
+    public MemoryGovernor(long? maxAccountedBytes)
     {
-        MaxReservedBytes = maxReservedBytes;
+        MaxAccountedBytes = maxAccountedBytes;
     }
 
-    public long? MaxReservedBytes { get; }
+    public long? MaxAccountedBytes { get; }
 
     public long CurrentReservedBytes { get; private set; }
 
@@ -17,9 +17,9 @@ internal sealed class MemoryGovernor
 
     public long PeakCommittedBytes { get; private set; }
 
-    public long CurrentLiveBytes => checked(CurrentReservedBytes + CurrentCommittedBytes);
+    public long CurrentAccountedBytes => checked(CurrentReservedBytes + CurrentCommittedBytes);
 
-    public long PeakLiveBytes { get; private set; }
+    public long PeakAccountedBytes { get; private set; }
 
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
@@ -29,10 +29,10 @@ internal sealed class MemoryGovernor
         }
 
         var nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
-        var nextLive = AddChecked(nextReserved, CurrentCommittedBytes, span);
-        if (MaxReservedBytes is { } maxReservedBytes && nextLive > maxReservedBytes)
+        var nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
+        if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
-            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxReservedBytes})", span);
+            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
         }
     }
 
@@ -51,10 +51,10 @@ internal sealed class MemoryGovernor
             PeakReservedBytes = CurrentReservedBytes;
         }
 
-        var currentLive = CurrentLiveBytes;
-        if (currentLive > PeakLiveBytes)
+        var currentAccounted = CurrentAccountedBytes;
+        if (currentAccounted > PeakAccountedBytes)
         {
-            PeakLiveBytes = currentLive;
+            PeakAccountedBytes = currentAccounted;
         }
     }
 
