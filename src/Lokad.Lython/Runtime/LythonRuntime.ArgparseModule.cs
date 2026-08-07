@@ -11,6 +11,36 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static PyString RequireArgparseStringValue(object value, string name, string owner, LythonSourceSpan span)
+    {
+        if (!PyStringOps.TryAsString(value, out var text))
+        {
+            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a string.", span);
+        }
+
+        return text;
+    }
+
+    private static string? OptionalArgparseString(object value, string name, string owner, LythonSourceSpan span)
+    {
+        if (ReferenceEquals(value, PyNone.Instance))
+        {
+            return null;
+        }
+
+        return RequireArgparseStringValue(value, name, owner, span).AsString();
+    }
+
+    private static bool RequireArgparseBool(object value, string name, string owner, LythonSourceSpan span)
+    {
+        if (value is bool boolean)
+        {
+            return boolean;
+        }
+
+        throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
+    }
+
     private sealed class ArgparseModule : PyModule
     {
         public static readonly ArgparseModule Instance = new();
@@ -106,28 +136,28 @@ internal sealed partial class LythonRuntime
             switch (name)
             {
                 case "prog":
-                    options.Prog = OptionalString(value, "prog", "argparse.ArgumentParser", span) ?? options.Prog;
+                    options.Prog = OptionalArgparseString(value, "prog", "argparse.ArgumentParser", span) ?? options.Prog;
                     break;
                 case "usage":
-                    options.Usage = OptionalString(value, "usage", "argparse.ArgumentParser", span);
+                    options.Usage = OptionalArgparseString(value, "usage", "argparse.ArgumentParser", span);
                     break;
                 case "description":
-                    options.Description = OptionalString(value, "description", "argparse.ArgumentParser", span);
+                    options.Description = OptionalArgparseString(value, "description", "argparse.ArgumentParser", span);
                     break;
                 case "epilog":
-                    options.Epilog = OptionalString(value, "epilog", "argparse.ArgumentParser", span);
+                    options.Epilog = OptionalArgparseString(value, "epilog", "argparse.ArgumentParser", span);
                     break;
                 case "formatter_class":
                     options.FormatterClass = ReferenceEquals(value, PyNone.Instance) ? null : value;
                     break;
                 case "add_help":
-                    options.AddHelp = RequireBool(value, "add_help", "argparse.ArgumentParser", span);
+                    options.AddHelp = RequireArgparseBool(value, "add_help", "argparse.ArgumentParser", span);
                     break;
                 case "allow_abbrev":
-                    options.AllowAbbrev = RequireBool(value, "allow_abbrev", "argparse.ArgumentParser", span);
+                    options.AllowAbbrev = RequireArgparseBool(value, "allow_abbrev", "argparse.ArgumentParser", span);
                     break;
                 case "exit_on_error":
-                    options.ExitOnError = RequireBool(value, "exit_on_error", "argparse.ArgumentParser", span);
+                    options.ExitOnError = RequireArgparseBool(value, "exit_on_error", "argparse.ArgumentParser", span);
                     break;
             }
         }
@@ -136,7 +166,7 @@ internal sealed partial class LythonRuntime
         {
             _ = context;
             var mode = arguments.Length >= 1 && !ReferenceEquals(arguments[0], PyNone.Instance)
-                ? RequireStringValue(arguments[0], "mode", "argparse.FileType", span).AsString()
+                ? RequireArgparseStringValue(arguments[0], "mode", "argparse.FileType", span).AsString()
                 : "r";
             if (mode.Contains('b'))
             {
@@ -178,36 +208,6 @@ internal sealed partial class LythonRuntime
                 }
                 : null;
             return new ArgparseFileTypeObject(mode, encoding, errors);
-        }
-
-        private static PyString RequireStringValue(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (!PyStringOps.TryAsString(value, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a string.", span);
-            }
-
-            return text;
-        }
-
-        private static string? OptionalString(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return null;
-            }
-
-            return RequireStringValue(value, name, owner, span).AsString();
-        }
-
-        private static bool RequireBool(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (value is bool boolean)
-            {
-                return boolean;
-            }
-
-            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
         }
 
         private static string DefaultProgramName(ExecutionContext context)
@@ -1187,13 +1187,13 @@ internal sealed partial class LythonRuntime
             var helpText = keyword.TryGetValue("help", out helpValue)
                 ? suppressHelp
                     ? null
-                    : OptionalString(helpValue, "help", "argparse.ArgumentParser.add_argument", span)
+                    : OptionalArgparseString(helpValue, "help", "argparse.ArgumentParser.add_argument", span)
                 : null;
             var metavar = keyword.TryGetValue("metavar", out var metavarValue)
-                ? OptionalString(metavarValue, "metavar", "argparse.ArgumentParser.add_argument", span)
+                ? OptionalArgparseString(metavarValue, "metavar", "argparse.ArgumentParser.add_argument", span)
                 : null;
             var versionText = keyword.TryGetValue("version", out var versionValue)
-                ? OptionalString(versionValue, "version", "argparse.ArgumentParser.add_argument", span)
+                ? OptionalArgparseString(versionValue, "version", "argparse.ArgumentParser.add_argument", span)
                 : null;
 
             return new ArgumentSpec(optionNames, dest, action, required, defaultValue, choices, converter, isPositional, nargs, groupId, constValue, helpText, metavar, versionText, suppressHelp);
@@ -1315,7 +1315,7 @@ internal sealed partial class LythonRuntime
 
         private static PyString RequireString(string name, object value, LythonSourceSpan span)
         {
-            return RequireStringValue(value, name, "argparse.ArgumentParser.add_argument", span);
+            return RequireArgparseStringValue(value, name, "argparse.ArgumentParser.add_argument", span);
         }
 
         private static string InferDestination(IReadOnlyList<string> optionNames, LythonSourceSpan span)
@@ -1613,12 +1613,6 @@ internal sealed partial class LythonRuntime
             return count;
         }
 
-        private bool HasOptionalArgumentNamed(string token, bool exactOnly)
-        {
-            _ = exactOnly;
-            return HasOptionalArgumentNamed(token);
-        }
-
         private int CountRemainingPositionalCandidates(IReadOnlyList<string> argv, int index)
         {
             var count = 0;
@@ -1696,7 +1690,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{methodName}({parameterName}) expects one argument.", span);
             }
 
-            return RequireStringValue(value.RequireNotNull(), parameterName, methodName, span);
+            return RequireArgparseStringValue(value.RequireNotNull(), parameterName, methodName, span);
         }
 
         private static void RequireNoArguments(CallArgumentValue[] arguments, string methodName, LythonSourceSpan span)
@@ -1823,36 +1817,6 @@ internal sealed partial class LythonRuntime
 
         private static string EnsureTrailingNewline(string text)
             => text.EndsWith('\n') ? text : text + "\n";
-
-        private static PyString RequireStringValue(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (!PyStringOps.TryAsString(value, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a string.", span);
-            }
-
-            return text;
-        }
-
-        private static string? OptionalString(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return null;
-            }
-
-            return RequireStringValue(value, name, owner, span).AsString();
-        }
-
-        private static bool RequireBool(object value, string name, string owner, LythonSourceSpan span)
-        {
-            if (value is bool boolean)
-            {
-                return boolean;
-            }
-
-            throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
-        }
 
         private static BigInteger RequireInteger(object value, string name, string owner, LythonSourceSpan span)
         {
