@@ -45,7 +45,7 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
             frame.Variables[pair.Key] = pair.Value;
         }
 
-        if (TryBuildImplicitSuperContext(boundArguments, out var anchorType, out var receiver))
+        if (PyFunctionBinding.TryBuildImplicitSuperContext(OwnerType, _parameters, boundArguments, out var anchorType, out var receiver))
         {
             frame.BindImplicitSuper(anchorType, receiver);
         }
@@ -88,7 +88,7 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
             frame.Variables[pair.Key] = pair.Value;
         }
 
-        if (TryBuildImplicitSuperContext(boundArguments, out var anchorType, out var receiver))
+        if (PyFunctionBinding.TryBuildImplicitSuperContext(OwnerType, _parameters, boundArguments, out var anchorType, out var receiver))
         {
             frame.BindImplicitSuper(anchorType, receiver);
         }
@@ -155,35 +155,4 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
 
     public override string ToString() => $"<function {Name}>";
 
-    private bool TryBuildImplicitSuperContext(Dictionary<string, object> boundArguments, [MaybeNullWhen(false)] out PyType anchorType, [MaybeNullWhen(false)] out object receiver)
-    {
-        if (OwnerType is null || _parameters.Count == 0)
-        {
-            anchorType = null;
-            receiver = null;
-            return false;
-        }
-
-        var firstParameterName = _parameters[0].Name;
-        if (!boundArguments.TryGetValue(firstParameterName, out receiver))
-        {
-            anchorType = null;
-            receiver = null;
-            return false;
-        }
-
-        switch (receiver)
-        {
-            case PyInstance instance when instance.Type.IsSubtypeOf(OwnerType):
-                anchorType = OwnerType;
-                return true;
-            case PyType type when type.IsSubtypeOf(OwnerType):
-                anchorType = OwnerType;
-                return true;
-            default:
-                anchorType = null;
-                receiver = null;
-                return false;
-        }
-    }
 }
