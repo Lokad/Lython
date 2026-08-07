@@ -112,6 +112,47 @@ public sealed class LythonCompiledScript
         var mergedOptions = MergeCancellation(options, cancellationToken, out var linkedCancellation);
         return RunAndDisposeAsync(host, mergedOptions, linkedCancellation);
 
+        static LythonRunOptions? MergeCancellation(
+            LythonRunOptions? options,
+            CancellationToken cancellationToken,
+            out CancellationTokenSource? linkedCancellation)
+        {
+            linkedCancellation = null;
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return options;
+            }
+
+            var effectiveCancellation = cancellationToken;
+            if (options?.CancellationToken.CanBeCanceled == true)
+            {
+                linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken, cancellationToken);
+                effectiveCancellation = linkedCancellation.Token;
+            }
+
+            return new LythonRunOptions
+            {
+                Globals = options?.Globals,
+                Args = options?.Args,
+                Environment = options?.Environment,
+                SourcePath = options?.SourcePath,
+                CancellationToken = effectiveCancellation,
+                DisableDefaultLimits = options?.DisableDefaultLimits ?? false,
+                DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false,
+                AllowedLocalModules = options?.AllowedLocalModules,
+                MaxExecutionSteps = options?.MaxExecutionSteps,
+                MaxRecursionDepth = options?.MaxRecursionDepth,
+                MaxHostCalls = options?.MaxHostCalls,
+                MaxCollectionSize = options?.MaxCollectionSize,
+                MaxStringLength = options?.MaxStringLength,
+                MaxHostReadBytes = options?.MaxHostReadBytes,
+                MaxStandardOutputBytes = options?.MaxStandardOutputBytes,
+                MaxStandardErrorBytes = options?.MaxStandardErrorBytes,
+                MaxExecutionMemoryBytes = options?.MaxExecutionMemoryBytes,
+                MaxProjectionMemoryBytes = options?.MaxProjectionMemoryBytes
+            };
+        }
+
         async Task<LythonExecutionResult> RunAndDisposeAsync(
             ILythonHost runHost,
             LythonRunOptions? runOptions,
@@ -126,46 +167,5 @@ public sealed class LythonCompiledScript
                 linkedCancellationSource?.Dispose();
             }
         }
-    }
-
-    private static LythonRunOptions? MergeCancellation(
-        LythonRunOptions? options,
-        CancellationToken cancellationToken,
-        out CancellationTokenSource? linkedCancellation)
-    {
-        linkedCancellation = null;
-        if (!cancellationToken.CanBeCanceled)
-        {
-            return options;
-        }
-
-        var effectiveCancellation = cancellationToken;
-        if (options?.CancellationToken.CanBeCanceled == true)
-        {
-            linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken, cancellationToken);
-            effectiveCancellation = linkedCancellation.Token;
-        }
-
-        return new LythonRunOptions
-        {
-            Globals = options?.Globals,
-            Args = options?.Args,
-            Environment = options?.Environment,
-            SourcePath = options?.SourcePath,
-            CancellationToken = effectiveCancellation,
-            DisableDefaultLimits = options?.DisableDefaultLimits ?? false,
-            DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false,
-            AllowedLocalModules = options?.AllowedLocalModules,
-            MaxExecutionSteps = options?.MaxExecutionSteps,
-            MaxRecursionDepth = options?.MaxRecursionDepth,
-            MaxHostCalls = options?.MaxHostCalls,
-            MaxCollectionSize = options?.MaxCollectionSize,
-            MaxStringLength = options?.MaxStringLength,
-            MaxHostReadBytes = options?.MaxHostReadBytes,
-            MaxStandardOutputBytes = options?.MaxStandardOutputBytes,
-            MaxStandardErrorBytes = options?.MaxStandardErrorBytes,
-            MaxExecutionMemoryBytes = options?.MaxExecutionMemoryBytes,
-            MaxProjectionMemoryBytes = options?.MaxProjectionMemoryBytes
-        };
     }
 }

@@ -113,6 +113,24 @@ internal static class PyEquality
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return CountersEqual(leftCounter, rightCounter);
+
+            static bool CountersEqual(PyCounter left, PyCounter right)
+            {
+                var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
+                keys.UnionWith(right.Keys);
+
+                foreach (var key in keys)
+                {
+                    var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
+                    var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
+                    if (!AreEqual(leftValue, rightValue))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -168,21 +186,4 @@ internal static class PyEquality
         }
     }
 
-    private static bool CountersEqual(PyCounter left, PyCounter right)
-    {
-        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
-        keys.UnionWith(right.Keys);
-
-        foreach (var key in keys)
-        {
-            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
-            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            if (!AreEqual(leftValue, rightValue))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }
