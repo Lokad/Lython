@@ -701,38 +701,9 @@ internal sealed partial class LythonRuntime
     internal static Dictionary<string, object> BindFunctionArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
-        string callableName,
-        string callableKind,
-        IReadOnlyList<LoweredFunctionParameter> parameters,
-        IReadOnlyDictionary<string, object> defaultValues,
+        FunctionBindingPlan plan,
         ExecutionContext context)
     {
-        var positionalParameters = new List<LoweredFunctionParameter>(parameters.Count);
-        var keywordOnlyParameters = new List<LoweredFunctionParameter>(parameters.Count);
-        var namedParameters = new Dictionary<string, LoweredFunctionParameter>(StringComparer.Ordinal);
-        LoweredFunctionParameter? variadicList = null;
-        LoweredFunctionParameter? variadicDictionary = null;
-        foreach (var parameter in parameters)
-        {
-            switch (parameter.Kind)
-            {
-                case FunctionParameterKind.Positional:
-                    positionalParameters.Add(parameter);
-                    namedParameters[parameter.Name] = parameter;
-                    break;
-                case FunctionParameterKind.KeywordOnly:
-                    keywordOnlyParameters.Add(parameter);
-                    namedParameters[parameter.Name] = parameter;
-                    break;
-                case FunctionParameterKind.VariadicList:
-                    variadicList = parameter;
-                    break;
-                case FunctionParameterKind.VariadicDictionary:
-                    variadicDictionary = parameter;
-                    break;
-            }
-        }
-
         var bound = new Dictionary<string, object>(StringComparer.Ordinal);
         var extraPositional = new PyList([], context.MemoryGovernor, span);
         var extraKeywords = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -742,32 +713,32 @@ internal sealed partial class LythonRuntime
         {
             if (argument.Name is null)
             {
-                if (positionalIndex >= positionalParameters.Count)
+                if (positionalIndex >= plan.PositionalParameters.Count)
                 {
-                    if (variadicList is null)
+                    if (plan.VariadicList is null)
                     {
-                        throw CallErrors.TooManyPositional(callableKind, callableName, span);
+                        throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
                     }
 
                     extraPositional.Add(argument.Value);
                     continue;
                 }
 
-                var parameter = positionalParameters[positionalIndex++];
+                var parameter = plan.PositionalParameters[positionalIndex++];
                 bound[parameter.Name] = argument.Value;
                 continue;
             }
 
-            if (!namedParameters.TryGetValue(argument.Name, out var named))
+            if (!plan.NamedParameters.TryGetValue(argument.Name, out var named))
             {
-                if (variadicDictionary is null)
+                if (plan.VariadicDictionary is null)
                 {
-                    throw CallErrors.UnexpectedKeyword(callableKind, callableName, argument.Name, span);
+                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, argument.Name, span);
                 }
 
                 if (!extraKeywords.TryAdd(argument.Name, argument.Value))
                 {
-                    throw CallErrors.MultipleValues(callableKind, callableName, argument.Name, span);
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.Name, span);
                 }
 
                 continue;
@@ -775,48 +746,48 @@ internal sealed partial class LythonRuntime
 
             if (!bound.TryAdd(named.Name, argument.Value))
             {
-                throw CallErrors.MultipleValues(callableKind, callableName, argument.Name, span);
+                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.Name, span);
             }
         }
 
-        foreach (var parameter in positionalParameters)
+        foreach (var parameter in plan.PositionalParameters)
         {
             if (bound.ContainsKey(parameter.Name))
             {
                 continue;
             }
 
-            if (defaultValues.TryGetValue(parameter.Name, out var defaultValue))
+            if (plan.DefaultValues.TryGetValue(parameter.Name, out var defaultValue))
             {
                 bound[parameter.Name] = defaultValue;
                 continue;
             }
 
-            throw CallErrors.MissingArgument(callableKind, callableName, parameter.Name, span);
+            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameter.Name, span);
         }
 
-        foreach (var parameter in keywordOnlyParameters)
+        foreach (var parameter in plan.KeywordOnlyParameters)
         {
             if (bound.ContainsKey(parameter.Name))
             {
                 continue;
             }
 
-            if (defaultValues.TryGetValue(parameter.Name, out var defaultValue))
+            if (plan.DefaultValues.TryGetValue(parameter.Name, out var defaultValue))
             {
                 bound[parameter.Name] = defaultValue;
                 continue;
             }
 
-            throw CallErrors.MissingArgument(callableKind, callableName, parameter.Name, span);
+            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameter.Name, span);
         }
 
-        if (variadicList is not null)
+        if (plan.VariadicList is not null)
         {
-            bound[variadicList.Name] = CreateTuple(extraPositional.Count, i => extraPositional[i], context, span);
+            bound[plan.VariadicList.Name] = CreateTuple(extraPositional.Count, i => extraPositional[i], context, span);
         }
 
-        if (variadicDictionary is not null)
+        if (plan.VariadicDictionary is not null)
         {
             var keywordDict = new PyDict(context.MemoryGovernor, span);
             foreach (var pair in extraKeywords)
@@ -824,7 +795,7 @@ internal sealed partial class LythonRuntime
                 keywordDict.SetItem(PyString.FromString(pair.Key), pair.Value);
             }
 
-            bound[variadicDictionary.Name] = keywordDict;
+            bound[plan.VariadicDictionary.Name] = keywordDict;
         }
 
         return bound;
@@ -864,39 +835,37 @@ internal sealed partial class LythonRuntime
 
     private sealed class LambdaFunction : ICallable
     {
-        private readonly IReadOnlyList<LoweredFunctionParameter> _parameters;
         private readonly LoweredExpression _body;
+        private readonly FunctionBindingPlan _bindingPlan;
         private readonly ExecutionContext _closure;
-        private readonly Dictionary<string, object> _defaultValues;
 
         public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure, Dictionary<string, object> defaultValues)
         {
-            _parameters = parameters;
             _body = body;
             _closure = closure;
-            _defaultValues = defaultValues;
+            _bindingPlan = new FunctionBindingPlan("<lambda>", "lambda", parameters, defaultValues);
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var boundArguments = BindFunctionArguments(arguments, span, "<lambda>", "lambda", _parameters, _defaultValues, context);
+            var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
-            var frame = new ExecutionContext(_closure);
-            foreach (var pair in boundArguments)
-            {
-                frame.Variables[pair.Key] = pair.Value;
-            }
-
-            frame.EnterFunctionCall(span);
+            var frame = PyFunctionBinding.EnterInvocationFrame(
+                _closure,
+                ScopeDirectiveFacts.Empty,
+                _bindingPlan,
+                boundArguments,
+                mirrorBoundArguments: true,
+                ownerType: null,
+                span);
             try
             {
                 return EvaluateLoweredExpression(_body, frame);
             }
             catch (LythonRuntimeException ex)
             {
-                ex.SetSourcePathIfMissing(frame.SourcePath);
-                ex.AddFrame("<lambda>", span, frame.SourcePath);
+                PyFunctionBinding.AnnotateException(ex, frame, "<lambda>", span);
                 throw;
             }
             finally
@@ -908,23 +877,23 @@ internal sealed partial class LythonRuntime
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var boundArguments = BindFunctionArguments(arguments, span, "<lambda>", "lambda", _parameters, _defaultValues, context);
+            var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
-            var frame = new ExecutionContext(_closure);
-            foreach (var pair in boundArguments)
-            {
-                frame.Variables[pair.Key] = pair.Value;
-            }
-
-            frame.EnterFunctionCall(span);
+            var frame = PyFunctionBinding.EnterInvocationFrame(
+                _closure,
+                ScopeDirectiveFacts.Empty,
+                _bindingPlan,
+                boundArguments,
+                mirrorBoundArguments: true,
+                ownerType: null,
+                span);
             try
             {
                 return await EvaluateLoweredExpressionAsync(_body, frame).ConfigureAwait(false);
             }
             catch (LythonRuntimeException ex)
             {
-                ex.SetSourcePathIfMissing(frame.SourcePath);
-                ex.AddFrame("<lambda>", span, frame.SourcePath);
+                PyFunctionBinding.AnnotateException(ex, frame, "<lambda>", span);
                 throw;
             }
             finally

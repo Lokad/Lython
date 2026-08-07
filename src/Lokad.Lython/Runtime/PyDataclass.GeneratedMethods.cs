@@ -7,19 +7,31 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDataclass
 {
-    private sealed class DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
+    private static readonly LoweredFunctionParameter[] BinaryProtocolParameters =
+    [
+        new("self", FunctionParameterKind.Positional, null, null),
+        new("other", FunctionParameterKind.Positional, null, null)
+    ];
+
+    private static readonly IReadOnlyDictionary<string, object> EmptyDefaultValues =
+        new Dictionary<string, object>(StringComparer.Ordinal);
+
+    private sealed class DataclassInitMethod : IPyBindableCallable
     {
-        public object Bind(object self) => new PyBoundMethod(self, this);
+        private readonly FunctionBindingPlan _bindingPlan;
+        private readonly IReadOnlyList<DataclassFieldSpec> _fields;
+        private readonly string _typeName;
 
-        public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
-            => instance is null ? this : Bind(instance);
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        public DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields)
         {
+            _typeName = typeName;
+            _fields = fields;
+
             var parameters = new List<LoweredFunctionParameter>(fields.Count + 1)
             {
                 new("self", FunctionParameterKind.Positional, null, null)
             };
+            var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
             foreach (var field in fields)
             {
                 if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
@@ -32,16 +44,6 @@ internal static partial class PyDataclass
                     field.KwOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional,
                     null,
                     null));
-            }
-
-            var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (var field in fields)
-            {
-                if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
-                {
-                    continue;
-                }
-
                 if (field.HasDefaultFactory)
                 {
                     defaults[field.Name] = DefaultFactorySentinel;
@@ -52,14 +54,24 @@ internal static partial class PyDataclass
                 }
             }
 
-            var bound = LythonRuntime.BindFunctionArguments(arguments, span, $"{typeName}.__init__", "Function", parameters, defaults, context);
+            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", "Function", parameters, defaults);
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             if (bound["self"] is not PyInstance instance)
             {
-                throw new LythonRuntimeException("TypeError", $"{typeName}.__init__ expected a bound instance.", span);
+                throw new LythonRuntimeException("TypeError", $"{_typeName}.__init__ expected a bound instance.", span);
             }
 
             var initVarValues = new List<object>();
-            foreach (var field in fields)
+            foreach (var field in _fields)
             {
                 if (!field.Store)
                 {
@@ -111,7 +123,7 @@ internal static partial class PyDataclass
                 };
                 if (callable is not LythonRuntime.ICallable postInitCallable)
                 {
-                    throw new LythonRuntimeException("TypeError", $"{typeName}.__post_init__ must be callable.", span);
+                    throw new LythonRuntimeException("TypeError", $"{_typeName}.__post_init__ must be callable.", span);
                 }
 
                 var postInitArguments = initVarValues.Select(value => new CallArgumentValue(null, value)).ToArray();
@@ -170,6 +182,9 @@ internal static partial class PyDataclass
 
     private sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
     {
+        private readonly FunctionBindingPlan _bindingPlan =
+            new($"{typeName}.__eq__", "Function", BinaryProtocolParameters, EmptyDefaultValues);
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -177,12 +192,7 @@ internal static partial class PyDataclass
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var parameters = new[]
-            {
-                new LoweredFunctionParameter("self", FunctionParameterKind.Positional, null, null),
-                new LoweredFunctionParameter("other", FunctionParameterKind.Positional, null, null)
-            };
-            var bound = LythonRuntime.BindFunctionArguments(arguments, span, $"{typeName}.__eq__", "Function", parameters, new Dictionary<string, object>(StringComparer.Ordinal), context);
+            var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             if (bound["self"] is not PyInstance self)
             {
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__eq__ expected a bound instance.", span);
@@ -215,8 +225,31 @@ internal static partial class PyDataclass
         GreaterEqual
     }
 
-    private sealed class DataclassOrderMethod(string typeName, DataclassOrderOperation operation) : IPyBindableCallable
+    private sealed class DataclassOrderMethod : IPyBindableCallable
     {
+        private readonly FunctionBindingPlan _bindingPlan;
+        private readonly DataclassOrderOperation _operation;
+        private readonly string _typeName;
+
+        public DataclassOrderMethod(string typeName, DataclassOrderOperation operation)
+        {
+            _typeName = typeName;
+            _operation = operation;
+            var operationName = operation switch
+            {
+                DataclassOrderOperation.Less => "lt",
+                DataclassOrderOperation.LessEqual => "le",
+                DataclassOrderOperation.Greater => "gt",
+                DataclassOrderOperation.GreaterEqual => "ge",
+                _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
+            };
+            _bindingPlan = new FunctionBindingPlan(
+                $"{typeName}.__{operationName}__",
+                "Function",
+                BinaryProtocolParameters,
+                EmptyDefaultValues);
+        }
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -224,19 +257,14 @@ internal static partial class PyDataclass
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var parameters = new[]
-            {
-                new LoweredFunctionParameter("self", FunctionParameterKind.Positional, null, null),
-                new LoweredFunctionParameter("other", FunctionParameterKind.Positional, null, null)
-            };
-            var bound = LythonRuntime.BindFunctionArguments(arguments, span, $"{typeName}.__{OperationName(operation)}__", "Function", parameters, new Dictionary<string, object>(StringComparer.Ordinal), context);
+            var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
             if (bound["self"] is not PyInstance self || bound["other"] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
             {
-                throw new LythonRuntimeException("TypeError", $"{typeName} ordering expects two instances of the same dataclass type.", span);
+                throw new LythonRuntimeException("TypeError", $"{_typeName} ordering expects two instances of the same dataclass type.", span);
             }
 
             var comparison = CompareOrderedInstances(self, other, span);
-            return operation switch
+            return _operation switch
             {
                 DataclassOrderOperation.Less => comparison < 0,
                 DataclassOrderOperation.LessEqual => comparison <= 0,
@@ -246,15 +274,6 @@ internal static partial class PyDataclass
             };
         }
 
-        private static string OperationName(DataclassOrderOperation operation)
-            => operation switch
-            {
-                DataclassOrderOperation.Less => "lt",
-                DataclassOrderOperation.LessEqual => "le",
-                DataclassOrderOperation.Greater => "gt",
-                DataclassOrderOperation.GreaterEqual => "ge",
-                _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
-            };
     }
 
     private sealed class DataclassHashMethod(string typeName) : IPyBindableCallable

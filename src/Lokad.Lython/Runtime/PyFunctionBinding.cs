@@ -4,29 +4,45 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyFunctionBinding
 {
-    public static bool TryBuildImplicitSuperContext(
-        PyType? ownerType,
-        IReadOnlyList<LoweredFunctionParameter> parameters,
+    public static LythonRuntime.ExecutionContext EnterInvocationFrame(
+        LythonRuntime.ExecutionContext closure,
+        ScopeDirectiveFacts scopeFacts,
+        FunctionBindingPlan bindingPlan,
         IReadOnlyDictionary<string, object> boundArguments,
-        [MaybeNullWhen(false)] out PyType anchorType,
-        [MaybeNullWhen(false)] out object receiver)
+        bool mirrorBoundArguments,
+        PyType? ownerType,
+        LythonSourceSpan span)
     {
-        if (ownerType is null || parameters.Count == 0 || !boundArguments.TryGetValue(parameters[0].Name, out receiver))
+        var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
+        if (mirrorBoundArguments)
         {
-            anchorType = null;
-            receiver = null;
-            return false;
+            foreach (var pair in boundArguments)
+            {
+                frame.Variables[pair.Key] = pair.Value;
+            }
         }
 
-        if (receiver is PyInstance instance && instance.Type.IsSubtypeOf(ownerType)
-            || receiver is PyType type && type.IsSubtypeOf(ownerType))
+        if (ownerType is not null &&
+            bindingPlan.Parameters.Count > 0 &&
+            boundArguments.TryGetValue(bindingPlan.Parameters[0].Name, out var receiver) &&
+            (receiver is PyInstance instance && instance.Type.IsSubtypeOf(ownerType) ||
+             receiver is PyType type && type.IsSubtypeOf(ownerType)))
         {
-            anchorType = ownerType;
-            return true;
+            frame.BindImplicitSuper(ownerType, receiver);
         }
 
-        anchorType = null;
-        receiver = null;
-        return false;
+        frame.EnterFunctionCall(span);
+        return frame;
     }
+
+    public static void AnnotateException(
+        LythonRuntimeException exception,
+        LythonRuntime.ExecutionContext frame,
+        string callableName,
+        LythonSourceSpan span)
+    {
+        exception.SetSourcePathIfMissing(frame.SourcePath);
+        exception.AddFrame(callableName, span, frame.SourcePath);
+    }
+
 }

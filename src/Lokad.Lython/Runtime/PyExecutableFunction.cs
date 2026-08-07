@@ -5,11 +5,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyDynamicAttributes
 {
-    private readonly IReadOnlyList<LoweredFunctionParameter> _parameters;
+    private readonly FunctionBindingPlan _bindingPlan;
     private readonly ExecutableCodeObject _codeObject;
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
-    private readonly Dictionary<string, object> _defaultValues;
     private readonly ScopeDirectiveFacts _scopeFacts;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
 
@@ -23,11 +22,10 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         ScopeDirectiveFacts scopeFacts)
     {
         Name = name;
-        _parameters = parameters;
         _codeObject = codeObject;
         _closure = closure;
         _closureCells = closureCells;
-        _defaultValues = defaultValues;
+        _bindingPlan = new FunctionBindingPlan(name, "Function", parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
 
@@ -38,23 +36,16 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, Name, "Function", _parameters, _defaultValues, context);
+        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
 
-        var frame = new LythonRuntime.ExecutionContext(_closure, _scopeFacts);
-        if (_codeObject.RequiresLocalVariableMirroring)
-        {
-            foreach (var pair in boundArguments)
-            {
-                frame.Variables[pair.Key] = pair.Value;
-            }
-        }
-
-        if (PyFunctionBinding.TryBuildImplicitSuperContext(OwnerType, _parameters, boundArguments, out var anchorType, out var receiver))
-        {
-            frame.BindImplicitSuper(anchorType, receiver);
-        }
-
-        frame.EnterFunctionCall(span);
+        var frame = PyFunctionBinding.EnterInvocationFrame(
+            _closure,
+            _scopeFacts,
+            _bindingPlan,
+            boundArguments,
+            _codeObject.RequiresLocalVariableMirroring,
+            OwnerType,
+            span);
         try
         {
             LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells);
@@ -66,8 +57,7 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         }
         catch (LythonRuntimeException ex)
         {
-            ex.SetSourcePathIfMissing(frame.SourcePath);
-            ex.AddFrame(Name, span, frame.SourcePath);
+            PyFunctionBinding.AnnotateException(ex, frame, Name, span);
             throw;
         }
         finally
