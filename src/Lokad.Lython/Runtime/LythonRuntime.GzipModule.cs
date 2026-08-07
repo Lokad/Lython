@@ -7,6 +7,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static readonly uint[] GzipCrc32Table = BuildGzipCrc32Table();
+
     private sealed class GzipModule : PyModule
     {
         public static readonly GzipModule Instance = new();
@@ -42,14 +44,21 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "gzip.decompress(data) requires a bytes-like object", span);
             }
 
-            if (data.Length == 0)
+            return DecompressPayload(data.Memory, span, context);
+        }
+
+        internal static PyBytes DecompressPayload(
+            ReadOnlyMemory<byte> compressed,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (compressed.IsEmpty)
             {
                 return CreateBytes([], context, span);
             }
 
             try
             {
-                var compressed = data.Memory;
                 var output = new Utf8ValueBuilder(context.MemoryGovernor, span);
                 var buffer = new byte[8192];
                 var position = 0;
@@ -297,10 +306,7 @@ internal sealed partial class LythonRuntime
         if (options.Operation == "r")
         {
             var compressed = ReadGovernedHostBytes(options.Path, context, span);
-            var decompressed = (PyBytes)GzipModule.Decompress(
-                [new PyBytes(compressed.ToArray())],
-                span,
-                context);
+            var decompressed = DecompressHostPayload(compressed, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
@@ -325,10 +331,7 @@ internal sealed partial class LythonRuntime
         if (options.Operation == "r")
         {
             var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
-            var decompressed = (PyBytes)GzipModule.Decompress(
-                [new PyBytes(compressed.ToArray())],
-                span,
-                context);
+            var decompressed = DecompressHostPayload(compressed, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
@@ -343,6 +346,29 @@ internal sealed partial class LythonRuntime
         }
 
         return GzipFileHandle.ForWrite(options, [], context);
+    }
+
+    private static PyBytes DecompressHostPayload(
+        ReadOnlyMemory<byte> compressed,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        if (compressed.IsEmpty)
+        {
+            return GzipModule.DecompressPayload(compressed, span, context);
+        }
+
+        var charge = PyBytes.EstimateApproximateBytes(compressed.Length);
+        context.MemoryGovernor.Reserve(charge, span);
+        context.MemoryGovernor.Commit(charge);
+        try
+        {
+            return GzipModule.DecompressPayload(compressed, span, context);
+        }
+        finally
+        {
+            context.MemoryGovernor.Release(charge);
+        }
     }
 
     private sealed class GzipFileHandle : IPyDynamicAttributes, IPyAsyncContextManager, IPyIteratorValue, IPyRenderableValue
@@ -403,7 +429,7 @@ internal sealed partial class LythonRuntime
             }
 
             var text = DecodeText(
-                decompressed.ToArray(),
+                decompressed.Memory,
                 options.Encoding,
                 context,
                 span,
@@ -1163,14 +1189,12 @@ internal sealed partial class LythonRuntime
     private static uint ComputeGzipCrc32(ReadOnlySpan<byte> data, ExecutionContext context, LythonSourceSpan? span)
     {
         var crc = uint.MaxValue;
-        for (var i = 0; i < data.Length; i++)
+        const int budgetChunkLength = 4096;
+        for (var offset = 0; offset < data.Length; offset += budgetChunkLength)
         {
-            if ((i & 0xfff) == 0)
-            {
-                context.CheckExecutionBudget(span);
-            }
-
-            crc = UpdateGzipCrc32(crc, data.Slice(i, 1));
+            context.CheckExecutionBudget(span);
+            var length = Math.Min(budgetChunkLength, data.Length - offset);
+            crc = UpdateGzipCrc32(crc, data.Slice(offset, length));
         }
 
         return ~crc;
@@ -1180,14 +1204,27 @@ internal sealed partial class LythonRuntime
     {
         foreach (var value in data)
         {
-            crc ^= value;
-            for (var bit = 0; bit < 8; bit++)
-            {
-                crc = (crc >> 1) ^ (0xedb88320u & unchecked((uint)-(int)(crc & 1)));
-            }
+            crc = GzipCrc32Table[(crc ^ value) & 0xff] ^ (crc >> 8);
         }
 
         return crc;
+    }
+
+    private static uint[] BuildGzipCrc32Table()
+    {
+        var table = new uint[256];
+        for (var index = 0; index < table.Length; index++)
+        {
+            var value = (uint)index;
+            for (var bit = 0; bit < 8; bit++)
+            {
+                value = (value >> 1) ^ (0xedb88320u & unchecked((uint)-(int)(value & 1)));
+            }
+
+            table[index] = value;
+        }
+
+        return table;
     }
 
     private static int ParseGzipHeader(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)

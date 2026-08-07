@@ -58,6 +58,23 @@ return str(checks)
     }
 
     [Fact]
+    public void CrcProcessingHandlesMultipleBudgetChunks()
+    {
+        var result = new LythonEngine().Run(
+            """
+import gzip
+
+payload = ("abcdefgh" * 8192).encode()
+compressed = gzip.compress(payload, mtime=0)
+return gzip.decompress(compressed) == payload
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, Describe(result));
+        Assert.Equal(true, result.ReturnValue);
+    }
+
+    [Fact]
     public async Task AsyncExecutionHasPureGzipParity()
     {
         var result = await new LythonEngine().RunAsync(
