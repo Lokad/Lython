@@ -8,6 +8,7 @@ public sealed class ExecutionParityTests
     {
         "return str([x * x for x in range(8) if x % 2 == 0])\n",
         "def f(a, b=2, *, c=3):\n    return a + b + c\nreturn str(f(1, c=4))\n",
+        "def f(*args, **kwargs):\n    return [args, kwargs]\nreturn str(f('head', *[1, 2], **{'name': 'value'}))\n",
         "class Base:\n    def value(self):\n        return 'base'\nclass Child(Base):\n    def value(self):\n        return super().value() + '-child'\nreturn Child().value()\n",
         "values = []\nfor value in [0, 1]:\n    try:\n        values.append(str(4 // value))\n    except ZeroDivisionError as ex:\n        values.append(ex.type)\nreturn '|'.join(values)\n",
         "import json\nreturn json.dumps(json.loads('{\"b\":2,\"a\":[1,true,null]}'), sort_keys=True)\n",
