@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
@@ -11,8 +12,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly IReadOnlyDictionary<string, int> EmptyRegexNamedGroups = new Dictionary<string, int>(StringComparer.Ordinal);
-
     internal sealed record ReCapture(PyString Value, BigInteger Start, BigInteger End);
 
     internal sealed record ReMatchObject(
@@ -292,14 +291,20 @@ internal sealed partial class LythonRuntime
             try
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
-                var (captureSlotCount, namedGroups) = SummarizePatternGroups(pattern.AsString());
+                var groupSummary = RegexPatternFacts.SummarizeGroups(pattern.AsString());
                 var reportedFlags = ToPythonFlags(options) | ParseLeadingInlinePythonFlags(pattern.AsString());
                 if ((reportedFlags & PythonAsciiFlag) == 0)
                 {
                     reportedFlags |= PythonUnicodeFlag;
                 }
 
-                return new RePatternObject(pattern, options, reportedFlags, compiled, captureSlotCount, namedGroups);
+                return new RePatternObject(
+                    pattern,
+                    options,
+                    reportedFlags,
+                    compiled,
+                    groupSummary.CaptureSlotCount,
+                    groupSummary.NamedGroups);
             }
             catch (PythonRePatternException ex)
             {
@@ -837,101 +842,6 @@ internal sealed partial class LythonRuntime
             return new PyList(items, context.MemoryGovernor, span);
         }
 
-        private static (int CaptureSlotCount, IReadOnlyDictionary<string, int> NamedGroups) SummarizePatternGroups(string pattern)
-        {
-            var count = 1;
-            var names = new Dictionary<string, int>(StringComparer.Ordinal);
-            var inClass = false;
-            for (var i = 0; i < pattern.Length; i++)
-            {
-                var ch = pattern[i];
-                if (ch == '\\')
-                {
-                    i++;
-                    continue;
-                }
-
-                if (ch == '[')
-                {
-                    inClass = true;
-                    continue;
-                }
-
-                if (ch == ']' && inClass)
-                {
-                    inClass = false;
-                    continue;
-                }
-
-                if (inClass || ch != '(')
-                {
-                    continue;
-                }
-
-                if (i + 1 >= pattern.Length || pattern[i + 1] != '?')
-                {
-                    count++;
-                    continue;
-                }
-
-                if (i + 3 < pattern.Length && pattern[i + 2] == 'P' && pattern[i + 3] == '<')
-                {
-                    var end = pattern.IndexOf('>', i + 4);
-                    if (end < 0)
-                    {
-                        continue;
-                    }
-
-                    var name = pattern[(i + 4)..end];
-                    names[name] = count;
-                    count++;
-                    i = end;
-                    continue;
-                }
-
-                if (i + 2 < pattern.Length && pattern[i + 2] is ':' or '=' or '!')
-                {
-                    continue;
-                }
-
-                if (i + 3 < pattern.Length && pattern[i + 2] == '<' && pattern[i + 3] is '=' or '!')
-                {
-                    continue;
-                }
-
-                if (TrySkipInlineRegexFlags(pattern, i + 2, out var endIndex))
-                {
-                    i = endIndex;
-                    continue;
-                }
-            }
-
-            return (count, names.Count == 0 ? EmptyRegexNamedGroups : names);
-        }
-
-        private static bool TrySkipInlineRegexFlags(string pattern, int start, out int endIndex)
-        {
-            var i = start;
-            while (i < pattern.Length && (char.IsLetter(pattern[i]) || pattern[i] == '-'))
-            {
-                i++;
-            }
-
-            if (i == start || i >= pattern.Length)
-            {
-                endIndex = start;
-                return false;
-            }
-
-            if (pattern[i] is ')' or ':')
-            {
-                endIndex = i;
-                return true;
-            }
-
-            endIndex = start;
-            return false;
-        }
     }
 
     internal sealed class PyRegexFindIterator : PyIteratorBase

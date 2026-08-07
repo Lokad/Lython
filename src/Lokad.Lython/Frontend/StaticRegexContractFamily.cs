@@ -546,8 +546,9 @@ internal static class StaticRegexContractFamily
 
     private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern)
     {
-        return TrySummarizeRegexGroups(pattern, out var captureSlotCount, out var namedGroups)
-            ? new AbstractRegexPatternSummary(pattern, captureSlotCount, namedGroups)
+        var summary = RegexPatternFacts.SummarizeGroups(pattern);
+        return summary.IsComplete
+            ? new AbstractRegexPatternSummary(pattern, summary.CaptureSlotCount, summary.NamedGroups)
             : new AbstractRegexPatternSummary(pattern, null, new Dictionary<string, int>(StringComparer.Ordinal));
     }
 
@@ -641,113 +642,6 @@ internal static class StaticRegexContractFamily
             regex = default;
             return false;
         }
-    }
-
-    private static bool TrySummarizeRegexGroups(
-        string pattern,
-        out int captureSlotCount,
-        out IReadOnlyDictionary<string, int> namedGroups)
-    {
-        var count = 1;
-        var names = new Dictionary<string, int>(StringComparer.Ordinal);
-        var inClass = false;
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            var ch = pattern[i];
-            if (ch == '\\')
-            {
-                i++;
-                continue;
-            }
-
-            if (ch == '[')
-            {
-                inClass = true;
-                continue;
-            }
-
-            if (ch == ']' && inClass)
-            {
-                inClass = false;
-                continue;
-            }
-
-            if (inClass || ch != '(')
-            {
-                continue;
-            }
-
-            if (i + 1 >= pattern.Length || pattern[i + 1] != '?')
-            {
-                count++;
-                continue;
-            }
-
-            if (i + 3 < pattern.Length && pattern[i + 2] == 'P' && pattern[i + 3] == '<')
-            {
-                var end = pattern.IndexOf('>', i + 4);
-                if (end < 0)
-                {
-                    captureSlotCount = 0;
-                    namedGroups = names;
-                    return false;
-                }
-
-                var name = pattern[(i + 4)..end];
-                names[name] = count;
-                count++;
-                i = end;
-                continue;
-            }
-
-            if (i + 2 < pattern.Length && pattern[i + 2] is ':' or '=' or '!')
-            {
-                continue;
-            }
-
-            if (i + 3 < pattern.Length && pattern[i + 2] == '<' && pattern[i + 3] is '=' or '!')
-            {
-                continue;
-            }
-
-            if (TrySkipInlineFlags(pattern, i + 2, out var endIndex))
-            {
-                i = endIndex;
-                continue;
-            }
-
-            captureSlotCount = 0;
-            namedGroups = names;
-            return false;
-        }
-
-        captureSlotCount = count;
-        namedGroups = names;
-        return true;
-    }
-
-    private static bool TrySkipInlineFlags(string pattern, int start, out int endIndex)
-    {
-        var i = start;
-        while (i < pattern.Length && (char.IsLetter(pattern[i]) || pattern[i] == '-'))
-        {
-            i++;
-        }
-
-        if (i == start || i >= pattern.Length)
-        {
-            endIndex = start;
-            return false;
-        }
-
-        if (pattern[i] is ')' or ':')
-        {
-            endIndex = i;
-            return true;
-        }
-
-        endIndex = start;
-        return false;
     }
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
