@@ -868,11 +868,11 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         }
     }
 
-    public int Count => BuildMergedKeys().Count;
+    public int Count => CountMergedKeys();
 
     public int Length => Count;
 
-    public bool IsTruthy() => Count != 0;
+    public bool IsTruthy() => _maps.Any(map => map.Count != 0);
 
     public IEnumerable<object> Iterate() => BuildMergedKeys();
 
@@ -951,11 +951,12 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     private IReadOnlyList<object> BuildMergedKeys()
     {
         var keys = new List<object>();
+        var seen = new HashSet<object>(PyValueComparer.Instance);
         foreach (var map in _maps)
         {
             foreach (var key in map.Keys)
             {
-                if (!keys.Any(existing => PyEquality.AreEqual(existing, key)))
+                if (seen.Add(key))
                 {
                     keys.Add(key);
                 }
@@ -968,12 +969,30 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     private IReadOnlyList<KeyValuePair<object, object>> BuildMergedItems()
     {
         var items = new List<KeyValuePair<object, object>>();
-        foreach (var key in BuildMergedKeys())
+        var seen = new HashSet<object>(PyValueComparer.Instance);
+        foreach (var map in _maps)
         {
-            items.Add(new KeyValuePair<object, object>(key, GetOrDefault(key, PyNone.Instance)));
+            foreach (var pair in map)
+            {
+                if (seen.Add(pair.Key))
+                {
+                    items.Add(pair);
+                }
+            }
         }
 
         return items;
+    }
+
+    private int CountMergedKeys()
+    {
+        var keys = new HashSet<object>(PyValueComparer.Instance);
+        foreach (var map in _maps)
+        {
+            keys.UnionWith(map.Keys);
+        }
+
+        return keys.Count;
     }
 
     private static PyDict ExpectMap(object value, LythonSourceSpan span)

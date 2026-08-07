@@ -192,7 +192,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public PyString Slice(PyIndexing.SliceBounds bounds)
     {
-        var count = SliceItemCount(bounds);
+        var count = bounds.Count;
         if (count == 0)
         {
             return Empty;
@@ -593,20 +593,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         offsets[runeIndex] = _utf8.Length;
         _runeByteOffsets = offsets;
         return offsets;
-    }
-
-    private static int SliceItemCount(PyIndexing.SliceBounds bounds)
-    {
-        if (bounds.Step > 0)
-        {
-            return bounds.Start >= bounds.End
-                ? 0
-                : (int)(1L + ((long)bounds.End - 1 - bounds.Start) / bounds.Step);
-        }
-
-        return bounds.Start <= bounds.End
-            ? 0
-            : (int)(1L + ((long)bounds.Start - 1 - bounds.End) / -(long)bounds.Step);
     }
 
     private static PyString[] CreateAsciiCharacters()

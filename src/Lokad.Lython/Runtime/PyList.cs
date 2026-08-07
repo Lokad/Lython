@@ -150,17 +150,24 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             return;
         }
 
-        var remove = bounds.Indices().ToArray();
-        if (remove.Length == 0)
+        var removeCount = bounds.Count;
+        if (removeCount == 0)
         {
             return;
         }
 
-        Array.Sort(remove);
-        for (var i = remove.Length - 1; i >= 0; i--)
+        var items = ToArray();
+        var updated = new object[items.Length - removeCount];
+        var destination = 0;
+        for (var source = 0; source < items.Length; source++)
         {
-            RemoveAt(remove[i]);
+            if (!bounds.Contains(source))
+            {
+                updated[destination++] = items[source];
+            }
         }
+
+        ReplaceStorage(updated);
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)

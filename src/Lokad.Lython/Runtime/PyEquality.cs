@@ -170,14 +170,8 @@ internal static class PyEquality
 
     private static bool CountersEqual(PyCounter left, PyCounter right)
     {
-        var keys = new List<object>();
-        foreach (var key in left.Keys.Concat(right.Keys))
-        {
-            if (!keys.Any(existing => AreEqual(existing, key)))
-            {
-                keys.Add(key);
-            }
-        }
+        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
+        keys.UnionWith(right.Keys);
 
         foreach (var key in keys)
         {

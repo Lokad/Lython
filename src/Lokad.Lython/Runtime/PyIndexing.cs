@@ -7,6 +7,10 @@ internal static class PyIndexing
 {
     public readonly record struct SliceBounds(int Start, int End, int Step)
     {
+        public int Count => Step > 0
+            ? Start >= End ? 0 : (int)(1L + ((long)End - 1 - Start) / Step)
+            : Start <= End ? 0 : (int)(1L + ((long)Start - 1 - End) / -(long)Step);
+
         public IEnumerable<int> Indices()
         {
             if (Step > 0)
@@ -23,6 +27,16 @@ internal static class PyIndexing
                     yield return (int)i;
                 }
             }
+        }
+
+        public bool Contains(int index)
+        {
+            if (Step > 0)
+            {
+                return index >= Start && index < End && (index - (long)Start) % Step == 0;
+            }
+
+            return index <= Start && index > End && ((long)Start - index) % -(long)Step == 0;
         }
     }
 
