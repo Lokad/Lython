@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -143,10 +143,10 @@ internal sealed partial class LythonRuntime
                 "lgamma" => new BuiltinCallable(LythonKnownCallableSignatures.MathLgamma, LGamma),
                 "fma" => new BuiltinCallable(LythonKnownCallableSignatures.MathFma, Fma),
                 "sumprod" => new BuiltinCallable(LythonKnownCallableSignatures.MathSumProd, SumProd),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object Sqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -634,7 +634,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -647,10 +647,10 @@ internal sealed partial class LythonRuntime
                 "datetime" => PyDateTimeOps.DateTimeType,
                 "tzinfo" => PyDateTimeOps.TzInfoType,
                 "timezone" => PyDateTimeOps.TimezoneType,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -662,7 +662,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -698,10 +698,10 @@ internal sealed partial class LythonRuntime
                 "DEBUG" => new BigInteger(RegexDebugFlag),
                 "Pattern" => PyString.FromString("re.Pattern"),
                 "Match" => PyString.FromString("re.Match"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private const int PythonIgnoreCaseFlag = 2;
@@ -1521,7 +1521,7 @@ internal sealed partial class LythonRuntime
             _matches = ReModule.CreateDetailedFindMatches(pattern, range).GetEnumerator();
         }
 
-        public override bool TryMoveNext(out object value)
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_matches is null || !_matches.MoveNext())
             {
@@ -1530,7 +1530,7 @@ internal sealed partial class LythonRuntime
             }
 
             _context.CheckExecutionBudget(_span);
-            value = ReModule.CreateMatchObject(_pattern, _range, (Utf8PythonDetailedMatchData)_matches.Current!, _context, _span);
+            value = ReModule.CreateMatchObject(_pattern, _range, (Utf8PythonDetailedMatchData)_matches.Current.RequireNotNull(), _context, _span);
             return true;
         }
 
@@ -1543,7 +1543,7 @@ internal sealed partial class LythonRuntime
 
     internal static class ReMatchMembers
     {
-        public static bool TryGetMember(ReMatchObject match, string name, out object value)
+        public static bool TryGetMember(ReMatchObject match, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
                 {
@@ -1655,10 +1655,10 @@ internal sealed partial class LythonRuntime
                     var bounds = ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span);
                     return CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
                 }, "match.span", ["group"], 0),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span)
@@ -1874,7 +1874,7 @@ internal sealed partial class LythonRuntime
             _stderr = state.Stderr;
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1905,10 +1905,10 @@ internal sealed partial class LythonRuntime
                 "setrecursionlimit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetRecursionLimit, "sys.setrecursionlimit(...) is not supported by Lython; use LythonRunOptions.MaxRecursionDepth."),
                 "addaudithook" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAddAuditHook, "sys.addaudithook(...) is not supported by Lython."),
                 "audit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysAudit, "sys.audit(...) is not supported by Lython."),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object Exit(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1932,7 +1932,7 @@ internal sealed partial class LythonRuntime
                     PyString.FromString(LythonPythonVersion.ReleaseLevel),
                     new BigInteger(LythonPythonVersion.Serial)
                 ],
-                span: null!);
+                span: null);
 
         private static object GetDefaultEncoding(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -2052,7 +2052,7 @@ internal sealed partial class LythonRuntime
             _hexversion = hexversion;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2060,10 +2060,10 @@ internal sealed partial class LythonRuntime
                 "version" => _version,
                 "hexversion" => _hexversion,
                 "cache_tag" => PyString.FromString(LythonPythonVersion.CacheTag),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2091,7 +2091,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name == "dataclass")
             {
@@ -2195,13 +2195,13 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> ExportedNames => PyTyping.ExportedNames;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => PyTyping.TryGetMember(name, out value);
     }
 
     internal static class RePatternMembers
     {
-        public static bool TryGetMember(RePatternObject pattern, string name, out object value)
+        public static bool TryGetMember(RePatternObject pattern, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2217,10 +2217,10 @@ internal sealed partial class LythonRuntime
                 "sub" => new BoundCallable((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, includeCount: false), "pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2),
                 "subn" => new BoundCallable((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, includeCount: true), "pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2),
                 "split" => new BoundCallable((arguments, span, context) => ExecuteSplit(pattern, arguments, span, context), "pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static PyDict CreateGroupIndex(RePatternObject pattern)
@@ -2385,7 +2385,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2404,10 +2404,10 @@ internal sealed partial class LythonRuntime
                 "RawDescriptionHelpFormatter" => FormatterClasses["RawDescriptionHelpFormatter"],
                 "RawTextHelpFormatter" => FormatterClasses["RawTextHelpFormatter"],
                 "ArgumentDefaultsHelpFormatter" => FormatterClasses["ArgumentDefaultsHelpFormatter"],
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object CreateParser(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2679,7 +2679,7 @@ internal sealed partial class LythonRuntime
 
         public PyString? Description => _options.Description is null ? null : PyString.FromString(_options.Description);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2696,10 +2696,10 @@ internal sealed partial class LythonRuntime
                 "set_defaults" => new CustomMethodCallable("argparse.ArgumentParser.set_defaults", SetDefaults),
                 "get_default" => new CustomMethodCallable("argparse.ArgumentParser.get_default", GetDefault),
                 "add_subparsers" => new CustomMethodCallable("argparse.ArgumentParser.add_subparsers", AddSubparsers),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2913,7 +2913,7 @@ internal sealed partial class LythonRuntime
 
             var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)
                 ? context.State.Args.Select(static item => item.AsString()).ToList()
-                : ToStringList(argsValue!, $"{methodName}(args) expects an iterable of strings.", span);
+                : ToStringList(argsValue.RequireNotNull(), $"{methodName}(args) expects an iterable of strings.", span);
 
             var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)
                 ? null
@@ -4052,7 +4052,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{methodName}({parameterName}) expects one argument.", span);
             }
 
-            return RequireStringValue(value!, parameterName, methodName, span);
+            return RequireStringValue(value.RequireNotNull(), parameterName, methodName, span);
         }
 
         private static void RequireNoArguments(CallArgumentValue[] arguments, string methodName, LythonSourceSpan span)
@@ -4239,7 +4239,7 @@ internal sealed partial class LythonRuntime
 
         public IReadOnlyDictionary<string, object> Members => _members;
 
-        public bool TryGetMember(string name, out object value) => _members.TryGetValue(name, out value!);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
 
         public bool TrySetMember(string name, object value)
         {
@@ -4282,15 +4282,15 @@ internal sealed partial class LythonRuntime
 
         public bool Required { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "add_argument" => new CustomMethodCallable("argparse._MutuallyExclusiveGroup.add_argument", AddArgument),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -4427,7 +4427,7 @@ internal sealed partial class LythonRuntime
         public override IReadOnlyList<string> ExportedNames
             => ["Path", "PurePath", "PurePosixPath", "PosixPath", "PureWindowsPath", "WindowsPath"];
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -4437,10 +4437,10 @@ internal sealed partial class LythonRuntime
                 "PosixPath" => PosixPathType,
                 "PureWindowsPath" => PureWindowsPathType,
                 "WindowsPath" => WindowsPathType,
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object CreatePath(IReadOnlyList<object> arguments, LythonSourceSpan span)
@@ -4466,7 +4466,7 @@ internal sealed partial class LythonRuntime
                 path = path is null ? segment : PathOps.Join(path, segment);
             }
 
-            return new PyPath(PathOps.Normalize(path!));
+            return new PyPath(PathOps.Normalize(path.RequireNotNull()));
         }
 
         private sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
@@ -4505,7 +4505,7 @@ internal sealed partial class LythonRuntime
                 return CreatePath(values, span);
             }
 
-            public bool TryGetMember(string name, out object value)
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
@@ -4529,10 +4529,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("NotImplementedError", $"{Name}.home() is not supported by Lython; the host does not expose an ambient user home directory.", span);
                     }, $"{Name}.home", []),
                     "__name__" => PyString.FromString(ShortName),
-                    _ => null!
+                    _ => MissingMemberValue.Instance
                 };
 
-                return value is not null;
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
 
             public bool TrySetMember(string name, object value)
@@ -4560,7 +4560,7 @@ internal sealed partial class LythonRuntime
 
     internal static class StringMembers
     {
-        public static bool TryGetMember(PyString text, string name, out object value)
+        public static bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5132,10 +5132,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("KeyError", ex.Message, span);
                     }
                 }, "str.format_map", ["mapping"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span)
@@ -5273,9 +5273,10 @@ internal sealed partial class LythonRuntime
                     }
 
                     var memberName = field[start..index];
-                    if (!PyMemberAccess.TryResolve(current, memberName, context, span, out current))
+                    var memberTarget = current;
+                    if (!PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out current))
                     {
-                        throw PyMemberAccess.CreateMissingMemberError(current, memberName, span);
+                        throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberName, span);
                     }
 
                     continue;
@@ -5349,7 +5350,7 @@ internal sealed partial class LythonRuntime
 
     internal static class BytesMembers
     {
-        public static bool TryGetMember(PyBytes bytes, string name, out object value)
+        public static bool TryGetMember(PyBytes bytes, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5368,10 +5369,10 @@ internal sealed partial class LythonRuntime
                         : TextErrorMode.Strict;
                     return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, "bytes.decode", ["encoding", "errors"], 0),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -5445,7 +5446,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5453,10 +5454,10 @@ internal sealed partial class LythonRuntime
                 "fnmatchcase" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchCase, MatchCase),
                 "filter" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchFilter, Filter),
                 "translate" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchTranslate, Translate),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object Match(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -5804,7 +5805,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5815,10 +5816,10 @@ internal sealed partial class LythonRuntime
                 "JSONDecodeError" => new ExceptionTypeValue("JSONDecodeError"),
                 "JSONEncoder" => new UnsupportedJsonClassFactory("json.JSONEncoder"),
                 "JSONDecoder" => new UnsupportedJsonClassFactory("json.JSONDecoder"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object Load(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -6353,7 +6354,7 @@ internal sealed partial class LythonRuntime
             builder.Append(Numbers.PyNumberOps.RenderFloat(value));
         }
 
-        private static bool TryConvertJsonConstant(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, out object value)
+        private static bool TryConvertJsonConstant(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             var trimmed = text.AsString().Trim();
             if (trimmed is not ("NaN" or "Infinity" or "-Infinity"))
@@ -6821,7 +6822,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -6834,10 +6835,10 @@ internal sealed partial class LythonRuntime
                 "QUOTE_ALL" => new BigInteger(CsvQuoteAll),
                 "QUOTE_NONNUMERIC" => new BigInteger(CsvQuoteNonNumeric),
                 "QUOTE_NONE" => new BigInteger(CsvQuoteNone),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object Reader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -6948,7 +6949,7 @@ internal sealed partial class LythonRuntime
                 : null;
             var delimiter = (legacyDelimiter is null && dialectDelimiter is null
                 ? GetCharacterOption(arguments, delimiterIndex, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span)
-                : GetRequiredCharacter(legacyDelimiter ?? dialectDelimiter!, "delimiter", allowNone: false, span))!;
+                : GetRequiredCharacter(legacyDelimiter ?? dialectDelimiter.RequireNotNull(), "delimiter", allowNone: false, span)).RequireNotNull();
             if (delimiter.AsString() is "\r" or "\n")
             {
                 throw CsvError("csv delimiter cannot be a newline.", span);
@@ -7543,30 +7544,30 @@ internal sealed partial class LythonRuntime
 
     internal static class CsvReaderMembers
     {
-        public static bool TryGetMember(CsvReaderObject reader, string name, out object value)
+        public static bool TryGetMember(CsvReaderObject reader, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "line_num" => new BigInteger(reader.LineNum),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class CsvDictReaderMembers
     {
-        public static bool TryGetMember(CsvDictReaderObject reader, string name, out object value)
+        public static bool TryGetMember(CsvDictReaderObject reader, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "fieldnames" => reader.FieldNames is null ? PyNone.Instance : new PyList(reader.FieldNames),
                 "line_num" => new BigInteger(reader.LineNum),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -7628,7 +7629,7 @@ internal sealed partial class LythonRuntime
 
     internal static class CsvWriterMembers
     {
-        public static bool TryGetMember(CsvWriterObject writer, string name, out object value)
+        public static bool TryGetMember(CsvWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -7664,10 +7665,10 @@ internal sealed partial class LythonRuntime
 
                     return RenderCsvDocument(writer.Rows, writer.Options, trailingTerminator: false, span);
                 }),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public static BigInteger WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span)
@@ -7838,7 +7839,7 @@ internal sealed partial class LythonRuntime
 
     internal static class CsvDictWriterMembers
     {
-        public static bool TryGetMember(CsvDictWriterObject writer, string name, out object value)
+        public static bool TryGetMember(CsvDictWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -7880,10 +7881,10 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "csv.DictWriter.writerows", ["rowdicts"]),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, object row, LythonSourceSpan span)

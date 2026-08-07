@@ -119,7 +119,7 @@ internal static class StaticConditionRefinements
     private static bool TryGetIdentifierComparedToNone(
         ExpressionSyntax candidate,
         ExpressionSyntax other,
-        out IdentifierExpressionSyntax identifier)
+        [MaybeNullWhen(false)] out IdentifierExpressionSyntax identifier)
     {
         while (candidate is ParenthesizedExpressionSyntax candidateParenthesized)
         {
@@ -138,7 +138,7 @@ internal static class StaticConditionRefinements
             return true;
         }
 
-        identifier = default!;
+        identifier = default;
         return false;
     }
 
@@ -212,7 +212,7 @@ internal static class StaticConditionRefinements
 
         if (recognizedFailure)
         {
-            bindings.ReplaceWith(failedPaths!);
+            bindings.ReplaceWith(failedPaths.RequireNotNull());
         }
 
         return recognizedFailure;

@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
 {
     internal static class TimedeltaMembers
     {
-        public static bool TryGetMember(PyTimedelta delta, string name, out object value)
+        public static bool TryGetMember(PyTimedelta delta, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -23,16 +23,16 @@ internal sealed partial class LythonRuntime
 
                     return delta.TotalSeconds();
                 }),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class DateMembers
     {
-        public static bool TryGetMember(PyDate date, string name, out object value)
+        public static bool TryGetMember(PyDate date, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -123,20 +123,20 @@ internal sealed partial class LythonRuntime
                 "replace" => new BoundCallable((arguments, span, _) =>
                 {
                     return new PyDate(new DateOnly(
-                        ArgAt(arguments, 0) is null or PyNone ? (int)date.Year : ToInt(ArgAt(arguments, 0)!, "date.replace", span),
-                        ArgAt(arguments, 1) is null or PyNone ? (int)date.Month : ToInt(ArgAt(arguments, 1)!, "date.replace", span),
-                        ArgAt(arguments, 2) is null or PyNone ? (int)date.Day : ToInt(ArgAt(arguments, 2)!, "date.replace", span)));
+                        ArgAt(arguments, 0) is null or PyNone ? (int)date.Year : ToInt(ArgAt(arguments, 0).RequireNotNull(), "date.replace", span),
+                        ArgAt(arguments, 1) is null or PyNone ? (int)date.Month : ToInt(ArgAt(arguments, 1).RequireNotNull(), "date.replace", span),
+                        ArgAt(arguments, 2) is null or PyNone ? (int)date.Day : ToInt(ArgAt(arguments, 2).RequireNotNull(), "date.replace", span)));
                 }, "date.replace", ["year", "month", "day"], 0),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class TimeMembers
     {
-        public static bool TryGetMember(PyTime time, string name, out object value)
+        public static bool TryGetMember(PyTime time, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -210,9 +210,9 @@ internal sealed partial class LythonRuntime
                     var fold = foldArg is null or PyNone ? time.Fold : ToFold(foldArg, "time.replace", span);
                     return new PyTime(
                         new TimeOnly(
-                            ArgAt(arguments, 0) is null or PyNone ? (int)time.Hour : ToInt(ArgAt(arguments, 0)!, "time.replace", span),
-                            ArgAt(arguments, 1) is null or PyNone ? (int)time.Minute : ToInt(ArgAt(arguments, 1)!, "time.replace", span),
-                            ArgAt(arguments, 2) is null or PyNone ? (int)time.Second : ToInt(ArgAt(arguments, 2)!, "time.replace", span),
+                            ArgAt(arguments, 0) is null or PyNone ? (int)time.Hour : ToInt(ArgAt(arguments, 0).RequireNotNull(), "time.replace", span),
+                            ArgAt(arguments, 1) is null or PyNone ? (int)time.Minute : ToInt(ArgAt(arguments, 1).RequireNotNull(), "time.replace", span),
+                            ArgAt(arguments, 2) is null or PyNone ? (int)time.Second : ToInt(ArgAt(arguments, 2).RequireNotNull(), "time.replace", span),
                             microsecond / 1000,
                             microsecond % 1000),
                         ArgAt(arguments, 4) switch
@@ -224,16 +224,16 @@ internal sealed partial class LythonRuntime
                         },
                         fold);
                 }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class DateTimeMembers
     {
-        public static bool TryGetMember(PyDateTime dateTime, string name, out object value)
+        public static bool TryGetMember(PyDateTime dateTime, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -436,12 +436,12 @@ internal sealed partial class LythonRuntime
                     var fold = foldArg is null or PyNone ? dateTime.Fold : ToFold(foldArg, "datetime.replace", span);
                     return new PyDateTime(
                         new DateTime(
-                            ArgAt(arguments, 0) is null or PyNone ? (int)dateTime.Year : ToInt(ArgAt(arguments, 0)!, "datetime.replace", span),
-                            ArgAt(arguments, 1) is null or PyNone ? (int)dateTime.Month : ToInt(ArgAt(arguments, 1)!, "datetime.replace", span),
-                            ArgAt(arguments, 2) is null or PyNone ? (int)dateTime.Day : ToInt(ArgAt(arguments, 2)!, "datetime.replace", span),
-                            ArgAt(arguments, 3) is null or PyNone ? (int)dateTime.Hour : ToInt(ArgAt(arguments, 3)!, "datetime.replace", span),
-                            ArgAt(arguments, 4) is null or PyNone ? (int)dateTime.Minute : ToInt(ArgAt(arguments, 4)!, "datetime.replace", span),
-                            ArgAt(arguments, 5) is null or PyNone ? (int)dateTime.Second : ToInt(ArgAt(arguments, 5)!, "datetime.replace", span),
+                            ArgAt(arguments, 0) is null or PyNone ? (int)dateTime.Year : ToInt(ArgAt(arguments, 0).RequireNotNull(), "datetime.replace", span),
+                            ArgAt(arguments, 1) is null or PyNone ? (int)dateTime.Month : ToInt(ArgAt(arguments, 1).RequireNotNull(), "datetime.replace", span),
+                            ArgAt(arguments, 2) is null or PyNone ? (int)dateTime.Day : ToInt(ArgAt(arguments, 2).RequireNotNull(), "datetime.replace", span),
+                            ArgAt(arguments, 3) is null or PyNone ? (int)dateTime.Hour : ToInt(ArgAt(arguments, 3).RequireNotNull(), "datetime.replace", span),
+                            ArgAt(arguments, 4) is null or PyNone ? (int)dateTime.Minute : ToInt(ArgAt(arguments, 4).RequireNotNull(), "datetime.replace", span),
+                            ArgAt(arguments, 5) is null or PyNone ? (int)dateTime.Second : ToInt(ArgAt(arguments, 5).RequireNotNull(), "datetime.replace", span),
                             microsecond / 1000,
                             DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
                         ArgAt(arguments, 7) switch
@@ -453,10 +453,10 @@ internal sealed partial class LythonRuntime
                         },
                         fold);
                 }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static int ToInt(object value, string owner, LythonSourceSpan span)
@@ -472,7 +472,7 @@ internal sealed partial class LythonRuntime
 
     internal static class TimezoneMembers
     {
-        public static bool TryGetMember(PyTimezone timezone, string name, out object value)
+        public static bool TryGetMember(PyTimezone timezone, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -503,10 +503,10 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "timezone.dst", ["dt"]),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 

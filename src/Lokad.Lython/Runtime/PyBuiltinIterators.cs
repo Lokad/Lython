@@ -13,7 +13,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
         _displayName = displayName;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_source.TryMoveNext(out value))
         {
@@ -59,7 +59,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         var result = LythonRuntime.RuntimeValue(_callable.Invoke([], _span, _context));
@@ -103,7 +103,7 @@ internal sealed class PyReversedIterator : PyIteratorBase
         _getIndex = getIndex;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_nextIndex < 0)
         {
@@ -147,7 +147,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         var arguments = new CallArgumentValue[_iterators.Length];
         for (var i = 0; i < _iterators.Length; i++)
@@ -209,7 +209,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         while (_source.TryMoveNext(out var current))
         {

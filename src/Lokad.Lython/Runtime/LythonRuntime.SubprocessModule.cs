@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -52,10 +52,10 @@ internal sealed partial class LythonRuntime
                 "PIPE" => new BigInteger(SubprocessPipe),
                 "STDOUT" => new BigInteger(SubprocessStdout),
                 "DEVNULL" => new BigInteger(SubprocessDevNull),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -440,16 +440,16 @@ internal sealed partial class LythonRuntime
     {
         public static readonly SubprocessCalledProcessErrorType Instance = new();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "__name__" => PyString.FromString("CalledProcessError"),
                 "type" => PyString.FromString("CalledProcessError"),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -492,15 +492,15 @@ internal sealed partial class LythonRuntime
     {
         public static readonly SubprocessTimeoutExpiredType Instance = new();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "__name__" => PyString.FromString("TimeoutExpired"),
                 "type" => PyString.FromString("TimeoutExpired"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)

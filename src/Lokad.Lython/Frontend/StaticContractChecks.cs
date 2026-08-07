@@ -269,7 +269,7 @@ internal static class StaticContractChecks
     {
         if (requireNonEmpty && items.Count == 0)
         {
-            AddDiagnostic(diagnostics, emptyCode!, emptyMessage!, emptySpan!);
+            AddDiagnostic(diagnostics, emptyCode.RequireNotNull(), emptyMessage.RequireNotNull(), emptySpan.RequireNotNull());
             return;
         }
 
@@ -291,7 +291,7 @@ internal static class StaticContractChecks
     {
         if (requireNonEmpty && items.Count == 0)
         {
-            AddDiagnostic(diagnostics, emptyCode!, emptyMessage!, emptySpan!);
+            AddDiagnostic(diagnostics, emptyCode.RequireNotNull(), emptyMessage.RequireNotNull(), emptySpan.RequireNotNull());
             return;
         }
 

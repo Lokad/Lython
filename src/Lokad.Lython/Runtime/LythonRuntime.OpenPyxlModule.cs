@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -42,10 +42,10 @@ internal sealed partial class LythonRuntime
                 "cell" => OpenPyxlCellModule.Instance,
                 "worksheet" => OpenPyxlWorksheetModule.Instance,
                 "drawing" => OpenPyxlDrawingModule.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object Workbook(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -101,8 +101,8 @@ internal sealed partial class LythonRuntime
             _members = new Dictionary<string, object>(members, StringComparer.Ordinal);
         }
 
-        public override bool TryGetMember(string name, out object value)
-            => _members.TryGetValue(name, out value!);
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => _members.TryGetValue(name, out value);
     }
 
     private static BuiltinCallable UnsupportedOpenPyxlCallable(string qualifiedName)
@@ -142,16 +142,16 @@ internal sealed partial class LythonRuntime
 
         public OpenPyxlComment Copy() => new(Text, Author);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "text" => PyString.FromString(Text),
                 "author" => PyString.FromString(Author),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -329,7 +329,7 @@ internal sealed partial class LythonRuntime
 
         public OpenPyxlChartAxis YAxis { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -351,10 +351,10 @@ internal sealed partial class LythonRuntime
                 "add_data" => new BoundCallable(AddData, "Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1),
                 "set_categories" => new BoundCallable(SetCategories, "Chart.set_categories", ["labels"]),
                 "append" => new BoundCallable(Append, "Chart.append", ["value"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -432,15 +432,15 @@ internal sealed partial class LythonRuntime
     {
         public string? Title { get; private set; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "title" => Title is null ? PyNone.Instance : PyString.FromString(Title),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -487,7 +487,7 @@ internal sealed partial class LythonRuntime
 
         public string? RangeString { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -497,10 +497,10 @@ internal sealed partial class LythonRuntime
                 "max_col" => MaxColumn is null ? PyNone.Instance : new BigInteger(MaxColumn.Value),
                 "max_row" => MaxRow is null ? PyNone.Instance : new BigInteger(MaxRow.Value),
                 "range_string" => ReferenceText() is { } text ? PyString.FromString(text) : PyNone.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -551,17 +551,17 @@ internal sealed partial class LythonRuntime
 
         public object Title { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "values" => Values,
                 "xvalues" => XValues,
                 "title" => Title,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -597,7 +597,7 @@ internal sealed partial class LythonRuntime
 
         public string Format => Path.GetExtension(Source).TrimStart('.').ToLowerInvariant();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -611,10 +611,10 @@ internal sealed partial class LythonRuntime
                 "anchor" => Anchor ?? PyNone.Instance,
                 "width" => Width ?? PyNone.Instance,
                 "height" => Height ?? PyNone.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -716,7 +716,7 @@ internal sealed partial class LythonRuntime
 
         public bool? Auto { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -728,9 +728,9 @@ internal sealed partial class LythonRuntime
                 "auto" => Auto is { } auto ? auto : PyNone.Instance,
                 "index" => ColorIndexValue(),
                 "value" => ColorIndexValue(),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -829,8 +829,8 @@ internal sealed partial class LythonRuntime
             return new OpenPyxlStyleValue(QualifiedName, members);
         }
 
-        public bool TryGetMember(string name, out object value)
-            => _members.TryGetValue(name, out value!);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => _members.TryGetValue(name, out value);
 
         public bool TrySetMember(string name, object value)
         {
@@ -898,7 +898,7 @@ internal sealed partial class LythonRuntime
             (OpenPyxlStyleValue leftStyle, OpenPyxlStyleValue rightStyle) => StyleValuesEqual(leftStyle, rightStyle),
             (OpenPyxlColor leftColor, OpenPyxlColor rightColor) => leftColor.Equals(rightColor),
             (null or PyNone, _) or (_, null or PyNone) => false,
-            _ => PyEquality.AreEqual(left!, right!),
+            _ => PyEquality.AreEqual(left.RequireNotNull(), right.RequireNotNull()),
         };
     }
 
@@ -939,11 +939,11 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return PyValueComparer.Instance.GetHashCode(value!);
+            return PyValueComparer.Instance.GetHashCode(value.RequireNotNull());
         }
         catch (InvalidOperationException)
         {
-            return value!.GetHashCode();
+            return value.RequireNotNull().GetHashCode();
         }
     }
 
@@ -978,7 +978,7 @@ internal sealed partial class LythonRuntime
         return new OpenPyxlColor(type, rgb, indexed, theme, tint, auto);
     }
 
-    private static object CreateFont(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object CreateFont(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = context;
         var bold = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 6, false, "openpyxl.styles.Font.b", span), "openpyxl.styles.Font.bold", span);
@@ -986,7 +986,7 @@ internal sealed partial class LythonRuntime
         var sizeValue = FirstStyleValue(arguments, 8, 1);
         var size = sizeValue is PyNone
             ? (object)PyNone.Instance
-            : NormalizeOptionalNonNegativeDouble(sizeValue, "openpyxl.styles.Font.size", span)!.Value;
+            : NormalizeOptionalNonNegativeDouble(sizeValue, "openpyxl.styles.Font.size", span).RequireNotNull();
         var underline = FirstStyleValue(arguments, 5, 9);
         var strike = OptionalStyleBool(arguments, 11, OptionalStyleBool(arguments, 10, false, "openpyxl.styles.Font.strike", span), "openpyxl.styles.Font.strikethrough", span);
         return new OpenPyxlStyleValue("openpyxl.styles.Font", new Dictionary<string, object>
@@ -1006,7 +1006,7 @@ internal sealed partial class LythonRuntime
         });
     }
 
-    private static object CreatePatternFill(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object CreatePatternFill(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = span;
         _ = context;
@@ -1022,7 +1022,7 @@ internal sealed partial class LythonRuntime
         });
     }
 
-    private static object CreateBorder(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object CreateBorder(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = span;
         _ = context;
@@ -1048,7 +1048,7 @@ internal sealed partial class LythonRuntime
         });
     }
 
-    private static object CreateAlignment(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object CreateAlignment(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = context;
         var wrapText = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 4, false, "openpyxl.styles.Alignment.wrapText", span), "openpyxl.styles.Alignment.wrap_text", span);
@@ -1067,7 +1067,7 @@ internal sealed partial class LythonRuntime
         });
     }
 
-    private static object CreateProtection(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object CreateProtection(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = context;
         return new OpenPyxlStyleValue("openpyxl.styles.Protection", new Dictionary<string, object>
@@ -1315,7 +1315,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static bool OptionalStyleBool(object[] arguments, int index, bool defaultValue, string owner, LythonSourceSpan span)
+    private static bool OptionalStyleBool(object[] arguments, int index, bool defaultValue, string owner, LythonSourceSpan? span)
         => arguments.Length <= index || arguments[index] is PyNone
             ? defaultValue
             : arguments[index] is bool value
@@ -1325,11 +1325,11 @@ internal sealed partial class LythonRuntime
     private static object DefaultCellStyle(string name)
         => name switch
         {
-            "font" => CreateFont([], null!, null!),
-            "fill" => CreatePatternFill([], null!, null!),
-            "border" => CreateBorder([], null!, null!),
-            "alignment" => CreateAlignment([], null!, null!),
-            "protection" => CreateProtection([], null!, null!),
+            "font" => CreateFont([], null, null),
+            "fill" => CreatePatternFill([], null, null),
+            "border" => CreateBorder([], null, null),
+            "alignment" => CreateAlignment([], null, null),
+            "protection" => CreateProtection([], null, null),
             _ => PyNone.Instance,
         };
 
@@ -1430,7 +1430,7 @@ internal sealed partial class LythonRuntime
 
         public bool RewriteReference(Func<CellRangeAddress, CellRangeAddress?> rewrite)
         {
-            var rewritten = rewrite(ParseCellRange(Reference, null!));
+            var rewritten = rewrite(ParseCellRange(Reference, null));
             if (rewritten is null)
             {
                 return false;
@@ -1440,7 +1440,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1448,10 +1448,10 @@ internal sealed partial class LythonRuntime
                 "name" => PyString.FromString(DisplayName),
                 "ref" => PyString.FromString(Reference),
                 "tableStyleInfo" => TableStyleInfo,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1510,7 +1510,7 @@ internal sealed partial class LythonRuntime
 
         public OpenPyxlTableStyleInfo Copy() => new(Name, ShowFirstColumn, ShowLastColumn, ShowRowStripes, ShowColumnStripes);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1519,10 +1519,10 @@ internal sealed partial class LythonRuntime
                 "showLastColumn" => ShowLastColumn,
                 "showRowStripes" => ShowRowStripes,
                 "showColumnStripes" => ShowColumnStripes,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1677,7 +1677,7 @@ internal sealed partial class LythonRuntime
             _ranges.AddRange(rewritten);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1696,10 +1696,10 @@ internal sealed partial class LythonRuntime
                 "sqref" => PyString.FromString(Sqref),
                 "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray()),
                 "add" => new BoundCallable(Add, "DataValidation.add", ["cell_range"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1784,17 +1784,17 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "dataValidation" => new PyList(_worksheet.DataValidations.Select(validation => (object)validation).ToArray()),
                 "count" => new BigInteger(_worksheet.DataValidations.Count),
                 "append" => new BoundCallable(Append, "DataValidationList.append", ["data_validation"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1850,7 +1850,7 @@ internal sealed partial class LythonRuntime
 
         internal XElement? SourceXml { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1858,10 +1858,10 @@ internal sealed partial class LythonRuntime
                 "operator" => Operator is null ? PyNone.Instance : PyString.FromString(Operator),
                 "priority" => Priority is null ? PyNone.Instance : new BigInteger(Priority.Value),
                 "formula" => new PyList(Formulas.Select(formula => (object)PyString.FromString(formula)).ToArray()),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1944,17 +1944,17 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "ranges" => new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref)).ToArray()),
                 "items" => new BoundCallable(Items, "ConditionalFormattingList.items", []),
                 "add" => new BoundCallable(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2036,7 +2036,7 @@ internal sealed partial class LythonRuntime
         public void AddImage(OpenPyxlLoadedImage image)
             => _images.Add(image);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2048,10 +2048,10 @@ internal sealed partial class LythonRuntime
                 "_charts" => new PyList(_charts.Cast<object>().ToArray()),
                 "images" => new PyList(_images.Cast<object>().ToArray()),
                 "_images" => new PyList(_images.Cast<object>().ToArray()),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2085,7 +2085,7 @@ internal sealed partial class LythonRuntime
 
         public string DrawingPath { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2096,10 +2096,10 @@ internal sealed partial class LythonRuntime
                 "drawing_path" => PyString.FromString(ContentPath(DrawingPath)),
                 "anchor" => PyNone.Instance,
                 "title" => PyNone.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2135,7 +2135,7 @@ internal sealed partial class LythonRuntime
 
         public string Format => Path.GetExtension(PackagePath).TrimStart('.').ToLowerInvariant();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2148,10 +2148,10 @@ internal sealed partial class LythonRuntime
                 "anchor" => PyNone.Instance,
                 "width" => PyNone.Instance,
                 "height" => PyNone.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2178,14 +2178,14 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name == "Workbook")
             {
                 return OpenPyxlModule.Instance.TryGetMember("Workbook", out value);
             }
 
-            value = null!;
+            value = null;
             return false;
         }
     }
@@ -2198,15 +2198,15 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "excel" => OpenPyxlReaderExcelModule.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -2218,14 +2218,14 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name == "load_workbook")
             {
                 return OpenPyxlModule.Instance.TryGetMember("load_workbook", out value);
             }
 
-            value = null!;
+            value = null;
             return false;
         }
     }
@@ -2238,7 +2238,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2254,10 +2254,10 @@ internal sealed partial class LythonRuntime
                 "cols_from_range" => new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlColsFromRange, ColsFromRange),
                 "cell" => OpenPyxlUtilsCellModule.Instance,
                 "exceptions" => OpenPyxlUtilsExceptionsModule.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object GetColumnLetter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2297,7 +2297,7 @@ internal sealed partial class LythonRuntime
             }
 
             return new PyTuple(
-                [PyString.FromString(ColumnName(part.Column!.Value)), new BigInteger(part.Row.Value)],
+                [PyString.FromString(ColumnName(part.Column.RequireNotNull())), new BigInteger(part.Row.Value)],
                 context.MemoryGovernor,
                 span);
         }
@@ -2312,7 +2312,7 @@ internal sealed partial class LythonRuntime
             }
 
             return new PyTuple(
-                [new BigInteger(part.Row.Value), new BigInteger(part.Column!.Value)],
+                [new BigInteger(part.Row.Value), new BigInteger(part.Column.RequireNotNull())],
                 context.MemoryGovernor,
                 span);
         }
@@ -2376,13 +2376,13 @@ internal sealed partial class LythonRuntime
             var reference = ExpectSingleStringArgument(arguments, "rows_from_range(range_string)", span);
             var bounds = ParseBoundedUtilityRange(reference, "rows_from_range(range_string)", span);
             var rows = new List<object>();
-            for (var row = bounds.MinRow!.Value; row <= bounds.MaxRow!.Value; row++)
+            for (var row = bounds.MinRow.RequireNotNull(); row <= bounds.MaxRow.RequireNotNull(); row++)
             {
                 context.CheckExecutionBudget(span);
-                var cells = new object[bounds.MaxColumn!.Value - bounds.MinColumn!.Value + 1];
-                for (var column = bounds.MinColumn.Value; column <= bounds.MaxColumn.Value; column++)
+                var cells = new object[bounds.MaxColumn.RequireNotNull() - bounds.MinColumn.RequireNotNull() + 1];
+                for (var column = bounds.MinColumn.RequireNotNull(); column <= bounds.MaxColumn.RequireNotNull(); column++)
                 {
-                    cells[column - bounds.MinColumn.Value] = PyString.FromString(CellReference(row, column));
+                    cells[column - bounds.MinColumn.RequireNotNull()] = PyString.FromString(CellReference(row, column));
                 }
 
                 rows.Add(new PyTuple(cells, context.MemoryGovernor, span));
@@ -2396,13 +2396,13 @@ internal sealed partial class LythonRuntime
             var reference = ExpectSingleStringArgument(arguments, "cols_from_range(range_string)", span);
             var bounds = ParseBoundedUtilityRange(reference, "cols_from_range(range_string)", span);
             var columns = new List<object>();
-            for (var column = bounds.MinColumn!.Value; column <= bounds.MaxColumn!.Value; column++)
+            for (var column = bounds.MinColumn.RequireNotNull(); column <= bounds.MaxColumn.RequireNotNull(); column++)
             {
                 context.CheckExecutionBudget(span);
-                var cells = new object[bounds.MaxRow!.Value - bounds.MinRow!.Value + 1];
-                for (var row = bounds.MinRow.Value; row <= bounds.MaxRow.Value; row++)
+                var cells = new object[bounds.MaxRow.RequireNotNull() - bounds.MinRow.RequireNotNull() + 1];
+                for (var row = bounds.MinRow.RequireNotNull(); row <= bounds.MaxRow.RequireNotNull(); row++)
                 {
-                    cells[row - bounds.MinRow.Value] = PyString.FromString(CellReference(row, column));
+                    cells[row - bounds.MinRow.RequireNotNull()] = PyString.FromString(CellReference(row, column));
                 }
 
                 columns.Add(new PyTuple(cells, context.MemoryGovernor, span));
@@ -2465,20 +2465,20 @@ internal sealed partial class LythonRuntime
             return start.Kind switch
             {
                 UtilityReferenceKind.Cell => new UtilityRangeBoundaries(
-                    Math.Min(start.Column!.Value, end.Column!.Value),
-                    Math.Min(start.Row!.Value, end.Row!.Value),
-                    Math.Max(start.Column.Value, end.Column.Value),
-                    Math.Max(start.Row.Value, end.Row.Value)),
+                    Math.Min(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
+                    Math.Min(start.Row.RequireNotNull(), end.Row.RequireNotNull()),
+                    Math.Max(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
+                    Math.Max(start.Row.RequireNotNull(), end.Row.RequireNotNull())),
                 UtilityReferenceKind.Column => new UtilityRangeBoundaries(
-                    Math.Min(start.Column!.Value, end.Column!.Value),
+                    Math.Min(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
                     null,
-                    Math.Max(start.Column.Value, end.Column.Value),
+                    Math.Max(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
                     null),
                 UtilityReferenceKind.Row => new UtilityRangeBoundaries(
                     null,
-                    Math.Min(start.Row!.Value, end.Row!.Value),
+                    Math.Min(start.Row.RequireNotNull(), end.Row.RequireNotNull()),
                     null,
-                    Math.Max(start.Row.Value, end.Row.Value)),
+                    Math.Max(start.Row.RequireNotNull(), end.Row.RequireNotNull())),
                 _ => throw new InvalidOperationException("Unsupported reference kind."),
             };
         }
@@ -2488,9 +2488,9 @@ internal sealed partial class LythonRuntime
             var reference = ParseUtilityReferencePart(part, allowCell: true, allowColumn: true, allowRow: true, span);
             return reference.Kind switch
             {
-                UtilityReferenceKind.Cell => "$" + ColumnName(reference.Column!.Value) + "$" + reference.Row!.Value.ToString(CultureInfo.InvariantCulture),
-                UtilityReferenceKind.Column => "$" + ColumnName(reference.Column!.Value),
-                UtilityReferenceKind.Row => "$" + reference.Row!.Value.ToString(CultureInfo.InvariantCulture),
+                UtilityReferenceKind.Cell => "$" + ColumnName(reference.Column.RequireNotNull()) + "$" + reference.Row.RequireNotNull().ToString(CultureInfo.InvariantCulture),
+                UtilityReferenceKind.Column => "$" + ColumnName(reference.Column.RequireNotNull()),
+                UtilityReferenceKind.Row => "$" + reference.Row.RequireNotNull().ToString(CultureInfo.InvariantCulture),
                 _ => throw new LythonRuntimeException("ValueError", $"{original} is not a valid coordinate range", span),
             };
         }
@@ -2601,7 +2601,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name is
                 "get_column_letter" or
@@ -2618,7 +2618,7 @@ internal sealed partial class LythonRuntime
                 return OpenPyxlUtilsModule.Instance.TryGetMember(name, out value);
             }
 
-            value = null!;
+            value = null;
             return false;
         }
     }
@@ -2717,7 +2717,7 @@ internal sealed partial class LythonRuntime
         public static OpenPyxlWorkbook FromWorksheets(List<OpenPyxlWorksheet> worksheets, bool readOnly, bool date1904, int activeIndex, OpenPyxlSaveGuard saveGuard, OpenPyxlPackageSnapshot? packageSnapshot, bool hasVbaProject)
             => new(worksheets.Count == 0 ? [new OpenPyxlWorksheet("Sheet")] : worksheets, readOnly, writeOnly: false, isoDates: false, date1904, activeIndex, saveGuard, packageSnapshot, hasVbaProject);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2745,10 +2745,10 @@ internal sealed partial class LythonRuntime
                 "get_sheet_names" => new BoundCallable(GetSheetNames, "Workbook.get_sheet_names", []),
                 "save" => new BoundCallable(Save, SaveAsync, "Workbook.save", ["filename"]),
                 "close" => new BoundCallable(Close, "Workbook.close", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -2902,7 +2902,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            var worksheet = ResolveOwnedWorksheet(value, "Workbook.active", span!);
+            var worksheet = ResolveOwnedWorksheet(value, "Workbook.active", span);
             _activeIndex = _worksheets.IndexOf(worksheet);
         }
 
@@ -3182,7 +3182,7 @@ internal sealed partial class LythonRuntime
             return ResolveOwnedWorksheet(value, owner, span);
         }
 
-        private OpenPyxlWorksheet ResolveOwnedWorksheet(object value, string owner, LythonSourceSpan span)
+        private OpenPyxlWorksheet ResolveOwnedWorksheet(object value, string owner, LythonSourceSpan? span)
         {
             if (value is OpenPyxlWorksheet worksheet &&
                 ReferenceEquals(worksheet.Workbook, this) &&
@@ -3326,7 +3326,7 @@ internal sealed partial class LythonRuntime
 
         public bool HasPageMargins => _hasPageMargins;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -3361,9 +3361,9 @@ internal sealed partial class LythonRuntime
                 "add_image" => new BoundCallable(AddImage, "Worksheet.add_image", ["img", "anchor"], requiredCount: 1),
                 "column_dimensions" => new OpenPyxlColumnDimensionCollection(this),
                 "row_dimensions" => new OpenPyxlRowDimensionCollection(this),
-                "rows" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null!),
-                "columns" => ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null!),
-                "values" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, null, null!),
+                "rows" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
+                "columns" => ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
+                "values" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, null, null),
                 "cell" => new BoundCallable(Cell, "Worksheet.cell", ["row", "column", "value"], requiredCount: 2),
                 "append" => new BoundCallable(Append, "Worksheet.append", ["iterable"]),
                 "iter_rows" => new BoundCallable(IterRows, "Worksheet.iter_rows", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0),
@@ -3378,10 +3378,10 @@ internal sealed partial class LythonRuntime
                 "move_range" => new BoundCallable(MoveRange, "Worksheet.move_range", ["cell_range", "rows", "cols", "translate"], requiredCount: 1),
                 "merged_cells" => new OpenPyxlMergedCellSet(_mergedRanges),
                 "merged_cell_ranges" => MergedRangeList(),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -4562,7 +4562,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            var target = rewrite(ParseCellOrRange(_autoFilterRef, null!));
+            var target = rewrite(ParseCellOrRange(_autoFilterRef, null));
             _autoFilterRef = target?.CellOrRangeReference;
         }
 
@@ -4734,7 +4734,7 @@ internal sealed partial class LythonRuntime
                 new CellAddress(range.End.Row, range.End.Column - amount));
         }
 
-        private PyTuple ColumnsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan span)
+        private PyTuple ColumnsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
         {
             var columns = new List<object>();
             for (var column = minColumn; column <= maxColumn; column++)
@@ -4747,7 +4747,7 @@ internal sealed partial class LythonRuntime
             return context is null ? new PyTuple(columns) : new PyTuple(columns, context.MemoryGovernor, span);
         }
 
-        private PyTuple RowsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan span)
+        private PyTuple RowsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
         {
             var rows = new List<object>();
             for (var row = minRow; row <= maxRow; row++)
@@ -4760,7 +4760,7 @@ internal sealed partial class LythonRuntime
             return context is null ? new PyTuple(rows) : new PyTuple(rows, context.MemoryGovernor, span);
         }
 
-        private PyTuple RowTuple(int row, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan span)
+        private PyTuple RowTuple(int row, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
         {
             var items = new List<object>();
             for (var column = minColumn; column <= maxColumn; column++)
@@ -4771,7 +4771,7 @@ internal sealed partial class LythonRuntime
             return context is null ? new PyTuple(items) : new PyTuple(items, context.MemoryGovernor, span);
         }
 
-        private PyTuple ColumnTuple(int minRow, int maxRow, int column, bool valuesOnly, ExecutionContext? context, LythonSourceSpan span)
+        private PyTuple ColumnTuple(int minRow, int maxRow, int column, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
         {
             var items = new List<object>();
             for (var row = minRow; row <= maxRow; row++)
@@ -4843,7 +4843,7 @@ internal sealed partial class LythonRuntime
             set => _worksheet.SetCellValue(Row, Column, value);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -4869,10 +4869,10 @@ internal sealed partial class LythonRuntime
                 "style_id" => new BigInteger(_worksheet.GetCellStyleId(Row, Column)),
                 "data_type" => PyString.FromString(_worksheet.GetCellDataType(Row, Column)),
                 "offset" => new BoundCallable(Offset, "Cell.offset", ["row", "column"], requiredCount: 0),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -4989,7 +4989,7 @@ internal sealed partial class LythonRuntime
 
         public string Target { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -4998,10 +4998,10 @@ internal sealed partial class LythonRuntime
                 "location" => PyNone.Instance,
                 "tooltip" => PyNone.Instance,
                 "display" => PyString.FromString(Target),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5029,15 +5029,15 @@ internal sealed partial class LythonRuntime
             _ranges = ranges;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "ranges" => RangeList(),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5071,15 +5071,15 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "ref" => _worksheet.AutoFilterRef is null ? PyNone.Instance : PyString.FromString(_worksheet.AutoFilterRef),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5161,7 +5161,7 @@ internal sealed partial class LythonRuntime
         public void CopyFrom(OpenPyxlSheetProtection other)
             => SetLoaded(other.Sheet, other.Objects, other.Scenarios, other.Password, other.AlgorithmName, other.HashValue, other.SaltValue, other.SpinCount);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5175,10 +5175,10 @@ internal sealed partial class LythonRuntime
                 "spinCount" => SpinCount is null ? PyNone.Instance : new BigInteger(SpinCount.Value),
                 "enable" => new BoundCallable(Enable, "SheetProtection.enable", []),
                 "disable" => new BoundCallable(Disable, "SheetProtection.disable", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5346,7 +5346,7 @@ internal sealed partial class LythonRuntime
             RevisionsSpinCount = revisionsSpinCount;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5367,10 +5367,10 @@ internal sealed partial class LythonRuntime
                 "revisionsSpinCount" => RevisionsSpinCount is null ? PyNone.Instance : new BigInteger(RevisionsSpinCount.Value),
                 "set_workbook_password" => new BoundCallable(SetWorkbookPassword, "WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1),
                 "set_revisions_password" => new BoundCallable(SetRevisionsPassword, "WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5504,7 +5504,7 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5512,10 +5512,10 @@ internal sealed partial class LythonRuntime
                 "tabSelected" => _worksheet.TabSelected,
                 "workbookViewId" => new BigInteger(_worksheet.WorkbookViewId),
                 "selection" => new PyList([new OpenPyxlSelection(_worksheet)]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5555,17 +5555,17 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "activeCell" => PyString.FromString(_worksheet.SelectionActiveCell),
                 "sqref" => PyString.FromString(_worksheet.SelectionSqref),
                 "pane" => _worksheet.SelectionPane is null ? PyNone.Instance : PyString.FromString(_worksheet.SelectionPane),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5626,7 +5626,7 @@ internal sealed partial class LythonRuntime
             Footer = footer;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5636,10 +5636,10 @@ internal sealed partial class LythonRuntime
                 "bottom" => Bottom,
                 "header" => Header,
                 "footer" => Footer,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5725,7 +5725,7 @@ internal sealed partial class LythonRuntime
             FitToHeight is not null ||
             Scale is not null;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5734,10 +5734,10 @@ internal sealed partial class LythonRuntime
                 "fitToWidth" or "fit_to_width" => FitToWidth is null ? PyNone.Instance : new BigInteger(FitToWidth.Value),
                 "fitToHeight" or "fit_to_height" => FitToHeight is null ? PyNone.Instance : new BigInteger(FitToHeight.Value),
                 "scale" => Scale is null ? PyNone.Instance : new BigInteger(Scale.Value),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5843,17 +5843,17 @@ internal sealed partial class LythonRuntime
             _worksheet = worksheet;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "keys" => new BoundCallable(Keys, "TableList.keys", []),
                 "values" => new BoundCallable(Values, "TableList.values", []),
                 "items" => new BoundCallable(Items, "TableList.items", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -5945,7 +5945,7 @@ internal sealed partial class LythonRuntime
 
         public object Style { get; set; } = PyNone.Instance;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -5953,10 +5953,10 @@ internal sealed partial class LythonRuntime
                 "width" => Width is null ? PyNone.Instance : Width.Value,
                 "hidden" => Hidden,
                 "style" => Style,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -6007,7 +6007,7 @@ internal sealed partial class LythonRuntime
 
         public object Style { get; set; } = PyNone.Instance;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -6015,10 +6015,10 @@ internal sealed partial class LythonRuntime
                 "height" => Height is null ? PyNone.Instance : Height.Value,
                 "hidden" => Hidden,
                 "style" => Style,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -6734,7 +6734,7 @@ internal sealed partial class LythonRuntime
         private static IReadOnlyList<string> PreservedStructuralWorksheetFeatures(OpenPyxlWorksheet worksheet)
         {
             var snapshot = worksheet.Workbook?.PackageSnapshot;
-            var worksheetPath = worksheet.SourcePath!;
+            var worksheetPath = worksheet.SourcePath.RequireNotNull();
             var features = new SortedSet<string>(StringComparer.Ordinal);
             var worksheetDocument = LoadSnapshotXml(snapshot, worksheetPath);
             foreach (var child in worksheetDocument?.Root?.Elements() ?? [])
@@ -6895,7 +6895,7 @@ internal sealed partial class LythonRuntime
             => workbook.Worksheets
                 .SelectMany(worksheet => worksheet.Tables.Values)
                 .Where(table => table.HasLoadedPartUpdate && table.SourcePath is not null)
-                .Select(table => table.SourcePath!)
+                .Select(table => table.SourcePath.RequireNotNull())
                 .Distinct(StringComparer.Ordinal);
 
         private static IEnumerable<string> UpdatedLoadedCommentsPartPaths(OpenPyxlWorkbook workbook)
@@ -6932,7 +6932,7 @@ internal sealed partial class LythonRuntime
                 .Where(table => table.HasLoadedPartUpdate && table.SourcePath is not null)
                 .OrderBy(table => table.SourcePath, StringComparer.Ordinal))
             {
-                WriteXml(archive, table.SourcePath!, CreateLoadedTableXml(workbook.PackageSnapshot, table));
+                WriteXml(archive, table.SourcePath.RequireNotNull(), CreateLoadedTableXml(workbook.PackageSnapshot, table));
             }
         }
 
@@ -6942,7 +6942,7 @@ internal sealed partial class LythonRuntime
                 .Where(worksheet => worksheet.HasLoadedCommentsUpdate && worksheet.CommentsSourcePath is not null)
                 .OrderBy(worksheet => worksheet.CommentsSourcePath, StringComparer.Ordinal))
             {
-                WriteXml(archive, worksheet.CommentsSourcePath!, CreateLoadedCommentsXml(worksheet));
+                WriteXml(archive, worksheet.CommentsSourcePath.RequireNotNull(), CreateLoadedCommentsXml(worksheet));
             }
         }
 
@@ -7130,7 +7130,7 @@ internal sealed partial class LythonRuntime
                     Format = (string?)element.Attribute("formatCode"),
                 })
                 .Where(item => item.Id is not null && item.Format is not null)
-                .ToDictionary(item => item.Id!.Value, item => item.Format!, EqualityComparer<int>.Default) ?? new Dictionary<int, string>();
+                .ToDictionary(item => item.Id.RequireNotNull(), item => item.Format.RequireNotNull(), EqualityComparer<int>.Default) ?? new Dictionary<int, string>();
 
         private static OpenPyxlCellStyleSnapshot ReadCellStyle(
             XElement cell,
@@ -8486,7 +8486,7 @@ internal sealed partial class LythonRuntime
         private static string CreatePrintAreaDefinedNameText(OpenPyxlWorksheet worksheet)
             => string.Join(
                 ",",
-                worksheet.PrintArea!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                worksheet.PrintArea.RequireNotNull().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .Select(range => SheetQualifiedReference(worksheet.Title, AbsoluteCellOrRangeReference(range))));
 
         private static string CreatePrintTitlesDefinedNameText(OpenPyxlWorksheet worksheet)
@@ -8521,7 +8521,7 @@ internal sealed partial class LythonRuntime
 
         private static string AbsoluteCellReference(string reference)
         {
-            var address = ParseCellAddress(reference, null!);
+            var address = ParseCellAddress(reference, null);
             return "$" + ColumnName(address.Column) + "$" + address.Row.ToString(CultureInfo.InvariantCulture);
         }
 
@@ -9399,10 +9399,10 @@ internal sealed partial class LythonRuntime
             var sheetViewChildren = new List<object>();
             if (hasPane)
             {
-                var address = ParseCellAddress(worksheet.FreezePanes!, null!);
+                var address = ParseCellAddress(worksheet.FreezePanes.RequireNotNull(), null);
                 var paneAttributes = new List<object>
                 {
-                    new XAttribute("topLeftCell", worksheet.FreezePanes!),
+                    new XAttribute("topLeftCell", worksheet.FreezePanes.RequireNotNull()),
                     new XAttribute("state", "frozen"),
                 };
                 if (address.Column > 1)
@@ -10063,7 +10063,7 @@ internal sealed partial class LythonRuntime
         return (int)integer;
     }
 
-    private static int ExpectPositiveInt(object value, string owner, LythonSourceSpan span)
+    private static int ExpectPositiveInt(object value, string owner, LythonSourceSpan? span)
     {
         if (!PyNumberOps.TryAsInteger(value, out var integer) || integer < BigInteger.One || integer > new BigInteger(int.MaxValue))
         {
@@ -10100,7 +10100,7 @@ internal sealed partial class LythonRuntime
             return null;
         }
 
-        return ExpectPositiveInt(value, owner, span!);
+        return ExpectPositiveInt(value, owner, span);
     }
 
     private static int? NormalizeOptionalNonNegativeInt(object value, string owner, LythonSourceSpan? span)
@@ -10197,7 +10197,7 @@ internal sealed partial class LythonRuntime
         return title;
     }
 
-    private static CellAddress ParseCellAddress(string reference, LythonSourceSpan span)
+    private static CellAddress ParseCellAddress(string reference, LythonSourceSpan? span)
     {
         var text = reference.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
         var index = 0;
@@ -10221,7 +10221,7 @@ internal sealed partial class LythonRuntime
         return new CellAddress(row, column);
     }
 
-    private static (CellAddress Start, CellAddress End) ParseRange(string reference, LythonSourceSpan span)
+    private static (CellAddress Start, CellAddress End) ParseRange(string reference, LythonSourceSpan? span)
     {
         var parts = reference.Split(':', 2);
         if (parts.Length != 2)
@@ -10236,13 +10236,13 @@ internal sealed partial class LythonRuntime
             new CellAddress(Math.Max(start.Row, end.Row), Math.Max(start.Column, end.Column)));
     }
 
-    private static CellRangeAddress ParseCellRange(string reference, LythonSourceSpan span)
+    private static CellRangeAddress ParseCellRange(string reference, LythonSourceSpan? span)
     {
         var (start, end) = ParseRange(reference, span);
         return new CellRangeAddress(start, end);
     }
 
-    private static CellRangeAddress ParseCellOrRange(string reference, LythonSourceSpan span)
+    private static CellRangeAddress ParseCellOrRange(string reference, LythonSourceSpan? span)
     {
         if (reference.Contains(':', StringComparison.Ordinal))
         {
@@ -10266,7 +10266,7 @@ internal sealed partial class LythonRuntime
         }
 
         var ranges = new List<string>();
-        foreach (var item in ToSequence(value, span!))
+        foreach (var item in ToSequence(value, span.RequireNotNull()))
         {
             ranges.Add(NormalizeCellOrRangeReference(ExpectString(item, owner, span), span));
         }
@@ -10294,7 +10294,7 @@ internal sealed partial class LythonRuntime
     {
         var text = reference.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
         return text.Contains(':', StringComparison.Ordinal)
-            ? ParseCellRange(text, span!).Reference
+            ? ParseCellRange(text, span).Reference
             : NormalizeCellReference(PyString.FromString(text), "cell reference", span);
     }
 
@@ -10339,8 +10339,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"{owner} expects a column range such as 'A:C'.", span);
         }
 
-        var start = ParseColumnName(parts[0], span!);
-        var end = ParseColumnName(parts[1], span!);
+        var start = ParseColumnName(parts[0], span);
+        var end = ParseColumnName(parts[1], span);
         return ColumnName(Math.Min(start, end)) + ":" + ColumnName(Math.Max(start, end));
     }
 
@@ -10381,7 +10381,7 @@ internal sealed partial class LythonRuntime
         }
 
         var normalized = NormalizeCellReference(value, owner, span);
-        var address = ParseCellAddress(normalized, span!);
+        var address = ParseCellAddress(normalized, span);
         if (address.Row == 1 && address.Column == 1)
         {
             return null;
@@ -10392,7 +10392,7 @@ internal sealed partial class LythonRuntime
 
     private static string NormalizeCellReference(object value, string owner, LythonSourceSpan? span)
     {
-        var address = ParseCellAddress(ExpectString(value, owner, span), span!);
+        var address = ParseCellAddress(ExpectString(value, owner, span), span);
         return CellReference(address.Row, address.Column);
     }
 
@@ -10403,7 +10403,7 @@ internal sealed partial class LythonRuntime
             return null;
         }
 
-        return ParseCellRange(ExpectString(value, owner, span), span!).Reference;
+        return ParseCellRange(ExpectString(value, owner, span), span).Reference;
     }
 
     private static string NormalizeSelectionReference(object value, string owner, LythonSourceSpan? span)
@@ -10424,7 +10424,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < parts.Length; i++)
         {
             normalized[i] = parts[i].Contains(':', StringComparison.Ordinal)
-                ? ParseCellRange(parts[i], span!).Reference
+                ? ParseCellRange(parts[i], span).Reference
                 : NormalizeCellReference(PyString.FromString(parts[i]), owner, span);
         }
 
@@ -10473,7 +10473,7 @@ internal sealed partial class LythonRuntime
             new CellAddress(Math.Max(startRow, endRow), Math.Max(startColumn, endColumn)));
     }
 
-    private static int ParseColumnName(string text, LythonSourceSpan span)
+    private static int ParseColumnName(string text, LythonSourceSpan? span)
     {
         if (text.Length == 0 || text.Length > 3)
         {

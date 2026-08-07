@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -59,10 +59,10 @@ internal sealed partial class LythonRuntime
                         "NotImplementedError",
                         "hashlib.file_digest() is unsupported because Lython does not expose generic binary file handles; use in-memory bytes or a contained high-level file API.",
                         span)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static PySet CreateAlgorithmSet()
@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
 
             if (dataAssigned)
             {
-                var initial = HashlibModule.RequireHashBytes(data!, Name, span);
+                var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), Name, span);
                 return new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span);
             }
 
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "hashlib.new() missing required argument 'name'", span);
             }
 
-            if (!PyStringOps.TryAsString(name!, out var nameText))
+            if (!PyStringOps.TryAsString(name.RequireNotNull(), out var nameText))
             {
                 throw new LythonRuntimeException("TypeError", "hashlib.new(name[, data]) expects name to be a string.", span);
             }
@@ -235,7 +235,7 @@ internal sealed partial class LythonRuntime
 
             if (dataAssigned)
             {
-                var initial = HashlibModule.RequireHashBytes(data!, "hashlib.new", span);
+                var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), "hashlib.new", span);
                 return new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span);
             }
 
@@ -275,7 +275,7 @@ internal sealed partial class LythonRuntime
             _governor = governor;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -286,10 +286,10 @@ internal sealed partial class LythonRuntime
                 "name" => PyString.FromString(AlgorithmName),
                 "digest_size" => new BigInteger(DigestSize),
                 "block_size" => new BigInteger(BlockSize),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)

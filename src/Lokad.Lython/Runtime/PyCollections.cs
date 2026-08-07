@@ -43,7 +43,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public IEnumerable<KeyValuePair<object, object>> Items => _items;
 
-    public bool TryGetValue(object key, out object value) => _items.TryGetValue(key, out value);
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
     public object GetOrCreate(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -74,7 +74,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public void Clear() => _items.Clear();
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         if (name == "default_factory")
         {
@@ -170,7 +170,7 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public object GetCount(object key) => _items.TryGetValue(key, out var value) ? value : BigInteger.Zero;
 
-    public bool TryGetValue(object key, out object value) => _items.TryGetValue(key, out value);
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
     public void SetItem(object key, object value) => _items.SetItem(key, value);
 
@@ -269,7 +269,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             throw new InvalidOperationException("pop from an empty deque");
         }
 
-        var value = _items.Last!.Value;
+        var value = _items.Last.RequireNotNull().Value;
         _items.RemoveLast();
         return value;
     }
@@ -281,7 +281,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             throw new InvalidOperationException("pop from an empty deque");
         }
 
-        var value = _items.First!.Value;
+        var value = _items.First.RequireNotNull().Value;
         _items.RemoveFirst();
         return value;
     }
@@ -458,10 +458,10 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     private LinkedListNode<object> GetNodeAt(int index)
     {
-        var current = _items.First!;
+        var current = _items.First.RequireNotNull();
         for (var i = 0; i < index; i++)
         {
-            current = current.Next!;
+            current = current.Next.RequireNotNull();
         }
 
         return current;
@@ -566,7 +566,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         return new PyNamedTupleObject(this, values);
     }
 
-    public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, LythonSourceSpan span)
+    public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, LythonSourceSpan? span)
     {
         var materialized = values.ToArray();
         if (materialized.Length != _fieldNames.Length)
@@ -577,7 +577,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         return new PyNamedTupleObject(this, materialized);
     }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
@@ -697,7 +697,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     public IEnumerable<object> Iterate() => _values;
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         var fieldIndex = _type.IndexOfField(name);
         if (fieldIndex >= 0)
@@ -753,8 +753,9 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     private object GetTypeMember(string name)
     {
-        _ = _type.TryGetMember(name, out var value);
-        return value;
+        return _type.TryGetMember(name, out var value)
+            ? value
+            : throw new InvalidOperationException($"Named tuple type member '{name}' is missing.");
     }
 
     private sealed class BoundNamedTupleAsDict : LythonRuntime.ICallable, IPyRenderableValue
@@ -884,7 +885,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         }
     }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {

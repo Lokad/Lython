@@ -277,7 +277,7 @@ internal static class StaticKnownCallArgumentChecks
         int position,
         string keyword,
         AbstractState bindings,
-        out ExpressionSyntax expression,
+        [MaybeNullWhen(false)] out ExpressionSyntax expression,
         out AbstractValue value)
     {
         if (!arguments.TryGetValue(position, keyword, out expression))

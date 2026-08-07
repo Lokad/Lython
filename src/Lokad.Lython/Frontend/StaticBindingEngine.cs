@@ -812,7 +812,7 @@ internal static class StaticBindingEngine
         return false;
     }
 
-    private static bool TryGetKnownStringKeyword(ConcreteCallArguments arguments, AbstractState bindings, string keyword, out string value)
+    private static bool TryGetKnownStringKeyword(ConcreteCallArguments arguments, AbstractState bindings, string keyword, [MaybeNullWhen(false)] out string value)
     {
         if (arguments.Keywords.TryGetValue(keyword, out var expression))
         {
@@ -1169,13 +1169,13 @@ internal static class StaticBindingEngine
     private static bool TryBuildSimpleClassSummary(
         ClassDefinitionStatementSyntax classDefinition,
         AbstractState bindings,
-        out AbstractClassSummary summary)
+        [MaybeNullWhen(false)] out AbstractClassSummary summary)
     {
         if (classDefinition.DataclassDecorator is null ||
             classDefinition.Bases.Count != 0 ||
             classDefinition.KeywordArguments.Count != 0)
         {
-            summary = default!;
+            summary = default;
             return false;
         }
 
@@ -1204,7 +1204,7 @@ internal static class StaticBindingEngine
                     var initOnly = IsInitOnlyDataclassField(annotated.Annotation);
                     var hasDefault = TryGetDataclassFieldDefault(annotated.Expression, bindings, out var defaultValue);
                     var includeInInit = TryGetDataclassFieldInit(annotated.Expression, out var init) ? init : true;
-                    var keywordOnly = classDefinition.DataclassDecorator!.KwOnly ||
+                    var keywordOnly = classDefinition.DataclassDecorator.RequireNotNull().KwOnly ||
                         (TryGetDataclassFieldKeywordOnly(annotated.Expression, out var kwOnly) && kwOnly);
                     fields.Add(new AbstractClassFieldSummary(
                         annotated.Name,
@@ -1217,14 +1217,14 @@ internal static class StaticBindingEngine
                     break;
 
                 default:
-                    summary = default!;
+                    summary = default;
                     return false;
             }
         }
 
         if (fields.Count == 0)
         {
-            summary = default!;
+            summary = default;
             return false;
         }
 
@@ -1283,7 +1283,7 @@ internal static class StaticBindingEngine
         return TryGetBooleanLiteral(keywordOnlyExpression, out keywordOnly);
     }
 
-    private static bool TryGetDataclassFieldArgument(ExpressionSyntax? expression, int position, string keyword, out ExpressionSyntax argument)
+    private static bool TryGetDataclassFieldArgument(ExpressionSyntax? expression, int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax argument)
     {
         if (expression is CallExpressionSyntax call &&
             IsDataclassFieldCall(call) &&
@@ -1293,7 +1293,7 @@ internal static class StaticBindingEngine
             return true;
         }
 
-        argument = default!;
+        argument = default;
         return false;
     }
 
@@ -1407,14 +1407,14 @@ internal static class StaticBindingEngine
     private static bool TryBuildSimpleFunctionSummary(
         FunctionDefinitionStatementSyntax functionDefinition,
         AbstractState bindings,
-        out AbstractFunctionSummary summary)
+        [MaybeNullWhen(false)] out AbstractFunctionSummary summary)
     {
         if (functionDefinition.Decorators.Count != 0 ||
             functionDefinition.Parameters.Any(static parameter => parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary) ||
             ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body) ||
             !IsStraightLineSummaryBody(functionDefinition.Body))
         {
-            summary = default!;
+            summary = default;
             return false;
         }
 

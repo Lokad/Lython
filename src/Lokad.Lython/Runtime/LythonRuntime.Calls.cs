@@ -258,7 +258,7 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (IsBuiltinTypeName(Name) && name is "__name__" or "__qualname__")
             {
@@ -1002,16 +1002,16 @@ internal sealed partial class LythonRuntime
 
         public string TypeName { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "__name__" => PyString.FromString(TypeName),
                 "type" => PyString.FromString(TypeName),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)

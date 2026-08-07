@@ -863,9 +863,9 @@ internal sealed class Parser
         return expression is MemberExpressionSyntax ? expression : null;
     }
 
-    private bool TryParseLiteralPatternExpression(out ExpressionSyntax expression)
+    private bool TryParseLiteralPatternExpression([MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
-        expression = null!;
+        expression = null;
 
         if (CurrentToken is Token.String or Token.Integer or Token.Float or Token.True or Token.False or Token.None)
         {
@@ -2269,7 +2269,7 @@ internal sealed class Parser
                 return null;
             }
 
-            targets.Add(nextTarget!);
+            targets.Add(nextTarget.RequireNotNull());
             ReadToken();
 
             startDiagnosticCount = _diagnostics.Count;
@@ -2417,7 +2417,7 @@ internal sealed class Parser
         }
 
         return new AugmentedAssignmentStatementSyntax(
-            target!,
+            target.RequireNotNull(),
             op,
             expression,
             Merge(targetExpression.Span, expression.Span));
@@ -4176,7 +4176,7 @@ internal sealed class Parser
 
     private static bool TryDecodeStringLiteral(
         string literal,
-        out string value,
+        [MaybeNullWhen(false)] out string value,
         out string message,
         bool decodeUnicodeEscapes = true)
     {
@@ -4614,11 +4614,11 @@ internal sealed class Parser
         int start,
         bool allowNestedFormatFields,
         out int end,
-        out FormattedStringExpressionPartSyntax part,
+        [MaybeNullWhen(false)] out FormattedStringExpressionPartSyntax part,
         out string? debugText)
     {
         end = -1;
-        part = null!;
+        part = null;
         debugText = null;
 
         if (!TryFindFormattedStringFieldEnd(content, start, out end))
@@ -4925,9 +4925,9 @@ internal sealed class Parser
         return false;
     }
 
-    private static bool TryParseEmbeddedExpression(string expressionText, out ExpressionSyntax expression)
+    private static bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
-        expression = null!;
+        expression = null;
         var frontend = LythonFrontend.Compile("value = " + expressionText + "\n");
         if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
         {
@@ -4962,7 +4962,7 @@ internal sealed class Parser
         return false;
     }
 
-    private static bool TryDecodeEscapedText(string text, bool isRaw, out string value)
+    private static bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value)
     {
         if (isRaw)
         {

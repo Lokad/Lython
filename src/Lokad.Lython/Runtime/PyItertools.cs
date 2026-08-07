@@ -28,7 +28,7 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
     }
 
     /// <summary>Advances once and supplies the current Python value when successful.</summary>
-    public abstract bool TryMoveNext(out object value);
+    public abstract bool TryMoveNext([MaybeNullWhen(false)] out object value);
 
     /// <summary>Provides async iteration with semantics identical to <see cref="TryMoveNext"/>.</summary>
     public virtual ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
@@ -70,7 +70,7 @@ internal sealed class PyChainIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         while (true)
         {
@@ -86,7 +86,7 @@ internal sealed class PyChainIterator : PyIteratorBase
                 return false;
             }
 
-            _current = next;
+            _current = next.RequireNotNull();
         }
     }
 
@@ -115,13 +115,13 @@ internal sealed class PyChainIterator : PyIteratorBase
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.chain object>");
 
-    private bool TryOpenNextCursor(out PyIteration.Cursor cursor)
+    private bool TryOpenNextCursor([MaybeNullWhen(false)] out PyIteration.Cursor cursor)
     {
         if (_sources is not null)
         {
             if (_sourceIndex >= _sources.Length)
             {
-                cursor = null!;
+                cursor = null;
                 return false;
             }
 
@@ -135,17 +135,17 @@ internal sealed class PyChainIterator : PyIteratorBase
             return true;
         }
 
-        cursor = null!;
+        cursor = null;
         return false;
     }
 
-    private async ValueTask<(bool HasValue, PyIteration.Cursor Cursor)> TryOpenNextCursorAsync()
+    private async ValueTask<(bool HasValue, PyIteration.Cursor? Cursor)> TryOpenNextCursorAsync()
     {
         if (_sources is not null)
         {
             if (_sourceIndex >= _sources.Length)
             {
-                return (false, null!);
+                return (false, null);
             }
 
             return (true, _sources[_sourceIndex++]);
@@ -160,7 +160,7 @@ internal sealed class PyChainIterator : PyIteratorBase
             }
         }
 
-        return (false, null!);
+        return (false, null);
     }
 }
 
@@ -181,7 +181,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
         _step = step;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (!SkipStart())
         {
@@ -314,7 +314,7 @@ internal sealed class PyProductIterator : PyIteratorBase
         }
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_done)
         {
@@ -386,7 +386,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         _allocationSpan = allocationSpan;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_done || _iterators.Length == 0)
         {
@@ -476,7 +476,7 @@ internal sealed class PyCountIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         if (!_started)
@@ -505,7 +505,7 @@ internal sealed class PyRepeatIterator : PyIteratorBase
         _remaining = times;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_remaining is { } remaining)
         {
@@ -545,7 +545,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         if (!_sourceExhausted)
@@ -629,7 +629,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         _done = r > pool.Length;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_done)
         {
@@ -701,7 +701,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         _done = pool.Length == 0 && r > 0;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_done)
         {
@@ -786,7 +786,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         _done = r > pool.Length;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_done)
         {
@@ -879,7 +879,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         if (!_started)
@@ -966,7 +966,7 @@ internal sealed class PyCompressIterator : PyIteratorBase
         _selectors = PyIteration.Cursor.Create(selectors, span);
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         while (_data.TryMoveNext(out var data) && _selectors.TryMoveNext(out var selector))
         {
@@ -1038,7 +1038,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         if (_done)
@@ -1172,7 +1172,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         if (!_source.TryMoveNext(out var current))
@@ -1223,7 +1223,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (!_hasPrevious)
         {
@@ -1305,7 +1305,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         _activeGroup?.Drain();
@@ -1419,7 +1419,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
             _firstItem = firstItem;
         }
 
-        public override bool TryMoveNext(out object value)
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_done || _parent._activeGroupId != _id)
             {
@@ -1517,7 +1517,7 @@ internal sealed class PyTeeIterator : PyIteratorBase
         _index = index;
     }
 
-    public override bool TryMoveNext(out object value) => _state.TryGetNext(_index, out value);
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value) => _state.TryGetNext(_index, out value);
 
     public override async ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
         => await _state.TryGetNextAsync(_index).ConfigureAwait(false);
@@ -1550,7 +1550,7 @@ internal sealed class PyTeeSharedState
         _span = span;
     }
 
-    public bool TryGetNext(int index, out object value)
+    public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
         var ownQueue = _queues[index];
@@ -1649,7 +1649,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         var items = new object[_size];
         var count = 0;

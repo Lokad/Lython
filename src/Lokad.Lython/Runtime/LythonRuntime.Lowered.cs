@@ -356,10 +356,10 @@ internal sealed partial class LythonRuntime
             switch (assignment.Syntax)
             {
                 case AssignmentStatementSyntax simple:
-                    StoreName(simple.Name, EvaluateLoweredExpression(assignment.Expression!, context), context, assignment.Span);
+                    StoreName(simple.Name, EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context), context, assignment.Span);
                     return;
                 case ChainedAssignmentStatementSyntax chained:
-                    var chainedValue = EvaluateLoweredExpression(assignment.Expression!, context);
+                    var chainedValue = EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context);
                     foreach (var assignmentTarget in chained.Targets)
                     {
                         AssignTarget(assignmentTarget, chainedValue, context);
@@ -375,7 +375,7 @@ internal sealed partial class LythonRuntime
                     var augmentedTarget = ResolveLoweredAugmentedAssignmentTarget(augmented, assignment, context);
                     augmentedTarget.Store(EvaluateAugmentedAssignment(
                         augmentedTarget.CurrentValue,
-                        EvaluateLoweredExpression(assignment.Expression!, context),
+                        EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context),
                         augmented.Operator,
                         context,
                         augmented.Span));
@@ -383,32 +383,32 @@ internal sealed partial class LythonRuntime
                 case UnpackingAssignmentStatementSyntax unpacking:
                     AssignTargets(
                         unpacking.Targets,
-                        EvaluateLoweredExpression(assignment.Expression!, context),
+                        EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context),
                         unpacking.Expression.Span,
                         context);
                     return;
                 case SubscriptAssignmentStatementSyntax subscript:
                     ExecuteLoweredSubscriptAssignment(
                         subscript,
-                        assignment.Target!,
-                        assignment.Index!,
-                        EvaluateLoweredExpression(assignment.Expression!, context),
+                        assignment.Target.RequireNotNull(),
+                        assignment.Index.RequireNotNull(),
+                        EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context),
                         context);
                     return;
                 case SliceAssignmentStatementSyntax slice:
                     ExecuteLoweredSliceAssignment(
                         slice,
-                        assignment.Target!,
+                        assignment.Target.RequireNotNull(),
                         assignment.Start,
                         assignment.End,
                         assignment.Step,
-                        EvaluateLoweredExpression(assignment.Expression!, context),
+                        EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context),
                         context);
                     return;
                 case MemberAssignmentStatementSyntax memberAssignment:
-                    var target = EvaluateLoweredExpression(assignment.Target!, context);
-                    var value = EvaluateLoweredExpression(assignment.Expression!, context);
-                    if (!PyMemberAccess.TryAssign(target, assignment.MemberName!, value, context, memberAssignment.Span))
+                    var target = EvaluateLoweredExpression(assignment.Target.RequireNotNull(), context);
+                    var value = EvaluateLoweredExpression(assignment.Expression.RequireNotNull(), context);
+                    if (!PyMemberAccess.TryAssign(target, assignment.MemberName.RequireNotNull(), value, context, memberAssignment.Span))
                     {
                         throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", memberAssignment.Span);
                     }
@@ -453,15 +453,15 @@ internal sealed partial class LythonRuntime
                 return ResolveAugmentedAssignmentTarget(statement.Target, context);
 
             case SubscriptAssignmentTargetSyntax subscript:
-                var subscriptTarget = EvaluateLoweredExpression(assignment.Target!, context);
-                var index = EvaluateLoweredExpression(assignment.Index!, context);
+                var subscriptTarget = EvaluateLoweredExpression(assignment.Target.RequireNotNull(), context);
+                var index = EvaluateLoweredExpression(assignment.Index.RequireNotNull(), context);
                 var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     subscriptValue,
                     value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
 
             case SliceAssignmentTargetSyntax slice:
-                var sliceTarget = EvaluateLoweredExpression(assignment.Target!, context);
+                var sliceTarget = EvaluateLoweredExpression(assignment.Target.RequireNotNull(), context);
                 var start = assignment.Start is null ? null : EvaluateLoweredExpression(assignment.Start, context);
                 var end = assignment.End is null ? null : EvaluateLoweredExpression(assignment.End, context);
                 var step = assignment.Step is null ? null : EvaluateLoweredExpression(assignment.Step, context);
@@ -471,7 +471,7 @@ internal sealed partial class LythonRuntime
                     value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
 
             case MemberAssignmentTargetSyntax member:
-                var memberTarget = EvaluateLoweredExpression(assignment.Target!, context);
+                var memberTarget = EvaluateLoweredExpression(assignment.Target.RequireNotNull(), context);
                 if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
                 {
                     throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span);

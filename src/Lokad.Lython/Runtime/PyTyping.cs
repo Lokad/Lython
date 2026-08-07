@@ -154,7 +154,7 @@ internal static class PyTyping
         ["Type"] = "type",
     };
 
-    public static bool TryGetMember(string name, out object value)
+    public static bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         if (AliasNames.Contains(name))
         {
@@ -330,7 +330,7 @@ internal static class PyTyping
         return [];
     }
 
-    private static bool TryGetSingleArgument(CallArgumentValue[] arguments, string keyword, out object value)
+    private static bool TryGetSingleArgument(CallArgumentValue[] arguments, string keyword, [MaybeNullWhen(false)] out object value)
     {
         if (CountEffectiveArguments(arguments) != 1)
         {
@@ -341,7 +341,7 @@ internal static class PyTyping
         return TryGetNamedOrPositional(arguments, 0, keyword, out value);
     }
 
-    private static bool TryGetNamedOrPositional(CallArgumentValue[] arguments, int position, string keyword, out object value)
+    private static bool TryGetNamedOrPositional(CallArgumentValue[] arguments, int position, string keyword, [MaybeNullWhen(false)] out object value)
     {
         value = PyNone.Instance;
         var positionalIndex = 0;
@@ -499,7 +499,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
             : CreateNamedTuple(arguments, span);
     }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
@@ -638,7 +638,7 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
 
     public IEnumerable<object> Iterate() => _values;
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         var index = IndexOfField(name);
         if (index >= 0)

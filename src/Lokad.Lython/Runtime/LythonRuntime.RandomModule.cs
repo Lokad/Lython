@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
             _state = state;
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -53,10 +53,10 @@ internal sealed partial class LythonRuntime
                 "paretovariate" => new BuiltinCallable(LythonKnownCallableSignatures.RandomParetoVariate, (arguments, span, context) => ParetoVariate(_state, arguments, span, context)),
                 "vonmisesvariate" => new BuiltinCallable(LythonKnownCallableSignatures.RandomVonMisesVariate, (arguments, span, context) => VonMisesVariate(_state, arguments, span, context)),
                 "weibullvariate" => new BuiltinCallable(LythonKnownCallableSignatures.RandomWeibullVariate, (arguments, span, context) => WeibullVariate(_state, arguments, span, context)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object CreateRandom(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -778,7 +778,7 @@ internal sealed partial class LythonRuntime
                 return weights.Length - 1;
             }
 
-            var cumulativeWeights = cumulative!;
+            var cumulativeWeights = cumulative.RequireNotNull();
             var maximum = cumulativeWeights[^1];
             if (maximum <= 0)
             {
@@ -868,7 +868,7 @@ internal sealed partial class LythonRuntime
                 _state = state;
             }
 
-            public bool TryGetMember(string name, out object value)
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
@@ -895,10 +895,10 @@ internal sealed partial class LythonRuntime
                     "paretovariate" => new BoundCallable((arguments, span, context) => ParetoVariate(_state, arguments, span, context), LythonKnownCallableSignatures.RandomParetoVariate),
                     "vonmisesvariate" => new BoundCallable((arguments, span, context) => VonMisesVariate(_state, arguments, span, context), LythonKnownCallableSignatures.RandomVonMisesVariate),
                     "weibullvariate" => new BoundCallable((arguments, span, context) => WeibullVariate(_state, arguments, span, context), LythonKnownCallableSignatures.RandomWeibullVariate),
-                    _ => null!,
+                    _ => MissingMemberValue.Instance,
                 };
 
-                return value is not null;
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
 
             public bool TrySetMember(string name, object value)

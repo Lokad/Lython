@@ -74,7 +74,7 @@ internal sealed class PyDecimalContext : IPyDynamicAttributes, IPyRenderableValu
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
@@ -123,10 +123,10 @@ internal sealed class PyDecimalContext : IPyDynamicAttributes, IPyRenderableValu
 
                 return new PyDecimal((decimal)floating);
             }, "Context.create_decimal_from_float", ["f"]),
-            _ => null!,
+            _ => MissingMemberValue.Instance,
         };
 
-        return value is not null;
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
 
     public bool TrySetMember(string name, object value)
@@ -300,17 +300,17 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _items.GetEnumerator();
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
             "sign" => new BigInteger(Sign),
             "digits" => Digits,
             "exponent" => Exponent,
-            _ => null!,
+            _ => MissingMemberValue.Instance,
         };
 
-        return value is not null;
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
 
     public bool TrySetMember(string name, object value)

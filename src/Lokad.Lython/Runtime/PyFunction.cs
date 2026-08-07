@@ -125,9 +125,9 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
     public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
         => instance is null ? this : Bind(instance);
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        if (_metadata.TryGetValue(name, out value!))
+        if (_metadata.TryGetValue(name, out value))
         {
             return true;
         }
@@ -153,20 +153,20 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
 
     public override string ToString() => $"<function {Name}>";
 
-    private bool TryBuildImplicitSuperContext(Dictionary<string, object> boundArguments, out PyType anchorType, out object receiver)
+    private bool TryBuildImplicitSuperContext(Dictionary<string, object> boundArguments, [MaybeNullWhen(false)] out PyType anchorType, [MaybeNullWhen(false)] out object receiver)
     {
         if (OwnerType is null || _parameters.Count == 0)
         {
-            anchorType = null!;
-            receiver = null!;
+            anchorType = null;
+            receiver = null;
             return false;
         }
 
         var firstParameterName = _parameters[0].Name;
-        if (!boundArguments.TryGetValue(firstParameterName, out receiver!))
+        if (!boundArguments.TryGetValue(firstParameterName, out receiver))
         {
-            anchorType = null!;
-            receiver = null!;
+            anchorType = null;
+            receiver = null;
             return false;
         }
 
@@ -179,8 +179,8 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
                 anchorType = OwnerType;
                 return true;
             default:
-                anchorType = null!;
-                receiver = null!;
+                anchorType = null;
+                receiver = null;
                 return false;
         }
     }

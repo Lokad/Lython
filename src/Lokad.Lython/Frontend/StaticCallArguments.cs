@@ -6,7 +6,7 @@ internal readonly record struct ConcreteCallArguments(
     IReadOnlyList<AbstractValue?>? PositionalValues = null,
     IReadOnlyDictionary<string, AbstractValue>? KeywordValues = null)
 {
-    public bool TryGetValue(int position, string keyword, out ExpressionSyntax expression)
+    public bool TryGetValue(int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
         if (position < Positional.Count)
         {
@@ -14,7 +14,7 @@ internal readonly record struct ConcreteCallArguments(
             return true;
         }
 
-        return Keywords.TryGetValue(keyword, out expression!);
+        return Keywords.TryGetValue(keyword, out expression);
     }
 
     public AbstractValue ResolvePositionalValue(int position, AbstractState bindings)
@@ -23,7 +23,7 @@ internal readonly record struct ConcreteCallArguments(
             position < PositionalValues.Count &&
             PositionalValues[position].HasValue)
         {
-            return PositionalValues[position]!.Value;
+            return PositionalValues[position].RequireNotNull();
         }
 
         return StaticAbstractValueResolver.ResolveOrUnknown(Positional[position], bindings);

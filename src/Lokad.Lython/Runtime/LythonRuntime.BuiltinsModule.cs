@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => _memberNames;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             switch (name)
             {
@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                     value = PyNone.Instance;
                     return true;
                 default:
-                    return _builtins.TryGetValue(name, out value!);
+                    return _builtins.TryGetValue(name, out value);
             }
         }
     }

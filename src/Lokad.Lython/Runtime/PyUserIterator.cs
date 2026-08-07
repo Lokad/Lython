@@ -22,7 +22,7 @@ internal sealed class PyUserIterator : IPyIteratorValue
         }
     }
 
-    public bool TryMoveNext(out object value)
+    public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_iterator is IPyIteratorValue iterator)
         {

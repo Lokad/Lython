@@ -88,7 +88,7 @@ internal static class PyIteration
             return new Cursor(value, span);
         }
 
-        public bool TryMoveNext(out object value)
+        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_value is IPyIteratorValue iterator)
             {

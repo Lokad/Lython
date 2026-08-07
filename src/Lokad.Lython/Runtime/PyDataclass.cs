@@ -94,7 +94,7 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
 
     public object Metadata { get; }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         switch (name)
         {
@@ -201,7 +201,7 @@ internal sealed class PyDataclassParamsObject : IPyRenderableValue
 
     public bool MatchArgs { get; }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
@@ -1051,7 +1051,7 @@ internal static class PyDataclass
         }
 
         var type = GetDataclassType(arguments[0], span, "dataclasses.fields()");
-        var visibleFields = GetHelperVisibleFields(type.DataclassFields!).ToArray();
+        var visibleFields = GetHelperVisibleFields(type.DataclassFields.RequireNotNull()).ToArray();
         if (!type.TryGetOwnMember("__dataclass_fields__", out var rawFieldMap) || rawFieldMap is not PyDict fieldMap)
         {
             throw new LythonRuntimeException("TypeError", "dataclasses.fields() could not read the dataclass field map.", span);
@@ -1061,10 +1061,12 @@ internal static class PyDataclass
         for (var i = 0; i < visibleFields.Length; i++)
         {
             var key = PyString.FromString(visibleFields[i].Name);
-            if (!fieldMap.TryGetValue(key, out items[i]))
+            if (!fieldMap.TryGetValue(key, out var item))
             {
                 throw new LythonRuntimeException("TypeError", "dataclasses.fields() found an incomplete dataclass field map.", span);
             }
+
+            items[i] = item;
         }
 
         return new PyTuple(items, context.MemoryGovernor, span);
@@ -1212,7 +1214,7 @@ internal static class PyDataclass
 
     private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields!).ToArray();
+        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields.RequireNotNull()).ToArray();
         var pairs = new (object Key, object Value)[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
@@ -1226,7 +1228,7 @@ internal static class PyDataclass
 
     private static object BuildDataclassTuple(PyInstance instance, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields!).ToArray();
+        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields.RequireNotNull()).ToArray();
         var items = new object[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
@@ -1310,7 +1312,7 @@ internal static class PyDataclass
     private static DataclassFieldSpec[] CollectFields(PyType type, ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var fields = new List<DataclassFieldSpec>();
-        var defaultKwOnly = syntax.DataclassDecorator!.KwOnly;
+        var defaultKwOnly = syntax.DataclassDecorator.RequireNotNull().KwOnly;
         var annotations = TryGetAnnotations(members, span);
 
         foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
@@ -1437,7 +1439,7 @@ internal static class PyDataclass
                 : null;
 
             var hasDefault = fieldDefinition?.HasDefault ?? type.TryGetOwnMember(name, out rawMember);
-            var classMemberValue = fieldDefinition?.DefaultValue ?? (hasDefault ? rawMember : PyNone.Instance);
+            var classMemberValue = fieldDefinition?.DefaultValue ?? (hasDefault ? rawMember.RequireNotNull() : PyNone.Instance);
             var defaultValue = classMemberValue;
             var hasDefaultFactory = fieldDefinition?.HasDefaultFactory ?? false;
             var defaultFactory = fieldDefinition?.DefaultFactory ?? PyNone.Instance;
@@ -1763,7 +1765,7 @@ internal static class PyDataclass
         };
     }
 
-    private static bool TryResolveDynamicDescriptorDefault(PyInstance descriptorInstance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    private static bool TryResolveDynamicDescriptorDefault(PyInstance descriptorInstance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (descriptorInstance.Type.TryLookupInMro("__get__", 0, out var rawMethod, out _))
         {

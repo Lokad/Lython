@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -46,10 +46,10 @@ internal sealed partial class LythonRuntime
                 "ROUND_UP" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundUp),
                 "ROUND_05UP" => Runtime.Text.PyString.FromString(PyDecimalContext.Round05Up),
                 _ when DecimalExceptionNames.Contains(name, StringComparer.Ordinal) => new ExceptionTypeValue(name),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 

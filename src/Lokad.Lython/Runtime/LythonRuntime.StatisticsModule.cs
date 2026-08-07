@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -51,10 +51,10 @@ internal sealed partial class LythonRuntime
                 "NormalDist" => NormalDistType,
                 "kde" => UnsupportedStatisticsCallable("statistics.kde"),
                 "kde_random" => UnsupportedStatisticsCallable("statistics.kde_random"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object Mean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -681,20 +681,20 @@ internal sealed partial class LythonRuntime
             return new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1)));
         }
 
-        public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, out object value)
+        public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = (left, right) switch
             {
                 (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean + rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
                 (PyNormalDist lhs, _) when TryAsReal(right, out var amount) => new PyNormalDist(lhs.Mean + amount, lhs.Stdev),
                 (_, PyNormalDist rhs) when TryAsReal(left, out var amount) => new PyNormalDist(amount + rhs.Mean, rhs.Stdev),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TrySubtractNormalDist(object left, object right, LythonSourceSpan span, out object value)
+        public static bool TrySubtractNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             _ = span;
             value = (left, right) switch
@@ -702,28 +702,28 @@ internal sealed partial class LythonRuntime
                 (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean - rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
                 (PyNormalDist lhs, _) when TryAsReal(right, out var amount) => new PyNormalDist(lhs.Mean - amount, lhs.Stdev),
                 (_, PyNormalDist rhs) when TryAsReal(left, out var amount) => new PyNormalDist(amount - rhs.Mean, rhs.Stdev),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TryMultiplyNormalDist(object left, object right, LythonSourceSpan span, out object value)
+        public static bool TryMultiplyNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             _ = span;
             value = (left, right) switch
             {
                 (PyNormalDist lhs, _) when TryAsReal(right, out var factor) => new PyNormalDist(lhs.Mean * factor, lhs.Stdev * Math.Abs(factor)),
                 (_, PyNormalDist rhs) when TryAsReal(left, out var factor) => new PyNormalDist(factor * rhs.Mean, Math.Abs(factor) * rhs.Stdev),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TryDivideNormalDist(object left, object right, LythonSourceSpan span, out object value)
+        public static bool TryDivideNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            value = null!;
+            value = null;
             if (left is not PyNormalDist lhs || !TryAsReal(right, out var divisor))
             {
                 return false;
@@ -738,11 +738,11 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public static bool TryUnaryNormalDist(object operand, bool negative, out object value)
+        public static bool TryUnaryNormalDist(object operand, bool negative, [MaybeNullWhen(false)] out object value)
         {
             if (operand is not PyNormalDist dist)
             {
-                value = null!;
+                value = null;
                 return false;
             }
 
@@ -872,7 +872,7 @@ internal sealed partial class LythonRuntime
 
             public IEnumerable<object> Iterate() => this;
 
-            public bool TryGetMember(string name, out object value)
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
@@ -941,10 +941,10 @@ internal sealed partial class LythonRuntime
 
                         throw new LythonRuntimeException("ValueError", "LinearRegression.index(value): value is not in tuple", span);
                     }, "LinearRegression.index", ["value", "start", "stop"], requiredCount: 1),
-                    _ => null!,
+                    _ => MissingMemberValue.Instance,
                 };
 
-                return value is not null;
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
 
             public bool TrySetMember(string name, object value)
@@ -1024,7 +1024,7 @@ internal sealed partial class LythonRuntime
 
             public double Variance => Stdev * Stdev;
 
-            public bool TryGetMember(string name, out object value)
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
@@ -1128,10 +1128,10 @@ internal sealed partial class LythonRuntime
 
                         return new PyList(samples, context.MemoryGovernor, span);
                     }, "NormalDist.samples", ["n", "seed"], requiredCount: 1),
-                    _ => null!,
+                    _ => MissingMemberValue.Instance,
                 };
 
-                return value is not null;
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
 
             public bool TrySetMember(string name, object value)

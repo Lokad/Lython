@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyAttributeLookup
 {
-    public static bool TryResolveTypeMember(PyType type, string memberName, out object value)
+    public static bool TryResolveTypeMember(PyType type, string memberName, [MaybeNullWhen(false)] out object value)
     {
         if (TryResolveBuiltinTypeMember(type, memberName, out value))
         {
@@ -21,7 +21,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    public static bool TryResolveTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public static bool TryResolveTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (TryResolveBuiltinTypeMember(type, memberName, context, span, out value))
         {
@@ -38,7 +38,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    public static bool TryResolveInstanceMember(PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public static bool TryResolveInstanceMember(PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (instance.Type.TryLookupInMro("__getattribute__", 0, out var getAttributeValue, out _))
         {
@@ -76,7 +76,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    public static bool TryResolveInstanceMemberWithoutGetAttrFallback(PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public static bool TryResolveInstanceMemberWithoutGetAttrFallback(PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (memberName == "__class__")
         {
@@ -106,7 +106,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    public static bool TryResolveSuperMember(PySuper superObject, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public static bool TryResolveSuperMember(PySuper superObject, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (!superObject.BoundType.TryGetSuccessorMroIndex(superObject.AnchorType, out var startIndex))
         {
@@ -193,7 +193,7 @@ internal static class PyAttributeLookup
                rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _);
     }
 
-    private static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, out object value)
+    private static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
     {
         if (rawValue is IPyDescriptor descriptor)
         {
@@ -226,7 +226,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    private static bool TryLookupDescriptorMethod(PyInstance descriptorInstance, string methodName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ICallable callable)
+    private static bool TryLookupDescriptorMethod(PyInstance descriptorInstance, string methodName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out LythonRuntime.ICallable callable)
     {
         if (descriptorInstance.Type.TryLookupInMro(methodName, 0, out var rawMethod, out _))
         {
@@ -242,11 +242,11 @@ internal static class PyAttributeLookup
             return true;
         }
 
-        callable = null!;
+        callable = null;
         return false;
     }
 
-    private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, out object value)
+    private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, [MaybeNullWhen(false)] out object value)
     {
         value = memberName switch
         {
@@ -261,7 +261,7 @@ internal static class PyAttributeLookup
         return !ReferenceEquals(value, PyNone.Instance);
     }
 
-    private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         value = memberName switch
         {

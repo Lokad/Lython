@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -31,10 +31,10 @@ internal sealed partial class LythonRuntime
                 "Differ" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibDiffer, Differ),
                 "HtmlDiff" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibHtmlDiff, HtmlDiff),
                 "SequenceMatcher" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object IsLineJunk(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -652,7 +652,7 @@ internal sealed partial class LythonRuntime
             _charjunk = charjunk;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -669,10 +669,10 @@ internal sealed partial class LythonRuntime
                     var b = DifflibModule.RequireStringSequence(arguments[1], "Differ.compare(a, b)", span);
                     return new PyList(CompareLines(a, b, span, context), context.MemoryGovernor, span);
                 }, "Differ.compare", ["a", "b"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         internal IEnumerable<object> CompareLines(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, LythonSourceSpan span, ExecutionContext context)
@@ -898,16 +898,16 @@ internal sealed partial class LythonRuntime
             _charjunk = charjunk;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "make_table" => new BoundCallable(MakeTable, new LythonCallableSignature("HtmlDiff.make_table", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines"], RequiredCount: 2)),
                 "make_file" => new BoundCallable(MakeFile, new LythonCallableSignature("HtmlDiff.make_file", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines", "charset"], RequiredCount: 2)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object MakeTable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1156,7 +1156,7 @@ internal sealed partial class LythonRuntime
             SetSeq2(bOriginal, span, context);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1264,10 +1264,10 @@ internal sealed partial class LythonRuntime
                     var n = arguments.Length == 1 && arguments[0] is not PyNone ? DifflibModule.RequireInt32(arguments[0], "SequenceMatcher.get_grouped_opcodes(..., n=...) expects an integer.", span) : 3;
                     return new PyList(BuildGroupedOpcodes(n).Select(group => (object)new PyList(group.Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span)), context.MemoryGovernor, span);
                 }, "SequenceMatcher.get_grouped_opcodes", ["n"], requiredCount: 0),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public void SetSeqs(object aOriginal, object bOriginal, LythonSourceSpan span, ExecutionContext context)
@@ -1706,17 +1706,17 @@ internal sealed partial class LythonRuntime
 
         public object this[int index] => GetItem(index);
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "a" => new BigInteger(A),
                 "b" => new BigInteger(B),
                 "size" => new BigInteger(Size),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public object GetItem(int index)

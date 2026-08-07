@@ -757,7 +757,7 @@ internal sealed class ExecutableScript
             switch (assignment.Syntax)
             {
                 case AssignmentStatementSyntax simple:
-                    CompileExpression(assignment.Expression!, currentBlock);
+                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
                     CompileStoreBoundName(simple.Name, assignment.Span, currentBlock);
                     return currentBlock;
 
@@ -779,13 +779,13 @@ internal sealed class ExecutableScript
                     }
 
                     CompileLoadIdentifier(augmentedName.Name, assignment.Span, currentBlock);
-                    CompileExpression(assignment.Expression!, currentBlock);
+                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Operator), assignment.Span));
                     CompileStoreBoundName(augmentedName.Name, assignment.Span, currentBlock);
                     return currentBlock;
 
                 case ChainedAssignmentStatementSyntax chained:
-                    CompileExpression(assignment.Expression!, currentBlock);
+                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
                     for (var i = 0; i < chained.Targets.Count; i++)
                     {
                         if (chained.Targets[i] is not NameAssignmentTargetSyntax name)
@@ -803,7 +803,7 @@ internal sealed class ExecutableScript
                     return currentBlock;
 
                 case UnpackingAssignmentStatementSyntax unpacking:
-                    CompileExpression(assignment.Expression!, currentBlock);
+                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Targets, assignment.Span), assignment.Span));
                     return currentBlock;
 
@@ -1424,7 +1424,7 @@ internal sealed class ExecutableScript
                             region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null);
                 })
                 .Where(region => region is not null)
-                .Select(region => region!)
+                .Select(region => region.RequireNotNull())
                 .ToArray();
         }
 
@@ -1681,7 +1681,7 @@ internal sealed class ExecutableScript
                 .Where(parameter => parameter.DefaultValue is not null)
                 .ToDictionary(
                     parameter => parameter.Name,
-                    parameter => parameter.DefaultValue!,
+                    parameter => parameter.DefaultValue.RequireNotNull(),
                     StringComparer.Ordinal);
 
             _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject, defaultValues));

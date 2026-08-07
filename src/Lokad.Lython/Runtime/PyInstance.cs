@@ -14,11 +14,11 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public PyType Type { get; }
 
-    public bool TryGetOwnAttribute(string name, out object value) => _attributes.TryGetValue(name, out value!);
+    public bool TryGetOwnAttribute(string name, [MaybeNullWhen(false)] out object value) => _attributes.TryGetValue(name, out value);
 
     public IEnumerable<KeyValuePair<string, object>> EnumerateOwnAttributes() => _attributes;
 
-    public bool TryGetAttribute(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public bool TryGetAttribute(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         => PyAttributeLookup.TryResolveInstanceMember(this, name, context, span, out value);
 
     public void SetAttribute(string name, object value) => _attributes[name] = value;

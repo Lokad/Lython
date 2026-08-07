@@ -402,17 +402,17 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
             "year" => Year,
             "week" => Week,
             "weekday" => Weekday,
-            _ => null!,
+            _ => MissingMemberValue.Instance,
         };
 
-        return value is not null;
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
 
     public bool TrySetMember(string name, object value)
@@ -681,7 +681,7 @@ internal static class PyDateTimeOps
         var name = ArgAt(bound, 1) switch
         {
             null or PyNone => null,
-            _ when PyStringOps.TryAsString(ArgAt(bound, 1)!, out var text) => text.AsString(),
+            _ when PyStringOps.TryAsString(ArgAt(bound, 1).RequireNotNull(), out var text) => text.AsString(),
             _ => throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects name to be a string or None.", span)
         };
 
@@ -1315,8 +1315,8 @@ internal static class PyDateTimeOps
             return left.Value.CompareTo(right.Value);
         }
 
-        var leftAdjusted = AdjustTimeTicks(left.Value, left.TzInfo!.Offset);
-        var rightAdjusted = AdjustTimeTicks(right.Value, right.TzInfo!.Offset);
+        var leftAdjusted = AdjustTimeTicks(left.Value, left.TzInfo.RequireNotNull().Offset);
+        var rightAdjusted = AdjustTimeTicks(right.Value, right.TzInfo.RequireNotNull().Offset);
         return leftAdjusted.CompareTo(rightAdjusted);
     }
 
@@ -1344,7 +1344,7 @@ internal static class PyDateTimeOps
             return left.Value == right.Value;
         }
 
-        return AdjustTimeTicks(left.Value, left.TzInfo!.Offset) == AdjustTimeTicks(right.Value, right.TzInfo!.Offset);
+        return AdjustTimeTicks(left.Value, left.TzInfo.RequireNotNull().Offset) == AdjustTimeTicks(right.Value, right.TzInfo.RequireNotNull().Offset);
     }
 
     public static long AdjustTimeTicks(TimeOnly value, TimeSpan offset)
@@ -1464,9 +1464,9 @@ internal static class PyDateTimeOps
             }
 
             var isoDate = DateFromIsoCalendarParts(
-                int.Parse(Capture('G')!, CultureInfo.InvariantCulture),
-                int.Parse(Capture('V')!, CultureInfo.InvariantCulture),
-                int.Parse(Capture('u')!, CultureInfo.InvariantCulture));
+                int.Parse(Capture('G').RequireNotNull(), CultureInfo.InvariantCulture),
+                int.Parse(Capture('V').RequireNotNull(), CultureInfo.InvariantCulture),
+                int.Parse(Capture('u').RequireNotNull(), CultureInfo.InvariantCulture));
             year = isoDate.Year;
             month = isoDate.Month;
             day = isoDate.Day;

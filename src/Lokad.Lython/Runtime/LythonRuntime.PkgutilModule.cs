@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -30,10 +30,10 @@ internal sealed partial class LythonRuntime
                 "iter_zipimport_modules" => UnsupportedPkgutilCallable("pkgutil.iter_zipimport_modules"),
                 "get_data" => UnsupportedPkgutilCallable("pkgutil.get_data"),
                 "read_code" => UnsupportedPkgutilCallable("pkgutil.read_code"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object ModuleInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -689,7 +689,7 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<object> Iterate() => this;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -767,10 +767,10 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("ValueError", "ModuleInfo.index(value): value is not in tuple", span);
                 }, "ModuleInfo.index", ["value", "start", "stop"], requiredCount: 1),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -855,7 +855,7 @@ internal sealed partial class LythonRuntime
 
         public string? SourcePath { get; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -897,10 +897,10 @@ internal sealed partial class LythonRuntime
                         ? PyNone.Instance
                         : ReadGovernedHostText(SourcePath, context, span);
                 }, "loader.get_source", ["fullname"], requiredCount: 0),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)

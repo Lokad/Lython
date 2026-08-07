@@ -3119,7 +3119,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            public bool TryMoveNext(out object value)
+            public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 var line = ReadLine();
                 if (line.Length == 0)

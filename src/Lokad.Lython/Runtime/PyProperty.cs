@@ -58,7 +58,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         return property;
     }
 
-    public bool TryGetDecoratorMember(string name, out object value)
+    public bool TryGetDecoratorMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {

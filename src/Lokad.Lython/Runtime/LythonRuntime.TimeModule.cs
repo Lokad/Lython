@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Names;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -91,13 +91,13 @@ internal sealed partial class LythonRuntime
                         "NotImplementedError",
                         "time.tzset() is unsupported because Lython uses the host's fixed local offset and has no ambient timezone database.",
                         span)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             var offset = context.Host.LocalNow.Offset;
             var secondsWest = new BigInteger(-(long)offset.TotalSeconds);
@@ -110,10 +110,10 @@ internal sealed partial class LythonRuntime
                     [PyString.FromString(zoneName), PyString.FromString(zoneName)],
                     context.MemoryGovernor,
                     span),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null || TryGetMember(name, out value);
+            return !ReferenceEquals(value, MissingMemberValue.Instance) || TryGetMember(name, out value);
         }
 
         private static object CurrentTime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
         bool monotonic,
         double resolution) : IPyDynamicAttributes, IPyRenderableValue
     {
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -523,9 +523,9 @@ internal sealed partial class LythonRuntime
                 "implementation" => PyString.FromString(implementation),
                 "monotonic" => monotonic,
                 "resolution" => resolution,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -583,7 +583,7 @@ internal sealed partial class LythonRuntime
                 span);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -591,9 +591,9 @@ internal sealed partial class LythonRuntime
                 "n_fields" => new BigInteger(11),
                 "n_sequence_fields" => new BigInteger(9),
                 "n_unnamed_fields" => BigInteger.Zero,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -677,7 +677,7 @@ internal sealed partial class LythonRuntime
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             var fieldIndex = Array.IndexOf(FieldNames, name);
             if (fieldIndex >= 0)
@@ -695,9 +695,9 @@ internal sealed partial class LythonRuntime
                 "n_unnamed_fields" => BigInteger.Zero,
                 "count" => new BoundCallable((arguments, span, _) => CountValue(arguments, span), "struct_time.count", ["value"]),
                 "index" => new BoundCallable((arguments, span, _) => IndexValue(arguments, span), "struct_time.index", ["value", "start", "stop"], 1),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)

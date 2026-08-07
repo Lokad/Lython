@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> ExportedNames => Names;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -136,13 +136,13 @@ internal sealed partial class LythonRuntime
                 "link" => UnsupportedOsCallable("os.link", "os.link() is not supported because Lython's host path model does not expose hard links."),
                 "getpid" => UnsupportedOsCallable("os.getpid", "os.getpid() is not supported because process identity is outside Lython's contained host surface."),
                 "kill" => UnsupportedOsCallable("os.kill", "os.kill() is not supported because signals are outside Lython's contained host surface."),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             _ = span;
             if (name == "environ")
@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> ExportedNames => Names;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -230,10 +230,10 @@ internal sealed partial class LythonRuntime
                 "ismount" => new BuiltinCallable(LythonKnownCallableSignatures.OsPathIsMount, OsPathIsMount),
                 "islink" => UnsupportedOsCallable("os.path.islink", "os.path.islink() is not supported because Lython's host path model does not expose symlinks."),
                 "supports_unicode_filenames" => true,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -1433,7 +1433,7 @@ internal sealed partial class LythonRuntime
             _items = items;
         }
 
-        public bool TryGetString(string key, out string value) => _items.TryGetValue(key, out value!);
+        public bool TryGetString(string key, [MaybeNullWhen(false)] out string value) => _items.TryGetValue(key, out value);
 
         public object GetSubscript(object index, LythonSourceSpan span)
         {
@@ -1469,7 +1469,7 @@ internal sealed partial class LythonRuntime
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1560,10 +1560,10 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "os.environ.update", ["mapping"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1600,7 +1600,7 @@ internal sealed partial class LythonRuntime
             _entries = entries;
         }
 
-        public override bool TryMoveNext(out object value)
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_closed || _index >= _entries.Length)
             {
@@ -1623,7 +1623,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1656,10 +1656,10 @@ internal sealed partial class LythonRuntime
                     _closed = true;
                     return false;
                 }, "ScandirIterator.__exit__", ["exc_type", "exc", "tb"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1690,7 +1690,7 @@ internal sealed partial class LythonRuntime
 
         public string Path => _path;
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1783,10 +1783,10 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("NotImplementedError", "DirEntry.is_symlink() is not supported because Lython's host path model does not expose symlinks.", span);
                 }, "DirEntry.is_symlink", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -1830,7 +1830,7 @@ internal sealed partial class LythonRuntime
             _frames.Push(new WalkFrame(root));
         }
 
-        public override bool TryMoveNext(out object value)
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             while (_frames.Count != 0)
             {
@@ -2091,8 +2091,8 @@ internal sealed partial class LythonRuntime
             return new PyTuple(
             [
                 PyString.FromString(frame.DirectoryPath, _governor, _span),
-                frame.DirectoryNames!,
-                frame.FileNames!
+                frame.DirectoryNames.RequireNotNull(),
+                frame.FileNames.RequireNotNull()
             ],
             _governor,
             _span);

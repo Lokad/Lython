@@ -103,7 +103,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         _index = start;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (!_cursor.TryMoveNext(out var item))
         {
@@ -133,7 +133,7 @@ internal sealed class PyZipIterator : PyIteratorBase
         _span = span;
     }
 
-    public override bool TryMoveNext(out object value)
+    public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_finished || _cursors.Length == 0)
         {
@@ -144,8 +144,9 @@ internal sealed class PyZipIterator : PyIteratorBase
         var items = new object[_cursors.Length];
         for (var i = 0; i < _cursors.Length; i++)
         {
-            if (_cursors[i].TryMoveNext(out items[i]))
+            if (_cursors[i].TryMoveNext(out var item))
             {
+                items[i] = item;
                 continue;
             }
 

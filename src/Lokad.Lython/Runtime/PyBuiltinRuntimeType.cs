@@ -23,7 +23,7 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => _constructor(arguments, span, context);
 
-    public bool TryGetMember(string memberName, out object value)
+    public bool TryGetMember(string memberName, [MaybeNullWhen(false)] out object value)
     {
         if (memberName == "__name__")
         {

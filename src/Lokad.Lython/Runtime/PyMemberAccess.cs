@@ -4,58 +4,58 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyMemberAccess
 {
-    private delegate bool ExactMemberResolver(object target, string memberName, out object value);
+    private delegate bool ExactMemberResolver(object target, string memberName, [MaybeNullWhen(false)] out object value);
 
     private static readonly IReadOnlyDictionary<Type, ExactMemberResolver> ExactResolvers =
         new Dictionary<Type, ExactMemberResolver>
         {
-            [typeof(PyString)] = static (object target, string memberName, out object value) => LythonRuntime.StringMembers.TryGetMember((PyString)target, memberName, out value),
-            [typeof(PyBytes)] = static (object target, string memberName, out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
-            [typeof(PyList)] = static (object target, string memberName, out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
-            [typeof(PyDict)] = static (object target, string memberName, out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
-            [typeof(PySet)] = static (object target, string memberName, out object value) => LythonRuntime.SetMembers.TryGetMember((PySet)target, memberName, out value),
-            [typeof(PyPath)] = static (object target, string memberName, out object value) => LythonRuntime.PathMembers.TryGetMember((PyPath)target, memberName, out value),
-            [typeof(PyDecimal)] = static (object target, string memberName, out object value) => LythonRuntime.DecimalMembers.TryGetMember((PyDecimal)target, memberName, out value),
-            [typeof(PyDate)] = static (object target, string memberName, out object value) => LythonRuntime.DateMembers.TryGetMember((PyDate)target, memberName, out value),
-            [typeof(PyTime)] = static (object target, string memberName, out object value) => LythonRuntime.TimeMembers.TryGetMember((PyTime)target, memberName, out value),
-            [typeof(PyDateTime)] = static (object target, string memberName, out object value) => LythonRuntime.DateTimeMembers.TryGetMember((PyDateTime)target, memberName, out value),
-            [typeof(PyTimedelta)] = static (object target, string memberName, out object value) => LythonRuntime.TimedeltaMembers.TryGetMember((PyTimedelta)target, memberName, out value),
-            [typeof(PyTimezone)] = static (object target, string memberName, out object value) => LythonRuntime.TimezoneMembers.TryGetMember((PyTimezone)target, memberName, out value),
-            [typeof(PyDefaultDict)] = static (object target, string memberName, out object value) => LythonRuntime.DefaultDictMembers.TryGetMember((PyDefaultDict)target, memberName, out value),
-            [typeof(PyCounter)] = static (object target, string memberName, out object value) => LythonRuntime.CounterMembers.TryGetMember((PyCounter)target, memberName, out value),
-            [typeof(PyDeque)] = static (object target, string memberName, out object value) => LythonRuntime.DequeMembers.TryGetMember((PyDeque)target, memberName, out value),
-            [typeof(PyDataclassFieldObject)] = static (object target, string memberName, out object value) => ((PyDataclassFieldObject)target).TryGetMember(memberName, out value),
-            [typeof(PyDataclassParamsObject)] = static (object target, string memberName, out object value) => ((PyDataclassParamsObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonPathStat)] = static (object target, string memberName, out object value) => LythonRuntime.PathStatMembers.TryGetMember((LythonPathStat)target, memberName, out value),
-            [typeof(LythonRuntime.CsvReaderObject)] = static (object target, string memberName, out object value) => LythonRuntime.CsvReaderMembers.TryGetMember((LythonRuntime.CsvReaderObject)target, memberName, out value),
-            [typeof(LythonRuntime.CsvDictReaderObject)] = static (object target, string memberName, out object value) => LythonRuntime.CsvDictReaderMembers.TryGetMember((LythonRuntime.CsvDictReaderObject)target, memberName, out value),
-            [typeof(LythonRuntime.CsvWriterObject)] = static (object target, string memberName, out object value) => LythonRuntime.CsvWriterMembers.TryGetMember((LythonRuntime.CsvWriterObject)target, memberName, out value),
-            [typeof(LythonRuntime.CsvDictWriterObject)] = static (object target, string memberName, out object value) => LythonRuntime.CsvDictWriterMembers.TryGetMember((LythonRuntime.CsvDictWriterObject)target, memberName, out value),
-            [typeof(LythonRuntime.ReMatchObject)] = static (object target, string memberName, out object value) => LythonRuntime.ReMatchMembers.TryGetMember((LythonRuntime.ReMatchObject)target, memberName, out value),
-            [typeof(LythonRuntime.RePatternObject)] = static (object target, string memberName, out object value) => LythonRuntime.RePatternMembers.TryGetMember((LythonRuntime.RePatternObject)target, memberName, out value),
-            [typeof(PyException)] = static (object target, string memberName, out object value) => LythonRuntime.ExceptionInstanceMembers.TryGetMember((PyException)target, memberName, out value),
-            [typeof(LythonRuntime.ExecutionContext.TextFileHandle)] = static (object target, string memberName, out object value) => LythonRuntime.TextFileHandleMembers.TryGetMember((LythonRuntime.ExecutionContext.TextFileHandle)target, memberName, out value),
-            [typeof(HostTextInputHandle)] = static (object target, string memberName, out object value) => LythonRuntime.HostTextInputMembers.TryGetMember((HostTextInputHandle)target, memberName, out value),
-            [typeof(HostTextOutputHandle)] = static (object target, string memberName, out object value) => LythonRuntime.HostTextOutputMembers.TryGetMember((HostTextOutputHandle)target, memberName, out value),
-            [typeof(PyCompletedProcess)] = static (object target, string memberName, out object value) => LythonRuntime.CompletedProcessMembers.TryGetMember((PyCompletedProcess)target, memberName, out value),
-            [typeof(LythonRuntime.ArgumentParserObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.ArgumentParserObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.ArgparseNamespaceObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.ArgparseNamespaceObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.ArgparseMutuallyExclusiveGroupObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.ArgparseMutuallyExclusiveGroupObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.ChainFactory)] = static (object target, string memberName, out object value) => ((LythonRuntime.ChainFactory)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.DifflibDifferObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.DifflibDifferObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.DifflibHtmlDiffObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.DifflibHtmlDiffObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.DifflibMatchObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.DifflibMatchObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.DifflibSequenceMatcherObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.DifflibSequenceMatcherObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.PkgutilModuleInfoObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.PkgutilModuleInfoObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.PkgutilLoaderObject)] = static (object target, string memberName, out object value) => ((LythonRuntime.PkgutilLoaderObject)target).TryGetMember(memberName, out value),
+            [typeof(PyString)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.StringMembers.TryGetMember((PyString)target, memberName, out value),
+            [typeof(PyBytes)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
+            [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
+            [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
+            [typeof(PySet)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.SetMembers.TryGetMember((PySet)target, memberName, out value),
+            [typeof(PyPath)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.PathMembers.TryGetMember((PyPath)target, memberName, out value),
+            [typeof(PyDecimal)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DecimalMembers.TryGetMember((PyDecimal)target, memberName, out value),
+            [typeof(PyDate)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DateMembers.TryGetMember((PyDate)target, memberName, out value),
+            [typeof(PyTime)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TimeMembers.TryGetMember((PyTime)target, memberName, out value),
+            [typeof(PyDateTime)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DateTimeMembers.TryGetMember((PyDateTime)target, memberName, out value),
+            [typeof(PyTimedelta)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TimedeltaMembers.TryGetMember((PyTimedelta)target, memberName, out value),
+            [typeof(PyTimezone)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TimezoneMembers.TryGetMember((PyTimezone)target, memberName, out value),
+            [typeof(PyDefaultDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DefaultDictMembers.TryGetMember((PyDefaultDict)target, memberName, out value),
+            [typeof(PyCounter)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CounterMembers.TryGetMember((PyCounter)target, memberName, out value),
+            [typeof(PyDeque)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DequeMembers.TryGetMember((PyDeque)target, memberName, out value),
+            [typeof(PyDataclassFieldObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((PyDataclassFieldObject)target).TryGetMember(memberName, out value),
+            [typeof(PyDataclassParamsObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((PyDataclassParamsObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonPathStat)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.PathStatMembers.TryGetMember((LythonPathStat)target, memberName, out value),
+            [typeof(LythonRuntime.CsvReaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvReaderMembers.TryGetMember((LythonRuntime.CsvReaderObject)target, memberName, out value),
+            [typeof(LythonRuntime.CsvDictReaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvDictReaderMembers.TryGetMember((LythonRuntime.CsvDictReaderObject)target, memberName, out value),
+            [typeof(LythonRuntime.CsvWriterObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvWriterMembers.TryGetMember((LythonRuntime.CsvWriterObject)target, memberName, out value),
+            [typeof(LythonRuntime.CsvDictWriterObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvDictWriterMembers.TryGetMember((LythonRuntime.CsvDictWriterObject)target, memberName, out value),
+            [typeof(LythonRuntime.ReMatchObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ReMatchMembers.TryGetMember((LythonRuntime.ReMatchObject)target, memberName, out value),
+            [typeof(LythonRuntime.RePatternObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.RePatternMembers.TryGetMember((LythonRuntime.RePatternObject)target, memberName, out value),
+            [typeof(PyException)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ExceptionInstanceMembers.TryGetMember((PyException)target, memberName, out value),
+            [typeof(LythonRuntime.ExecutionContext.TextFileHandle)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TextFileHandleMembers.TryGetMember((LythonRuntime.ExecutionContext.TextFileHandle)target, memberName, out value),
+            [typeof(HostTextInputHandle)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.HostTextInputMembers.TryGetMember((HostTextInputHandle)target, memberName, out value),
+            [typeof(HostTextOutputHandle)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.HostTextOutputMembers.TryGetMember((HostTextOutputHandle)target, memberName, out value),
+            [typeof(PyCompletedProcess)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CompletedProcessMembers.TryGetMember((PyCompletedProcess)target, memberName, out value),
+            [typeof(LythonRuntime.ArgumentParserObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.ArgumentParserObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.ArgparseNamespaceObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.ArgparseNamespaceObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.ArgparseMutuallyExclusiveGroupObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.ArgparseMutuallyExclusiveGroupObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.ChainFactory)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.ChainFactory)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.DifflibDifferObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibDifferObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.DifflibHtmlDiffObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibHtmlDiffObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.DifflibMatchObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibMatchObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.DifflibSequenceMatcherObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibSequenceMatcherObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.PkgutilModuleInfoObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilModuleInfoObject)target).TryGetMember(memberName, out value),
+            [typeof(LythonRuntime.PkgutilLoaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilLoaderObject)target).TryGetMember(memberName, out value),
         };
 
-    public static bool TryResolve(object target, string memberName, out object value)
+    public static bool TryResolve(object target, string memberName, [MaybeNullWhen(false)] out object value)
     {
         return TryResolveNonContextual(target, memberName, out value);
     }
 
-    public static bool TryResolve(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object value)
+    public static bool TryResolve(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (target is not IPyContextualDynamicAttributes &&
             target is not PyPath &&
@@ -96,7 +96,7 @@ internal static class PyMemberAccess
         return TryResolveNonContextual(target, memberName, out value);
     }
 
-    private static bool TryResolveNonContextual(object target, string memberName, out object value)
+    private static bool TryResolveNonContextual(object target, string memberName, [MaybeNullWhen(false)] out object value)
     {
         if (target is string legacy)
         {

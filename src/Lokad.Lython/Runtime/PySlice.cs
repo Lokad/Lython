@@ -23,7 +23,7 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue
 
     public object? StepBound => Step is PyNone ? null : Step;
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {

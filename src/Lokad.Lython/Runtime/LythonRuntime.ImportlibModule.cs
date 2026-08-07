@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -30,10 +30,10 @@ internal sealed partial class LythonRuntime
                     LythonKnownCallableSignatures.ImportlibInvalidateCaches,
                     InvalidateCaches),
                 "util" => ImportlibUtilModule.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object ImportModule(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -101,10 +101,10 @@ internal sealed partial class LythonRuntime
                 "spec_from_loader" => UnsupportedImportlibCallable(
                     LythonKnownCallableSignatures.ImportlibUtilSpecFromLoader,
                     "importlib.util.spec_from_loader() is unsupported because Lython module specs are created only by contained discovery."),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object FindSpec(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -188,7 +188,7 @@ internal sealed partial class LythonRuntime
         string moduleName,
         ExecutionContext context,
         LythonSourceSpan span,
-        out ImportlibModuleSpecObject spec)
+        [MaybeNullWhen(false)] out ImportlibModuleSpecObject spec)
     {
         if (IsDiscoverableBuiltinModuleName(moduleName, context))
         {
@@ -202,7 +202,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        spec = null!;
+        spec = null;
         return false;
     }
 
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        public bool TryGetMember(string name, out object value) => _members.TryGetValue(name, out value!);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
 
         public bool TrySetMember(string name, object value)
         {

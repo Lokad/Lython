@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
 
         public string ErrorsName => _request.Errors ?? "strict";
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -277,9 +277,9 @@ internal sealed partial class LythonRuntime
                     async (arguments, span, _) => await ExitBoundAsync(arguments, span).ConfigureAwait(false),
                     "Popen.__exit__",
                     ["exc_type", "exc_value", "traceback"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -698,7 +698,7 @@ internal sealed partial class LythonRuntime
 
         public bool IsClosed { get; private set; }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -713,9 +713,9 @@ internal sealed partial class LythonRuntime
                 "readable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.readable", []),
                 "seekable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.seekable", []),
                 "isatty" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.isatty", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -923,7 +923,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -953,9 +953,9 @@ internal sealed partial class LythonRuntime
                 "writable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.writable", []),
                 "seekable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.seekable", []),
                 "isatty" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.isatty", []),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -987,7 +987,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryMoveNext(out object value)
+        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             EnsureOpen(PopenSyntheticSpan);
             var line = ReadLineCore(_owner.GetOutput(_isStandardError, PopenSyntheticSpan), -1, PopenSyntheticSpan);

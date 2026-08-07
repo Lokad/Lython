@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -29,10 +29,10 @@ internal sealed partial class LythonRuntime
                 "compress" => GzipCompressCallable.Instance,
                 "decompress" => new BuiltinCallable(LythonKnownCallableSignatures.GzipDecompress, Decompress),
                 "BadGzipFile" => new ExceptionTypeValue("BadGzipFile"),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public static object Decompress(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -239,10 +239,10 @@ internal sealed partial class LythonRuntime
         }
 
         var path = PathOps.Normalize(
-            CoercePathLike(values[0]!, context, span, "gzip.open()").AsString(),
+            CoercePathLike(values[0].RequireNotNull(), context, span, "gzip.open()").AsString(),
             context.Host.Cwd);
         var mode = assigned[1]
-            ? PyStringOps.TryAsString(values[1]!, out var modeText)
+            ? PyStringOps.TryAsString(values[1].RequireNotNull(), out var modeText)
                 ? modeText.AsString()
                 : throw new LythonRuntimeException("TypeError", "gzip.open(..., mode=...) expects a string", span)
             : "rb";
@@ -258,7 +258,7 @@ internal sealed partial class LythonRuntime
             _ when mode.StartsWith('x') => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support exclusive-creation modes", span),
             _ => throw new LythonRuntimeException("ValueError", $"Invalid mode: '{mode}'", span),
         };
-        var compressionLevel = assigned[2] ? ParseCompressionLevel(values[2]!, span) : 9;
+        var compressionLevel = assigned[2] ? ParseCompressionLevel(values[2].RequireNotNull(), span) : 9;
 
         if (!text)
         {
@@ -281,13 +281,13 @@ internal sealed partial class LythonRuntime
         }
 
         var encoding = assigned[3]
-            ? ParseTextEncoding(values[3]!, "gzip.open()", span)
+            ? ParseTextEncoding(values[3].RequireNotNull(), "gzip.open()", span)
             : TextEncodingMode.Utf8;
         var errors = assigned[4]
-            ? ParseTextErrors(values[4]!, "gzip.open()", span)
+            ? ParseTextErrors(values[4].RequireNotNull(), "gzip.open()", span)
             : TextErrorMode.Strict;
         var newline = assigned[5]
-            ? ParseTextNewline(values[5]!, "gzip.open()", span)
+            ? ParseTextNewline(values[5].RequireNotNull(), "gzip.open()", span)
             : TextNewlineMode.TranslateUniversal;
         return new GzipOpenOptions(path, mode, operation, Text: true, compressionLevel, encoding, errors, newline);
     }
@@ -428,7 +428,7 @@ internal sealed partial class LythonRuntime
             return handle;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -511,10 +511,10 @@ internal sealed partial class LythonRuntime
                 "readlines" => new BoundCallable((arguments, span, _) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span), span), "gzip file.readlines", ["hint"], 0),
                 "write" => new BoundCallable((arguments, span, _) => Write(arguments, span), "gzip file.write", ["data"]),
                 "writelines" => new BoundCallable((arguments, span, _) => WriteLines(arguments, span), "gzip file.writelines", ["lines"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public bool TrySetMember(string name, object value)
@@ -564,7 +564,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryMoveNext(out object value)
+        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             var line = ReadLine(-1, null);
             if (IsEmptyReadValue(line))
@@ -590,7 +590,7 @@ internal sealed partial class LythonRuntime
             EnsureReadable(span);
             if (_options.Text)
             {
-                var text = _textRead!;
+                var text = _textRead.RequireNotNull();
                 if (_readCursor >= text.Utf8Bytes.Length)
                 {
                     return PyString.Empty;
@@ -604,7 +604,7 @@ internal sealed partial class LythonRuntime
                 return result;
             }
 
-            var bytes = _binaryRead!;
+            var bytes = _binaryRead.RequireNotNull();
             if (_readCursor >= bytes.Length)
             {
                 return CreateBytes([], _context, span);
@@ -621,7 +621,7 @@ internal sealed partial class LythonRuntime
             EnsureReadable(span);
             if (_options.Text)
             {
-                var text = _textRead!;
+                var text = _textRead.RequireNotNull();
                 var source = text.Utf8Bytes.Span;
                 if (_readCursor >= source.Length)
                 {
@@ -639,7 +639,7 @@ internal sealed partial class LythonRuntime
                 return line;
             }
 
-            var bytes = _binaryRead!;
+            var bytes = _binaryRead.RequireNotNull();
             if (_readCursor >= bytes.Length)
             {
                 return CreateBytes([], _context, span);
@@ -1055,8 +1055,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "gzip.compress(data) requires a bytes-like object", span);
             }
 
-            var compressionLevel = levelAssigned ? ParseCompressionLevel(level!, span) : 9;
-            var modificationTime = mtimeAssigned ? ParseModificationTime(mtime!, span) : 0u;
+            var compressionLevel = levelAssigned ? ParseCompressionLevel(level.RequireNotNull(), span) : 9;
+            var modificationTime = mtimeAssigned ? ParseModificationTime(mtime.RequireNotNull(), span) : 0u;
             return CreateBytes(CompressGzip(bytes.Bytes, compressionLevel, modificationTime, context, span), context, span);
         }
 

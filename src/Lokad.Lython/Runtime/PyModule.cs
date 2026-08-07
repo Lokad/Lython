@@ -1,5 +1,10 @@
 namespace Lokad.Lython.Runtime;
 
+internal static class MissingMemberValue
+{
+    public static object Instance { get; } = new();
+}
+
 internal abstract class PyModule
 {
     protected PyModule(string name)
@@ -16,7 +21,7 @@ internal abstract class PyModule
     public virtual IReadOnlyList<string> MemberNames => ExportedNames;
 
     /// <summary>Resolves a module member and returns <see langword="false"/> without throwing when absent.</summary>
-    public abstract bool TryGetMember(string name, out object value);
+    public abstract bool TryGetMember(string name, [MaybeNullWhen(false)] out object value);
 
     /// <summary>Assigns a writable module member, returning <see langword="false"/> when assignment is unsupported.</summary>
     public virtual bool TrySetMember(string name, object value)
@@ -37,7 +42,7 @@ internal sealed class ScriptPyModule : PyModule
         _members = members;
     }
 
-    public override bool TryGetMember(string name, out object value) => _members.TryGetValue(name, out value!);
+    public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
 
     public override IReadOnlyList<string> ExportedNames
         => _members.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();

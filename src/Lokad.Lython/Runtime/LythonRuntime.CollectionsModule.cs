@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 "abc",
             ];
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -42,10 +42,10 @@ internal sealed partial class LythonRuntime
                 "UserList" => new UnsupportedCollectionsCallable("collections.UserList"),
                 "UserString" => new UnsupportedCollectionsCallable("collections.UserString"),
                 "abc" => CollectionsAbcModule.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> ExportedNames => Names;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (Names.Contains(name, StringComparer.Ordinal))
             {
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
         var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateDefaultDict(result, source!, span, context);
+            PopulateDefaultDict(result, source.RequireNotNull(), span, context);
         }
 
         foreach (var pair in keywordItems)
@@ -269,7 +269,7 @@ internal sealed partial class LythonRuntime
         var result = new PyCounter(context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateCounter(result, source!, span, context, subtract: false);
+            PopulateCounter(result, source.RequireNotNull(), span, context, subtract: false);
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = hasIterable
-            ? new PyDeque(ToSequence(iterable!, span), maxLength)
+            ? new PyDeque(ToSequence(iterable.RequireNotNull(), span), maxLength)
             : new PyDeque(maxLength);
         context.ObserveCollectionCount(result.Count, span);
         return result;
@@ -458,7 +458,7 @@ internal sealed partial class LythonRuntime
         var dict = new PyDict(context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateDict(dict, source!, "collections.OrderedDict([mapping], **kwargs)", span, context);
+            PopulateDict(dict, source.RequireNotNull(), "collections.OrderedDict([mapping], **kwargs)", span, context);
         }
 
         foreach (var pair in keywordItems)
@@ -639,7 +639,7 @@ internal sealed partial class LythonRuntime
         return (int)integer;
     }
 
-    private static bool TryGetArgument(CallArgumentValue[] arguments, int position, string keyword, LythonSourceSpan span, out object value)
+    private static bool TryGetArgument(CallArgumentValue[] arguments, int position, string keyword, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         value = PyNone.Instance;
         var positionalIndex = 0;

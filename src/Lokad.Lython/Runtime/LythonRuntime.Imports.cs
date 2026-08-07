@@ -71,15 +71,15 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "annotations" => PyNone.Instance,
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -208,7 +208,7 @@ internal sealed partial class LythonRuntime
             parent = resolved;
         }
 
-        return resolved!;
+        return resolved.RequireNotNull();
     }
 
     private static async ValueTask<PyModule> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
             parent = resolved;
         }
 
-        return resolved!;
+        return resolved.RequireNotNull();
     }
 
     private static void AttachImportedChild(PyModule parent, string childName, PyModule child, LythonSourceSpan span)
@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
         string name,
         ExecutionContext context,
         LythonSourceSpan span,
-        out object value)
+        [MaybeNullWhen(false)] out object value)
         => TryResolveRuntimeMember(module, name, context, span, out value);
 
     private static string ResolveLocalModulePath(string moduleName, ExecutionContext context)

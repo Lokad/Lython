@@ -370,8 +370,9 @@ internal static class StaticRegexContractFamily
             expression = arguments.Positional[0];
             value = arguments.ResolvePositionalValue(0, bindings);
         }
-        else if (arguments.Keywords.TryGetValue("group", out expression!))
+        else if (arguments.Keywords.TryGetValue("group", out var keywordExpression))
         {
+            expression = keywordExpression;
             value = arguments.ResolveKeywordValue("group", bindings);
         }
         else
@@ -517,13 +518,13 @@ internal static class StaticRegexContractFamily
         string flagsKeyword,
         AbstractState bindings,
         bool allowCompiledPattern,
-        out AbstractRegexPatternSummary summary,
+        [MaybeNullWhen(false)] out AbstractRegexPatternSummary summary,
         out bool flagsKnown)
     {
         flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, out _);
         if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue))
         {
-            summary = default!;
+            summary = default;
             return false;
         }
 
@@ -535,7 +536,7 @@ internal static class StaticRegexContractFamily
 
         if (patternValue.Kind != AbstractValueKind.String)
         {
-            summary = default!;
+            summary = default;
             return false;
         }
 
@@ -556,11 +557,12 @@ internal static class StaticRegexContractFamily
     private static AbstractRegexMatchSummary CreateRegexMatchSummary<TNameEntry>(
         int captureSlotCount,
         IEnumerable<TNameEntry> nameEntries)
+        where TNameEntry : struct
     {
         var namedGroups = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var entry in nameEntries)
         {
-            dynamic dynamicEntry = entry!;
+            dynamic dynamicEntry = entry;
             namedGroups[(string)dynamicEntry.Name] = (int)dynamicEntry.Number;
         }
 
@@ -627,7 +629,7 @@ internal static class StaticRegexContractFamily
             ? options
             : PythonReCompileOptions.None;
 
-    private static bool TryCompileRegex(string pattern, PythonReCompileOptions options, out Utf8PythonRegex regex)
+    private static bool TryCompileRegex(string pattern, PythonReCompileOptions options, [MaybeNullWhen(false)] out Utf8PythonRegex regex)
     {
         try
         {
@@ -636,7 +638,7 @@ internal static class StaticRegexContractFamily
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException || ex.GetType().Name.Contains("Regex", StringComparison.Ordinal))
         {
-            regex = default!;
+            regex = default;
             return false;
         }
     }

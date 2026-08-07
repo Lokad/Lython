@@ -67,7 +67,7 @@ public sealed class LythonEngine
                 var runtime = new LythonRuntime();
                 return executableScript is not null
                     ? runtime.Run(executableScript, host, options)
-                    : runtime.Run(loweredScript!, host, options);
+                    : runtime.Run(loweredScript.RequireNotNull(), host, options);
             },
             async (host, options) =>
             {
@@ -101,7 +101,7 @@ public sealed class LythonEngine
                 }
 
                 var runtime = new LythonRuntime();
-                return await runtime.RunAsync(loweredScript!, host, options).ConfigureAwait(false);
+                return await runtime.RunAsync(loweredScript.RequireNotNull(), host, options).ConfigureAwait(false);
             });
     }
 

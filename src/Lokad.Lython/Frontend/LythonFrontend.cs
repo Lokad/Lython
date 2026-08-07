@@ -184,7 +184,7 @@ internal static class LythonFrontend
             _ => c.ToString()
         };
 
-    private static bool TryCreateLeadingIndentationDiagnostic(string source, out LythonDiagnostic diagnostic)
+    private static bool TryCreateLeadingIndentationDiagnostic(string source, [MaybeNullWhen(false)] out LythonDiagnostic diagnostic)
     {
         var line = 1;
         var lineStart = 0;
@@ -231,7 +231,7 @@ internal static class LythonFrontend
             line++;
         }
 
-        diagnostic = null!;
+        diagnostic = null;
         return false;
     }
 }

@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
                 var previousException = context.Services.SetCurrentException(pyException);
                 try
                 {
-                    pendingControl = await ExecuteStatementsAsync(statement.ExceptBody!, exceptContext).ConfigureAwait(false);
+                    pendingControl = await ExecuteStatementsAsync(statement.ExceptBody.RequireNotNull(), exceptContext).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -436,10 +436,10 @@ internal sealed partial class LythonRuntime
             switch (assignment.Syntax)
             {
                 case AssignmentStatementSyntax simple:
-                    StoreName(simple.Name, await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false), context, assignment.Span);
+                    StoreName(simple.Name, await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false), context, assignment.Span);
                     return;
                 case ChainedAssignmentStatementSyntax chained:
-                    var chainedValue = await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false);
+                    var chainedValue = await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false);
                     foreach (var assignmentTarget in chained.Targets)
                     {
                         AssignTarget(assignmentTarget, chainedValue, context);
@@ -455,7 +455,7 @@ internal sealed partial class LythonRuntime
                     var augmentedTarget = await ResolveLoweredAugmentedAssignmentTargetAsync(augmented, assignment, context).ConfigureAwait(false);
                     augmentedTarget.Store(EvaluateAugmentedAssignment(
                         augmentedTarget.CurrentValue,
-                        await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
+                        await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false),
                         augmented.Operator,
                         context,
                         augmented.Span));
@@ -463,34 +463,34 @@ internal sealed partial class LythonRuntime
                 case UnpackingAssignmentStatementSyntax unpacking:
                     AssignTargets(
                         unpacking.Targets,
-                        await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
+                        await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false),
                         unpacking.Expression.Span,
                         context);
                     return;
                 case SubscriptAssignmentStatementSyntax subscript:
                     await ExecuteLoweredSubscriptAssignmentAsync(
                             subscript,
-                            assignment.Target!,
-                            assignment.Index!,
-                            await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
+                            assignment.Target.RequireNotNull(),
+                            assignment.Index.RequireNotNull(),
+                            await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false),
                             context)
                         .ConfigureAwait(false);
                     return;
                 case SliceAssignmentStatementSyntax slice:
                     await ExecuteLoweredSliceAssignmentAsync(
                             slice,
-                            assignment.Target!,
+                            assignment.Target.RequireNotNull(),
                             assignment.Start,
                             assignment.End,
                             assignment.Step,
-                            await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false),
+                            await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false),
                             context)
                         .ConfigureAwait(false);
                     return;
                 case MemberAssignmentStatementSyntax memberAssignment:
-                    var target = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
-                    var value = await EvaluateLoweredExpressionAsync(assignment.Expression!, context).ConfigureAwait(false);
-                    if (!PyMemberAccess.TryAssign(target, assignment.MemberName!, value, context, memberAssignment.Span))
+                    var target = await EvaluateLoweredExpressionAsync(assignment.Target.RequireNotNull(), context).ConfigureAwait(false);
+                    var value = await EvaluateLoweredExpressionAsync(assignment.Expression.RequireNotNull(), context).ConfigureAwait(false);
+                    if (!PyMemberAccess.TryAssign(target, assignment.MemberName.RequireNotNull(), value, context, memberAssignment.Span))
                     {
                         throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", memberAssignment.Span);
                     }
@@ -516,15 +516,15 @@ internal sealed partial class LythonRuntime
                 return ResolveAugmentedAssignmentTarget(statement.Target, context);
 
             case SubscriptAssignmentTargetSyntax subscript:
-                var subscriptTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
-                var index = await EvaluateLoweredExpressionAsync(assignment.Index!, context).ConfigureAwait(false);
+                var subscriptTarget = await EvaluateLoweredExpressionAsync(assignment.Target.RequireNotNull(), context).ConfigureAwait(false);
+                var index = await EvaluateLoweredExpressionAsync(assignment.Index.RequireNotNull(), context).ConfigureAwait(false);
                 var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     subscriptValue,
                     value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
 
             case SliceAssignmentTargetSyntax slice:
-                var sliceTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
+                var sliceTarget = await EvaluateLoweredExpressionAsync(assignment.Target.RequireNotNull(), context).ConfigureAwait(false);
                 var start = assignment.Start is null
                     ? null
                     : await EvaluateLoweredExpressionAsync(assignment.Start, context).ConfigureAwait(false);
@@ -540,7 +540,7 @@ internal sealed partial class LythonRuntime
                     value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
 
             case MemberAssignmentTargetSyntax member:
-                var memberTarget = await EvaluateLoweredExpressionAsync(assignment.Target!, context).ConfigureAwait(false);
+                var memberTarget = await EvaluateLoweredExpressionAsync(assignment.Target.RequireNotNull(), context).ConfigureAwait(false);
                 if (!TryResolveRuntimeMember(memberTarget, member.MemberName, context, member.Span, out var memberValue))
                 {
                     throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, member.Span);

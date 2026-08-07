@@ -10,7 +10,7 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 
     object GetRequired(object key);
 
-    bool TryGetValue(object key, out object value);
+    bool TryGetValue(object key, [MaybeNullWhen(false)] out object value);
 
     bool ContainsKey(object key);
 
@@ -108,7 +108,7 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
         return true;
     }
 
-    public bool TryGetValue(object key, out object value)
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
     {
         foreach (var pair in _items)
         {
@@ -213,7 +213,7 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public object GetRequired(object key) => _items[key];
 
-    public bool TryGetValue(object key, out object value) => _items.TryGetValue(key, out value!);
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
     public bool ContainsKey(object key) => _items.ContainsKey(key);
 

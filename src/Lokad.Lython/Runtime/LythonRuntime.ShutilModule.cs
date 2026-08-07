@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             "copyfileobj",
         ];
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -37,10 +37,10 @@ internal sealed partial class LythonRuntime
                 "copy2" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopy2, ShutilCopy2),
                 "move" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilMove, ShutilMove, ShutilMoveAsync),
                 "copyfileobj" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopyFileObj, ShutilCopyFileObj, ShutilCopyFileObjAsync),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 

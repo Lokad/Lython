@@ -188,7 +188,7 @@ internal static class StaticDataclassContractFamily
         return false;
     }
 
-    private static bool TryResolveDataclassClass(ConcreteCallArguments arguments, AbstractState bindings, out AbstractClassSummary summary)
+    private static bool TryResolveDataclassClass(ConcreteCallArguments arguments, AbstractState bindings, [MaybeNullWhen(false)] out AbstractClassSummary summary)
     {
         if (TryResolveDataclassTarget(arguments, bindings, out var target))
         {
@@ -205,11 +205,11 @@ internal static class StaticDataclassContractFamily
             }
         }
 
-        summary = default!;
+        summary = default;
         return false;
     }
 
-    private static bool TryResolveDataclassInstance(ConcreteCallArguments arguments, AbstractState bindings, out AbstractInstanceSummary instance)
+    private static bool TryResolveDataclassInstance(ConcreteCallArguments arguments, AbstractState bindings, [MaybeNullWhen(false)] out AbstractInstanceSummary instance)
     {
         if (TryResolveDataclassTarget(arguments, bindings, out var target) &&
             target.Kind == AbstractValueKind.UserInstance)
@@ -218,7 +218,7 @@ internal static class StaticDataclassContractFamily
             return instance.Class.IsDataclass;
         }
 
-        instance = default!;
+        instance = default;
         return false;
     }
 

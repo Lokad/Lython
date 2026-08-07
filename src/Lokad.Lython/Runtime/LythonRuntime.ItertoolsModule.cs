@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -36,10 +36,10 @@ internal sealed partial class LythonRuntime
                 "groupby" => new ItertoolsCallable("itertools.groupby", GroupBy),
                 "tee" => new ItertoolsCallable("itertools.tee", Tee),
                 "batched" => new ItertoolsCallable("itertools.batched", Batched),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -70,15 +70,15 @@ internal sealed partial class LythonRuntime
             return new PyChainIterator(iterables, span);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "from_iterable" => new ItertoolsCallable("itertools.chain.from_iterable", FromIterable),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object FromIterable(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

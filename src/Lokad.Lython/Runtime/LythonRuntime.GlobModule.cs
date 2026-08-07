@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -24,10 +24,10 @@ internal sealed partial class LythonRuntime
                 "translate" => new BuiltinCallable(LythonKnownCallableSignatures.GlobTranslate, Translate),
                 "glob0" => new BuiltinCallable(LythonKnownCallableSignatures.Glob0, UnsupportedGlobInternal),
                 "glob1" => new BuiltinCallable(LythonKnownCallableSignatures.Glob1, UnsupportedGlobInternal),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
             _items = items;
         }
 
-        public override bool TryMoveNext(out object value)
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_index >= _items.Length)
             {

@@ -118,7 +118,7 @@ internal sealed class SmallPyListStorage : IPyListStorage
     {
         Array.Copy(_items, index + 1, _items, index, _count - index - 1);
         _count--;
-        _items[_count] = null!;
+        Array.Clear(_items, _count, 1);
     }
 
     public void Clear()

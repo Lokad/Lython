@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -72,10 +72,10 @@ internal sealed partial class LythonRuntime
                 "itemgetter" => new OperatorFactoryCallable("operator.itemgetter", CreateItemGetter),
                 "attrgetter" => new OperatorFactoryCallable("operator.attrgetter", CreateAttrGetter),
                 "methodcaller" => new OperatorFactoryCallable("operator.methodcaller", CreateMethodCaller),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -194,9 +194,10 @@ internal sealed partial class LythonRuntime
             var current = target;
             foreach (var part in path)
             {
-                if (!PyMemberAccess.TryResolve(current, part, context, span, out current))
+                var memberTarget = current;
+                if (!PyMemberAccess.TryResolve(memberTarget, part, context, span, out current))
                 {
-                    throw PyMemberAccess.CreateMissingMemberError(current, part, span);
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, part, span);
                 }
             }
 

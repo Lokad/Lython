@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
                 "replace" => CopyReplaceCallable.Instance,
                 "dispatch_table" => new PyDict(),
                 "Error" or "error" => CopyError,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private object ShallowCopy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -169,9 +169,9 @@ internal sealed partial class LythonRuntime
             return new CopyMemo(dict);
         }
 
-        public bool TryGet(object original, out object copied)
+        public bool TryGet(object original, [MaybeNullWhen(false)] out object copied)
         {
-            if (_references.TryGetValue(original, out copied!))
+            if (_references.TryGetValue(original, out copied))
             {
                 return true;
             }
@@ -346,7 +346,7 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static bool TryInvokeCopyHook(PyInstance instance, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, out object value)
+    private static bool TryInvokeCopyHook(PyInstance instance, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, [MaybeNullWhen(false)] out object value)
     {
         var hookName = deep ? "__deepcopy__" : "__copy__";
         if (!PyMemberAccess.TryResolve(instance, hookName, context, span, out var member))

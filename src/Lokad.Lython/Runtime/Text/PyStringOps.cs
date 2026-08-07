@@ -667,9 +667,14 @@ internal static class PyStringOps
 
                         selected = resolveCompositeField(slotText);
                     }
-                    else if (keywords is null || !keywords.TryGetValue(slotText, out selected!))
+                    else
                     {
-                        throw new KeyNotFoundException(slotText);
+                        if (keywords is null || !keywords.TryGetValue(slotText, out var keywordValue))
+                        {
+                            throw new KeyNotFoundException(slotText);
+                        }
+
+                        selected = keywordValue;
                     }
                 }
 

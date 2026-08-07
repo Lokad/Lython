@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -28,10 +28,10 @@ internal sealed partial class LythonRuntime
                 "quote" => new BuiltinCallable(LythonKnownCallableSignatures.ShlexQuote, Quote),
                 "join" => new BuiltinCallable(LythonKnownCallableSignatures.ShlexJoin, Join),
                 "split" => new BuiltinCallable(LythonKnownCallableSignatures.ShlexSplit, Split),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object Quote(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
 
             public int LineNumber { get; private set; } = 1;
 
-            public bool TryGetMember(string name, out object value)
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
@@ -354,10 +354,10 @@ internal sealed partial class LythonRuntime
                     "wordchars" => PyString.FromString(WordChars),
                     "punctuation_chars" => PyString.FromString(PunctuationChars),
                     "source" => _source,
-                    _ => null!,
+                    _ => MissingMemberValue.Instance,
                 };
 
-                return value is not null;
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
 
             public bool TrySetMember(string name, object value)
@@ -423,7 +423,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            public bool TryMoveNext(out object value)
+            public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 var token = GetToken(_creationSpan);
                 if (AreEqual(token, _eof))

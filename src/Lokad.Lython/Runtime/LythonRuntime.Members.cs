@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal static class ListMembers
     {
-        public static bool TryGetMember(PyList list, string name, out object value)
+        public static bool TryGetMember(PyList list, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -156,10 +156,10 @@ internal sealed partial class LythonRuntime
                     list.Clear();
                     return PyNone.Instance;
                 }),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object SortList(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -330,7 +330,7 @@ internal sealed partial class LythonRuntime
 
     internal static class DictMembers
     {
-        public static bool TryGetMember(PyDict dict, string name, out object value)
+        public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -441,16 +441,16 @@ internal sealed partial class LythonRuntime
                      dict.SetItem(key, defaultValue);
                      return defaultValue;
                 }, "dict.setdefault", ["key", "default"], 1),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class DefaultDictMembers
     {
-        public static bool TryGetMember(PyDefaultDict dict, string name, out object value)
+        public static bool TryGetMember(PyDefaultDict dict, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -537,16 +537,16 @@ internal sealed partial class LythonRuntime
                     dict.Clear();
                     return PyNone.Instance;
                 }),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class CounterMembers
     {
-        public static bool TryGetMember(PyCounter counter, string name, out object value)
+        public static bool TryGetMember(PyCounter counter, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -691,10 +691,10 @@ internal sealed partial class LythonRuntime
 
                     return BuildItemsList(counter, context, span);
                 }),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private sealed class CounterUpdateCallable : ICallable, IPyRenderableValue
@@ -750,7 +750,7 @@ internal sealed partial class LythonRuntime
                 {
                     try
                     {
-                        PopulateCounter(_counter, source!, span, context, _subtract);
+                        PopulateCounter(_counter, source.RequireNotNull(), span, context, _subtract);
                     }
                     catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
                     {
@@ -799,7 +799,7 @@ internal sealed partial class LythonRuntime
 
     internal static class DequeMembers
     {
-        public static bool TryGetMember(PyDeque deque, string name, out object value)
+        public static bool TryGetMember(PyDeque deque, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -980,10 +980,10 @@ internal sealed partial class LythonRuntime
                     deque.Rotate(offset);
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static int NormalizeDequeSearchBound(object? value, int length, int defaultValue, LythonSourceSpan span)
@@ -1042,7 +1042,7 @@ internal sealed partial class LythonRuntime
 
     internal static class SetMembers
     {
-        public static bool TryGetMember(PySet set, string name, out object value)
+        public static bool TryGetMember(PySet set, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1189,10 +1189,10 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
                 }, OnePositional("set.symmetric_difference_update", "other")),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static LythonCallableSignature NoArguments(string name) => new(name, []);
@@ -1281,7 +1281,7 @@ internal sealed partial class LythonRuntime
 
     internal static class PathStatMembers
     {
-        public static bool TryGetMember(LythonPathStat stat, string name, out object value)
+        public static bool TryGetMember(LythonPathStat stat, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1296,16 +1296,16 @@ internal sealed partial class LythonRuntime
                 "st_atime" => PathModifiedAtSeconds(stat.ModifiedAtTimestamp, null),
                 "st_mode" or "st_ino" or "st_dev" or "st_nlink" or "st_uid" or "st_gid"
                     => throw new LythonRuntimeException("NotImplementedError", "Rich stat_result metadata is not supported by Lython because the host path model only exposes existence, kind, size, and modified time.", null),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class ExceptionInstanceMembers
     {
-        public static bool TryGetMember(PyException exception, string name, out object value)
+        public static bool TryGetMember(PyException exception, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1313,17 +1313,17 @@ internal sealed partial class LythonRuntime
                 "message" => PyString.FromString(exception.Message),
                 "args" => CreateExceptionArgs(exception),
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            if (value is null &&
+            if (ReferenceEquals(value, MissingMemberValue.Instance) &&
                 exception.Value is PyDict payload &&
                 payload.TryGetValue(PyString.FromString(name), out var payloadValue))
             {
                 value = payloadValue;
             }
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static PyTuple CreateExceptionArgs(PyException exception)
@@ -1375,7 +1375,7 @@ internal sealed partial class LythonRuntime
 
     internal static class DecimalMembers
     {
-        public static bool TryGetMember(PyDecimal decimalValue, string name, out object value)
+        public static bool TryGetMember(PyDecimal decimalValue, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -1446,10 +1446,10 @@ internal sealed partial class LythonRuntime
                 "max" => new BoundCallable((arguments, span, _) => PyDecimalOps.MinMax(decimalValue, arguments, "max", span), new LythonCallableSignature("Decimal.max", ["other", "context"], RequiredCount: 1)),
                 "min_mag" => new BoundCallable((arguments, span, _) => PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", span), new LythonCallableSignature("Decimal.min_mag", ["other", "context"], RequiredCount: 1)),
                 "max_mag" => new BoundCallable((arguments, span, _) => PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", span), new LythonCallableSignature("Decimal.max_mag", ["other", "context"], RequiredCount: 1)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static bool ExpectDecimalNoArguments(string name, object[] arguments, LythonSourceSpan span, bool result)
@@ -1465,7 +1465,7 @@ internal sealed partial class LythonRuntime
 
     internal static class PathMembers
     {
-        public static bool TryGetMember(PyPath path, string name, out object value)
+        public static bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2057,22 +2057,22 @@ internal sealed partial class LythonRuntime
 
                     return string.Equals(left, right, StringComparison.Ordinal);
                 }, "Path.samefile", ["other_path"]),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TryGetMember(PyPath path, string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public static bool TryGetMember(PyPath path, string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span),
                 "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static BoundCallable UnsupportedPathMember(string name, string message)
@@ -2665,7 +2665,7 @@ internal sealed partial class LythonRuntime
 
     internal static class TextFileHandleMembers
     {
-        public static bool TryGetMember(ExecutionContext.TextFileHandle handle, string name, out object value)
+        public static bool TryGetMember(ExecutionContext.TextFileHandle handle, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2829,16 +2829,16 @@ internal sealed partial class LythonRuntime
 
                     return await handle.FlushAsync().ConfigureAwait(false);
                 }, "file.flush", []),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class HostTextInputMembers
     {
-        public static bool TryGetMember(HostTextInputHandle handle, string name, out object value)
+        public static bool TryGetMember(HostTextInputHandle handle, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2878,16 +2878,16 @@ internal sealed partial class LythonRuntime
 
                     return await handle.ReadLineAsync(span).ConfigureAwait(false);
                 }),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class HostTextOutputMembers
     {
-        public static bool TryGetMember(HostTextOutputHandle handle, string name, out object value)
+        public static bool TryGetMember(HostTextOutputHandle handle, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2927,16 +2927,16 @@ internal sealed partial class LythonRuntime
 
                     return await handle.FlushAsync(span).ConfigureAwait(false);
                 }),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
     internal static class CompletedProcessMembers
     {
-        public static bool TryGetMember(PyCompletedProcess process, string name, out object value)
+        public static bool TryGetMember(PyCompletedProcess process, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -2965,10 +2965,10 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }),
-                _ => null!
+                _ => MissingMemberValue.Instance
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 }

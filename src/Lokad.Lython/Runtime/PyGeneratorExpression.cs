@@ -34,7 +34,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         }
     }
 
-    public bool TryMoveNext(out object value)
+    public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _iterator ??= IterateClauses(_clauses, 0, _closure).GetEnumerator();
         if (_iterator.MoveNext())

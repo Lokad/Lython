@@ -446,16 +446,16 @@ internal sealed partial class LythonRuntime
         {
             var leftValue = EvaluateExpression(binary.Left, context);
             return IsTruthy(leftValue, context, binary.Left.Span)
-                ? leftValue!
-                : EvaluateExpression(binary.Right, context)!;
+                ? leftValue.RequireNotNull()
+                : EvaluateExpression(binary.Right, context).RequireNotNull();
         }
 
         if (binary.Operator == BinaryOperatorSyntax.And)
         {
             var leftValue = EvaluateExpression(binary.Left, context);
             return !IsTruthy(leftValue, context, binary.Left.Span)
-                ? leftValue!
-                : EvaluateExpression(binary.Right, context)!;
+                ? leftValue.RequireNotNull()
+                : EvaluateExpression(binary.Right, context).RequireNotNull();
         }
 
         var left = EvaluateExpression(binary.Left, context);
@@ -2142,7 +2142,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
         }
 
-        return operand!;
+        return operand.RequireNotNull();
     }
 
     private static object EvaluateUnaryMinus(object operand, LythonSourceSpan span)
@@ -3099,7 +3099,7 @@ internal sealed partial class LythonRuntime
         throw PyMemberAccess.CreateMissingMemberError(target, member.MemberName, member.Span);
     }
 
-    internal static bool TryResolveRuntimeMember(object target, string memberName, ExecutionContext context, LythonSourceSpan span, out object value)
+    internal static bool TryResolveRuntimeMember(object target, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         => PyMemberAccess.TryResolve(target, memberName, context, span, out value);
 
     private static object EvaluateSubscript(SubscriptExpressionSyntax subscript, ExecutionContext context)
@@ -3312,7 +3312,7 @@ internal sealed partial class LythonRuntime
         };
         if (methods.Item1 is not null &&
             (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
-             TryInvokeBinarySpecialMethod(right, methods.Item2!, left, context, span, out result)))
+             TryInvokeBinarySpecialMethod(right, methods.Item2.RequireNotNull(), left, context, span, out result)))
         {
             return true;
         }
@@ -3761,8 +3761,8 @@ internal sealed partial class LythonRuntime
 
         public void SetDecimalContext(PyDecimalContext context) => State.DecimalContext = context;
 
-        internal bool TryGetNonlocalTarget(string name, out ExecutionContext context)
-            => NonlocalTargets.TryGetValue(name, out context!);
+        internal bool TryGetNonlocalTarget(string name, [MaybeNullWhen(false)] out ExecutionContext context)
+            => NonlocalTargets.TryGetValue(name, out context);
 
         private static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
         {
@@ -4078,7 +4078,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryGetBuiltinType(string name, out PyType type)
+        public bool TryGetBuiltinType(string name, [MaybeNullWhen(false)] out PyType type)
         {
             if (TryGetBuiltin(name, out var value) && value is PyType resolved)
             {
@@ -4086,21 +4086,21 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            type = null!;
+            type = null;
             return false;
         }
 
-        public bool TryGetBuiltin(string name, out object value)
+        public bool TryGetBuiltin(string name, [MaybeNullWhen(false)] out object value)
         {
             for (var current = this; current is not null; current = current.ParentContext)
             {
-                if (current.Frame.Variables.TryGetValue(name, out value!))
+                if (current.Frame.Variables.TryGetValue(name, out value))
                 {
                     return true;
                 }
             }
 
-            value = null!;
+            value = null;
             return false;
         }
 

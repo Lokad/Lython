@@ -12,7 +12,7 @@ internal interface IPyAsyncIterableValue : IPyIterableValue
 
 internal interface IPyIteratorValue : IPyIterableValue
 {
-    bool TryMoveNext(out object value);
+    bool TryMoveNext([MaybeNullWhen(false)] out object value);
 }
 
 internal interface IPyAsyncIteratorValue : IPyIteratorValue, IPyAsyncIterableValue

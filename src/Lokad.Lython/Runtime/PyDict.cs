@@ -83,7 +83,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public object GetItem(object key) => FromStorageValue(_items.GetRequired(ToStorageKey(key)));
 
-    public bool TryGetValue(object key, out object value)
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
     {
         if (_items.TryGetValue(ToStorageKey(key), out var stored))
         {

@@ -35,7 +35,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public PyType? MetaType { get; private set; }
 
-    public bool TryGetOwnMember(string name, out object value) => _members.TryGetValue(name, out value!);
+    public bool TryGetOwnMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
 
     public IEnumerable<KeyValuePair<string, object>> EnumerateOwnMembers() => _members;
 
@@ -54,15 +54,15 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         }
     }
 
-    public bool TryGetMember(string name, out object value)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         => PyAttributeLookup.TryResolveTypeMember(this, name, out value);
 
-    public bool TryLookupInMro(string name, int startIndex, out object value, out PyType? ownerType)
+    public bool TryLookupInMro(string name, int startIndex, [MaybeNullWhen(false)] out object value, out PyType? ownerType)
     {
         for (var i = startIndex; i < Mro.Count; i++)
         {
             var current = Mro[i];
-            if (current._members.TryGetValue(name, out value!))
+            if (current._members.TryGetValue(name, out value))
             {
                 ownerType = current;
                 return true;
@@ -409,7 +409,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         }
     }
 
-    private static bool TryGetSetNameCallable(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out LythonRuntime.ICallable callable)
+    private static bool TryGetSetNameCallable(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out LythonRuntime.ICallable callable)
     {
         if (value is PyInstance instance && instance.Type.TryLookupInMro("__set_name__", 0, out var rawMethod, out _))
         {
@@ -429,7 +429,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return true;
         }
 
-        callable = null!;
+        callable = null;
         return false;
     }
 }

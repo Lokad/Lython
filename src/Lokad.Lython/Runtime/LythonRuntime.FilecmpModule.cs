@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
 
         public override IReadOnlyList<string> MemberNames => Members;
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -30,10 +30,10 @@ internal sealed partial class LythonRuntime
                         "NotImplementedError",
                         "filecmp.dircmp is unsupported because recursive directory comparison is outside Lython's contained filecmp surface.",
                         span)),
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         private static object CompareFiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)

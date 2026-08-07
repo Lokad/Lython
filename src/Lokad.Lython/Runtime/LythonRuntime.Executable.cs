@@ -35,14 +35,14 @@ internal sealed partial class LythonRuntime
             _closureCells = closureCells;
         }
 
-        public bool TryResolveLocalOrClosure(string name, out object value)
+        public bool TryResolveLocalOrClosure(string name, [MaybeNullWhen(false)] out object value)
         {
             if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
                 var local = _locals[localSlot];
                 if (!ReferenceEquals(local, UninitializedLocal))
                 {
-                    value = local!;
+                    value = local.RequireNotNull();
                     return true;
                 }
             }
@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
                 var closure = _closureCells[closureSlot].Value;
                 if (!ReferenceEquals(closure, UninitializedLocal))
                 {
-                    value = closure!;
+                    value = closure.RequireNotNull();
                     return true;
                 }
             }
@@ -68,12 +68,12 @@ internal sealed partial class LythonRuntime
                 var value = _locals[pair.Value];
                 if (!ReferenceEquals(value, UninitializedLocal))
                 {
-                    yield return new KeyValuePair<string, object>(pair.Key, value!);
+                    yield return new KeyValuePair<string, object>(pair.Key, value.RequireNotNull());
                 }
             }
         }
 
-        public bool TryGetCell(string name, out ExecutableCell cell)
+        public bool TryGetCell(string name, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
             if (_localCells is not null && _codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
@@ -90,11 +90,11 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            cell = null!;
+            cell = null;
             return false;
         }
 
-        public bool TryGetClosureCell(int slot, out ExecutableCell cell)
+        public bool TryGetClosureCell(int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
             if (_closureCells is not null && slot >= 0 && slot < _closureCells.Count)
             {
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            cell = null!;
+            cell = null;
             return false;
         }
 
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
 
         public int Count { get; private set; }
 
-        public object this[int index] => _items[index]!;
+        public object this[int index] => _items[index].RequireNotNull();
 
         public void Push(object value)
         {
@@ -200,13 +200,13 @@ internal sealed partial class LythonRuntime
         public object Pop()
         {
             var index = Count - 1;
-            var value = _items[index]!;
+            var value = _items[index].RequireNotNull();
             _items[index] = null;
             Count = index;
             return value;
         }
 
-        public object Peek() => _items[Count - 1]!;
+        public object Peek() => _items[Count - 1].RequireNotNull();
 
         public void RemoveTail(int count)
         {
@@ -731,7 +731,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
         }
 
-        return value!;
+        return value.RequireNotNull();
     }
 
     private static object LoadClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, LythonSourceSpan span)
@@ -747,7 +747,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
-        return cell.Value!;
+        return cell.Value.RequireNotNull();
     }
 
     private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
@@ -1516,7 +1516,7 @@ internal sealed partial class LythonRuntime
         };
         if (methods.Item1 is not null &&
             (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
-             TryInvokeBinarySpecialMethod(right, methods.Item2!, left, context, span, out result)))
+             TryInvokeBinarySpecialMethod(right, methods.Item2.RequireNotNull(), left, context, span, out result)))
         {
             return true;
         }

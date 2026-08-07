@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override bool TryGetMember(string name, out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -48,10 +48,10 @@ internal sealed partial class LythonRuntime
                 "singledispatch" => SingleDispatchFactory.Instance,
                 "singledispatchmethod" => SingleDispatchMethodFactory.Instance,
                 "recursive_repr" => RecursiveReprFactory.Instance,
-                _ => null!,
+                _ => MissingMemberValue.Instance,
             };
 
-            return value is not null;
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -136,9 +136,9 @@ internal sealed partial class LythonRuntime
             return _callable.Invoke(count == combined.Length ? combined : combined[..count], span, context);
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -156,9 +156,9 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, PyNone.Instance);
         }
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -605,9 +605,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -626,9 +626,9 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, PyNone.Instance);
         }
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -897,9 +897,9 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -1038,9 +1038,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public bool TryGetMember(string name, out object value)
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -1059,9 +1059,9 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, PyNone.Instance);
         }
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value!))
+            if (_metadata.TryGetValue(name, out value))
             {
                 return true;
             }
@@ -1380,9 +1380,9 @@ internal sealed partial class LythonRuntime
 
         public void BindOwner(PyType owner) => _dispatcher.BindOwner(owner);
 
-        public bool TryGetMember(string name, out object value) => _dispatcher.TryGetMember(name, out value);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _dispatcher.TryGetMember(name, out value);
 
-        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, out object value)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => _dispatcher.TryGetMember(name, context, span, out value);
 
         public bool TrySetMember(string name, object value) => _dispatcher.TrySetMember(name, value);
@@ -1990,7 +1990,7 @@ internal sealed partial class LythonRuntime
         mutableWrapper.TrySetMember("__wrapped__", wrapped);
     }
 
-    private static bool TryReadWrapperMetadata(object target, string memberName, ExecutionContext? context, LythonSourceSpan? span, out object value)
+    private static bool TryReadWrapperMetadata(object target, string memberName, ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
     {
         if (context is not null && span is not null && PyMemberAccess.TryResolve(target, memberName, context, span, out value))
         {
