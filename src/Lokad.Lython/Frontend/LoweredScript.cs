@@ -72,7 +72,7 @@ internal sealed class LoweredScript
                 classDefinition,
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
                 classDefinition.Bases.Select(LowerExpression).ToArray(),
-                classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(argument.Name, LowerExpression(argument.Value))).ToArray(),
+                classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LowerExpression(argument.Value))).ToArray(),
                 LowerStatements(classDefinition.Body)),
             AssignmentStatementSyntax assignment
                 => new LoweredAssignmentStatement(
@@ -266,9 +266,8 @@ internal sealed class LoweredScript
                 call,
                 LowerExpression(call.Target),
                 call.Arguments.Select(argument => new LoweredCallArgument(
-                    argument.Name,
-                    LowerExpression(argument.Expression),
-                    argument.Kind)).ToArray()),
+                    argument.Form,
+                    LowerExpression(argument.Expression))).ToArray()),
             SubscriptExpressionSyntax subscript => new LoweredSubscriptExpression(
                 subscript,
                 LowerExpression(subscript.Target),

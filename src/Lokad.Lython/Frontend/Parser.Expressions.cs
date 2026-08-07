@@ -528,12 +528,11 @@ internal sealed partial class Parser
                     var sawKeywordArgument = false;
                     while (true)
                     {
-                        string? argumentName = null;
-                        var kind = CallArgumentKind.Positional;
+                        var form = CallArgumentForm.Positional;
                         if (CurrentToken == Token.StarStar)
                         {
                             ReadToken();
-                            kind = CallArgumentKind.StarredDictionary;
+                            form = CallArgumentForm.StarredDictionary;
                             sawKeywordArgument = true;
                         }
                         else if (CurrentToken == Token.Star)
@@ -545,14 +544,13 @@ internal sealed partial class Parser
                             }
 
                             ReadToken();
-                            kind = CallArgumentKind.StarredList;
+                            form = CallArgumentForm.StarredList;
                         }
                         else if (IsNameToken(CurrentToken) && PeekToken(1) == Token.Assign)
                         {
                             var nameToken = ReadToken();
                             ReadToken();
-                            argumentName = IdentifierText(nameToken);
-                            kind = CallArgumentKind.Keyword;
+                            form = CallArgumentForm.Keyword(IdentifierText(nameToken));
                             sawKeywordArgument = true;
                         }
                         else if (sawKeywordArgument)
@@ -568,7 +566,7 @@ internal sealed partial class Parser
                         }
 
                         SkipGroupedExpressionTrivia();
-                        if (CurrentToken == Token.For && kind == CallArgumentKind.Positional && argumentName is null)
+                        if (CurrentToken == Token.For && form.Kind == CallArgumentKind.Positional)
                         {
                             if (!TryParseComprehensionClauses(out var clauses, out _))
                             {
@@ -582,7 +580,7 @@ internal sealed partial class Parser
                         }
                         SkipGroupedExpressionTrivia();
 
-                        arguments.Add(new CallArgumentSyntax(argumentName, argument, kind));
+                        arguments.Add(new CallArgumentSyntax(form, argument));
 
                         if (CurrentToken != Token.Comma)
                         {

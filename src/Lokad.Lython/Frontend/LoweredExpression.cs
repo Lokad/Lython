@@ -165,14 +165,12 @@ internal sealed record LoweredMemberExpression(
 }
 
 internal sealed record LoweredCallArgument(
-    string? Name,
-    LoweredExpression Expression,
-    CallArgumentKind Kind)
+    CallArgumentForm Form,
+    LoweredExpression Expression)
 {
-    public LoweredCallArgument(string? Name, LoweredExpression Expression)
-        : this(Name, Expression, CallArgumentKind.Positional)
-    {
-    }
+    public CallArgumentKind Kind => Form.Kind;
+
+    public string KeywordName => Form.KeywordName;
 }
 
 internal sealed record LoweredCallExpression(

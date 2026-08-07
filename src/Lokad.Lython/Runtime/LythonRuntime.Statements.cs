@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
                             classDefinition,
                             classDefinition.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(),
                             loweredBases,
-                            classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(argument.Name, LoweredScript.LowerStandaloneExpression(argument.Value))).ToArray(),
+                            classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LoweredScript.LowerStandaloneExpression(argument.Value))).ToArray(),
                             LoweredScript.Lower(new ScriptSyntax(classDefinition.Body)).Statements),
                         context);
                     return;

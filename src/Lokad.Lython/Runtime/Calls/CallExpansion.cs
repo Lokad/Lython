@@ -14,7 +14,7 @@ internal static class CallExpansion
             arguments,
             context,
             argument => argument.Kind,
-            argument => argument.Name,
+            argument => argument.KeywordName,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context));
     }
@@ -28,7 +28,7 @@ internal static class CallExpansion
             arguments,
             context,
             argument => argument.Kind,
-            argument => argument.Name,
+            argument => argument.KeywordName,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context));
     }
@@ -42,7 +42,7 @@ internal static class CallExpansion
             arguments,
             context,
             argument => argument.Kind,
-            argument => argument.Name,
+            argument => argument.KeywordName,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context));
     }

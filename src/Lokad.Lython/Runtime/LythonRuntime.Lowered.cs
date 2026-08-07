@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = new CallArgumentValue(argument.Name, EvaluateLoweredExpression(argument.Expression, context));
+                classKeywordArguments[i] = new CallArgumentValue(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, context));
             }
             var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
@@ -1134,7 +1134,7 @@ internal sealed partial class LythonRuntime
     {
         foreach (var argument in arguments)
         {
-            if (string.Equals(argument.Name, "metaclass", StringComparison.Ordinal))
+            if (string.Equals(argument.KeywordName, "metaclass", StringComparison.Ordinal))
             {
                 throw new LythonRuntimeException(
                     "TypeError",

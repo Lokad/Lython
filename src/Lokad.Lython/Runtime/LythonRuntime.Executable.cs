@@ -1045,9 +1045,9 @@ internal sealed partial class LythonRuntime
                 throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.");
             }
 
-            arguments[i] = new CallArgumentValue(
-                spec.Kind == CallArgumentKind.Keyword ? spec.Name : null,
-                stack[start + i + 1]);
+            arguments[i] = spec.Kind == CallArgumentKind.Keyword
+                ? new CallArgumentValue(spec.KeywordName, stack[start + i + 1])
+                : new CallArgumentValue(null, stack[start + i + 1]);
         }
 
         stack.RemoveTail(valueCount);

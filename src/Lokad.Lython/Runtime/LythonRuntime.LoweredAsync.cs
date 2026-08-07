@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = new CallArgumentValue(argument.Name, await EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false));
+                classKeywordArguments[i] = new CallArgumentValue(argument.KeywordName, await EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false));
             }
 
             var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);

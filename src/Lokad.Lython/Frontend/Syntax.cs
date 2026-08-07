@@ -433,15 +433,38 @@ internal enum CallArgumentKind
     StarredDictionary,
 }
 
-internal sealed record CallArgumentSyntax(
-    string? Name,
-    ExpressionSyntax Expression,
-    CallArgumentKind Kind)
+internal readonly record struct CallArgumentForm
 {
-    public CallArgumentSyntax(string? Name, ExpressionSyntax Expression)
-        : this(Name, Expression, CallArgumentKind.Positional)
+    private readonly string _keywordName;
+
+    private CallArgumentForm(CallArgumentKind kind, string keywordName)
     {
+        Kind = kind;
+        _keywordName = keywordName;
     }
+
+    public static CallArgumentForm Positional { get; } = new(CallArgumentKind.Positional, string.Empty);
+
+    public static CallArgumentForm StarredList { get; } = new(CallArgumentKind.StarredList, string.Empty);
+
+    public static CallArgumentForm StarredDictionary { get; } = new(CallArgumentKind.StarredDictionary, string.Empty);
+
+    public static CallArgumentForm Keyword(string name) => new(CallArgumentKind.Keyword, name);
+
+    public CallArgumentKind Kind { get; }
+
+    public string KeywordName => Kind == CallArgumentKind.Keyword
+        ? _keywordName
+        : throw new InvalidOperationException("Only a keyword argument has a keyword name.");
+}
+
+internal sealed record CallArgumentSyntax(
+    CallArgumentForm Form,
+    ExpressionSyntax Expression)
+{
+    public CallArgumentKind Kind => Form.Kind;
+
+    public string KeywordName => Form.KeywordName;
 }
 
 internal sealed record SubscriptExpressionSyntax(

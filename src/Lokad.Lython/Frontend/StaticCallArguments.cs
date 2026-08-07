@@ -91,13 +91,7 @@ internal static class StaticCallArguments
 
             if (argument.Kind == CallArgumentKind.Keyword)
             {
-                if (argument.Name is null)
-                {
-                    arguments = default;
-                    return false;
-                }
-
-                keywords[argument.Name] = argument.Expression;
+                keywords[argument.KeywordName] = argument.Expression;
             }
             else
             {
@@ -126,14 +120,8 @@ internal static class StaticCallArguments
                     break;
 
                 case CallArgumentKind.Keyword:
-                    if (argument.Name is null)
-                    {
-                        arguments = default;
-                        return false;
-                    }
-
-                    keywords[argument.Name] = argument.Expression;
-                    keywordValues.Remove(argument.Name);
+                    keywords[argument.KeywordName] = argument.Expression;
+                    keywordValues.Remove(argument.KeywordName);
                     break;
 
                 case CallArgumentKind.StarredList:

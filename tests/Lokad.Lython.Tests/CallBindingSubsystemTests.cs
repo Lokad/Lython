@@ -88,18 +88,18 @@ public sealed class CallBindingSubsystemTests
 
         var raw = CallExpansion.ExpandRawArguments(
             [
-                new CallArgumentSyntax(null, new StringLiteralExpressionSyntax("head", Span)),
-                new CallArgumentSyntax(null, new IdentifierExpressionSyntax("items", Span), CallArgumentKind.StarredList),
-                new CallArgumentSyntax(null, new IdentifierExpressionSyntax("mapping", Span), CallArgumentKind.StarredDictionary),
+                new CallArgumentSyntax(CallArgumentForm.Positional, new StringLiteralExpressionSyntax("head", Span)),
+                new CallArgumentSyntax(CallArgumentForm.StarredList, new IdentifierExpressionSyntax("items", Span)),
+                new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span)),
             ],
             context,
             InvokeEvaluateExpression);
 
         var lowered = CallExpansion.ExpandLoweredArguments(
             [
-                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new StringLiteralExpressionSyntax("head", Span))),
-                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("items", Span)), CallArgumentKind.StarredList),
-                new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)), CallArgumentKind.StarredDictionary),
+                new LoweredCallArgument(CallArgumentForm.Positional, LoweredScript.LowerStandaloneExpression(new StringLiteralExpressionSyntax("head", Span))),
+                new LoweredCallArgument(CallArgumentForm.StarredList, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("items", Span))),
+                new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span))),
             ],
             context,
             InvokeEvaluateLoweredExpression);
@@ -116,12 +116,12 @@ public sealed class CallBindingSubsystemTests
         context.Variables["mapping"] = mapping;
 
         var rawEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandRawArguments(
-            [new CallArgumentSyntax(null, new IdentifierExpressionSyntax("mapping", Span), CallArgumentKind.StarredDictionary)],
+            [new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span))],
             context,
             InvokeEvaluateExpression));
 
         var loweredEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandLoweredArguments(
-            [new LoweredCallArgument(null, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)), CallArgumentKind.StarredDictionary)],
+            [new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)))],
             context,
             InvokeEvaluateLoweredExpression));
 

@@ -279,8 +279,12 @@ internal sealed record ExecutableImportBinding(
     LythonSourceSpan Span);
 
 internal sealed record ExecutableCallArgumentSpec(
-    string? Name,
-    CallArgumentKind Kind);
+    CallArgumentForm Form)
+{
+    public CallArgumentKind Kind => Form.Kind;
+
+    public string KeywordName => Form.KeywordName;
+}
 
 internal sealed record ExecutableCallSite(
     int ArgumentCount,
@@ -1689,7 +1693,7 @@ internal sealed class ExecutableScript
         {
             _callSites.Add(new ExecutableCallSite(
                 call.Arguments.Count,
-                call.Arguments.Select(argument => new ExecutableCallArgumentSpec(argument.Name, argument.Kind)).ToArray(),
+                call.Arguments.Select(argument => new ExecutableCallArgumentSpec(argument.Form)).ToArray(),
                 call.Target.Span,
                 call.Span));
             return _callSites.Count - 1;

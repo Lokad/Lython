@@ -267,7 +267,7 @@ internal sealed partial class Parser
             case CallExpressionSyntax { Target: var target, Arguments: var arguments } when IsDataclassDecoratorTarget(target):
                 foreach (var argument in arguments)
                 {
-                    if (argument.Kind is not CallArgumentKind.Keyword || argument.Name is null)
+                    if (argument.Kind is not CallArgumentKind.Keyword)
                     {
                         AddDiagnostic("LA1107", "@dataclass expects keyword boolean options only.", argument.Expression.Span);
                         decorator = null;
@@ -281,7 +281,7 @@ internal sealed partial class Parser
                         return true;
                     }
 
-                    switch (argument.Name)
+                    switch (argument.KeywordName)
                     {
                         case "init":
                             init = boolean.Value;
@@ -311,14 +311,14 @@ internal sealed partial class Parser
                         case "weakref_slot":
                             if (boolean.Value)
                             {
-                                AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.Name}=True'; Lython dataclasses do not implement slots.", argument.Expression.Span);
+                                AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.KeywordName}=True'; Lython dataclasses do not implement slots.", argument.Expression.Span);
                                 decorator = null;
                                 return true;
                             }
 
                             break;
                         default:
-                            AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.Name}'.", argument.Expression.Span);
+                            AddDiagnostic("LA1111", $"Unsupported @dataclass option '{argument.KeywordName}'.", argument.Expression.Span);
                             decorator = null;
                             return true;
                     }
