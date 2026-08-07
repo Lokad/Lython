@@ -312,103 +312,11 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            await ExecuteTryStatementAsync(statement, context).ConfigureAwait(false);
+            await ExecuteTryStatementCoreAsync(statement, context, ExecuteStatementsAsync).ConfigureAwait(false);
         }
         finally
         {
             context.LeaveInterpreterFrame();
-        }
-    }
-
-    private static async ValueTask ExecuteTryStatementAsync(LoweredTryStatement statement, ExecutionContext context)
-    {
-        ControlSignal? pendingControl = null;
-        ReturnSignal? pendingReturn = null;
-        LythonRuntimeException? pendingException = null;
-        var ranWithoutException = false;
-
-        try
-        {
-            pendingControl = await ExecuteStatementsAsync(statement.TryBody, context).ConfigureAwait(false);
-            ranWithoutException = pendingControl is null;
-            if (ranWithoutException && statement.ElseBody is not null)
-            {
-                pendingControl = await ExecuteStatementsAsync(statement.ElseBody, context).ConfigureAwait(false);
-            }
-        }
-        catch (ReturnSignal signal)
-        {
-            pendingReturn = signal;
-        }
-        catch (LythonRuntimeException ex)
-        {
-            if (statement.Syntax.ExceptBody is not null &&
-                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
-            {
-                var exceptContext = new ExecutionContext(context);
-                var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
-                if (statement.Syntax.ExceptionVariableName is not null)
-                {
-                    StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);
-                }
-
-                var previousException = context.Services.SetCurrentException(pyException);
-                try
-                {
-                    pendingControl = await ExecuteStatementsAsync(statement.ExceptBody.RequireNotNull(), exceptContext).ConfigureAwait(false);
-                }
-                finally
-                {
-                    context.Services.SetCurrentException(previousException);
-                }
-            }
-            else
-            {
-                pendingException = ex;
-            }
-        }
-        finally
-        {
-            if (statement.FinallyBody is not null)
-            {
-                try
-                {
-                    var finalSignal = await ExecuteStatementsAsync(statement.FinallyBody, context).ConfigureAwait(false);
-                    if (finalSignal is not null)
-                    {
-                        pendingControl = finalSignal;
-                        pendingReturn = null;
-                        pendingException = null;
-                    }
-                }
-                catch (ReturnSignal signal)
-                {
-                    pendingReturn = signal;
-                    pendingControl = null;
-                    pendingException = null;
-                }
-                catch (LythonRuntimeException ex)
-                {
-                    pendingException = ex;
-                    pendingControl = null;
-                    pendingReturn = null;
-                }
-            }
-        }
-
-        if (pendingException is not null)
-        {
-            throw pendingException;
-        }
-
-        if (pendingReturn is not null)
-        {
-            throw pendingReturn;
-        }
-
-        if (pendingControl is not null)
-        {
-            throw pendingControl;
         }
     }
 

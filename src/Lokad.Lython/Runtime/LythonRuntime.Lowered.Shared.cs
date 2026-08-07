@@ -6,6 +6,104 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private delegate ValueTask<ControlSignal?> LoweredStatementExecutor(
+        IReadOnlyList<LoweredStatement> statements,
+        ExecutionContext context);
+
+    private static async ValueTask ExecuteTryStatementCoreAsync(
+        LoweredTryStatement statement,
+        ExecutionContext context,
+        LoweredStatementExecutor executeStatements)
+    {
+        ControlSignal? pendingControl = null;
+        ReturnSignal? pendingReturn = null;
+        LythonRuntimeException? pendingException = null;
+
+        try
+        {
+            pendingControl = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
+            if (pendingControl is null && statement.ElseBody is not null)
+            {
+                pendingControl = await executeStatements(statement.ElseBody, context).ConfigureAwait(false);
+            }
+        }
+        catch (ReturnSignal signal)
+        {
+            pendingReturn = signal;
+        }
+        catch (LythonRuntimeException ex)
+        {
+            if (statement.ExceptBody is not null &&
+                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
+            {
+                var exceptContext = new ExecutionContext(context);
+                var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
+                if (statement.Syntax.ExceptionVariableName is not null)
+                {
+                    StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);
+                }
+
+                var previousException = context.Services.SetCurrentException(pyException);
+                try
+                {
+                    pendingControl = await executeStatements(statement.ExceptBody, exceptContext).ConfigureAwait(false);
+                }
+                finally
+                {
+                    context.Services.SetCurrentException(previousException);
+                }
+            }
+            else
+            {
+                pendingException = ex;
+            }
+        }
+        finally
+        {
+            if (statement.FinallyBody is not null)
+            {
+                try
+                {
+                    var finalSignal = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
+                    if (finalSignal is not null)
+                    {
+                        // Python's finally suite wins over every pending exit from try/except.
+                        pendingControl = finalSignal;
+                        pendingReturn = null;
+                        pendingException = null;
+                    }
+                }
+                catch (ReturnSignal signal)
+                {
+                    pendingReturn = signal;
+                    pendingControl = null;
+                    pendingException = null;
+                }
+                catch (LythonRuntimeException ex)
+                {
+                    pendingException = ex;
+                    pendingControl = null;
+                    pendingReturn = null;
+                }
+            }
+        }
+
+        if (pendingException is not null)
+        {
+            throw pendingException;
+        }
+
+        if (pendingReturn is not null)
+        {
+            throw pendingReturn;
+        }
+
+        if (pendingControl is not null)
+        {
+            throw pendingControl;
+        }
+    }
+
     private static PyFunction CreateLoweredFunction(
         LoweredFunctionDefinitionStatement functionDefinition,
         ExecutionContext context,

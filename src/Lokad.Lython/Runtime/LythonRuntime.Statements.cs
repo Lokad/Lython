@@ -218,94 +218,11 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteTryStatement(LoweredTryStatement statement, ExecutionContext context)
     {
-        ControlSignal? pendingControl = null;
-        ReturnSignal? pendingReturn = null;
-        LythonRuntimeException? pendingException = null;
-        var ranWithoutException = false;
+        static ValueTask<ControlSignal?> ExecuteSynchronously(
+            IReadOnlyList<LoweredStatement> statements,
+            ExecutionContext executionContext)
+            => new(ExecuteStatements(statements, executionContext));
 
-        try
-        {
-            pendingControl = ExecuteStatements(statement.TryBody, context);
-            ranWithoutException = pendingControl is null;
-            if (ranWithoutException && statement.ElseBody is not null)
-            {
-                pendingControl = ExecuteStatements(statement.ElseBody, context);
-            }
-        }
-        catch (ReturnSignal signal)
-        {
-            pendingReturn = signal;
-        }
-        catch (LythonRuntimeException ex)
-        {
-            if (statement.ExceptBody is not null &&
-                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
-            {
-                var exceptContext = new ExecutionContext(context);
-                var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
-                if (statement.Syntax.ExceptionVariableName is not null)
-                {
-                    StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Syntax.Span);
-                }
-
-                var previousException = context.Services.SetCurrentException(pyException);
-                try
-                {
-                    pendingControl = ExecuteStatements(statement.ExceptBody, exceptContext);
-                }
-                finally
-                {
-                    context.Services.SetCurrentException(previousException);
-                }
-            }
-            else
-            {
-                pendingException = ex;
-            }
-        }
-
-        finally
-        {
-            if (statement.FinallyBody is not null)
-            {
-                try
-                {
-                    var finalSignal = ExecuteStatements(statement.FinallyBody, context);
-                    if (finalSignal is not null)
-                    {
-                        pendingControl = finalSignal;
-                        pendingReturn = null;
-                        pendingException = null;
-                    }
-                }
-                catch (ReturnSignal signal)
-                {
-                    pendingReturn = signal;
-                    pendingControl = null;
-                    pendingException = null;
-                }
-                catch (LythonRuntimeException ex)
-                {
-                    pendingException = ex;
-                    pendingControl = null;
-                    pendingReturn = null;
-                }
-            }
-        }
-
-        if (pendingException is not null)
-        {
-            throw pendingException;
-        }
-
-        if (pendingReturn is not null)
-        {
-            throw pendingReturn;
-        }
-
-        if (pendingControl is not null)
-        {
-            throw pendingControl;
-        }
+        ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously).GetAwaiter().GetResult();
     }
 }
