@@ -64,9 +64,9 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     {
         value = name switch
         {
-            "getter" => new PropertyDecoratorCallable(this, getter: true),
-            "setter" => new PropertyDecoratorCallable(this, getter: false),
-            "deleter" => new PropertyDecoratorCallable(this, getter: null),
+            "getter" => new PropertyDecoratorCallable(this, PropertyAccessorKind.Getter),
+            "setter" => new PropertyDecoratorCallable(this, PropertyAccessorKind.Setter),
+            "deleter" => new PropertyDecoratorCallable(this, PropertyAccessorKind.Deleter),
             "__get__" => new PropertyDescriptorMethodCallable(this, DescriptorMethodKind.Get),
             "__set__" => new PropertyDescriptorMethodCallable(this, DescriptorMethodKind.Set),
             "__delete__" => new PropertyDescriptorMethodCallable(this, DescriptorMethodKind.Delete),
@@ -112,7 +112,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             throw new LythonRuntimeException("AttributeError", BuildMissingGetterMessage(owner), accessSpan);
         }
 
-        var callable = BindAccessor(_getter, instance, owner, context, accessSpan, "getter");
+        var callable = BindAccessor(_getter, instance, owner, context, accessSpan, PropertyAccessorKind.Getter);
         return callable.Invoke(Array.Empty<CallArgumentValue>(), accessSpan, context);
     }
 
@@ -123,7 +123,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
         }
 
-        var callable = BindAccessor(_setter, instance, instance.Type, context, span, "setter");
+        var callable = BindAccessor(_setter, instance, instance.Type, context, span, PropertyAccessorKind.Setter);
         _ = callable.Invoke([CallArgumentValue.Positional(value)], span, context);
     }
 
@@ -134,7 +134,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
         }
 
-        var callable = BindAccessor(_deleter, instance, instance.Type, context, span, "deleter");
+        var callable = BindAccessor(_deleter, instance, instance.Type, context, span, PropertyAccessorKind.Deleter);
         _ = callable.Invoke([], span, context);
     }
 
@@ -146,7 +146,13 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    private LythonRuntime.ICallable BindAccessor(LythonRuntime.ICallable accessor, object instance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string kind)
+    private LythonRuntime.ICallable BindAccessor(
+        LythonRuntime.ICallable accessor,
+        object instance,
+        PyType owner,
+        LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span,
+        PropertyAccessorKind kind)
     {
         var resolved = accessor is IPyDescriptor descriptor
             ? descriptor.Get(instance, owner, context, span)
@@ -154,7 +160,14 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
 
         if (resolved is not LythonRuntime.ICallable callable)
         {
-            throw new LythonRuntimeException("TypeError", $"property {kind} must be callable.", span);
+            var name = kind switch
+            {
+                PropertyAccessorKind.Getter => "getter",
+                PropertyAccessorKind.Setter => "setter",
+                PropertyAccessorKind.Deleter => "deleter",
+                _ => throw new InvalidOperationException("Unknown property accessor kind.")
+            };
+            throw new LythonRuntimeException("TypeError", $"property {name} must be callable.", span);
         }
 
         return callable;
@@ -175,7 +188,14 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             ? $"property on '{owner.Name}' has no deleter."
             : $"property '{Name}' of '{owner.Name}' has no deleter.";
 
-    private sealed class PropertyDecoratorCallable(PyProperty property, bool? getter) : LythonRuntime.ICallable
+    private enum PropertyAccessorKind
+    {
+        Getter,
+        Setter,
+        Deleter
+    }
+
+    private sealed class PropertyDecoratorCallable(PyProperty property, PropertyAccessorKind kind) : LythonRuntime.ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
@@ -184,20 +204,22 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             {
                 throw new LythonRuntimeException(
                     "TypeError",
-                    getter switch
+                    kind switch
                     {
-                        true => "property.getter(func) expects one callable argument.",
-                        false => "property.setter(func) expects one callable argument.",
-                        _ => "property.deleter(func) expects one callable argument."
+                        PropertyAccessorKind.Getter => "property.getter(func) expects one callable argument.",
+                        PropertyAccessorKind.Setter => "property.setter(func) expects one callable argument.",
+                        PropertyAccessorKind.Deleter => "property.deleter(func) expects one callable argument.",
+                        _ => throw new InvalidOperationException("Unknown property accessor kind.")
                     },
                     span);
             }
 
-            return getter switch
+            return kind switch
             {
-                true => property.WithGetter(callable),
-                false => property.WithSetter(callable),
-                _ => property.WithDeleter(callable)
+                PropertyAccessorKind.Getter => property.WithGetter(callable),
+                PropertyAccessorKind.Setter => property.WithSetter(callable),
+                PropertyAccessorKind.Deleter => property.WithDeleter(callable),
+                _ => throw new InvalidOperationException("Unknown property accessor kind.")
             };
         }
     }
