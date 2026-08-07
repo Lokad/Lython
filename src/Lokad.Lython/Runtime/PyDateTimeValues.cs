@@ -452,6 +452,8 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
 
 internal static class PyDateTimeOps
 {
+    private static readonly int[] IsoDatePrefixLengths = [10, 8, 7];
+
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Regex OffsetTextRegex = new(
         @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
@@ -1769,7 +1771,7 @@ internal static class PyDateTimeOps
 
     private static PyDateTime ParseIsoDateTime(string text, PyTimezone? timezone)
     {
-        foreach (var dateLength in new[] { 10, 8, 7 })
+        foreach (var dateLength in IsoDatePrefixLengths)
         {
             if (text.Length < dateLength)
             {

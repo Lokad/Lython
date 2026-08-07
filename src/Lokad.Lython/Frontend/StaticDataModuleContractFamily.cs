@@ -687,7 +687,7 @@ internal static class StaticDataModuleContractFamily
             return false;
         }
 
-        foreach (var protocol in new[] { "__reduce_ex__", "__reduce__", "__getstate__", "__setstate__" })
+        foreach (var protocol in CopyProtocolFacts.UnsupportedReductionHooks)
         {
             if (instance.Class.Methods.ContainsKey(protocol) || instance.Class.FieldsByName.ContainsKey(protocol))
             {

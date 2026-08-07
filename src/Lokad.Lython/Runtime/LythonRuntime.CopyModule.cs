@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
 
     private static void RejectUnsupportedCopyProtocols(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
     {
-        foreach (var protocol in new[] { "__reduce_ex__", "__reduce__", "__getstate__", "__setstate__" })
+        foreach (var protocol in CopyProtocolFacts.UnsupportedReductionHooks)
         {
             if (PyMemberAccess.TryResolve(instance, protocol, context, span, out var member) &&
                 !ReferenceEquals(member, PyNone.Instance))

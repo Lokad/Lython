@@ -17,6 +17,9 @@ internal sealed partial class LythonRuntime
 
     private static readonly string[] FunctoolsWrapperUpdateNames = ["__dict__"];
 
+    private static readonly OrderingMethod[] OrderingMethods =
+        [OrderingMethod.Lt, OrderingMethod.Le, OrderingMethod.Gt, OrderingMethod.Ge];
+
     private static readonly PyNamedTupleType FunctoolsCacheInfoType =
         new("CacheInfo", ["hits", "misses", "maxsize", "currsize"]);
 
@@ -1748,7 +1751,7 @@ internal sealed partial class LythonRuntime
         }
 
         var root = GetRootOrderingMethod(type, span);
-        foreach (var method in new[] { OrderingMethod.Lt, OrderingMethod.Le, OrderingMethod.Gt, OrderingMethod.Ge })
+        foreach (var method in OrderingMethods)
         {
             var methodName = OrderingMethodName(method);
             if (method == root || type.TryGetOwnMember(methodName, out _))
