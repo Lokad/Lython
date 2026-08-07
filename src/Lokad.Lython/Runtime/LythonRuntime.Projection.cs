@@ -5,7 +5,7 @@ internal sealed partial class LythonRuntime
     private static object? NormalizePublicValue(object value, LythonRunOptions? options)
     {
         var maxProjectionBytes = ExecutionLimits.NonNegativeOrDefault(
-            options?.MaxProjectionMemoryBytes,
+            options?.MaxProjectionMemoryBytes?.Bytes,
             options?.DisableDefaultLimits == true ? null : LythonRunOptions.DefaultMaxProjectionMemoryBytes,
             nameof(LythonRunOptions.MaxProjectionMemoryBytes));
         var budget = maxProjectionBytes is null

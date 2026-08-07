@@ -856,16 +856,31 @@ internal sealed partial class LythonRuntime
             return new ExecutionLimits
             {
                 CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionSteps : null, nameof(LythonRunOptions.MaxExecutionSteps)),
-                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null, nameof(LythonRunOptions.MaxRecursionDepth)),
-                MaxHostCalls = NonNegativeOrDefault(options?.MaxHostCalls, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null, nameof(LythonRunOptions.MaxHostCalls)),
-                MaxCollectionSize = NonNegativeOrDefault(options?.MaxCollectionSize, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null, nameof(LythonRunOptions.MaxCollectionSize)),
-                MaxStringLength = NonNegativeOrDefault(options?.MaxStringLength, useDefaultLimits ? LythonRunOptions.DefaultMaxStringLength : null, nameof(LythonRunOptions.MaxStringLength)),
-                MaxHostReadBytes = NonNegativeOrDefault(options?.MaxHostReadBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null, nameof(LythonRunOptions.MaxHostReadBytes)),
-                MaxStandardOutputBytes = NonNegativeOrDefault(options?.MaxStandardOutputBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardOutputBytes : null, nameof(LythonRunOptions.MaxStandardOutputBytes)),
-                MaxStandardErrorBytes = NonNegativeOrDefault(options?.MaxStandardErrorBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardErrorBytes : null, nameof(LythonRunOptions.MaxStandardErrorBytes)),
-                MaxExecutionMemoryBytes = NonNegativeOrDefault(options?.MaxExecutionMemoryBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionMemoryBytes : null, nameof(LythonRunOptions.MaxExecutionMemoryBytes)),
+                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionSteps : null, nameof(LythonRunOptions.MaxExecutionSteps)),
+                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null, nameof(LythonRunOptions.MaxRecursionDepth)),
+                MaxHostCalls = NonNegativeOrDefault(options?.MaxHostCalls?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null, nameof(LythonRunOptions.MaxHostCalls)),
+                MaxCollectionSize = NonNegativeOrDefault(options?.MaxCollectionSize?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null, nameof(LythonRunOptions.MaxCollectionSize)),
+                MaxStringLength = NonNegativeOrDefault(options?.MaxStringLength?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxStringLength : null, nameof(LythonRunOptions.MaxStringLength)),
+                MaxHostReadBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxHostReadBytes, nameof(LythonRunOptions.MaxHostReadBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null, nameof(LythonRunOptions.MaxHostReadBytes)),
+                MaxStandardOutputBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxStandardOutputBytes, nameof(LythonRunOptions.MaxStandardOutputBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxStandardOutputBytes : null, nameof(LythonRunOptions.MaxStandardOutputBytes)),
+                MaxStandardErrorBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxStandardErrorBytes, nameof(LythonRunOptions.MaxStandardErrorBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxStandardErrorBytes : null, nameof(LythonRunOptions.MaxStandardErrorBytes)),
+                MaxExecutionMemoryBytes = NonNegativeOrDefault(options?.MaxExecutionMemoryBytes?.Bytes, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionMemoryBytes : null, nameof(LythonRunOptions.MaxExecutionMemoryBytes)),
             };
+        }
+
+        private static int? ToInt32Bytes(LythonByteLimit? limit, string parameterName)
+        {
+            if (limit is null)
+            {
+                return null;
+            }
+
+            if (limit.Value.Bytes > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, limit.Value.Bytes, "This byte limit cannot exceed Int32.MaxValue.");
+            }
+
+            return (int)limit.Value.Bytes;
         }
 
         internal static int? NonNegativeOrDefault(int? value, int? defaultValue, string parameterName)

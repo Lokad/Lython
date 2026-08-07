@@ -40,23 +40,23 @@ public sealed class LythonRunOptions
 
     public IReadOnlySet<string>? AllowedLocalModules { get; init; }
 
-    public int? MaxExecutionSteps { get; init; }
+    public LythonCountLimit? MaxExecutionSteps { get; init; }
 
-    public int? MaxRecursionDepth { get; init; }
+    public LythonCountLimit? MaxRecursionDepth { get; init; }
 
-    public int? MaxHostCalls { get; init; }
+    public LythonCountLimit? MaxHostCalls { get; init; }
 
-    public int? MaxCollectionSize { get; init; }
+    public LythonCountLimit? MaxCollectionSize { get; init; }
 
-    public int? MaxStringLength { get; init; }
+    public LythonCountLimit? MaxStringLength { get; init; }
 
-    public int? MaxHostReadBytes { get; init; }
+    public LythonByteLimit? MaxHostReadBytes { get; init; }
 
-    public int? MaxStandardOutputBytes { get; init; }
+    public LythonByteLimit? MaxStandardOutputBytes { get; init; }
 
-    public int? MaxStandardErrorBytes { get; init; }
+    public LythonByteLimit? MaxStandardErrorBytes { get; init; }
 
-    public long? MaxExecutionMemoryBytes { get; init; }
+    public LythonByteLimit? MaxExecutionMemoryBytes { get; init; }
 
-    public long? MaxProjectionMemoryBytes { get; init; }
+    public LythonByteLimit? MaxProjectionMemoryBytes { get; init; }
 }
