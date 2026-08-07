@@ -952,7 +952,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> ResolveLoweredMemberAsync(LoweredMemberExpression member, ExecutionContext context)
     {
         var target = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-        if (TryResolveRuntimeMember(target, member.Member.MemberName, context, member.Span, out var value))
+        if (TryResolveCachedRuntimeMember(member, target, context, out var value))
         {
             return value;
         }

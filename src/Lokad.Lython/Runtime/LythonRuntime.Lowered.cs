@@ -867,12 +867,36 @@ internal sealed partial class LythonRuntime
     private static object ResolveLoweredMember(LoweredMemberExpression member, ExecutionContext context)
     {
         var target = EvaluateLoweredExpression(member.Target, context);
-        if (TryResolveRuntimeMember(target, member.Member.MemberName, context, member.Span, out var value))
+        if (TryResolveCachedRuntimeMember(member, target, context, out var value))
         {
             return value;
         }
 
         throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
+    }
+
+    private static bool TryResolveCachedRuntimeMember(
+        LoweredMemberExpression member,
+        object target,
+        ExecutionContext context,
+        [MaybeNullWhen(false)] out object value)
+    {
+        if (context.State.TryReadRuntimeMemberCache(member, target, out value))
+        {
+            return true;
+        }
+
+        if (!TryResolveRuntimeMember(target, member.Member.MemberName, context, member.Span, out value))
+        {
+            return false;
+        }
+
+        if (CanCacheRuntimeMemberTarget(target))
+        {
+            context.State.WriteRuntimeMemberCache(member, target, value);
+        }
+
+        return true;
     }
 
     private static object EvaluateLoweredBinary(LoweredBinaryExpression binary, ExecutionContext context)

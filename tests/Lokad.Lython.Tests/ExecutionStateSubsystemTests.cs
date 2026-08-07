@@ -23,6 +23,24 @@ public sealed class ExecutionStateSubsystemTests
         Assert.Contains("TypeError", ExecutionState.BuiltinNames);
     }
 
+    [Fact]
+    public void ExecutionState_RuntimeMemberCachesAreReferenceBasedAndRunLocal()
+    {
+        var state = new ExecutionState(new MockLythonHost(), options: null);
+        var otherState = new ExecutionState(new MockLythonHost(), options: null);
+        var cacheSite = new object();
+        var target = new object();
+        var value = new object();
+
+        state.WriteRuntimeMemberCache(cacheSite, target, value);
+
+        Assert.True(state.TryReadRuntimeMemberCache(cacheSite, target, out var cached));
+        Assert.Same(value, cached);
+        Assert.False(state.TryReadRuntimeMemberCache(cacheSite, new object(), out _));
+        Assert.False(state.TryReadRuntimeMemberCache(new object(), target, out _));
+        Assert.False(otherState.TryReadRuntimeMemberCache(cacheSite, target, out _));
+    }
+
     [Theory]
     [InlineData("append_text")]
     [InlineData("basename")]

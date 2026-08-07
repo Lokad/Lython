@@ -3,6 +3,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed class ExecutionState
 {
     private Dictionary<string, object>? _builtinVariables;
+    private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
 
     public static readonly HashSet<string> BuiltinNames =
     [
@@ -104,4 +105,29 @@ internal sealed class ExecutionState
 
         _builtinVariables = builtinVariables;
     }
+
+    public bool TryReadRuntimeMemberCache(
+        object cacheSite,
+        object target,
+        [MaybeNullWhen(false)] out object value)
+    {
+        if (_runtimeMemberCaches is not null &&
+            _runtimeMemberCaches.TryGetValue(cacheSite, out var entry) &&
+            ReferenceEquals(entry.Target, target))
+        {
+            value = entry.Value;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    public void WriteRuntimeMemberCache(object cacheSite, object target, object value)
+    {
+        _runtimeMemberCaches ??= new Dictionary<object, RuntimeMemberCacheEntry>(ReferenceEqualityComparer.Instance);
+        _runtimeMemberCaches[cacheSite] = new RuntimeMemberCacheEntry(target, value);
+    }
+
+    private sealed record RuntimeMemberCacheEntry(object Target, object Value);
 }

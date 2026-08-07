@@ -1362,7 +1362,7 @@ internal sealed partial class LythonRuntime
 
     private static void TryWriteExecutableMemberCache(object target, object value, ExecutableMemberCache cache)
     {
-        if (!CanCacheExecutableMemberTarget(target))
+        if (!CanCacheRuntimeMemberTarget(target))
         {
             cache.Target = null;
             cache.Value = null;
@@ -1373,7 +1373,7 @@ internal sealed partial class LythonRuntime
         cache.Value = value;
     }
 
-    private static bool CanCacheExecutableMemberTarget(object target)
+    private static bool CanCacheRuntimeMemberTarget(object target)
         => target is PyString
             or PyBytes
             or PyList
