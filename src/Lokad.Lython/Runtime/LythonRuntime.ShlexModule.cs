@@ -462,6 +462,8 @@ internal sealed partial class LythonRuntime
                         throw SourceInclusionUnsupported(span);
                     }
 
+                    // EOF of a pushed source resumes its suspended parent; only the
+                    // outermost EOF is observable through get_token()/iteration.
                     if (!AreEqual(raw, _eof) || _sourceStack.Count == 0)
                     {
                         return raw;
@@ -477,6 +479,9 @@ internal sealed partial class LythonRuntime
                 var quoted = false;
                 var escapedState = LexerState.Whitespace;
 
+                // Classification deliberately consults the public character sets on
+                // every transition: unlike punctuation_chars, Python lets scripts
+                // mutate whitespace, quotes, escapes, commenters, and wordchars.
                 while (true)
                 {
                     _context.CheckExecutionBudget(span);
@@ -652,6 +657,9 @@ internal sealed partial class LythonRuntime
                         }
                         else
                         {
+                            // Punctuation mode needs a character pushback so the next
+                            // token can reconsider it under the current mutable sets.
+                            // Otherwise CPython exposes it as a complete pushed token.
                             if (PunctuationChars.Length > 0)
                             {
                                 _pushbackChars.Push(next);
@@ -774,6 +782,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
+                    // shlex operates on Python characters, not UTF-16 code units.
                     var rune = Rune.GetRuneAt(_input, _index);
                     next = rune.ToString();
                     _index += rune.Utf16SequenceLength;

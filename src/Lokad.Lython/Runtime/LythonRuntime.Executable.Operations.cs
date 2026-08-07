@@ -100,6 +100,8 @@ internal sealed partial class LythonRuntime
 
     private static bool TryReadExecutableMemberCache(object target, ExecutableMemberCache cache, out object? value)
     {
+        // Identity is required: equal mutable Python values can expose different
+        // instance members, while cacheable builtin targets have stable lookup rules.
         if (ReferenceEquals(cache.Target, target))
         {
             value = cache.Value;

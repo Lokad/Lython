@@ -514,6 +514,8 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.ExitContextManager:
                                 {
                                     var manager = PopContextManager(stack, instruction.Span);
+                                    // Only exceptions are suppressible. Return/break/continue
+                                    // are normal exits to __exit__ and remain pending afterward.
                                     if (pendingAbrupt?.Exception is { } exception)
                                     {
                                         if (manager.Exit(exception.ExceptionType, exception, PyNone.Instance))

@@ -65,6 +65,8 @@ internal sealed partial class LythonRuntime
                 var memberCount = 0;
                 try
                 {
+                    // RFC 1952 permits concatenated members and zero padding between them.
+                    // Keep their output governed and private until every trailer is validated.
                     while (position < compressed.Length)
                     {
                         while (position < compressed.Length && compressed.Span[position] == 0)
@@ -407,6 +409,8 @@ internal sealed partial class LythonRuntime
 
         public static GzipFileHandle ForWrite(GzipOpenOptions options, byte[] prefix, ExecutionContext context)
         {
+            // Append retains the original compressed members verbatim. Flush creates and
+            // validates the new member before a single host replacement publishes either.
             if (prefix.Length > 0)
             {
                 context.MemoryGovernor.Reserve(PyBytes.EstimateApproximateBytes(prefix.Length), null);
@@ -790,6 +794,8 @@ internal sealed partial class LythonRuntime
 
         private GzipWritePayload CreateCompressedWritePayload(LythonSourceSpan? span)
         {
+            // Construct and account for the complete payload before either flush path
+            // crosses the host boundary, so local failures cannot partially update a file.
             var compressed = CompressGzip(_writeBuffer.WrittenSpan, _options.CompressionLevel, 0, _context, span);
             var compressedCharge = PyBytes.EstimateApproximateBytes(compressed.Length);
             _context.MemoryGovernor.Reserve(compressedCharge, span);
