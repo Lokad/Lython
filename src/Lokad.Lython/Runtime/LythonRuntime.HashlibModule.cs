@@ -249,8 +249,7 @@ internal sealed partial class LythonRuntime
 
         private readonly HashlibAlgorithm _algorithm;
         private readonly MemoryGovernor _governor;
-        private readonly LythonSourceSpan? _allocationSpan;
-        private byte[] _input;
+        private readonly IncrementalHash _hash;
 
         public HashlibHashObject(
             HashlibAlgorithm algorithm,
@@ -260,11 +259,20 @@ internal sealed partial class LythonRuntime
         {
             _algorithm = algorithm;
             _governor = governor;
-            _allocationSpan = allocationSpan;
-            var retainedBytes = checked(ObjectOverhead + input.Length);
-            governor.Reserve(retainedBytes, allocationSpan);
-            governor.Commit(retainedBytes);
-            _input = input.ToArray();
+            governor.Reserve(ObjectOverhead, allocationSpan);
+            _hash = IncrementalHash.CreateHash(HashAlgorithmName);
+            _hash.AppendData(input);
+            governor.Commit(ObjectOverhead);
+        }
+
+        private HashlibHashObject(
+            HashlibAlgorithm algorithm,
+            IncrementalHash hash,
+            MemoryGovernor governor)
+        {
+            _algorithm = algorithm;
+            _hash = hash;
+            _governor = governor;
         }
 
         public bool TryGetMember(string name, out object value)
@@ -307,13 +315,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "hash.update(data) requires a bytes-like object", span);
             }
 
-            var newLength = checked(_input.Length + bytes.Length);
-            _governor.Reserve(bytes.Length, span);
-            _governor.Commit(bytes.Length);
-            var combined = new byte[newLength];
-            _input.CopyTo(combined, 0);
-            bytes.Bytes.CopyTo(combined.AsSpan(_input.Length));
-            _input = combined;
+            _hash.AppendData(bytes.Bytes);
             return PyNone.Instance;
         }
 
@@ -333,19 +335,23 @@ internal sealed partial class LythonRuntime
         {
             _ = arguments;
             _ = context;
-            return new HashlibHashObject(_algorithm, _input, _governor, span);
+            _governor.Reserve(ObjectOverhead, span);
+            var clone = _hash.Clone();
+            _governor.Commit(ObjectOverhead);
+            return new HashlibHashObject(_algorithm, clone, _governor);
         }
 
-        private byte[] ComputeHash()
-            => _algorithm switch
-            {
-                HashlibAlgorithm.Md5 => MD5.HashData(_input),
-                HashlibAlgorithm.Sha1 => SHA1.HashData(_input),
-                HashlibAlgorithm.Sha256 => SHA256.HashData(_input),
-                HashlibAlgorithm.Sha384 => SHA384.HashData(_input),
-                HashlibAlgorithm.Sha512 => SHA512.HashData(_input),
-                _ => throw new InvalidOperationException("Unknown hash algorithm."),
-            };
+        private byte[] ComputeHash() => _hash.GetCurrentHash();
+
+        private HashAlgorithmName HashAlgorithmName => _algorithm switch
+        {
+            HashlibAlgorithm.Md5 => System.Security.Cryptography.HashAlgorithmName.MD5,
+            HashlibAlgorithm.Sha1 => System.Security.Cryptography.HashAlgorithmName.SHA1,
+            HashlibAlgorithm.Sha256 => System.Security.Cryptography.HashAlgorithmName.SHA256,
+            HashlibAlgorithm.Sha384 => System.Security.Cryptography.HashAlgorithmName.SHA384,
+            HashlibAlgorithm.Sha512 => System.Security.Cryptography.HashAlgorithmName.SHA512,
+            _ => throw new InvalidOperationException("Unknown hash algorithm."),
+        };
 
         private string AlgorithmName => _algorithm switch
         {
