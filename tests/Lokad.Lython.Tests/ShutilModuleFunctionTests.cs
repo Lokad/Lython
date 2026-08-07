@@ -126,7 +126,7 @@ except shutil.SameFileError as ex:
         var result = new LythonEngine().Run(source, host);
 
         Assert.False(result.Success);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]

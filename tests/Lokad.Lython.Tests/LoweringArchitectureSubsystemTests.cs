@@ -20,7 +20,7 @@ def helper():
 value = 2
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
         Assert.Single(lowered.TopLevelImports);
         Assert.Single(lowered.TopLevelFunctions);
@@ -46,14 +46,14 @@ for item in [1]:
             pass
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var loop = Assert.IsType<LoweredForStatement>(Assert.Single(lowered.Statements));
         Assert.IsType<LoweredListLiteralExpression>(loop.Iterable);
         var withStatement = Assert.IsType<LoweredWithStatement>(Assert.Single(loop.Body));
         Assert.IsType<LoweredCallExpression>(withStatement.ContextExpression);
         var tryStatement = Assert.IsType<LoweredTryStatement>(Assert.Single(withStatement.Body));
         Assert.Single(tryStatement.TryBody);
-        Assert.Single(tryStatement.ExceptBody!);
+        Assert.Single(tryStatement.ExceptBody.RequireNotNull());
     }
 
     [Fact]
@@ -65,7 +65,7 @@ mapping = {item: f"{item!s}" for item in [1, 2]}
 unique = {f"{item}" for item in [1, 2] if item}
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var listAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
         var listComprehension = Assert.IsType<LoweredListComprehensionExpression>(listAssignment.Expression);
         var listFormatted = Assert.IsType<LoweredFormattedStringExpression>(listComprehension.ItemExpression);
@@ -99,7 +99,7 @@ result = helper.run(*items, **mapping)
 ok = left < middle < right
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
         var valueAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
         var binary = Assert.IsType<LoweredBinaryExpression>(valueAssignment.Expression);
@@ -133,7 +133,7 @@ else:
     raise Error("bad")
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
         var lambdaAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
         var lambda = Assert.IsType<LoweredLambdaExpression>(lambdaAssignment.Expression);
@@ -149,7 +149,7 @@ else:
 
         var ifStatement = Assert.IsType<LoweredIfStatement>(lowered.Statements[3]);
         Assert.IsType<LoweredPassStatement>(Assert.Single(ifStatement.ThenStatements));
-        Assert.IsType<LoweredRaiseStatement>(Assert.Single(ifStatement.ElseStatements!));
+        Assert.IsType<LoweredRaiseStatement>(Assert.Single(ifStatement.ElseStatements.RequireNotNull()));
     }
 
     [Fact]
@@ -170,7 +170,7 @@ else:
     pass
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
         var ifStatement = Assert.IsType<LoweredIfStatement>(lowered.Statements[0]);
         var condition = Assert.IsType<LoweredParenthesizedExpression>(ifStatement.Condition);
@@ -178,11 +178,11 @@ else:
 
         var forStatement = Assert.IsType<LoweredForStatement>(lowered.Statements[1]);
         Assert.NotNull(forStatement.ElseStatements);
-        Assert.Single(forStatement.ElseStatements!);
+        Assert.Single(forStatement.ElseStatements.RequireNotNull());
 
         var whileStatement = Assert.IsType<LoweredWhileStatement>(lowered.Statements[2]);
         Assert.NotNull(whileStatement.ElseStatements);
-        Assert.Single(whileStatement.ElseStatements!);
+        Assert.Single(whileStatement.ElseStatements.RequireNotNull());
     }
 
     [Fact]
@@ -197,7 +197,7 @@ def outer():
 helper.value = b"x"
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var outer = Assert.IsType<LoweredFunctionDefinitionStatement>(lowered.Statements[0]);
         var inner = Assert.IsType<LoweredFunctionDefinitionStatement>(outer.Body[0]);
         Assert.Equal(FunctionParameterKind.KeywordOnly, inner.Parameters[0].Kind);
@@ -222,7 +222,7 @@ return value, 3
 """);
 
         Assert.Empty(frontend.Diagnostics);
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
         var assignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
         Assert.Equal(2, Assert.IsType<LoweredTupleLiteralExpression>(assignment.Expression).Items.Count);
@@ -243,7 +243,7 @@ match pathlib.Path("/docs/guide.md"):
         value = suffix
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var matchStatement = Assert.IsType<LoweredMatchStatement>(lowered.Statements[1]);
         Assert.IsType<LoweredCallExpression>(matchStatement.Subject);
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
@@ -266,7 +266,7 @@ mapping = {item: item.upper() for item in values if item}
 assert values[0].startswith("v")
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
         Assert.DoesNotContain(FlattenExpressions(lowered.Statements), expression => expression is LoweredOtherExpression);
     }
@@ -290,7 +290,7 @@ line = [match, case][0].upper().splitlines(True)[0]
 result = helper(*["a", "b"], suffix="?")
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
         Assert.DoesNotContain(FlattenExpressions(lowered.Statements), expression => expression is LoweredOtherExpression);
     }
@@ -304,7 +304,7 @@ y = x + 2
 y
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var entry = executable.EntryPoint;
 
@@ -349,7 +349,7 @@ else:
     count = 99
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var entry = executable.EntryPoint;
 
@@ -373,7 +373,7 @@ else:
 return value
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
         Assert.DoesNotContain(
@@ -393,7 +393,7 @@ class Box:
 value = sorted(*[[3, 1, 2]], reverse=True)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
         Assert.NotEmpty(executable.EntryPoint.StatementFallbacks);
@@ -416,7 +416,7 @@ while count > 1:
 return count
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(
             executable,
@@ -447,7 +447,7 @@ else:
 return total
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -462,7 +462,7 @@ return total
 return len([1, 2, 3])
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -478,7 +478,7 @@ import math
 return math.sqrt(9)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         Assert.True(executable.EntryPoint.MemberCacheCount > 0);
         Assert.True(executable.EntryPoint.CallCacheCount > 0);
@@ -496,7 +496,7 @@ payload = {"items": (1, 2, 3)}
 return payload["items"][1]
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -516,7 +516,7 @@ if ok:
 return 0
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -533,7 +533,7 @@ a += 2
 return a + b
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -549,7 +549,7 @@ first, *middle, last = [1, 2, 3, 4]
 return first + len(middle) + last
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -567,7 +567,7 @@ def helper(value, step=1):
 return helper(2)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         Assert.Single(executable.EntryPoint.Functions);
         Assert.NotNull(executable.EntryPoint.Functions[0].CodeObject);
@@ -589,7 +589,7 @@ def outer(value):
 return outer(3)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         Assert.Single(executable.EntryPoint.Functions);
         Assert.NotNull(executable.EntryPoint.Functions[0].CodeObject);
@@ -612,14 +612,15 @@ def outer(value):
 return outer(3)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var outer = Assert.Single(executable.EntryPoint.Functions);
-        var inner = Assert.Single(outer.CodeObject!.Functions);
+        var inner = Assert.Single(outer.CodeObject.RequireNotNull().Functions);
+        var innerCode = inner.CodeObject.RequireNotNull();
 
-        Assert.Equal(["value"], inner.CodeObject!.ClosureNames);
+        Assert.Equal(["value"], innerCode.ClosureNames);
         Assert.Contains(
-            inner.CodeObject.Blocks.SelectMany(block => block.Instructions),
+            innerCode.Blocks.SelectMany(block => block.Instructions),
             instruction => instruction.OpCode == ExecutableOpCode.LoadClosure);
 
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
@@ -645,7 +646,7 @@ finally:
 return value
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
 
         Assert.NotEmpty(executable.EntryPoint.ExceptionRegions);
@@ -671,7 +672,7 @@ finally:
 return value
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -692,7 +693,7 @@ for value in [0, 1]:
 return "|".join(values)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -710,7 +711,7 @@ finally:
     marker = 2
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -728,7 +729,7 @@ with open("/sample.txt", "w") as handle:
 return open("/sample.txt").read()
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -750,7 +751,7 @@ def choose(value):
 return choose({"x": 2, "y": 5})
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -765,7 +766,7 @@ return choose({"x": 2, "y": 5})
 return sorted(*[[3, 1, 2]], reverse=True)
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 
@@ -809,7 +810,7 @@ for left, right in [(1, 2), (3, 4)]:
 return total
 """);
 
-        var lowered = LoweredScript.Lower(frontend.Script!);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
 

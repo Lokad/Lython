@@ -36,7 +36,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("string or bytes operands", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -75,7 +75,7 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("lython\n", host.ReadText("/out.txt"));
         Assert.NotNull(host.LastSubprocessRequest);
-        Assert.Equal(["tool", "--version"], host.LastSubprocessRequest!.Args);
+        Assert.Equal(["tool", "--version"], host.LastSubprocessRequest.RequireNotNull().Args);
         Assert.Equal(LythonSubprocessStreamMode.Pipe, host.LastSubprocessRequest.StandardOutput);
     }
 

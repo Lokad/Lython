@@ -16,7 +16,7 @@ public sealed class RandomModuleFunctionTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(owner, result.Failure.Message, StringComparison.Ordinal);
         Assert.Contains("sequence", result.Failure.Message, StringComparison.Ordinal);
     }
@@ -297,7 +297,7 @@ random.expovariate(0)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 }

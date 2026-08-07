@@ -143,8 +143,9 @@ f("a")
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("name", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("name", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -174,13 +175,13 @@ f("a")
 
     private static object InvokeEvaluateExpression(ExpressionSyntax expression, LythonRuntime.ExecutionContext context)
     {
-        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
-        return method.Invoke(null, [expression, context])!;
+        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
+        return method.Invoke(null, [expression, context]).RequireNotNull();
     }
 
     private static object InvokeEvaluateLoweredExpression(LoweredExpression expression, LythonRuntime.ExecutionContext context)
     {
-        var method = typeof(LythonRuntime).GetMethod("EvaluateLoweredExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
-        return method.Invoke(null, [expression, context])!;
+        var method = typeof(LythonRuntime).GetMethod("EvaluateLoweredExpression", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
+        return method.Invoke(null, [expression, context]).RequireNotNull();
     }
 }

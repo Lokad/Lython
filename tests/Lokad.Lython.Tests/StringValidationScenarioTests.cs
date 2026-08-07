@@ -90,7 +90,7 @@ public sealed class StringValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("empty separator", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -101,7 +101,7 @@ public sealed class StringValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("empty separator", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -114,7 +114,7 @@ public sealed class StringValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("substring not found", result.Failure.Message, StringComparison.Ordinal);
     }
 

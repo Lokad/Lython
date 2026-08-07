@@ -60,8 +60,9 @@ f()
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("Decorator expression must evaluate to a callable", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("Decorator expression must evaluate to a callable", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -75,7 +76,8 @@ value.member = 1
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("attribute assignment", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("attribute assignment", failure.Message, StringComparison.Ordinal);
     }
 }

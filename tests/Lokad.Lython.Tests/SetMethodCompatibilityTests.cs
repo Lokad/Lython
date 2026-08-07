@@ -139,7 +139,7 @@ return "|".join([
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum collection size", result.Failure.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -150,6 +150,6 @@ return "|".join([
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("KeyError", result.Failure!.ExceptionType);
+        Assert.Equal("KeyError", result.Failure.RequireNotNull().ExceptionType);
     }
 }

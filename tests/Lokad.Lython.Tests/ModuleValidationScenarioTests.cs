@@ -166,7 +166,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -206,7 +206,7 @@ __lython_file.close()
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -312,7 +312,7 @@ json.dumps(re.search("a", "a"))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Unsupported json.dumps value type", result.Failure.Message, StringComparison.Ordinal);
     }
 

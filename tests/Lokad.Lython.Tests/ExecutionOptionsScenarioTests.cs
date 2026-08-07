@@ -24,7 +24,7 @@ value = "hello"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -51,7 +51,7 @@ while True:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -70,7 +70,7 @@ value = "hello"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -109,7 +109,7 @@ while True:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -132,7 +132,7 @@ value = open("/input.txt").read()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution canceled", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -154,7 +154,7 @@ loop()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RecursionError", result.Failure!.ExceptionType);
+        Assert.Equal("RecursionError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum recursion depth exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -178,7 +178,7 @@ right = open("/b.txt").read()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -198,7 +198,7 @@ while True:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum execution step count exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -217,7 +217,7 @@ value = "abcdef"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum string length exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -236,7 +236,7 @@ value = "abc" + "def"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum string length exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -255,7 +255,7 @@ value = "ab" * 4
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum string length exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -274,7 +274,7 @@ value = "abcdefghijklmnopqrstuvwxyz0123456789"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -293,7 +293,7 @@ values = list(range(10))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum collection size exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -314,7 +314,7 @@ while True:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -340,7 +340,7 @@ push(items, 100)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -360,7 +360,7 @@ while True:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -379,7 +379,7 @@ values = (1, 2, 3, 4, 5, 6, 7, 8)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -398,7 +398,7 @@ value = b"abcdefghijklmnopqrstuvwxyz0123456789"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -417,7 +417,7 @@ values = [1, 2, 3, 4, 5, 6, 7, 8]
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -436,7 +436,7 @@ values = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7}
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -455,7 +455,7 @@ value = bytes(range(64))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -477,7 +477,7 @@ text = open("/input.txt").read()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -503,7 +503,7 @@ return_value = payload
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -523,7 +523,7 @@ matches = re.findall("a", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -543,7 +543,7 @@ value = json.loads("[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -565,7 +565,7 @@ value = collect(a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -584,7 +584,7 @@ values = [n for n in range(32)]
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -615,7 +615,7 @@ return_value = list(items)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -634,7 +634,7 @@ value = ("alpha " * 24).split()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -661,7 +661,7 @@ value = fields(Box)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -680,7 +680,7 @@ value = (1, 2, 3, 4, 5, 6) + (7, 8, 9, 10, 11, 12)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -699,7 +699,7 @@ value = "abcdefghij" + "klmnopqrst" + "uvwxyz0123"
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -718,7 +718,7 @@ value = 2 ** 4096
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -740,7 +740,7 @@ text = open("/input.txt").read()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("host text read exceeded maximum bytes", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -759,7 +759,7 @@ print("abcdefghij")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("standard output exceeded maximum captured output bytes", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -819,7 +819,7 @@ return open("/input.txt").read()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
         Assert.False(host.CompletedAsynchronously);
     }
@@ -839,7 +839,7 @@ value = 1 << 4096
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -859,7 +859,7 @@ value = Path("/repo/deeply/nested/folder/with/many/segments/file.txt").parts
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -884,7 +884,7 @@ value = p.keywords
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -904,7 +904,7 @@ tail = values[1:]
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -924,7 +924,7 @@ items = list(values.items())
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -944,7 +944,7 @@ value = list(itertools.product(range(6), range(6), range(6)))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -964,7 +964,7 @@ copy = values.copy()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -984,7 +984,7 @@ copy = values.copy()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1004,7 +1004,7 @@ copy = values.copy()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1024,7 +1024,7 @@ value = Counter(range(32)).copy()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1045,7 +1045,7 @@ value = left | right
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1073,7 +1073,7 @@ value = C.__mro__
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1093,7 +1093,7 @@ value = list(itertools.zip_longest(range(12), range(12), fillvalue=None))
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -1113,7 +1113,7 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ProjectionError", result.Failure!.ExceptionType);
+        Assert.Equal("ProjectionError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("projection memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 

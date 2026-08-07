@@ -58,7 +58,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.NotNull(host.LastSubprocessRequest);
-        Assert.Equal("/repo/work", host.LastSubprocessRequest!.Cwd);
+        Assert.Equal("/repo/work", host.LastSubprocessRequest.RequireNotNull().Cwd);
         Assert.Equal(1500, host.LastSubprocessRequest.TimeoutMilliseconds);
         Assert.Equal("payload", System.Text.Encoding.UTF8.GetString(host.LastSubprocessRequest.StandardInputUtf8.Span));
     }
@@ -86,7 +86,7 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("ok|None", host.ReadText("/out.txt"));
         Assert.NotNull(host.LastSubprocessRequest);
-        Assert.Equal(["tool", "/repo/input.txt"], host.LastSubprocessRequest!.Args);
+        Assert.Equal(["tool", "/repo/input.txt"], host.LastSubprocessRequest.RequireNotNull().Args);
         Assert.Equal("/repo/work", host.LastSubprocessRequest.Cwd);
         Assert.Equal(LythonSubprocessStreamMode.DevNull, host.LastSubprocessRequest.StandardInput);
         Assert.Equal(LythonSubprocessStreamMode.Pipe, host.LastSubprocessRequest.StandardOutput);
@@ -96,7 +96,7 @@ __lython_file.close()
         Assert.Equal("utf-8", host.LastSubprocessRequest.Encoding);
         Assert.Equal("strict", host.LastSubprocessRequest.Errors);
         Assert.NotNull(host.LastSubprocessRequest.Environment);
-        Assert.Equal("VALUE", host.LastSubprocessRequest.Environment!["NAME"]);
+        Assert.Equal("VALUE", host.LastSubprocessRequest.Environment.RequireNotNull()["NAME"]);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("hi|echo hi|path|/repo/script.sh", host.ReadText("/out.txt"));
         Assert.NotNull(host.LastSubprocessRequest);
-        Assert.True(host.LastSubprocessRequest!.UseShell);
+        Assert.True(host.LastSubprocessRequest.RequireNotNull().UseShell);
         Assert.Equal(["/repo/script.sh"], host.LastSubprocessRequest.Args);
     }
 
@@ -270,7 +270,7 @@ import subprocess
             host);
 
         Assert.False(result.Success);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -333,8 +333,9 @@ subprocess.run(["tool"])
             host);
 
         Assert.False(result.Success);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
-        Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Contains("use RunAsync", failure.Message, StringComparison.Ordinal);
     }
 
     private static string DescribeFailure(LythonExecutionResult result)

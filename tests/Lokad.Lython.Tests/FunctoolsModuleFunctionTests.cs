@@ -279,7 +279,7 @@ f.register(1, f)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 

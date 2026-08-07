@@ -129,7 +129,7 @@ Path("/repo/out.txt").write_text("€", encoding="latin-1")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("UnicodeEncodeError", result.Failure!.ExceptionType);
+        Assert.Equal("UnicodeEncodeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Equal([0x6b, 0x65, 0x65, 0x70], host.ReadBytes("/repo/out.txt"));
     }
 
@@ -149,7 +149,7 @@ Path("/repo/input.txt").read_text(encoding="latin-1")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("host binary read exceeded maximum bytes (8)", result.Failure.Message, StringComparison.Ordinal);
     }
 

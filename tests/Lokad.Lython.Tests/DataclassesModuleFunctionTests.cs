@@ -257,8 +257,9 @@ class Bad(Base):
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("without a default cannot follow", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("without a default cannot follow", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -276,7 +277,8 @@ Box = dataclasses.dataclass(Box, slots=True)
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
-        Assert.Contains("slots=True", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("NotImplementedError", failure.ExceptionType);
+        Assert.Contains("slots=True", failure.Message, StringComparison.Ordinal);
     }
 }

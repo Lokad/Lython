@@ -276,7 +276,7 @@ argparse.ArgumentParser(fromfile_prefix_chars="@")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
+        Assert.Equal("NotImplementedError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("fromfile_prefix_chars", result.Failure.Message, StringComparison.Ordinal);
     }
 }

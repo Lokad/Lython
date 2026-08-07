@@ -164,7 +164,7 @@ items[::2] = replacement
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("extended slice", result.Failure.Message, StringComparison.Ordinal);
     }
 

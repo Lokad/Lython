@@ -756,7 +756,7 @@ parser.add_argument("--lang", choices=1)
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -828,7 +828,7 @@ Path("/repo/input.txt").open(encoding="utf-8", newline="bad")
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -845,7 +845,7 @@ Path("/repo/a.txt").relative_to("/other")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("is not under", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -865,7 +865,7 @@ parser.parse_args(["--pytest", "--django"])
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("mutually exclusive arguments must not be used together", result.Failure.Message, StringComparison.Ordinal);
     }
 }

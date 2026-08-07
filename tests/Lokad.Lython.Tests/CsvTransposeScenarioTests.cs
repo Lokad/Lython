@@ -39,7 +39,7 @@ rows = csv.reader(["\"broken"])
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("Error", result.Failure!.ExceptionType);
+        Assert.Equal("Error", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Invalid csv input", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -81,7 +81,7 @@ writer.writerows(None)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ writer.writerow([["nested"]])
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("CSV rows must contain scalar values", result.Failure.Message, StringComparison.Ordinal);
     }
 

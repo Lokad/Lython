@@ -94,7 +94,7 @@ return [
 
         Assert.Null(exception);
         Assert.NotNull(compiled);
-        Assert.False(compiled!.IsValid);
+        Assert.False(compiled.RequireNotNull().IsValid);
         Assert.NotEmpty(compiled.Diagnostics);
     }
 
@@ -408,7 +408,7 @@ open("/repo/input.txt", "r" "b")
         Assert.Equal(LythonDiagnosticSeverity.Error, diagnostic.Severity);
         Assert.Contains(expectedMessageFragment, diagnostic.Message, StringComparison.Ordinal);
         Assert.NotNull(diagnostic.Span);
-        Assert.True(diagnostic.Span!.Line > 0);
+        Assert.True(diagnostic.Span.RequireNotNull().Line > 0);
         Assert.True(diagnostic.Span.Column > 0);
     }
 

@@ -70,7 +70,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("error", result.Failure!.ExceptionType);
+        Assert.Equal("error", result.Failure.RequireNotNull().ExceptionType);
         Assert.Empty(result.Diagnostics);
     }
 }

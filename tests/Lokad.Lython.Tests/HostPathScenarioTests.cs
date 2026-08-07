@@ -84,7 +84,7 @@ os.mkdir("/missing/child")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Parent directory does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -101,7 +101,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Host write_text failed", result.Failure.Message, StringComparison.Ordinal);
         Assert.Contains("disk quota exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
@@ -139,7 +139,7 @@ os.listdir("/missing")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Directory does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -158,7 +158,7 @@ os.remove("/dir")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Directory is not empty", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -193,7 +193,7 @@ shutil.move("/src.txt", "/dst.txt")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("File does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -616,7 +616,7 @@ if "needle" not in text:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("needle missing", result.Failure.Message, StringComparison.Ordinal);
     }

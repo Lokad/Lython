@@ -42,7 +42,7 @@ public sealed class BuiltinValidationScenarioTests
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -55,7 +55,7 @@ public sealed class BuiltinValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -69,7 +69,7 @@ public sealed class BuiltinValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -92,7 +92,7 @@ public sealed class BuiltinValidationScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -111,7 +111,7 @@ public sealed class BuiltinValidationScenarioTests
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(expectedFailureKind, result.Failure!.ExceptionType);
+            Assert.Equal(expectedFailureKind, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -270,7 +270,7 @@ with open(file = "/out.txt", mode = "w") as handle:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("NameError", result.Failure!.ExceptionType);
+        Assert.Equal("NameError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(name, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -288,7 +288,7 @@ f(**{1: 2})
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("string keys", result.Failure.Message, StringComparison.Ordinal);
     }
 

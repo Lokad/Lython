@@ -318,7 +318,7 @@ import os
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("NotImplementedError", result.Failure!.ExceptionType);
+        Assert.Equal("NotImplementedError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -463,7 +463,7 @@ for root, dirs, files in os.walk("/repo/docs"):
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -596,7 +596,7 @@ os.path.samefile("/repo/missing.txt", "/repo/also-missing.txt")
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }

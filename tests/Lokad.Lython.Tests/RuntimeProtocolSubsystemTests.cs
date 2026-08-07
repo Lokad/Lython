@@ -34,7 +34,7 @@ public sealed class RuntimeProtocolSubsystemTests
         Assert.IsType<PyList>(listSlice);
         Assert.IsType<PyTuple>(tupleSlice);
         Assert.Equal([new BigInteger(2), new BigInteger(3)], ((PyList)listSlice).ToArray());
-        Assert.Equal("b", ((PyString)((PyTuple)tupleSlice)[0]!).AsString());
+        Assert.Equal("b", ((PyString)((PyTuple)tupleSlice)[0].RequireNotNull()).AsString());
     }
 
     [Fact]

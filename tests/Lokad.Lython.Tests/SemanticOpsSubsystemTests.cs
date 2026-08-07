@@ -16,8 +16,9 @@ public sealed class SemanticOpsSubsystemTests
         Assert.True(PyEquality.AreEqual(PyString.FromString("x"), "x"));
         Assert.False(PyEquality.AreEqual(PyString.FromString("x"), "y"));
 
-        Assert.Equal(0, PyComparison.Compare(PyString.FromString("a"), "a", null!));
-        Assert.True(PyContainment.Contains(new PyTuple([PyString.FromString("a"), BigInteger.One]), true, null!));
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        Assert.Equal(0, PyComparison.Compare(PyString.FromString("a"), "a", span));
+        Assert.True(PyContainment.Contains(new PyTuple([PyString.FromString("a"), BigInteger.One]), true, span));
     }
 
     [Fact]

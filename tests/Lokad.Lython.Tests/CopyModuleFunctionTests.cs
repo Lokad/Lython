@@ -184,7 +184,7 @@ copy.replace(items, obj=1)
 
         Assert.False(valid.Success);
         Assert.NotNull(valid.Failure);
-        Assert.Equal("TypeError", valid.Failure!.ExceptionType);
+        Assert.Equal("TypeError", valid.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("copy.replace", valid.Failure.Message, StringComparison.Ordinal);
 
         var invalid = new LythonEngine().Run(
@@ -260,7 +260,7 @@ copy.replace(1, x=2)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 }

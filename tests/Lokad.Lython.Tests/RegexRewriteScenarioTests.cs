@@ -42,7 +42,7 @@ public sealed class RegexRewriteScenarioTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(fixture.Result.ExceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(fixture.Result.ExceptionType, result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -352,7 +352,7 @@ re.split("a", "alpha", maxsplit=2147483648)
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }
@@ -553,7 +553,7 @@ m.group("missing")
         else
         {
             Assert.NotNull(result.Failure);
-            Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+            Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
             Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
         }
     }

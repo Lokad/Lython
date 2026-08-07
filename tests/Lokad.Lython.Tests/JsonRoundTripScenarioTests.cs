@@ -19,7 +19,7 @@ json.dumps(value, check_circular=False)
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RecursionError", result.Failure!.ExceptionType);
+        Assert.Equal("RecursionError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("maximum recursion depth exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -104,7 +104,7 @@ json.loads("{")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("JSONDecodeError", result.Failure!.ExceptionType);
+        Assert.Equal("JSONDecodeError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Theory]
@@ -136,7 +136,7 @@ json.loads("[\"abc\\y\"]")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("JSONDecodeError", result.Failure!.ExceptionType);
+        Assert.Equal("JSONDecodeError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -264,7 +264,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("JSONDecodeError", result.Failure!.ExceptionType);
+        Assert.Equal("JSONDecodeError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -347,7 +347,7 @@ json.dumps({(1, 2): "pair"})
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("dictionary keys", result.Failure.Message, StringComparison.Ordinal);
     }
 

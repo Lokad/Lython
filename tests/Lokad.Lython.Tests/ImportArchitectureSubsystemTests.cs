@@ -315,7 +315,7 @@ fail()
 
         Assert.False(result.Success);
         Assert.Equal("/repo/tools/helper.py", result.Failure?.SourcePath);
-        Assert.All(result.Failure!.StackTrace, frame => Assert.Equal("/repo/tools/helper.py", frame.SourcePath));
+        Assert.All(result.Failure.RequireNotNull().StackTrace, frame => Assert.Equal("/repo/tools/helper.py", frame.SourcePath));
     }
 
     [Fact]

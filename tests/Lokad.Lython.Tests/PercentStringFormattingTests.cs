@@ -90,7 +90,7 @@ return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(message, result.Failure.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -104,7 +104,7 @@ return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure!.ExceptionType);
+        Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]

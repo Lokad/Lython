@@ -430,7 +430,7 @@ box.value = 2
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("AttributeError", result.Failure!.ExceptionType);
+        Assert.Equal("AttributeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("has no setter", result.Failure.Message);
     }
 
@@ -451,7 +451,7 @@ del box.value
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("AttributeError", result.Failure!.ExceptionType);
+        Assert.Equal("AttributeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("has no deleter", result.Failure.Message);
     }
 
@@ -539,7 +539,7 @@ parser.parse_args()
         Assert.False(result.Success);
         Assert.Equal(2, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("invalid choice", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -577,7 +577,7 @@ sys.exit(3)
         Assert.False(result.Success);
         Assert.Equal(3, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -593,7 +593,7 @@ sys.exit()
         Assert.False(result.Success);
         Assert.Equal(0, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -609,7 +609,7 @@ sys.exit(code=4)
         Assert.False(result.Success);
         Assert.Equal(4, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -624,7 +624,7 @@ raise SystemExit(3)
         Assert.False(result.Success);
         Assert.Equal(3, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -642,10 +642,10 @@ raise SystemExit(10 ** 100)
 
         Assert.Null(exception);
         Assert.NotNull(result);
-        Assert.False(result!.Success);
+        Assert.False(result.RequireNotNull().Success);
         Assert.Equal(1, result.ExitCode);
         Assert.NotNull(result.Failure);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -664,7 +664,7 @@ except Exception:
 
         Assert.False(result.Success);
         Assert.Equal(5, result.ExitCode);
-        Assert.Equal("SystemExit", result.Failure!.ExceptionType);
+        Assert.Equal("SystemExit", result.Failure.RequireNotNull().ExceptionType);
     }
 
     [Fact]
@@ -920,8 +920,9 @@ class C(A, B):
             host);
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("consistent method resolution order", result.Failure.Message, StringComparison.OrdinalIgnoreCase);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("consistent method resolution order", failure.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -1488,8 +1489,9 @@ Demo.bad()
             new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
-        Assert.Contains("only supported inside instance methods", result.Failure.Message, StringComparison.Ordinal);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("only supported inside instance methods", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1780,7 +1782,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("AttributeError", result.Failure!.ExceptionType);
+        Assert.Equal("AttributeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("Object has no attribute 'value'", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -2053,7 +2055,7 @@ class Box:
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("__set_name__ must be callable", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -2152,7 +2154,7 @@ class Box(metaclass=object):
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("metaclass", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -2355,7 +2357,7 @@ Box().render()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("first argument to be a class", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -2377,7 +2379,7 @@ B().render()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure!.ExceptionType);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("instance to be an instance of the given class or its subclass", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -2710,7 +2712,7 @@ return value
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
         Assert.IsType<string>(result.ReturnValue);
-        Assert.Equal("a😀b", (string)result.ReturnValue!);
+        Assert.Equal("a😀b", (string)result.ReturnValue.RequireNotNull());
     }
 
     [Fact]
@@ -3086,7 +3088,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(messageFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -4116,7 +4118,7 @@ assert 1 > 2, "bad guard"
 
         Assert.False(failure.Success);
         Assert.NotNull(failure.Failure);
-        Assert.Equal("AssertionError", failure.Failure!.ExceptionType);
+        Assert.Equal("AssertionError", failure.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("bad guard", failure.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -4562,7 +4564,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal(exceptionType, result.Failure!.ExceptionType);
+        Assert.Equal(exceptionType, result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(expectedFragment, result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -4599,7 +4601,7 @@ items.pop()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("IndexError", result.Failure!.ExceptionType);
+        Assert.Equal("IndexError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("pop from empty list", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -4615,7 +4617,7 @@ d.pop("missing")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("KeyError", result.Failure!.ExceptionType);
+        Assert.Equal("KeyError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains("missing", result.Failure.Message, StringComparison.Ordinal);
     }
 
@@ -4669,7 +4671,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("ValueError", result.Failure!.ExceptionType);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
     }
 }

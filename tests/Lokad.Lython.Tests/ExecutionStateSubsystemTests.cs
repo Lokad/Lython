@@ -82,6 +82,6 @@ public sealed class ExecutionStateSubsystemTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("NameError", result.Failure!.ExceptionType);
+        Assert.Equal("NameError", result.Failure.RequireNotNull().ExceptionType);
     }
 }

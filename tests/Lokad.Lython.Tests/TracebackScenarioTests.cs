@@ -21,7 +21,7 @@ outer()
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
         Assert.Collection(
             result.Failure.StackTrace,
             frame => Assert.Equal("outer", frame.FunctionName),
