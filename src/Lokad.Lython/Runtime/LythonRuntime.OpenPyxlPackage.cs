@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -18,7 +19,9 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                using var stream = new MemoryStream(payload.ToArray(), writable: false);
+                using var stream = MemoryMarshal.TryGetArray(payload, out var segment)
+                    ? new MemoryStream(segment.Array.RequireNotNull(), segment.Offset, segment.Count, writable: false)
+                    : new MemoryStream(payload.ToArray(), writable: false);
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
                 var sharedStrings = LoadSharedStrings(archive);
                 var cellStyles = LoadCellStyles(archive, span);
