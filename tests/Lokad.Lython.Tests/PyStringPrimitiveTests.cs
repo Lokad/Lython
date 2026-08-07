@@ -20,6 +20,15 @@ public sealed class PyStringPrimitiveTests
     }
 
     [Fact]
+    public void SteppedUnicodeSlices_HandleReverseAndExtremeSteps()
+    {
+        var text = PyString.FromString("aβ😀é");
+
+        Assert.Equal("é😀βa", text.Slice(new PyIndexing.SliceBounds(3, -1, -1)).AsString());
+        Assert.Equal("é", text.Slice(new PyIndexing.SliceBounds(3, -1, int.MinValue)).AsString());
+    }
+
+    [Fact]
     public void FindCountReplaceAndCompare_FollowUtf8Semantics()
     {
         var text = PyString.FromString("é😀é😀");

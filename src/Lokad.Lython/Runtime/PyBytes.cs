@@ -8,6 +8,8 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
     private readonly byte[] _bytes;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
+    private int _hashCode;
+    private bool _hashCodeComputed;
 
     public PyBytes(byte[] bytes)
     {
@@ -79,13 +81,21 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public int GetPyHashCode()
     {
+        if (Volatile.Read(ref _hashCodeComputed))
+        {
+            return _hashCode;
+        }
+
         var hash = new HashCode();
         foreach (var value in _bytes)
         {
             hash.Add(value);
         }
 
-        return hash.ToHashCode();
+        var computed = hash.ToHashCode();
+        _hashCode = computed;
+        Volatile.Write(ref _hashCodeComputed, true);
+        return computed;
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

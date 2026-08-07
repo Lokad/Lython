@@ -3,15 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime.Text;
 
-internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue
+internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+    private static readonly PyString[] AsciiCharacters = CreateAsciiCharacters();
 
     private readonly byte[] _utf8;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private int _runeLength = -1;
+    private int[]? _runeByteOffsets;
     private string? _decodedString;
+    private int _hashCode;
+    private bool _hashCodeComputed;
 
     private PyString(byte[] utf8)
     {
@@ -186,9 +190,50 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
     }
 
+    public PyString Slice(PyIndexing.SliceBounds bounds)
+    {
+        var count = SliceItemCount(bounds);
+        if (count == 0)
+        {
+            return Empty;
+        }
+
+        if (bounds.Step == 1)
+        {
+            return SliceByByteRange(
+                GetByteIndexForRuneBoundary(bounds.Start),
+                GetByteIndexForRuneBoundary(bounds.End));
+        }
+
+        long totalBytes = 0;
+        for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
+        {
+            totalBytes += GetRuneByteRange((int)runeIndex).Length;
+        }
+
+        var resultLength = CheckedByteLength(totalBytes, _allocationSpan);
+        var result = _memoryGovernor is null
+            ? new byte[resultLength]
+            : AllocateGovernedUtf8(resultLength, _memoryGovernor, _allocationSpan);
+        var offset = 0;
+        for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
+        {
+            var (start, length) = GetRuneByteRange((int)runeIndex);
+            Buffer.BlockCopy(_utf8, start, result, offset, length);
+            offset += length;
+        }
+
+        return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan);
+    }
+
     public PyString Index(int runeIndex)
     {
         var (start, length) = GetRuneByteRange(runeIndex);
+        if (length == 1 && _utf8[start] < 0x80)
+        {
+            return AsciiCharacters[_utf8[start]];
+        }
+
         var bytes = _memoryGovernor is null
             ? new byte[length]
             : AllocateGovernedUtf8(length, _memoryGovernor, _allocationSpan);
@@ -201,6 +246,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         for (var byteIndex = 0; byteIndex < _utf8.Length;)
         {
             var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+            if (runeLength == 1)
+            {
+                yield return AsciiCharacters[_utf8[byteIndex]];
+                byteIndex++;
+                continue;
+            }
+
             var bytes = _memoryGovernor is null
                 ? new byte[runeLength]
                 : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
@@ -309,10 +361,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 ? new Utf8ValueBuilder(capacity)
                 : new Utf8ValueBuilder(_memoryGovernor, _allocationSpan, capacity);
             builder.Append(newValue);
-            foreach (var rune in EnumerateRunes())
+            for (var byteIndex = 0; byteIndex < _utf8.Length;)
             {
-                builder.Append(rune);
+                var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+                builder.Append(_utf8.AsSpan(byteIndex, runeLength));
                 builder.Append(newValue);
+                byteIndex += runeLength;
             }
 
             return builder.ToPyString();
@@ -356,13 +410,21 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public override int GetHashCode()
     {
+        if (Volatile.Read(ref _hashCodeComputed))
+        {
+            return _hashCode;
+        }
+
         var hash = new HashCode();
         foreach (var b in _utf8)
         {
             hash.Add(b);
         }
 
-        return hash.ToHashCode();
+        var computed = hash.ToHashCode();
+        _hashCode = computed;
+        Volatile.Write(ref _hashCodeComputed, true);
+        return computed;
     }
 
     public static int CompareOrdinal(PyString left, PyString right)
@@ -389,6 +451,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return Slice(list);
     }
 
+    object IPySliceableValue.GetSlice(object? start, object? end, object? step, LythonSourceSpan span)
+        => Slice(PyIndexing.NormalizeSliceBounds(Length, start, end, step, span));
+
     public IEnumerable<object> Iterate()
     {
         foreach (var rune in EnumerateRunes())
@@ -410,14 +475,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return 0;
         }
 
-        var runeIndex = 0;
-        for (var i = 0; i < byteIndex;)
+        if (Length == _utf8.Length)
         {
-            i += GetRuneLength(_utf8[i]);
-            runeIndex++;
+            return Math.Min(byteIndex, _utf8.Length);
         }
 
-        return runeIndex;
+        var offsets = GetRuneByteOffsets();
+        var index = Array.BinarySearch(offsets, byteIndex);
+        return index >= 0 ? index : ~index;
     }
 
     internal int GetByteIndexForRuneBoundary(int runeIndex)
@@ -427,19 +492,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return 0;
         }
 
-        var currentRune = 0;
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        var length = Length;
+        if (runeIndex >= length)
         {
-            if (currentRune == runeIndex)
-            {
-                return byteIndex;
-            }
-
-            byteIndex += GetRuneLength(_utf8[byteIndex]);
-            currentRune++;
+            return _utf8.Length;
         }
 
-        return _utf8.Length;
+        return length == _utf8.Length ? runeIndex : GetRuneByteOffsets()[runeIndex];
     }
 
     internal int GetByteIndexAfterRunes(int startByte, int runeCount)
@@ -449,13 +508,19 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return Math.Min(startByte, _utf8.Length);
         }
 
-        var byteIndex = startByte;
-        for (var remaining = runeCount; remaining > 0 && byteIndex < _utf8.Length; remaining--)
+        if (Length == _utf8.Length)
         {
-            byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+            return Math.Min(startByte + runeCount, _utf8.Length);
         }
 
-        return byteIndex;
+        var offsets = GetRuneByteOffsets();
+        var startRune = Array.BinarySearch(offsets, startByte);
+        if (startRune < 0)
+        {
+            startRune = ~startRune;
+        }
+
+        return offsets[Math.Min(startRune + runeCount, offsets.Length - 1)];
     }
 
     internal PyString SliceByByteRange(int startByte, int endByte)
@@ -474,22 +539,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     }
 
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
-    {
-        if (needle.Length == 0)
-        {
-            return 0;
-        }
-
-        for (var i = 0; i <= haystack.Length - needle.Length; i++)
-        {
-            if (haystack.Slice(i, needle.Length).SequenceEqual(needle))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
+        => haystack.IndexOf(needle);
 
     private static int CountRunes(byte[] utf8)
     {
@@ -510,20 +560,64 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             throw new ArgumentOutOfRangeException(nameof(runeIndex));
         }
 
-        var currentRune = 0;
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        var length = Length;
+        if (runeIndex >= length)
         {
-            var runeLength = GetRuneLengthAtByteIndex(byteIndex);
-            if (currentRune == runeIndex)
-            {
-                return (byteIndex, runeLength);
-            }
-
-            byteIndex += runeLength;
-            currentRune++;
+            throw new ArgumentOutOfRangeException(nameof(runeIndex));
         }
 
-        throw new ArgumentOutOfRangeException(nameof(runeIndex));
+        if (length == _utf8.Length)
+        {
+            return (runeIndex, 1);
+        }
+
+        var offsets = GetRuneByteOffsets();
+        return (offsets[runeIndex], offsets[runeIndex + 1] - offsets[runeIndex]);
+    }
+
+    private int[] GetRuneByteOffsets()
+    {
+        if (_runeByteOffsets is not null)
+        {
+            return _runeByteOffsets;
+        }
+
+        var offsets = new int[Length + 1];
+        var runeIndex = 0;
+        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        {
+            offsets[runeIndex++] = byteIndex;
+            byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+        }
+
+        offsets[runeIndex] = _utf8.Length;
+        _runeByteOffsets = offsets;
+        return offsets;
+    }
+
+    private static int SliceItemCount(PyIndexing.SliceBounds bounds)
+    {
+        if (bounds.Step > 0)
+        {
+            return bounds.Start >= bounds.End
+                ? 0
+                : (int)(1L + ((long)bounds.End - 1 - bounds.Start) / bounds.Step);
+        }
+
+        return bounds.Start <= bounds.End
+            ? 0
+            : (int)(1L + ((long)bounds.Start - 1 - bounds.End) / -(long)bounds.Step);
+    }
+
+    private static PyString[] CreateAsciiCharacters()
+    {
+        var characters = new PyString[128];
+        for (var value = 0; value < characters.Length; value++)
+        {
+            characters[value] = new PyString([(byte)value]);
+        }
+
+        return characters;
     }
 
     private int GetRuneLengthAtByteIndex(int byteIndex) => GetRuneLength(_utf8[byteIndex]);

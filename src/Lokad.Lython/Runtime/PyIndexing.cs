@@ -11,16 +11,16 @@ internal static class PyIndexing
         {
             if (Step > 0)
             {
-                for (var i = Start; i < End; i += Step)
+                for (long i = Start; i < End; i += Step)
                 {
-                    yield return i;
+                    yield return (int)i;
                 }
             }
             else
             {
-                for (var i = Start; i > End; i += Step)
+                for (long i = Start; i > End; i += Step)
                 {
-                    yield return i;
+                    yield return (int)i;
                 }
             }
         }
