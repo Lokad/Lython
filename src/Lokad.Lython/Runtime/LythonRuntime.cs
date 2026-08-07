@@ -3798,73 +3798,73 @@ internal sealed partial class LythonRuntime
         }
 
         public ReadOnlyMemory<byte> ReadTextUtf8(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.ReadTextUtf8Async(path, Limits.CancellationToken), "read_text", span);
+            => AwaitHost(Host, () => Host.ReadTextUtf8Async(path, Limits.CancellationToken), "read_text", span);
 
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ReadTextUtf8Async(path, Limits.CancellationToken), "read_text", span);
 
         public void WriteTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => AwaitHost(() => Host.WriteTextUtf8Async(path, utf8, Limits.CancellationToken), "write_text", span);
+            => AwaitHost(Host, () => Host.WriteTextUtf8Async(path, utf8, Limits.CancellationToken), "write_text", span);
 
         public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.WriteTextUtf8Async(path, utf8, Limits.CancellationToken), "write_text", span);
 
         public void AppendTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => AwaitHost(() => Host.AppendTextUtf8Async(path, utf8, Limits.CancellationToken), "append_text", span);
+            => AwaitHost(Host, () => Host.AppendTextUtf8Async(path, utf8, Limits.CancellationToken), "append_text", span);
 
         public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.AppendTextUtf8Async(path, utf8, Limits.CancellationToken), "append_text", span);
 
         public ReadOnlyMemory<byte> ReadHostBytes(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.ReadBytesAsync(path, Limits.CancellationToken), "read_bytes", span);
+            => AwaitHost(Host, () => Host.ReadBytesAsync(path, Limits.CancellationToken), "read_bytes", span);
 
         public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ReadBytesAsync(path, Limits.CancellationToken), "read_bytes", span);
 
         public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => AwaitHost(() => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
+            => AwaitHost(Host, () => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
 
         public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
 
         public bool HostExists(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.ExistsAsync(path, Limits.CancellationToken), "exists", span);
+            => AwaitHost(Host, () => Host.ExistsAsync(path, Limits.CancellationToken), "exists", span);
 
         public ValueTask<bool> HostExistsAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ExistsAsync(path, Limits.CancellationToken), "exists", span);
 
         public IReadOnlyList<string> HostListDir(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.ListDirAsync(path, Limits.CancellationToken), "listdir", span);
+            => AwaitHost(Host, () => Host.ListDirAsync(path, Limits.CancellationToken), "listdir", span);
 
         public ValueTask<IReadOnlyList<string>> HostListDirAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ListDirAsync(path, Limits.CancellationToken), "listdir", span);
 
         public void HostMkDir(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.MkDirAsync(path, Limits.CancellationToken), "mkdir", span);
+            => AwaitHost(Host, () => Host.MkDirAsync(path, Limits.CancellationToken), "mkdir", span);
 
         public ValueTask HostMkDirAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.MkDirAsync(path, Limits.CancellationToken), "mkdir", span);
 
         public void HostRemove(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.RemoveAsync(path, Limits.CancellationToken), "remove", span);
+            => AwaitHost(Host, () => Host.RemoveAsync(path, Limits.CancellationToken), "remove", span);
 
         public ValueTask HostRemoveAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.RemoveAsync(path, Limits.CancellationToken), "remove", span);
 
         public void HostCopy(string source, string destination, LythonSourceSpan? span)
-            => AwaitHost(() => Host.CopyAsync(source, destination, Limits.CancellationToken), "copy", span);
+            => AwaitHost(Host, () => Host.CopyAsync(source, destination, Limits.CancellationToken), "copy", span);
 
         public ValueTask HostCopyAsync(string source, string destination, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.CopyAsync(source, destination, Limits.CancellationToken), "copy", span);
 
         public void HostMove(string source, string destination, LythonSourceSpan? span)
-            => AwaitHost(() => Host.MoveAsync(source, destination, Limits.CancellationToken), "move", span);
+            => AwaitHost(Host, () => Host.MoveAsync(source, destination, Limits.CancellationToken), "move", span);
 
         public ValueTask HostMoveAsync(string source, string destination, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.MoveAsync(source, destination, Limits.CancellationToken), "move", span);
 
         public LythonPathStat HostStat(string path, LythonSourceSpan? span)
-            => AwaitHost(() => Host.StatAsync(path, Limits.CancellationToken), "stat", span);
+            => AwaitHost(Host, () => Host.StatAsync(path, Limits.CancellationToken), "stat", span);
 
         public ValueTask<LythonPathStat> HostStatAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.StatAsync(path, Limits.CancellationToken), "stat", span);
@@ -3877,7 +3877,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
             }
 
-            return AwaitHost(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
+            return AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
         }
 
         public ValueTask<LythonSubprocessResult> RunSubprocessAsync(LythonSubprocessRequest request, LythonSourceSpan? span)
@@ -3891,8 +3891,9 @@ internal sealed partial class LythonRuntime
             return AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
         }
 
-        private T AwaitHost<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
+        private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
         {
+            RequireSynchronousCapability(capability, name, span);
             try
             {
                 var valueTask = operation();
@@ -3904,7 +3905,7 @@ internal sealed partial class LythonRuntime
                 var task = valueTask.AsTask();
                 if (!task.IsCompleted)
                 {
-                    throw RuntimeErrors.Runtime($"{name} completed asynchronously; use RunAsync with asynchronous hosts.", span);
+                    throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
                 }
 
                 if (task.IsCanceled)
@@ -3937,14 +3938,15 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void AwaitHost(Func<ValueTask> operation, string name, LythonSourceSpan? span)
+        private void AwaitHost(object capability, Func<ValueTask> operation, string name, LythonSourceSpan? span)
         {
+            RequireSynchronousCapability(capability, name, span);
             try
             {
                 var task = operation().AsTask();
                 if (!task.IsCompleted)
                 {
-                    throw RuntimeErrors.Runtime($"{name} completed asynchronously; use RunAsync with asynchronous hosts.", span);
+                    throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
                 }
 
                 if (task.IsCanceled)
@@ -3972,6 +3974,14 @@ internal sealed partial class LythonRuntime
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 throw RuntimeErrors.Host(name, ex, span);
+            }
+        }
+
+        private static void RequireSynchronousCapability(object capability, string name, LythonSourceSpan? span)
+        {
+            if (capability is not ILythonSynchronousHostCapability { CompletesSynchronously: true })
+            {
+                throw RuntimeErrors.Runtime($"{name} cannot run synchronously; use RunAsync because the host capability is asynchronous.", span);
             }
         }
 

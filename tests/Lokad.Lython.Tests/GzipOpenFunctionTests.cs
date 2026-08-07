@@ -317,8 +317,10 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
     private static string Describe(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message));
 
-    private sealed class TextOnlyHost : ILythonHost
+    private sealed class TextOnlyHost : ILythonHost, ILythonSynchronousHostCapability
     {
+        public bool CompletesSynchronously => true;
+
         private readonly MockLythonHost _inner = new("/repo");
 
         public string Cwd => _inner.Cwd;

@@ -372,8 +372,10 @@ fail()
         Assert.Contains("Cannot import name 'missing' from 'helper'", missingMember.Failure?.Message);
     }
 
-    private sealed class CountingHost : ILythonHost
+    private sealed class CountingHost : ILythonHost, ILythonSynchronousHostCapability
     {
+        public bool CompletesSynchronously => true;
+
         private readonly MockLythonHost _inner = new();
         public Dictionary<string, int> ExistsCalls { get; } = new(StringComparer.Ordinal);
 

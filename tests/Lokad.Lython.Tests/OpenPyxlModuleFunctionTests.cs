@@ -3814,8 +3814,10 @@ wb.save("/out.xlsx")
         throw new DirectoryNotFoundException("Could not locate Fixtures/openpyxl.");
     }
 
-    private sealed class TextOnlyHost : ILythonHost
+    private sealed class TextOnlyHost : ILythonHost, ILythonSynchronousHostCapability
     {
+        public bool CompletesSynchronously => true;
+
         private readonly MockLythonHost _inner = new();
 
         public string Cwd => _inner.Cwd;

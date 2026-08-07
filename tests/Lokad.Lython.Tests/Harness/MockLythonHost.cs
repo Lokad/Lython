@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Lokad.Lython.Tests.Harness;
 
-internal sealed class MockLythonHost : ILythonHost
+internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapability
 {
     private const string MockTimestamp = "1970-01-01T00:00:00Z";
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
@@ -29,6 +29,8 @@ internal sealed class MockLythonHost : ILythonHost
     }
 
     public string Cwd { get; }
+
+    public bool CompletesSynchronously => true;
 
     public DateTimeOffset LocalNow { get; set; }
 
@@ -533,10 +535,12 @@ internal sealed class MockLythonHost : ILythonHost
             : left + "/" + right;
     }
 
-    private sealed class MockTextInput : ILythonTextInput
+    private sealed class MockTextInput : ILythonTextInput, ILythonSynchronousHostCapability
     {
         private readonly string[] _lines;
         private int _index;
+
+        public bool CompletesSynchronously => true;
 
         public MockTextInput(string text)
         {
@@ -569,11 +573,13 @@ internal sealed class MockLythonHost : ILythonHost
         }
     }
 
-    private sealed class MockTextOutput : ILythonTextOutput
+    private sealed class MockTextOutput : ILythonTextOutput, ILythonSynchronousHostCapability
     {
         private readonly StringBuilder _builder = new();
 
         public string Text => _builder.ToString();
+
+        public bool CompletesSynchronously => true;
 
         public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
         {
@@ -589,7 +595,7 @@ internal sealed class MockLythonHost : ILythonHost
         }
     }
 
-    public sealed class MockTiming : ILythonTiming
+    public sealed class MockTiming : ILythonTiming, ILythonSynchronousHostCapability
     {
         private readonly List<TimeSpan> _delays = [];
 
@@ -600,6 +606,8 @@ internal sealed class MockLythonHost : ILythonHost
         }
 
         public long MonotonicNanoseconds { get; private set; }
+
+        public bool CompletesSynchronously => true;
 
         public long MonotonicResolutionNanoseconds { get; }
 
@@ -617,13 +625,15 @@ internal sealed class MockLythonHost : ILythonHost
             => MonotonicNanoseconds = checked(MonotonicNanoseconds + nanoseconds);
     }
 
-    private sealed class MockSubprocessRunner : ILythonSubprocessRunner
+    private sealed class MockSubprocessRunner : ILythonSubprocessRunner, ILythonSynchronousHostCapability
     {
         private readonly Dictionary<string, LythonSubprocessResult> _results = new(StringComparer.Ordinal);
         private readonly HashSet<string> _timeouts = new(StringComparer.Ordinal);
         private readonly List<LythonSubprocessRequest> _requests = [];
 
         public bool Enabled { get; set; }
+
+        public bool CompletesSynchronously => !CompleteAsynchronously;
 
         public bool CompleteAsynchronously { get; set; }
 

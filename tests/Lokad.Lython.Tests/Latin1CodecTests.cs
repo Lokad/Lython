@@ -199,8 +199,10 @@ argparse.FileType("r", encoding="latin1")
     private static string Describe(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message));
 
-    private sealed class TextOnlyHost : ILythonHost
+    private sealed class TextOnlyHost : ILythonHost, ILythonSynchronousHostCapability
     {
+        public bool CompletesSynchronously => true;
+
         private readonly MockLythonHost _inner = new("/repo");
 
         public string Cwd => _inner.Cwd;

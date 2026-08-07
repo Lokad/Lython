@@ -725,8 +725,10 @@ with open("/output.txt", "w") as handle:
         Assert.Contains(compiled.Diagnostics, d => d.Code == diagnosticCode);
     }
 
-    private sealed class ThrowingWriteHost : ILythonHost
+    private sealed class ThrowingWriteHost : ILythonHost, ILythonSynchronousHostCapability
     {
+        public bool CompletesSynchronously => true;
+
         private readonly MockLythonHost _inner = new();
 
         public string Cwd => _inner.Cwd;

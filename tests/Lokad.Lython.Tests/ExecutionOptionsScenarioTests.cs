@@ -821,6 +821,7 @@ return open("/input.txt").read()
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure!.ExceptionType);
         Assert.Contains("use RunAsync", result.Failure.Message, StringComparison.Ordinal);
+        Assert.False(host.CompletedAsynchronously);
     }
 
     [Fact]

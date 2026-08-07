@@ -805,10 +805,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            var value = AwaitHost(
-                () => ValueTask.FromResult(timing.MonotonicNanoseconds),
-                "time.monotonic",
-                span);
+            var value = ReadTimingValue(() => timing.MonotonicNanoseconds, "time.monotonic", span);
             if (value < 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a negative monotonic reading.", span);
@@ -821,10 +818,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            var value = AwaitHost(
-                () => ValueTask.FromResult(timing.MonotonicResolutionNanoseconds),
-                "time.get_clock_info",
-                span);
+            var value = ReadTimingValue(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span);
             if (value <= 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a non-positive monotonic resolution.", span);
@@ -837,7 +831,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            AwaitHost(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+            AwaitHost(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
         }
 
         public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
@@ -851,5 +845,21 @@ internal sealed partial class LythonRuntime
             => Host.Timing ?? throw RuntimeErrors.Runtime(
                 "host timing/sleep capability is not available in this host.",
                 span);
+
+        private static long ReadTimingValue(Func<long> read, string name, LythonSourceSpan? span)
+        {
+            try
+            {
+                return read();
+            }
+            catch (LythonRuntimeException)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                throw RuntimeErrors.Host(name, ex, span);
+            }
+        }
     }
 }
