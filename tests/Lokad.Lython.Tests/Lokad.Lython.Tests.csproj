@@ -4,6 +4,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lokad.Parsing" />
+    <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -13,7 +15,15 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!--
+    White-box subsystem tests compile the production sources into the test
+    assembly. This keeps implementation details internal without granting a
+    friend assembly or widening the package's public API.
+  -->
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Lokad.Lython\Lokad.Lython.csproj" />
+    <Compile
+      Include="..\..\src\Lokad.Lython\**\*.cs"
+      Exclude="..\..\src\Lokad.Lython\bin\**;..\..\src\Lokad.Lython\obj\**"
+      LinkBase="Production" />
   </ItemGroup>
 </Project>

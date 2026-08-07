@@ -1,52 +1,53 @@
-using System.Numerics;
 using BenchmarkDotNet.Attributes;
-using Lokad.Lython.Runtime;
-using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Benchmarks;
 
 [MemoryDiagnoser]
 public class RuntimeHotPathBenchmarks
 {
-    private readonly PyString _text = PyString.FromString("alpha beta gamma delta epsilon zeta eta theta");
-    private readonly PyList _list = new(Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)));
-    private readonly PyDict _dict = new();
-    private readonly CallArgumentValue[] _boundBuiltinArguments;
+    private readonly BenchmarkHost _host = new();
+    private readonly LythonCompiledScript _textReplace;
+    private readonly LythonCompiledScript _listClone;
+    private readonly LythonCompiledScript _dictionaryClone;
+    private readonly LythonCompiledScript _namedBuiltinCall;
 
     public RuntimeHotPathBenchmarks()
     {
-        for (var i = 0; i < 16; i++)
-        {
-            _dict.SetItem(PyString.FromString("k" + i), new BigInteger(i));
-        }
-
-        _boundBuiltinArguments =
-        [
-            new CallArgumentValue((string?)null, _text),
-            new CallArgumentValue("reverse", false)
-        ];
+        var engine = new LythonEngine();
+        _textReplace = Compile(engine, "return 'alpha beta gamma delta epsilon zeta eta theta'.replace('ta', 'XX')");
+        _listClone = Compile(engine, "items = list(range(32))\nreturn list(items)");
+        _dictionaryClone = Compile(engine, "items = {'a': 1, 'b': 2, 'c': 3, 'd': 4}\nreturn dict(items)");
+        _namedBuiltinCall = Compile(engine, "return len(sorted([3, 1, 2], reverse=True))");
     }
 
     [Benchmark]
-    public int PyStringReplace() => _text.Replace(PyString.FromString("ta"), PyString.FromString("XX")).Length;
+    public object? PyStringReplace() => Run(_textReplace);
 
     [Benchmark]
-    public int PyListClone() => new PyList(_list).Count;
+    public object? PyListClone() => Run(_listClone);
 
     [Benchmark]
-    public int PyDictClone() => new PyDict(_dict).Count;
+    public object? PyDictClone() => Run(_dictionaryClone);
 
     [Benchmark]
-    public int PublicProjectionDictionary()
-        => PublicProjection.ProjectDictionary(_dict).Count;
+    public object? CallBinderNamedBuiltin() => Run(_namedBuiltinCall);
 
-    [Benchmark]
-    public int CallBinderNamedBuiltin()
-        => CallBinder.BindNamedArguments(
-            _boundBuiltinArguments,
-            new LythonSourceSpan(0, 0, 0, 0),
-            "sorted",
-            "Builtin",
-            ["iterable", "key", "reverse"],
-            requiredCount: 1).Length;
+    private static LythonCompiledScript Compile(LythonEngine engine, string source)
+    {
+        var script = engine.Compile(source);
+        if (!script.IsValid)
+        {
+            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        }
+
+        return script;
+    }
+
+    private object? Run(LythonCompiledScript script)
+    {
+        var result = script.Run(_host);
+        return result.Success
+            ? result.ReturnValue
+            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
+    }
 }

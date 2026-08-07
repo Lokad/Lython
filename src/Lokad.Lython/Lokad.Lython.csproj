@@ -34,15 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Lokad.Lython.Tests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Lokad.Lython.Benchmarks</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Lokad.Parsing" />
     <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
