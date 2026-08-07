@@ -191,6 +191,23 @@ internal sealed partial class LythonRuntime
             return PyString.Empty;
         }
 
+        if (errors == TextErrorMode.Strict)
+        {
+            try
+            {
+                _ = StrictUtf8.GetCharCount(utf8.Span);
+            }
+            catch (DecoderFallbackException ex)
+            {
+                throw new LythonRuntimeException("UnicodeDecodeError", "invalid UTF-8 text", span, ex);
+            }
+
+            if (newline != TextNewlineMode.TranslateUniversal || !utf8.Span.Contains((byte)'\r'))
+            {
+                return PyString.FromUtf8(utf8, governor, span);
+            }
+        }
+
         var decoded = DecodeUtf8ToString(utf8.Span, errors, span);
         decoded = ApplyReadNewlineMode(decoded, newline);
         return decoded.Length == 0
@@ -214,16 +231,16 @@ internal sealed partial class LythonRuntime
     {
         if (encoding != TextEncodingMode.Latin1)
         {
-            var text = DecodeUtf8Text(payload, context, span, errors, newline);
-            if (encoding != TextEncodingMode.Utf8Bom)
+            if (encoding == TextEncodingMode.Utf8Bom &&
+                payload.Length >= 3 &&
+                payload.Span[0] == 0xEF &&
+                payload.Span[1] == 0xBB &&
+                payload.Span[2] == 0xBF)
             {
-                return text;
+                payload = payload[3..];
             }
 
-            var decoded = text.AsString();
-            return decoded.Length > 0 && decoded[0] == '\uFEFF'
-                ? CreateString(decoded[1..], context, span)
-                : text;
+            return DecodeUtf8Text(payload, context, span, errors, newline);
         }
 
         if (payload.Length == 0)
@@ -231,30 +248,68 @@ internal sealed partial class LythonRuntime
             return PyString.Empty;
         }
 
-        var chars = new char[payload.Length];
-        var bytes = payload.Span;
-        for (var i = 0; i < bytes.Length; i++)
+        var source = payload.Span;
+        var outputLength = 0;
+        for (var i = 0; i < source.Length; i++)
         {
-            chars[i] = (char)bytes[i];
+            if (newline == TextNewlineMode.TranslateUniversal && source[i] == (byte)'\r')
+            {
+                if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
+                {
+                    i++;
+                }
+
+                outputLength++;
+                continue;
+            }
+
+            outputLength = checked(outputLength + (source[i] < 0x80 ? 1 : 2));
         }
 
-        var decodedLatin1 = ApplyReadNewlineMode(new string(chars), newline);
-        return decodedLatin1.Length == 0
-            ? PyString.Empty
-            : CreateString(decodedLatin1, context, span);
+        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(outputLength), span);
+        var utf8 = new byte[outputLength];
+        var offset = 0;
+        for (var i = 0; i < source.Length; i++)
+        {
+            var value = source[i];
+            if (newline == TextNewlineMode.TranslateUniversal && value == (byte)'\r')
+            {
+                if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
+                {
+                    i++;
+                }
+
+                utf8[offset++] = (byte)'\n';
+                continue;
+            }
+
+            if (value < 0x80)
+            {
+                utf8[offset++] = value;
+            }
+            else
+            {
+                utf8[offset++] = (byte)(0xC0 | value >> 6);
+                utf8[offset++] = (byte)(0x80 | value & 0x3F);
+            }
+        }
+
+        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
     }
 
     private static PyString StripUtf8Bom(PyString text, TextEncodingMode encoding)
     {
-        if (encoding != TextEncodingMode.Utf8Bom)
+        var utf8 = text.Utf8Bytes;
+        if (encoding != TextEncodingMode.Utf8Bom ||
+            utf8.Length < 3 ||
+            utf8.Span[0] != 0xEF ||
+            utf8.Span[1] != 0xBB ||
+            utf8.Span[2] != 0xBF)
         {
             return text;
         }
 
-        var decoded = text.AsString();
-        return decoded.Length > 0 && decoded[0] == '\uFEFF'
-            ? PyString.FromString(decoded[1..])
-            : text;
+        return PyString.FromUtf8(utf8[3..]);
     }
 
     private static byte[] EncodeText(
@@ -265,30 +320,81 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span)
     {
-        var output = ApplyWriteNewlineMode(text.AsString(), newline);
         if (encoding == TextEncodingMode.Latin1)
         {
-            return EncodeLatin1(output, errors, context, span);
+            return EncodeLatin1(text, errors, newline, context, span);
         }
 
-        var byteCount = StrictUtf8.GetByteCount(output) + (encoding == TextEncodingMode.Utf8Bom ? 3 : 0);
+        var source = text.Utf8Bytes.Span;
+        var newlineExpansion = 0;
+        if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+        {
+            foreach (var value in source)
+            {
+                if (value == (byte)'\n')
+                {
+                    newlineExpansion++;
+                }
+            }
+        }
+
+        var bomLength = encoding == TextEncodingMode.Utf8Bom ? 3 : 0;
+        var byteCount = checked(source.Length + newlineExpansion + bomLength);
         context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
-        var utf8 = StrictUtf8.GetBytes(output);
-        return encoding == TextEncodingMode.Utf8Bom
-            ? [0xEF, 0xBB, 0xBF, .. utf8]
-            : utf8;
+        var bytes = new byte[byteCount];
+        var offset = 0;
+        if (bomLength != 0)
+        {
+            bytes[0] = 0xEF;
+            bytes[1] = 0xBB;
+            bytes[2] = 0xBF;
+            offset = 3;
+        }
+
+        if (newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
+        {
+            source.CopyTo(bytes.AsSpan(offset));
+            return bytes;
+        }
+
+        foreach (var value in source)
+        {
+            if (value != (byte)'\n')
+            {
+                bytes[offset++] = value;
+                continue;
+            }
+
+            bytes[offset++] = (byte)'\r';
+            if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+            {
+                bytes[offset++] = (byte)'\n';
+            }
+        }
+
+        return bytes;
     }
 
     private static byte[] EncodeLatin1(
-        string text,
+        PyString text,
         TextErrorMode errors,
+        TextNewlineMode newline,
         ExecutionContext context,
         LythonSourceSpan? span)
     {
         var byteCount = 0;
         var position = 0;
-        foreach (var rune in text.EnumerateRunes())
+        var source = text.Utf8Bytes.Span;
+        for (var sourceOffset = 0; sourceOffset < source.Length; position++)
         {
+            _ = Rune.DecodeFromUtf8(source[sourceOffset..], out var rune, out var consumed);
+            sourceOffset += consumed;
+            if (rune.Value == '\n' && newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+            {
+                byteCount = checked(byteCount + 2);
+                continue;
+            }
+
             if (rune.Value <= byte.MaxValue)
             {
                 byteCount++;
@@ -303,8 +409,6 @@ internal sealed partial class LythonRuntime
                     _ => throw Latin1EncodeError(rune, position, span)
                 };
             }
-
-            position++;
         }
 
         context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
@@ -315,8 +419,21 @@ internal sealed partial class LythonRuntime
 
         var bytes = new byte[byteCount];
         var offset = 0;
-        foreach (var rune in text.EnumerateRunes())
+        for (var sourceOffset = 0; sourceOffset < source.Length;)
         {
+            _ = Rune.DecodeFromUtf8(source[sourceOffset..], out var rune, out var consumed);
+            sourceOffset += consumed;
+            if (rune.Value == '\n' && newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)
+            {
+                bytes[offset++] = (byte)'\r';
+                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+                {
+                    bytes[offset++] = (byte)'\n';
+                }
+
+                continue;
+            }
+
             if (rune.Value <= byte.MaxValue)
             {
                 bytes[offset++] = (byte)rune.Value;
@@ -331,18 +448,24 @@ internal sealed partial class LythonRuntime
                     bytes[offset++] = (byte)'?';
                     break;
                 case TextErrorMode.BackslashReplace:
-                    var escaped = rune.Value <= 0xFFFF
-                        ? $"\\u{rune.Value:x4}"
-                        : $"\\U{rune.Value:x8}";
-                    foreach (var character in escaped)
-                    {
-                        bytes[offset++] = (byte)character;
-                    }
+                    WriteBackslashEscapedRune(rune, bytes, ref offset);
                     break;
             }
         }
 
         return bytes;
+    }
+
+    private static void WriteBackslashEscapedRune(Rune rune, byte[] destination, ref int offset)
+    {
+        const string hex = "0123456789abcdef";
+        var digits = rune.Value <= 0xFFFF ? 4 : 8;
+        destination[offset++] = (byte)'\\';
+        destination[offset++] = rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U';
+        for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
+        {
+            destination[offset++] = (byte)hex[(rune.Value >> shift) & 0xF];
+        }
     }
 
     private static LythonRuntimeException Latin1EncodeError(Rune rune, int position, LythonSourceSpan? span)
@@ -502,17 +625,6 @@ internal sealed partial class LythonRuntime
         => newline == TextNewlineMode.TranslateUniversal
             ? NormalizeNewlineString(text)
             : text;
-
-    private static string ApplyWriteNewlineMode(string text, TextNewlineMode newline)
-    {
-        return newline switch
-        {
-            TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed => text,
-            TextNewlineMode.PreserveCarriageReturn => text.Replace("\n", "\r", StringComparison.Ordinal),
-            TextNewlineMode.PreserveCarriageReturnLineFeed => text.Replace("\n", "\r\n", StringComparison.Ordinal),
-            _ => text
-        };
-    }
 
     private static string NormalizeNewlineString(string text)
     {

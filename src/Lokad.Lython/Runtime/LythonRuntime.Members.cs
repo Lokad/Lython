@@ -2574,19 +2574,6 @@ internal sealed partial class LythonRuntime
             return text;
         }
 
-        private static PyString StripUtf8Bom(PyString text, TextEncodingMode encodingMode)
-        {
-            if (encodingMode != TextEncodingMode.Utf8Bom)
-            {
-                return text;
-            }
-
-            var decoded = text.AsString();
-            return decoded.Length > 0 && decoded[0] == '\uFEFF'
-                ? PyString.FromString(decoded[1..])
-                : text;
-        }
-
         private static byte[] EncodePathText(
             PyString text,
             TextEncodingMode encodingMode,

@@ -3198,30 +3198,97 @@ internal sealed partial class LythonRuntime
                 var inputLength = text.Length;
                 if (_encoding == TextEncodingMode.Latin1)
                 {
-                    text = DecodeText(
-                        EncodeText(
-                            text,
-                            _encoding,
-                            _errors,
-                            TextNewlineMode.PreserveUniversal,
-                            _context,
-                            null),
-                        _encoding,
-                        _context,
-                        null,
-                        TextErrorMode.Strict,
-                        TextNewlineMode.PreserveUniversal);
+                    var normalizedLength = GetLatin1NormalizedLength();
+                    EnsureBufferedLength(normalizedLength);
+                    AppendLatin1Normalized();
+                    _bufferedRuneLength += normalizedLength;
+                    return new BigInteger(inputLength);
                 }
 
-                var bufferedRuneLength = _bufferedRuneLength + text.Length;
-                if (_context.Limits.MaxStringLength is { } maximumLength && bufferedRuneLength > maximumLength)
-                {
-                    throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximumLength})", null);
-                }
-
+                EnsureBufferedLength(text.Length);
                 _writeBuffer.RequireNotNull().Append(text);
-                _bufferedRuneLength = bufferedRuneLength;
+                _bufferedRuneLength += text.Length;
                 return new BigInteger(inputLength);
+
+                long GetLatin1NormalizedLength()
+                {
+                    var length = 0L;
+                    var position = 0;
+                    var source = text.Utf8Bytes.Span;
+                    for (var offset = 0; offset < source.Length; position++)
+                    {
+                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                        offset += consumed;
+                        if (rune.Value <= byte.MaxValue)
+                        {
+                            length++;
+                            continue;
+                        }
+
+                        length = _errors switch
+                        {
+                            TextErrorMode.Ignore => length,
+                            TextErrorMode.Replace => checked(length + 1),
+                            TextErrorMode.BackslashReplace => checked(length + (rune.Value <= 0xFFFF ? 6 : 10)),
+                            _ => throw Latin1EncodeError(rune, position, null)
+                        };
+                    }
+
+                    return length;
+                }
+
+                void EnsureBufferedLength(long additionalLength)
+                {
+                    var bufferedLength = checked(_bufferedRuneLength + additionalLength);
+                    if (_context.Limits.MaxStringLength is { } maximumLength && bufferedLength > maximumLength)
+                    {
+                        throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximumLength})", null);
+                    }
+                }
+
+                void AppendLatin1Normalized()
+                {
+                    const string hex = "0123456789abcdef";
+                    var buffer = _writeBuffer.RequireNotNull();
+                    var source = text.Utf8Bytes.Span;
+                    Span<byte> encoded = stackalloc byte[4];
+                    for (var offset = 0; offset < source.Length;)
+                    {
+                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                        offset += consumed;
+                        if (rune.Value <= 0x7F)
+                        {
+                            buffer.Append((byte)rune.Value);
+                            continue;
+                        }
+
+                        if (rune.Value <= byte.MaxValue)
+                        {
+                            var encodedLength = rune.EncodeToUtf8(encoded);
+                            buffer.Append(encoded[..encodedLength]);
+                            continue;
+                        }
+
+                        if (_errors == TextErrorMode.Ignore)
+                        {
+                            continue;
+                        }
+
+                        if (_errors == TextErrorMode.Replace)
+                        {
+                            buffer.Append((byte)'?');
+                            continue;
+                        }
+
+                        var digits = rune.Value <= 0xFFFF ? 4 : 8;
+                        buffer.Append((byte)'\\');
+                        buffer.Append(rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U');
+                        for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
+                        {
+                            buffer.Append((byte)hex[(rune.Value >> shift) & 0xF]);
+                        }
+                    }
+                }
             }
 
             public object WriteLines(object value, LythonSourceSpan span)

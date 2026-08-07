@@ -352,7 +352,7 @@ public sealed class RuntimeStorageSubsystemTests
         host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 160 });
+            new LythonRunOptions { MaxExecutionMemoryBytes = 96 });
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,
@@ -366,7 +366,7 @@ public sealed class RuntimeStorageSubsystemTests
         await handle.FlushAsync();
         await handle.ExitAsync();
 
-        Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes, 0, 100);
+        Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal([.. Enumerable.Repeat((byte)'a', 1_000), 0xe9, 0x21], host.ReadBytes("/output.txt"));
         Assert.True(host.CompletedAsynchronously > 0);
     }
