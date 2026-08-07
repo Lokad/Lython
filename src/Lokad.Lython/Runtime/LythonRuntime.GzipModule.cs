@@ -155,11 +155,24 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private enum GzipOperation
+    {
+        Read,
+        Write,
+        Append,
+    }
+
+    private enum GzipContentKind
+    {
+        Binary,
+        Text,
+    }
+
     private readonly record struct GzipOpenOptions(
         string Path,
         string Mode,
-        string Operation,
-        bool Text,
+        GzipOperation Operation,
+        GzipContentKind ContentKind,
         int CompressionLevel,
         TextEncodingMode Encoding,
         TextErrorMode Errors,
@@ -255,21 +268,21 @@ internal sealed partial class LythonRuntime
                 ? modeText.AsString()
                 : throw new LythonRuntimeException("TypeError", "gzip.open(..., mode=...) expects a string", span)
             : "rb";
-        var (operation, text) = mode switch
+        var (operation, contentKind) = mode switch
         {
-            "r" or "rb" => ("r", false),
-            "rt" => ("r", true),
-            "w" or "wb" => ("w", false),
-            "wt" => ("w", true),
-            "a" or "ab" => ("a", false),
-            "at" => ("a", true),
+            "r" or "rb" => (GzipOperation.Read, GzipContentKind.Binary),
+            "rt" => (GzipOperation.Read, GzipContentKind.Text),
+            "w" or "wb" => (GzipOperation.Write, GzipContentKind.Binary),
+            "wt" => (GzipOperation.Write, GzipContentKind.Text),
+            "a" or "ab" => (GzipOperation.Append, GzipContentKind.Binary),
+            "at" => (GzipOperation.Append, GzipContentKind.Text),
             _ when mode.Contains('+', StringComparison.Ordinal) => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support random-access updating modes", span),
             _ when mode.StartsWith('x') => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support exclusive-creation modes", span),
             _ => throw new LythonRuntimeException("ValueError", $"Invalid mode: '{mode}'", span),
         };
         var compressionLevel = assigned[2] ? ParseCompressionLevel(values[2].RequireNotNull(), span) : 9;
 
-        if (!text)
+        if (contentKind == GzipContentKind.Binary)
         {
             if ((assigned[3] && values[3] is not PyNone) ||
                 (assigned[4] && values[4] is not PyNone) ||
@@ -282,7 +295,7 @@ internal sealed partial class LythonRuntime
                 path,
                 mode,
                 operation,
-                Text: false,
+                GzipContentKind.Binary,
                 compressionLevel,
                 TextEncodingMode.Utf8,
                 TextErrorMode.Strict,
@@ -298,19 +311,19 @@ internal sealed partial class LythonRuntime
         var newline = assigned[5]
             ? ParseTextNewline(values[5].RequireNotNull(), "gzip.open()", span)
             : TextNewlineMode.TranslateUniversal;
-        return new GzipOpenOptions(path, mode, operation, Text: true, compressionLevel, encoding, errors, newline);
+        return new GzipOpenOptions(path, mode, operation, GzipContentKind.Text, compressionLevel, encoding, errors, newline);
     }
 
     private static object OpenGzipHandle(GzipOpenOptions options, ExecutionContext context, LythonSourceSpan span)
     {
-        if (options.Operation == "r")
+        if (options.Operation == GzipOperation.Read)
         {
             using var compressed = ReadGovernedHostBytes(options.Path, context, span);
             var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
-        if (options.Operation == "a")
+        if (options.Operation == GzipOperation.Append)
         {
             context.RegisterHostCall(span);
             var stat = context.HostStat(options.Path, span);
@@ -331,14 +344,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (options.Operation == "r")
+        if (options.Operation == GzipOperation.Read)
         {
             using var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
             var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
-        if (options.Operation == "a")
+        if (options.Operation == GzipOperation.Append)
         {
             context.RegisterHostCall(span);
             var stat = await context.HostStatAsync(options.Path, span).ConfigureAwait(false);
@@ -390,7 +403,7 @@ internal sealed partial class LythonRuntime
         public PyString ReadRemainingTextForLexer(LythonSourceSpan span)
         {
             EnsureReadable(span);
-            if (!_options.Text)
+            if (_options.ContentKind != GzipContentKind.Text)
             {
                 throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a readable text handle, not a binary gzip handle.", span);
             }
@@ -406,7 +419,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            if (!options.Text)
+            if (options.ContentKind != GzipContentKind.Text)
             {
                 return new GzipFileHandle(options, context, decompressed, null, [], dirty: false);
             }
@@ -444,8 +457,8 @@ internal sealed partial class LythonRuntime
                 "closed" => IsClosed,
                 "name" => PyString.FromString(_options.Path),
                 "mode" => PyString.FromString(_options.Mode),
-                "encoding" when _options.Text => PyString.FromString(EncodingName),
-                "errors" when _options.Text => PyString.FromString(ErrorsName),
+                "encoding" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(EncodingName),
+                "errors" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(ErrorsName),
                 "__enter__" => new BoundCallable((arguments, span, _) =>
                 {
                     RequireNoArguments(arguments, "gzip file __enter__()", span);
@@ -510,10 +523,10 @@ internal sealed partial class LythonRuntime
                     await FlushAsync(span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
-                "readable" => NoArgumentMethod("gzip file.readable", (_, span) => { EnsureOpen(span); return _options.Operation == "r"; }),
-                "writable" => NoArgumentMethod("gzip file.writable", (_, span) => { EnsureOpen(span); return _options.Operation is "w" or "a"; }),
+                "readable" => NoArgumentMethod("gzip file.readable", (_, span) => { EnsureOpen(span); return _options.Operation == GzipOperation.Read; }),
+                "writable" => NoArgumentMethod("gzip file.writable", (_, span) => { EnsureOpen(span); return _options.Operation is GzipOperation.Write or GzipOperation.Append; }),
                 "seekable" => NoArgumentMethod("gzip file.seekable", (_, span) => { EnsureOpen(span); return false; }),
-                "tell" => NoArgumentMethod("gzip file.tell", (_, span) => { EnsureOpen(span); return new BigInteger(_options.Operation == "r" ? _readCursor : _writeBuffer.Length); }),
+                "tell" => NoArgumentMethod("gzip file.tell", (_, span) => { EnsureOpen(span); return new BigInteger(_options.Operation == GzipOperation.Read ? _readCursor : _writeBuffer.Length); }),
                 "seek" => new BoundCallable((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),
                 "read" => new BoundCallable((arguments, span, _) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span), span), "gzip file.read", ["size"], 0),
                 "readline" => new BoundCallable((arguments, span, _) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span), span), "gzip file.readline", ["size"], 0),
@@ -597,7 +610,7 @@ internal sealed partial class LythonRuntime
         private object Read(int size, LythonSourceSpan? span)
         {
             EnsureReadable(span);
-            if (_options.Text)
+            if (_options.ContentKind == GzipContentKind.Text)
             {
                 var text = _textRead.RequireNotNull();
                 if (_readCursor >= text.Utf8Bytes.Length)
@@ -628,7 +641,7 @@ internal sealed partial class LythonRuntime
         private object ReadLine(int size, LythonSourceSpan? span)
         {
             EnsureReadable(span);
-            if (_options.Text)
+            if (_options.ContentKind == GzipContentKind.Text)
             {
                 var text = _textRead.RequireNotNull();
                 var source = text.Utf8Bytes.Span;
@@ -701,7 +714,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "gzip file.write(data) expects one argument", span);
             }
 
-            if (_options.Text)
+            if (_options.ContentKind == GzipContentKind.Text)
             {
                 if (!PyStringOps.TryAsString(arguments[0], out var text))
                 {
@@ -766,7 +779,7 @@ internal sealed partial class LythonRuntime
         private void Flush(LythonSourceSpan? span)
         {
             EnsureOpen(span);
-            if (_options.Operation == "r" || !_dirty || _validationFailed)
+            if (_options.Operation == GzipOperation.Read || !_dirty || _validationFailed)
             {
                 return;
             }
@@ -787,7 +800,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask FlushAsync(LythonSourceSpan? span)
         {
             EnsureOpen(span);
-            if (_options.Operation == "r" || !_dirty || _validationFailed)
+            if (_options.Operation == GzipOperation.Read || !_dirty || _validationFailed)
             {
                 return;
             }
@@ -811,7 +824,7 @@ internal sealed partial class LythonRuntime
             var compressedCharge = PyBytes.EstimateApproximateBytes(compressed.Length);
             _context.MemoryGovernor.Reserve(compressedCharge, span);
             _context.MemoryGovernor.Commit(compressedCharge);
-            if (_options.Operation != "a" || _compressedPrefix.Length == 0)
+            if (_options.Operation != GzipOperation.Append || _compressedPrefix.Length == 0)
             {
                 return new GzipWritePayload(compressed, compressedCharge);
             }
@@ -926,7 +939,7 @@ internal sealed partial class LythonRuntime
         private void EnsureReadable(LythonSourceSpan? span)
         {
             EnsureOpen(span);
-            if (_options.Operation != "r")
+            if (_options.Operation != GzipOperation.Read)
             {
                 throw new LythonRuntimeException("ValueError", "write-only gzip file", span);
             }
@@ -935,7 +948,7 @@ internal sealed partial class LythonRuntime
         private void EnsureWritable(LythonSourceSpan? span)
         {
             EnsureOpen(span);
-            if (_options.Operation == "r")
+            if (_options.Operation == GzipOperation.Read)
             {
                 throw new LythonRuntimeException("ValueError", "read-only gzip file", span);
             }
