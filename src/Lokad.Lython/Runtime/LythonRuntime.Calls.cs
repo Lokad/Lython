@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
         private readonly LythonCallableSignature _signature;
-        private readonly Dictionary<string, int>? _parameterIndices;
+        private readonly IReadOnlyDictionary<string, int>? _parameterIndices;
 
         public BuiltinCallable(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(signature, implementation, null) { }
 
@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
             _signature = signature;
             _implementation = implementation;
             _asyncImplementation = asyncImplementation;
-            _parameterIndices = signature.ParameterNames is null ? null : CreateParameterIndices(signature.ParameterNames);
+            _parameterIndices = signature.ParameterNames is null ? null : CallBinder.GetParameterIndices(signature.ParameterNames);
         }
 
         public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(new LythonCallableSignature(name), implementation) { }
@@ -828,17 +828,6 @@ internal sealed partial class LythonRuntime
         }
 
         return bound;
-    }
-
-    private static Dictionary<string, int> CreateParameterIndices(string[] parameterNames)
-    {
-        var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
-        for (var i = 0; i < parameterNames.Length; i++)
-        {
-            indices[parameterNames[i]] = i;
-        }
-
-        return indices;
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(

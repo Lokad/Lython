@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
 
     private static object Count(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.count", ["start", "step"], requiredCount: 0, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCount, span);
         var start = bound.Assigned[0] ? ExpectNumber(bound.Values[0], "itertools.count(..., start=...) expects a number.", span) : BigInteger.Zero;
         var step = bound.Assigned[1] ? ExpectNumber(bound.Values[1], "itertools.count(..., step=...) expects a number.", span) : BigInteger.One;
         return new PyCountIterator(start, step, context, span);
@@ -138,7 +138,7 @@ internal sealed partial class LythonRuntime
     private static object Repeat(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        var bound = BindArguments(arguments, "itertools.repeat", ["object", "times"], requiredCount: 1, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsRepeat, span);
         long? times = null;
         if (bound.Assigned[1])
         {
@@ -320,7 +320,7 @@ internal sealed partial class LythonRuntime
 
     private static object Combinations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.combinations", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = MaterializeSequence(bound.Values[0], span);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
@@ -328,7 +328,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.combinations", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
@@ -336,7 +336,7 @@ internal sealed partial class LythonRuntime
 
     private static object CombinationsWithReplacement(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.combinations_with_replacement", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = MaterializeSequence(bound.Values[0], span);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.combinations_with_replacement", ["iterable", "r"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
@@ -352,7 +352,7 @@ internal sealed partial class LythonRuntime
 
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.permutations", ["iterable", "r"], requiredCount: 1, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
         var pool = MaterializeSequence(bound.Values[0], span);
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
@@ -362,7 +362,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.permutations", ["iterable", "r"], requiredCount: 1, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span).ConfigureAwait(false);
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
@@ -372,7 +372,7 @@ internal sealed partial class LythonRuntime
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.accumulate", ["iterable", "func", "initial"], requiredCount: 1, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsAccumulate, span);
         LythonRuntime.ICallable? function = null;
         if (bound.Assigned[1] && bound.Values[1] is not PyNone)
         {
@@ -387,7 +387,7 @@ internal sealed partial class LythonRuntime
     private static object Compress(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        var bound = BindArguments(arguments, "itertools.compress", ["data", "selectors"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCompress, span);
         return new PyCompressIterator(bound.Values[0], bound.Values[1], span);
     }
 
@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
 
     private static object GroupBy(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.groupby", ["iterable", "key"], requiredCount: 1, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsGroupBy, span);
         LythonRuntime.ICallable? keyFunction = null;
         if (bound.Assigned[1] && bound.Values[1] is not PyNone)
         {
@@ -475,7 +475,7 @@ internal sealed partial class LythonRuntime
 
     private static object Batched(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var bound = BindArguments(arguments, "itertools.batched", ["iterable", "n", "strict"], requiredCount: 2, maxPositionalCount: 2, span);
+        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsBatched, span);
         var size = ExpectItPositiveInt(bound.Values[1], "n must be at least one", span);
         var strict = bound.Assigned[2] && IsTruthy(bound.Values[2]);
         return new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span);
@@ -510,15 +510,12 @@ internal sealed partial class LythonRuntime
 
     private static BoundCallArguments BindArguments(
         CallArgumentValue[] arguments,
-        string owner,
-        string[] parameterNames,
-        int requiredCount,
-        int maxPositionalCount,
+        LythonCallableSignature signature,
         LythonSourceSpan span)
         => CallBinder.BindNamedArgumentsWithPresence(
             arguments,
             span,
-            new LythonCallableSignature(owner, parameterNames, requiredCount, maxPositionalCount),
+            signature,
             "Builtin");
 
     private static object[] MaterializeSequence(object value, LythonSourceSpan span)

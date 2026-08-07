@@ -1,9 +1,13 @@
+using System.Runtime.CompilerServices;
+
 namespace Lokad.Lython.Runtime;
 
 internal readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
 
 internal static class CallBinder
 {
+    private static readonly ConditionalWeakTable<string[], Dictionary<string, int>> ParameterIndexCache = new();
+
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
@@ -18,7 +22,7 @@ internal static class CallBinder
             callableName,
             callableKind,
             parameterNames,
-            parameterNames is null ? null : CreateParameterIndices(parameterNames),
+            parameterNames is null ? null : GetParameterIndices(parameterNames),
             requiredCount,
             parameterNames?.Length,
             parameterNames?.Length,
@@ -43,7 +47,7 @@ internal static class CallBinder
             signature.Name,
             callableKind,
             signature.ParameterNames,
-            parameterIndices ?? (signature.ParameterNames is null ? null : CreateParameterIndices(signature.ParameterNames)),
+            parameterIndices ?? (signature.ParameterNames is null ? null : GetParameterIndices(signature.ParameterNames)),
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
@@ -64,7 +68,7 @@ internal static class CallBinder
             signature.Name,
             callableKind,
             signature.ParameterNames,
-            signature.ParameterNames is null ? null : CreateParameterIndices(signature.ParameterNames),
+            signature.ParameterNames is null ? null : GetParameterIndices(signature.ParameterNames),
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
@@ -226,14 +230,15 @@ internal static class CallBinder
         return new BoundCallArguments(result, resultAssigned);
     }
 
-    private static Dictionary<string, int> CreateParameterIndices(string[] parameterNames)
-    {
-        var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
-        for (var i = 0; i < parameterNames.Length; i++)
+    internal static IReadOnlyDictionary<string, int> GetParameterIndices(string[] parameterNames)
+        => ParameterIndexCache.GetValue(parameterNames, static names =>
         {
-            indices[parameterNames[i]] = i;
-        }
+            var indices = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
+            for (var i = 0; i < names.Length; i++)
+            {
+                indices[names[i]] = i;
+            }
 
-        return indices;
-    }
+            return indices;
+        });
 }
