@@ -1255,6 +1255,8 @@ internal sealed partial class LythonRuntime
 
             private static double InverseStandardNormal(double p)
             {
+                // Peter J. Acklam's piecewise rational approximation uses this split to select
+                // the tail coefficients without sacrificing precision in the central region.
                 const double low = 0.02425;
                 const double high = 1.0 - low;
                 if (p < low)
