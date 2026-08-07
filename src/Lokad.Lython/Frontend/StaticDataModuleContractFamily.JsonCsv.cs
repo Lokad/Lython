@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using Lokad.Lython.Runtime;
 using static Lokad.Lython.Frontend.StaticKnownCallArgumentChecks;
 
@@ -323,7 +324,7 @@ internal static partial class StaticDataModuleContractFamily
             return;
         }
 
-        if (text.Length != 1)
+        if (text.EnumerateRunes().Count() != 1)
         {
             AddDiagnostic(diagnostics, "LA3068", $"csv {keyword} must be one character.", expression.Span);
         }

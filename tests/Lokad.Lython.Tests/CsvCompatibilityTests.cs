@@ -125,6 +125,26 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Reader_TreatsNonBmpDelimiterAndQuoteAsSinglePythonCharacters()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import csv
+
+delimited = list(csv.reader(["alpha💬beta💬gamma"], delimiter="💬"))
+quoted = list(csv.reader(["💬alpha💬💬beta💬,gamma"], quotechar="💬"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write(repr(delimited) + "|" + repr(quoted))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[['alpha', 'beta', 'gamma']]|[['alpha💬beta', 'gamma']]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Writer_SupportsFileHandlesConstantsOptionsAndScalarConversion()
     {
         var host = new MockLythonHost();

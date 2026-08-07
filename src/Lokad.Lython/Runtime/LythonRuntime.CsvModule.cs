@@ -384,6 +384,9 @@ internal sealed partial class LythonRuntime
             private readonly CsvOptions _options;
             private readonly ExecutionContext _context;
             private readonly LythonSourceSpan _span;
+            private readonly string _delimiter;
+            private readonly string? _quoteCharacter;
+            private readonly string? _escapeCharacter;
             private readonly List<object> _row = new();
             private readonly StringBuilder _field = new();
             private bool _inQuotes;
@@ -396,6 +399,9 @@ internal sealed partial class LythonRuntime
                 _options = options;
                 _context = context;
                 _span = span;
+                _delimiter = options.Delimiter.AsString();
+                _quoteCharacter = options.QuoteChar?.AsString();
+                _escapeCharacter = options.EscapeChar?.AsString();
                 Rows = new PyList([], context.MemoryGovernor, span);
             }
 
@@ -413,17 +419,21 @@ internal sealed partial class LythonRuntime
                             continue;
                         }
 
-                        if (IsQuote(c))
+                        if (MatchesQuoteAt(text, i))
                         {
-                            if (_options.DoubleQuote && i + 1 < text.Length && IsQuote(text[i + 1]))
+                            var quoteCharacter = _quoteCharacter.RequireNotNull();
+                            if (_options.DoubleQuote && MatchesAt(text, i + quoteCharacter.Length, quoteCharacter))
                             {
-                                _field.Append(c);
-                                i++;
+                                // A doubled quote denotes one literal quote, including for a
+                                // non-BMP Python character represented by two UTF-16 code units.
+                                _field.Append(quoteCharacter);
+                                i += (2 * quoteCharacter.Length) - 1;
                             }
                             else
                             {
                                 _inQuotes = false;
                                 _afterQuote = true;
+                                i += quoteCharacter.Length - 1;
                             }
 
                             continue;
@@ -444,10 +454,10 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    if (MatchesAt(text, i, _options.Delimiter.AsString()))
+                    if (MatchesAt(text, i, _delimiter))
                     {
                         FinishField();
-                        i += _options.Delimiter.AsString().Length - 1;
+                        i += _delimiter.Length - 1;
                         _recordStarted = true;
                         _afterQuote = false;
                         continue;
@@ -458,16 +468,19 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    if (IsQuote(c) && !_fieldStarted)
+                    if (MatchesQuoteAt(text, i) && !_fieldStarted)
                     {
                         _inQuotes = true;
                         _fieldStarted = true;
                         _recordStarted = true;
+                        i += _quoteCharacter.RequireNotNull().Length - 1;
                         continue;
                     }
 
                     if (_afterQuote)
                     {
+                        // Once a quoted field closes, only a delimiter or physical line ending
+                        // may follow it; accepting ordinary text here would hide malformed CSV.
                         throw CsvError("Invalid csv input.", _span);
                     }
 
@@ -513,24 +526,24 @@ internal sealed partial class LythonRuntime
 
             private bool TryConsumeEscape(string text, ref int index)
             {
-                if (_options.EscapeChar is null || !MatchesAt(text, index, _options.EscapeChar.AsString()))
+                if (_escapeCharacter is null || !MatchesAt(text, index, _escapeCharacter))
                 {
                     return false;
                 }
 
-                if (index + _options.EscapeChar.AsString().Length >= text.Length)
+                if (index + _escapeCharacter.Length >= text.Length)
                 {
                     if (_options.Strict)
                     {
                         throw CsvError("Invalid csv input.", _span);
                     }
 
-                    _field.Append(_options.EscapeChar.AsString());
-                    index += _options.EscapeChar.AsString().Length - 1;
+                    _field.Append(_escapeCharacter);
+                    index += _escapeCharacter.Length - 1;
                     return true;
                 }
 
-                index += _options.EscapeChar.AsString().Length;
+                index += _escapeCharacter.Length;
                 _field.Append(text[index]);
                 _fieldStarted = true;
                 _recordStarted = true;
@@ -560,8 +573,8 @@ internal sealed partial class LythonRuntime
                 _afterQuote = false;
             }
 
-            private bool IsQuote(char c)
-                => _options.QuoteChar is not null && MatchesAt(c.ToString(), 0, _options.QuoteChar.AsString());
+            private bool MatchesQuoteAt(string text, int index)
+                => _quoteCharacter is not null && MatchesAt(text, index, _quoteCharacter);
         }
 
         private static bool MatchesAt(string text, int index, string value)
