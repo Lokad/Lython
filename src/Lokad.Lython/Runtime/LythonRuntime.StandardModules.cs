@@ -381,8 +381,6 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public override IReadOnlyList<string> ExportedNames => PyTyping.ExportedNames;
-
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => PyTyping.TryGetMember(name, out value);
     }

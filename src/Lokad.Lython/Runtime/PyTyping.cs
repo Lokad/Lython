@@ -84,39 +84,6 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
 
 internal static class PyTyping
 {
-    public static readonly IReadOnlyList<string> ExportedNames =
-    [
-        "Any",
-        "Optional",
-        "Union",
-        "List",
-        "Dict",
-        "Tuple",
-        "Set",
-        "FrozenSet",
-        "Sequence",
-        "Iterable",
-        "Iterator",
-        "Mapping",
-        "MutableMapping",
-        "Callable",
-        "Type",
-        "ClassVar",
-        "Final",
-        "Literal",
-        "Annotated",
-        "TYPE_CHECKING",
-        "TypeVar",
-        "NewType",
-        "Generic",
-        "Protocol",
-        "NamedTuple",
-        "TypedDict",
-        "cast",
-        "get_origin",
-        "get_args"
-    ];
-
     private static readonly HashSet<string> AliasNames = new(StringComparer.Ordinal)
     {
         "Any",
