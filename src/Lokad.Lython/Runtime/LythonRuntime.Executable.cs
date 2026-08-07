@@ -259,51 +259,15 @@ internal sealed partial class LythonRuntime
             context = new ExecutionContext(host, options);
             ExecuteExecutableCodeObject(script.EntryPoint, context);
 
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.Succeeded,
-                returnValue: null,
-                standardOutput: CaptureStandardOutput(context),
-                standardError: CaptureStandardError(context),
-                exitCode: null,
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: null);
+            return CreateSuccessfulResult(context, null);
         }
         catch (ReturnSignal signal)
         {
-            try
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.Succeeded,
-                    returnValue: NormalizePublicValue(signal.Value, options),
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: null,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: null);
-            }
-            catch (ProjectionException ex)
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.RuntimeFailed,
-                    returnValue: null,
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: 1,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
-            }
+            return CreateReturnedResult(signal, context, options);
         }
         catch (LythonRuntimeException ex)
         {
-            ex.SetSourcePathIfMissing(context?.SourcePath);
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.RuntimeFailed,
-                returnValue: null,
-                standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                standardError: context is null ? string.Empty : CaptureStandardError(context),
-                exitCode: GetExitCode(ex),
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: RuntimeFailureProjection.ToPublicFailure(ex));
+            return CreateRuntimeFailureResult(ex, context);
         }
     }
 

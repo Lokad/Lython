@@ -205,52 +205,65 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.TopLevelLoopControl(null);
             }
 
+            return CreateSuccessfulResult(context, null);
+        }
+        catch (ReturnSignal signal)
+        {
+            return CreateReturnedResult(signal, context, options);
+        }
+        catch (LythonRuntimeException ex)
+        {
+            return CreateRuntimeFailureResult(ex, context);
+        }
+    }
+
+    private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue)
+        => new(
+            outcome: LythonExecutionOutcome.Succeeded,
+            returnValue: returnValue,
+            standardOutput: CaptureStandardOutput(context),
+            standardError: CaptureStandardError(context),
+            exitCode: null,
+            diagnostics: Array.Empty<LythonDiagnostic>(),
+            failure: null);
+
+    private static LythonExecutionResult CreateReturnedResult(ReturnSignal signal, ExecutionContext? context, LythonRunOptions? options)
+    {
+        try
+        {
             return new LythonExecutionResult(
                 outcome: LythonExecutionOutcome.Succeeded,
-                returnValue: null,
-                standardOutput: CaptureStandardOutput(context),
-                standardError: CaptureStandardError(context),
+                returnValue: NormalizePublicValue(signal.Value, options),
+                standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
+                standardError: context is null ? string.Empty : CaptureStandardError(context),
                 exitCode: null,
                 diagnostics: Array.Empty<LythonDiagnostic>(),
                 failure: null);
         }
-        catch (ReturnSignal signal)
+        catch (ProjectionException ex)
         {
-            try
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.Succeeded,
-                    returnValue: NormalizePublicValue(signal.Value, options),
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: null,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: null);
-            }
-            catch (ProjectionException ex)
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.RuntimeFailed,
-                    returnValue: null,
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: 1,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
-            }
-        }
-        catch (LythonRuntimeException ex)
-        {
-            ex.SetSourcePathIfMissing(context?.SourcePath);
             return new LythonExecutionResult(
                 outcome: LythonExecutionOutcome.RuntimeFailed,
                 returnValue: null,
                 standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                 standardError: context is null ? string.Empty : CaptureStandardError(context),
-                exitCode: GetExitCode(ex),
+                exitCode: 1,
                 diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: RuntimeFailureProjection.ToPublicFailure(ex));
+                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
         }
+    }
+
+    private static LythonExecutionResult CreateRuntimeFailureResult(LythonRuntimeException exception, ExecutionContext? context)
+    {
+        exception.SetSourcePathIfMissing(context?.SourcePath);
+        return new LythonExecutionResult(
+            outcome: LythonExecutionOutcome.RuntimeFailed,
+            returnValue: null,
+            standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
+            standardError: context is null ? string.Empty : CaptureStandardError(context),
+            exitCode: GetExitCode(exception),
+            diagnostics: Array.Empty<LythonDiagnostic>(),
+            failure: RuntimeFailureProjection.ToPublicFailure(exception));
     }
 
     private static string CaptureStandardOutput(ExecutionContext context)
@@ -334,51 +347,15 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.TopLevelLoopControl(null);
             }
 
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.Succeeded,
-                returnValue: null,
-                standardOutput: CaptureStandardOutput(context),
-                standardError: CaptureStandardError(context),
-                exitCode: null,
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: null);
+            return CreateSuccessfulResult(context, null);
         }
         catch (ReturnSignal signal)
         {
-            try
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.Succeeded,
-                    returnValue: NormalizePublicValue(signal.Value, options),
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: null,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: null);
-            }
-            catch (ProjectionException ex)
-            {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.RuntimeFailed,
-                    returnValue: null,
-                    standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                    standardError: context is null ? string.Empty : CaptureStandardError(context),
-                    exitCode: 1,
-                    diagnostics: Array.Empty<LythonDiagnostic>(),
-                    failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
-            }
+            return CreateReturnedResult(signal, context, options);
         }
         catch (LythonRuntimeException ex)
         {
-            ex.SetSourcePathIfMissing(context?.SourcePath);
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.RuntimeFailed,
-                returnValue: null,
-                standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
-                standardError: context is null ? string.Empty : CaptureStandardError(context),
-                exitCode: GetExitCode(ex),
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: RuntimeFailureProjection.ToPublicFailure(ex));
+            return CreateRuntimeFailureResult(ex, context);
         }
     }
 
