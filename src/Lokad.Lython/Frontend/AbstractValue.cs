@@ -163,6 +163,7 @@ internal readonly record struct AbstractValue(
     LythonSourceSpan Span)
 {
     private static readonly LythonSourceSpan SyntheticSpan = new(0, 0, 0, 0);
+    private static readonly IEqualityComparer<AbstractValue> LiteralKeyComparer = new AbstractLiteralKeyComparer();
 
     public static AbstractValue Unknown() => Unknown(SyntheticSpan);
     public static AbstractValue Unknown(LythonSourceSpan span) => new(AbstractValueKind.Unknown, "unknown", span);
@@ -536,28 +537,27 @@ internal readonly record struct AbstractValue(
             return Unknown(span);
         }
 
+        var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
+        foreach (var rightPair in rightPairs)
+        {
+            if (IsComparableLiteralKey(rightPair.Key))
+            {
+                rightValues.TryAdd(rightPair.Key, rightPair.Value);
+            }
+        }
+
         var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
         foreach (var leftPair in leftPairs)
         {
-            var found = false;
-            foreach (var rightPair in rightPairs)
-            {
-                if (!AbstractValuesEqual(leftPair.Key, rightPair.Key))
-                {
-                    continue;
-                }
-
-                joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
-                    leftPair.Key.WithSpan(span),
-                    Join(leftPair.Value, rightPair.Value, span)));
-                found = true;
-                break;
-            }
-
-            if (!found)
+            if (!IsComparableLiteralKey(leftPair.Key) ||
+                !rightValues.TryGetValue(leftPair.Key, out var rightValue))
             {
                 return Unknown(span);
             }
+
+            joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
+                leftPair.Key.WithSpan(span),
+                Join(leftPair.Value, rightValue, span)));
         }
 
         return Dict(joinedPairs, span);
@@ -705,23 +705,37 @@ internal readonly record struct AbstractValue(
         };
     }
 
-    private static bool ByteArraysEqual(byte[] left, byte[] right)
+    private static bool IsComparableLiteralKey(AbstractValue value)
+        => value.Kind is AbstractValueKind.String or
+            AbstractValueKind.Integer or
+            AbstractValueKind.Float or
+            AbstractValueKind.Boolean or
+            AbstractValueKind.Bytes or
+            AbstractValueKind.None;
+
+    private sealed class AbstractLiteralKeyComparer : IEqualityComparer<AbstractValue>
     {
-        if (left.Length != right.Length)
-        {
-            return false;
-        }
+        public bool Equals(AbstractValue left, AbstractValue right) => AbstractValuesEqual(left, right);
 
-        for (var i = 0; i < left.Length; i++)
+        public int GetHashCode(AbstractValue value)
         {
-            if (left[i] != right[i])
+            var hash = new HashCode();
+            hash.Add(value.Kind);
+            if (value.Kind == AbstractValueKind.Bytes)
             {
-                return false;
+                hash.AddBytes((byte[])value.Value);
             }
-        }
+            else if (value.Kind != AbstractValueKind.None)
+            {
+                hash.Add(value.Value);
+            }
 
-        return true;
+            return hash.ToHashCode();
+        }
     }
+
+    private static bool ByteArraysEqual(byte[] left, byte[] right)
+        => left.AsSpan().SequenceEqual(right);
 }
 
 internal readonly record struct AbstractSequenceLengthBounds(
