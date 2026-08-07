@@ -42,14 +42,14 @@ internal static partial class StaticDataModuleContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvReader.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeCsvInputArgument(arguments, 0, "csvfile", "csv.reader(csvfile) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, dialectPosition: 1, delimiterPosition: 2, quotecharPosition: 3, quotingPosition: 4, doublequotePosition: 5, escapecharPosition: 6, skipinitialspacePosition: 7, lineterminatorPosition: 8, strictPosition: 9, diagnostics, bindings);
+            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Standard, diagnostics, bindings);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvWriter.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeOptionalCsvWriterFileArgument(arguments, 0, "fileobj", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, dialectPosition: 1, delimiterPosition: 2, quotecharPosition: 3, quotingPosition: 4, doublequotePosition: 5, escapecharPosition: 6, skipinitialspacePosition: 7, lineterminatorPosition: 8, strictPosition: 9, diagnostics, bindings);
+            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Standard, diagnostics, bindings);
             return emitted;
         }
 
@@ -57,7 +57,7 @@ internal static partial class StaticDataModuleContractFamily
         {
             var emitted = AnalyzeCsvInputArgument(arguments, 0, "f", "csv.DictReader(f) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
             emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, dialectPosition: 4, delimiterPosition: 5, quotecharPosition: 6, quotingPosition: 7, doublequotePosition: 8, escapecharPosition: 9, skipinitialspacePosition: 10, lineterminatorPosition: 11, strictPosition: 12, diagnostics, bindings);
+            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
             return emitted;
         }
 
@@ -66,7 +66,7 @@ internal static partial class StaticDataModuleContractFamily
             var emitted = AnalyzeRequiredCsvWriterFileArgument(arguments, 0, "f", diagnostics, bindings);
             emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
             emitted |= AnalyzeDictWriterExtrasAction(arguments, diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, dialectPosition: 4, delimiterPosition: 5, quotecharPosition: 6, quotingPosition: 7, doublequotePosition: 8, escapecharPosition: 9, skipinitialspacePosition: 10, lineterminatorPosition: 11, strictPosition: 12, diagnostics, bindings);
+            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
             return emitted;
         }
 

@@ -9,14 +9,14 @@ internal static partial class StaticDataModuleContractFamily
     private static void AnalyzeCsvReaderCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         AnalyzeCsvInputArgument(arguments, 0, "csvfile", "csv.reader(csvfile) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
-        AnalyzeCsvOptions(arguments, dialectPosition: 1, delimiterPosition: 2, quotecharPosition: 3, quotingPosition: 4, doublequotePosition: 5, escapecharPosition: 6, skipinitialspacePosition: 7, lineterminatorPosition: 8, strictPosition: 9, diagnostics, bindings);
+        AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Standard, diagnostics, bindings);
     }
 
     private static void AnalyzeCsvDictReaderCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         AnalyzeCsvInputArgument(arguments, 0, "f", "csv.DictReader(f) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
         AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
-        AnalyzeCsvOptions(arguments, dialectPosition: 4, delimiterPosition: 5, quotecharPosition: 6, quotingPosition: 7, doublequotePosition: 8, escapecharPosition: 9, skipinitialspacePosition: 10, lineterminatorPosition: 11, strictPosition: 12, diagnostics, bindings);
+        AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
     }
 
     private static void AnalyzeCsvDictWriterCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -24,7 +24,7 @@ internal static partial class StaticDataModuleContractFamily
         AnalyzeRequiredCsvWriterFileArgument(arguments, 0, "f", diagnostics, bindings);
         AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
         AnalyzeDictWriterExtrasAction(arguments, diagnostics, bindings);
-        AnalyzeCsvOptions(arguments, dialectPosition: 4, delimiterPosition: 5, quotecharPosition: 6, quotingPosition: 7, doublequotePosition: 8, escapecharPosition: 9, skipinitialspacePosition: 10, lineterminatorPosition: 11, strictPosition: 12, diagnostics, bindings);
+        AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
     }
 
     private static void AnalyzeJsonLoadOptions(
@@ -252,27 +252,19 @@ internal static partial class StaticDataModuleContractFamily
 
     private static void AnalyzeCsvOptions(
         ConcreteCallArguments arguments,
-        int dialectPosition,
-        int delimiterPosition,
-        int quotecharPosition,
-        int quotingPosition,
-        int doublequotePosition,
-        int escapecharPosition,
-        int skipinitialspacePosition,
-        int lineterminatorPosition,
-        int strictPosition,
+        CsvOptionArgumentLayout layout,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        AnalyzeCsvDialect(arguments, dialectPosition, diagnostics, bindings);
-        AnalyzeCsvCharacterOption(arguments, delimiterPosition, "delimiter", allowNone: false, diagnostics, bindings);
-        AnalyzeCsvCharacterOption(arguments, quotecharPosition, "quotechar", allowNone: true, diagnostics, bindings);
-        AnalyzeCsvQuoting(arguments, quotingPosition, diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, doublequotePosition, "doublequote", "csv doublequote must be a bool.", diagnostics, bindings);
-        AnalyzeCsvCharacterOption(arguments, escapecharPosition, "escapechar", allowNone: true, diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, skipinitialspacePosition, "skipinitialspace", "csv skipinitialspace must be a bool.", diagnostics, bindings);
-        AnalyzeStringArgument(arguments, lineterminatorPosition, "lineterminator", "csv lineterminator must be a string.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, strictPosition, "strict", "csv strict must be a bool.", diagnostics, bindings);
+        AnalyzeCsvDialect(arguments, layout.Dialect, diagnostics, bindings);
+        AnalyzeCsvCharacterOption(arguments, layout.Delimiter, "delimiter", allowNone: false, diagnostics, bindings);
+        AnalyzeCsvCharacterOption(arguments, layout.QuoteCharacter, "quotechar", allowNone: true, diagnostics, bindings);
+        AnalyzeCsvQuoting(arguments, layout.Quoting, diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, layout.DoubleQuote, "doublequote", "csv doublequote must be a bool.", diagnostics, bindings);
+        AnalyzeCsvCharacterOption(arguments, layout.EscapeCharacter, "escapechar", allowNone: true, diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, layout.SkipInitialSpace, "skipinitialspace", "csv skipinitialspace must be a bool.", diagnostics, bindings);
+        AnalyzeStringArgument(arguments, layout.LineTerminator, "lineterminator", "csv lineterminator must be a string.", diagnostics, bindings);
+        AnalyzeBooleanArgument(arguments, layout.Strict, "strict", "csv strict must be a bool.", diagnostics, bindings);
     }
 
     private static void AnalyzeCsvDialect(ConcreteCallArguments arguments, int position, List<LythonDiagnostic> diagnostics, AbstractState bindings)

@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
@@ -62,7 +63,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
 
-            var options = GetOptions(arguments, dialectIndex: 1, delimiterIndex: 2, quotecharIndex: 3, quotingIndex: 4, doublequoteIndex: 5, escapecharIndex: 6, skipinitialspaceIndex: 7, lineterminatorIndex: 8, strictIndex: 9, span);
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
             var records = ParseCsvRecords(arguments[0], options, span, context);
             return new CsvReaderObject(records.Rows, records.PhysicalLineCount, context.MemoryGovernor, span);
         }
@@ -75,7 +76,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
             }
 
-            var options = GetOptions(arguments, dialectIndex: 4, delimiterIndex: 5, quotecharIndex: 6, quotingIndex: 7, doublequoteIndex: 8, escapecharIndex: 9, skipinitialspaceIndex: 10, lineterminatorIndex: 11, strictIndex: 12, span);
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
             var records = ParseCsvRecords(arguments[0], options, span, context);
             var fieldNames = arguments.Length > 1 && arguments[1] is not PyNone
                 ? ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span)
@@ -119,7 +120,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var options = GetOptions(arguments, dialectIndex: 1, delimiterIndex: 2, quotecharIndex: 3, quotingIndex: 4, doublequoteIndex: 5, escapecharIndex: 6, skipinitialspaceIndex: 7, lineterminatorIndex: 8, strictIndex: 9, span);
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
             return new CsvWriterObject(options, file);
         }
 
@@ -134,38 +135,30 @@ internal sealed partial class LythonRuntime
             var fieldNames = ToCsvFieldNames(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span);
             var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var extrasAction = GetExtrasAction(arguments, 3, span);
-            var options = GetOptions(arguments, dialectIndex: 4, delimiterIndex: 5, quotecharIndex: 6, quotingIndex: 7, doublequoteIndex: 8, escapecharIndex: 9, skipinitialspaceIndex: 10, lineterminatorIndex: 11, strictIndex: 12, span);
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
             return new CsvDictWriterObject(new CsvWriterObject(options, file), fieldNames, restVal, extrasAction);
         }
 
         private static CsvOptions GetOptions(
             object[] arguments,
-            int dialectIndex,
-            int delimiterIndex,
-            int quotecharIndex,
-            int quotingIndex,
-            int doublequoteIndex,
-            int escapecharIndex,
-            int skipinitialspaceIndex,
-            int lineterminatorIndex,
-            int strictIndex,
+            CsvOptionArgumentLayout layout,
             LythonSourceSpan span)
         {
-            ValidateDialect(arguments, dialectIndex, span);
+            ValidateDialect(arguments, layout.Dialect, span);
 
-            var delimiter = GetCharacterOption(arguments, delimiterIndex, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span).RequireNotNull();
+            var delimiter = GetCharacterOption(arguments, layout.Delimiter, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span).RequireNotNull();
             if (delimiter.AsString() is "\r" or "\n")
             {
                 throw CsvError("csv delimiter cannot be a newline.", span);
             }
 
-            var quotechar = GetCharacterOption(arguments, quotecharIndex, PyString.FromString("\""), "quotechar", allowNone: true, span);
-            var quoting = GetQuoting(arguments, quotingIndex, span);
-            var doublequote = GetBooleanOption(arguments, doublequoteIndex, defaultValue: true, "doublequote", span);
-            var escapechar = GetCharacterOption(arguments, escapecharIndex, null, "escapechar", allowNone: true, span);
-            var skipinitialspace = GetBooleanOption(arguments, skipinitialspaceIndex, defaultValue: false, "skipinitialspace", span);
-            var lineterminator = GetStringOption(arguments, lineterminatorIndex, PyString.FromString("\n"), "lineterminator", allowNone: false, span);
-            var strict = GetBooleanOption(arguments, strictIndex, defaultValue: false, "strict", span);
+            var quotechar = GetCharacterOption(arguments, layout.QuoteCharacter, PyString.FromString("\""), "quotechar", allowNone: true, span);
+            var quoting = GetQuoting(arguments, layout.Quoting, span);
+            var doublequote = GetBooleanOption(arguments, layout.DoubleQuote, defaultValue: true, "doublequote", span);
+            var escapechar = GetCharacterOption(arguments, layout.EscapeCharacter, null, "escapechar", allowNone: true, span);
+            var skipinitialspace = GetBooleanOption(arguments, layout.SkipInitialSpace, defaultValue: false, "skipinitialspace", span);
+            var lineterminator = GetStringOption(arguments, layout.LineTerminator, PyString.FromString("\n"), "lineterminator", allowNone: false, span);
+            var strict = GetBooleanOption(arguments, layout.Strict, defaultValue: false, "strict", span);
 
             if (quoting == CsvQuotingMode.None && escapechar is null)
             {
