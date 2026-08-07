@@ -9,6 +9,7 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Added unparenthesized tuple expression lists, collection-display unpacking, dotted imports with Python package binding, and implicit continuation throughout compound-statement headers.
 - Added old-style string interpolation and the ordinary non-mutating and mutating set method families.
 - Improved static flow analysis for short-circuit `None` guards and branch-local sequence length bounds, and made `Counter` report its number of stored keys through `len(...)`.
+- Made `pathlib` construction, joining, and `absolute()` preserve lexical parent segments while `resolve()` and host-mediated operations continue to canonicalize them.
 
 ### Standard Library Surface
 
@@ -21,6 +22,7 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Made every unsuccessful execution carry a non-zero process-compatible exit status and aligned synchronous/asynchronous execution behavior with differential coverage.
 - Reject asynchronous host effects before synchronous execution can perform preceding side effects.
 - Hardened captured subprocess output, gzip buffers, incremental hash state, governed byte accumulation, pipe lifecycle, and exception-handler stack restoration.
+- Made executable context managers invoke `__exit__` exactly once when an exception is not suppressed.
 - Made zero-valued execution limits enforce real zero budgets, reject negative limits explicitly, and retain omitted limits as the only default/unlimited case.
 - Removed avoidable buffered-output copies and quadratic work from text handles, sized Unicode reads, `functools` caches, gzip CRC processing, traceback collection, and large-integer base formatting.
 
@@ -28,7 +30,9 @@ This pending release closes the Studio compatibility findings gathered from codi
 
 - Tightened public state contracts, nullability invariants, host implementor documentation, and optional-parameter usage to follow the repository's C# guidelines.
 - Removed friend-assembly access and unnecessary unsafe compilation, enabled warnings as errors, made benchmarks part of the solution, and normalized source formatting.
-- Consolidated shared sync/async execution semantics, removed the duplicate memory estimator, and cached stable builtin member bindings per execution.
+- Centralized invariants shared by synchronous and asynchronous execution while keeping their effect-awaiting loops explicit, removed the duplicate memory estimator, and cached stable builtin member bindings per execution.
+- Replaced nullable/string-tagged call arguments and generic executable instruction payloads with explicit domain types, and unified static user-call binding across functions and methods.
+- Canonicalized builtin module inventories and datetime operator contracts, and split oversized runtime, static-analysis, and lowering units by responsibility.
 - Introduced a black-box public-assembly smoke suite alongside the source-linked white-box suite, establishing the boundary that later compatibility scenarios can exercise without source linking.
 
 ## 0.7.0 - 2026-07-02
