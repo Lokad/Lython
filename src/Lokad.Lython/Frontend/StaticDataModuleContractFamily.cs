@@ -41,33 +41,22 @@ internal static partial class StaticDataModuleContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvReader.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzeCsvInputArgument(arguments, 0, "csvfile", "csv.reader(csvfile) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Standard, diagnostics, bindings);
-            return emitted;
+            return AnalyzeCsvReaderCall(arguments, diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvWriter.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzeOptionalCsvWriterFileArgument(arguments, 0, "fileobj", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Standard, diagnostics, bindings);
-            return emitted;
+            return AnalyzeCsvWriterCall(arguments, diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvDictReader.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzeCsvInputArgument(arguments, 0, "f", "csv.DictReader(f) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
-            emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
-            return emitted;
+            return AnalyzeCsvDictReaderCall(arguments, diagnostics, bindings);
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.CsvDictWriter.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzeRequiredCsvWriterFileArgument(arguments, 0, "f", diagnostics, bindings);
-            emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
-            emitted |= AnalyzeDictWriterExtrasAction(arguments, diagnostics, bindings);
-            AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
-            return emitted;
+            return AnalyzeCsvDictWriterCall(arguments, diagnostics, bindings);
         }
 
         if (AnalyzeDifflibKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings))
