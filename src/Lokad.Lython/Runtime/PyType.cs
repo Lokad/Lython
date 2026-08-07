@@ -25,6 +25,14 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public IReadOnlyList<DataclassFieldSpec>? DataclassFields { get; private set; }
 
+    public DataclassFieldSpec[]? DataclassHelperFields { get; private set; }
+
+    public DataclassFieldSpec[]? DataclassReprFields { get; private set; }
+
+    public DataclassFieldSpec[]? DataclassComparableFields { get; private set; }
+
+    public IReadOnlyDictionary<string, DataclassFieldSpec>? DataclassFieldsByName { get; private set; }
+
     public bool DataclassReprEnabled { get; private set; }
 
     public bool DataclassEqEnabled { get; private set; }
@@ -157,6 +165,10 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     public void SetDataclassMetadata(IReadOnlyList<DataclassFieldSpec> fields, bool reprEnabled, bool eqEnabled, bool orderEnabled, DataclassHashMode hashMode)
     {
         DataclassFields = fields;
+        DataclassHelperFields = fields.Where(static field => field.Kind == DataclassFieldKind.Normal).ToArray();
+        DataclassReprFields = fields.Where(static field => field.Repr).ToArray();
+        DataclassComparableFields = fields.Where(static field => field.Compare).ToArray();
+        DataclassFieldsByName = fields.ToDictionary(static field => field.Name, StringComparer.Ordinal);
         DataclassReprEnabled = reprEnabled;
         DataclassEqEnabled = eqEnabled;
         DataclassOrderEnabled = orderEnabled;

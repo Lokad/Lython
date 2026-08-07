@@ -311,12 +311,12 @@ internal static class PyDataclass
 
         if (decorator.Repr && !type.TryGetOwnMember("__repr__", out _))
         {
-            type.TrySetMember("__repr__", new DataclassReprMethod(type.Name, fields.Where(field => field.Repr).ToArray()));
+            type.TrySetMember("__repr__", new DataclassReprMethod(type.Name, type.DataclassReprFields.RequireNotNull()));
         }
 
         if (decorator.Eq && !type.TryGetOwnMember("__eq__", out _))
         {
-            type.TrySetMember("__eq__", new DataclassEqMethod(type.Name, fields.Where(field => field.Compare).ToArray()));
+            type.TrySetMember("__eq__", new DataclassEqMethod(type.Name, type.DataclassComparableFields.RequireNotNull()));
         }
 
         if (decorator.Order)
@@ -1018,8 +1018,7 @@ internal static class PyDataclass
 
         foreach (var change in changes.Keys)
         {
-            var field = instance.Type.DataclassFields.FirstOrDefault(candidate => candidate.Name == change);
-            if (field is null)
+            if (!instance.Type.DataclassFieldsByName.RequireNotNull().TryGetValue(change, out var field))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}() got an unexpected field '{change}'.", span);
             }
@@ -1092,7 +1091,7 @@ internal static class PyDataclass
         }
 
         var type = GetDataclassType(arguments[0], span, "dataclasses.fields()");
-        var visibleFields = GetHelperVisibleFields(type.DataclassFields.RequireNotNull()).ToArray();
+        var visibleFields = type.DataclassHelperFields.RequireNotNull();
         if (!type.TryGetOwnMember("__dataclass_fields__", out var rawFieldMap) || rawFieldMap is not PyDict fieldMap)
         {
             throw new LythonRuntimeException("TypeError", "dataclasses.fields() could not read the dataclass field map.", span);
@@ -1158,7 +1157,7 @@ internal static class PyDataclass
             throw new LythonRuntimeException("TypeError", "Values are not comparable.", span);
         }
 
-        foreach (var field in left.Type.DataclassFields.Where(field => field.Compare))
+        foreach (var field in left.Type.DataclassComparableFields.RequireNotNull())
         {
             _ = left.TryGetOwnAttribute(field.Name, out var leftValue);
             _ = right.TryGetOwnAttribute(field.Name, out var rightValue);
@@ -1255,7 +1254,7 @@ internal static class PyDataclass
 
     private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields.RequireNotNull()).ToArray();
+        var visibleFields = instance.Type.DataclassHelperFields.RequireNotNull();
         var pairs = new (object Key, object Value)[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
@@ -1269,7 +1268,7 @@ internal static class PyDataclass
 
     private static object BuildDataclassTuple(PyInstance instance, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var visibleFields = GetHelperVisibleFields(instance.Type.DataclassFields.RequireNotNull()).ToArray();
+        var visibleFields = instance.Type.DataclassHelperFields.RequireNotNull();
         var items = new object[visibleFields.Length];
         for (var i = 0; i < visibleFields.Length; i++)
         {
@@ -1831,9 +1830,6 @@ internal static class PyDataclass
         value = PyNone.Instance;
         return false;
     }
-
-    private static IEnumerable<DataclassFieldSpec> GetHelperVisibleFields(IEnumerable<DataclassFieldSpec> fields)
-        => fields.Where(field => field.Kind == DataclassFieldKind.Normal);
 
     internal static bool ShouldIncludeInGeneratedHash(DataclassFieldSpec field)
     {

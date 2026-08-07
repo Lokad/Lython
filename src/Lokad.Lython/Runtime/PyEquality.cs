@@ -148,9 +148,9 @@ internal static class PyEquality
                 return false;
             }
 
-            if (leftInstance.Type.DataclassEqEnabled && leftInstance.Type.DataclassFields is { } fields)
+            if (leftInstance.Type.DataclassEqEnabled && leftInstance.Type.DataclassComparableFields is { } fields)
             {
-                foreach (var field in fields.Where(field => field.Compare))
+                foreach (var field in fields)
                 {
                     _ = leftInstance.TryGetOwnAttribute(field.Name, out var leftValue);
                     _ = rightInstance.TryGetOwnAttribute(field.Name, out var rightValue);
