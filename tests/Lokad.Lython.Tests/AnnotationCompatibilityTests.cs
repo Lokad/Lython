@@ -26,7 +26,7 @@ __lython_file.close()
         Assert.Empty(compiled.Diagnostics);
 
         var host = new MockLythonHost();
-        var result = compiled.Run(host, options: null);
+        var result = compiled.Run(host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("{'count': 2}", host.ReadText("/out.txt"));
     }
@@ -98,7 +98,7 @@ __lython_file.close()
         Assert.Empty(compiled.Diagnostics);
 
         var host = new MockLythonHost();
-        var result = compiled.Run(host, options: null);
+        var result = compiled.Run(host);
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("ab cd", host.ReadText("/out.txt"));

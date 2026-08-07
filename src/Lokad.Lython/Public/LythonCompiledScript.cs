@@ -29,24 +29,49 @@ public sealed class LythonCompiledScript
     public bool IsValid { get; }
 
     public LythonExecutionResult Run(
+        ILythonHost host)
+    {
+        return RunCore(host, null);
+    }
+
+    public LythonExecutionResult Run(
         ILythonHost host,
-        IReadOnlyDictionary<string, object?>? globals = null)
+        IReadOnlyDictionary<string, object?> globals)
     {
         return Run(host, new LythonRunOptions { Globals = globals });
     }
 
     public LythonExecutionResult Run(
         ILythonHost host,
-        LythonRunOptions? options)
+        LythonRunOptions options)
     {
-        ArgumentNullException.ThrowIfNull(host);
-        return _runner(host, options);
+        return RunCore(host, options);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        ILythonHost host)
+    {
+        return RunAsyncCore(host, null, CancellationToken.None);
     }
 
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
-        IReadOnlyDictionary<string, object?>? globals = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
+    {
+        return RunAsyncCore(host, null, cancellationToken);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        ILythonHost host,
+        IReadOnlyDictionary<string, object?> globals)
+    {
+        return RunAsync(host, globals, CancellationToken.None);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        ILythonHost host,
+        IReadOnlyDictionary<string, object?> globals,
+        CancellationToken cancellationToken)
     {
         return RunAsync(
             host,
@@ -61,10 +86,29 @@ public sealed class LythonCompiledScript
 
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
-        LythonRunOptions? options,
-        CancellationToken cancellationToken = default)
+        LythonRunOptions options)
     {
-        ArgumentNullException.ThrowIfNull(host);
+        return RunAsyncCore(host, options, CancellationToken.None);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        ILythonHost host,
+        LythonRunOptions options,
+        CancellationToken cancellationToken)
+    {
+        return RunAsyncCore(host, options, cancellationToken);
+    }
+
+    private LythonExecutionResult RunCore(ILythonHost host, LythonRunOptions? options)
+    {
+        return _runner(host, options);
+    }
+
+    private Task<LythonExecutionResult> RunAsyncCore(
+        ILythonHost host,
+        LythonRunOptions? options,
+        CancellationToken cancellationToken)
+    {
         var mergedOptions = MergeCancellation(options, cancellationToken, out var linkedCancellation);
         return RunAndDisposeAsync(host, mergedOptions, linkedCancellation);
 

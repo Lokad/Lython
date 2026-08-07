@@ -1291,9 +1291,9 @@ internal sealed partial class LythonRuntime
                 "size" => stat.Size,
                 "modified_at" => stat.ModifiedAt,
                 "st_size" => stat.Size,
-                "st_mtime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
-                "st_ctime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
-                "st_atime" => PathModifiedAtSeconds(stat.ModifiedAt, null),
+                "st_mtime" => PathModifiedAtSeconds(stat.ModifiedAtTimestamp, null),
+                "st_ctime" => PathModifiedAtSeconds(stat.ModifiedAtTimestamp, null),
+                "st_atime" => PathModifiedAtSeconds(stat.ModifiedAtTimestamp, null),
                 "st_mode" or "st_ino" or "st_dev" or "st_nlink" or "st_uid" or "st_gid"
                     => throw new LythonRuntimeException("NotImplementedError", "Rich stat_result metadata is not supported by Lython because the host path model only exposes existence, kind, size, and modified time.", null),
                 _ => null!,

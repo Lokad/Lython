@@ -44,9 +44,12 @@ public interface ILythonHost
 
     ILythonTiming? Timing => null;
 
+    IAsyncEnumerable<LythonWalkEntry> WalkAsync(string path)
+        => WalkAsync(path, CancellationToken.None);
+
     async IAsyncEnumerable<LythonWalkEntry> WalkAsync(
         string path,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var item in EnumerateWalk(this, path, cancellationToken).ConfigureAwait(false))
         {

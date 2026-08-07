@@ -416,11 +416,9 @@ sealed class PureProbeHost : ILythonHost
 
     public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) =>
         ValueTask.FromResult(new LythonPathStat(
-            Exists: false,
-            IsFile: false,
-            IsDir: false,
-            Size: 0,
-            ModifiedAt: string.Empty));
+            kind: LythonPathKind.Missing,
+            size: 0,
+            modifiedAt: null));
 
     private static InvalidOperationException Unsupported(string operation) =>
         new($"Pure probe host cannot {operation}.");

@@ -5,7 +5,6 @@ namespace Lokad.Lython.Tests.Harness;
 
 internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapability
 {
-    private const string MockTimestamp = "1970-01-01T00:00:00Z";
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     private readonly Dictionary<string, string> _files = new(StringComparer.Ordinal);
@@ -332,50 +331,40 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         if (_files.TryGetValue(path, out var text))
         {
             return ValueTask.FromResult(new LythonPathStat(
-                Exists: true,
-                IsFile: true,
-                IsDir: false,
-                Size: new BigInteger(Utf8.GetByteCount(text)),
-                ModifiedAt: MockTimestamp));
+                kind: LythonPathKind.File,
+                size: new BigInteger(Utf8.GetByteCount(text)),
+                modifiedAt: DateTimeOffset.UnixEpoch));
         }
 
         if (_rawTextFiles.TryGetValue(path, out var rawText))
         {
             return ValueTask.FromResult(new LythonPathStat(
-                Exists: true,
-                IsFile: true,
-                IsDir: false,
-                Size: new BigInteger(rawText.Length),
-                ModifiedAt: MockTimestamp));
+                kind: LythonPathKind.File,
+                size: new BigInteger(rawText.Length),
+                modifiedAt: DateTimeOffset.UnixEpoch));
         }
 
         if (_binaryFiles.TryGetValue(path, out var payload))
         {
             return ValueTask.FromResult(new LythonPathStat(
-                Exists: true,
-                IsFile: true,
-                IsDir: false,
-                Size: new BigInteger(payload.Length),
-                ModifiedAt: MockTimestamp));
+                kind: LythonPathKind.File,
+                size: new BigInteger(payload.Length),
+                modifiedAt: DateTimeOffset.UnixEpoch));
         }
 
         var dir = NormalizeDirectory(path);
         if (_directories.Contains(dir))
         {
             return ValueTask.FromResult(new LythonPathStat(
-                Exists: true,
-                IsFile: false,
-                IsDir: true,
-                Size: BigInteger.Zero,
-                ModifiedAt: MockTimestamp));
+                kind: LythonPathKind.Directory,
+                size: BigInteger.Zero,
+                modifiedAt: DateTimeOffset.UnixEpoch));
         }
 
         return ValueTask.FromResult(new LythonPathStat(
-            Exists: false,
-            IsFile: false,
-            IsDir: false,
-            Size: BigInteger.Zero,
-            ModifiedAt: MockTimestamp));
+            kind: LythonPathKind.Missing,
+            size: BigInteger.Zero,
+            modifiedAt: null));
     }
 
     public bool Exists(string path) => ExistsAsync(path, CancellationToken.None).GetAwaiter().GetResult();

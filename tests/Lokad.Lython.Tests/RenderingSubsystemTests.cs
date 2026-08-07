@@ -16,7 +16,7 @@ value = {"x": (1,), "y": {2, 1}}
 return (str(value), f"{value}")
 """);
 
-        var result = script.Run(new MockLythonHost(), options: null);
+        var result = script.Run(new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
         var tuple = Assert.IsType<object?[]>(result.ReturnValue);

@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
             }
 
             return new LythonExecutionResult(
-                success: true,
+                outcome: LythonExecutionOutcome.Succeeded,
                 returnValue: null,
                 standardOutput: CaptureStandardOutput(context),
                 standardError: CaptureStandardError(context),
@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 return new LythonExecutionResult(
-                    success: true,
+                    outcome: LythonExecutionOutcome.Succeeded,
                     returnValue: NormalizePublicValue(signal.Value, options),
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
             catch (ProjectionException ex)
             {
                 return new LythonExecutionResult(
-                    success: false,
+                    outcome: LythonExecutionOutcome.RuntimeFailed,
                     returnValue: null,
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
@@ -235,7 +235,7 @@ internal sealed partial class LythonRuntime
         {
             ex.SetSourcePathIfMissing(context?.SourcePath);
             return new LythonExecutionResult(
-                success: false,
+                outcome: LythonExecutionOutcome.RuntimeFailed,
                 returnValue: null,
                 standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                 standardError: context is null ? string.Empty : CaptureStandardError(context),
@@ -1895,7 +1895,7 @@ internal sealed partial class LythonRuntime
             }
 
             return new LythonExecutionResult(
-                success: true,
+                outcome: LythonExecutionOutcome.Succeeded,
                 returnValue: null,
                 standardOutput: CaptureStandardOutput(context),
                 standardError: CaptureStandardError(context),
@@ -1908,7 +1908,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 return new LythonExecutionResult(
-                    success: true,
+                    outcome: LythonExecutionOutcome.Succeeded,
                     returnValue: NormalizePublicValue(signal.Value, options),
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
@@ -1919,7 +1919,7 @@ internal sealed partial class LythonRuntime
             catch (ProjectionException ex)
             {
                 return new LythonExecutionResult(
-                    success: false,
+                    outcome: LythonExecutionOutcome.RuntimeFailed,
                     returnValue: null,
                     standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                     standardError: context is null ? string.Empty : CaptureStandardError(context),
@@ -1932,7 +1932,7 @@ internal sealed partial class LythonRuntime
         {
             ex.SetSourcePathIfMissing(context?.SourcePath);
             return new LythonExecutionResult(
-                success: false,
+                outcome: LythonExecutionOutcome.RuntimeFailed,
                 returnValue: null,
                 standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                 standardError: context is null ? string.Empty : CaptureStandardError(context),

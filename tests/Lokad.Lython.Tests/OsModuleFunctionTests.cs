@@ -8,6 +8,7 @@ public sealed class OsModuleFunctionTests
     public void OsPathModule_PureHelpers_HaveDirectCoverage()
     {
         var host = new MockLythonHost("/repo/work");
+        host.SeedFile("/repo/docs/a.txt", string.Empty);
 
         var result = new LythonEngine().Run(
             """
@@ -44,6 +45,7 @@ __lython_file.close()
     public void OsPathModule_ExpandedHelpers_FollowContainedPosixModel()
     {
         var host = new MockLythonHost("/repo/work");
+        host.SeedFile("/repo/docs/a.txt", string.Empty);
 
         var result = new LythonEngine().Run(
             """

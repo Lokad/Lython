@@ -95,11 +95,9 @@ internal sealed class BenchmarkHost : ILythonHost
         }
 
         return ValueTask.FromResult(new LythonPathStat(
-            Exists: true,
-            IsFile: true,
-            IsDir: false,
-            Size: utf8.Length,
-            ModifiedAt: "1970-01-01T00:00:00Z"));
+            kind: LythonPathKind.File,
+            size: utf8.Length,
+            modifiedAt: DateTimeOffset.UnixEpoch));
     }
 
     public ReadOnlyMemory<byte> ReadTextUtf8(string path)

@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
             => first.IsFile == second.IsFile &&
                first.IsDir == second.IsDir &&
                first.Size == second.Size &&
-               string.Equals(first.ModifiedAt, second.ModifiedAt, StringComparison.Ordinal);
+               first.ModifiedAtTimestamp == second.ModifiedAtTimestamp;
 
         private static LythonRuntimeException MissingFile(string path, LythonSourceSpan span)
             => new("FileNotFoundError", $"No such file or directory: '{path}'", span);

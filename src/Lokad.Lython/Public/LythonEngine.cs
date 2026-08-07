@@ -38,7 +38,7 @@ public sealed class LythonEngine
                 if (!isValid)
                 {
                     return new LythonExecutionResult(
-                        success: false,
+                        outcome: LythonExecutionOutcome.CompilationFailed,
                         returnValue: null,
                         standardOutput: string.Empty,
                         standardError: string.Empty,
@@ -54,7 +54,7 @@ public sealed class LythonEngine
                     {
                         var allDiagnostics = diagnostics.Concat(hostDiagnostics).ToArray();
                         return new LythonExecutionResult(
-                            success: false,
+                            outcome: LythonExecutionOutcome.CompilationFailed,
                             returnValue: null,
                             standardOutput: string.Empty,
                             standardError: string.Empty,
@@ -74,7 +74,7 @@ public sealed class LythonEngine
                 if (!isValid)
                 {
                     return new LythonExecutionResult(
-                        success: false,
+                        outcome: LythonExecutionOutcome.CompilationFailed,
                         returnValue: null,
                         standardOutput: string.Empty,
                         standardError: string.Empty,
@@ -90,7 +90,7 @@ public sealed class LythonEngine
                     {
                         var allDiagnostics = diagnostics.Concat(hostDiagnostics).ToArray();
                         return new LythonExecutionResult(
-                            success: false,
+                            outcome: LythonExecutionOutcome.CompilationFailed,
                             returnValue: null,
                             standardOutput: string.Empty,
                             standardError: string.Empty,
@@ -107,8 +107,15 @@ public sealed class LythonEngine
 
     public LythonExecutionResult Run(
         string source,
+        ILythonHost host)
+    {
+        return Compile(source).Run(host);
+    }
+
+    public LythonExecutionResult Run(
+        string source,
         ILythonHost host,
-        IReadOnlyDictionary<string, object?>? globals = null)
+        IReadOnlyDictionary<string, object?> globals)
     {
         return Compile(source).Run(host, new LythonRunOptions { Globals = globals });
     }
@@ -116,16 +123,39 @@ public sealed class LythonEngine
     public LythonExecutionResult Run(
         string source,
         ILythonHost host,
-        LythonRunOptions? options)
+        LythonRunOptions options)
     {
         return Compile(source).Run(host, options);
     }
 
     public Task<LythonExecutionResult> RunAsync(
         string source,
+        ILythonHost host)
+    {
+        return Compile(source).RunAsync(host);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        string source,
         ILythonHost host,
-        IReadOnlyDictionary<string, object?>? globals = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
+    {
+        return Compile(source).RunAsync(host, cancellationToken);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        string source,
+        ILythonHost host,
+        IReadOnlyDictionary<string, object?> globals)
+    {
+        return Compile(source).RunAsync(host, globals);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        string source,
+        ILythonHost host,
+        IReadOnlyDictionary<string, object?> globals,
+        CancellationToken cancellationToken)
     {
         return Compile(source).RunAsync(host, globals, cancellationToken);
     }
@@ -133,8 +163,16 @@ public sealed class LythonEngine
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
-        LythonRunOptions? options,
-        CancellationToken cancellationToken = default)
+        LythonRunOptions options)
+    {
+        return Compile(source).RunAsync(host, options);
+    }
+
+    public Task<LythonExecutionResult> RunAsync(
+        string source,
+        ILythonHost host,
+        LythonRunOptions options,
+        CancellationToken cancellationToken)
     {
         return Compile(source).RunAsync(host, options, cancellationToken);
     }

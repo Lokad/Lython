@@ -16,7 +16,7 @@ value = [1, (2, 3), {"name": "lokad", "items": [4]}]
 return value
 """);
 
-        var result = script.Run(host, options: null);
+        var result = script.Run(host);
 
         Assert.True(result.Success, result.Failure?.Message);
         var list = Assert.IsType<List<object?>>(result.ReturnValue);
@@ -43,7 +43,7 @@ value = [None, {"x": None}]
 return value
 """);
 
-        var result = script.Run(host, options: null);
+        var result = script.Run(host);
 
         Assert.True(result.Success);
         var list = Assert.IsType<List<object?>>(result.ReturnValue);

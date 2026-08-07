@@ -962,14 +962,14 @@ internal sealed partial class LythonRuntime
     private static object OsPathGetMTime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.getmtime", span);
-        return PathModifiedAtSeconds(HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).ModifiedAt, span);
+        return PathModifiedAtSeconds(HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).ModifiedAtTimestamp, span);
     }
 
     private static async ValueTask<object> OsPathGetMTimeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.getmtime", span);
         var stat = await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
-        return PathModifiedAtSeconds(stat.ModifiedAt, span);
+        return PathModifiedAtSeconds(stat.ModifiedAtTimestamp, span);
     }
 
     private static object OsPathSameFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1101,18 +1101,14 @@ internal sealed partial class LythonRuntime
            exception.InnerException is not null &&
            exception.Message.StartsWith("Host ", StringComparison.Ordinal);
 
-    private static double PathModifiedAtSeconds(string modifiedAt, LythonSourceSpan? span)
+    private static double PathModifiedAtSeconds(DateTimeOffset? modifiedAt, LythonSourceSpan? span)
     {
-        if (!DateTimeOffset.TryParse(
-            modifiedAt,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed))
+        if (modifiedAt is not { } timestamp)
         {
-            throw new LythonRuntimeException("ValueError", "host modified_at timestamp is not ISO-8601 parseable.", span);
+            throw new LythonRuntimeException("ValueError", "host stat has no modification timestamp.", span);
         }
 
-        return (parsed - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero)).TotalSeconds;
+        return (timestamp - DateTimeOffset.UnixEpoch).TotalSeconds;
     }
 
     private static IEnumerable<string> EnumerateMissingDirectories(string path)
