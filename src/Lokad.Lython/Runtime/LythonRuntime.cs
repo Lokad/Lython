@@ -3958,22 +3958,22 @@ internal sealed partial class LythonRuntime
             LythonSubprocessResult result,
             LythonSourceSpan? span)
         {
-            if (request.MaxOutputBytes is not { } maximum)
+            if (request.OutputLimit is not { } outputLimit)
             {
                 return;
             }
 
-            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe && result.StandardOutputUtf8.Length > maximum)
+            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe && result.StandardOutputUtf8.Length > outputLimit.Bytes)
             {
                 throw RuntimeErrors.Runtime(
-                    $"subprocess standard output exceeded maximum captured output bytes ({maximum}); received {result.StandardOutputUtf8.Length} bytes.",
+                    $"subprocess standard output exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardOutputUtf8.Length} bytes.",
                     span);
             }
 
-            if (request.StandardError == LythonSubprocessStreamMode.Pipe && result.StandardErrorUtf8.Length > maximum)
+            if (request.StandardError == LythonSubprocessStreamMode.Pipe && result.StandardErrorUtf8.Length > outputLimit.Bytes)
             {
                 throw RuntimeErrors.Runtime(
-                    $"subprocess standard error exceeded maximum captured output bytes ({maximum}); received {result.StandardErrorUtf8.Length} bytes.",
+                    $"subprocess standard error exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardErrorUtf8.Length} bytes.",
                     span);
             }
         }

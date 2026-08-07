@@ -59,7 +59,7 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
         Assert.True(result.Success, DescribeFailure(result));
         Assert.NotNull(host.LastSubprocessRequest);
         Assert.Equal("/repo/work", host.LastSubprocessRequest.RequireNotNull().Cwd);
-        Assert.Equal(1500, host.LastSubprocessRequest.TimeoutMilliseconds);
+        Assert.Equal(TimeSpan.FromMilliseconds(1500), host.LastSubprocessRequest.Timeout);
         Assert.Equal("payload", System.Text.Encoding.UTF8.GetString(host.LastSubprocessRequest.StandardInputUtf8.Span));
     }
 
@@ -91,10 +91,10 @@ __lython_file.close()
         Assert.Equal(LythonSubprocessStreamMode.DevNull, host.LastSubprocessRequest.StandardInput);
         Assert.Equal(LythonSubprocessStreamMode.Pipe, host.LastSubprocessRequest.StandardOutput);
         Assert.Equal(LythonSubprocessStreamMode.StandardOutput, host.LastSubprocessRequest.StandardError);
-        Assert.False(host.LastSubprocessRequest.UseShell);
-        Assert.True(host.LastSubprocessRequest.TextMode);
-        Assert.Equal("utf-8", host.LastSubprocessRequest.Encoding);
-        Assert.Equal("strict", host.LastSubprocessRequest.Errors);
+        Assert.Equal(LythonSubprocessInvocationMode.Direct, host.LastSubprocessRequest.InvocationMode);
+        Assert.Equal(LythonSubprocessContentMode.Text, host.LastSubprocessRequest.ContentMode);
+        Assert.Equal(LythonSubprocessTextEncoding.Utf8, host.LastSubprocessRequest.TextEncoding);
+        Assert.Equal(LythonSubprocessTextErrorMode.Strict, host.LastSubprocessRequest.TextErrorMode);
         Assert.NotNull(host.LastSubprocessRequest.Environment);
         Assert.Equal("VALUE", host.LastSubprocessRequest.Environment.RequireNotNull()["NAME"]);
     }
@@ -122,7 +122,7 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("hi|echo hi|path|/repo/script.sh", host.ReadText("/out.txt"));
         Assert.NotNull(host.LastSubprocessRequest);
-        Assert.True(host.LastSubprocessRequest.RequireNotNull().UseShell);
+        Assert.Equal(LythonSubprocessInvocationMode.Shell, host.LastSubprocessRequest.RequireNotNull().InvocationMode);
         Assert.Equal(["/repo/script.sh"], host.LastSubprocessRequest.Args);
     }
 

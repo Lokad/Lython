@@ -263,12 +263,14 @@ internal sealed partial class LythonRuntime
                 StandardInput: stdin,
                 StandardOutput: stdout,
                 StandardError: stderr,
-                UseShell: shell,
-                TextMode: textMode,
-                Encoding: encoding,
-                Errors: errors,
-                TimeoutMilliseconds: timeout,
-                MaxOutputBytes: context.Limits.MaxStringLength),
+                InvocationMode: shell ? LythonSubprocessInvocationMode.Shell : LythonSubprocessInvocationMode.Direct,
+                ContentMode: textMode ? LythonSubprocessContentMode.Text : LythonSubprocessContentMode.Binary,
+                TextEncoding: encoding,
+                TextErrorMode: errors,
+                Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null,
+                OutputLimit: context.Limits.MaxStringLength is { } maximumOutputBytes
+                    ? new LythonSubprocessOutputLimit(maximumOutputBytes)
+                    : null),
             check,
             completionKind);
     }
@@ -280,10 +282,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         object stdout = invocation.Request.StandardOutput == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardOutputUtf8, invocation.Request.Encoding, invocation.Request.Errors, context, span)
+            ? DecodeSubprocessOutput(result.StandardOutputUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
         object stderr = invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.Encoding, invocation.Request.Errors, context, span)
+            ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
         var args = new PyList(invocation.Request.Args.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
         context.ObserveCollectionCount(args.Count, span);
@@ -312,20 +314,20 @@ internal sealed partial class LythonRuntime
 
     private static PyString DecodeSubprocessOutput(
         ReadOnlyMemory<byte> utf8,
-        string? encoding,
-        string? errors,
+        LythonSubprocessTextEncoding encoding,
+        LythonSubprocessTextErrorMode errors,
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var errorMode = errors?.ToLowerInvariant() switch
+        var errorMode = errors switch
         {
-            "ignore" => TextErrorMode.Ignore,
-            "replace" => TextErrorMode.Replace,
-            "backslashreplace" => TextErrorMode.BackslashReplace,
+            LythonSubprocessTextErrorMode.Ignore => TextErrorMode.Ignore,
+            LythonSubprocessTextErrorMode.Replace => TextErrorMode.Replace,
+            LythonSubprocessTextErrorMode.BackslashReplace => TextErrorMode.BackslashReplace,
             _ => TextErrorMode.Strict
         };
         var text = DecodeUtf8Text(utf8, context, span, errorMode);
-        if (string.Equals(encoding, "utf-8-sig", StringComparison.OrdinalIgnoreCase))
+        if (encoding == LythonSubprocessTextEncoding.Utf8WithSignature)
         {
             var decoded = text.AsString();
             if (decoded.Length > 0 && decoded[0] == '\uFEFF')
@@ -631,40 +633,40 @@ internal sealed partial class LythonRuntime
             HasArgument(arguments, SubprocessErrorsIndex);
     }
 
-    private static string? ParseSubprocessEncoding(object[] arguments, string owner, LythonSourceSpan span)
+    private static LythonSubprocessTextEncoding ParseSubprocessEncoding(object[] arguments, string owner, LythonSourceSpan span)
     {
         var value = GetArgument(arguments, SubprocessEncodingIndex);
         if (value is PyNone or null)
         {
-            return null;
+            return LythonSubprocessTextEncoding.Utf8;
         }
 
         var encodingMode = ParseTextEncoding(value, owner, span);
         return encodingMode switch
         {
-            TextEncodingMode.Utf8Bom => "utf-8-sig",
+            TextEncodingMode.Utf8Bom => LythonSubprocessTextEncoding.Utf8WithSignature,
             TextEncodingMode.Latin1 => throw new LythonRuntimeException(
                 "ValueError",
                 $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig' because the subprocess host boundary is UTF-8-shaped.",
                 span),
-            _ => "utf-8"
+            _ => LythonSubprocessTextEncoding.Utf8
         };
     }
 
-    private static string? ParseSubprocessErrors(object[] arguments, string owner, LythonSourceSpan span)
+    private static LythonSubprocessTextErrorMode ParseSubprocessErrors(object[] arguments, string owner, LythonSourceSpan span)
     {
         var value = GetArgument(arguments, SubprocessErrorsIndex);
         if (value is PyNone or null)
         {
-            return null;
+            return LythonSubprocessTextErrorMode.Strict;
         }
 
         return ParseTextErrors(value, owner, span) switch
         {
-            TextErrorMode.Ignore => "ignore",
-            TextErrorMode.Replace => "replace",
-            TextErrorMode.BackslashReplace => "backslashreplace",
-            _ => "strict"
+            TextErrorMode.Ignore => LythonSubprocessTextErrorMode.Ignore,
+            TextErrorMode.Replace => LythonSubprocessTextErrorMode.Replace,
+            TextErrorMode.BackslashReplace => LythonSubprocessTextErrorMode.BackslashReplace,
+            _ => LythonSubprocessTextErrorMode.Strict
         };
     }
 

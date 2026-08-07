@@ -5,6 +5,14 @@ namespace Lokad.Lython.Tests;
 public sealed class SubprocessCompletionSubsystemTests
 {
     [Fact]
+    public void OutputLimitRejectsNegativeByteCounts()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new LythonSubprocessOutputLimit(-1));
+
+        Assert.Equal("bytes", exception.ParamName);
+    }
+
+    [Fact]
     public async Task CompleteBufferedAsync_RejectsCapturedOutputBeyondTheBound()
     {
         var exception = await Assert.ThrowsAsync<LythonSubprocessOutputLimitException>(() => LythonSubprocessCompletion
@@ -110,12 +118,14 @@ public sealed class SubprocessCompletionSubsystemTests
             StandardInput: LythonSubprocessStreamMode.Inherit,
             StandardOutput: standardOutput,
             StandardError: standardError,
-            UseShell: false,
-            TextMode: true,
-            Encoding: null,
-            Errors: null,
-            TimeoutMilliseconds: null,
-            MaxOutputBytes: maxOutputBytes);
+            InvocationMode: LythonSubprocessInvocationMode.Direct,
+            ContentMode: LythonSubprocessContentMode.Text,
+            TextEncoding: LythonSubprocessTextEncoding.Utf8,
+            TextErrorMode: LythonSubprocessTextErrorMode.Strict,
+            Timeout: null,
+            OutputLimit: maxOutputBytes is { } maximumBytes
+                ? new LythonSubprocessOutputLimit(maximumBytes)
+                : null);
 
     private static ReadOnlyMemory<byte> Bytes(string text) => Encoding.UTF8.GetBytes(text);
 

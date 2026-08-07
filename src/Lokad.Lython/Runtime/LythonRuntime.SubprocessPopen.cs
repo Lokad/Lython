@@ -235,9 +235,17 @@ internal sealed partial class LythonRuntime
 
         public bool IsCompleted => _result is not null;
 
-        public string EncodingName => _request.Encoding ?? "utf-8";
+        public string EncodingName => _request.TextEncoding == LythonSubprocessTextEncoding.Utf8WithSignature
+            ? "utf-8-sig"
+            : "utf-8";
 
-        public string ErrorsName => _request.Errors ?? "strict";
+        public string ErrorsName => _request.TextErrorMode switch
+        {
+            LythonSubprocessTextErrorMode.Ignore => "ignore",
+            LythonSubprocessTextErrorMode.Replace => "replace",
+            LythonSubprocessTextErrorMode.BackslashReplace => "backslashreplace",
+            _ => "strict",
+        };
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -250,7 +258,7 @@ internal sealed partial class LythonRuntime
                 "returncode" => _result is null ? PyNone.Instance : new BigInteger(_result.ReturnCode),
                 "encoding" => PyString.FromString(EncodingName),
                 "errors" => PyString.FromString(ErrorsName),
-                "universal_newlines" => _request.TextMode,
+                "universal_newlines" => _request.ContentMode == LythonSubprocessContentMode.Text,
                 "communicate" => new BoundCallable(
                     (arguments, span, _) => Communicate(arguments, span),
                     async (arguments, span, _) => await CommunicateAsync(arguments, span).ConfigureAwait(false),
@@ -547,7 +555,9 @@ internal sealed partial class LythonRuntime
             return _request with
             {
                 StandardInputUtf8 = input,
-                TimeoutMilliseconds = timeoutMilliseconds,
+                Timeout = timeoutMilliseconds is { } timeoutValue
+                    ? TimeSpan.FromMilliseconds(timeoutValue)
+                    : null,
             };
         }
 
@@ -573,7 +583,9 @@ internal sealed partial class LythonRuntime
             return _request with
             {
                 StandardInputUtf8 = input,
-                TimeoutMilliseconds = timeoutMilliseconds,
+                Timeout = timeoutMilliseconds is { } timeoutValue
+                    ? TimeSpan.FromMilliseconds(timeoutValue)
+                    : null,
             };
         }
 
@@ -581,12 +593,12 @@ internal sealed partial class LythonRuntime
         {
             if (_stdout is not null)
             {
-                _decodedStdout = DecodeSubprocessOutput(result.StandardOutputUtf8, _request.Encoding, _request.Errors, _context, span);
+                _decodedStdout = DecodeSubprocessOutput(result.StandardOutputUtf8, _request.TextEncoding, _request.TextErrorMode, _context, span);
             }
 
             if (_stderr is not null)
             {
-                _decodedStderr = DecodeSubprocessOutput(result.StandardErrorUtf8, _request.Encoding, _request.Errors, _context, span);
+                _decodedStderr = DecodeSubprocessOutput(result.StandardErrorUtf8, _request.TextEncoding, _request.TextErrorMode, _context, span);
             }
 
             var ownCapturedBytes =
