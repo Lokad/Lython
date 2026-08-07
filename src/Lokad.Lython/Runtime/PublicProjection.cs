@@ -29,6 +29,12 @@ internal static class PublicProjection
             LythonRuntime.ReFindAllResult matches => ProjectFindAllResult(matches, budget),
             _ => value
         };
+
+        static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget)
+        {
+            budget?.Reserve(48L + (16L * value.Count));
+            return value.Select(item => NormalizeValue(item, budget)).ToArray();
+        }
     }
 
     public static object? ProjectNone() => null;
@@ -141,15 +147,6 @@ internal static class PublicProjection
         }
 
         return normalized;
-    }
-
-    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value)
-        => ProjectStructTime(value, null);
-
-    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget)
-    {
-        budget?.Reserve(48L + (16L * value.Count));
-        return value.Select(item => NormalizeValue(item, budget)).ToArray();
     }
 
     public static HashSet<object?> ProjectSet(PySet set)
