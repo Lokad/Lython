@@ -121,4 +121,17 @@ public sealed class PyCollectionsPrimitiveTests
         Assert.Equal(new BigInteger(0), slice.GetItem(0));
         Assert.Equal(new BigInteger(9_998), slice.GetItem(4_999));
     }
+
+    [Fact]
+    public void PyDequeEqualityTraversesLinkedStorageOnce()
+    {
+        var values = Enumerable.Range(0, 20_000).Select(static value => (object)new BigInteger(value)).ToArray();
+        var left = new PyDeque(values);
+        var right = new PyDeque(values);
+
+        Assert.True(PyEquality.AreEqual(left, right));
+
+        right.SetItem(right.Count - 1, new BigInteger(-1));
+        Assert.False(PyEquality.AreEqual(left, right));
+    }
 }

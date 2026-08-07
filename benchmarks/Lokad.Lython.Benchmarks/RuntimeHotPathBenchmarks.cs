@@ -13,6 +13,7 @@ public class RuntimeHotPathBenchmarks
     private readonly LythonCompiledScript _unicodeIndexing;
     private readonly LythonCompiledScript _steppedListDeletion;
     private readonly LythonCompiledScript _counterEquality;
+    private readonly LythonCompiledScript _dequeEquality;
     private readonly LythonCompiledScript _chainMapLookup;
     private readonly LythonCompiledScript _openPyxlAppend;
     private readonly string _repeatedConstantSource;
@@ -33,6 +34,9 @@ public class RuntimeHotPathBenchmarks
         _counterEquality = Compile(
             engine,
             "from collections import Counter\nleft = Counter(range(10000))\nright = Counter(range(10000))\nreturn left == right");
+        _dequeEquality = Compile(
+            engine,
+            "from collections import deque\nleft = deque(range(10000))\nright = deque(range(10000))\nreturn left == right");
         _chainMapLookup = Compile(
             engine,
             "from collections import ChainMap\nmaps = [{str(value): value} for value in range(256)]\ncombined = ChainMap(*maps)\nreturn sum(combined[str(value)] for value in range(256))");
@@ -65,6 +69,9 @@ public class RuntimeHotPathBenchmarks
 
     [Benchmark]
     public object? LargeCounterEquality() => Run(_counterEquality);
+
+    [Benchmark]
+    public object? LargeDequeEquality() => Run(_dequeEquality);
 
     [Benchmark]
     public object? ChainMapLookupAcrossManyMaps() => Run(_chainMapLookup);

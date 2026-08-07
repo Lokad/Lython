@@ -81,9 +81,12 @@ internal static class PyEquality
                 return false;
             }
 
-            for (var i = 0; i < leftDeque.Count; i++)
+            using var leftItems = leftDeque.GetEnumerator();
+            using var rightItems = rightDeque.GetEnumerator();
+            while (leftItems.MoveNext())
             {
-                if (!AreEqual(leftDeque[i], rightDeque[i]))
+                _ = rightItems.MoveNext();
+                if (!AreEqual(leftItems.Current, rightItems.Current))
                 {
                     return false;
                 }
