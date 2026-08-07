@@ -183,6 +183,77 @@ right = open("/b.txt").read()
     }
 
     [Fact]
+    public void ZeroHostCallLimit_DoesNotFallBackToDefaultOrUnlimited()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/a.txt", "A");
+
+        var result = new LythonEngine().Run(
+            "value = open('/a.txt').read()",
+            host,
+            new LythonRunOptions
+            {
+                DisableDefaultLimits = true,
+                MaxHostCalls = 0
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ZeroCollectionLimit_AllowsEmptyButRejectsNonEmptyCollections()
+    {
+        var emptyResult = new LythonEngine().Run(
+            "value = []",
+            new MockLythonHost(),
+            new LythonRunOptions { MaxCollectionSize = 0 });
+        var nonEmptyResult = new LythonEngine().Run(
+            "value = [1]",
+            new MockLythonHost(),
+            new LythonRunOptions { MaxCollectionSize = 0 });
+
+        Assert.True(emptyResult.Success, emptyResult.Failure?.Message);
+        Assert.False(nonEmptyResult.Success);
+        Assert.NotNull(nonEmptyResult.Failure);
+        Assert.Contains("maximum collection size exceeded", nonEmptyResult.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("steps")]
+    [InlineData("recursion")]
+    [InlineData("host-calls")]
+    [InlineData("collection")]
+    [InlineData("string")]
+    [InlineData("host-read")]
+    [InlineData("stdout")]
+    [InlineData("stderr")]
+    [InlineData("execution-memory")]
+    [InlineData("projection-memory")]
+    public void NegativeLimits_AreRejectedExplicitly(string limit)
+    {
+        var options = limit switch
+        {
+            "steps" => new LythonRunOptions { MaxExecutionSteps = -1 },
+            "recursion" => new LythonRunOptions { MaxRecursionDepth = -1 },
+            "host-calls" => new LythonRunOptions { MaxHostCalls = -1 },
+            "collection" => new LythonRunOptions { MaxCollectionSize = -1 },
+            "string" => new LythonRunOptions { MaxStringLength = -1 },
+            "host-read" => new LythonRunOptions { MaxHostReadBytes = -1 },
+            "stdout" => new LythonRunOptions { MaxStandardOutputBytes = -1 },
+            "stderr" => new LythonRunOptions { MaxStandardErrorBytes = -1 },
+            "execution-memory" => new LythonRunOptions { MaxExecutionMemoryBytes = -1 },
+            "projection-memory" => new LythonRunOptions { MaxProjectionMemoryBytes = -1 },
+            _ => throw new InvalidOperationException($"unknown test limit: {limit}")
+        };
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new LythonEngine().Run("return 1", new MockLythonHost(), options));
+    }
+
+    [Fact]
     public void ExecutionStepLimit_IsEnforced()
     {
         var result = new LythonEngine().Run(

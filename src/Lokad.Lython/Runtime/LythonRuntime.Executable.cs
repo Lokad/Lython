@@ -500,6 +500,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.MakeList:
                                 {
                                     var value = CreateListFromStack(stack, instruction.A, instruction.Span, context);
+                                    context.ObserveValue(value, instruction.Span);
                                     stack.Push(value);
                                     break;
                                 }

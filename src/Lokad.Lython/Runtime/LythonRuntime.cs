@@ -4588,26 +4588,36 @@ internal sealed partial class LythonRuntime
             return new ExecutionLimits
             {
                 CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxExecutionSteps = PositiveOrDefault(options?.MaxExecutionSteps, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionSteps : null),
-                MaxRecursionDepth = PositiveOrDefault(options?.MaxRecursionDepth, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null),
-                MaxHostCalls = PositiveOrDefault(options?.MaxHostCalls, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null),
-                MaxCollectionSize = PositiveOrDefault(options?.MaxCollectionSize, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null),
-                MaxStringLength = PositiveOrDefault(options?.MaxStringLength, useDefaultLimits ? LythonRunOptions.DefaultMaxStringLength : null),
-                MaxHostReadBytes = PositiveOrDefault(options?.MaxHostReadBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null),
-                MaxStandardOutputBytes = PositiveOrDefault(options?.MaxStandardOutputBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardOutputBytes : null),
-                MaxStandardErrorBytes = PositiveOrDefault(options?.MaxStandardErrorBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardErrorBytes : null),
-                MaxExecutionMemoryBytes = PositiveOrDefault(options?.MaxExecutionMemoryBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionMemoryBytes : null),
+                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionSteps : null, nameof(LythonRunOptions.MaxExecutionSteps)),
+                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null, nameof(LythonRunOptions.MaxRecursionDepth)),
+                MaxHostCalls = NonNegativeOrDefault(options?.MaxHostCalls, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null, nameof(LythonRunOptions.MaxHostCalls)),
+                MaxCollectionSize = NonNegativeOrDefault(options?.MaxCollectionSize, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null, nameof(LythonRunOptions.MaxCollectionSize)),
+                MaxStringLength = NonNegativeOrDefault(options?.MaxStringLength, useDefaultLimits ? LythonRunOptions.DefaultMaxStringLength : null, nameof(LythonRunOptions.MaxStringLength)),
+                MaxHostReadBytes = NonNegativeOrDefault(options?.MaxHostReadBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null, nameof(LythonRunOptions.MaxHostReadBytes)),
+                MaxStandardOutputBytes = NonNegativeOrDefault(options?.MaxStandardOutputBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardOutputBytes : null, nameof(LythonRunOptions.MaxStandardOutputBytes)),
+                MaxStandardErrorBytes = NonNegativeOrDefault(options?.MaxStandardErrorBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxStandardErrorBytes : null, nameof(LythonRunOptions.MaxStandardErrorBytes)),
+                MaxExecutionMemoryBytes = NonNegativeOrDefault(options?.MaxExecutionMemoryBytes, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionMemoryBytes : null, nameof(LythonRunOptions.MaxExecutionMemoryBytes)),
             };
         }
 
-        private static int? PositiveOrDefault(int? value, int? defaultValue)
+        internal static int? NonNegativeOrDefault(int? value, int? defaultValue, string parameterName)
         {
-            return value is > 0 ? value : defaultValue;
+            if (value is < 0)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, value, "Execution limits cannot be negative.");
+            }
+
+            return value ?? defaultValue;
         }
 
-        private static long? PositiveOrDefault(long? value, long? defaultValue)
+        internal static long? NonNegativeOrDefault(long? value, long? defaultValue, string parameterName)
         {
-            return value is > 0 ? value : defaultValue;
+            if (value is < 0)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, value, "Execution limits cannot be negative.");
+            }
+
+            return value ?? defaultValue;
         }
     }
 
