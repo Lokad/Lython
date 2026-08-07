@@ -915,17 +915,6 @@ internal sealed partial class LythonRuntime
         return new PyClassMethod(callable);
     }
 
-    private static object ObjectNew(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        _ = context;
-        if (arguments.Length == 0 || arguments[0] is not PyType type)
-        {
-            throw new LythonRuntimeException("TypeError", "object.__new__(cls, ...) expects the first argument to be a class.", span);
-        }
-
-        return new PyInstance(type);
-    }
-
     private sealed class ObjectNewMethod : ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

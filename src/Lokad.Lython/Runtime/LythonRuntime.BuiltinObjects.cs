@@ -166,42 +166,6 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static async ValueTask<object> DictAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        _ = context;
-        if (arguments.Length == 0)
-        {
-            return new PyDict(context.MemoryGovernor, span);
-        }
-
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects one argument.", span);
-        }
-
-        if (arguments[0] is PyDict sourceDict)
-        {
-            var copied = new PyDict(sourceDict, context.MemoryGovernor, span);
-            context.ObserveCollectionCount(copied.Count, span);
-            return copied;
-        }
-
-        var result = new PyDict(context.MemoryGovernor, span);
-        await foreach (var pair in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
-        {
-            var values = await PyIteration.MaterializeAsync(pair, span).ConfigureAwait(false);
-            if (values.Count != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects key-value pairs.", span);
-            }
-
-            result.SetItem(ValidateDictionaryKey(values[0], span, context.MemoryGovernor), values[1]);
-        }
-
-        context.ObserveCollectionCount(result.Count, span);
-        return result;
-    }
-
     private static object Set(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)

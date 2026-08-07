@@ -1164,29 +1164,6 @@ internal static class PyStringOps
             : trimChars.Contains(rune);
     }
 
-    private static PyString ConcatRunes(IEnumerable<PyString> runes)
-    {
-        var materialized = runes as PyString[] ?? [.. runes];
-        var owner = materialized.Length != 0 ? materialized[0] : PyString.Empty;
-        var builder = CreateBuilder(owner);
-        foreach (var rune in materialized)
-        {
-            builder.Append(rune);
-        }
-
-        return builder.ToPyStringAndRelease();
-    }
-
-    private static bool IsLineBreak(PyString rune)
-    {
-        return rune.Equals(NewlineLiteral) ||
-               rune.Equals(CarriageReturnLiteral) ||
-               rune.Equals(VerticalTabLiteral) ||
-               rune.Equals(FormFeedLiteral) ||
-               rune.Equals(LineSeparatorLiteral) ||
-               rune.Equals(ParagraphSeparatorLiteral);
-    }
-
     private static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
         => haystack.LastIndexOf(needle);
 

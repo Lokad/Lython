@@ -2059,43 +2059,6 @@ internal static class PyDateTimeOps
 
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 
-    private static string TranslateStrftimeFormat(string format, LythonSourceSpan span)
-    {
-        var builder = new StringBuilder(format.Length * 2);
-        for (var i = 0; i < format.Length; i++)
-        {
-            var ch = format[i];
-            if (ch != '%')
-            {
-                builder.Append(ch);
-                continue;
-            }
-
-            if (i + 1 >= format.Length)
-            {
-                throw new LythonRuntimeException("ValueError", "strftime format string cannot end with '%'.", span);
-            }
-
-            var directive = format[++i];
-            builder.Append(directive switch
-            {
-                '%' => "%",
-                'Y' => "yyyy",
-                'm' => "MM",
-                'd' => "dd",
-                'H' => "HH",
-                'M' => "mm",
-                'S' => "ss",
-                'f' => "ffffff",
-                'z' => "zzz",
-                'y' => "yy",
-                _ => throw new LythonRuntimeException("ValueError", $"strftime directive '%{directive}' is not supported in Lython yet.", span)
-            });
-        }
-
-        return builder.ToString();
-    }
-
     private static bool TryGetScale(object value, out double scale)
     {
         if (Numbers.PyNumberOps.TryAsNumber(value, out var number))

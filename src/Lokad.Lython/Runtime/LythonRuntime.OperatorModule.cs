@@ -560,52 +560,6 @@ internal sealed partial class LythonRuntime
         return InvokeCallableTarget(arguments[0].Value, span, span, context, () => arguments[1..]);
     }
 
-    private static bool TryGetLength(object value, out BigInteger length)
-    {
-        switch (value)
-        {
-            case PyString text:
-                length = text.Length;
-                return true;
-            case PyBytes bytes:
-                length = bytes.Length;
-                return true;
-            case string text:
-                length = PyString.FromString(text).Length;
-                return true;
-            case ReFindAllResult matches:
-                length = matches.Items.Count;
-                return true;
-            case PyDict dict:
-                length = dict.Count;
-                return true;
-            case PyDefaultDict defaultDict:
-                length = defaultDict.Count;
-                return true;
-            case PyCounter counter:
-                length = counter.Count;
-                return true;
-            case PyDeque deque:
-                length = deque.Count;
-                return true;
-            case PySet set:
-                length = set.Count;
-                return true;
-            case IPyIndexableValue indexable:
-                length = indexable.Length;
-                return true;
-            case IReadOnlyCollection<object> collection:
-                length = collection.Count;
-                return true;
-            case System.Collections.ICollection collection:
-                length = collection.Count;
-                return true;
-            default:
-                length = BigInteger.Zero;
-                return false;
-        }
-    }
-
     private static object CreateItemGetter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;

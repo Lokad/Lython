@@ -638,31 +638,6 @@ internal sealed partial class LythonRuntime
         return new PyZipIterator([.. iterables], strict, span);
     }
 
-    private static async ValueTask<object> EnumerateAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        _ = context;
-        if (arguments.Length is not 1 and not 2)
-        {
-            throw new LythonRuntimeException("TypeError", "enumerate(iterable[, start]) expects one or two arguments.", span);
-        }
-
-        var result = new PyList([], context.MemoryGovernor, span);
-        var index = arguments.Length == 2 && arguments[1] is BigInteger start
-            ? start
-            : arguments.Length == 1
-                ? BigInteger.Zero
-                : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
-
-        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
-        {
-            result.Add(CreateTuple(2, i => i == 0 ? index : item, context, span));
-            context.ObserveCollectionCount(result.Count, span);
-            index += BigInteger.One;
-        }
-
-        return result;
-    }
-
     private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, span);
@@ -707,49 +682,6 @@ internal sealed partial class LythonRuntime
             foreach (var enumerator in enumerators)
             {
                 (enumerator as IDisposable)?.Dispose();
-            }
-        }
-    }
-
-    private static async ValueTask<object> ZipAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var result = new PyList([], context.MemoryGovernor, span);
-        if (arguments.Length == 0)
-        {
-            return result;
-        }
-
-        var cursors = new PyIteration.Cursor[arguments.Length];
-        for (var i = 0; i < arguments.Length; i++)
-        {
-            cursors[i] = PyIteration.Cursor.Create(arguments[i], span);
-        }
-
-        try
-        {
-            while (true)
-            {
-                var items = new object[cursors.Length];
-                for (var i = 0; i < cursors.Length; i++)
-                {
-                    var (hasValue, value) = await cursors[i].TryMoveNextAsync().ConfigureAwait(false);
-                    if (!hasValue)
-                    {
-                        return result;
-                    }
-
-                    items[i] = RuntimeValue(value);
-                }
-
-                result.Add(new PyTuple(items, context.MemoryGovernor, span));
-                context.ObserveCollectionCount(result.Count, span);
-            }
-        }
-        finally
-        {
-            foreach (var cursor in cursors)
-            {
-                await cursor.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
