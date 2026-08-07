@@ -1372,22 +1372,23 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool CanCacheRuntimeMemberTarget(object target)
-        => target is PyString
-            or PyBytes
-            or PyList
-            or PyTuple
-            or PyDict
-            or PySet
-            or PyDecimal
-            or PyDate
-            or PyTime
-            or PyDateTime
-            or PyTimedelta
-            or PyTimezone
-            or RePatternObject
-            or ReMatchObject
-            or PyPath
-            or PyModule;
+        => target is not IPyContextualDynamicAttributes &&
+           target is (PyString
+               or PyBytes
+               or PyList
+               or PyTuple
+               or PyDict
+               or PySet
+               or PyDecimal
+               or PyDate
+               or PyTime
+               or PyDateTime
+               or PyTimedelta
+               or PyTimezone
+               or RePatternObject
+               or ReMatchObject
+               or PyPath
+               or PyModule);
 
     private static object Pop(ExecutableValueStack stack, LythonSourceSpan span)
     {

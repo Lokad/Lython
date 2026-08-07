@@ -88,10 +88,13 @@ __lython_file.close()
             """
 import sys
 
-before = "helper" in sys.modules
+modules = sys.modules
+same = modules is sys.modules
+before = "helper" in modules
 import helper
 after = "helper" in sys.modules
 parts = [
+    str(same),
     str("sys" in sys.modules),
     str("json" in sys.modules),
     str(before),
@@ -109,7 +112,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("True|True|False|True|42", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|True|False|True|42", host.ReadText("/out.txt"));
     }
 
     [Fact]
