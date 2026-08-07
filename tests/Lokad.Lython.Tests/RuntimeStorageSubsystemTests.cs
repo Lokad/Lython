@@ -325,6 +325,53 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void TextFileHandle_RepeatedFlushesReleasePublishedBufferCapacity()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(
+            host,
+            new LythonRunOptions { MaxExecutionMemoryBytes = 96 });
+        var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
+
+        for (var i = 0; i < 200; i++)
+        {
+            _ = handle.Write(PyString.FromString("x"));
+            _ = handle.Flush();
+        }
+
+        Assert.Equal(new BigInteger(200), handle.Tell());
+        Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
+        _ = handle.Exit();
+        Assert.Equal(new string('x', 200), host.ReadText("/output.txt"));
+    }
+
+    [Fact]
+    public async Task TextFileHandle_AsyncLatin1AppendDoesNotRetainOrRewritePrefix()
+    {
+        var host = new DelayedLythonHost();
+        host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
+        var context = new LythonRuntime.ExecutionContext(
+            host,
+            new LythonRunOptions { MaxExecutionMemoryBytes = 160 });
+        var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
+            "/output.txt",
+            context,
+            LythonRuntime.TextEncodingMode.Latin1,
+            LythonRuntime.TextErrorMode.Strict,
+            LythonRuntime.TextNewlineMode.TranslateUniversal);
+
+        _ = handle.Write(PyString.FromString("é"));
+        await handle.FlushAsync();
+        _ = handle.Write(PyString.FromString("!"));
+        await handle.FlushAsync();
+        await handle.ExitAsync();
+
+        Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes, 0, 100);
+        Assert.Equal([.. Enumerable.Repeat((byte)'a', 1_000), 0xe9, 0x21], host.ReadBytes("/output.txt"));
+        Assert.True(host.CompletedAsynchronously > 0);
+    }
+
+    [Fact]
     public void ExecutionServices_GovernedValuesDoNotDoubleChargeMemoryGovernor()
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions

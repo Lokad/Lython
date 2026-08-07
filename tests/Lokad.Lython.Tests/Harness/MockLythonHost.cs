@@ -131,6 +131,24 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         return ValueTask.CompletedTask;
     }
 
+    public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        path = NormalizePath(path);
+        EnsureDirectory(ParentOf(path));
+        if (!_binaryFiles.TryGetValue(path, out var prefix))
+        {
+            _binaryFiles[path] = bytes.ToArray();
+            return ValueTask.CompletedTask;
+        }
+
+        var combined = new byte[checked(prefix.Length + bytes.Length)];
+        prefix.CopyTo(combined, 0);
+        bytes.CopyTo(combined.AsMemory(prefix.Length));
+        _binaryFiles[path] = combined;
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

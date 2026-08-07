@@ -3832,6 +3832,12 @@ internal sealed partial class LythonRuntime
         public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.WriteBytesAsync(path, payload, Limits.CancellationToken), "write_bytes", span);
 
+        public void AppendHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.AppendBytesAsync(path, payload, Limits.CancellationToken), "append_bytes", span);
+
+        public ValueTask AppendHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.AppendBytesAsync(path, payload, Limits.CancellationToken), "append_bytes", span);
+
         public bool HostExists(string path, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.ExistsAsync(path, Limits.CancellationToken), "exists", span);
 

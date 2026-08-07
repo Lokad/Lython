@@ -37,6 +37,29 @@ public interface ILythonHost
     ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
         => throw new NotSupportedException("Host binary file I/O is not available.");
 
+    /// <summary>Appends bytes to a contained binary file when the host exposes binary I/O.</summary>
+    /// <remarks>
+    /// Implementations must preserve the existing prefix and create a missing file. The default
+    /// implementation composes the other host operations and is therefore neither atomic nor
+    /// allocation-free; hosts with native append support should override it.
+    /// </remarks>
+    async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var stat = await StatAsync(path, cancellationToken).ConfigureAwait(false);
+        if (!stat.Exists)
+        {
+            await WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        var prefix = await ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        var combined = new byte[checked(prefix.Length + bytes.Length)];
+        prefix.CopyTo(combined);
+        bytes.CopyTo(combined.AsMemory(prefix.Length));
+        await WriteBytesAsync(path, combined, cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>Determines whether a file-system entry exists at the contained path.</summary>
     ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken);
 
