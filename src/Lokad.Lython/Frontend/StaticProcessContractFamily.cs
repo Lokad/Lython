@@ -330,7 +330,7 @@ internal static class StaticProcessContractFamily
         if (!arguments.TryGetValue(position, keyword, out var expression) ||
             expression is NoneLiteralExpressionSyntax ||
             !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
-            IsSupportedTextError(text))
+            StaticTextContractFacts.IsSupportedErrorName(text))
         {
             return false;
         }
@@ -338,12 +338,6 @@ internal static class StaticProcessContractFamily
         StaticDiagnosticSink.AddError(diagnostics, "LA3032", message, expression.Span);
         return true;
     }
-
-    private static bool IsSupportedTextError(string errors)
-        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSubprocessKnownCall(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.SubprocessRun.Name, StringComparison.Ordinal) ||

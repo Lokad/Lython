@@ -512,7 +512,7 @@ internal static class StaticTextIoContractFamily
 
         if (errorsExpression is not NoneLiteralExpressionSyntax &&
             StaticAbstractValueResolver.TryResolveKnownString(errorsExpression, bindings, out var errorsText) &&
-            !IsSupportedTextError(errorsText))
+            !StaticTextContractFacts.IsSupportedErrorName(errorsText))
         {
             AddDiagnostic(diagnostics, code, unsupportedErrorsMessage, errorsExpression.Span);
         }
@@ -520,12 +520,6 @@ internal static class StaticTextIoContractFamily
 
     private static bool IsSupportedTextMode(string mode)
         => mode is "r" or "rt" or "w" or "wt" or "a" or "at";
-
-    private static bool IsSupportedTextError(string errors)
-        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
 
     private static void AnalyzeOpenerArgument(
         ConcreteCallArguments arguments,

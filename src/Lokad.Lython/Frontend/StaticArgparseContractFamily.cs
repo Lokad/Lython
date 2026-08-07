@@ -264,7 +264,7 @@ internal static class StaticArgparseContractFamily
         if (!arguments.TryGetValue(position, keyword, out var expression) ||
             expression is NoneLiteralExpressionSyntax ||
             !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
-            IsSupportedTextError(text))
+            StaticTextContractFacts.IsSupportedErrorName(text))
         {
             return false;
         }
@@ -273,9 +273,4 @@ internal static class StaticArgparseContractFamily
         return true;
     }
 
-    private static bool IsSupportedTextError(string errors)
-        => errors.Equals("strict", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("ignore", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("replace", StringComparison.OrdinalIgnoreCase) ||
-           errors.Equals("backslashreplace", StringComparison.OrdinalIgnoreCase);
 }
