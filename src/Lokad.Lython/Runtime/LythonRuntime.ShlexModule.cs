@@ -241,7 +241,8 @@ internal sealed partial class LythonRuntime
             private readonly Stack<SourceSnapshot> _sourceStack = [];
             private string _input;
             private int _index;
-            private string? _state = " ";
+            // Quote and escape states retain their triggering symbol because both sets are mutable Python attributes.
+            private LexerState _state = LexerState.Whitespace;
             private object _instream;
             private object _infile;
             private object _eof;
@@ -474,7 +475,7 @@ internal sealed partial class LythonRuntime
             {
                 var token = new StringBuilder();
                 var quoted = false;
-                var escapedState = " ";
+                var escapedState = LexerState.Whitespace;
 
                 while (true)
                 {
@@ -482,17 +483,17 @@ internal sealed partial class LythonRuntime
                     var next = ReadSymbol();
                     var atEnd = next.Length == 0;
 
-                    if (_state is null)
+                    if (_state.Kind == LexerStateKind.End)
                     {
                         token.Clear();
                         break;
                     }
 
-                    if (_state == " ")
+                    if (_state.Kind == LexerStateKind.Whitespace)
                     {
                         if (atEnd)
                         {
-                            _state = null;
+                            _state = LexerState.End;
                             break;
                         }
 
@@ -509,18 +510,18 @@ internal sealed partial class LythonRuntime
                         }
                         else if (Posix && Contains(Escape, next))
                         {
-                            escapedState = "a";
-                            _state = next;
+                            escapedState = LexerState.Word;
+                            _state = LexerState.Escape(next);
                         }
                         else if (Contains(WordChars, next))
                         {
                             token.Append(next);
-                            _state = "a";
+                            _state = LexerState.Word;
                         }
                         else if (Contains(PunctuationChars, next))
                         {
                             token.Append(next);
-                            _state = "c";
+                            _state = LexerState.Punctuation;
                         }
                         else if (Contains(Quotes, next))
                         {
@@ -529,12 +530,12 @@ internal sealed partial class LythonRuntime
                                 token.Append(next);
                             }
 
-                            _state = next;
+                            _state = LexerState.Quote(next);
                         }
                         else if (WhitespaceSplit)
                         {
                             token.Append(next);
-                            _state = "a";
+                            _state = LexerState.Word;
                         }
                         else
                         {
@@ -545,7 +546,7 @@ internal sealed partial class LythonRuntime
                             }
                         }
                     }
-                    else if (Contains(Quotes, _state))
+                    else if (_state.Kind == LexerStateKind.Quote)
                     {
                         quoted = true;
                         if (atEnd)
@@ -553,53 +554,55 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", "No closing quotation", span);
                         }
 
-                        if (next == _state)
+                        if (next == _state.Symbol)
                         {
                             if (!Posix)
                             {
                                 token.Append(next);
-                                _state = " ";
+                                _state = LexerState.Whitespace;
                                 break;
                             }
 
-                            _state = "a";
+                            _state = LexerState.Word;
                         }
-                        else if (Posix && Contains(Escape, next) && Contains(EscapedQuotes, _state))
+                        else if (Posix && Contains(Escape, next) && Contains(EscapedQuotes, _state.Symbol))
                         {
                             escapedState = _state;
-                            _state = next;
+                            _state = LexerState.Escape(next);
                         }
                         else
                         {
                             token.Append(next);
                         }
                     }
-                    else if (Contains(Escape, _state))
+                    else if (_state.Kind == LexerStateKind.Escape)
                     {
                         if (atEnd)
                         {
                             throw new LythonRuntimeException("ValueError", "No escaped character", span);
                         }
 
-                        if (Contains(Quotes, escapedState) && next != _state && next != escapedState)
+                        if (escapedState.Kind == LexerStateKind.Quote &&
+                            next != _state.Symbol &&
+                            next != escapedState.Symbol)
                         {
-                            token.Append(_state);
+                            token.Append(_state.Symbol);
                         }
 
                         token.Append(next);
                         _state = escapedState;
                     }
-                    else if (_state is "a" or "c")
+                    else if (_state.Kind is LexerStateKind.Word or LexerStateKind.Punctuation)
                     {
                         if (atEnd)
                         {
-                            _state = null;
+                            _state = LexerState.End;
                             break;
                         }
 
                         if (Contains(Whitespace, next))
                         {
-                            _state = " ";
+                            _state = LexerState.Whitespace;
                             if (token.Length > 0 || Posix && quoted)
                             {
                                 break;
@@ -610,14 +613,14 @@ internal sealed partial class LythonRuntime
                             SkipComment();
                             if (Posix)
                             {
-                                _state = " ";
+                                _state = LexerState.Whitespace;
                                 if (token.Length > 0 || quoted)
                                 {
                                     break;
                                 }
                             }
                         }
-                        else if (_state == "c")
+                        else if (_state.Kind == LexerStateKind.Punctuation)
                         {
                             if (Contains(PunctuationChars, next))
                             {
@@ -630,18 +633,18 @@ internal sealed partial class LythonRuntime
                                     _pushbackChars.Push(next);
                                 }
 
-                                _state = " ";
+                                _state = LexerState.Whitespace;
                                 break;
                             }
                         }
                         else if (Posix && Contains(Quotes, next))
                         {
-                            _state = next;
+                            _state = LexerState.Quote(next);
                         }
                         else if (Posix && Contains(Escape, next))
                         {
-                            escapedState = "a";
-                            _state = next;
+                            escapedState = LexerState.Word;
+                            _state = LexerState.Escape(next);
                         }
                         else if (Contains(WordChars, next) || Contains(Quotes, next) || WhitespaceSplit && !Contains(PunctuationChars, next))
                         {
@@ -658,7 +661,7 @@ internal sealed partial class LythonRuntime
                                 _pushback.AddFirst(CreateToken(next, span));
                             }
 
-                            _state = " ";
+                            _state = LexerState.Whitespace;
                             if (token.Length > 0 || Posix && quoted)
                             {
                                 break;
@@ -730,7 +733,32 @@ internal sealed partial class LythonRuntime
                 _instream = source.Stream;
                 _infile = source.Infile;
                 LineNumber = source.LineNumber;
-                _state = " ";
+                _state = LexerState.Whitespace;
+            }
+
+            private enum LexerStateKind
+            {
+                Whitespace,
+                Word,
+                Punctuation,
+                Quote,
+                Escape,
+                End
+            }
+
+            private readonly record struct LexerState(LexerStateKind Kind, string Symbol)
+            {
+                public static LexerState Whitespace => new(LexerStateKind.Whitespace, string.Empty);
+
+                public static LexerState Word => new(LexerStateKind.Word, string.Empty);
+
+                public static LexerState Punctuation => new(LexerStateKind.Punctuation, string.Empty);
+
+                public static LexerState End => new(LexerStateKind.End, string.Empty);
+
+                public static LexerState Quote(string symbol) => new(LexerStateKind.Quote, symbol);
+
+                public static LexerState Escape(string symbol) => new(LexerStateKind.Escape, symbol);
             }
 
             private string ReadSymbol()
