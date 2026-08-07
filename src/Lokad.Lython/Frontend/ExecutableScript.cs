@@ -43,6 +43,7 @@ internal enum ExecutableOpCode
     Subscript,
     Slice,
     Binary,
+    Augmented,
     Unary,
     Jump,
     JumpIfFalse,
@@ -104,159 +105,216 @@ internal enum ExecutableAugmentedOperator
     RightShift,
 }
 
-internal readonly record struct ExecutableInstruction(
-    ExecutableOpCode OpCode,
-    LythonSourceSpan Span,
-    int A,
-    int B,
-    ExecutableBinaryOperator BinaryOperator,
-    ExecutableUnaryOperator UnaryOperator,
-    ExecutableAugmentedOperator AugmentedOperator)
+[Flags]
+internal enum ExecutableSliceParts
 {
-    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span)
-        : this(OpCode, Span, 0, 0, default, default, default)
+    None = 0,
+    Start = 1,
+    End = 2,
+    Step = 4,
+}
+
+internal readonly record struct ExecutableInstruction
+{
+    private readonly int _primaryIndex;
+    private readonly int _secondaryIndex;
+    private readonly ExecutableBinaryOperator _binaryOperator;
+    private readonly ExecutableUnaryOperator _unaryOperator;
+    private readonly ExecutableAugmentedOperator _augmentedOperator;
+    private readonly ExecutableSliceParts _sliceParts;
+
+    private ExecutableInstruction(
+        ExecutableOpCode opCode,
+        LythonSourceSpan span,
+        int primaryIndex,
+        int secondaryIndex,
+        ExecutableBinaryOperator binaryOperator,
+        ExecutableUnaryOperator unaryOperator,
+        ExecutableAugmentedOperator augmentedOperator,
+        ExecutableSliceParts sliceParts)
     {
+        OpCode = opCode;
+        Span = span;
+        _primaryIndex = primaryIndex;
+        _secondaryIndex = secondaryIndex;
+        _binaryOperator = binaryOperator;
+        _unaryOperator = unaryOperator;
+        _augmentedOperator = augmentedOperator;
+        _sliceParts = sliceParts;
     }
 
-    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A)
-        : this(OpCode, Span, A, 0, default, default, default)
-    {
-    }
+    public ExecutableOpCode OpCode { get; }
 
-    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B)
-        : this(OpCode, Span, A, B, default, default, default)
-    {
-    }
+    public LythonSourceSpan Span { get; }
 
-    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B, ExecutableBinaryOperator BinaryOperator)
-        : this(OpCode, Span, A, B, BinaryOperator, default, default)
-    {
-    }
-
-    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B, ExecutableBinaryOperator BinaryOperator, ExecutableUnaryOperator UnaryOperator)
-        : this(OpCode, Span, A, B, BinaryOperator, UnaryOperator, default)
-    {
-    }
+    // Named projections keep the VM independent of the compact, index-based storage layout.
+    public int ImportIndex => _primaryIndex;
+    public int FunctionIndex => _primaryIndex;
+    public int StatementFallbackIndex => _primaryIndex;
+    public int ConstantIndex => _primaryIndex;
+    public int LocalSlot => _primaryIndex;
+    public int ClosureSlot => _primaryIndex;
+    public int NameIndex => _primaryIndex;
+    public int ExpressionFallbackIndex => _primaryIndex;
+    public int MemberCacheIndex => _secondaryIndex;
+    public int ItemCount => _primaryIndex;
+    public int PairCount => _primaryIndex;
+    public int MatchCaseIndex => _primaryIndex;
+    public int FailureBlockIndex => _secondaryIndex;
+    public int TargetBlockIndex => _primaryIndex;
+    public int LoopTargetIndex => _primaryIndex;
+    public int UnpackingTargetIndex => _primaryIndex;
+    public int CallSiteIndex => _primaryIndex;
+    public int CallCacheIndex => _secondaryIndex;
+    public int ExceptionNameIndex => _primaryIndex;
+    public ExecutableSliceParts SliceParts => _sliceParts;
+    public ExecutableBinaryOperator BinaryOperator => _binaryOperator;
+    public ExecutableUnaryOperator UnaryOperator => _unaryOperator;
+    public ExecutableAugmentedOperator AugmentedOperator => _augmentedOperator;
 
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.Import, span, A: importIndex);
+        => CreateIndexed(ExecutableOpCode.Import, importIndex, span);
 
     public static ExecutableInstruction DefineFunction(int functionIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.DefineFunction, span, A: functionIndex);
+        => CreateIndexed(ExecutableOpCode.DefineFunction, functionIndex, span);
 
     public static ExecutableInstruction ExecuteFallbackStatement(int statementIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.ExecuteFallbackStatement, span, A: statementIndex);
+        => CreateIndexed(ExecutableOpCode.ExecuteFallbackStatement, statementIndex, span);
 
     public static ExecutableInstruction LoadConst(int constantIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadConst, span, A: constantIndex);
+        => CreateIndexed(ExecutableOpCode.LoadConst, constantIndex, span);
 
     public static ExecutableInstruction LoadLocal(int slot, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadLocal, span, A: slot);
+        => CreateIndexed(ExecutableOpCode.LoadLocal, slot, span);
 
     public static ExecutableInstruction LoadClosure(int slot, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadClosure, span, A: slot);
+        => CreateIndexed(ExecutableOpCode.LoadClosure, slot, span);
 
     public static ExecutableInstruction LoadGlobal(int nameIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadGlobal, span, A: nameIndex);
+        => CreateIndexed(ExecutableOpCode.LoadGlobal, nameIndex, span);
 
     public static ExecutableInstruction LoadName(int nameIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadName, span, A: nameIndex);
+        => CreateIndexed(ExecutableOpCode.LoadName, nameIndex, span);
 
     public static ExecutableInstruction EvaluateFallbackExpression(int expressionIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.EvaluateFallbackExpression, span, A: expressionIndex);
+        => CreateIndexed(ExecutableOpCode.EvaluateFallbackExpression, expressionIndex, span);
 
     public static ExecutableInstruction LoadMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadMember, span, A: nameIndex, B: cacheIndex);
+        => CreateIndexed(ExecutableOpCode.LoadMember, nameIndex, cacheIndex, span);
 
     public static ExecutableInstruction StoreLocal(int slot, LythonSourceSpan span)
-        => new(ExecutableOpCode.StoreLocal, span, A: slot);
+        => CreateIndexed(ExecutableOpCode.StoreLocal, slot, span);
 
     public static ExecutableInstruction StoreClosure(int slot, LythonSourceSpan span)
-        => new(ExecutableOpCode.StoreClosure, span, A: slot);
+        => CreateIndexed(ExecutableOpCode.StoreClosure, slot, span);
 
     public static ExecutableInstruction StoreGlobal(int nameIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.StoreGlobal, span, A: nameIndex);
+        => CreateIndexed(ExecutableOpCode.StoreGlobal, nameIndex, span);
 
     public static ExecutableInstruction StoreName(int nameIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.StoreName, span, A: nameIndex);
+        => CreateIndexed(ExecutableOpCode.StoreName, nameIndex, span);
 
     public static ExecutableInstruction Dup(LythonSourceSpan span)
-        => new(ExecutableOpCode.Dup, span);
+        => Create(ExecutableOpCode.Dup, span);
 
     public static ExecutableInstruction PopTop(LythonSourceSpan span)
-        => new(ExecutableOpCode.PopTop, span);
+        => Create(ExecutableOpCode.PopTop, span);
 
     public static ExecutableInstruction MakeList(int count, LythonSourceSpan span)
-        => new(ExecutableOpCode.MakeList, span, A: count);
+        => CreateIndexed(ExecutableOpCode.MakeList, count, span);
 
     public static ExecutableInstruction MakeTuple(int count, LythonSourceSpan span)
-        => new(ExecutableOpCode.MakeTuple, span, A: count);
+        => CreateIndexed(ExecutableOpCode.MakeTuple, count, span);
 
     public static ExecutableInstruction MakeSet(int count, LythonSourceSpan span)
-        => new(ExecutableOpCode.MakeSet, span, A: count);
+        => CreateIndexed(ExecutableOpCode.MakeSet, count, span);
 
     public static ExecutableInstruction MakeDict(int pairCount, LythonSourceSpan span)
-        => new(ExecutableOpCode.MakeDict, span, A: pairCount);
+        => CreateIndexed(ExecutableOpCode.MakeDict, pairCount, span);
 
     public static ExecutableInstruction ResolveContextManager(LythonSourceSpan span)
-        => new(ExecutableOpCode.ResolveContextManager, span);
+        => Create(ExecutableOpCode.ResolveContextManager, span);
 
     public static ExecutableInstruction EnterContextManager(LythonSourceSpan span)
-        => new(ExecutableOpCode.EnterContextManager, span);
+        => Create(ExecutableOpCode.EnterContextManager, span);
 
     public static ExecutableInstruction ExitContextManager(LythonSourceSpan span)
-        => new(ExecutableOpCode.ExitContextManager, span);
+        => Create(ExecutableOpCode.ExitContextManager, span);
 
     public static ExecutableInstruction MatchCase(int caseIndex, int failBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.MatchCase, span, A: caseIndex, B: failBlockIndex);
+        => CreateIndexed(ExecutableOpCode.MatchCase, caseIndex, failBlockIndex, span);
 
     public static ExecutableInstruction GetIter(LythonSourceSpan span)
-        => new(ExecutableOpCode.GetIter, span);
+        => Create(ExecutableOpCode.GetIter, span);
 
     public static ExecutableInstruction ForNext(int targetBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.ForNext, span, A: targetBlockIndex);
+        => CreateIndexed(ExecutableOpCode.ForNext, targetBlockIndex, span);
 
     public static ExecutableInstruction AssignLoopTarget(int loopTargetIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.AssignLoopTarget, span, A: loopTargetIndex);
+        => CreateIndexed(ExecutableOpCode.AssignLoopTarget, loopTargetIndex, span);
 
     public static ExecutableInstruction AssignUnpackingTargets(int unpackingTargetIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.AssignUnpackingTargets, span, A: unpackingTargetIndex);
+        => CreateIndexed(ExecutableOpCode.AssignUnpackingTargets, unpackingTargetIndex, span);
 
     public static ExecutableInstruction Call(int callSiteIndex, int cacheIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.Call, span, A: callSiteIndex, B: cacheIndex);
+        => CreateIndexed(ExecutableOpCode.Call, callSiteIndex, cacheIndex, span);
 
     public static ExecutableInstruction Subscript(LythonSourceSpan span)
-        => new(ExecutableOpCode.Subscript, span);
+        => Create(ExecutableOpCode.Subscript, span);
 
-    public static ExecutableInstruction Slice(int presenceFlags, LythonSourceSpan span)
-        => new(ExecutableOpCode.Slice, span, A: presenceFlags);
+    public static ExecutableInstruction Slice(ExecutableSliceParts parts, LythonSourceSpan span)
+        => new(ExecutableOpCode.Slice, span, 0, 0, default, default, default, parts);
 
     public static ExecutableInstruction Binary(ExecutableBinaryOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Binary, span, 0, 0, BinaryOperator: op);
+        => new(ExecutableOpCode.Binary, span, 0, 0, op, default, default, default);
 
     public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Binary, span, 0, 1, default, default, AugmentedOperator: op);
+        => new(ExecutableOpCode.Augmented, span, 0, 0, default, default, op, default);
 
     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Unary, span, 0, 0, default, UnaryOperator: op);
+        => new(ExecutableOpCode.Unary, span, 0, 0, default, op, default, default);
 
     public static ExecutableInstruction Jump(int targetBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.Jump, span, A: targetBlockIndex);
+        => CreateIndexed(ExecutableOpCode.Jump, targetBlockIndex, span);
 
     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.JumpIfFalse, span, A: targetBlockIndex);
+        => CreateIndexed(ExecutableOpCode.JumpIfFalse, targetBlockIndex, span);
 
     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.ClearException, span, A: exceptionNameIndex);
+        => CreateIndexed(ExecutableOpCode.ClearException, exceptionNameIndex, span);
 
     public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.EndFinally, span, A: targetBlockIndex);
+        => CreateIndexed(ExecutableOpCode.EndFinally, targetBlockIndex, span);
 
     public static ExecutableInstruction Return(LythonSourceSpan span)
-        => new(ExecutableOpCode.Return, span);
+        => Create(ExecutableOpCode.Return, span);
 
     public static ExecutableInstruction ReturnNone(LythonSourceSpan span)
-        => new(ExecutableOpCode.ReturnNone, span);
+        => Create(ExecutableOpCode.ReturnNone, span);
+
+    public ExecutableInstruction WithTargetBlockIndex(int targetBlockIndex)
+        => OpCode switch
+        {
+            ExecutableOpCode.Jump => Jump(targetBlockIndex, Span),
+            ExecutableOpCode.JumpIfFalse => JumpIfFalse(targetBlockIndex, Span),
+            ExecutableOpCode.ForNext => ForNext(targetBlockIndex, Span),
+            ExecutableOpCode.EndFinally => EndFinally(targetBlockIndex, Span),
+            _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.")
+        };
+
+    public ExecutableInstruction WithFailureBlockIndex(int failureBlockIndex)
+        => OpCode == ExecutableOpCode.MatchCase
+            ? MatchCase(MatchCaseIndex, failureBlockIndex, Span)
+            : throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.");
+
+    private static ExecutableInstruction Create(ExecutableOpCode opCode, LythonSourceSpan span)
+        => new(opCode, span, 0, 0, default, default, default, default);
+
+    private static ExecutableInstruction CreateIndexed(ExecutableOpCode opCode, int primaryIndex, LythonSourceSpan span)
+        => new(opCode, span, primaryIndex, 0, default, default, default, default);
+
+    private static ExecutableInstruction CreateIndexed(ExecutableOpCode opCode, int primaryIndex, int secondaryIndex, LythonSourceSpan span)
+        => new(opCode, span, primaryIndex, secondaryIndex, default, default, default, default);
 }
 
 internal sealed record ExecutableBasicBlock(
@@ -1283,23 +1341,23 @@ internal sealed class ExecutableScript
 
                 case LoweredSliceExpression slice:
                     CompileExpression(slice.Target, currentBlock);
-                    var flags = 0;
+                    var parts = ExecutableSliceParts.None;
                     if (slice.Start is not null)
                     {
                         CompileExpression(slice.Start, currentBlock);
-                        flags |= 1;
+                        parts |= ExecutableSliceParts.Start;
                     }
                     if (slice.End is not null)
                     {
                         CompileExpression(slice.End, currentBlock);
-                        flags |= 2;
+                        parts |= ExecutableSliceParts.End;
                     }
                     if (slice.Step is not null)
                     {
                         CompileExpression(slice.Step, currentBlock);
-                        flags |= 4;
+                        parts |= ExecutableSliceParts.Step;
                     }
-                    AddInstruction(currentBlock, ExecutableInstruction.Slice(flags, slice.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Slice(parts, slice.Span));
                     return;
 
                 case LoweredBinaryExpression binary:
@@ -1497,10 +1555,10 @@ internal sealed class ExecutableScript
                         case ExecutableOpCode.JumpIfFalse:
                         case ExecutableOpCode.ForNext:
                         case ExecutableOpCode.EndFinally:
-                            pending.Push(FinalJumpTarget(instruction.A));
+                            pending.Push(FinalJumpTarget(instruction.TargetBlockIndex));
                             break;
                         case ExecutableOpCode.MatchCase:
-                            pending.Push(FinalJumpTarget(instruction.B));
+                            pending.Push(FinalJumpTarget(instruction.FailureBlockIndex));
                             break;
                     }
                 }
@@ -1540,11 +1598,11 @@ internal sealed class ExecutableScript
         {
             return instruction.OpCode switch
             {
-                ExecutableOpCode.Jump => instruction with { A = indexMap[FinalJumpTarget(instruction.A)] },
-                ExecutableOpCode.JumpIfFalse => instruction with { A = indexMap[FinalJumpTarget(instruction.A)] },
-                ExecutableOpCode.ForNext => instruction with { A = indexMap[FinalJumpTarget(instruction.A)] },
-                ExecutableOpCode.EndFinally => instruction with { A = indexMap[FinalJumpTarget(instruction.A)] },
-                ExecutableOpCode.MatchCase => instruction with { B = indexMap[FinalJumpTarget(instruction.B)] },
+                ExecutableOpCode.Jump or
+                ExecutableOpCode.JumpIfFalse or
+                ExecutableOpCode.ForNext or
+                ExecutableOpCode.EndFinally => instruction.WithTargetBlockIndex(indexMap[FinalJumpTarget(instruction.TargetBlockIndex)]),
+                ExecutableOpCode.MatchCase => instruction.WithFailureBlockIndex(indexMap[FinalJumpTarget(instruction.FailureBlockIndex)]),
                 _ => instruction
             };
         }
@@ -1561,7 +1619,7 @@ internal sealed class ExecutableScript
                     break;
                 }
 
-                current = instructions[0].A;
+                current = instructions[0].TargetBlockIndex;
             }
 
             return current;

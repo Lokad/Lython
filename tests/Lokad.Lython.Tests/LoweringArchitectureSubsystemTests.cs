@@ -335,6 +335,29 @@ y
     }
 
     [Fact]
+    public void ExecutableScript_TypesAugmentedAndSliceInstructionPayloads()
+    {
+        var frontend = LythonFrontend.Compile("""
+total = 1
+total += 2
+values = [0, 1, 2, 3, 4]
+values[1:4:2]
+""");
+
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var executable = ExecutableScript.Compile(lowered);
+        var instructions = executable.EntryPoint.Blocks.SelectMany(block => block.Instructions).ToArray();
+
+        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
+        Assert.Equal(ExecutableAugmentedOperator.Add, augmented.AugmentedOperator);
+
+        var slice = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Slice);
+        Assert.Equal(
+            ExecutableSliceParts.Start | ExecutableSliceParts.End | ExecutableSliceParts.Step,
+            slice.SliceParts);
+    }
+
+    [Fact]
     public void ExecutableScript_InternsLargeConstantTablesWithoutChangingOrder()
     {
         var source = string.Join(
@@ -398,8 +421,8 @@ return value
         Assert.DoesNotContain(
             executable.EntryPoint.Blocks.SelectMany(block => block.Instructions),
             instruction => instruction.OpCode == ExecutableOpCode.Jump &&
-                           executable.EntryPoint.Blocks[instruction.A].Instructions.Count == 1 &&
-                           executable.EntryPoint.Blocks[instruction.A].Instructions[0].OpCode == ExecutableOpCode.Jump);
+                           executable.EntryPoint.Blocks[instruction.TargetBlockIndex].Instructions.Count == 1 &&
+                           executable.EntryPoint.Blocks[instruction.TargetBlockIndex].Instructions[0].OpCode == ExecutableOpCode.Jump);
     }
 
     [Fact]
