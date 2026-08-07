@@ -9,13 +9,16 @@ public sealed class RuntimeFailureSubsystemTests
     {
         var span = new LythonSourceSpan(1, 4, 1, 1);
         var ex = new LythonRuntimeException("ValueError", "bad", span);
-        ex.AddFrame("helper", span);
+        ex.AddFrame("inner", span);
+        ex.AddFrame("outer", span);
 
         var failure = RuntimeFailureProjection.ToPublicFailure(ex);
 
         Assert.Equal("ValueError", failure.ExceptionType);
         Assert.Equal("bad", failure.Message);
-        Assert.Single(failure.StackTrace);
-        Assert.Equal("helper", failure.StackTrace[0].FunctionName);
+        Assert.Collection(
+            failure.StackTrace,
+            frame => Assert.Equal("outer", frame.FunctionName),
+            frame => Assert.Equal("inner", frame.FunctionName));
     }
 }

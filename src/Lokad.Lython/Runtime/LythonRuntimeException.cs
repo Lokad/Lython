@@ -42,6 +42,6 @@ internal sealed class LythonRuntimeException : Exception
 
     public void AddFrame(string functionName, LythonSourceSpan span, string? sourcePath)
     {
-        Frames.Insert(0, new LythonStackFrame(functionName, span, sourcePath));
+        Frames.Add(new LythonStackFrame(functionName, span, sourcePath));
     }
 }

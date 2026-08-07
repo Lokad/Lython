@@ -151,6 +151,21 @@ return str(True & True) + "|" + str(True | False) + "|" + str(True ^ False) + "|
     }
 
     [Fact]
+    public void LargeIntegerBaseFormattingPreservesDigitOrder()
+    {
+        var result = new LythonEngine().Run(
+            """
+value = (1 << 4096) + 15
+text = hex(value)
+return str(len(text)) + "|" + text[:3] + "|" + text[-1]
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1027|0x1|f", result.ReturnValue);
+    }
+
+    [Fact]
     public void NumericAndTextBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

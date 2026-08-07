@@ -2961,7 +2961,13 @@ internal sealed partial class LythonRuntime
         while (value > BigInteger.Zero)
         {
             value = BigInteger.DivRem(value, radix, out var remainder);
-            builder.Insert(0, digits[(int)remainder]);
+            builder.Append(digits[(int)remainder]);
+        }
+
+        for (var left = 0; left < builder.Length / 2; left++)
+        {
+            var right = builder.Length - left - 1;
+            (builder[left], builder[right]) = (builder[right], builder[left]);
         }
 
         return builder.ToString();
