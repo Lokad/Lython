@@ -39,15 +39,18 @@ internal sealed class Utf8ValueBuilder
         else
         {
             EnsureMaxLength(capacity);
-            _memoryGovernor.EnsureCanReserve(capacity, allocationSpan);
-            _buffer = new byte[capacity];
             _memoryGovernor.Reserve(capacity, allocationSpan);
+            _buffer = new byte[capacity];
             _memoryGovernor.Commit(capacity);
             _committedCapacity = capacity;
         }
     }
 
     public int Length => _length;
+
+    public ReadOnlyMemory<byte> WrittenMemory => _buffer.AsMemory(0, _length);
+
+    public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _length);
 
     public void Append(byte value)
     {
@@ -139,18 +142,40 @@ internal sealed class Utf8ValueBuilder
 
         if (_memoryGovernor is not null)
         {
-            _memoryGovernor.EnsureCanReserve(_length, _allocationSpan);
+            _memoryGovernor.Reserve(_length, _allocationSpan);
         }
 
         var exact = new byte[_length];
         _buffer.AsSpan(0, _length).CopyTo(exact);
         if (_memoryGovernor is not null)
         {
-            _memoryGovernor.Reserve(exact.Length, _allocationSpan);
             _memoryGovernor.Commit(exact.Length);
         }
 
         return exact;
+    }
+
+    public byte[] ToArrayAndRelease()
+    {
+        if (_length == 0)
+        {
+            Release();
+            return [];
+        }
+
+        _memoryGovernor?.EnsureCanReserve(_length, _allocationSpan);
+        var exact = new byte[_length];
+        _buffer.AsSpan(0, _length).CopyTo(exact);
+        Release();
+        return exact;
+    }
+
+    public void Release()
+    {
+        _memoryGovernor?.Release(_committedCapacity);
+        _buffer = [];
+        _length = 0;
+        _committedCapacity = 0;
     }
 
     private void EnsureAdditionalCapacity(int additionalBytes)
@@ -177,6 +202,11 @@ internal sealed class Utf8ValueBuilder
             ? 8L
             : (long)_buffer.Length * 2L;
         var newCapacityLong = Math.Max(doubledCapacity, requiredCapacity);
+        if (_maxLengthBytes is { } maximumLength)
+        {
+            newCapacityLong = Math.Min(newCapacityLong, maximumLength);
+        }
+
         if (newCapacityLong > int.MaxValue)
         {
             throw RuntimeErrors.Runtime("UTF-8 buffer allocation is too large.", _allocationSpan);
@@ -186,21 +216,20 @@ internal sealed class Utf8ValueBuilder
 
         if (_memoryGovernor is not null)
         {
-            var delta = newCapacity - _buffer.Length;
-            _memoryGovernor.EnsureCanReserve(delta, _allocationSpan);
+            _memoryGovernor.Reserve(newCapacity, _allocationSpan);
         }
 
         var expanded = new byte[newCapacity];
         _buffer.AsSpan(0, _length).CopyTo(expanded);
-        _buffer = expanded;
 
         if (_memoryGovernor is not null)
         {
-            var delta = newCapacity - _committedCapacity;
-            _memoryGovernor.Reserve(delta, _allocationSpan);
-            _memoryGovernor.Commit(delta);
-            _committedCapacity += delta;
+            _memoryGovernor.Release(_committedCapacity);
+            _memoryGovernor.Commit(newCapacity);
+            _committedCapacity = newCapacity;
         }
+
+        _buffer = expanded;
     }
 
     private void EnsureMaxLength(int requiredCapacity)

@@ -684,12 +684,16 @@ internal sealed partial class LythonRuntime
     {
         private readonly PyPopen _owner;
         private readonly ExecutionContext _context;
-        private PyString _buffer = PyString.Empty;
+        private readonly Utf8ValueBuilder _buffer;
 
         public PopenInputStream(PyPopen owner, ExecutionContext context)
         {
             _owner = owner;
             _context = context;
+            _buffer = new Utf8ValueBuilder(
+                context.MemoryGovernor,
+                maxLengthBytes: context.Limits.MaxStringLength,
+                maxLengthOwner: "Popen stdin");
         }
 
         public bool IsClosed { get; private set; }
@@ -724,8 +728,7 @@ internal sealed partial class LythonRuntime
         public BigInteger Write(PyString text, LythonSourceSpan span)
         {
             EnsureWritable(span);
-            _buffer = _buffer.Concat(text);
-            _context.ObserveString(_buffer, span);
+            _buffer.Append(text);
             return new BigInteger(text.Length);
         }
 
@@ -733,11 +736,10 @@ internal sealed partial class LythonRuntime
         {
             if (!IsClosed)
             {
-                _context.ObserveString(_buffer, span);
                 IsClosed = true;
             }
 
-            return _buffer.Utf8Bytes;
+            return _buffer.WrittenMemory;
         }
 
         public void Close() => IsClosed = true;
