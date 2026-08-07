@@ -3141,31 +3141,78 @@ internal sealed partial class LythonRuntime
             return PyTruthiness.IsTruthy(value);
         }
 
+        var protocol = ResolveTruthinessProtocol(instance, context, span, out var callable);
+        return protocol == TruthinessProtocol.Default
+            ? true
+            : InterpretTruthinessResult(protocol, callable.RequireNotNull().Invoke([], span, context), span);
+    }
+
+    internal static async ValueTask<bool> IsTruthyAsync(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is not PyInstance instance)
+        {
+            return PyTruthiness.IsTruthy(value);
+        }
+
+        var protocol = ResolveTruthinessProtocol(instance, context, span, out var callable);
+        if (protocol == TruthinessProtocol.Default)
+        {
+            return true;
+        }
+
+        var result = await callable.RequireNotNull().InvokeAsync([], span, context).ConfigureAwait(false);
+        return InterpretTruthinessResult(protocol, result, span);
+    }
+
+    private static TruthinessProtocol ResolveTruthinessProtocol(
+        PyInstance instance,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out ICallable? callable)
+    {
         if (instance.TryGetAttribute("__bool__", context, span, out var boolMember) && boolMember is ICallable boolCallable)
         {
-            var result = boolCallable.Invoke([], span, context);
+            callable = boolCallable;
+            return TruthinessProtocol.Boolean;
+        }
+
+        if (instance.TryGetAttribute("__len__", context, span, out var lengthMember) && lengthMember is ICallable lengthCallable)
+        {
+            callable = lengthCallable;
+            return TruthinessProtocol.Length;
+        }
+
+        callable = null;
+        return TruthinessProtocol.Default;
+    }
+
+    private static bool InterpretTruthinessResult(TruthinessProtocol protocol, object result, LythonSourceSpan span)
+    {
+        if (protocol == TruthinessProtocol.Boolean)
+        {
             return result is bool boolean
                 ? boolean
                 : throw new LythonRuntimeException("TypeError", "__bool__ should return bool", span);
         }
 
-        if (instance.TryGetAttribute("__len__", context, span, out var lengthMember) && lengthMember is ICallable lengthCallable)
+        if (!PyNumberOps.TryAsInteger(result, out var length))
         {
-            var result = lengthCallable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(result, out var length))
-            {
-                throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);
-            }
-
-            if (length < 0)
-            {
-                throw new LythonRuntimeException("ValueError", "__len__() should return >= 0", span);
-            }
-
-            return length != 0;
+            throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);
         }
 
-        return true;
+        if (length < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "__len__() should return >= 0", span);
+        }
+
+        return length != 0;
+    }
+
+    private enum TruthinessProtocol
+    {
+        Default,
+        Boolean,
+        Length,
     }
 
     internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)

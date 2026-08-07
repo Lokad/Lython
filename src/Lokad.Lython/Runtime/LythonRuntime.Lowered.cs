@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            var branch = IsTruthy(EvaluateLoweredExpression(statement.Condition, context))
+            var branch = IsTruthy(EvaluateLoweredExpression(statement.Condition, context), context, statement.Condition.Span)
                 ? statement.ThenStatements
                 : statement.ElseStatements;
 
@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
         try
         {
             var broke = false;
-            while (IsTruthy(EvaluateLoweredExpression(statement.Condition, context)))
+            while (IsTruthy(EvaluateLoweredExpression(statement.Condition, context), context, statement.Condition.Span))
             {
                 var signal = ExecuteStatements(statement.Body, context);
                 if (signal is ContinueSignal)
@@ -571,7 +571,7 @@ internal sealed partial class LythonRuntime
                 LoweredBinaryExpression binary => EvaluateLoweredBinary(binary, context),
                 LoweredChainedComparisonExpression chained => EvaluateLoweredChainedComparison(chained, context),
                 LoweredUnaryExpression unary => EvaluateLoweredUnary(unary, context),
-                LoweredConditionalExpression conditional => IsTruthy(EvaluateLoweredExpression(conditional.Condition, context))
+                LoweredConditionalExpression conditional => IsTruthy(EvaluateLoweredExpression(conditional.Condition, context), context, conditional.Condition.Span)
                     ? EvaluateLoweredExpression(conditional.Consequent, context)
                     : EvaluateLoweredExpression(conditional.Alternative, context),
                 LoweredAssignmentExpression assignment => EvaluateLoweredAssignmentExpression(assignment, context),
@@ -904,7 +904,7 @@ internal sealed partial class LythonRuntime
         if (binary.Binary.Operator == BinaryOperatorSyntax.Or)
         {
             var leftValue = EvaluateLoweredExpression(binary.Left, context);
-            return IsTruthy(leftValue)
+            return IsTruthy(leftValue, context, binary.Left.Span)
                 ? leftValue
                 : EvaluateLoweredExpression(binary.Right, context);
         }
@@ -912,7 +912,7 @@ internal sealed partial class LythonRuntime
         if (binary.Binary.Operator == BinaryOperatorSyntax.And)
         {
             var leftValue = EvaluateLoweredExpression(binary.Left, context);
-            return !IsTruthy(leftValue)
+            return !IsTruthy(leftValue, context, binary.Left.Span)
                 ? leftValue
                 : EvaluateLoweredExpression(binary.Right, context);
         }
@@ -977,14 +977,14 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredUnary(LoweredUnaryExpression unary, ExecutionContext context)
     {
         var operand = EvaluateLoweredExpression(unary.Operand, context);
-        return EvaluateLoweredUnaryOperator(unary, operand);
+        return EvaluateLoweredUnaryOperator(unary, operand, context);
     }
 
-    private static object EvaluateLoweredUnaryOperator(LoweredUnaryExpression unary, object operand)
+    private static object EvaluateLoweredUnaryOperator(LoweredUnaryExpression unary, object operand, ExecutionContext context)
     {
         return unary.Unary.Operator switch
         {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand),
+            UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
             UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
             UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
             UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
@@ -994,7 +994,7 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteLoweredAssertStatement(LoweredAssertStatement statement, ExecutionContext context)
     {
-        if (IsTruthy(EvaluateLoweredExpression(statement.Condition, context)))
+        if (IsTruthy(EvaluateLoweredExpression(statement.Condition, context), context, statement.Condition.Span))
         {
             return;
         }

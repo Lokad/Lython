@@ -203,7 +203,11 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            var branch = IsTruthy(await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false))
+            var branch = await IsTruthyAsync(
+                    await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false),
+                    context,
+                    statement.Condition.Span)
+                .ConfigureAwait(false)
                 ? statement.ThenStatements
                 : statement.ElseStatements;
 
@@ -267,7 +271,11 @@ internal sealed partial class LythonRuntime
         try
         {
             var broke = false;
-            while (IsTruthy(await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false)))
+            while (await IsTruthyAsync(
+                    await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false),
+                    context,
+                    statement.Condition.Span)
+                .ConfigureAwait(false))
             {
                 var signal = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
                 if (signal is ContinueSignal)
@@ -659,7 +667,11 @@ internal sealed partial class LythonRuntime
                 LoweredBinaryExpression binary => await EvaluateLoweredBinaryAsync(binary, context).ConfigureAwait(false),
                 LoweredChainedComparisonExpression chained => await EvaluateLoweredChainedComparisonAsync(chained, context).ConfigureAwait(false),
                 LoweredUnaryExpression unary => await EvaluateLoweredUnaryAsync(unary, context).ConfigureAwait(false),
-                LoweredConditionalExpression conditional => IsTruthy(await EvaluateLoweredExpressionAsync(conditional.Condition, context).ConfigureAwait(false))
+                LoweredConditionalExpression conditional => await IsTruthyAsync(
+                        await EvaluateLoweredExpressionAsync(conditional.Condition, context).ConfigureAwait(false),
+                        context,
+                        conditional.Condition.Span)
+                    .ConfigureAwait(false)
                     ? await EvaluateLoweredExpressionAsync(conditional.Consequent, context).ConfigureAwait(false)
                     : await EvaluateLoweredExpressionAsync(conditional.Alternative, context).ConfigureAwait(false),
                 LoweredAssignmentExpression assignment => await EvaluateLoweredAssignmentExpressionAsync(assignment, context).ConfigureAwait(false),
@@ -845,12 +857,14 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredListComprehensionAsync(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
-                context,
-                async scope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, scope).ConfigureAwait(false))))
+                scope,
+                async itemScope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false))))
             .ConfigureAwait(false);
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -859,19 +873,21 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredSetComprehensionAsync(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
-                context,
-                async scope =>
+                scope,
+                async itemScope =>
                 {
                     var item = ValidateSetItem(
-                        await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, scope).ConfigureAwait(false),
+                        await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false),
                         comprehension.ItemExpression.Span,
-                        scope.MemoryGovernor);
+                        itemScope.MemoryGovernor);
                     result.Add(item);
                 })
             .ConfigureAwait(false);
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -880,19 +896,21 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredDictComprehensionAsync(LoweredDictComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
+        var scope = new ExecutionContext(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
-                context,
-                async scope =>
+                scope,
+                async itemScope =>
                 {
                     var key = ValidateDictionaryKey(
-                        await EvaluateLoweredExpressionAsync(comprehension.KeyExpression, scope).ConfigureAwait(false),
+                        await EvaluateLoweredExpressionAsync(comprehension.KeyExpression, itemScope).ConfigureAwait(false),
                         comprehension.KeyExpression.Span,
-                        scope.MemoryGovernor);
-                    result.SetItem(key, RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ValueExpression, scope).ConfigureAwait(false)));
+                        itemScope.MemoryGovernor);
+                    result.SetItem(key, RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ValueExpression, itemScope).ConfigureAwait(false)));
                 })
             .ConfigureAwait(false);
+        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         return result;
@@ -909,21 +927,25 @@ internal sealed partial class LythonRuntime
 
         await foreach (var item in ToSequenceAsync(iterable, clause.Iterable.Span).ConfigureAwait(false))
         {
-            var scope = new ExecutionContext(context);
-            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
+            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 
-            if (clause.Condition is not null && !IsTruthy(await EvaluateLoweredExpressionAsync(clause.Condition, scope).ConfigureAwait(false)))
+            if (clause.Condition is not null &&
+                !await IsTruthyAsync(
+                        await EvaluateLoweredExpressionAsync(clause.Condition, context).ConfigureAwait(false),
+                        context,
+                        clause.Condition.Span)
+                    .ConfigureAwait(false))
             {
                 continue;
             }
 
             if (index == clauses.Count - 1)
             {
-                await emit(scope).ConfigureAwait(false);
+                await emit(context).ConfigureAwait(false);
             }
             else
             {
-                await EvaluateLoweredComprehensionClausesAsync(clauses, index + 1, scope, emit).ConfigureAwait(false);
+                await EvaluateLoweredComprehensionClausesAsync(clauses, index + 1, context, emit).ConfigureAwait(false);
             }
         }
     }
@@ -965,7 +987,7 @@ internal sealed partial class LythonRuntime
         if (binary.Binary.Operator == BinaryOperatorSyntax.Or)
         {
             var leftValue = await EvaluateLoweredExpressionAsync(binary.Left, context).ConfigureAwait(false);
-            return IsTruthy(leftValue)
+            return await IsTruthyAsync(leftValue, context, binary.Left.Span).ConfigureAwait(false)
                 ? leftValue
                 : await EvaluateLoweredExpressionAsync(binary.Right, context).ConfigureAwait(false);
         }
@@ -973,7 +995,7 @@ internal sealed partial class LythonRuntime
         if (binary.Binary.Operator == BinaryOperatorSyntax.And)
         {
             var leftValue = await EvaluateLoweredExpressionAsync(binary.Left, context).ConfigureAwait(false);
-            return !IsTruthy(leftValue)
+            return !await IsTruthyAsync(leftValue, context, binary.Left.Span).ConfigureAwait(false)
                 ? leftValue
                 : await EvaluateLoweredExpressionAsync(binary.Right, context).ConfigureAwait(false);
         }
@@ -1003,12 +1025,18 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredUnaryAsync(LoweredUnaryExpression unary, ExecutionContext context)
     {
         var operand = await EvaluateLoweredExpressionAsync(unary.Operand, context).ConfigureAwait(false);
-        return EvaluateLoweredUnaryOperator(unary, operand);
+        return unary.Unary.Operator == UnaryOperatorSyntax.Not
+            ? !await IsTruthyAsync(operand, context, unary.Span).ConfigureAwait(false)
+            : EvaluateLoweredUnaryOperator(unary, operand, context);
     }
 
     private static async ValueTask ExecuteLoweredAssertStatementAsync(LoweredAssertStatement statement, ExecutionContext context)
     {
-        if (IsTruthy(await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false)))
+        if (await IsTruthyAsync(
+                await EvaluateLoweredExpressionAsync(statement.Condition, context).ConfigureAwait(false),
+                context,
+                statement.Condition.Span)
+            .ConfigureAwait(false))
         {
             return;
         }

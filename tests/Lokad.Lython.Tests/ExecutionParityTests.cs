@@ -21,6 +21,7 @@ public sealed class ExecutionParityTests
         "import hashlib\nh = hashlib.sha256(b'a')\nh.update(b'b')\nreturn h.hexdigest()\n",
         "import gzip\nreturn str(gzip.decompress(gzip.compress(b'payload')) == b'payload')\n",
         "import time\nreturn str(time.gmtime(0)) + '|' + str(time.time_ns())\n",
+        "last = -1\na = [(last := x) for x in range(3)]\nb = {(last := x) for x in range(3, 5)}\nc = {x: (last := x * 2) for x in range(2)}\nreturn str([a, b, c, last])\n",
     };
 
     [Theory]
@@ -55,6 +56,42 @@ return str(time.monotonic_ns())
         AssertEquivalent(sync, asyncResult);
         Assert.Equal(syncHost.ReadText("/output.txt"), asyncHost.ReadText("/output.txt"));
         Assert.Equal(syncHost.CapturedStandardOutput(), asyncHost.CapturedStandardOutput());
+    }
+
+    [Fact]
+    public async Task SyncAndAsyncRuntimesAwaitTheSameTruthinessProtocol()
+    {
+        const string source = """
+class Flag:
+    def __bool__(self):
+        with open("/flag.txt") as source:
+            return source.read() == "yes"
+
+def evaluate():
+    flag = Flag()
+    values = []
+    if flag:
+        values.append("if")
+    values.append("and" if flag and True else "bad")
+    values.append("conditional" if flag else "bad")
+    values.append(str(not flag))
+    values.extend(["1" for ignored in [1] if flag])
+    assert flag
+    return "|".join(values)
+
+return evaluate()
+""";
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/flag.txt", "yes");
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/flag.txt", "yes");
+
+        var sync = new LythonEngine().Run(source, syncHost);
+        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+
+        AssertEquivalent(sync, asyncResult);
+        Assert.Equal("if|and|conditional|False|1", asyncResult.ReturnValue);
+        Assert.True(asyncHost.CompletedAsynchronously > 0);
     }
 
     [Fact]
