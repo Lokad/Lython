@@ -463,21 +463,11 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.ItertoolsTee, "LA3151", "itertools.tee(iterable[, n]) expects one or two arguments."),
         new(LythonKnownCallableSignatures.ItertoolsBatched, "LA3151", "itertools.batched(iterable, n, *, strict=False) expects supported arguments."),
     ];
+    private static readonly IReadOnlyDictionary<string, StaticKnownCallContract> KnownCallContractsByName =
+        KnownCallContracts.ToDictionary(static contract => contract.TargetName, StringComparer.Ordinal);
 
     public static bool TryGetKnownCallContract(string targetName, out StaticKnownCallContract contract)
-    {
-        foreach (var candidate in KnownCallContracts)
-        {
-            if (string.Equals(candidate.TargetName, targetName, StringComparison.Ordinal))
-            {
-                contract = candidate;
-                return true;
-            }
-        }
-
-        contract = default;
-        return false;
-    }
+        => KnownCallContractsByName.TryGetValue(targetName, out contract);
 
     public static bool TryGetKnownCallReturn(string targetName, LythonSourceSpan span, out AbstractValue value)
     {

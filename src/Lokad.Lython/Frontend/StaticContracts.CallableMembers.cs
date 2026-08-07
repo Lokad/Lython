@@ -3,22 +3,11 @@ namespace Lokad.Lython.Frontend;
 internal static partial class StaticContracts
 {
     private static readonly StaticCallableContract[] CallableContracts = CreateCallableContracts();
+    private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticCallableContract> CallableContractsByMember =
+        CallableContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
 
     public static bool TryGetCallableContract(AbstractValue receiver, string memberName, out StaticCallableContract contract)
-    {
-        foreach (var candidate in CallableContracts)
-        {
-            if (candidate.ReceiverKind == receiver.Kind &&
-                candidate.MemberName == memberName)
-            {
-                contract = candidate;
-                return true;
-            }
-        }
-
-        contract = default;
-        return false;
-    }
+        => CallableContractsByMember.TryGetValue(new StaticMemberContractKey(receiver.Kind, memberName), out contract);
 
     public static bool IsMutatingMember(AbstractValue receiver, string memberName)
         => TryGetCallableContract(receiver, memberName, out var contract) &&

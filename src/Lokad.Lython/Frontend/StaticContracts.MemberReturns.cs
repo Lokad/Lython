@@ -43,6 +43,8 @@ internal static partial class StaticContracts
     ];
 
     private static readonly StaticMemberReturnContract[] MemberReturnContracts = CreateMemberReturnContracts();
+    private static readonly IReadOnlyDictionary<StaticMemberContractKey, StaticMemberReturnContract> MemberReturnContractsByMember =
+        MemberReturnContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
 
     public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
@@ -54,14 +56,12 @@ internal static partial class StaticContracts
             return true;
         }
 
-        foreach (var contract in MemberReturnContracts)
+        if (MemberReturnContractsByMember.TryGetValue(
+            new StaticMemberContractKey(receiver.Kind, memberName),
+            out var contract))
         {
-            if (contract.ReceiverKind == receiver.Kind &&
-                contract.MemberName == memberName)
-            {
-                value = CreateReturnValue(contract.ReturnShape, receiver, span);
-                return true;
-            }
+            value = CreateReturnValue(contract.ReturnShape, receiver, span);
+            return true;
         }
 
         value = default;

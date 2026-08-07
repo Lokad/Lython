@@ -111,6 +111,10 @@ internal readonly record struct StaticMemberValueContract(
     string MemberName,
     StaticReturnShape ValueShape);
 
+internal readonly record struct StaticMemberContractKey(
+    AbstractValueKind ReceiverKind,
+    string MemberName);
+
 internal readonly record struct StaticCallShapeContract(
     int MinArgumentCount,
     int? MaxArgumentCount,
