@@ -47,6 +47,38 @@ return json.dumps({"ok": True}) + "|" + str(re.search("a+", "caaab").span())
     }
 
     [Fact]
+    public void ModuleAttributesPreserveIdentityAndReflectScriptAssignments()
+    {
+        var host = new CountingHost();
+        host.SeedFile("/helper.py", "value = 1\n");
+
+        var result = new LythonEngine().Run(
+            """
+import hashlib
+import helper
+
+before = helper.value
+helper.value = 2
+return [
+    hashlib.sha256 is hashlib.sha256,
+    hashlib.__name__ is hashlib.__name__,
+    before,
+    helper.value,
+]
+""",
+            host,
+            new LythonRunOptions
+            {
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" }
+            });
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            new object?[] { true, true, new System.Numerics.BigInteger(1), new System.Numerics.BigInteger(2) },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
+    [Fact]
     public void DottedBuiltinImports_FollowPythonPackageBindingRules()
     {
         var result = new LythonEngine().Run(

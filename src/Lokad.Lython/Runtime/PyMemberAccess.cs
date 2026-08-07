@@ -109,14 +109,8 @@ internal static class PyMemberAccess
             return true;
         }
 
-        if (target is PyModule module && module.TryGetMember(memberName, out value))
+        if (target is PyModule module && module.TryGetCachedMember(memberName, out value))
         {
-            return true;
-        }
-
-        if (target is PyModule namedModule && memberName == "__name__")
-        {
-            value = PyString.FromString(namedModule.Name);
             return true;
         }
 

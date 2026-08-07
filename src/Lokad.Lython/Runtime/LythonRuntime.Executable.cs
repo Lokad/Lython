@@ -1386,7 +1386,8 @@ internal sealed partial class LythonRuntime
             or PyTimezone
             or RePatternObject
             or ReMatchObject
-            or PyPath;
+            or PyPath
+            or PyModule;
 
     private static object Pop(ExecutableValueStack stack, LythonSourceSpan span)
     {
