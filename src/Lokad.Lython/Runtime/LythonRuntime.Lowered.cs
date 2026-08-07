@@ -105,13 +105,10 @@ internal sealed partial class LythonRuntime
         try
         {
             var syntax = functionDefinition.Syntax;
-            var function = new PyFunction(
-                syntax.Name,
-                functionDefinition.Parameters,
-                functionDefinition.Body,
-                context.FunctionClosureContext,
-                BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)),
-                ScopeDirectiveFactsCollector.ForFunction(syntax));
+            var function = CreateLoweredFunction(
+                functionDefinition,
+                context,
+                BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)));
             StoreName(syntax.Name, ApplyDecorators(function, functionDefinition.Decorators, functionDefinition.Span, context), context, functionDefinition.Span);
         }
         finally
@@ -147,49 +144,13 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
             }
 
-            StoreClassAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
-
-            PyType type;
-            try
-            {
-                type = new PyType(
-                    classDefinition.Syntax.Name,
-                    resolvedBases,
-                    new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal));
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new LythonRuntimeException("TypeError", ex.Message, classDefinition.Span);
-            }
-
-            if (context.TryGetBuiltinType("type", out var metaType))
-            {
-                type.SetMetaType(metaType);
-            }
-
-            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
-            type.InitializeClassMembers(context, classDefinition.Span);
+            var type = CreateLoweredClassType(classDefinition, resolvedBases, classContext, context);
             InvokeInitSubclass(type, classKeywordArguments, classDefinition.Span, context);
             StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context), context, classDefinition.Span);
         }
         finally
         {
             context.LeaveInterpreterFrame();
-        }
-    }
-
-    private static void StoreClassAnnotations(ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, ExecutionContext context)
-    {
-        PyDict? annotations = null;
-        foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
-        {
-            annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
-            annotations.SetItem(PyString.FromString(statement.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
-        }
-
-        if (annotations is not null)
-        {
-            members["__annotations__"] = annotations;
         }
     }
 
@@ -791,29 +752,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static PyString ValidateLoweredString(PyString text, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.ObserveString(text, span);
-        return text;
-    }
-
-    private static T ValidateLoweredCollection<T>(T collection, ExecutionContext context, LythonSourceSpan span)
-        where T : IReadOnlyCollection<object>
-    {
-        context.ObserveCollectionCount(collection.Count, span);
-        return collection;
-    }
-
     private static object EvaluateLoweredSubscript(LoweredSubscriptExpression subscript, ExecutionContext context)
     {
         var target = EvaluateLoweredExpression(subscript.Target, context);
         var index = EvaluateLoweredExpression(subscript.Index, context);
-        if (target is PyDefaultDict defaultDict)
-        {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, subscript.Span), context, subscript.Span);
-        }
-
-        return PyIndexing.ReadIndex(target, index, subscript.Span);
+        return ReadLoweredSubscript(target, index, subscript.Span, context);
     }
 
     private static object EvaluateLoweredSlice(LoweredSliceExpression slice, ExecutionContext context)
@@ -828,36 +771,7 @@ internal sealed partial class LythonRuntime
     private static object ResolveLoweredMember(LoweredMemberExpression member, ExecutionContext context)
     {
         var target = EvaluateLoweredExpression(member.Target, context);
-        if (TryResolveCachedRuntimeMember(member, target, context, out var value))
-        {
-            return value;
-        }
-
-        throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
-    }
-
-    private static bool TryResolveCachedRuntimeMember(
-        LoweredMemberExpression member,
-        object target,
-        ExecutionContext context,
-        [MaybeNullWhen(false)] out object value)
-    {
-        if (context.State.TryReadRuntimeMemberCache(member, target, out value))
-        {
-            return true;
-        }
-
-        if (!TryResolveRuntimeMember(target, member.Member.MemberName, context, member.Span, out value))
-        {
-            return false;
-        }
-
-        if (CanCacheRuntimeMemberTarget(target))
-        {
-            context.State.WriteRuntimeMemberCache(member, target, value);
-        }
-
-        return true;
+        return ResolveLoweredMemberValue(member, target, context);
     }
 
     private static object EvaluateLoweredBinary(LoweredBinaryExpression binary, ExecutionContext context)
@@ -884,40 +798,6 @@ internal sealed partial class LythonRuntime
         return EvaluateLoweredBinaryOperator(binary, left, right, context);
     }
 
-    private static object EvaluateLoweredBinaryOperator(
-        LoweredBinaryExpression binary,
-        object left,
-        object right,
-        ExecutionContext context)
-    {
-        return binary.Binary.Operator switch
-        {
-            BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, binary.Span),
-            BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
-            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
-            BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
-            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => Compare(left, right, binary.Span) < 0,
-            BinaryOperatorSyntax.LessEqual => Compare(left, right, binary.Span) <= 0,
-            BinaryOperatorSyntax.Greater => Compare(left, right, binary.Span) > 0,
-            BinaryOperatorSyntax.GreaterEqual => Compare(left, right, binary.Span) >= 0,
-            BinaryOperatorSyntax.Is => AreIdentical(left, right),
-            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.Equal => AreEqual(left, right),
-            BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
-            _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Binary.Operator}")
-        };
-    }
-
     private static bool EvaluateLoweredChainedComparison(LoweredChainedComparisonExpression chained, ExecutionContext context)
     {
         var left = EvaluateLoweredExpression(chained.Operands[0], context);
@@ -939,18 +819,6 @@ internal sealed partial class LythonRuntime
     {
         var operand = EvaluateLoweredExpression(unary.Operand, context);
         return EvaluateLoweredUnaryOperator(unary, operand, context);
-    }
-
-    private static object EvaluateLoweredUnaryOperator(LoweredUnaryExpression unary, object operand, ExecutionContext context)
-    {
-        return unary.Unary.Operator switch
-        {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
-            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
-            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
-            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
-            _ => throw new InvalidOperationException($"Unknown unary operator: {unary.Unary.Operator}")
-        };
     }
 
     private static void ExecuteLoweredAssertStatement(LoweredAssertStatement statement, ExecutionContext context)
@@ -1070,16 +938,6 @@ internal sealed partial class LythonRuntime
         ThrowLoweredRaisedValue(raised, statement.Span);
     }
 
-    private static void ThrowLoweredRaisedValue(object raised, LythonSourceSpan span)
-    {
-        if (raised is not PyException instance)
-        {
-            throw RuntimeErrors.RaiseExpectsException(span);
-        }
-
-        throw new LythonRuntimeException(instance.TypeName, instance.Message, span, innerException: null, payload: instance.Value);
-    }
-
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
         var loweredParameters = LowerLambdaParameters(lambda);
@@ -1090,28 +948,10 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
     }
 
-    private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)
-        => lambda.Lambda.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
-
     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)
     {
         var value = EvaluateLoweredExpression(assignment.Expression, context);
         return StoreLoweredAssignmentResult(assignment, value, context);
-    }
-
-    private static object StoreLoweredAssignmentResult(
-        LoweredAssignmentExpression assignment,
-        object value,
-        ExecutionContext context)
-    {
-        StoreName(assignment.Assignment.Name, value, context, assignment.Span);
-        return value;
     }
 
     private static object InvokeLoweredCall(LoweredCallExpression call, ExecutionContext context)
@@ -1129,20 +969,6 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredCallArgument> arguments,
         ExecutionContext context)
         => CallExpansion.ExpandLoweredArguments(arguments, context, EvaluateLoweredExpression);
-
-    private static void ValidateClassKeywordArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
-    {
-        foreach (var argument in arguments)
-        {
-            if (string.Equals(argument.KeywordName, "metaclass", StringComparison.Ordinal))
-            {
-                throw new LythonRuntimeException(
-                    "TypeError",
-                    "class(..., metaclass=...) is not supported by Lython.",
-                    span);
-            }
-        }
-    }
 
     private static void InvokeInitSubclass(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)
     {

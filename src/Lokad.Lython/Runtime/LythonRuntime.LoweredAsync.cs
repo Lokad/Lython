@@ -99,13 +99,10 @@ internal sealed partial class LythonRuntime
         try
         {
             var syntax = functionDefinition.Syntax;
-            var function = new PyFunction(
-                syntax.Name,
-                functionDefinition.Parameters,
-                functionDefinition.Body,
-                context.FunctionClosureContext,
-                await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false),
-                ScopeDirectiveFactsCollector.ForFunction(syntax));
+            var function = CreateLoweredFunction(
+                functionDefinition,
+                context,
+                await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false));
             StoreName(
                 syntax.Name,
                 await ApplyDecoratorsAsync(function, functionDefinition.Decorators, functionDefinition.Span, context).ConfigureAwait(false),
@@ -146,28 +143,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
             }
 
-            StoreClassAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
-
-            PyType type;
-            try
-            {
-                type = new PyType(
-                    classDefinition.Syntax.Name,
-                    resolvedBases,
-                    new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal));
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new LythonRuntimeException("TypeError", ex.Message, classDefinition.Span);
-            }
-
-            if (context.TryGetBuiltinType("type", out var metaType))
-            {
-                type.SetMetaType(metaType);
-            }
-
-            PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
-            type.InitializeClassMembers(context, classDefinition.Span);
+            var type = CreateLoweredClassType(classDefinition, resolvedBases, classContext, context);
             await InvokeInitSubclassAsync(type, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
             StoreName(
                 classDefinition.Syntax.Name,
@@ -915,12 +891,7 @@ internal sealed partial class LythonRuntime
     {
         var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
         var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-        if (target is PyDefaultDict defaultDict)
-        {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, subscript.Span), context, subscript.Span);
-        }
-
-        return PyIndexing.ReadIndex(target, index, subscript.Span);
+        return ReadLoweredSubscript(target, index, subscript.Span, context);
     }
 
     private static async ValueTask<object> EvaluateLoweredSliceAsync(LoweredSliceExpression slice, ExecutionContext context)
@@ -935,12 +906,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> ResolveLoweredMemberAsync(LoweredMemberExpression member, ExecutionContext context)
     {
         var target = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-        if (TryResolveCachedRuntimeMember(member, target, context, out var value))
-        {
-            return value;
-        }
-
-        throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
+        return ResolveLoweredMemberValue(member, target, context);
     }
 
     private static async ValueTask<object> EvaluateLoweredBinaryAsync(LoweredBinaryExpression binary, ExecutionContext context)
