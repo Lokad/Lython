@@ -7,6 +7,131 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDataclass
 {
+    private sealed class DataclassInitMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
+    {
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var parameters = new List<LoweredFunctionParameter>(fields.Count + 1)
+            {
+                new("self", FunctionParameterKind.Positional, null, null)
+            };
+            foreach (var field in fields)
+            {
+                if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
+                {
+                    continue;
+                }
+
+                parameters.Add(new LoweredFunctionParameter(
+                    field.Name,
+                    field.KwOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional,
+                    null,
+                    null));
+            }
+
+            var defaults = new Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (var field in fields)
+            {
+                if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
+                {
+                    continue;
+                }
+
+                if (field.HasDefaultFactory)
+                {
+                    defaults[field.Name] = DefaultFactorySentinel;
+                }
+                else if (field.HasDefault)
+                {
+                    defaults[field.Name] = field.DefaultValue;
+                }
+            }
+
+            var bound = LythonRuntime.BindFunctionArguments(arguments, span, $"{typeName}.__init__", "Function", parameters, defaults, context);
+            if (bound["self"] is not PyInstance instance)
+            {
+                throw new LythonRuntimeException("TypeError", $"{typeName}.__init__ expected a bound instance.", span);
+            }
+
+            var initVarValues = new List<object>();
+            foreach (var field in fields)
+            {
+                if (!field.Store)
+                {
+                    if (field.Kind == DataclassFieldKind.InitVar && field.Init)
+                    {
+                        var initVarValue = bound[field.Name];
+                        if (ReferenceEquals(initVarValue, DefaultFactorySentinel))
+                        {
+                            initVarValue = InvokeDefaultFactory(field, span, context);
+                        }
+
+                        initVarValues.Add(initVarValue);
+                    }
+                    continue;
+                }
+
+                object value;
+                if (field.Init)
+                {
+                    value = bound[field.Name];
+                    if (ReferenceEquals(value, DefaultFactorySentinel))
+                    {
+                        value = InvokeDefaultFactory(field, span, context);
+                    }
+                }
+                else if (field.HasDefaultFactory)
+                {
+                    value = InvokeDefaultFactory(field, span, context);
+                }
+                else if (field.HasDefault)
+                {
+                    value = field.DefaultValue;
+                }
+                else
+                {
+                    continue;
+                }
+
+                SetAttributeDuringDataclassInit(instance, field.Name, value, context, span);
+            }
+
+            if (instance.Type.TryGetMember("__post_init__", out var postInitRaw))
+            {
+                var callable = postInitRaw switch
+                {
+                    IPyBindableCallable bindable => bindable.Bind(instance),
+                    IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                    _ => postInitRaw
+                };
+                if (callable is not LythonRuntime.ICallable postInitCallable)
+                {
+                    throw new LythonRuntimeException("TypeError", $"{typeName}.__post_init__ must be callable.", span);
+                }
+
+                var postInitArguments = initVarValues.Select(value => new CallArgumentValue(null, value)).ToArray();
+                _ = postInitCallable.Invoke(postInitArguments, span, context);
+            }
+
+            return PyNone.Instance;
+        }
+
+        internal static object InvokeDefaultFactory(DataclassFieldSpec field, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            if (field.DefaultFactory is not LythonRuntime.ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", $"Dataclass field '{field.Name}' has a non-callable default_factory.", span);
+            }
+
+            return callable.Invoke([], span, context);
+        }
+    }
+
     private sealed class DataclassReprMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
     {
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -181,4 +306,3 @@ internal static partial class PyDataclass
         }
     }
 }
-
