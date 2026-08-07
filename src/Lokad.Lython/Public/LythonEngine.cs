@@ -23,7 +23,7 @@ public sealed class LythonEngine
             {
                 executableScript = ExecutableScript.Compile(loweredScript);
             }
-            catch (NotSupportedException)
+            catch (ExecutableLoweringFallbackException)
             {
                 executableScript = null;
             }

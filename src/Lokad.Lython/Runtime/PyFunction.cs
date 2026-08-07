@@ -11,21 +11,19 @@ internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, ICla
     private readonly ScopeDirectiveFacts _scopeFacts;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
 
-    public PyFunction(string name, IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body, LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaultValues) : this(name, parameters, body, closure, defaultValues, null) { }
-
     public PyFunction(
         string name,
         IReadOnlyList<LoweredFunctionParameter> parameters,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext closure,
         Dictionary<string, object> defaultValues,
-        ScopeDirectiveFacts? scopeFacts)
+        ScopeDirectiveFacts scopeFacts)
     {
         Name = name;
         _body = body;
         _closure = closure;
         _bindingPlan = new FunctionBindingPlan(name, "Function", parameters, defaultValues);
-        _scopeFacts = scopeFacts ?? ScopeDirectiveFacts.Empty;
+        _scopeFacts = scopeFacts;
     }
 
     public string Name { get; }

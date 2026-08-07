@@ -6,6 +6,9 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
+// Signals that a valid lowered program must use the general interpreter instead of executable IR.
+internal sealed class ExecutableLoweringFallbackException(string message) : Exception(message);
+
 internal enum ExecutableOpCode
 {
     Import,
@@ -794,7 +797,7 @@ internal sealed class ExecutableScript
                 case AnnotatedAssignmentStatementSyntax annotated:
                     if (assignment.Expression is null)
                     {
-                        throw new NotSupportedException($"Executable IR lowering does not support annotation-only assignments: {assignment.Syntax.GetType().Name}.");
+                        throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {assignment.Syntax.GetType().Name}.");
                     }
 
                     CompileExpression(assignment.Expression, currentBlock);
@@ -820,7 +823,7 @@ internal sealed class ExecutableScript
                     {
                         if (chained.Targets[i] is not NameAssignmentTargetSyntax name)
                         {
-                            throw new NotSupportedException($"Executable IR lowering does not yet support chained assignment target {chained.Targets[i].GetType().Name}.");
+                            throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support chained assignment target {chained.Targets[i].GetType().Name}.");
                         }
 
                         if (i < chained.Targets.Count - 1)
@@ -1145,7 +1148,7 @@ internal sealed class ExecutableScript
         {
             if (!_loops.TryPeek(out var loop))
             {
-                throw new NotSupportedException("Executable IR lowering cannot emit break outside a loop.");
+                throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
             }
 
             AddInstruction(currentBlock, ExecutableInstruction.Jump(loop.BreakBlockIndex, statement.Span));
@@ -1156,7 +1159,7 @@ internal sealed class ExecutableScript
         {
             if (!_loops.TryPeek(out var loop))
             {
-                throw new NotSupportedException("Executable IR lowering cannot emit continue outside a loop.");
+                throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit continue outside a loop.");
             }
 
             AddInstruction(currentBlock, ExecutableInstruction.Jump(loop.ContinueBlockIndex, statement.Span));
@@ -1365,7 +1368,7 @@ internal sealed class ExecutableScript
                 BinaryOperatorSyntax.IsNot => ExecutableBinaryOperator.IsNot,
                 BinaryOperatorSyntax.In => ExecutableBinaryOperator.In,
                 BinaryOperatorSyntax.NotIn => ExecutableBinaryOperator.NotIn,
-                _ => throw new NotSupportedException($"Executable IR lowering does not support binary operator {op}."),
+                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support binary operator {op}."),
             };
 
         private static ExecutableUnaryOperator MapUnaryOperator(UnaryOperatorSyntax op)
@@ -1375,7 +1378,7 @@ internal sealed class ExecutableScript
                 UnaryOperatorSyntax.Plus => ExecutableUnaryOperator.Plus,
                 UnaryOperatorSyntax.Minus => ExecutableUnaryOperator.Minus,
                 UnaryOperatorSyntax.BitwiseNot => ExecutableUnaryOperator.BitwiseNot,
-                _ => throw new NotSupportedException($"Executable IR lowering does not support unary operator {op}."),
+                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support unary operator {op}."),
             };
 
         private static ExecutableAugmentedOperator MapAugmentedAssignmentOperator(AugmentedAssignmentOperatorSyntax op)
@@ -1393,7 +1396,7 @@ internal sealed class ExecutableScript
                 AugmentedAssignmentOperatorSyntax.BitwiseAnd => ExecutableAugmentedOperator.BitwiseAnd,
                 AugmentedAssignmentOperatorSyntax.LeftShift => ExecutableAugmentedOperator.LeftShift,
                 AugmentedAssignmentOperatorSyntax.RightShift => ExecutableAugmentedOperator.RightShift,
-                _ => throw new NotSupportedException($"Executable IR lowering does not support augmented assignment operator {op}."),
+                _ => throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support augmented assignment operator {op}."),
             };
 
         private int CreateBlock()
@@ -1714,7 +1717,7 @@ internal sealed class ExecutableScript
                     _functionParameters is null ? null : _locals.Concat(_closures))
                     .CompileCodeObject(functionDefinition.Syntax.Name, functionDefinition.Body);
             }
-            catch (NotSupportedException)
+            catch (ExecutableLoweringFallbackException)
             {
                 codeObject = null;
             }
@@ -1857,5 +1860,6 @@ internal sealed class ExecutableScript
         private readonly record struct LoopContext(
             int ContinueBlockIndex,
             int BreakBlockIndex);
+
     }
 }

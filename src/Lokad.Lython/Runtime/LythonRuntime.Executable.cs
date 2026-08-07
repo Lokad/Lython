@@ -1042,7 +1042,7 @@ internal sealed partial class LythonRuntime
             var spec = callSite.Arguments[i];
             if (spec.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
             {
-                throw new NotSupportedException($"Executable interpreter does not yet support call argument kind {spec.Kind}.");
+                throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.");
             }
 
             arguments[i] = new CallArgumentValue(
@@ -1457,7 +1457,7 @@ internal sealed partial class LythonRuntime
             ExecutableBinaryOperator.NotIn => !Contains(right, left, context, span),
             ExecutableBinaryOperator.Equal => AreEqualWithProtocols(left, right, context, span),
             ExecutableBinaryOperator.NotEqual => !AreEqualWithProtocols(left, right, context, span),
-            _ => throw new NotSupportedException($"Executable interpreter does not yet support binary operator {op}."),
+            _ => throw new InvalidOperationException($"Executable IR contains unknown binary operator {op}."),
         };
     }
 
@@ -1481,7 +1481,7 @@ internal sealed partial class LythonRuntime
             ExecutableUnaryOperator.Plus => EvaluateUnaryPlus(operand, span),
             ExecutableUnaryOperator.Minus => EvaluateUnaryMinus(operand, span),
             ExecutableUnaryOperator.BitwiseNot => EvaluateBitwiseNot(operand, span),
-            _ => throw new NotSupportedException($"Executable interpreter does not yet support unary operator {op}."),
+            _ => throw new InvalidOperationException($"Executable IR contains unknown unary operator {op}."),
         };
     }
 
@@ -1544,7 +1544,7 @@ internal sealed partial class LythonRuntime
                 ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
                 ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
                 ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
-                _ => throw new NotSupportedException($"Executable interpreter does not yet support augmented operator {op}."),
+                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
             },
             context,
             span);
