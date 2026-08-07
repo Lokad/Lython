@@ -1011,6 +1011,39 @@ internal sealed partial class LythonRuntime
         {
             private const double InvSqrtTau = 0.39894228040143267794;
             private const double SqrtTwo = 1.4142135623730950488;
+            private static readonly double[] InverseNormalCentralNumerator =
+            [
+                -3.969683028665376e+01,
+                2.209460984245205e+02,
+                -2.759285104469687e+02,
+                1.383577518672690e+02,
+                -3.066479806614716e+01,
+                2.506628277459239e+00,
+            ];
+            private static readonly double[] InverseNormalCentralDenominator =
+            [
+                -5.447609879822406e+01,
+                1.615858368580409e+02,
+                -1.556989798598866e+02,
+                6.680131188771972e+01,
+                -1.328068155288572e+01,
+            ];
+            private static readonly double[] InverseNormalTailNumerator =
+            [
+                -7.784894002430293e-03,
+                -3.223964580411365e-01,
+                -2.400758277161838e+00,
+                -2.549732539343734e+00,
+                4.374664141464968e+00,
+                2.938163982698783e+00,
+            ];
+            private static readonly double[] InverseNormalTailDenominator =
+            [
+                7.784695709041462e-03,
+                3.224671290700398e-01,
+                2.445134137142996e+00,
+                3.754408661907416e+00,
+            ];
 
             public PyNormalDist(double mean, double stdev)
             {
@@ -1065,7 +1098,7 @@ internal sealed partial class LythonRuntime
 
                         RequirePositiveStdev("cdf()", span);
                         var x = ExpectReal(arguments[0], "NormalDist.cdf(x)", span);
-                        return 0.5 * (1.0 + ErfApprox((x - Mean) / (Stdev * SqrtTwo)));
+                        return 0.5 * (1.0 + FloatingPointSpecialFunctions.Erf((x - Mean) / (Stdev * SqrtTwo)));
                     }, "NormalDist.cdf", ["x"]),
                     "inv_cdf" => new BoundCallable((arguments, span, _) =>
                     {
@@ -1172,7 +1205,7 @@ internal sealed partial class LythonRuntime
             public double Cdf(double x, LythonSourceSpan span)
             {
                 RequirePositiveStdev("cdf()", span);
-                return 0.5 * (1.0 + ErfApprox((x - Mean) / (Stdev * SqrtTwo)));
+                return 0.5 * (1.0 + FloatingPointSpecialFunctions.Erf((x - Mean) / (Stdev * SqrtTwo)));
             }
 
             private double Overlap(PyNormalDist other, LythonSourceSpan span)
@@ -1181,7 +1214,7 @@ internal sealed partial class LythonRuntime
                 other.RequirePositiveStdev("overlap()", span);
                 if (Stdev == other.Stdev)
                 {
-                    return 1.0 - ErfApprox(Math.Abs(Mean - other.Mean) / (2.0 * Stdev * SqrtTwo));
+                    return 1.0 - FloatingPointSpecialFunctions.Erf(Math.Abs(Mean - other.Mean) / (2.0 * Stdev * SqrtTwo));
                 }
 
                 var variance = Variance;
@@ -1220,87 +1253,28 @@ internal sealed partial class LythonRuntime
                 return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
             }
 
-            private static double ErfApprox(double value)
-            {
-                if (double.IsNaN(value))
-                {
-                    return double.NaN;
-                }
-
-                if (double.IsPositiveInfinity(value))
-                {
-                    return 1.0;
-                }
-
-                if (double.IsNegativeInfinity(value))
-                {
-                    return -1.0;
-                }
-
-                var sign = Math.Sign(value);
-                var x = Math.Abs(value);
-                var t = 1.0 / (1.0 + 0.3275911 * x);
-                var polynomial = (((((1.061405429 * t) - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
-                var result = 1.0 - polynomial * Math.Exp(-x * x);
-                return sign < 0 ? -result : result;
-            }
-
             private static double InverseStandardNormal(double p)
             {
-                double[] a =
-                [
-                    -3.969683028665376e+01,
-                    2.209460984245205e+02,
-                    -2.759285104469687e+02,
-                    1.383577518672690e+02,
-                    -3.066479806614716e+01,
-                    2.506628277459239e+00,
-                ];
-                double[] b =
-                [
-                    -5.447609879822406e+01,
-                    1.615858368580409e+02,
-                    -1.556989798598866e+02,
-                    6.680131188771972e+01,
-                    -1.328068155288572e+01,
-                ];
-                double[] c =
-                [
-                    -7.784894002430293e-03,
-                    -3.223964580411365e-01,
-                    -2.400758277161838e+00,
-                    -2.549732539343734e+00,
-                    4.374664141464968e+00,
-                    2.938163982698783e+00,
-                ];
-                double[] d =
-                [
-                    7.784695709041462e-03,
-                    3.224671290700398e-01,
-                    2.445134137142996e+00,
-                    3.754408661907416e+00,
-                ];
-
                 const double low = 0.02425;
                 const double high = 1.0 - low;
                 if (p < low)
                 {
                     var q = Math.Sqrt(-2.0 * Math.Log(p));
-                    return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
-                           ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
+                    return (((((InverseNormalTailNumerator[0] * q + InverseNormalTailNumerator[1]) * q + InverseNormalTailNumerator[2]) * q + InverseNormalTailNumerator[3]) * q + InverseNormalTailNumerator[4]) * q + InverseNormalTailNumerator[5]) /
+                           ((((InverseNormalTailDenominator[0] * q + InverseNormalTailDenominator[1]) * q + InverseNormalTailDenominator[2]) * q + InverseNormalTailDenominator[3]) * q + 1.0);
                 }
 
                 if (p <= high)
                 {
                     var q = p - 0.5;
                     var r = q * q;
-                    return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
-                           (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0);
+                    return (((((InverseNormalCentralNumerator[0] * r + InverseNormalCentralNumerator[1]) * r + InverseNormalCentralNumerator[2]) * r + InverseNormalCentralNumerator[3]) * r + InverseNormalCentralNumerator[4]) * r + InverseNormalCentralNumerator[5]) * q /
+                           (((((InverseNormalCentralDenominator[0] * r + InverseNormalCentralDenominator[1]) * r + InverseNormalCentralDenominator[2]) * r + InverseNormalCentralDenominator[3]) * r + InverseNormalCentralDenominator[4]) * r + 1.0);
                 }
 
                 var upperQ = Math.Sqrt(-2.0 * Math.Log(1.0 - p));
-                return -(((((c[0] * upperQ + c[1]) * upperQ + c[2]) * upperQ + c[3]) * upperQ + c[4]) * upperQ + c[5]) /
-                       ((((d[0] * upperQ + d[1]) * upperQ + d[2]) * upperQ + d[3]) * upperQ + 1.0);
+                return -(((((InverseNormalTailNumerator[0] * upperQ + InverseNormalTailNumerator[1]) * upperQ + InverseNormalTailNumerator[2]) * upperQ + InverseNormalTailNumerator[3]) * upperQ + InverseNormalTailNumerator[4]) * upperQ + InverseNormalTailNumerator[5]) /
+                       ((((InverseNormalTailDenominator[0] * upperQ + InverseNormalTailDenominator[1]) * upperQ + InverseNormalTailDenominator[2]) * upperQ + InverseNormalTailDenominator[3]) * upperQ + 1.0);
             }
         }
     }

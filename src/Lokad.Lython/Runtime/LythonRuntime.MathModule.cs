@@ -303,10 +303,10 @@ internal sealed partial class LythonRuntime
             => UnaryFloat(arguments, "math.cbrt", span, context, Math.Cbrt);
 
         private static object Erf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.erf", span, context, ErfApprox);
+            => UnaryFloat(arguments, "math.erf", span, context, FloatingPointSpecialFunctions.Erf);
 
         private static object Erfc(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => UnaryFloat(arguments, "math.erfc", span, context, ErfcApprox);
+            => UnaryFloat(arguments, "math.erfc", span, context, FloatingPointSpecialFunctions.Erfc);
 
         private static object Gamma(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -505,65 +505,6 @@ internal sealed partial class LythonRuntime
 
         private static bool IsNonPositiveInteger(double value)
             => value <= 0.0 && Math.Truncate(value) == value;
-
-        private static double ErfApprox(double value)
-        {
-            if (double.IsNaN(value))
-            {
-                return double.NaN;
-            }
-
-            if (double.IsPositiveInfinity(value))
-            {
-                return 1.0;
-            }
-
-            if (double.IsNegativeInfinity(value))
-            {
-                return -1.0;
-            }
-
-            if (value == 0.0)
-            {
-                return value;
-            }
-
-            var sign = Math.Sign(value);
-            var x = Math.Abs(value);
-            var t = 1.0 / (1.0 + 0.3275911 * x);
-            var polynomial = (((((1.061405429 * t) - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
-            var result = 1.0 - polynomial * Math.Exp(-x * x);
-            return sign < 0 ? -result : result;
-        }
-
-        private static double ErfcApprox(double value)
-        {
-            if (double.IsNaN(value))
-            {
-                return double.NaN;
-            }
-
-            if (double.IsPositiveInfinity(value))
-            {
-                return 0.0;
-            }
-
-            if (double.IsNegativeInfinity(value))
-            {
-                return 2.0;
-            }
-
-            if (value == 0.0)
-            {
-                return 1.0;
-            }
-
-            var x = Math.Abs(value);
-            var t = 1.0 / (1.0 + 0.3275911 * x);
-            var polynomial = (((((1.061405429 * t) - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
-            var tail = polynomial * Math.Exp(-x * x);
-            return value < 0 ? 2.0 - tail : tail;
-        }
 
         private static double Expm1Accurate(double value)
         {
