@@ -441,28 +441,22 @@ internal static class StaticAbstractValueResolver
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        value = op switch
+        if (!StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out var resultKind))
         {
-            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDate(span),
-            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDate => AbstractValue.DateTimeDate(span),
-            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDateTime(span),
-            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeDateTime(span),
-            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDate(span),
-            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDateTime(span),
-            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Multiply when StaticAbstractFacts.IsTimedeltaNumericPair(left, right) => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.FloatType(span),
-            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.IntegerType(span),
-            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Modulo when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
-            _ => default
-        };
+            value = default;
+            return false;
+        }
 
-        return value.Kind != default;
+        value = resultKind switch
+        {
+            AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeTimedelta(span),
+            AbstractValueKind.DateTimeDate => AbstractValue.DateTimeDate(span),
+            AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeDateTime(span),
+            AbstractValueKind.FloatType => AbstractValue.FloatType(span),
+            AbstractValueKind.IntegerType => AbstractValue.IntegerType(span),
+            _ => throw new InvalidOperationException($"Unsupported datetime operation result kind '{resultKind}'.")
+        };
+        return true;
     }
 
     private static bool TryResolveStatisticsBinaryAbstractValue(

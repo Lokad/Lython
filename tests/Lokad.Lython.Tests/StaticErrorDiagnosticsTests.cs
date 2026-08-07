@@ -1218,6 +1218,36 @@ b"a" + b"b"
     }
 
     [Fact]
+    public void TimedeltaOperatorDiagnostics_ShareTheRuntimeCompatibilityMatrix()
+    {
+        var valid = new LythonEngine().Compile(
+            """
+from datetime import timedelta
+
+left = timedelta(seconds=5)
+right = timedelta(seconds=2)
+left % right
+left / 2
+left // 2
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+from datetime import timedelta
+
+delta = timedelta(seconds=5)
+delta % 2
+2 % delta
+2 / delta
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Equal(3, invalid.Diagnostics.Count(d => d.Code == "LA3141"));
+    }
+
+    [Fact]
     public void BinaryExpressionTypeFlow_WidensShortCircuitDisagreement()
     {
         var compiled = new LythonEngine().Compile(

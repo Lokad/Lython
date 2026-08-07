@@ -4,9 +4,36 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticAbstractFacts
 {
-    public static bool IsTimedeltaNumericPair(AbstractValue left, AbstractValue right)
-        => left.Kind == AbstractValueKind.DateTimeTimedelta && IsNumericLike(right) ||
-           IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
+    public static bool TryGetDateTimeBinaryResultKind(
+        BinaryOperatorSyntax op,
+        AbstractValue left,
+        AbstractValue right,
+        out AbstractValueKind resultKind)
+    {
+        resultKind = op switch
+        {
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeDate,
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDate => AbstractValueKind.DateTimeDate,
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeDateTime,
+            BinaryOperatorSyntax.Add when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValueKind.DateTimeDateTime,
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeDate,
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeDateTime,
+            BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Multiply when left.Kind == AbstractValueKind.DateTimeTimedelta && IsNumericLike(right) => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Multiply when IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.FloatType,
+            BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && IsNumericLike(right) => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.IntegerType,
+            BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && IsNumericLike(right) => AbstractValueKind.DateTimeTimedelta,
+            BinaryOperatorSyntax.Modulo when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValueKind.DateTimeTimedelta,
+            _ => default
+        };
+
+        return resultKind != default;
+    }
 
     public static bool IsNormalDistAdditivePair(AbstractValue left, AbstractValue right)
         => left.Kind == AbstractValueKind.StatisticsNormalDist &&

@@ -399,25 +399,25 @@ internal static class StaticStructuralDiagnostics
         {
             BinaryOperatorSyntax.Add => CanApplyAdd(left, right),
             BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
-                CanApplyDateTimeSubtract(left, right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
                 IsSetLike(left) && IsSetLike(right),
             BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
-                StaticAbstractFacts.IsTimedeltaNumericPair(left, right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 StaticAbstractFacts.IsNormalDistNumericPair(left, right) ||
                 left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
                 IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && IsListLike(right),
             BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
-                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
                 left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
             BinaryOperatorSyntax.FloorDivide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
-                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)),
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
             BinaryOperatorSyntax.Modulo => CanApplyStringModulo(left, right) ||
                 StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
-                left.Kind == AbstractValueKind.DateTimeTimedelta && (right.Kind == AbstractValueKind.DateTimeTimedelta || StaticAbstractFacts.IsNumericLike(right)),
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
             BinaryOperatorSyntax.BitwiseOr or
             BinaryOperatorSyntax.BitwiseXor or
@@ -567,9 +567,7 @@ internal static class StaticStructuralDiagnostics
         => left.IsStringLike && right.IsStringLike ||
            StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
            StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
-           left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
-           IsDateOrDateTime(left) && right.Kind == AbstractValueKind.DateTimeTimedelta ||
-           left.Kind == AbstractValueKind.DateTimeTimedelta && IsDateOrDateTime(right) ||
+           StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
            IsListLike(left) && IsListLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
 
@@ -584,14 +582,6 @@ internal static class StaticStructuralDiagnostics
            IsListLike(left) && IsListLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
            IsSetLike(left) && IsSetLike(right);
-
-    private static bool CanApplyDateTimeSubtract(AbstractValue left, AbstractValue right)
-        => left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
-           left.Kind == AbstractValueKind.DateTimeDate && (right.Kind == AbstractValueKind.DateTimeDate || right.Kind == AbstractValueKind.DateTimeTimedelta) ||
-           left.Kind == AbstractValueKind.DateTimeDateTime && (right.Kind == AbstractValueKind.DateTimeDateTime || right.Kind == AbstractValueKind.DateTimeTimedelta);
-
-    private static bool IsDateOrDateTime(AbstractValue value)
-        => value.Kind is AbstractValueKind.DateTimeDate or AbstractValueKind.DateTimeDateTime;
 
     private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)
     {
