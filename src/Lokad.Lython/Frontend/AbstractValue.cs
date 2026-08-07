@@ -312,6 +312,9 @@ internal readonly record struct AbstractValue(
 
     public static AbstractValue Join(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
+        // Join is the least upper bound used at control-flow merges. Preserve exact
+        // literals only when both paths agree, then widen within a Python value family;
+        // unrelated families deliberately become Unknown instead of inventing a union.
         if (left.Kind == AbstractValueKind.Never)
         {
             return right.WithSpan(span);
@@ -428,6 +431,9 @@ internal readonly record struct AbstractValue(
                 return Unknown(span);
             }
 
+            // A literal dictionary remains useful only when both paths have the same
+            // comparable keys. Different shapes widen to Unknown because the analyzer
+            // does not model optional dictionary entries.
             var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
             foreach (var rightPair in rightPairs)
             {

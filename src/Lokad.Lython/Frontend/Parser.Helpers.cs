@@ -373,6 +373,8 @@ internal sealed partial class Parser
 
         if (isRaw)
         {
+            // Tokenization has already established the closing delimiter. Raw strings
+            // preserve every body code unit here, including backslash sequences.
             value = literal[start..end];
             return true;
         }
@@ -482,6 +484,8 @@ internal sealed partial class Parser
                     }
                     else
                     {
+                        // Python preserves unknown escape sequences rather than silently
+                        // dropping the backslash; diagnostics for those escapes are not fatal.
                         builder.Append('\\');
                         builder.Append(literal[i]);
                     }

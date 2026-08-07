@@ -8,6 +8,9 @@ internal static class PyEquality
 {
     public static bool AreEqual(object left, object right)
     {
+        // Decimal coercion has its own Python rules and must run before the broader
+        // numeric tower. In particular, falling back to CLR Equals would make equal
+        // values with different runtime representations compare unequal.
         if (left is PyDecimal || right is PyDecimal)
         {
             return PyDecimalOps.AreEqual(left, right);
@@ -18,6 +21,8 @@ internal static class PyEquality
             return PyNumberOps.AreEqual(lhs, rhs);
         }
 
+        // Keep identity after numeric comparison: a boxed NaN must remain unequal to
+        // itself even when both operands happen to reference the same boxed object.
         if (ReferenceEquals(left, right))
         {
             return true;
@@ -119,6 +124,8 @@ internal static class PyEquality
 
             static bool CountersEqual(PyCounter left, PyCounter right)
             {
+                // Counter equality treats absent keys as having a zero count, unlike
+                // ordinary dictionary equality, so compare the union of both key sets.
                 var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
                 keys.UnionWith(right.Keys);
 
@@ -143,6 +150,8 @@ internal static class PyEquality
 
         if (left is PyInstance leftInstance && right is PyInstance rightInstance)
         {
+            // Generated dataclass equality is intentionally exact-type equality; base
+            // and derived dataclass instances do not compare field-by-field in Python.
             if (!ReferenceEquals(leftInstance.Type, rightInstance.Type))
             {
                 return false;

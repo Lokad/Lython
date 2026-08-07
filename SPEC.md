@@ -301,8 +301,10 @@ local script modules. The built-in allowlist includes the standard-library
 subsets specified in this document, including `argparse`, `builtins`, `collections`,
 `copy`, `csv`, `dataclasses`, `datetime`, `decimal`, `difflib`, `filecmp`, `fnmatch`,
 `functools`, `glob`, `gzip`, `hashlib`, `importlib`, `itertools`, `json`, `math`, `operator`, `os`,
-`pathlib`, `pkgutil`, `random`, `re`, `shlex`, `shutil`, `statistics`, `subprocess`, `time`
-when host-enabled, `sys`, `typing`, and related contained helpers.
+`pathlib`, `pkgutil`, `random`, `re`, `shlex`, `shutil`, `statistics`, `time`, `sys`, `typing`,
+and related contained helpers. The `subprocess` module joins that allowlist only when the host
+provides the subprocess capability; `time` is always importable and routes clock-sensitive
+operations through the configured host.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members, including comma-separated dotted imports.
