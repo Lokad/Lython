@@ -2,6 +2,9 @@
   <Folder Name="/src/">
     <Project Path="src/Lokad.Lython/Lokad.Lython.csproj" />
   </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj" />
   </Folder>
