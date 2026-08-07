@@ -6,7 +6,7 @@ internal sealed class FunctionBindingPlan
 {
     public FunctionBindingPlan(
         string callableName,
-        string callableKind,
+        PythonCallableKind callableKind,
         IReadOnlyList<LoweredFunctionParameter> parameters,
         IReadOnlyDictionary<string, object> defaultValues)
     {
@@ -46,7 +46,7 @@ internal sealed class FunctionBindingPlan
 
     public string CallableName { get; }
 
-    public string CallableKind { get; }
+    public PythonCallableKind CallableKind { get; }
 
     public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
 

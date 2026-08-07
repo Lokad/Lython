@@ -22,7 +22,7 @@ public sealed class CallBindingSubsystemTests
             ],
             Span,
             "demo",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["first", "second", "third"],
             requiredCount: 1);
 
@@ -39,7 +39,7 @@ public sealed class CallBindingSubsystemTests
             ],
             Span,
             "demo",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["first"],
             requiredCount: 1));
 
@@ -54,7 +54,7 @@ public sealed class CallBindingSubsystemTests
             [CallArgumentValue.Keyword("nope", 1)],
             Span,
             "demo",
-            "Method",
+            PythonCallableKind.Method,
             ["value"],
             requiredCount: 1));
 
@@ -69,7 +69,7 @@ public sealed class CallBindingSubsystemTests
             [CallArgumentValue.Keyword("value", 1)],
             Span,
             "demo",
-            "Builtin",
+            PythonCallableKind.Builtin,
             null,
             requiredCount: 0));
 

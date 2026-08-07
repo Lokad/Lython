@@ -480,7 +480,7 @@ internal sealed partial class LythonRuntime
                 arguments,
                 span,
                 new LythonCallableSignature("subprocess.CalledProcessError", ["returncode", "cmd", "output", "stderr"], RequiredCount: 2),
-                "Builtin");
+                PythonCallableKind.Builtin);
             var returnCode = bound[0] switch
             {
                 BigInteger integer => integer,
@@ -531,7 +531,7 @@ internal sealed partial class LythonRuntime
                 arguments,
                 span,
                 LythonKnownCallableSignatures.SubprocessTimeoutExpired,
-                "Builtin");
+                PythonCallableKind.Builtin);
             return new PyException(
                 "TimeoutExpired",
                 $"Command timed out after {bound[1]}.",

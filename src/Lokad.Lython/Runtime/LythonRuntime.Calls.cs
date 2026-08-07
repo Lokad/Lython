@@ -296,14 +296,14 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Builtin", _parameterIndices);
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin, _parameterIndices);
             return _implementation(positional, span, context);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Builtin", _parameterIndices);
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin, _parameterIndices);
             return _asyncImplementation is null
                 ? _implementation(positional, span, context)
                 : await _asyncImplementation(positional, span, context).ConfigureAwait(false);
@@ -396,7 +396,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
-            => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, "Builtin"));
+            => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, PythonCallableKind.Builtin));
     }
 
     private sealed class PrintCallable : ICallable
@@ -428,7 +428,7 @@ internal sealed partial class LythonRuntime
                     case "sep":
                         if (seenSeparator)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "sep", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "sep", span);
                         }
 
                         separator = ReferenceEquals(argument.Value, PyNone.Instance)
@@ -442,7 +442,7 @@ internal sealed partial class LythonRuntime
                     case "end":
                         if (seenEnding)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "end", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "end", span);
                         }
 
                         ending = ReferenceEquals(argument.Value, PyNone.Instance)
@@ -456,7 +456,7 @@ internal sealed partial class LythonRuntime
                     case "file":
                         if (seenFile)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "file", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "file", span);
                         }
 
                         outputTarget = argument.Value switch
@@ -476,7 +476,7 @@ internal sealed partial class LythonRuntime
                     case "flush":
                         if (seenFlush)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "flush", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "flush", span);
                         }
 
                         flush = IsTruthy(argument.Value);
@@ -484,7 +484,7 @@ internal sealed partial class LythonRuntime
                         break;
 
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.KeywordName, span);
+                        throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "print", argument.KeywordName, span);
                 }
             }
 
@@ -534,7 +534,7 @@ internal sealed partial class LythonRuntime
                     case "sep":
                         if (seenSeparator)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "sep", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "sep", span);
                         }
 
                         separator = ReferenceEquals(argument.Value, PyNone.Instance)
@@ -548,7 +548,7 @@ internal sealed partial class LythonRuntime
                     case "end":
                         if (seenEnding)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "end", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "end", span);
                         }
 
                         ending = ReferenceEquals(argument.Value, PyNone.Instance)
@@ -562,7 +562,7 @@ internal sealed partial class LythonRuntime
                     case "file":
                         if (seenFile)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "file", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "file", span);
                         }
 
                         outputTarget = argument.Value switch
@@ -582,7 +582,7 @@ internal sealed partial class LythonRuntime
                     case "flush":
                         if (seenFlush)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "print", "flush", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "print", "flush", span);
                         }
 
                         flush = IsTruthy(argument.Value);
@@ -590,7 +590,7 @@ internal sealed partial class LythonRuntime
                         break;
 
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.KeywordName, span);
+                        throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "print", argument.KeywordName, span);
                 }
             }
 
@@ -844,7 +844,7 @@ internal sealed partial class LythonRuntime
         {
             _body = body;
             _closure = closure;
-            _bindingPlan = new FunctionBindingPlan("<lambda>", "lambda", parameters, defaultValues);
+            _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues);
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

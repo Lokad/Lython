@@ -516,7 +516,7 @@ internal sealed partial class LythonRuntime
             arguments,
             span,
             signature,
-            "Builtin");
+            PythonCallableKind.Builtin);
 
     private static object[] MaterializeSequence(object value, LythonSourceSpan span)
     {

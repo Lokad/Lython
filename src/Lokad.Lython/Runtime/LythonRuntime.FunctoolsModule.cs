@@ -1391,7 +1391,7 @@ internal sealed partial class LythonRuntime
             {
                 if (arguments[0].IsKeyword && arguments[0].KeywordName != "fillvalue")
                 {
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.recursive_repr", arguments[0].KeywordName, span);
+                    throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "functools.recursive_repr", arguments[0].KeywordName, span);
                 }
 
                 if (!PyStringOps.TryAsString(arguments[0].Value, out fillValue))
@@ -1797,7 +1797,7 @@ internal sealed partial class LythonRuntime
                     case 0:
                         if (seenWrapper)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "wrapper", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "wrapper", span);
                         }
 
                         wrapper = argument.Value;
@@ -1806,7 +1806,7 @@ internal sealed partial class LythonRuntime
                     case 1:
                         if (seenWrapped)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "wrapped", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "wrapped", span);
                         }
 
                         wrapped = argument.Value;
@@ -1815,7 +1815,7 @@ internal sealed partial class LythonRuntime
                     case 2:
                         if (seenAssigned)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "assigned", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "assigned", span);
                         }
 
                         assigned = argument.Value;
@@ -1824,7 +1824,7 @@ internal sealed partial class LythonRuntime
                     case 3:
                         if (seenUpdated)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "updated", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "updated", span);
                         }
 
                         updated = argument.Value;
@@ -1842,7 +1842,7 @@ internal sealed partial class LythonRuntime
                 case "wrapper":
                     if (seenWrapper)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "wrapper", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "wrapper", span);
                     }
 
                     wrapper = argument.Value;
@@ -1851,7 +1851,7 @@ internal sealed partial class LythonRuntime
                 case "wrapped":
                     if (seenWrapped)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "wrapped", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "wrapped", span);
                     }
 
                     wrapped = argument.Value;
@@ -1860,7 +1860,7 @@ internal sealed partial class LythonRuntime
                 case "assigned":
                     if (seenAssigned)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "assigned", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "assigned", span);
                     }
 
                     assigned = argument.Value;
@@ -1869,14 +1869,14 @@ internal sealed partial class LythonRuntime
                 case "updated":
                     if (seenUpdated)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.update_wrapper", "updated", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.update_wrapper", "updated", span);
                     }
 
                     updated = argument.Value;
                     seenUpdated = true;
                     break;
                 default:
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.update_wrapper", argument.KeywordName, span);
+                    throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "functools.update_wrapper", argument.KeywordName, span);
             }
         }
 
@@ -1971,7 +1971,7 @@ internal sealed partial class LythonRuntime
                     case 0:
                         if (seenMaxSize)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.lru_cache", "maxsize", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "maxsize", span);
                         }
 
                         maxSizeValue = argument.Value;
@@ -1980,7 +1980,7 @@ internal sealed partial class LythonRuntime
                     case 1:
                         if (seenTyped)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "functools.lru_cache", "typed", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "typed", span);
                         }
 
                         typedValue = argument.Value;
@@ -1998,7 +1998,7 @@ internal sealed partial class LythonRuntime
                 case "maxsize":
                     if (seenMaxSize)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.lru_cache", "maxsize", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "maxsize", span);
                     }
 
                     maxSizeValue = argument.Value;
@@ -2007,14 +2007,14 @@ internal sealed partial class LythonRuntime
                 case "typed":
                     if (seenTyped)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "functools.lru_cache", "typed", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "typed", span);
                     }
 
                     typedValue = argument.Value;
                     seenTyped = true;
                     break;
                 default:
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.lru_cache", argument.KeywordName, span);
+                    throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "functools.lru_cache", argument.KeywordName, span);
             }
         }
 

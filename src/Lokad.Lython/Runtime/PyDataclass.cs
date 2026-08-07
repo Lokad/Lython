@@ -257,7 +257,7 @@ internal static partial class PyDataclass
                 {
                     if (seenCls)
                     {
-                        throw CallErrors.MultipleValues("Builtin", "dataclasses.dataclass", "cls", span);
+                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.dataclass", "cls", span);
                     }
 
                     seenCls = true;
@@ -521,7 +521,7 @@ internal static partial class PyDataclass
     {
         if (!seen.Add(name) || target is not null)
         {
-            throw CallErrors.MultipleValues("Builtin", owner, name, span);
+            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, owner, name, span);
         }
 
         target = value;
@@ -531,7 +531,7 @@ internal static partial class PyDataclass
     {
         if (!seen.Add(name))
         {
-            throw CallErrors.MultipleValues("Builtin", owner, name, span);
+            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, owner, name, span);
         }
 
         return name switch
@@ -546,7 +546,7 @@ internal static partial class PyDataclass
             "match_args" => options with { MatchArgs = ExpectBool(value, $"{owner}(match_args=...)", span) },
             "slots" => RejectUnsupportedDataclassSlotOption(options, value, owner, "slots", span),
             "weakref_slot" => RejectUnsupportedDataclassSlotOption(options, value, owner, "weakref_slot", span),
-            _ => throw CallErrors.UnexpectedKeyword("Builtin", owner, name, span)
+            _ => throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, owner, name, span)
         };
     }
 
@@ -615,7 +615,7 @@ internal static partial class PyDataclass
                     case "default":
                         if (seenDefault)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "default", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "default", span);
                         }
 
                         defaultValue = argument.Value;
@@ -624,7 +624,7 @@ internal static partial class PyDataclass
                     case "default_factory":
                         if (seenDefaultFactory)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "default_factory", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "default_factory", span);
                         }
 
                         defaultFactory = argument.Value;
@@ -633,7 +633,7 @@ internal static partial class PyDataclass
                     case "init":
                         if (seenInit)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "init", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "init", span);
                         }
 
                         init = ExpectBool(argument.Value, "field(init=...)", span);
@@ -642,7 +642,7 @@ internal static partial class PyDataclass
                     case "repr":
                         if (seenRepr)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "repr", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "repr", span);
                         }
 
                         repr = ExpectBool(argument.Value, "field(repr=...)", span);
@@ -651,7 +651,7 @@ internal static partial class PyDataclass
                     case "compare":
                         if (seenCompare)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "compare", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "compare", span);
                         }
 
                         compare = ExpectBool(argument.Value, "field(compare=...)", span);
@@ -660,7 +660,7 @@ internal static partial class PyDataclass
                     case "hash":
                         if (seenHash)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "hash", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "hash", span);
                         }
 
                         hash = ExpectOptionalBool(argument.Value, "field(hash=...)", span);
@@ -669,7 +669,7 @@ internal static partial class PyDataclass
                     case "kw_only":
                         if (seenKwOnly)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "kw_only", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "kw_only", span);
                         }
 
                         kwOnly = ExpectOptionalBool(argument.Value, "field(kw_only=...)", span);
@@ -678,14 +678,14 @@ internal static partial class PyDataclass
                     case "metadata":
                         if (seenMetadata)
                         {
-                            throw CallErrors.MultipleValues("Builtin", "dataclasses.field", "metadata", span);
+                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.field", "metadata", span);
                         }
 
                         metadata = NormalizeFieldMetadata(argument.Value, span, context);
                         seenMetadata = true;
                         break;
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "dataclasses.field", argument.KeywordName, span);
+                        throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "dataclasses.field", argument.KeywordName, span);
                 }
             }
 

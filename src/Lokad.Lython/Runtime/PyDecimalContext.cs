@@ -224,7 +224,7 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
-        var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Method");
+        var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
         return _implementation(positional, span);
     }
 

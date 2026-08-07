@@ -29,7 +29,7 @@ internal static partial class PyDataclass
 
             if (!changes.TryAdd(argument.KeywordName, argument.Value))
             {
-                throw CallErrors.MultipleValues("Builtin", owner, argument.KeywordName, span);
+                throw CallErrors.MultipleValues(PythonCallableKind.Builtin, owner, argument.KeywordName, span);
             }
         }
 

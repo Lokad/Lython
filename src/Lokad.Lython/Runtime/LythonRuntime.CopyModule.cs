@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
 
                 if (!seen.Add(argument.KeywordName))
                 {
-                    throw CallErrors.MultipleValues("Builtin", "copy.replace", argument.KeywordName, span);
+                    throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "copy.replace", argument.KeywordName, span);
                 }
 
                 changes.Add(argument);

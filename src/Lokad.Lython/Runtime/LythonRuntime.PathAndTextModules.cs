@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (arguments[i].IsKeyword)
                     {
-                        throw CallErrors.NoKeywordArguments("Builtin", Name, span);
+                        throw CallErrors.NoKeywordArguments(PythonCallableKind.Builtin, Name, span);
                     }
 
                     values[i] = arguments[i].Value;
@@ -689,7 +689,7 @@ internal sealed partial class LythonRuntime
 
                             if (!keywords.TryAdd(argument.KeywordName, argument.Value))
                             {
-                                throw CallErrors.MultipleValues("Method", "str.format", argument.KeywordName, span);
+                                throw CallErrors.MultipleValues(PythonCallableKind.Method, "str.format", argument.KeywordName, span);
                             }
                         }
 
@@ -1029,14 +1029,14 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Method");
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
             return _implementation(positional, span, context);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Method");
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
             return _asyncImplementation is null
                 ? _implementation(positional, span, context)
                 : await _asyncImplementation(positional, span, context).ConfigureAwait(false);

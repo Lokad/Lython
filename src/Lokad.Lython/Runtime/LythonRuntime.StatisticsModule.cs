@@ -652,7 +652,7 @@ internal sealed partial class LythonRuntime
                 arguments,
                 span,
                 LythonKnownCallableSignatures.StatisticsNormalDist,
-                "Builtin");
+                PythonCallableKind.Builtin);
             var mean = bound.Length >= 1 && bound[0] is not PyNone
                 ? ExpectReal(bound[0], "statistics.NormalDist(..., mu=...)", span)
                 : 0.0;
@@ -817,7 +817,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                var positional = CallBinder.BindNamedArguments(arguments, span, _signature, "Builtin");
+                var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
                 return _implementation(positional, span, context);
             }
         }

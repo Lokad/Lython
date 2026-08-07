@@ -54,7 +54,7 @@ internal static partial class PyDataclass
                 }
             }
 
-            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", "Function", parameters, defaults);
+            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -183,7 +183,7 @@ internal static partial class PyDataclass
     private sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
     {
         private readonly FunctionBindingPlan _bindingPlan =
-            new($"{typeName}.__eq__", "Function", BinaryProtocolParameters, EmptyDefaultValues);
+            new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -245,7 +245,7 @@ internal static partial class PyDataclass
             };
             _bindingPlan = new FunctionBindingPlan(
                 $"{typeName}.__{operationName}__",
-                "Function",
+                PythonCallableKind.Function,
                 BinaryProtocolParameters,
                 EmptyDefaultValues);
         }

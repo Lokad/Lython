@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
             arguments,
             span,
             LythonKnownCallableSignatures.GzipOpen,
-            "Builtin");
+            PythonCallableKind.Builtin);
         var values = bound.Values;
 
         var path = PathOps.Normalize(

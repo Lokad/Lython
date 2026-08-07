@@ -1109,7 +1109,7 @@ internal sealed partial class LythonRuntime
             }
 
             private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
-                => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, "Method"));
+                => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, PythonCallableKind.Method));
 
             private static object OpenTextFile(
                 string path,

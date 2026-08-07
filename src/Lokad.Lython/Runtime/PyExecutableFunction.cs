@@ -25,7 +25,7 @@ internal sealed class PyExecutableFunction : IPyRenderableValue, IPyBindableCall
         _codeObject = codeObject;
         _closure = closure;
         _closureCells = closureCells;
-        _bindingPlan = new FunctionBindingPlan(name, "Function", parameters, defaultValues);
+        _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
 

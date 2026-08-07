@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var bound = CallBinder.BindNamedArguments(arguments, span, new LythonCallableSignature("re.RegexFlag", ["value"], RequiredCount: 0), "Builtin");
+                var bound = CallBinder.BindNamedArguments(arguments, span, new LythonCallableSignature("re.RegexFlag", ["value"], RequiredCount: 0), PythonCallableKind.Builtin);
                 if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
                 {
                     return BigInteger.Zero;

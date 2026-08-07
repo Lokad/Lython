@@ -42,7 +42,7 @@ internal static class CallBinder
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         string callableName,
-        string callableKind,
+        PythonCallableKind callableKind,
         string[]? parameterNames,
         int requiredCount)
     {
@@ -61,14 +61,14 @@ internal static class CallBinder
             positionalOnlyCount: 0).Values;
     }
 
-    public static object[] BindNamedArguments(CallArgumentValue[] arguments, LythonSourceSpan span, LythonCallableSignature signature, string callableKind)
+    public static object[] BindNamedArguments(CallArgumentValue[] arguments, LythonSourceSpan span, LythonCallableSignature signature, PythonCallableKind callableKind)
         => BindNamedArguments(arguments, span, signature, callableKind, null);
 
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
-        string callableKind,
+        PythonCallableKind callableKind,
         IReadOnlyDictionary<string, int>? parameterIndices)
     {
         return BindNamedArgumentsCore(
@@ -90,7 +90,7 @@ internal static class CallBinder
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
-        string callableKind)
+        PythonCallableKind callableKind)
     {
         var bound = BindNamedArgumentsCore(
             arguments,
@@ -120,7 +120,7 @@ internal static class CallBinder
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         string callableName,
-        string callableKind,
+        PythonCallableKind callableKind,
         string[]? parameterNames,
         IReadOnlyDictionary<string, int>? parameterIndices,
         int requiredCount)
@@ -130,7 +130,7 @@ internal static class CallBinder
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         string callableName,
-        string callableKind,
+        PythonCallableKind callableKind,
         string[]? parameterNames,
         IReadOnlyDictionary<string, int>? parameterIndices,
         int requiredCount,

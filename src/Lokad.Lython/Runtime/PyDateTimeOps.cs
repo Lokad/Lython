@@ -46,7 +46,7 @@ internal static partial class PyDateTimeOps
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var positional = CallBinder.BindNamedArguments(arguments, span, _name, "Builtin", _parameterNames, _requiredCount);
+            var positional = CallBinder.BindNamedArguments(arguments, span, _name, PythonCallableKind.Builtin, _parameterNames, _requiredCount);
             return _implementation(positional, span, context);
         }
     }
@@ -130,7 +130,7 @@ internal static partial class PyDateTimeOps
             arguments,
             span,
             "datetime.timedelta",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"],
             0);
 
@@ -168,7 +168,7 @@ internal static partial class PyDateTimeOps
             arguments,
             span,
             "datetime.date",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["year", "month", "day"],
             3);
 
@@ -185,7 +185,7 @@ internal static partial class PyDateTimeOps
             arguments,
             span,
             "datetime.time",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
             0);
 
@@ -208,7 +208,7 @@ internal static partial class PyDateTimeOps
             arguments,
             span,
             "datetime.datetime",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
             3);
 
@@ -246,7 +246,7 @@ internal static partial class PyDateTimeOps
             arguments,
             span,
             "datetime.timezone",
-            "Builtin",
+            PythonCallableKind.Builtin,
             ["offset", "name"],
             1);
 
