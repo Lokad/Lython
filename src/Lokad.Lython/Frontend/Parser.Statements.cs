@@ -243,26 +243,19 @@ internal sealed partial class Parser
 
     private bool TryConvertDataclassDecorator(ExpressionSyntax expression, LythonSourceSpan span, out DataclassDecoratorSyntax? decorator)
     {
-        var init = true;
-        var repr = true;
-        var eq = true;
-        var order = false;
-        var unsafeHash = false;
-        var frozen = false;
-        var kwOnly = false;
-        var matchArgs = true;
+        var options = DataclassDecoratorSyntax.CreateDefault(span);
 
         switch (expression)
         {
             case IdentifierExpressionSyntax { Name: "dataclass" }:
-                decorator = new DataclassDecoratorSyntax(init, repr, eq, order, unsafeHash, frozen, kwOnly, matchArgs, span);
+                decorator = options;
                 return true;
             case MemberExpressionSyntax
             {
                 Target: IdentifierExpressionSyntax { Name: "dataclasses" },
                 MemberName: "dataclass"
             }:
-                decorator = new DataclassDecoratorSyntax(init, repr, eq, order, unsafeHash, frozen, kwOnly, matchArgs, span);
+                decorator = options;
                 return true;
             case CallExpressionSyntax { Target: var target, Arguments: var arguments } when IsDataclassDecoratorTarget(target):
                 foreach (var argument in arguments)
@@ -284,28 +277,28 @@ internal sealed partial class Parser
                     switch (argument.KeywordName)
                     {
                         case "init":
-                            init = boolean.Value;
+                            options = options with { Init = boolean.Value };
                             break;
                         case "repr":
-                            repr = boolean.Value;
+                            options = options with { Repr = boolean.Value };
                             break;
                         case "eq":
-                            eq = boolean.Value;
+                            options = options with { Eq = boolean.Value };
                             break;
                         case "order":
-                            order = boolean.Value;
+                            options = options with { Order = boolean.Value };
                             break;
                         case "unsafe_hash":
-                            unsafeHash = boolean.Value;
+                            options = options with { UnsafeHash = boolean.Value };
                             break;
                         case "frozen":
-                            frozen = boolean.Value;
+                            options = options with { Frozen = boolean.Value };
                             break;
                         case "kw_only":
-                            kwOnly = boolean.Value;
+                            options = options with { KwOnly = boolean.Value };
                             break;
                         case "match_args":
-                            matchArgs = boolean.Value;
+                            options = options with { MatchArgs = boolean.Value };
                             break;
                         case "slots":
                         case "weakref_slot":
@@ -324,7 +317,7 @@ internal sealed partial class Parser
                     }
                 }
 
-                decorator = new DataclassDecoratorSyntax(init, repr, eq, order, unsafeHash, frozen, kwOnly, matchArgs, span);
+                decorator = options;
                 return true;
             default:
                 decorator = null;

@@ -43,7 +43,7 @@ internal static partial class PyDataclass
         ValidateDataclassOptions(type, decorator, span);
 
         type.SetDataclassMetadata(fields, decorator.Repr, decorator.Eq, decorator.Order, DetermineHashMode(type, decorator));
-        type.TrySetMember("__dataclass_params__", new PyDataclassParamsObject(decorator.Init, decorator.Repr, decorator.Eq, decorator.Order, decorator.UnsafeHash, decorator.Frozen, decorator.KwOnly, decorator.MatchArgs));
+        type.TrySetMember("__dataclass_params__", new PyDataclassParamsObject(decorator));
         type.TrySetMember("__dataclass_fields__", BuildFieldMap(fields, context, span));
 
         if (decorator.Init && !type.TryGetOwnMember("__init__", out _))
@@ -170,66 +170,12 @@ internal static partial class PyDataclass
         };
     }
 
-    private sealed record DataclassOptions(
-        bool Init,
-        bool Repr,
-        bool Eq,
-        bool Order,
-        bool UnsafeHash,
-        bool Frozen,
-        bool KwOnly,
-        bool MatchArgs)
-    {
-        public DataclassOptions()
-            : this(true, true, true, false, false, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init)
-            : this(Init, true, true, false, false, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr)
-            : this(Init, Repr, true, false, false, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr, bool Eq)
-            : this(Init, Repr, Eq, false, false, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order)
-            : this(Init, Repr, Eq, Order, false, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash)
-            : this(Init, Repr, Eq, Order, UnsafeHash, false, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash, bool Frozen)
-            : this(Init, Repr, Eq, Order, UnsafeHash, Frozen, false, true)
-        {
-        }
-
-        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash, bool Frozen, bool KwOnly)
-            : this(Init, Repr, Eq, Order, UnsafeHash, Frozen, KwOnly, true)
-        {
-        }
-    }
-
-    private static DataclassDecoratorSyntax ToDecorator(DataclassOptions options, LythonSourceSpan span)
-        => new(options.Init, options.Repr, options.Eq, options.Order, options.UnsafeHash, options.Frozen, options.KwOnly, options.MatchArgs, span);
-
     private sealed class DataclassCallableImpl : LythonRuntime.ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var options = new DataclassOptions();
+            var options = DataclassDecoratorSyntax.CreateDefault(span);
             PyType? cls = null;
             var seenCls = false;
             var seenOptions = new HashSet<string>(StringComparer.Ordinal);
@@ -273,10 +219,9 @@ internal static partial class PyDataclass
                 options = ApplyDataclassOption(options, argument.KeywordName, argument.Value, seenOptions, "dataclasses.dataclass", span);
             }
 
-            var decorator = ToDecorator(options, span);
             return cls is null
-                ? new DataclassRuntimeDecorator(decorator)
-                : ApplyRuntime(cls, decorator, context, span);
+                ? new DataclassRuntimeDecorator(options)
+                : ApplyRuntime(cls, options, context, span);
         }
     }
 
@@ -330,7 +275,7 @@ internal static partial class PyDataclass
             object? fieldsArgument = null;
             object? basesArgument = null;
             object? namespaceArgument = null;
-            var options = new DataclassOptions();
+            var options = DataclassDecoratorSyntax.CreateDefault(span);
             var positionalCount = 0;
             var seen = new HashSet<string>(StringComparer.Ordinal);
             var seenOptions = new HashSet<string>(StringComparer.Ordinal);
@@ -431,7 +376,7 @@ internal static partial class PyDataclass
                 type.SetMetaType(metaType);
             }
 
-            ApplyRuntime(type, ToDecorator(options, span), context, span);
+            ApplyRuntime(type, options, context, span);
             type.InitializeClassMembers(context, span);
             return type;
         }
@@ -527,7 +472,7 @@ internal static partial class PyDataclass
         target = value;
     }
 
-    private static DataclassOptions ApplyDataclassOption(DataclassOptions options, string name, object value, HashSet<string> seen, string owner, LythonSourceSpan span)
+    private static DataclassDecoratorSyntax ApplyDataclassOption(DataclassDecoratorSyntax options, string name, object value, HashSet<string> seen, string owner, LythonSourceSpan span)
     {
         if (!seen.Add(name))
         {
@@ -550,7 +495,7 @@ internal static partial class PyDataclass
         };
     }
 
-    private static DataclassOptions RejectUnsupportedDataclassSlotOption(DataclassOptions options, object value, string owner, string name, LythonSourceSpan span)
+    private static DataclassDecoratorSyntax RejectUnsupportedDataclassSlotOption(DataclassDecoratorSyntax options, object value, string owner, string name, LythonSourceSpan span)
     {
         if (!ExpectBool(value, $"{owner}({name}=...)", span))
         {

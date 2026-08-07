@@ -216,7 +216,20 @@ internal sealed record DataclassDecoratorSyntax(
     bool Frozen,
     bool KwOnly,
     bool MatchArgs,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    public static DataclassDecoratorSyntax CreateDefault(LythonSourceSpan span)
+        => new(
+            Init: true,
+            Repr: true,
+            Eq: true,
+            Order: false,
+            UnsafeHash: false,
+            Frozen: false,
+            KwOnly: false,
+            MatchArgs: true,
+            Span: span);
+}
 
 internal enum FunctionParameterKind
 {

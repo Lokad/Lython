@@ -171,16 +171,16 @@ internal sealed class PyDataclassAnnotationValue(ExpressionSyntax expression) : 
 
 internal sealed class PyDataclassParamsObject : IPyRenderableValue
 {
-    public PyDataclassParamsObject(bool init, bool repr, bool eq, bool order, bool unsafeHash, bool frozen, bool kwOnly, bool matchArgs)
+    public PyDataclassParamsObject(DataclassDecoratorSyntax options)
     {
-        Init = init;
-        Repr = repr;
-        Eq = eq;
-        Order = order;
-        UnsafeHash = unsafeHash;
-        Frozen = frozen;
-        KwOnly = kwOnly;
-        MatchArgs = matchArgs;
+        Init = options.Init;
+        Repr = options.Repr;
+        Eq = options.Eq;
+        Order = options.Order;
+        UnsafeHash = options.UnsafeHash;
+        Frozen = options.Frozen;
+        KwOnly = options.KwOnly;
+        MatchArgs = options.MatchArgs;
     }
 
     public bool Init { get; }
