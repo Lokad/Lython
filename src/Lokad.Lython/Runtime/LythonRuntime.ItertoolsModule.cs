@@ -515,52 +515,11 @@ internal sealed partial class LythonRuntime
         int requiredCount,
         int maxPositionalCount,
         LythonSourceSpan span)
-    {
-        var values = new object[parameterNames.Length];
-        var assigned = new bool[parameterNames.Length];
-        Array.Fill(values, PyNone.Instance);
-        var positionalIndex = 0;
-
-        foreach (var argument in arguments)
-        {
-            if (argument.Name is null)
-            {
-                if (positionalIndex >= maxPositionalCount || positionalIndex >= parameterNames.Length)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{owner}(...) received too many positional arguments.", span);
-                }
-
-                values[positionalIndex] = argument.Value;
-                assigned[positionalIndex] = true;
-                positionalIndex++;
-                continue;
-            }
-
-            var index = Array.IndexOf(parameterNames, argument.Name);
-            if (index < 0)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(...) received an unexpected keyword argument '{argument.Name}'.", span);
-            }
-
-            if (assigned[index])
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(...) got multiple values for argument '{argument.Name}'.", span);
-            }
-
-            values[index] = argument.Value;
-            assigned[index] = true;
-        }
-
-        for (var i = 0; i < requiredCount; i++)
-        {
-            if (!assigned[i])
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(...) missing required argument '{parameterNames[i]}'.", span);
-            }
-        }
-
-        return new BoundCallArguments(values, assigned);
-    }
+        => CallBinder.BindNamedArgumentsWithPresence(
+            arguments,
+            span,
+            new LythonCallableSignature(owner, parameterNames, requiredCount, maxPositionalCount),
+            "Builtin");
 
     private static object[] MaterializeSequence(object value, LythonSourceSpan span)
     {
@@ -596,8 +555,6 @@ internal sealed partial class LythonRuntime
 
         return [.. list];
     }
-
-    private readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
 
     private static long ExpectNonNegativeLong(object value, string message, LythonSourceSpan span)
     {

@@ -57,7 +57,8 @@ internal static class CallBinder
         LythonSourceSpan span,
         LythonCallableSignature signature,
         string callableKind)
-        => BindNamedArgumentsCore(
+    {
+        var bound = BindNamedArgumentsCore(
             arguments,
             span,
             signature.Name,
@@ -70,6 +71,18 @@ internal static class CallBinder
             signature.AllowsExtraKeywords,
             signature.AllowsExtraPositional,
             signature.PositionalOnlyCount);
+        if (signature.ParameterNames is null || bound.Values.Length >= signature.ParameterNames.Length)
+        {
+            return bound;
+        }
+
+        var values = new object[signature.ParameterNames.Length];
+        Array.Fill(values, PyNone.Instance);
+        Array.Copy(bound.Values, values, bound.Values.Length);
+        var assigned = new bool[signature.ParameterNames.Length];
+        Array.Copy(bound.Assigned, assigned, bound.Assigned.Length);
+        return new BoundCallArguments(values, assigned);
+    }
 
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,

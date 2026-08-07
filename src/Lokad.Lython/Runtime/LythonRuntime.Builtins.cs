@@ -16,7 +16,19 @@ internal sealed partial class LythonRuntime
         Latin1,
     }
 
-    private readonly record struct BoundOpenArguments(object[] Values, bool[] Assigned, int Count);
+    private readonly record struct BoundOpenArguments(object[] Values, bool[] Assigned, int Count)
+    {
+        public static BoundOpenArguments From(BoundCallArguments bound)
+        {
+            var count = bound.Assigned.Length;
+            while (count > 0 && !bound.Assigned[count - 1])
+            {
+                count--;
+            }
+
+            return new BoundOpenArguments(bound.Values, bound.Assigned, count);
+        }
+    }
 
     private static object Open(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => Open(BindPositionalOpenArguments(arguments, span), span, context);

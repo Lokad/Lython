@@ -1083,7 +1083,10 @@ internal sealed partial class LythonRuntime
 
         private sealed class PathOpenCallable(string path) : ICallable
         {
-            private static readonly string[] ParameterNames = ["mode", "buffering", "encoding", "errors", "newline"];
+            private static readonly LythonCallableSignature CallSignature = new(
+                "Path.open",
+                ["mode", "buffering", "encoding", "errors", "newline"],
+                RequiredCount: 0);
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
@@ -1106,59 +1109,7 @@ internal sealed partial class LythonRuntime
             }
 
             private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
-            {
-                var bound = new object[ParameterNames.Length];
-                Array.Fill(bound, PyNone.Instance);
-                var assigned = new bool[ParameterNames.Length];
-                var positionalIndex = 0;
-
-                foreach (var argument in arguments)
-                {
-                    if (argument.Name is null)
-                    {
-                        if (positionalIndex >= bound.Length)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.open([mode][, buffering][, encoding][, errors][, newline]) received too many positional arguments.", span);
-                        }
-
-                        bound[positionalIndex] = argument.Value;
-                        assigned[positionalIndex] = true;
-                        positionalIndex++;
-                        continue;
-                    }
-
-                    var index = argument.Name switch
-                    {
-                        "mode" => 0,
-                        "buffering" => 1,
-                        "encoding" => 2,
-                        "errors" => 3,
-                        "newline" => 4,
-                        _ => -1
-                    };
-
-                    if (index < 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", $"Path.open([mode][, buffering][, encoding][, errors][, newline]) got an unexpected keyword argument '{argument.Name}'.", span);
-                    }
-
-                    if (assigned[index])
-                    {
-                        throw new LythonRuntimeException("TypeError", $"Path.open([mode][, buffering][, encoding][, errors][, newline]) got multiple values for argument '{ParameterNames[index]}'.", span);
-                    }
-
-                    bound[index] = argument.Value;
-                    assigned[index] = true;
-                }
-
-                var count = bound.Length;
-                while (count > 0 && !assigned[count - 1])
-                {
-                    count--;
-                }
-
-                return new BoundOpenArguments(bound, assigned, count);
-            }
+                => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, "Method"));
 
             private static object OpenTextFile(
                 string path,

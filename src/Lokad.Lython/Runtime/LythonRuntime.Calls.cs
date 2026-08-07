@@ -366,8 +366,10 @@ internal sealed partial class LythonRuntime
 
     private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        private const string Signature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";
-        private static readonly string[] ParameterNames = ["file/path", "mode", "buffering", "encoding", "errors", "newline", "closefd", "opener"];
+        private static readonly LythonCallableSignature CallSignature = new(
+            "open",
+            ["file", "mode", "buffering", "encoding", "errors", "newline", "closefd", "opener"],
+            RequiredCount: 1);
 
         public string Name => "open";
 
@@ -394,67 +396,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BoundOpenArguments BindArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
-        {
-            var bound = new object[ParameterNames.Length];
-            Array.Fill(bound, PyNone.Instance);
-            var assigned = new bool[ParameterNames.Length];
-            var positionalIndex = 0;
-
-            foreach (var argument in arguments)
-            {
-                if (argument.Name is null)
-                {
-                    if (positionalIndex >= bound.Length)
-                    {
-                        throw new LythonRuntimeException("TypeError", $"{Signature} received too many positional arguments.", span);
-                    }
-
-                    bound[positionalIndex] = argument.Value;
-                    assigned[positionalIndex] = true;
-                    positionalIndex++;
-                    continue;
-                }
-
-                var index = argument.Name switch
-                {
-                    "file" or "path" => 0,
-                    "mode" => 1,
-                    "buffering" => 2,
-                    "encoding" => 3,
-                    "errors" => 4,
-                    "newline" => 5,
-                    "closefd" => 6,
-                    "opener" => 7,
-                    _ => -1
-                };
-
-                if (index < 0)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{Signature} got an unexpected keyword argument '{argument.Name}'.", span);
-                }
-
-                if (assigned[index])
-                {
-                    throw new LythonRuntimeException("TypeError", $"{Signature} got multiple values for argument '{ParameterNames[index]}'.", span);
-                }
-
-                bound[index] = argument.Value;
-                assigned[index] = true;
-            }
-
-            if (!assigned[0])
-            {
-                throw new LythonRuntimeException("TypeError", $"{Signature} expects a file/path argument.", span);
-            }
-
-            var count = bound.Length;
-            while (count > 1 && !assigned[count - 1])
-            {
-                count--;
-            }
-
-            return new BoundOpenArguments(bound, assigned, count);
-        }
+            => BoundOpenArguments.From(CallBinder.BindNamedArgumentsWithPresence(arguments, span, CallSignature, "Builtin"));
     }
 
     private sealed class PrintCallable : ICallable
