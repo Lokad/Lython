@@ -466,15 +466,15 @@ internal sealed partial class LythonRuntime
                 case double floating:
                     return floating;
                 case BigInteger integer:
-                {
-                    var converted = (double)integer;
-                    if (double.IsInfinity(converted))
                     {
-                        throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
-                    }
+                        var converted = (double)integer;
+                        if (double.IsInfinity(converted))
+                        {
+                            throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+                        }
 
-                    return converted;
-                }
+                        return converted;
+                    }
                 case bool boolean:
                     return boolean ? 1.0 : 0.0;
                 case PyDecimal decimalValue:
@@ -482,15 +482,15 @@ internal sealed partial class LythonRuntime
                 case PyInstance instance when
                     instance.TryGetAttribute("__float__", context, span, out var member) &&
                     member is ICallable callable:
-                {
-                    var converted = callable.Invoke([], span, context);
-                    if (converted is double result)
                     {
-                        return result;
-                    }
+                        var converted = callable.Invoke([], span, context);
+                        if (converted is double result)
+                        {
+                            return result;
+                        }
 
-                    throw PercentTypeError("__float__ returned non-float");
-                }
+                        throw PercentTypeError("__float__ returned non-float");
+                    }
                 default:
                     throw PercentTypeError("must be real number, not non-numeric value");
             }

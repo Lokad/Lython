@@ -76,123 +76,123 @@ internal static class AnnotationDiagnostics
                 break;
 
             case IfStatementSyntax ifStatement:
-            {
-                var thenBindings = bindings.Clone();
-                AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings, returnAnnotation);
-                AbstractState elseBindings;
-                if (ifStatement.ElseStatements is not null)
                 {
-                    elseBindings = bindings.Clone();
-                    AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
-                }
-                else
-                {
-                    elseBindings = bindings.Clone();
-                }
+                    var thenBindings = bindings.Clone();
+                    AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings, returnAnnotation);
+                    AbstractState elseBindings;
+                    if (ifStatement.ElseStatements is not null)
+                    {
+                        elseBindings = bindings.Clone();
+                        AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
+                    }
+                    else
+                    {
+                        elseBindings = bindings.Clone();
+                    }
 
-                bindings.MergeFrom(thenBindings, elseBindings);
-                break;
-            }
+                    bindings.MergeFrom(thenBindings, elseBindings);
+                    break;
+                }
 
             case ForStatementSyntax forStatement:
-            {
-                var bodyBindings = bindings.Clone();
-                AnalyzeStatements(forStatement.Body, diagnostics, bodyBindings, returnAnnotation);
-                var merged = AbstractState.Merge(bindings, bodyBindings);
-                if (forStatement.ElseStatements is not null)
                 {
-                    var elseBindings = bindings.Clone();
-                    AnalyzeStatements(forStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
-                    merged = AbstractState.Merge(merged, elseBindings);
-                }
+                    var bodyBindings = bindings.Clone();
+                    AnalyzeStatements(forStatement.Body, diagnostics, bodyBindings, returnAnnotation);
+                    var merged = AbstractState.Merge(bindings, bodyBindings);
+                    if (forStatement.ElseStatements is not null)
+                    {
+                        var elseBindings = bindings.Clone();
+                        AnalyzeStatements(forStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
+                        merged = AbstractState.Merge(merged, elseBindings);
+                    }
 
-                bindings.ReplaceWith(merged);
-                break;
-            }
+                    bindings.ReplaceWith(merged);
+                    break;
+                }
 
             case WhileStatementSyntax whileStatement:
-            {
-                var bodyBindings = bindings.Clone();
-                AnalyzeStatements(whileStatement.Body, diagnostics, bodyBindings, returnAnnotation);
-                var merged = AbstractState.Merge(bindings, bodyBindings);
-                if (whileStatement.ElseStatements is not null)
                 {
-                    var elseBindings = bindings.Clone();
-                    AnalyzeStatements(whileStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
-                    merged = AbstractState.Merge(merged, elseBindings);
-                }
+                    var bodyBindings = bindings.Clone();
+                    AnalyzeStatements(whileStatement.Body, diagnostics, bodyBindings, returnAnnotation);
+                    var merged = AbstractState.Merge(bindings, bodyBindings);
+                    if (whileStatement.ElseStatements is not null)
+                    {
+                        var elseBindings = bindings.Clone();
+                        AnalyzeStatements(whileStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
+                        merged = AbstractState.Merge(merged, elseBindings);
+                    }
 
-                bindings.ReplaceWith(merged);
-                break;
-            }
+                    bindings.ReplaceWith(merged);
+                    break;
+                }
 
             case WithStatementSyntax withStatement:
-            {
-                var withBindings = bindings.Clone();
-                if (withStatement.VariableName is not null &&
-                    StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
-                    contextValue.Kind == AbstractValueKind.TextFileHandle)
                 {
-                    withBindings.Set(withStatement.VariableName, contextValue);
-                }
+                    var withBindings = bindings.Clone();
+                    if (withStatement.VariableName is not null &&
+                        StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
+                        contextValue.Kind == AbstractValueKind.TextFileHandle)
+                    {
+                        withBindings.Set(withStatement.VariableName, contextValue);
+                    }
 
-                AnalyzeStatements(withStatement.Body, diagnostics, withBindings, returnAnnotation);
-                bindings.ReplaceWith(withBindings);
-                if (withStatement.VariableName is not null)
-                {
-                    bindings.Remove(withStatement.VariableName);
+                    AnalyzeStatements(withStatement.Body, diagnostics, withBindings, returnAnnotation);
+                    bindings.ReplaceWith(withBindings);
+                    if (withStatement.VariableName is not null)
+                    {
+                        bindings.Remove(withStatement.VariableName);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case MatchStatementSyntax matchStatement:
-            {
-                var merged = bindings.Clone();
-                var hasCase = false;
-                foreach (var matchCase in matchStatement.Cases)
                 {
-                    var caseBindings = bindings.Clone();
-                    AnalyzeStatements(matchCase.Body, diagnostics, caseBindings, returnAnnotation);
-                    merged = hasCase ? AbstractState.Merge(merged, caseBindings) : caseBindings;
-                    hasCase = true;
-                }
+                    var merged = bindings.Clone();
+                    var hasCase = false;
+                    foreach (var matchCase in matchStatement.Cases)
+                    {
+                        var caseBindings = bindings.Clone();
+                        AnalyzeStatements(matchCase.Body, diagnostics, caseBindings, returnAnnotation);
+                        merged = hasCase ? AbstractState.Merge(merged, caseBindings) : caseBindings;
+                        hasCase = true;
+                    }
 
-                if (hasCase)
-                {
-                    bindings.ReplaceWith(AbstractState.Merge(bindings, merged));
+                    if (hasCase)
+                    {
+                        bindings.ReplaceWith(AbstractState.Merge(bindings, merged));
+                    }
+                    break;
                 }
-                break;
-            }
 
             case TryStatementSyntax tryStatement:
-            {
-                var merged = bindings.Clone();
-                var tryBindings = bindings.Clone();
-                AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation);
-                merged = AbstractState.Merge(merged, tryBindings);
-
-                if (tryStatement.ExceptBody is not null)
                 {
-                    var exceptBindings = bindings.Clone();
-                    AnalyzeStatements(tryStatement.ExceptBody, diagnostics, exceptBindings, returnAnnotation);
-                    merged = AbstractState.Merge(merged, exceptBindings);
-                }
+                    var merged = bindings.Clone();
+                    var tryBindings = bindings.Clone();
+                    AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation);
+                    merged = AbstractState.Merge(merged, tryBindings);
 
-                if (tryStatement.ElseBody is not null)
-                {
-                    var elseBindings = tryBindings.Clone();
-                    AnalyzeStatements(tryStatement.ElseBody, diagnostics, elseBindings, returnAnnotation);
-                    merged = AbstractState.Merge(merged, elseBindings);
-                }
+                    if (tryStatement.ExceptBody is not null)
+                    {
+                        var exceptBindings = bindings.Clone();
+                        AnalyzeStatements(tryStatement.ExceptBody, diagnostics, exceptBindings, returnAnnotation);
+                        merged = AbstractState.Merge(merged, exceptBindings);
+                    }
 
-                if (tryStatement.FinallyBody is not null)
-                {
-                    AnalyzeStatements(tryStatement.FinallyBody, diagnostics, merged, returnAnnotation);
-                }
+                    if (tryStatement.ElseBody is not null)
+                    {
+                        var elseBindings = tryBindings.Clone();
+                        AnalyzeStatements(tryStatement.ElseBody, diagnostics, elseBindings, returnAnnotation);
+                        merged = AbstractState.Merge(merged, elseBindings);
+                    }
 
-                bindings.ReplaceWith(merged);
-                break;
-            }
+                    if (tryStatement.FinallyBody is not null)
+                    {
+                        AnalyzeStatements(tryStatement.FinallyBody, diagnostics, merged, returnAnnotation);
+                    }
+
+                    bindings.ReplaceWith(merged);
+                    break;
+                }
 
             case ClassDefinitionStatementSyntax classDefinition:
                 AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone(), returnAnnotation: null);

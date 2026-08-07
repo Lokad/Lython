@@ -190,7 +190,7 @@ internal static class PyDecimalOps
             return new PyDecimal(1m / Pow(lhs, -exponentInt));
         }
 
-            return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
+        return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
     }
 
     public static int Compare(object left, object right, LythonSourceSpan span)

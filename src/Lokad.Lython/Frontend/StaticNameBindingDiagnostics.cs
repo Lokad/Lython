@@ -187,68 +187,68 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case IfStatementSyntax ifStatement:
-            {
-                AnalyzeExpression(ifStatement.Condition, context, localNames, maybeAssigned);
-                var thenAssigned = Clone(maybeAssigned);
-                AnalyzeStatements(ifStatement.ThenStatements, context, localNames, thenAssigned);
-                var elseAssigned = Clone(maybeAssigned);
-                if (ifStatement.ElseStatements is not null)
                 {
-                    AnalyzeStatements(ifStatement.ElseStatements, context, localNames, elseAssigned);
+                    AnalyzeExpression(ifStatement.Condition, context, localNames, maybeAssigned);
+                    var thenAssigned = Clone(maybeAssigned);
+                    AnalyzeStatements(ifStatement.ThenStatements, context, localNames, thenAssigned);
+                    var elseAssigned = Clone(maybeAssigned);
+                    if (ifStatement.ElseStatements is not null)
+                    {
+                        AnalyzeStatements(ifStatement.ElseStatements, context, localNames, elseAssigned);
+                    }
+                    maybeAssigned.UnionWith(thenAssigned);
+                    maybeAssigned.UnionWith(elseAssigned);
+                    break;
                 }
-                maybeAssigned.UnionWith(thenAssigned);
-                maybeAssigned.UnionWith(elseAssigned);
-                break;
-            }
 
             case ForStatementSyntax forStatement:
-            {
-                AnalyzeExpression(forStatement.Iterable, context, localNames, maybeAssigned);
-                var bodyAssigned = Clone(maybeAssigned);
-                AddLoopTarget(forStatement.Target, bodyAssigned);
-                AnalyzeStatements(forStatement.Body, context, localNames, bodyAssigned);
-                maybeAssigned.UnionWith(bodyAssigned);
-                if (forStatement.ElseStatements is not null)
                 {
-                    var elseAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(forStatement.ElseStatements, context, localNames, elseAssigned);
-                    maybeAssigned.UnionWith(elseAssigned);
+                    AnalyzeExpression(forStatement.Iterable, context, localNames, maybeAssigned);
+                    var bodyAssigned = Clone(maybeAssigned);
+                    AddLoopTarget(forStatement.Target, bodyAssigned);
+                    AnalyzeStatements(forStatement.Body, context, localNames, bodyAssigned);
+                    maybeAssigned.UnionWith(bodyAssigned);
+                    if (forStatement.ElseStatements is not null)
+                    {
+                        var elseAssigned = Clone(maybeAssigned);
+                        AnalyzeStatements(forStatement.ElseStatements, context, localNames, elseAssigned);
+                        maybeAssigned.UnionWith(elseAssigned);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case WhileStatementSyntax whileStatement:
-            {
-                AnalyzeExpression(whileStatement.Condition, context, localNames, maybeAssigned);
-                var bodyAssigned = Clone(maybeAssigned);
-                AnalyzeStatements(whileStatement.Body, context, localNames, bodyAssigned);
-                maybeAssigned.UnionWith(bodyAssigned);
-                if (whileStatement.ElseStatements is not null)
                 {
-                    var elseAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(whileStatement.ElseStatements, context, localNames, elseAssigned);
-                    maybeAssigned.UnionWith(elseAssigned);
+                    AnalyzeExpression(whileStatement.Condition, context, localNames, maybeAssigned);
+                    var bodyAssigned = Clone(maybeAssigned);
+                    AnalyzeStatements(whileStatement.Body, context, localNames, bodyAssigned);
+                    maybeAssigned.UnionWith(bodyAssigned);
+                    if (whileStatement.ElseStatements is not null)
+                    {
+                        var elseAssigned = Clone(maybeAssigned);
+                        AnalyzeStatements(whileStatement.ElseStatements, context, localNames, elseAssigned);
+                        maybeAssigned.UnionWith(elseAssigned);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case MatchStatementSyntax matchStatement:
-            {
-                AnalyzeExpression(matchStatement.Subject, context, localNames, maybeAssigned);
-                var unionAssigned = Clone(maybeAssigned);
-                foreach (var matchCase in matchStatement.Cases)
                 {
-                    if (matchCase.Guard is not null)
+                    AnalyzeExpression(matchStatement.Subject, context, localNames, maybeAssigned);
+                    var unionAssigned = Clone(maybeAssigned);
+                    foreach (var matchCase in matchStatement.Cases)
                     {
-                        AnalyzeExpression(matchCase.Guard, context, localNames, maybeAssigned);
+                        if (matchCase.Guard is not null)
+                        {
+                            AnalyzeExpression(matchCase.Guard, context, localNames, maybeAssigned);
+                        }
+                        var caseAssigned = Clone(maybeAssigned);
+                        AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
+                        unionAssigned.UnionWith(caseAssigned);
                     }
-                    var caseAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
-                    unionAssigned.UnionWith(caseAssigned);
+                    maybeAssigned.UnionWith(unionAssigned);
+                    break;
                 }
-                maybeAssigned.UnionWith(unionAssigned);
-                break;
-            }
 
             case AssertStatementSyntax assertStatement:
                 AnalyzeExpression(assertStatement.Condition, context, localNames, maybeAssigned);
@@ -307,28 +307,28 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case TryStatementSyntax tryStatement:
-            {
-                var tryAssigned = Clone(maybeAssigned);
-                AnalyzeStatements(tryStatement.TryBody, context, localNames, tryAssigned);
-                maybeAssigned.UnionWith(tryAssigned);
-                if (tryStatement.ExceptBody is not null)
                 {
-                    var exceptAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(tryStatement.ExceptBody, context, localNames, exceptAssigned);
-                    maybeAssigned.UnionWith(exceptAssigned);
+                    var tryAssigned = Clone(maybeAssigned);
+                    AnalyzeStatements(tryStatement.TryBody, context, localNames, tryAssigned);
+                    maybeAssigned.UnionWith(tryAssigned);
+                    if (tryStatement.ExceptBody is not null)
+                    {
+                        var exceptAssigned = Clone(maybeAssigned);
+                        AnalyzeStatements(tryStatement.ExceptBody, context, localNames, exceptAssigned);
+                        maybeAssigned.UnionWith(exceptAssigned);
+                    }
+                    if (tryStatement.ElseBody is not null)
+                    {
+                        var elseAssigned = Clone(maybeAssigned);
+                        AnalyzeStatements(tryStatement.ElseBody, context, localNames, elseAssigned);
+                        maybeAssigned.UnionWith(elseAssigned);
+                    }
+                    if (tryStatement.FinallyBody is not null)
+                    {
+                        AnalyzeStatements(tryStatement.FinallyBody, context, localNames, maybeAssigned);
+                    }
+                    break;
                 }
-                if (tryStatement.ElseBody is not null)
-                {
-                    var elseAssigned = Clone(maybeAssigned);
-                    AnalyzeStatements(tryStatement.ElseBody, context, localNames, elseAssigned);
-                    maybeAssigned.UnionWith(elseAssigned);
-                }
-                if (tryStatement.FinallyBody is not null)
-                {
-                    AnalyzeStatements(tryStatement.FinallyBody, context, localNames, maybeAssigned);
-                }
-                break;
-            }
         }
     }
 
@@ -460,15 +460,15 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case LambdaExpressionSyntax lambda:
-            {
-                var lambdaLocalNames = new HashSet<string>(StringComparer.Ordinal);
-                CollectLocalAssignments(lambda.Body, lambdaLocalNames);
-                var lambdaAssigned = new HashSet<string>(
-                    lambda.Parameters.Select(static parameter => parameter.Name),
-                    StringComparer.Ordinal);
-                AnalyzeExpression(lambda.Body, context, lambdaLocalNames, lambdaAssigned);
-                break;
-            }
+                {
+                    var lambdaLocalNames = new HashSet<string>(StringComparer.Ordinal);
+                    CollectLocalAssignments(lambda.Body, lambdaLocalNames);
+                    var lambdaAssigned = new HashSet<string>(
+                        lambda.Parameters.Select(static parameter => parameter.Name),
+                        StringComparer.Ordinal);
+                    AnalyzeExpression(lambda.Body, context, lambdaLocalNames, lambdaAssigned);
+                    break;
+                }
         }
     }
 

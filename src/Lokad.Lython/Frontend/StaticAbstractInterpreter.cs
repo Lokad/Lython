@@ -353,24 +353,24 @@ internal static class StaticAbstractInterpreter
                 break;
 
             case ListComprehensionExpressionSyntax listComprehension:
-            {
-                var comprehensionBindings = AnalyzeComprehensionClauses(listComprehension.Clauses, diagnostics, bindings, out var reachable);
-                if (reachable)
                 {
-                    AnalyzeExpression(listComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    var comprehensionBindings = AnalyzeComprehensionClauses(listComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(listComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case GeneratorExpressionSyntax generator:
-            {
-                var comprehensionBindings = AnalyzeComprehensionClauses(generator.Clauses, diagnostics, bindings, out var reachable);
-                if (reachable)
                 {
-                    AnalyzeExpression(generator.ItemExpression, diagnostics, comprehensionBindings);
+                    var comprehensionBindings = AnalyzeComprehensionClauses(generator.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(generator.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case DictLiteralExpressionSyntax dict:
                 foreach (var item in dict.Items)
@@ -388,25 +388,25 @@ internal static class StaticAbstractInterpreter
                 break;
 
             case SetComprehensionExpressionSyntax setComprehension:
-            {
-                var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings, out var reachable);
-                if (reachable)
                 {
-                    AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case DictComprehensionExpressionSyntax dictComprehension:
-            {
-                var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings, out var reachable);
-                if (reachable)
                 {
-                    AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
-                    AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
+                    var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
+                        AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
                 }
-                break;
-            }
 
             case TupleLiteralExpressionSyntax tuple:
                 AnalyzeExpressions(tuple.Items, diagnostics, bindings);
@@ -500,12 +500,12 @@ internal static class StaticAbstractInterpreter
                 break;
 
             case LambdaExpressionSyntax lambda:
-            {
-                var lambdaBindings = bindings.Clone();
-                StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
-                AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);
-                break;
-            }
+                {
+                    var lambdaBindings = bindings.Clone();
+                    StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
+                    AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);
+                    break;
+                }
         }
     }
 

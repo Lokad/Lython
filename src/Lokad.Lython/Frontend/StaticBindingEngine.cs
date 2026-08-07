@@ -301,30 +301,30 @@ internal static class StaticBindingEngine
                 return true;
 
             case AbstractValueKind.String:
-            {
-                var text = (string)value.Value;
-                var chars = new List<AbstractValue>(text.Length);
-                for (var i = 0; i < text.Length; i++)
                 {
-                    chars.Add(AbstractValue.String(text.Substring(i, 1), expression.Span));
-                }
+                    var text = (string)value.Value;
+                    var chars = new List<AbstractValue>(text.Length);
+                    for (var i = 0; i < text.Length; i++)
+                    {
+                        chars.Add(AbstractValue.String(text.Substring(i, 1), expression.Span));
+                    }
 
-                items = chars;
-                return true;
-            }
+                    items = chars;
+                    return true;
+                }
 
             case AbstractValueKind.Bytes:
-            {
-                var bytes = (byte[])value.Value;
-                var integers = new List<AbstractValue>(bytes.Length);
-                foreach (var item in bytes)
                 {
-                    integers.Add(AbstractValue.Integer(item.ToString(CultureInfo.InvariantCulture), expression.Span));
-                }
+                    var bytes = (byte[])value.Value;
+                    var integers = new List<AbstractValue>(bytes.Length);
+                    foreach (var item in bytes)
+                    {
+                        integers.Add(AbstractValue.Integer(item.ToString(CultureInfo.InvariantCulture), expression.Span));
+                    }
 
-                items = integers;
-                return true;
-            }
+                    items = integers;
+                    return true;
+                }
 
             default:
                 items = Array.Empty<AbstractValue>();
@@ -1752,61 +1752,61 @@ internal static class StaticBindingEngine
                     break;
 
                 case WithStatementSyntax withStatement:
-                {
-                    var withBindings = bindings.Clone();
-                    if (withStatement.VariableName is not null &&
-                        StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
-                        contextValue.Kind == AbstractValueKind.TextFileHandle)
                     {
-                        withBindings.Set(withStatement.VariableName, contextValue);
-                    }
+                        var withBindings = bindings.Clone();
+                        if (withStatement.VariableName is not null &&
+                            StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
+                            contextValue.Kind == AbstractValueKind.TextFileHandle)
+                        {
+                            withBindings.Set(withStatement.VariableName, contextValue);
+                        }
 
-                    if (TryInferStraightLineReturn(withStatement.Body, withBindings, out returnValue))
-                    {
-                        return true;
-                    }
+                        if (TryInferStraightLineReturn(withStatement.Body, withBindings, out returnValue))
+                        {
+                            return true;
+                        }
 
-                    bindings.ReplaceWith(withBindings);
-                    if (withStatement.VariableName is not null)
-                    {
-                        bindings.Remove(withStatement.VariableName);
-                    }
+                        bindings.ReplaceWith(withBindings);
+                        if (withStatement.VariableName is not null)
+                        {
+                            bindings.Remove(withStatement.VariableName);
+                        }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case IfStatementSyntax ifStatement:
-                {
-                    var thenBindings = bindings.Clone();
-                    StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, thenBindings);
-                    var thenReturned = TryInferStraightLineReturn(ifStatement.ThenStatements, thenBindings, out var thenReturnValue);
-                    var elseBindings = bindings.Clone();
-                    StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, elseBindings);
-                    AbstractValue elseReturnValue = default;
-                    var elseReturned = ifStatement.ElseStatements is not null &&
-                                       TryInferStraightLineReturn(ifStatement.ElseStatements, elseBindings, out elseReturnValue);
+                    {
+                        var thenBindings = bindings.Clone();
+                        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: true, thenBindings);
+                        var thenReturned = TryInferStraightLineReturn(ifStatement.ThenStatements, thenBindings, out var thenReturnValue);
+                        var elseBindings = bindings.Clone();
+                        StaticConditionRefinements.Apply(ifStatement.Condition, assumedTruth: false, elseBindings);
+                        AbstractValue elseReturnValue = default;
+                        var elseReturned = ifStatement.ElseStatements is not null &&
+                                           TryInferStraightLineReturn(ifStatement.ElseStatements, elseBindings, out elseReturnValue);
 
-                    if (thenReturned && elseReturned)
-                    {
-                        returnValue = AbstractValue.Join(thenReturnValue, elseReturnValue, statement.Span);
-                        return true;
-                    }
+                        if (thenReturned && elseReturned)
+                        {
+                            returnValue = AbstractValue.Join(thenReturnValue, elseReturnValue, statement.Span);
+                            return true;
+                        }
 
-                    if (thenReturned)
-                    {
-                        bindings.ReplaceWith(elseBindings);
-                    }
-                    else if (elseReturned)
-                    {
-                        bindings.ReplaceWith(thenBindings);
-                    }
-                    else
-                    {
-                        bindings.MergeFrom(thenBindings, elseBindings);
-                    }
+                        if (thenReturned)
+                        {
+                            bindings.ReplaceWith(elseBindings);
+                        }
+                        else if (elseReturned)
+                        {
+                            bindings.ReplaceWith(thenBindings);
+                        }
+                        else
+                        {
+                            bindings.MergeFrom(thenBindings, elseBindings);
+                        }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case ReturnStatementSyntax { Expression: null }:
                     returnValue = AbstractValue.None(statement.Span);
