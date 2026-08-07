@@ -680,6 +680,27 @@ return value
     }
 
     [Fact]
+    public void ExecutableSubset_ExceptionHandlersRestoreEnclosingLoopStackDepth()
+    {
+        var frontend = LythonFrontend.Compile("""
+values = []
+for value in [0, 1]:
+    try:
+        values.append(str(4 // value))
+    except ZeroDivisionError as ex:
+        values.append(ex.type)
+return "|".join(values)
+""");
+
+        var lowered = LoweredScript.Lower(frontend.Script!);
+        var executable = ExecutableScript.Compile(lowered);
+        var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("ZeroDivisionError|4", result.ReturnValue);
+    }
+
+    [Fact]
     public void ExecutableSubset_TryFinally_HonorsReturnThroughExecutableRegions()
     {
         var frontend = LythonFrontend.Compile("""

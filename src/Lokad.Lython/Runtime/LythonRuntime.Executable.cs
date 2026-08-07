@@ -332,10 +332,12 @@ internal sealed partial class LythonRuntime
             PendingAbruptSignal? pendingAbrupt = null;
             var memberCaches = new ExecutableMemberCache[codeObject.MemberCacheCount];
             var callCaches = new ExecutableCallCache[codeObject.CallCacheCount];
+            var blockEntryStackDepths = new int?[codeObject.Blocks.Count];
 
             while (true)
             {
                 var block = codeObject.Blocks[currentBlockIndex];
+                blockEntryStackDepths[currentBlockIndex] ??= stack.Count;
                 var jumped = false;
 
                 foreach (var instruction in block.Instructions)
@@ -676,7 +678,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ReturnSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, currentBlockIndex, new PendingAbruptSignal(Return: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Return: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }
@@ -685,7 +687,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ControlSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, currentBlockIndex, new PendingAbruptSignal(Control: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Control: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }
@@ -694,7 +696,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (LythonRuntimeException ex)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, currentBlockIndex, new PendingAbruptSignal(Exception: ex), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Exception: ex), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }
@@ -817,6 +819,8 @@ internal sealed partial class LythonRuntime
     private static bool TryHandleAbrupt(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
+        ExecutableValueStack stack,
+        IReadOnlyList<int?> blockEntryStackDepths,
         int currentBlockIndex,
         PendingAbruptSignal abrupt,
         LythonSourceSpan span,
@@ -828,6 +832,8 @@ internal sealed partial class LythonRuntime
         {
             return false;
         }
+
+        RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
 
         if (abrupt.Exception is not null &&
             region.ExceptBlockIndex is int exceptBlock &&
@@ -856,6 +862,22 @@ internal sealed partial class LythonRuntime
         pendingAbrupt = abrupt;
         nextBlockIndex = finallyBlock;
         return true;
+    }
+
+    private static void RestoreExecutableStackForHandler(
+        ExecutableExceptionRegion region,
+        ExecutableValueStack stack,
+        IReadOnlyList<int?> blockEntryStackDepths,
+        LythonSourceSpan span)
+    {
+        var targetDepth = blockEntryStackDepths[region.ProtectedStartBlockIndex]
+            ?? throw RuntimeErrors.Runtime("executable exception region has no entry stack depth", span);
+        if (stack.Count < targetDepth)
+        {
+            throw RuntimeErrors.Runtime("executable exception handler stack is invalid", span);
+        }
+
+        stack.RemoveTail(stack.Count - targetDepth);
     }
 
     private static ExecutableExceptionRegion? FindExecutableExceptionRegion(ExecutableCodeObject codeObject, int blockIndex)
