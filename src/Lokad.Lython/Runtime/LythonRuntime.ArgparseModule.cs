@@ -1259,26 +1259,23 @@ internal sealed partial class LythonRuntime
 
             if (_options.AllowAbbrev && optionToken.StartsWith("--", StringComparison.Ordinal))
             {
-                var matches = new HashSet<ArgumentSpec>();
+                ArgumentSpec? match = null;
                 foreach (var (name, candidate) in _optionalArgumentsByName)
                 {
                     if (name.StartsWith("--", StringComparison.Ordinal) &&
                         name.StartsWith(optionToken, StringComparison.Ordinal))
                     {
-                        matches.Add(candidate);
+                        if (match is not null && !ReferenceEquals(match, candidate))
+                        {
+                            error = $"ambiguous option: {optionToken}";
+                            return null;
+                        }
+
+                        match = candidate;
                     }
                 }
 
-                if (matches.Count == 1)
-                {
-                    return matches.First();
-                }
-
-                if (matches.Count > 1)
-                {
-                    error = $"ambiguous option: {optionToken}";
-                    return null;
-                }
+                return match;
             }
 
             return null;
