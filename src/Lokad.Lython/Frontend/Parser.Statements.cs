@@ -269,14 +269,14 @@ internal sealed partial class Parser
                 {
                     if (argument.Kind is not CallArgumentKind.Keyword || argument.Name is null)
                     {
-                        AddDiagnostic("LA1107", "@dataclass currently expects keyword boolean options only.", argument.Expression.Span);
+                        AddDiagnostic("LA1107", "@dataclass expects keyword boolean options only.", argument.Expression.Span);
                         decorator = null;
                         return true;
                     }
 
                     if (argument.Expression is not BooleanLiteralExpressionSyntax boolean)
                     {
-                        AddDiagnostic("LA1110", "@dataclass options currently expect True or False.", argument.Expression.Span);
+                        AddDiagnostic("LA1110", "@dataclass options expect True or False.", argument.Expression.Span);
                         decorator = null;
                         return true;
                     }

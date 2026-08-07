@@ -9,7 +9,10 @@ public sealed class LythonSubprocessOutputLimitException : Exception
     public LythonSubprocessOutputLimitException(string streamName, long actualBytes, long maximumBytes)
         : base($"subprocess {streamName} exceeded maximum captured output bytes ({maximumBytes}); received {actualBytes} bytes.")
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(streamName);
+        if (streamName.Length == 0 || streamName.All(char.IsWhiteSpace))
+        {
+            throw new ArgumentException("The subprocess stream name cannot be empty or whitespace.", nameof(streamName));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(actualBytes);
         ArgumentOutOfRangeException.ThrowIfNegative(maximumBytes);
         StreamName = streamName;
