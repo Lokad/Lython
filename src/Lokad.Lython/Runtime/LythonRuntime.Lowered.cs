@@ -716,7 +716,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         foreach (var part in parts)
         {
             switch (part)
@@ -740,7 +740,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var value = builder.ToPyString();
+        var value = builder.ToPyStringAndRelease();
         context.ObserveString(value, span);
         return value;
     }

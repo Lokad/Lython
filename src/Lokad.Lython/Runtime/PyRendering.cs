@@ -93,7 +93,7 @@ internal static class PyRendering
 
     public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix)
     {
-        var builder = new Utf8ValueBuilder();
+        var builder = new GovernedByteBuilder();
         builder.AppendString(prefix);
         var first = true;
         foreach (var item in items)
@@ -108,12 +108,12 @@ internal static class PyRendering
         }
 
         builder.AppendString(suffix);
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix, PyRenderingContext context)
     {
-        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendString(prefix);
         var first = true;
         foreach (var item in items)
@@ -128,22 +128,22 @@ internal static class PyRendering
         }
 
         builder.AppendString(suffix);
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString RenderSingletonTuple(PyString item)
     {
-        var builder = new Utf8ValueBuilder();
+        var builder = new GovernedByteBuilder();
         builder.AppendAscii("(");
         builder.Append(item);
         builder.Append(PyStringOps.CommaLiteral);
         builder.AppendAscii(")");
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString JoinRenderedDictionary(PyDict dict, PyRenderingContext context, bool interpolated)
     {
-        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendAscii("{");
         var first = true;
         foreach (var pair in dict)
@@ -160,7 +160,7 @@ internal static class PyRendering
         }
 
         builder.AppendAscii("}");
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString RenderDictionaryKey(object key, PyRenderingContext context, bool interpolated)
@@ -222,7 +222,7 @@ internal static class PyRendering
 
     private static PyString RenderStringLiteral(string text, PyRenderingContext context)
     {
-        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendAscii("'");
         for (var i = 0; i < text.Length; i++)
         {
@@ -272,7 +272,7 @@ internal static class PyRendering
         }
 
         builder.AppendAscii("'");
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object> activeContainers)
@@ -324,7 +324,7 @@ internal static class PyRendering
         PyRenderingContext context,
         HashSet<object> activeContainers)
     {
-        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendString(prefix);
         var first = true;
         foreach (var item in items)
@@ -339,7 +339,7 @@ internal static class PyRendering
         }
 
         builder.AppendString(suffix);
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private static PyString RenderReprDictionary(PyDict dict, PyRenderingContext context, HashSet<object> activeContainers)
@@ -351,7 +351,7 @@ internal static class PyRendering
 
         try
         {
-            var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
             builder.AppendAscii("{");
             var first = true;
             foreach (var pair in dict)
@@ -368,7 +368,7 @@ internal static class PyRendering
             }
 
             builder.AppendAscii("}");
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
         finally
         {
@@ -407,7 +407,7 @@ internal static class PyRendering
 
     private static PyString RenderExceptionRepr(PyException exception, PyRenderingContext context)
     {
-        var builder = new Utf8ValueBuilder(context.Context.MemoryGovernor);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendString(exception.TypeName);
         builder.AppendAscii("(");
         var args = exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
@@ -423,7 +423,7 @@ internal static class PyRendering
             builder.Append(ToReprPyString(args[i], context));
         }
         builder.AppendAscii(")");
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private sealed class RenderedSequence : IEnumerable<PyString>

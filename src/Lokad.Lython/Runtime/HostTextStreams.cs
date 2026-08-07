@@ -161,11 +161,11 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 internal sealed class HostTextOutputHandle : IPyRenderableValue
 {
     private readonly ILythonTextOutput? _output;
-    private readonly Utf8ValueBuilder? _capture;
+    private readonly GovernedByteBuilder? _capture;
     private readonly string _name;
     private readonly ExecutionState _state;
 
-    public HostTextOutputHandle(ILythonTextOutput? output, Utf8ValueBuilder? capture, string name, ExecutionState state)
+    public HostTextOutputHandle(ILythonTextOutput? output, GovernedByteBuilder? capture, string name, ExecutionState state)
     {
         _output = output;
         _capture = capture;

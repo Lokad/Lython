@@ -2812,11 +2812,11 @@ internal sealed partial class LythonRuntime
                 _errors = errors;
                 _newline = newline;
                 _appendBasePosition = appendBasePosition;
-                _writeBuffer = mode == "r" ? null : new Utf8ValueBuilder(context.MemoryGovernor);
+                _writeBuffer = mode == "r" ? null : new GovernedByteBuilder(context.MemoryGovernor);
             }
 
             private readonly PyString _text;
-            private readonly Utf8ValueBuilder? _writeBuffer;
+            private readonly GovernedByteBuilder? _writeBuffer;
             private readonly ExecutionContext _context;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;

@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
     {
         private readonly string _format = template.AsString();
         private readonly PyTuple? _tupleArguments = arguments as PyTuple;
-        private readonly Utf8ValueBuilder _builder = new(context.MemoryGovernor, span);
+        private readonly GovernedByteBuilder _builder = new(context.MemoryGovernor, span);
         private int _argumentIndex;
         private bool _sawMappingKey;
 
@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
 
             _builder.AppendString(_format[literalStart..]);
             EnsureAllArgumentsConsumed();
-            return _builder.ToPyString();
+            return _builder.ToPyStringAndRelease();
         }
 
         private PercentSpecifier ParseSpecifier(ref int index)

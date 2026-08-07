@@ -685,13 +685,13 @@ internal sealed partial class LythonRuntime
     {
         private readonly PyPopen _owner;
         private readonly ExecutionContext _context;
-        private readonly Utf8ValueBuilder _buffer;
+        private readonly GovernedByteBuilder _buffer;
 
         public PopenInputStream(PyPopen owner, ExecutionContext context)
         {
             _owner = owner;
             _context = context;
-            _buffer = new Utf8ValueBuilder(
+            _buffer = new GovernedByteBuilder(
                 context.MemoryGovernor,
                 allocationSpan: null,
                 capacity: 0,

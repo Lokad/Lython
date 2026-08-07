@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                var output = new Utf8ValueBuilder(context.MemoryGovernor, span);
+                var output = new GovernedByteBuilder(context.MemoryGovernor, span);
                 var buffer = new byte[8192];
                 var position = 0;
                 var memberCount = 0;
@@ -361,7 +361,7 @@ internal sealed partial class LythonRuntime
         private readonly PyBytes? _binaryRead;
         private readonly PyString? _textRead;
         private byte[] _compressedPrefix;
-        private readonly Utf8ValueBuilder _writeBuffer;
+        private readonly GovernedByteBuilder _writeBuffer;
         private long _compressedPrefixCharge;
         private int _readCursor;
         private bool _dirty;
@@ -381,7 +381,7 @@ internal sealed partial class LythonRuntime
             _binaryRead = binaryRead;
             _textRead = textRead;
             _compressedPrefix = compressedPrefix;
-            _writeBuffer = new Utf8ValueBuilder(context.MemoryGovernor);
+            _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor);
             _dirty = dirty;
         }
 
@@ -1093,7 +1093,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Memory("gzip compressed output is too large", span);
         }
 
-        var output = new Utf8ValueBuilder(
+        var output = new GovernedByteBuilder(
             context.MemoryGovernor,
             span,
             capacity: 0,
@@ -1289,9 +1289,9 @@ internal sealed partial class LythonRuntime
 
     private sealed class GzipBufferWriteStream : Stream
     {
-        private readonly Utf8ValueBuilder _output;
+        private readonly GovernedByteBuilder _output;
 
-        public GzipBufferWriteStream(Utf8ValueBuilder output)
+        public GzipBufferWriteStream(GovernedByteBuilder output)
         {
             _output = output;
         }

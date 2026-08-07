@@ -219,10 +219,10 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void Utf8ValueBuilder_ToPyStringAddsGovernedStringChargeWithoutConsumingBuilder()
+    public void GovernedByteBuilder_ToPyStringAddsGovernedStringChargeWithoutConsumingBuilder()
     {
         var governor = new MemoryGovernor(4096);
-        var builder = new Utf8ValueBuilder(governor, null, capacity: 3);
+        var builder = new GovernedByteBuilder(governor, null, capacity: 3);
 
         builder.AppendAscii("ab");
         builder.AppendString("c");
@@ -239,10 +239,10 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void Utf8ValueBuilder_ToPyStringChargesCopyForTrimmedGovernedBuffer()
+    public void GovernedByteBuilder_ToPyStringChargesCopyForTrimmedGovernedBuffer()
     {
         var governor = new MemoryGovernor(4096);
-        var builder = new Utf8ValueBuilder(governor);
+        var builder = new GovernedByteBuilder(governor);
 
         builder.AppendAscii("ab");
         builder.AppendString("c");
@@ -259,29 +259,29 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void Utf8ValueBuilder_ToArrayReturnsUtf8AndChargesGovernedCopy()
+    public void GovernedByteBuilder_ToPyStringAndReleaseTransfersRetainedBudgetToResult()
     {
         var governor = new MemoryGovernor(4096);
-        var builder = new Utf8ValueBuilder(governor);
+        var builder = new GovernedByteBuilder(governor);
 
         builder.AppendAscii("ab");
         builder.Append(PyString.FromString("c"));
 
         Assert.Equal(8, governor.CurrentCommittedBytes);
 
-        var bytes = builder.ToArray();
+        var value = builder.ToPyStringAndRelease();
 
-        Assert.Equal("abc"u8.ToArray(), bytes);
-        Assert.Equal(3, builder.Length);
-        Assert.Equal(11, governor.CurrentCommittedBytes);
+        Assert.Equal("abc", value.AsString());
+        Assert.Equal(0, builder.Length);
+        Assert.Equal(PyString.EstimateApproximateBytes(3), governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
     [Fact]
-    public void Utf8ValueBuilder_GrowthAccountsForTheTransientReplacementPeak()
+    public void GovernedByteBuilder_GrowthAccountsForTheTransientReplacementPeak()
     {
         var governor = new MemoryGovernor(20);
-        var builder = new Utf8ValueBuilder(governor, allocationSpan: null, capacity: 8);
+        var builder = new GovernedByteBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("12345678");
 
         var exception = Assert.Throws<LythonRuntimeException>(() => builder.Append((byte)'9'));
@@ -292,10 +292,10 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void Utf8ValueBuilder_ToArrayAndReleaseDropsTheBuilderCapacity()
+    public void GovernedByteBuilder_ToArrayAndReleaseDropsTheBuilderCapacity()
     {
         var governor = new MemoryGovernor(32);
-        var builder = new Utf8ValueBuilder(governor, allocationSpan: null, capacity: 8);
+        var builder = new GovernedByteBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("abc");
 
         var result = builder.ToArrayAndRelease();

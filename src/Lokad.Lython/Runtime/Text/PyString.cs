@@ -358,8 +358,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                     RuntimeMemoryEstimates.SaturatingMultiply(insertionCount, newValue._utf8.Length)),
                 _allocationSpan);
             var builder = _memoryGovernor is null
-                ? new Utf8ValueBuilder(capacity)
-                : new Utf8ValueBuilder(_memoryGovernor, _allocationSpan, capacity);
+                ? new GovernedByteBuilder(capacity)
+                : new GovernedByteBuilder(_memoryGovernor, _allocationSpan, capacity);
             builder.Append(newValue);
             for (var byteIndex = 0; byteIndex < _utf8.Length;)
             {
@@ -369,12 +369,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 byteIndex += runeLength;
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         var result = _memoryGovernor is null
-            ? new Utf8ValueBuilder(_utf8.Length)
-            : new Utf8ValueBuilder(_memoryGovernor, _allocationSpan, _utf8.Length);
+            ? new GovernedByteBuilder(_utf8.Length)
+            : new GovernedByteBuilder(_memoryGovernor, _allocationSpan, _utf8.Length);
         var offset = 0;
         while (offset < _utf8.Length)
         {
@@ -390,7 +390,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             offset += found + oldValue._utf8.Length;
         }
 
-        return result.ToPyString();
+        return result.ToPyStringAndRelease();
     }
 
     public PyString ToLowerInvariant()

@@ -3,7 +3,12 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Runtime.Text;
 
-internal sealed class Utf8ValueBuilder
+/// <summary>
+/// Accumulates arbitrary bytes while charging its retained capacity to an optional execution
+/// governor. Callers that finish with a value should use a consuming conversion or
+/// <see cref="Release"/> so the mutable capacity is not retained in the execution budget.
+/// </summary>
+internal sealed class GovernedByteBuilder
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
@@ -15,22 +20,22 @@ internal sealed class Utf8ValueBuilder
     private readonly int? _maxLengthBytes;
     private readonly string? _maxLengthOwner;
 
-    public Utf8ValueBuilder() : this(0) { }
+    public GovernedByteBuilder() : this(0) { }
 
-    public Utf8ValueBuilder(int capacity)
+    public GovernedByteBuilder(int capacity)
     {
         _buffer = capacity > 0 ? new byte[capacity] : [];
     }
 
-    public Utf8ValueBuilder(MemoryGovernor governor) : this(governor, null, 0, null, null) { }
+    public GovernedByteBuilder(MemoryGovernor governor) : this(governor, null, 0, null, null) { }
 
-    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(governor, allocationSpan, 0, null, null) { }
+    public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(governor, allocationSpan, 0, null, null) { }
 
-    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity) : this(governor, allocationSpan, capacity, null, null) { }
+    public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity) : this(governor, allocationSpan, capacity, null, null) { }
 
-    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity, int? maxLengthBytes) : this(governor, allocationSpan, capacity, maxLengthBytes, null) { }
+    public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity, int? maxLengthBytes) : this(governor, allocationSpan, capacity, maxLengthBytes, null) { }
 
-    public Utf8ValueBuilder(
+    public GovernedByteBuilder(
         MemoryGovernor governor,
         LythonSourceSpan? allocationSpan,
         int capacity,
@@ -140,26 +145,26 @@ internal sealed class Utf8ValueBuilder
             : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan);
     }
 
-    public byte[] ToArray()
+    public PyString ToPyStringAndRelease()
     {
         if (_length == 0)
         {
-            return [];
+            Release();
+            return PyString.Empty;
         }
 
         if (_memoryGovernor is not null)
         {
-            _memoryGovernor.Reserve(_length, _allocationSpan);
+            _memoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(_length), _allocationSpan);
         }
 
         var exact = new byte[_length];
         _buffer.AsSpan(0, _length).CopyTo(exact);
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.Commit(exact.Length);
-        }
-
-        return exact;
+        var result = _memoryGovernor is null
+            ? PyString.FromOwnedUtf8(exact)
+            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan);
+        Release();
+        return result;
     }
 
     public byte[] ToArrayAndRelease()
@@ -194,7 +199,7 @@ internal sealed class Utf8ValueBuilder
 
         if (_length > int.MaxValue - additionalBytes)
         {
-            throw RuntimeErrors.Runtime("UTF-8 buffer allocation is too large.", _allocationSpan);
+            throw RuntimeErrors.Runtime("byte buffer allocation is too large.", _allocationSpan);
         }
 
         var requiredCapacity = _length + additionalBytes;
@@ -216,7 +221,7 @@ internal sealed class Utf8ValueBuilder
 
         if (newCapacityLong > int.MaxValue)
         {
-            throw RuntimeErrors.Runtime("UTF-8 buffer allocation is too large.", _allocationSpan);
+            throw RuntimeErrors.Runtime("byte buffer allocation is too large.", _allocationSpan);
         }
 
         var newCapacity = (int)newCapacityLong;
@@ -243,7 +248,7 @@ internal sealed class Utf8ValueBuilder
     {
         if (_maxLengthBytes is { } maxLengthBytes && requiredCapacity > maxLengthBytes)
         {
-            var owner = _maxLengthOwner ?? "UTF-8 buffer";
+            var owner = _maxLengthOwner ?? "byte buffer";
             throw RuntimeErrors.Runtime($"{owner} exceeded maximum captured output bytes ({maxLengthBytes})", _allocationSpan);
         }
     }

@@ -41,13 +41,13 @@ internal sealed class ExecutionState
             : new Dictionary<string, string>(options.Environment, StringComparer.Ordinal);
         ImportedModules = new Dictionary<string, PyModule>(StringComparer.Ordinal);
         LoadingModules = new HashSet<string>(StringComparer.Ordinal);
-        StandardOutput = new Text.Utf8ValueBuilder(
+        StandardOutput = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
             capacity: 0,
             maxLengthBytes: Limits.MaxStandardOutputBytes,
             maxLengthOwner: "standard output");
-        StandardError = new Text.Utf8ValueBuilder(
+        StandardError = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
             capacity: 0,
@@ -83,9 +83,9 @@ internal sealed class ExecutionState
 
     public HashSet<string> LoadingModules { get; }
 
-    public Text.Utf8ValueBuilder StandardOutput { get; }
+    public Text.GovernedByteBuilder StandardOutput { get; }
 
-    public Text.Utf8ValueBuilder StandardError { get; }
+    public Text.GovernedByteBuilder StandardError { get; }
 
     public HostTextInputHandle Stdin { get; }
 

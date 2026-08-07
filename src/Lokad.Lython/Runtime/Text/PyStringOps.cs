@@ -77,7 +77,7 @@ internal static class PyStringOps
             }
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString TrimTrailingNewline(PyString value)
@@ -650,7 +650,7 @@ internal static class PyStringOps
             byteIndex += runeLength;
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString Format(PyString template, IReadOnlyList<object> positional)
@@ -778,7 +778,7 @@ internal static class PyStringOps
             builder.Append(b);
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static IReadOnlyDictionary<string, object> ExtractStringKeyDictionary(PyDict mapping)
@@ -810,7 +810,7 @@ internal static class PyStringOps
             builder.Append(rune);
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static bool IsLower(PyString value)
@@ -878,7 +878,7 @@ internal static class PyStringOps
             byteIndex += runeLength;
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString SwapCase(PyString value)
@@ -895,7 +895,7 @@ internal static class PyStringOps
             byteIndex += runeLength;
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString Title(PyString value)
@@ -924,7 +924,7 @@ internal static class PyStringOps
             byteIndex += runeLength;
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     public static PyString Replace(PyString value, PyString oldValue, PyString newValue, int count)
@@ -959,7 +959,7 @@ internal static class PyStringOps
                 }
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         var result = CreateBuilder(value, value.Utf8Bytes.Length);
@@ -982,7 +982,7 @@ internal static class PyStringOps
         }
 
         result.Append(bytes[offset..]);
-        return result.ToPyString();
+        return result.ToPyStringAndRelease();
     }
 
     public static (int Start, int End) NormalizeRange(int length, object? start, object? end)
@@ -1076,7 +1076,7 @@ internal static class PyStringOps
             builder.AppendString(MapCase(rune, mapping));
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private static string MapCase(Rune rune, CaseMapping mapping)
@@ -1174,7 +1174,7 @@ internal static class PyStringOps
             builder.Append(rune);
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private static bool IsLineBreak(PyString rune)
@@ -1280,10 +1280,10 @@ internal static class PyStringOps
         AppendRepeated(builder, fillChar, left);
         builder.Append(value);
         AppendRepeated(builder, fillChar, right);
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
-    private static void AppendRepeated(Utf8ValueBuilder builder, PyString value, int count)
+    private static void AppendRepeated(GovernedByteBuilder builder, PyString value, int count)
     {
         for (var i = 0; i < count; i++)
         {
@@ -1302,19 +1302,19 @@ internal static class PyStringOps
         return decoded;
     }
 
-    private static Utf8ValueBuilder CreateBuilder(PyString value)
+    private static GovernedByteBuilder CreateBuilder(PyString value)
         => CreateBuilder(value, 0);
 
-    private static Utf8ValueBuilder CreateBuilder(PyString value, int capacity)
+    private static GovernedByteBuilder CreateBuilder(PyString value, int capacity)
         => value.OwnerMemoryGovernor is null
-            ? new Utf8ValueBuilder(capacity)
-            : new Utf8ValueBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, capacity);
+            ? new GovernedByteBuilder(capacity)
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, capacity);
 
-    private static Utf8ValueBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span)
+    private static GovernedByteBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span)
         => CreateBuilder(governor, span, 0);
 
-    private static Utf8ValueBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span, int capacity)
-        => governor is null ? new Utf8ValueBuilder(capacity) : new Utf8ValueBuilder(governor, span, capacity);
+    private static GovernedByteBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span, int capacity)
+        => governor is null ? new GovernedByteBuilder(capacity) : new GovernedByteBuilder(governor, span, capacity);
 
     private static PyString FromString(string text, MemoryGovernor? governor, LythonSourceSpan? span)
         => governor is null ? PyString.FromString(text) : PyString.FromString(text, governor, span);

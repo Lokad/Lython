@@ -1242,7 +1242,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             bool includeCount)
         {
-            var builder = new Utf8ValueBuilder(context.MemoryGovernor, span);
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var sourceBytes = range.Segment.Utf8Bytes.Span;
             var lastByte = 0;
             var replaced = 0;
@@ -1281,7 +1281,7 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append(sourceBytes[lastByte..]);
-            var result = SpliceRangeResult(range, builder.ToPyString());
+            var result = SpliceRangeResult(range, builder.ToPyStringAndRelease());
             return includeCount
                 ? new PyTuple([result, new BigInteger(replaced)], context.MemoryGovernor, span)
                 : result;
@@ -6787,8 +6787,8 @@ internal sealed partial class LythonRuntime
         private static PyString EscapeJsonString(PyString text)
         {
             var builder = text.OwnerMemoryGovernor is null
-                ? new Utf8ValueBuilder(text.Utf8Bytes.Length + 2)
-                : new Utf8ValueBuilder(text.OwnerMemoryGovernor, text.AllocationSpan, text.Utf8Bytes.Length + 2);
+                ? new GovernedByteBuilder(text.Utf8Bytes.Length + 2)
+                : new GovernedByteBuilder(text.OwnerMemoryGovernor, text.AllocationSpan, text.Utf8Bytes.Length + 2);
             builder.Append((byte)'"');
             foreach (var rune in text.EnumerateRunes())
             {
@@ -6831,7 +6831,7 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append((byte)'"');
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
     }
 
@@ -7733,7 +7733,7 @@ internal sealed partial class LythonRuntime
 
         public static PyString RenderCsvDocument(IReadOnlyList<CsvCell[]> rows, CsvOptions options, bool trailingTerminator, LythonSourceSpan span)
         {
-            var builder = new Utf8ValueBuilder();
+            var builder = new GovernedByteBuilder();
             for (var i = 0; i < rows.Count; i++)
             {
                 if (i != 0)
@@ -7749,12 +7749,12 @@ internal sealed partial class LythonRuntime
                 builder.Append(options.LineTerminator);
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         private static PyString RenderCsvRow(CsvCell[] row, CsvOptions options, LythonSourceSpan span)
         {
-            var builder = new Utf8ValueBuilder();
+            var builder = new GovernedByteBuilder();
             var singleEmptyField = row.Length == 1 && row[0].Text.Length == 0;
             for (var i = 0; i < row.Length; i++)
             {
@@ -7766,7 +7766,7 @@ internal sealed partial class LythonRuntime
                 builder.Append(EscapeCsvField(row[i], options, span, forceQuotes: singleEmptyField));
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span)
@@ -7803,7 +7803,7 @@ internal sealed partial class LythonRuntime
                 return field;
             }
 
-            var builder = new Utf8ValueBuilder(fieldBytes.Length + 2);
+            var builder = new GovernedByteBuilder(fieldBytes.Length + 2);
             builder.Append(options.QuoteChar);
             for (var i = 0; i < fieldBytes.Length; i++)
             {
@@ -7827,7 +7827,7 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append(options.QuoteChar);
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         private static PyString EscapeUnquotedField(PyString field, CsvOptions options, LythonSourceSpan span)
@@ -7835,7 +7835,7 @@ internal sealed partial class LythonRuntime
             var fieldBytes = field.Utf8Bytes.Span;
             var delimiterBytes = options.Delimiter.Utf8Bytes.Span;
             var quoteBytes = options.QuoteChar is null ? ReadOnlySpan<byte>.Empty : options.QuoteChar.Utf8Bytes.Span;
-            var builder = new Utf8ValueBuilder(fieldBytes.Length);
+            var builder = new GovernedByteBuilder(fieldBytes.Length);
             for (var i = 0; i < fieldBytes.Length; i++)
             {
                 var needsEscape =
@@ -7855,7 +7855,7 @@ internal sealed partial class LythonRuntime
                 builder.Append(fieldBytes[i]);
             }
 
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         private static bool MatchesAt(ReadOnlySpan<byte> text, int index, ReadOnlySpan<byte> value)
@@ -7952,7 +7952,7 @@ internal sealed partial class LythonRuntime
 
     private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts)
     {
-        var builder = new Utf8ValueBuilder();
+        var builder = new GovernedByteBuilder();
         var first = true;
         foreach (var part in parts)
         {
@@ -7965,7 +7965,7 @@ internal sealed partial class LythonRuntime
             first = false;
         }
 
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
     private static PyString SliceByByteCount(PyString text, int start, int length)

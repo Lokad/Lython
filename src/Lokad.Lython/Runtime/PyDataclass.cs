@@ -2014,7 +2014,7 @@ internal static class PyDataclass
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__repr__() expected a bound instance.", span);
             }
 
-            var builder = new Utf8ValueBuilder();
+            var builder = new GovernedByteBuilder();
             builder.AppendString(typeName);
             builder.AppendAscii("(");
             for (var i = 0; i < fields.Count; i++)
@@ -2032,7 +2032,7 @@ internal static class PyDataclass
             }
 
             builder.AppendAscii(")");
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
     }
 

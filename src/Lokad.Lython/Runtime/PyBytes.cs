@@ -103,7 +103,7 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        var builder = new Utf8ValueBuilder();
+        var builder = new GovernedByteBuilder();
         builder.AppendAscii("b'");
         foreach (var value in _bytes)
         {
@@ -111,10 +111,10 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         }
 
         builder.AppendAscii("'");
-        return builder.ToPyString();
+        return builder.ToPyStringAndRelease();
     }
 
-    private static void AppendEscapedByte(Utf8ValueBuilder builder, byte value)
+    private static void AppendEscapedByte(GovernedByteBuilder builder, byte value)
     {
         switch (value)
         {

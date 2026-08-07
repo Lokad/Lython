@@ -72,7 +72,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         if (Type.DataclassReprEnabled && Type.DataclassFields is { } fields)
         {
             var renderedFields = fields.Where(field => field.Repr).ToArray();
-            var builder = new Utf8ValueBuilder();
+            var builder = new GovernedByteBuilder();
             builder.AppendString(Type.Name);
             builder.AppendAscii("(");
             for (var i = 0; i < renderedFields.Length; i++)
@@ -90,7 +90,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             }
 
             builder.AppendAscii(")");
-            return builder.ToPyString();
+            return builder.ToPyStringAndRelease();
         }
 
         return PyString.FromString($"<{Type.Name} object>");
