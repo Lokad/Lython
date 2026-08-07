@@ -417,13 +417,13 @@ internal sealed partial class LythonRuntime
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     positional.Add(argument.Value);
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "sep":
                         if (seenSeparator)
@@ -484,7 +484,7 @@ internal sealed partial class LythonRuntime
                         break;
 
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.Name, span);
+                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.KeywordName, span);
                 }
             }
 
@@ -523,13 +523,13 @@ internal sealed partial class LythonRuntime
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     positional.Add(argument.Value);
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "sep":
                         if (seenSeparator)
@@ -590,7 +590,7 @@ internal sealed partial class LythonRuntime
                         break;
 
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.Name, span);
+                        throw CallErrors.UnexpectedKeyword("Builtin", "print", argument.KeywordName, span);
                 }
             }
 
@@ -952,7 +952,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Name is not null)
+                if (arguments[i].IsKeyword)
                 {
                     throw new LythonRuntimeException("TypeError", $"{TypeName}(message) does not accept keyword arguments.", span);
                 }

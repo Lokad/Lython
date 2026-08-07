@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = new CallArgumentValue(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, context));
+                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, context));
             }
             var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
             }
 
-            current = callable.Invoke([new CallArgumentValue(null, current)], span, context);
+            current = callable.Invoke([CallArgumentValue.Positional(current)], span, context);
         }
 
         return current;
@@ -1053,7 +1053,7 @@ internal sealed partial class LythonRuntime
                 _ = counter.Remove(ValidateDictionaryKey(index, span));
                 return;
             case PyInstance instance:
-                InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, span);
+                InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
                 return;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", span);

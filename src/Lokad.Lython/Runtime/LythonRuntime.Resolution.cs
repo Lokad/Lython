@@ -317,7 +317,7 @@ internal sealed partial class LythonRuntime
             instance.TryGetAttribute(method, context, span, out var member) &&
             member is ICallable callable)
         {
-            result = callable.Invoke([new CallArgumentValue(null, argument)], span, context);
+            result = callable.Invoke([CallArgumentValue.Positional(argument)], span, context);
             return true;
         }
 
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
             instance.TryGetAttribute("__contains__", context, span, out var member) &&
             member is ICallable callable)
         {
-            return IsTruthy(callable.Invoke([new CallArgumentValue(null, candidate)], span, context), context, span);
+            return IsTruthy(callable.Invoke([CallArgumentValue.Positional(candidate)], span, context), context, span);
         }
 
         return PyContainment.Contains(container, candidate, span);
@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
         }
 
-        return callable.Invoke([new CallArgumentValue(null, index)], span, context);
+        return callable.Invoke([CallArgumentValue.Positional(index)], span, context);
     }
 
     private static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)

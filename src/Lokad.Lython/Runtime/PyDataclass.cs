@@ -236,7 +236,7 @@ internal static partial class PyDataclass
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (seenCls)
                     {
@@ -253,7 +253,7 @@ internal static partial class PyDataclass
                     continue;
                 }
 
-                if (argument.Name == "cls")
+                if (argument.KeywordName == "cls")
                 {
                     if (seenCls)
                     {
@@ -270,7 +270,7 @@ internal static partial class PyDataclass
                     continue;
                 }
 
-                options = ApplyDataclassOption(options, argument.Name, argument.Value, seenOptions, "dataclasses.dataclass", span);
+                options = ApplyDataclassOption(options, argument.KeywordName, argument.Value, seenOptions, "dataclasses.dataclass", span);
             }
 
             var decorator = ToDecorator(options, span);
@@ -285,7 +285,7 @@ internal static partial class PyDataclass
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyType type)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyType type)
             {
                 throw new LythonRuntimeException("TypeError", "dataclasses.dataclass(...) decorator expects one class argument.", span);
             }
@@ -337,7 +337,7 @@ internal static partial class PyDataclass
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     positionalCount++;
                     switch (positionalCount)
@@ -355,25 +355,25 @@ internal static partial class PyDataclass
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "cls_name":
-                        SetSingle(ref clsName, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        SetSingle(ref clsName, argument.Value, seen, argument.KeywordName, "dataclasses.make_dataclass", span);
                         break;
                     case "fields":
-                        SetSingle(ref fieldsArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        SetSingle(ref fieldsArgument, argument.Value, seen, argument.KeywordName, "dataclasses.make_dataclass", span);
                         break;
                     case "bases":
-                        SetSingle(ref basesArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        SetSingle(ref basesArgument, argument.Value, seen, argument.KeywordName, "dataclasses.make_dataclass", span);
                         break;
                     case "namespace":
-                        SetSingle(ref namespaceArgument, argument.Value, seen, argument.Name, "dataclasses.make_dataclass", span);
+                        SetSingle(ref namespaceArgument, argument.Value, seen, argument.KeywordName, "dataclasses.make_dataclass", span);
                         break;
                     case "module":
                     case "decorator":
-                        throw new LythonRuntimeException("NotImplementedError", $"dataclasses.make_dataclass({argument.Name}=...) is not supported by Lython.", span);
+                        throw new LythonRuntimeException("NotImplementedError", $"dataclasses.make_dataclass({argument.KeywordName}=...) is not supported by Lython.", span);
                     default:
-                        options = ApplyDataclassOption(options, argument.Name, argument.Value, seenOptions, "dataclasses.make_dataclass", span);
+                        options = ApplyDataclassOption(options, argument.KeywordName, argument.Value, seenOptions, "dataclasses.make_dataclass", span);
                         break;
                 }
             }
@@ -605,12 +605,12 @@ internal static partial class PyDataclass
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", "dataclasses.field(...) only supports keyword arguments in Lython.", span);
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "default":
                         if (seenDefault)
@@ -685,7 +685,7 @@ internal static partial class PyDataclass
                         seenMetadata = true;
                         break;
                     default:
-                        throw CallErrors.UnexpectedKeyword("Builtin", "dataclasses.field", argument.Name, span);
+                        throw CallErrors.UnexpectedKeyword("Builtin", "dataclasses.field", argument.KeywordName, span);
                 }
             }
 
@@ -711,7 +711,7 @@ internal static partial class PyDataclass
         {
             context.CheckExecutionBudget(span);
 
-            if (arguments.Length == 0 || arguments[0].Name is not null || arguments[0].Value is not PyInstance instance || instance.Type.DataclassFields is null)
+            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance || instance.Type.DataclassFields is null)
             {
                 throw new LythonRuntimeException("TypeError", "dataclasses.replace(obj, **changes) expects a dataclass instance as its first positional argument.", span);
             }
@@ -720,7 +720,7 @@ internal static partial class PyDataclass
             for (var i = 1; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", "dataclasses.replace(obj, **changes) only accepts keyword changes after the dataclass instance.", span);
                 }
@@ -747,14 +747,14 @@ internal static partial class PyDataclass
         var changes = new Dictionary<string, object>(StringComparer.Ordinal);
         foreach (var argument in changeArguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(obj, **changes) only accepts keyword changes after the dataclass instance.", span);
             }
 
-            if (!changes.TryAdd(argument.Name, argument.Value))
+            if (!changes.TryAdd(argument.KeywordName, argument.Value))
             {
-                throw CallErrors.MultipleValues("Builtin", owner, argument.Name, span);
+                throw CallErrors.MultipleValues("Builtin", owner, argument.KeywordName, span);
             }
         }
 
@@ -781,7 +781,7 @@ internal static partial class PyDataclass
 
             if (changes.TryGetValue(field.Name, out var changedValue))
             {
-                callArguments.Add(new CallArgumentValue(field.Name, changedValue));
+                callArguments.Add(CallArgumentValue.Keyword(field.Name, changedValue));
                 continue;
             }
 
@@ -789,13 +789,13 @@ internal static partial class PyDataclass
             {
                 if (field.HasDefaultFactory)
                 {
-                    callArguments.Add(new CallArgumentValue(field.Name, DataclassInitMethod.InvokeDefaultFactory(field, span, context)));
+                    callArguments.Add(CallArgumentValue.Keyword(field.Name, DataclassInitMethod.InvokeDefaultFactory(field, span, context)));
                     continue;
                 }
 
                 if (field.HasDefault)
                 {
-                    callArguments.Add(new CallArgumentValue(field.Name, field.DefaultValue));
+                    callArguments.Add(CallArgumentValue.Keyword(field.Name, field.DefaultValue));
                     continue;
                 }
 
@@ -803,7 +803,7 @@ internal static partial class PyDataclass
             }
 
             _ = instance.TryGetOwnAttribute(field.Name, out var existingValue);
-            callArguments.Add(new CallArgumentValue(field.Name, existingValue ?? PyNone.Instance));
+            callArguments.Add(CallArgumentValue.Keyword(field.Name, existingValue ?? PyNone.Instance));
         }
 
         return instance.Type.Invoke(callArguments.ToArray(), span, context);
@@ -979,7 +979,7 @@ internal static partial class PyDataclass
             items.Add(new PyTuple([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
         }
 
-        return dictFactory.Invoke([new CallArgumentValue(null, items)], span, context);
+        return dictFactory.Invoke([CallArgumentValue.Positional(items)], span, context);
     }
 
     private static object BuildTupleFromItems(IEnumerable<object> items, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -991,7 +991,7 @@ internal static partial class PyDataclass
         }
 
         var list = new PyList(MaterializeRuntimeValueItems(items), context.MemoryGovernor, span);
-        return tupleFactory.Invoke([new CallArgumentValue(null, list)], span, context);
+        return tupleFactory.Invoke([CallArgumentValue.Positional(list)], span, context);
     }
 
     private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -1561,8 +1561,8 @@ internal static partial class PyDataclass
 
             value = callable.Invoke(
                 [
-                    new CallArgumentValue(null, PyNone.Instance),
-                    new CallArgumentValue(null, owner)
+                    CallArgumentValue.Positional(PyNone.Instance),
+                    CallArgumentValue.Positional(owner)
                 ],
                 span,
                 context);

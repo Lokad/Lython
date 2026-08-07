@@ -613,7 +613,7 @@ internal sealed partial class LythonRuntime
             formatMember is ICallable formatCallable)
         {
             var formatted = formatCallable.Invoke(
-                [new CallArgumentValue(null, PyString.FromString(formatSpecifier, context.MemoryGovernor, span))],
+                [CallArgumentValue.Positional(PyString.FromString(formatSpecifier, context.MemoryGovernor, span))],
                 span,
                 context);
             if (!PyStringOps.TryAsString(formatted, out var formattedText))

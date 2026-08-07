@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
             var positionalCount = 0;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (positionalCount++ >= 1 || dataAssigned)
                     {
@@ -138,7 +138,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "string" when !dataAssigned:
                         data = argument.Value;
@@ -149,9 +149,9 @@ internal sealed partial class LythonRuntime
                         break;
                     case "string":
                     case "usedforsecurity":
-                        throw new LythonRuntimeException("TypeError", $"{Name}() got multiple values for argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"{Name}() got multiple values for argument '{argument.KeywordName}'", span);
                     default:
-                        throw new LythonRuntimeException("TypeError", $"{Name}() got an unexpected keyword argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"{Name}() got an unexpected keyword argument '{argument.KeywordName}'", span);
                 }
             }
 
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
             var positionalCount = 0;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     switch (positionalCount++)
                     {
@@ -196,7 +196,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "name" when !nameAssigned:
                         name = argument.Value;
@@ -212,9 +212,9 @@ internal sealed partial class LythonRuntime
                     case "name":
                     case "data":
                     case "usedforsecurity":
-                        throw new LythonRuntimeException("TypeError", $"hashlib.new() got multiple values for argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"hashlib.new() got multiple values for argument '{argument.KeywordName}'", span);
                     default:
-                        throw new LythonRuntimeException("TypeError", $"hashlib.new() got an unexpected keyword argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"hashlib.new() got an unexpected keyword argument '{argument.KeywordName}'", span);
                 }
             }
 

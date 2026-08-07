@@ -690,7 +690,7 @@ internal sealed partial class LythonRuntime
                         span,
                         span,
                         context,
-                        () => [new CallArgumentValue(null, matchObject)]);
+                        () => [CallArgumentValue.Positional(matchObject)]);
                     if (!PyStringOps.TryAsString(replacementValue, out var replacementText))
                     {
                         throw new LythonRuntimeException("TypeError", "Regex replacement callable must return a string.", span);
@@ -743,7 +743,7 @@ internal sealed partial class LythonRuntime
                 state.Span,
                 state.Span,
                 state.Context,
-                () => [new CallArgumentValue(null, matchObject)]);
+                () => [CallArgumentValue.Positional(matchObject)]);
 
             if (!PyStringOps.TryAsString(replacementValue, out var replacementText))
             {

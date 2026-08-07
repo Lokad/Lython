@@ -171,7 +171,7 @@ internal static class PyMemberAccess
                 }
 
                 _ = setattrCallable.Invoke(
-                    [new CallArgumentValue(null, PyString.FromString(memberName)), new CallArgumentValue(null, value)],
+                    [CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)],
                     span,
                     context);
                 return true;
@@ -199,7 +199,7 @@ internal static class PyMemberAccess
                 }
 
                 _ = delattrCallable.Invoke(
-                    [new CallArgumentValue(null, PyString.FromString(memberName))],
+                    [CallArgumentValue.Positional(PyString.FromString(memberName))],
                     span,
                     context);
                 return true;

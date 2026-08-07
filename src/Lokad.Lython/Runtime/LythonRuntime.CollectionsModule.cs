@@ -147,13 +147,13 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 positional.Add(argument.Value);
                 continue;
             }
 
-            if (argument.Name == "default_factory")
+            if (argument.KeywordName == "default_factory")
             {
                 if (hasDefaultFactory || positional.Count >= 1)
                 {
@@ -165,7 +165,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name is "iterable" or "mapping")
+            if (argument.KeywordName is "iterable" or "mapping")
             {
                 if (hasSource || positional.Count >= 2)
                 {
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            keywordItems.Add(new(argument.Name, argument.Value));
+            keywordItems.Add(new(argument.KeywordName, argument.Value));
         }
 
         if (positional.Count > 2)
@@ -238,7 +238,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalCount >= 1)
                 {
@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name is "iterable" or "mapping")
+            if (argument.KeywordName is "iterable" or "mapping")
             {
                 if (hasSource)
                 {
@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            keywordItems.Add(new(argument.Name, argument.Value));
+            keywordItems.Add(new(argument.KeywordName, argument.Value));
         }
 
         var result = new PyCounter(context.MemoryGovernor, span);
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalCount == 0)
                 {
@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name == "iterable")
+            if (argument.KeywordName == "iterable")
             {
                 if (hasIterable)
                 {
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name == "maxlen")
+            if (argument.KeywordName == "maxlen")
             {
                 if (hasMaxLength)
                 {
@@ -347,7 +347,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            throw new LythonRuntimeException("TypeError", $"collections.deque(...) received an unexpected keyword argument '{argument.Name}'.", span);
+            throw new LythonRuntimeException("TypeError", $"collections.deque(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
         }
 
         var result = hasIterable
@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
     private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        if (arguments.Count(static argument => argument.Name is null) > 2)
+        if (arguments.Count(static argument => argument.IsPositional) > 2)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None) accepts only typename and field_names positionally.", span);
         }
@@ -402,10 +402,10 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is not null &&
-                argument.Name is not ("typename" or "field_names" or "rename" or "defaults" or "module"))
+            if (argument.IsKeyword &&
+                argument.KeywordName is not ("typename" or "field_names" or "rename" or "defaults" or "module"))
             {
-                throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) received an unexpected keyword argument '{argument.Name}'.", span);
+                throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
             }
         }
 
@@ -427,7 +427,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalCount >= 1)
                 {
@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name is "mapping" or "iterable")
+            if (argument.KeywordName is "mapping" or "iterable")
             {
                 if (hasSource)
                 {
@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            keywordItems.Add(new(argument.Name, argument.Value));
+            keywordItems.Add(new(argument.KeywordName, argument.Value));
         }
 
         var dict = new PyDict(context.MemoryGovernor, span);
@@ -475,7 +475,7 @@ internal sealed partial class LythonRuntime
         var maps = new List<object>();
         foreach (var argument in arguments)
         {
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "collections.ChainMap(*maps) does not accept keyword arguments.", span);
             }
@@ -646,7 +646,7 @@ internal sealed partial class LythonRuntime
         var found = false;
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalIndex == position)
                 {
@@ -663,7 +663,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name == keyword)
+            if (argument.KeywordName == keyword)
             {
                 if (found)
                 {

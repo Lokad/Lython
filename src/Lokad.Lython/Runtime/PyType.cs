@@ -123,8 +123,8 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             {
                 _ = callable.Invoke(
                     [
-                        new CallArgumentValue(null, this),
-                        new CallArgumentValue(null, PyString.FromString(pair.Key))
+                        CallArgumentValue.Positional(this),
+                        CallArgumentValue.Positional(PyString.FromString(pair.Key))
                     ],
                     span,
                     context);
@@ -194,7 +194,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             }
 
             var newArguments = new CallArgumentValue[arguments.Length + 1];
-            newArguments[0] = new CallArgumentValue(null, this);
+            newArguments[0] = CallArgumentValue.Positional(this);
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
             instance = newCallable.Invoke(newArguments, span, context);
         }
@@ -241,7 +241,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             }
 
             var newArguments = new CallArgumentValue[arguments.Length + 1];
-            newArguments[0] = new CallArgumentValue(null, this);
+            newArguments[0] = CallArgumentValue.Positional(this);
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
             instance = await newCallable.InvokeAsync(newArguments, span, context).ConfigureAwait(false);
         }
@@ -281,7 +281,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     private object InvokeBuiltInType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (arguments.Length == 1 && arguments[0].Name is null)
+        if (arguments.Length == 1 && arguments[0].IsPositional)
         {
             return GetRuntimeTypeObject(arguments[0].Value, context, span);
         }

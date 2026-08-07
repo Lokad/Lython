@@ -61,11 +61,11 @@ internal sealed partial class LythonRuntime
             _ = context;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.set_defaults(...) accepts keyword arguments only.", span);
                 }
-                _defaults[argument.Name] = argument.Value;
+                _defaults[argument.KeywordName] = argument.Value;
             }
             return PyNone.Instance;
         }
@@ -278,7 +278,7 @@ internal sealed partial class LythonRuntime
             var assigned = false;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (assigned)
                     {
@@ -288,9 +288,9 @@ internal sealed partial class LythonRuntime
                     assigned = true;
                     continue;
                 }
-                if (argument.Name != parameterName)
+                if (argument.KeywordName != parameterName)
                 {
-                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
                 if (assigned)
                 {
@@ -318,7 +318,7 @@ internal sealed partial class LythonRuntime
             var assigned = false;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (assigned)
                     {
@@ -328,9 +328,9 @@ internal sealed partial class LythonRuntime
                     assigned = true;
                     continue;
                 }
-                if (argument.Name != "file")
+                if (argument.KeywordName != "file")
                 {
-                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
                 if (assigned)
                 {
@@ -348,7 +348,7 @@ internal sealed partial class LythonRuntime
             var assignedMessage = false;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (positionalIndex == 0)
                     {
@@ -375,7 +375,7 @@ internal sealed partial class LythonRuntime
                     positionalIndex++;
                     continue;
                 }
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "status":
                         if (assignedStatus)
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                         assignedMessage = true;
                         break;
                     default:
-                        throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser.exit(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                        throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser.exit(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
             }
         }

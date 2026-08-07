@@ -920,7 +920,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
             ? LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_total, next, _context, _span))
-            : LythonRuntime.RuntimeValue(_function.Invoke([new CallArgumentValue(null, _total), new CallArgumentValue(null, next)], _span, _context));
+            : LythonRuntime.RuntimeValue(_function.Invoke([CallArgumentValue.Positional(_total), CallArgumentValue.Positional(next)], _span, _context));
         value = _total;
         return true;
     }
@@ -956,7 +956,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
             ? LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_total, next, _context, _span))
-            : LythonRuntime.RuntimeValue(await _function.InvokeAsync([new CallArgumentValue(null, _total), new CallArgumentValue(null, next)], _span, _context).ConfigureAwait(false));
+            : LythonRuntime.RuntimeValue(await _function.InvokeAsync([CallArgumentValue.Positional(_total), CallArgumentValue.Positional(next)], _span, _context).ConfigureAwait(false));
         return (true, _total);
     }
 
@@ -1157,12 +1157,12 @@ internal sealed class PyPredicateIterator : PyIteratorBase
     private bool PredicateMatches(object item)
         => _predicate is null
             ? PyTruthiness.IsTruthy(item)
-            : PyTruthiness.IsTruthy(_predicate.Invoke([new CallArgumentValue(null, item)], _span, _context));
+            : PyTruthiness.IsTruthy(_predicate.Invoke([CallArgumentValue.Positional(item)], _span, _context));
 
     private async ValueTask<bool> PredicateMatchesAsync(object item)
         => _predicate is null
             ? PyTruthiness.IsTruthy(item)
-            : PyTruthiness.IsTruthy(await _predicate.InvokeAsync([new CallArgumentValue(null, item)], _span, _context).ConfigureAwait(false));
+            : PyTruthiness.IsTruthy(await _predicate.InvokeAsync([CallArgumentValue.Positional(item)], _span, _context).ConfigureAwait(false));
 }
 
 internal sealed class PyStarmapIterator : PyIteratorBase
@@ -1190,7 +1190,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         }
 
         var args = LythonRuntime.ToSequence(current, _span)
-            .Select(item => new CallArgumentValue(null, LythonRuntime.RuntimeValue(item)))
+            .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
             .ToArray();
         value = LythonRuntime.RuntimeValue(_function.Invoke(args, _span, _context));
         return true;
@@ -1207,7 +1207,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
         var values = await PyIteration.MaterializeAsync(current, _span).ConfigureAwait(false);
         var args = values
-            .Select(item => new CallArgumentValue(null, LythonRuntime.RuntimeValue(item)))
+            .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
             .ToArray();
         var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(args, _span, _context).ConfigureAwait(false));
         return (true, value);
@@ -1396,12 +1396,12 @@ internal sealed class PyGroupByIterator : PyIteratorBase
     private object ComputeKey(object item)
         => _keyFunction is null
             ? item
-            : LythonRuntime.RuntimeValue(_keyFunction.Invoke([new CallArgumentValue(null, item)], _span, _context));
+            : LythonRuntime.RuntimeValue(_keyFunction.Invoke([CallArgumentValue.Positional(item)], _span, _context));
 
     private async ValueTask<object> ComputeKeyAsync(object item)
         => _keyFunction is null
             ? item
-            : LythonRuntime.RuntimeValue(await _keyFunction.InvokeAsync([new CallArgumentValue(null, item)], _span, _context).ConfigureAwait(false));
+            : LythonRuntime.RuntimeValue(await _keyFunction.InvokeAsync([CallArgumentValue.Positional(item)], _span, _context).ConfigureAwait(false));
 
     private void StoreLookahead(object item, object key)
     {

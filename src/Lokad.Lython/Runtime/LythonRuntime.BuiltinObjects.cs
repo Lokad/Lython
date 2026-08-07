@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
 
     private static object Dict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var positional = arguments.Where(argument => argument.Name is null).ToArray();
+        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
         if (positional.Length > 1)
         {
             throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
@@ -352,9 +352,9 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
-                result.SetItem(PyString.FromString(argument.Name, context.MemoryGovernor, span), argument.Value);
+                result.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
             }
         }
 
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var positional = arguments.Where(argument => argument.Name is null).ToArray();
+        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
         if (positional.Length > 1)
         {
             throw new LythonRuntimeException("TypeError", "dict.update expected at most 1 positional argument", span);
@@ -406,9 +406,9 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
-                target.SetItem(PyString.FromString(argument.Name, context.MemoryGovernor, span), argument.Value);
+                target.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
             }
         }
 

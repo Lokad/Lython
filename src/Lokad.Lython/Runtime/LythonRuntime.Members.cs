@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
                 keyed.Add(new SortKeyValue(
                     item,
                     keyCallable is ICallable callable
-                        ? callable.Invoke([new CallArgumentValue(null, item)], span, context)
+                        ? callable.Invoke([CallArgumentValue.Positional(item)], span, context)
                         : item));
             }
 
@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
                 keyed.Add(new SortKeyValue(
                     item,
                     keyCallable is ICallable callable
-                        ? await callable.InvokeAsync([new CallArgumentValue(null, item)], span, context).ConfigureAwait(false)
+                        ? await callable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)
                         : item));
             }
 
@@ -718,7 +718,7 @@ internal sealed partial class LythonRuntime
 
                 foreach (var argument in arguments)
                 {
-                    if (argument.Name is null)
+                    if (argument.IsPositional)
                     {
                         if (positionalCount >= 1)
                         {
@@ -731,7 +731,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    if (argument.Name is "iterable" or "mapping")
+                    if (argument.KeywordName is "iterable" or "mapping")
                     {
                         if (hasSource)
                         {
@@ -743,7 +743,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    keywordItems.Add(new(argument.Name, argument.Value));
+                    keywordItems.Add(new(argument.KeywordName, argument.Value));
                 }
 
                 if (hasSource)

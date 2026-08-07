@@ -995,7 +995,7 @@ internal sealed partial class LythonRuntime
             var positionalCount = 0;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     switch (positionalCount++)
                     {
@@ -1014,7 +1014,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "data" when !dataAssigned:
                         data = argument.Value;
@@ -1031,9 +1031,9 @@ internal sealed partial class LythonRuntime
                     case "data":
                     case "compresslevel":
                     case "mtime":
-                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got multiple values for argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got multiple values for argument '{argument.KeywordName}'", span);
                     default:
-                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got an unexpected keyword argument '{argument.Name}'", span);
+                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got an unexpected keyword argument '{argument.KeywordName}'", span);
                 }
             }
 

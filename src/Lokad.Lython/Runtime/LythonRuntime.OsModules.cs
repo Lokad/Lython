@@ -2066,7 +2066,7 @@ internal sealed partial class LythonRuntime
                 callbackSpan,
                 callbackSpan,
                 _context,
-                [new CallArgumentValue(null, new PyException("RuntimeError", message, payload))]);
+                [CallArgumentValue.Positional(new PyException("RuntimeError", message, payload))]);
         }
 
         private async ValueTask HandleWalkErrorAsync(string message)
@@ -2083,7 +2083,7 @@ internal sealed partial class LythonRuntime
                 callbackSpan,
                 callbackSpan,
                 _context,
-                () => ValueTask.FromResult(new[] { new CallArgumentValue(null, new PyException("RuntimeError", message, payload)) })).ConfigureAwait(false);
+                () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(new PyException("RuntimeError", message, payload)) })).ConfigureAwait(false);
         }
 
         private object CreateTuple(WalkFrame frame)

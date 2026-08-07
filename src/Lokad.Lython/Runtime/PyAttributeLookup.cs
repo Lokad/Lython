@@ -50,7 +50,7 @@ internal static class PyAttributeLookup
 
             try
             {
-                value = getAttributeCallable.Invoke([new CallArgumentValue(null, PyString.FromString(memberName))], span, context);
+                value = getAttributeCallable.Invoke([CallArgumentValue.Positional(PyString.FromString(memberName))], span, context);
                 return true;
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
@@ -63,7 +63,7 @@ internal static class PyAttributeLookup
                         throw new LythonRuntimeException("TypeError", "__getattr__ must be callable.", span);
                     }
 
-                    value = getAttrCallable.Invoke([new CallArgumentValue(null, PyString.FromString(memberName))], span, context);
+                    value = getAttrCallable.Invoke([CallArgumentValue.Positional(PyString.FromString(memberName))], span, context);
                     return true;
                 }
 
@@ -136,7 +136,7 @@ internal static class PyAttributeLookup
             TryLookupDescriptorMethod(descriptorInstance, "__set__", context, span, out var callable))
         {
             _ = callable.Invoke(
-                [new CallArgumentValue(null, instance), new CallArgumentValue(null, value)],
+                [CallArgumentValue.Positional(instance), CallArgumentValue.Positional(value)],
                 span,
                 context);
             return true;
@@ -157,7 +157,7 @@ internal static class PyAttributeLookup
             TryLookupDescriptorMethod(descriptorInstance, "__delete__", context, span, out var callable))
         {
             _ = callable.Invoke(
-                [new CallArgumentValue(null, instance)],
+                [CallArgumentValue.Positional(instance)],
                 span,
                 context);
             return true;
@@ -213,8 +213,8 @@ internal static class PyAttributeLookup
             {
                 value = callable.Invoke(
                     [
-                        new CallArgumentValue(null, instance ?? PyNone.Instance),
-                        new CallArgumentValue(null, owner)
+                        CallArgumentValue.Positional(instance ?? PyNone.Instance),
+                        CallArgumentValue.Positional(owner)
                     ],
                     span,
                     context);

@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = new CallArgumentValue(argument.KeywordName, await EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false));
+                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, await EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false));
             }
 
             var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
             }
 
-            current = await callable.InvokeAsync([new CallArgumentValue(null, current)], span, context).ConfigureAwait(false);
+            current = await callable.InvokeAsync([CallArgumentValue.Positional(current)], span, context).ConfigureAwait(false);
         }
 
         return current;

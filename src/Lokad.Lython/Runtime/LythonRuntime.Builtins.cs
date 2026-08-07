@@ -952,7 +952,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyInstance)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance)
             {
                 throw new LythonRuntimeException("TypeError", "object.__init__(self) does not accept additional arguments.", span);
             }
@@ -971,7 +971,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length == 0 || arguments[0].Name is not null || arguments[0].Value is not PyType)
+            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not PyType)
             {
                 throw new LythonRuntimeException("TypeError", "object.__init_subclass__(cls) expects a class receiver.", span);
             }
@@ -995,9 +995,9 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 3 ||
-                arguments[0].Name is not null ||
-                arguments[1].Name is not null ||
-                arguments[2].Name is not null ||
+                arguments[0].IsKeyword ||
+                arguments[1].IsKeyword ||
+                arguments[2].IsKeyword ||
                 arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {
@@ -1025,8 +1025,8 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 2 ||
-                arguments[0].Name is not null ||
-                arguments[1].Name is not null ||
+                arguments[0].IsKeyword ||
+                arguments[1].IsKeyword ||
                 arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {
@@ -1059,8 +1059,8 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 2 ||
-                arguments[0].Name is not null ||
-                arguments[1].Name is not null ||
+                arguments[0].IsKeyword ||
+                arguments[1].IsKeyword ||
                 arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {

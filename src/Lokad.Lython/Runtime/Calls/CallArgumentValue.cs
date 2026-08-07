@@ -10,12 +10,18 @@ internal readonly record struct CallArgumentValue
 {
     private readonly string _keywordName;
 
-    public CallArgumentValue(string? name, object value)
+    private CallArgumentValue(CallArgumentPlacement placement, string keywordName, object value)
     {
-        Placement = name is null ? CallArgumentPlacement.Positional : CallArgumentPlacement.Keyword;
-        _keywordName = name ?? string.Empty;
+        Placement = placement;
+        _keywordName = keywordName;
         Value = value;
     }
+
+    public static CallArgumentValue Positional(object value)
+        => new(CallArgumentPlacement.Positional, string.Empty, value);
+
+    public static CallArgumentValue Keyword(string name, object value)
+        => new(CallArgumentPlacement.Keyword, name, value);
 
     public CallArgumentPlacement Placement { get; }
 
@@ -26,9 +32,6 @@ internal readonly record struct CallArgumentValue
     public string KeywordName => IsKeyword
         ? _keywordName
         : throw new InvalidOperationException("A positional call argument has no keyword name.");
-
-    // This projection keeps Python-facing parsers concise while Placement carries the actual discriminant.
-    public string? Name => IsKeyword ? _keywordName : null;
 
     public object Value { get; }
 }

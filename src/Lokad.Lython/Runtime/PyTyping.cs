@@ -352,7 +352,7 @@ internal static class PyTyping
         var found = false;
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalIndex == position)
                 {
@@ -364,7 +364,7 @@ internal static class PyTyping
                 continue;
             }
 
-            if (argument.Name == keyword)
+            if (argument.KeywordName == keyword)
             {
                 value = argument.Value;
                 found = true;
@@ -532,7 +532,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         var dict = new PyDict(context.MemoryGovernor, span);
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (argument.Value is PyDict source)
                 {
@@ -547,7 +547,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
                 throw new LythonRuntimeException("TypeError", $"{Name}(...) expects keyword arguments or a dict.", span);
             }
 
-            dict.SetItem(PyString.FromString(argument.Name), argument.Value);
+            dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
         }
 
         return dict;
@@ -561,7 +561,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalIndex >= values.Length)
                 {
@@ -572,10 +572,10 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
                 continue;
             }
 
-            var fieldIndex = IndexOfField(_fieldNames, argument.Name);
+            var fieldIndex = IndexOfField(_fieldNames, argument.KeywordName);
             if (fieldIndex < 0)
             {
-                throw new LythonRuntimeException("TypeError", $"{Name}(...) received an unexpected keyword argument '{argument.Name}'.", span);
+                throw new LythonRuntimeException("TypeError", $"{Name}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
             }
 
             values[fieldIndex] = argument.Value;
@@ -711,15 +711,15 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
             var values = _owner.ToArray();
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", $"{_owner._typeName}._replace(...) expects keyword arguments.", span);
                 }
 
-                var fieldIndex = _owner.IndexOfField(argument.Name);
+                var fieldIndex = _owner.IndexOfField(argument.KeywordName);
                 if (fieldIndex < 0)
                 {
-                    throw new LythonRuntimeException("ValueError", $"{_owner._typeName}._replace(...) got unexpected field name '{argument.Name}'.", span);
+                    throw new LythonRuntimeException("ValueError", $"{_owner._typeName}._replace(...) got unexpected field name '{argument.KeywordName}'.", span);
                 }
 
                 values[fieldIndex] = argument.Value;

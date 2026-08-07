@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length == 1 && arguments[0].Name is null && arguments[0].Value is ICallable callable)
+            if (arguments.Length == 1 && arguments[0].IsPositional && arguments[0].Value is ICallable callable)
             {
                 return CreateCacheWrapper(callable, maxSize: 128, CacheKeyMode.ValuesOnly, context, span);
             }
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.cache(user_function) expects one callable argument.", span);
             }
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.lru_cache(...)(user_function) expects one callable argument.", span);
             }

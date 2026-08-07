@@ -744,7 +744,7 @@ internal sealed partial class LythonRuntime
             => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
         private static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
-            => InvokeCallableTarget(callable, span, span, context, [new CallArgumentValue(null, argument)]);
+            => InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
 
         private static object? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
         {

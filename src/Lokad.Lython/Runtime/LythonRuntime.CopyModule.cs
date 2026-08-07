@@ -73,12 +73,12 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) expects an object.", span);
             }
 
-            if (arguments[0].Name is not null)
+            if (arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) requires obj as a positional-only argument.", span);
             }
 
-            if (arguments.Length > 1 && arguments[1].Name is null)
+            if (arguments.Length > 1 && arguments[1].IsPositional)
             {
                 throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) accepts only one positional argument.", span);
             }
@@ -88,14 +88,14 @@ internal sealed partial class LythonRuntime
             for (var i = 1; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) accepts only keyword changes after obj.", span);
                 }
 
-                if (!seen.Add(argument.Name))
+                if (!seen.Add(argument.KeywordName))
                 {
-                    throw CallErrors.MultipleValues("Builtin", "copy.replace", argument.Name, span);
+                    throw CallErrors.MultipleValues("Builtin", "copy.replace", argument.KeywordName, span);
                 }
 
                 changes.Add(argument);
@@ -384,7 +384,7 @@ internal sealed partial class LythonRuntime
         }
 
         value = depth == CopyDepth.Deep
-            ? callable.Invoke([new CallArgumentValue(null, memo.ExternalView)], span, context)
+            ? callable.Invoke([CallArgumentValue.Positional(memo.ExternalView)], span, context)
             : callable.Invoke([], span, context);
         return true;
     }

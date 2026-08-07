@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
             keyed.Add(new SortKeyValue(
                 item,
                 keyCallable is ICallable callable
-                    ? callable.Invoke([new CallArgumentValue(null, item)], span, context)
+                    ? callable.Invoke([CallArgumentValue.Positional(item)], span, context)
                     : item));
         }
 
@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
             keyed.Add(new SortKeyValue(
                 item,
                 keyCallable is ICallable callable
-                    ? await callable.InvokeAsync([new CallArgumentValue(null, item)], span, context).ConfigureAwait(false)
+                    ? await callable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)
                     : item));
         }
 
@@ -262,13 +262,13 @@ internal sealed partial class LythonRuntime
         var best = enumerator.Current;
         var bestKey = keyCallable is null
             ? best
-            : keyCallable.Invoke([new CallArgumentValue(null, best)], span, context);
+            : keyCallable.Invoke([CallArgumentValue.Positional(best)], span, context);
         while (enumerator.MoveNext())
         {
             var candidate = enumerator.Current;
             var candidateKey = keyCallable is null
                 ? candidate
-                : keyCallable.Invoke([new CallArgumentValue(null, candidate)], span, context);
+                : keyCallable.Invoke([CallArgumentValue.Positional(candidate)], span, context);
             var comparison = Compare(candidateKey, bestKey, span);
             if (isMin ? comparison < 0 : comparison > 0)
             {
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
 
         var bestKey = keyCallable is null
             ? best
-            : await keyCallable.InvokeAsync([new CallArgumentValue(null, best)], span, context).ConfigureAwait(false);
+            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(best)], span, context).ConfigureAwait(false);
         while (true)
         {
             var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
@@ -346,7 +346,7 @@ internal sealed partial class LythonRuntime
 
             var candidateKey = keyCallable is null
                 ? candidate
-                : await keyCallable.InvokeAsync([new CallArgumentValue(null, candidate)], span, context).ConfigureAwait(false);
+                : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
             if (isMin ? comparison < 0 : comparison > 0)
             {
@@ -368,13 +368,13 @@ internal sealed partial class LythonRuntime
         var best = values[0];
         var bestKey = keyCallable is null
             ? best
-            : await keyCallable.InvokeAsync([new CallArgumentValue(null, best)], span, context).ConfigureAwait(false);
+            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(best)], span, context).ConfigureAwait(false);
         for (var i = 1; i < values.Count; i++)
         {
             var candidate = values[i];
             var candidateKey = keyCallable is null
                 ? candidate
-                : await keyCallable.InvokeAsync([new CallArgumentValue(null, candidate)], span, context).ConfigureAwait(false);
+                : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
             if (isMin ? comparison < 0 : comparison > 0)
             {
@@ -398,13 +398,13 @@ internal sealed partial class LythonRuntime
         object defaultValue = PyNone.Instance;
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 positional.Add(argument.Value);
                 continue;
             }
 
-            if (argument.Name == "key")
+            if (argument.KeywordName == "key")
             {
                 if (sawKey)
                 {
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (argument.Name == "default")
+            if (argument.KeywordName == "default")
             {
                 if (hasDefault)
                 {
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            throw new LythonRuntimeException("TypeError", $"{name}() got an unexpected keyword argument '{argument.Name}'", span);
+            throw new LythonRuntimeException("TypeError", $"{name}() got an unexpected keyword argument '{argument.KeywordName}'", span);
         }
 
         if (positional.Count == 0)
@@ -533,7 +533,7 @@ internal sealed partial class LythonRuntime
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
         {
             var result = await leftKey.Comparer.InvokeAsync(
-                    [new CallArgumentValue(null, leftKey.Value), new CallArgumentValue(null, rightKey.Value)],
+                    [CallArgumentValue.Positional(leftKey.Value), CallArgumentValue.Positional(rightKey.Value)],
                     span,
                     context)
                 .ConfigureAwait(false);
@@ -620,15 +620,15 @@ internal sealed partial class LythonRuntime
         var sawStrict = false;
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 iterables.Add(argument.Value);
                 continue;
             }
 
-            if (argument.Name != "strict" || sawStrict)
+            if (argument.KeywordName != "strict" || sawStrict)
             {
-                throw new LythonRuntimeException("TypeError", $"zip() got an unexpected keyword argument '{argument.Name}'", span);
+                throw new LythonRuntimeException("TypeError", $"zip() got an unexpected keyword argument '{argument.KeywordName}'", span);
             }
 
             sawStrict = true;

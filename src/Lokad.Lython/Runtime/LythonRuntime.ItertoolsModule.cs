@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
             var positionalCount = 0;
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Name is not null)
+                if (arguments[i].IsKeyword)
                 {
                     throw new LythonRuntimeException("TypeError", "itertools.chain(...) does not accept keyword arguments.", span);
                 }
@@ -204,13 +204,13 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 positionalCount++;
                 continue;
             }
 
-            if (!string.Equals(argument.Name, "repeat", StringComparison.Ordinal))
+            if (!string.Equals(argument.KeywordName, "repeat", StringComparison.Ordinal))
             {
                 throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
             }
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
                 continue;
             }
@@ -252,13 +252,13 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 positionalCount++;
                 continue;
             }
 
-            if (!string.Equals(argument.Name, "repeat", StringComparison.Ordinal))
+            if (!string.Equals(argument.KeywordName, "repeat", StringComparison.Ordinal))
             {
                 throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
             }
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
                 continue;
             }
@@ -301,13 +301,13 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 iterables[iterableCount++] = argument.Value;
                 continue;
             }
 
-            if (!string.Equals(argument.Name, "fillvalue", StringComparison.Ordinal))
+            if (!string.Equals(argument.KeywordName, "fillvalue", StringComparison.Ordinal))
             {
                 throw new LythonRuntimeException("TypeError", "itertools.zip_longest(...) only supports the keyword argument fillvalue=.", span);
             }
@@ -486,7 +486,7 @@ internal sealed partial class LythonRuntime
         var positional = new object[arguments.Length];
         for (var i = 0; i < arguments.Length; i++)
         {
-            if (arguments[i].Name is not null)
+            if (arguments[i].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(...) does not accept keyword arguments in this form.", span);
             }

@@ -126,7 +126,7 @@ internal static partial class PyDataclass
                     throw new LythonRuntimeException("TypeError", $"{_typeName}.__post_init__ must be callable.", span);
                 }
 
-                var postInitArguments = initVarValues.Select(value => new CallArgumentValue(null, value)).ToArray();
+                var postInitArguments = initVarValues.Select(value => CallArgumentValue.Positional(value)).ToArray();
                 _ = postInitCallable.Invoke(postInitArguments, span, context);
             }
 
@@ -153,7 +153,7 @@ internal static partial class PyDataclass
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyInstance instance)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
             {
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__repr__() expected a bound instance.", span);
             }
@@ -286,7 +286,7 @@ internal static partial class PyDataclass
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyInstance instance)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
             {
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__hash__() expected a bound instance.", span);
             }

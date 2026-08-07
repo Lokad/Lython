@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
                 var values = new object[arguments.Length];
                 for (var i = 0; i < arguments.Length; i++)
                 {
-                    if (arguments[i].Name is not null)
+                    if (arguments[i].IsKeyword)
                     {
                         throw CallErrors.NoKeywordArguments("Builtin", Name, span);
                     }
@@ -663,7 +663,7 @@ internal sealed partial class LythonRuntime
                         var positionalCount = 0;
                         foreach (var argument in arguments)
                         {
-                            if (argument.Name is null)
+                            if (argument.IsPositional)
                             {
                                 positionalCount++;
                             }
@@ -673,7 +673,7 @@ internal sealed partial class LythonRuntime
                         var positionalIndex = 0;
                         foreach (var argument in arguments)
                         {
-                            if (argument.Name is null)
+                            if (argument.IsPositional)
                             {
                                 positional[positionalIndex++] = argument.Value;
                             }
@@ -682,14 +682,14 @@ internal sealed partial class LythonRuntime
                         var keywords = new Dictionary<string, object>(StringComparer.Ordinal);
                         foreach (var argument in arguments)
                         {
-                            if (argument.Name is null)
+                            if (argument.IsPositional)
                             {
                                 continue;
                             }
 
-                            if (!keywords.TryAdd(argument.Name, argument.Value))
+                            if (!keywords.TryAdd(argument.KeywordName, argument.Value))
                             {
-                                throw CallErrors.MultipleValues("Method", "str.format", argument.Name, span);
+                                throw CallErrors.MultipleValues("Method", "str.format", argument.KeywordName, span);
                             }
                         }
 

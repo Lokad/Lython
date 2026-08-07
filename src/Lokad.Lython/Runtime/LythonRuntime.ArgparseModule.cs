@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
 
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (positionalIndex >= ArgparseParserOptions.SupportedConstructorParameters.Length)
                     {
@@ -102,20 +102,20 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                if (argument.Name is "fromfile_prefix_chars" or "parents" or "conflict_handler" or "prefix_chars" or "argument_default")
+                if (argument.KeywordName is "fromfile_prefix_chars" or "parents" or "conflict_handler" or "prefix_chars" or "argument_default")
                 {
                     throw new LythonRuntimeException(
                         "NotImplementedError",
-                        $"argparse.ArgumentParser(..., {argument.Name}=...) is not supported by Lython.",
+                        $"argparse.ArgumentParser(..., {argument.KeywordName}=...) is not supported by Lython.",
                         span);
                 }
 
-                if (!ArgparseParserOptions.SupportedConstructorParameters.Contains(argument.Name, StringComparer.Ordinal))
+                if (!ArgparseParserOptions.SupportedConstructorParameters.Contains(argument.KeywordName, StringComparer.Ordinal))
                 {
-                    throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"argparse.ArgumentParser(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
 
-                AssignParserOption(options, argument.Name, argument.Value, assigned, span);
+                AssignParserOption(options, argument.KeywordName, argument.Value, assigned, span);
             }
 
             return new ArgumentParserObject(options);
@@ -239,12 +239,12 @@ internal sealed partial class LythonRuntime
                 var members = new Dictionary<string, object>(StringComparer.Ordinal);
                 foreach (var argument in arguments)
                 {
-                    if (argument.Name is null)
+                    if (argument.IsPositional)
                     {
                         throw new LythonRuntimeException("TypeError", "argparse.Namespace(...) accepts keyword arguments only.", span);
                     }
 
-                    members[argument.Name] = argument.Value;
+                    members[argument.KeywordName] = argument.Value;
                 }
 
                 return new ArgparseNamespaceObject(members);
@@ -519,7 +519,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || !PyStringOps.TryAsString(arguments[0].Value, out var filename))
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !PyStringOps.TryAsString(arguments[0].Value, out var filename))
             {
                 throw new LythonRuntimeException("TypeError", "argparse.FileType callable expects one filename argument.", span);
             }

@@ -17,8 +17,8 @@ public sealed class CallBindingSubsystemTests
     {
         var result = CallBinder.BindNamedArguments(
             [
-                new CallArgumentValue(null, 1),
-                new CallArgumentValue("third", 3)
+                CallArgumentValue.Positional(1),
+                CallArgumentValue.Keyword("third", 3)
             ],
             Span,
             "demo",
@@ -34,8 +34,8 @@ public sealed class CallBindingSubsystemTests
     {
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
             [
-                new CallArgumentValue(null, 1),
-                new CallArgumentValue("first", 2)
+                CallArgumentValue.Positional(1),
+                CallArgumentValue.Keyword("first", 2)
             ],
             Span,
             "demo",
@@ -51,7 +51,7 @@ public sealed class CallBindingSubsystemTests
     public void BindNamedArguments_RejectsUnexpectedKeyword()
     {
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
-            [new CallArgumentValue("nope", 1)],
+            [CallArgumentValue.Keyword("nope", 1)],
             Span,
             "demo",
             "Method",
@@ -66,7 +66,7 @@ public sealed class CallBindingSubsystemTests
     public void BindNamedArguments_RejectsKeywordWhenParameterNamesAreMissing()
     {
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
-            [new CallArgumentValue("value", 1)],
+            [CallArgumentValue.Keyword("value", 1)],
             Span,
             "demo",
             "Builtin",

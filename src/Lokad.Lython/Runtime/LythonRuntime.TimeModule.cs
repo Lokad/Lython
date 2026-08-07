@@ -559,7 +559,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "time.struct_time() expects one positional sequence argument.", span);
             }

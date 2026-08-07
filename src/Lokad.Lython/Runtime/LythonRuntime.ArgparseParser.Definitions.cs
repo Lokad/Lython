@@ -123,13 +123,13 @@ internal sealed partial class LythonRuntime
             var keyword = new Dictionary<string, object>(StringComparer.Ordinal);
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     positional.Add(argument.Value);
                 }
                 else
                 {
-                    keyword[argument.Name] = argument.Value;
+                    keyword[argument.KeywordName] = argument.Value;
                 }
             }
             ValidateSupportedKeywords(
@@ -206,10 +206,9 @@ internal sealed partial class LythonRuntime
         {
             for (var i = 0; i < arguments.Length; i++)
             {
-                var name = arguments[i].Name;
-                if (name is not null && !supportedNames.Contains(name))
+                if (arguments[i].IsKeyword && !supportedNames.Contains(arguments[i].KeywordName))
                 {
-                    throw new LythonRuntimeException("TypeError", $"{signature}(...) got an unexpected keyword argument '{name}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{signature}(...) got an unexpected keyword argument '{arguments[i].KeywordName}'.", span);
                 }
             }
         }

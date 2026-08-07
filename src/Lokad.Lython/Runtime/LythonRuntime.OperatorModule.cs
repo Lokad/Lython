@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "operator.itemgetter(...)(obj) expects one positional argument.", span);
             }
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "operator.attrgetter(...)(obj) expects one positional argument.", span);
             }
@@ -218,7 +218,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "operator.methodcaller(...)(obj) expects one positional argument.", span);
             }
@@ -236,13 +236,13 @@ internal sealed partial class LythonRuntime
             var rendered = new List<PyString> { PyRendering.ToReprPyString(PyString.FromString(_name), context) };
             foreach (var argument in _arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     rendered.Add(PyRendering.ToReprPyString(argument.Value, context));
                     continue;
                 }
 
-                rendered.Add(PyString.FromString(argument.Name + "=" + PyRendering.ToReprPyString(argument.Value, context).AsString()));
+                rendered.Add(PyString.FromString(argument.KeywordName + "=" + PyRendering.ToReprPyString(argument.Value, context).AsString()));
             }
 
             return PyRendering.JoinRenderedSequence("operator.methodcaller(", rendered, ")", context);
@@ -525,7 +525,7 @@ internal sealed partial class LythonRuntime
 
     private static object CallTarget(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length == 0 || arguments[0].Name is not null)
+        if (arguments.Length == 0 || arguments[0].IsKeyword)
         {
             throw new LythonRuntimeException("TypeError", "operator.call(obj, /, *args, **kwargs) expects a callable first positional argument.", span);
         }
@@ -544,7 +544,7 @@ internal sealed partial class LythonRuntime
         var items = new object[arguments.Length];
         for (var i = 0; i < arguments.Length; i++)
         {
-            if (arguments[i].Name is not null)
+            if (arguments[i].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "operator.itemgetter(item[, ...]) expects one or more positional arguments.", span);
             }
@@ -567,7 +567,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            if (argument.Name is not null)
+            if (argument.IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "operator.attrgetter(attr[, ...]) expects one or more positional string arguments.", span);
             }
@@ -592,7 +592,7 @@ internal sealed partial class LythonRuntime
     private static object CreateMethodCaller(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
-        if (arguments.Length == 0 || arguments[0].Name is not null || !PyStringOps.TryAsString(arguments[0].Value, out var name))
+        if (arguments.Length == 0 || arguments[0].IsKeyword || !PyStringOps.TryAsString(arguments[0].Value, out var name))
         {
             throw new LythonRuntimeException("TypeError", "operator.methodcaller(name, ...) expects the first argument to be a method name string.", span);
         }

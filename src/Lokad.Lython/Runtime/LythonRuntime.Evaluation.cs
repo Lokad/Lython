@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
                         return;
 
                     case PyInstance instance:
-                        InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, statement.Span);
+                        InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, statement.Span);
                         return;
 
                     case PyTuple:
@@ -475,7 +475,7 @@ internal sealed partial class LythonRuntime
                 InvokeItemMutation(
                     instance,
                     "__setitem__",
-                    [new CallArgumentValue(null, index), new CallArgumentValue(null, value)],
+                    [CallArgumentValue.Positional(index), CallArgumentValue.Positional(value)],
                     context,
                     span);
                 return;

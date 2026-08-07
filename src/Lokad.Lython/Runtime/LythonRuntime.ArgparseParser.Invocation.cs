@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
             var assignedNamespace = false;
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     if (positionalIndex == 0)
                     {
@@ -183,7 +183,7 @@ internal sealed partial class LythonRuntime
                     positionalIndex++;
                     continue;
                 }
-                switch (argument.Name)
+                switch (argument.KeywordName)
                 {
                     case "args":
                         if (assignedArgs)
@@ -202,7 +202,7 @@ internal sealed partial class LythonRuntime
                         assignedNamespace = true;
                         break;
                     default:
-                        throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.Name}'.", span);
+                        throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
             }
             var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)

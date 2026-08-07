@@ -160,7 +160,7 @@ internal sealed class PyMapIterator : PyIteratorBase
                 return false;
             }
 
-            arguments[i] = new CallArgumentValue(null, LythonRuntime.RuntimeValue(current));
+            arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
         value = LythonRuntime.RuntimeValue(_function.Invoke(arguments, _span, _context));
@@ -178,7 +178,7 @@ internal sealed class PyMapIterator : PyIteratorBase
                 return (false, PyNone.Instance);
             }
 
-            arguments[i] = new CallArgumentValue(null, LythonRuntime.RuntimeValue(current));
+            arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
         var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
@@ -218,7 +218,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
             var candidate = LythonRuntime.RuntimeValue(current);
             var keep = _function is null
                 ? PyTruthiness.IsTruthy(candidate)
-                : PyTruthiness.IsTruthy(_function.Invoke([new CallArgumentValue(null, candidate)], _span, _context));
+                : PyTruthiness.IsTruthy(_function.Invoke([CallArgumentValue.Positional(candidate)], _span, _context));
 
             if (keep)
             {
@@ -244,7 +244,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
             var candidate = LythonRuntime.RuntimeValue(current);
             var keep = _function is null
                 ? PyTruthiness.IsTruthy(candidate)
-                : PyTruthiness.IsTruthy(await _function.InvokeAsync([new CallArgumentValue(null, candidate)], _span, _context).ConfigureAwait(false));
+                : PyTruthiness.IsTruthy(await _function.InvokeAsync([CallArgumentValue.Positional(candidate)], _span, _context).ConfigureAwait(false));
 
             if (keep)
             {

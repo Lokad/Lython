@@ -124,7 +124,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         }
 
         var callable = BindAccessor(_setter, instance, instance.Type, context, span, "setter");
-        _ = callable.Invoke([new CallArgumentValue(null, value)], span, context);
+        _ = callable.Invoke([CallArgumentValue.Positional(value)], span, context);
     }
 
     public void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -180,7 +180,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not LythonRuntime.ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not LythonRuntime.ICallable callable)
             {
                 throw new LythonRuntimeException(
                     "TypeError",
@@ -224,7 +224,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
 
         private object InvokeGet(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (arguments.Length != 2 || arguments[0].Name is not null || arguments[1].Name is not null)
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "property.__get__(instance, owner) expects two positional arguments.", span);
             }
@@ -238,8 +238,8 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         private object InvokeSet(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             if (arguments.Length != 2 ||
-                arguments[0].Name is not null ||
-                arguments[1].Name is not null ||
+                arguments[0].IsKeyword ||
+                arguments[1].IsKeyword ||
                 arguments[0].Value is not PyInstance instance)
             {
                 throw new LythonRuntimeException("TypeError", "property.__set__(instance, value) expects an instance and a value.", span);
@@ -251,7 +251,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
 
         private object InvokeDelete(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not PyInstance instance)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
             {
                 throw new LythonRuntimeException("TypeError", "property.__delete__(instance) expects one instance argument.", span);
             }

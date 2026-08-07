@@ -533,7 +533,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         var positionalIndex = 0;
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalIndex >= _fieldNames.Length)
                 {
@@ -550,15 +550,15 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
                 continue;
             }
 
-            var fieldIndex = IndexOfField(argument.Name);
+            var fieldIndex = IndexOfField(argument.KeywordName);
             if (fieldIndex < 0)
             {
-                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) received an unexpected keyword argument '{argument.Name}'.", span);
+                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
             }
 
             if (assigned[fieldIndex])
             {
-                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) got multiple values for argument '{argument.Name}'.", span);
+                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) got multiple values for argument '{argument.KeywordName}'.", span);
             }
 
             values[fieldIndex] = argument.Value;
@@ -653,7 +653,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
             }
@@ -818,15 +818,15 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             var values = _owner.ToArray();
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", $"{_owner._type.Name}._replace(...) expects keyword arguments.", span);
                 }
 
-                var fieldIndex = _owner._type.IndexOfField(argument.Name);
+                var fieldIndex = _owner._type.IndexOfField(argument.KeywordName);
                 if (fieldIndex < 0)
                 {
-                    throw new LythonRuntimeException("ValueError", $"{_owner._type.Name}._replace(...) got unexpected field name '{argument.Name}'.", span);
+                    throw new LythonRuntimeException("ValueError", $"{_owner._type.Name}._replace(...) got unexpected field name '{argument.KeywordName}'.", span);
                 }
 
                 values[fieldIndex] = argument.Value;

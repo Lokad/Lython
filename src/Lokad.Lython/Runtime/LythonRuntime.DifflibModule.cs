@@ -205,14 +205,14 @@ internal sealed partial class LythonRuntime
 
             var result = callable.Invoke(
                 [
-                    new CallArgumentValue(null, new PyList(a.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
-                    new CallArgumentValue(null, new PyList(b.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
-                    new CallArgumentValue(null, BytesToDiffText(fromfile)),
-                    new CallArgumentValue(null, BytesToDiffText(tofile)),
-                    new CallArgumentValue(null, BytesToDiffText(fromfiledate)),
-                    new CallArgumentValue(null, BytesToDiffText(tofiledate)),
-                    new CallArgumentValue(null, new BigInteger(n)),
-                    new CallArgumentValue(null, BytesToDiffText(lineterm)),
+                    CallArgumentValue.Positional(new PyList(a.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
+                    CallArgumentValue.Positional(new PyList(b.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
+                    CallArgumentValue.Positional(BytesToDiffText(fromfile)),
+                    CallArgumentValue.Positional(BytesToDiffText(tofile)),
+                    CallArgumentValue.Positional(BytesToDiffText(fromfiledate)),
+                    CallArgumentValue.Positional(BytesToDiffText(tofiledate)),
+                    CallArgumentValue.Positional(new BigInteger(n)),
+                    CallArgumentValue.Positional(BytesToDiffText(lineterm)),
                 ],
                 span,
                 context);
@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib junk predicate must be callable or None.", span);
             }
 
-            return IsTruthy(callable.Invoke([new CallArgumentValue(null, argument)], span, context));
+            return IsTruthy(callable.Invoke([CallArgumentValue.Positional(argument)], span, context));
         }
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)

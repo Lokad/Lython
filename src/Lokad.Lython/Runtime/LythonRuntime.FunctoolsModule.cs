@@ -90,14 +90,13 @@ internal sealed partial class LythonRuntime
             HashSet<string>? overriddenKeywords = null;
             for (var i = 0; i < arguments.Length; i++)
             {
-                var name = arguments[i].Name;
-                if (name is null)
+                if (arguments[i].IsPositional)
                 {
                     continue;
                 }
 
                 overriddenKeywords ??= new HashSet<string>(StringComparer.Ordinal);
-                overriddenKeywords.Add(name);
+                overriddenKeywords.Add(arguments[i].KeywordName);
             }
 
             var combined = new CallArgumentValue[_boundArguments.Length + arguments.Length];
@@ -105,7 +104,7 @@ internal sealed partial class LythonRuntime
 
             for (var i = 0; i < _boundArguments.Length; i++)
             {
-                if (_boundArguments[i].Name is null)
+                if (_boundArguments[i].IsPositional)
                 {
                     combined[count++] = _boundArguments[i];
                 }
@@ -113,7 +112,7 @@ internal sealed partial class LythonRuntime
 
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Name is null)
+                if (arguments[i].IsPositional)
                 {
                     combined[count++] = arguments[i];
                 }
@@ -121,8 +120,8 @@ internal sealed partial class LythonRuntime
 
             for (var i = 0; i < _boundArguments.Length; i++)
             {
-                var name = _boundArguments[i].Name;
-                if (name is not null && (overriddenKeywords is null || !overriddenKeywords.Contains(name)))
+                if (_boundArguments[i].IsKeyword &&
+                    (overriddenKeywords is null || !overriddenKeywords.Contains(_boundArguments[i].KeywordName)))
                 {
                     combined[count++] = _boundArguments[i];
                 }
@@ -130,7 +129,7 @@ internal sealed partial class LythonRuntime
 
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Name is not null)
+                if (arguments[i].IsKeyword)
                 {
                     combined[count++] = arguments[i];
                 }
@@ -194,7 +193,7 @@ internal sealed partial class LythonRuntime
 
             foreach (var argument in _boundArguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     parts.Add(PyRendering.ToPythonString(argument.Value, context));
                 }
@@ -202,9 +201,9 @@ internal sealed partial class LythonRuntime
 
             foreach (var argument in _boundArguments)
             {
-                if (argument.Name is not null)
+                if (argument.IsKeyword)
                 {
-                    parts.Add($"{argument.Name}={PyRendering.ToPythonString(argument.Value, context)}");
+                    parts.Add($"{argument.KeywordName}={PyRendering.ToPythonString(argument.Value, context)}");
                 }
             }
 
@@ -228,9 +227,9 @@ internal sealed partial class LythonRuntime
             var dict = new PyDict();
             foreach (var argument in _boundArguments)
             {
-                if (argument.Name is not null)
+                if (argument.IsKeyword)
                 {
-                    dict.SetItem(PyString.FromString(argument.Name), argument.Value);
+                    dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
                 }
             }
 
@@ -242,9 +241,9 @@ internal sealed partial class LythonRuntime
             var dict = new PyDict(context.MemoryGovernor, span);
             foreach (var argument in _boundArguments)
             {
-                if (argument.Name is not null)
+                if (argument.IsKeyword)
                 {
-                    dict.SetItem(PyString.FromString(argument.Name), argument.Value);
+                    dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
                 }
             }
 
@@ -278,7 +277,7 @@ internal sealed partial class LythonRuntime
             var count = 0;
             for (var i = 0; i < _boundArguments.Length; i++)
             {
-                if (_boundArguments[i].Name is null)
+                if (_boundArguments[i].IsPositional)
                 {
                     count++;
                 }
@@ -288,7 +287,7 @@ internal sealed partial class LythonRuntime
             var index = 0;
             for (var i = 0; i < _boundArguments.Length; i++)
             {
-                if (_boundArguments[i].Name is null)
+                if (_boundArguments[i].IsPositional)
                 {
                     result[index++] = _boundArguments[i].Value;
                 }
@@ -307,7 +306,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length == 0 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partial(func, ...) expects the first argument to be callable.", span);
             }
@@ -385,7 +384,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length == 0 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod(func, ...) expects the first argument to be callable.", span);
             }
@@ -448,7 +447,7 @@ internal sealed partial class LythonRuntime
             }
 
             var bound = new CallArgumentValue[arguments.Length];
-            bound[0] = new CallArgumentValue("wrapped", arguments[0].Value);
+            bound[0] = CallArgumentValue.Keyword("wrapped", arguments[0].Value);
             for (var i = 1; i < arguments.Length; i++)
             {
                 bound[i] = arguments[i];
@@ -767,7 +766,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.cached_property(func) expects one callable argument.", span);
             }
@@ -880,7 +879,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.singledispatch(func) expects one callable argument.", span);
             }
@@ -908,7 +907,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.singledispatchmethod(func) expects one callable argument.", span);
             }
@@ -1213,7 +1212,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                if (arguments.Length == 1 && arguments[0].Name is null)
+                if (arguments.Length == 1 && arguments[0].IsPositional)
                 {
                     if (!IsSupportedTypeSpecifier(arguments[0].Value))
                     {
@@ -1229,8 +1228,8 @@ internal sealed partial class LythonRuntime
                 }
 
                 if (arguments.Length == 2 &&
-                    arguments[0].Name is null &&
-                    arguments[1].Name is null &&
+                    arguments[0].IsPositional &&
+                    arguments[1].IsPositional &&
                     arguments[1].Value is ICallable callable)
                 {
                     _owner.Register(arguments[0].Value, callable, span);
@@ -1263,7 +1262,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+                if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
                 {
                     throw new LythonRuntimeException("TypeError", "singledispatch.register(cls)(func) expects one callable argument.", span);
                 }
@@ -1290,7 +1289,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                if (arguments.Length != 1 || arguments[0].Name is not null)
+                if (arguments.Length != 1 || arguments[0].IsKeyword)
                 {
                     throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects one class/type argument.", span);
                 }
@@ -1359,7 +1358,7 @@ internal sealed partial class LythonRuntime
 
             var callable = _dispatcher.ResolveForValue(arguments[0].Value);
             var forwarded = new CallArgumentValue[arguments.Length + 1];
-            forwarded[0] = new CallArgumentValue(null, _self);
+            forwarded[0] = CallArgumentValue.Positional(_self);
             Array.Copy(arguments, 0, forwarded, 1, arguments.Length);
             return callable.Invoke(forwarded, span, context);
         }
@@ -1390,10 +1389,9 @@ internal sealed partial class LythonRuntime
 
             if (arguments.Length == 1)
             {
-                var keywordName = arguments[0].Name;
-                if (keywordName is not null && keywordName != "fillvalue")
+                if (arguments[0].IsKeyword && arguments[0].KeywordName != "fillvalue")
                 {
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.recursive_repr", keywordName, span);
+                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.recursive_repr", arguments[0].KeywordName, span);
                 }
 
                 if (!PyStringOps.TryAsString(arguments[0].Value, out fillValue))
@@ -1426,7 +1424,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length != 1 || arguments[0].Name is not null || arguments[0].Value is not ICallable callable)
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.recursive_repr(...)(func) expects one callable argument.", span);
             }
@@ -1507,7 +1505,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 1 || arguments[0].Name is not null)
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "functools.cmp_to_key(cmp)(value) expects one positional argument.", span);
             }
@@ -1535,7 +1533,7 @@ internal sealed partial class LythonRuntime
         public int CompareTo(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
         {
             var result = Comparer.Invoke(
-                [new CallArgumentValue(null, Value), new CallArgumentValue(null, other.Value)],
+                [CallArgumentValue.Positional(Value), CallArgumentValue.Positional(other.Value)],
                 span,
                 context);
             if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
@@ -1577,7 +1575,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 2 || arguments[0].Name is not null || arguments[1].Name is not null)
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "generated ordering method expects self and other.", span);
             }
@@ -1632,7 +1630,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"Object has no callable '{methodName}' method.", span);
             }
 
-            var result = callable.Invoke([new CallArgumentValue(null, other)], span, context);
+            var result = callable.Invoke([CallArgumentValue.Positional(other)], span, context);
             return result switch
             {
                 bool boolean => boolean,
@@ -1732,7 +1730,7 @@ internal sealed partial class LythonRuntime
         while (enumerator.MoveNext())
         {
             accumulator = callable.Invoke(
-                [new CallArgumentValue(null, accumulator), new CallArgumentValue(null, RuntimeValue(enumerator.Current))],
+                [CallArgumentValue.Positional(accumulator), CallArgumentValue.Positional(RuntimeValue(enumerator.Current))],
                 span,
                 context);
         }
@@ -1792,7 +1790,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 switch (positionalIndex++)
                 {
@@ -1839,7 +1837,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            switch (argument.Name)
+            switch (argument.KeywordName)
             {
                 case "wrapper":
                     if (seenWrapper)
@@ -1878,7 +1876,7 @@ internal sealed partial class LythonRuntime
                     seenUpdated = true;
                     break;
                 default:
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.update_wrapper", argument.Name, span);
+                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.update_wrapper", argument.KeywordName, span);
             }
         }
 
@@ -1966,7 +1964,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 switch (positionalIndex++)
                 {
@@ -1995,7 +1993,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            switch (argument.Name)
+            switch (argument.KeywordName)
             {
                 case "maxsize":
                     if (seenMaxSize)
@@ -2016,7 +2014,7 @@ internal sealed partial class LythonRuntime
                     seenTyped = true;
                     break;
                 default:
-                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.lru_cache", argument.Name, span);
+                    throw CallErrors.UnexpectedKeyword("Builtin", "functools.lru_cache", argument.KeywordName, span);
             }
         }
 
@@ -2060,14 +2058,14 @@ internal sealed partial class LythonRuntime
             var parts = new List<object>();
             foreach (var argument in arguments)
             {
-                if (argument.Name is null)
+                if (argument.IsPositional)
                 {
                     parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
                     continue;
                 }
 
                 parts.Add(CacheKeyMarker.Keyword);
-                parts.Add(PyString.FromString(argument.Name));
+                parts.Add(PyString.FromString(argument.KeywordName));
                 parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
             }
 
