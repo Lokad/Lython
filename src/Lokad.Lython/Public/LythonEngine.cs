@@ -29,39 +29,51 @@ public sealed class LythonEngine
             }
         }
 
+        LythonExecutionResult? CreatePreExecutionFailure(ILythonHost host)
+        {
+            if (!isValid)
+            {
+                return new LythonExecutionResult(
+                    outcome: LythonExecutionOutcome.CompilationFailed,
+                    returnValue: null,
+                    standardOutput: string.Empty,
+                    standardError: string.Empty,
+                    exitCode: 1,
+                    diagnostics: diagnostics,
+                    failure: null);
+            }
+
+            if (script is null)
+            {
+                return null;
+            }
+
+            var hostDiagnostics = StaticAnalyzer.AnalyzeHostRequirements(script, host);
+            if (hostDiagnostics.Count == 0)
+            {
+                return null;
+            }
+
+            return new LythonExecutionResult(
+                outcome: LythonExecutionOutcome.CompilationFailed,
+                returnValue: null,
+                standardOutput: string.Empty,
+                standardError: string.Empty,
+                exitCode: 1,
+                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray(),
+                failure: null);
+        }
+
         return new LythonCompiledScript(
             source,
             diagnostics,
             isValid,
             (host, options) =>
             {
-                if (!isValid)
+                var preExecutionFailure = CreatePreExecutionFailure(host);
+                if (preExecutionFailure is not null)
                 {
-                    return new LythonExecutionResult(
-                        outcome: LythonExecutionOutcome.CompilationFailed,
-                        returnValue: null,
-                        standardOutput: string.Empty,
-                        standardError: string.Empty,
-                        exitCode: 1,
-                        diagnostics: diagnostics,
-                        failure: null);
-                }
-
-                if (script is not null)
-                {
-                    var hostDiagnostics = StaticAnalyzer.AnalyzeHostRequirements(script, host);
-                    if (hostDiagnostics.Count != 0)
-                    {
-                        var allDiagnostics = diagnostics.Concat(hostDiagnostics).ToArray();
-                        return new LythonExecutionResult(
-                            outcome: LythonExecutionOutcome.CompilationFailed,
-                            returnValue: null,
-                            standardOutput: string.Empty,
-                            standardError: string.Empty,
-                            exitCode: 1,
-                            diagnostics: allDiagnostics,
-                            failure: null);
-                    }
+                    return preExecutionFailure;
                 }
 
                 var runtime = new LythonRuntime();
@@ -71,33 +83,10 @@ public sealed class LythonEngine
             },
             async (host, options) =>
             {
-                if (!isValid)
+                var preExecutionFailure = CreatePreExecutionFailure(host);
+                if (preExecutionFailure is not null)
                 {
-                    return new LythonExecutionResult(
-                        outcome: LythonExecutionOutcome.CompilationFailed,
-                        returnValue: null,
-                        standardOutput: string.Empty,
-                        standardError: string.Empty,
-                        exitCode: 1,
-                        diagnostics: diagnostics,
-                        failure: null);
-                }
-
-                if (script is not null)
-                {
-                    var hostDiagnostics = StaticAnalyzer.AnalyzeHostRequirements(script, host);
-                    if (hostDiagnostics.Count != 0)
-                    {
-                        var allDiagnostics = diagnostics.Concat(hostDiagnostics).ToArray();
-                        return new LythonExecutionResult(
-                            outcome: LythonExecutionOutcome.CompilationFailed,
-                            returnValue: null,
-                            standardOutput: string.Empty,
-                            standardError: string.Empty,
-                            exitCode: 1,
-                            diagnostics: allDiagnostics,
-                            failure: null);
-                    }
+                    return preExecutionFailure;
                 }
 
                 var runtime = new LythonRuntime();
