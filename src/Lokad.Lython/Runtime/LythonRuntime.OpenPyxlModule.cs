@@ -3239,8 +3239,14 @@ internal sealed partial class LythonRuntime
         private readonly List<OpenPyxlLoadedChart> _charts = new();
         private readonly List<OpenPyxlLoadedImage> _images = new();
         private readonly List<CellRangeAddress> _mergedRanges = new();
+        private readonly HashSet<CellRangeAddress> _mergedRangeSet = [];
         private readonly Dictionary<int, OpenPyxlColumnDimension> _columnDimensions = new();
         private readonly Dictionary<int, OpenPyxlRowDimension> _rowDimensions = new();
+        private int _minRow = 1;
+        private int _maxRow = 1;
+        private int _minColumn = 1;
+        private int _maxColumn = 1;
+        private bool _dimensionsDirty;
         private string? _freezePanes;
         private string? _autoFilterRef;
         private bool _showGridLines = true;
@@ -3681,13 +3687,123 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        internal int MinRow => _cells.Count == 0 ? 1 : _cells.Keys.Min(cell => cell.Row);
+        internal int MinRow
+        {
+            get
+            {
+                EnsureDimensions();
+                return _minRow;
+            }
+        }
 
-        internal int MaxRow => _cells.Count == 0 ? 1 : _cells.Keys.Max(cell => cell.Row);
+        internal int MaxRow
+        {
+            get
+            {
+                EnsureDimensions();
+                return _maxRow;
+            }
+        }
 
-        internal int MinColumn => _cells.Count == 0 ? 1 : _cells.Keys.Min(cell => cell.Column);
+        internal int MinColumn
+        {
+            get
+            {
+                EnsureDimensions();
+                return _minColumn;
+            }
+        }
 
-        internal int MaxColumn => _cells.Count == 0 ? 1 : _cells.Keys.Max(cell => cell.Column);
+        internal int MaxColumn
+        {
+            get
+            {
+                EnsureDimensions();
+                return _maxColumn;
+            }
+        }
+
+        private void IncludeInDimensions(CellAddress address)
+        {
+            if (_dimensionsDirty)
+            {
+                return;
+            }
+
+            if (_cells.Count == 1)
+            {
+                _minRow = address.Row;
+                _maxRow = address.Row;
+                _minColumn = address.Column;
+                _maxColumn = address.Column;
+                return;
+            }
+
+            _minRow = Math.Min(_minRow, address.Row);
+            _maxRow = Math.Max(_maxRow, address.Row);
+            _minColumn = Math.Min(_minColumn, address.Column);
+            _maxColumn = Math.Max(_maxColumn, address.Column);
+        }
+
+        private void InvalidateDimensionsAfterRemoval(CellAddress address)
+        {
+            if (_cells.Count == 0)
+            {
+                _minRow = 1;
+                _maxRow = 1;
+                _minColumn = 1;
+                _maxColumn = 1;
+                _dimensionsDirty = false;
+                return;
+            }
+
+            if (address.Row == _minRow ||
+                address.Row == _maxRow ||
+                address.Column == _minColumn ||
+                address.Column == _maxColumn)
+            {
+                _dimensionsDirty = true;
+            }
+        }
+
+        private void EnsureDimensions()
+        {
+            if (!_dimensionsDirty)
+            {
+                return;
+            }
+
+            if (_cells.Count == 0)
+            {
+                _minRow = 1;
+                _maxRow = 1;
+                _minColumn = 1;
+                _maxColumn = 1;
+                _dimensionsDirty = false;
+                return;
+            }
+
+            var first = true;
+            foreach (var address in _cells.Keys)
+            {
+                if (first)
+                {
+                    _minRow = address.Row;
+                    _maxRow = address.Row;
+                    _minColumn = address.Column;
+                    _maxColumn = address.Column;
+                    first = false;
+                    continue;
+                }
+
+                _minRow = Math.Min(_minRow, address.Row);
+                _maxRow = Math.Max(_maxRow, address.Row);
+                _minColumn = Math.Min(_minColumn, address.Column);
+                _maxColumn = Math.Max(_maxColumn, address.Column);
+            }
+
+            _dimensionsDirty = false;
+        }
 
         internal object GetCellValue(int row, int column)
             => _cells.TryGetValue(new CellAddress(row, column), out var value) ? value : PyNone.Instance;
@@ -3901,14 +4017,24 @@ internal sealed partial class LythonRuntime
             var address = new CellAddress(row, column);
             if (normalized is PyNone)
             {
-                _cells.Remove(address);
+                if (_cells.Remove(address))
+                {
+                    InvalidateDimensionsAfterRemoval(address);
+                }
+
                 _dataTypes.Remove(address);
                 _formulaCachedValues.Remove(address);
                 _formulaXml.Remove(address);
                 return;
             }
 
+            var added = !_cells.ContainsKey(address);
             _cells[address] = normalized;
+            if (added)
+            {
+                IncludeInDimensions(address);
+            }
+
             _formulaCachedValues.Remove(address);
             _formulaXml.Remove(address);
             if (PyStringOps.TryAsString(normalized, out var text) && IsCellErrorText(text.AsString()))
@@ -3930,7 +4056,13 @@ internal sealed partial class LythonRuntime
         {
             if (value is not PyNone)
             {
-                _cells[new CellAddress(row, column)] = value;
+                var address = new CellAddress(row, column);
+                var added = !_cells.ContainsKey(address);
+                _cells[address] = value;
+                if (added)
+                {
+                    IncludeInDimensions(address);
+                }
             }
         }
 
@@ -4016,6 +4148,12 @@ internal sealed partial class LythonRuntime
                 copy._cells[pair.Key] = pair.Value;
             }
 
+            copy._minRow = _minRow;
+            copy._maxRow = _maxRow;
+            copy._minColumn = _minColumn;
+            copy._maxColumn = _maxColumn;
+            copy._dimensionsDirty = _dimensionsDirty;
+
             foreach (var pair in _dataTypes)
             {
                 copy._dataTypes[pair.Key] = pair.Value;
@@ -4077,6 +4215,12 @@ internal sealed partial class LythonRuntime
             foreach (var formatting in _conditionalFormattings)
             {
                 copy._conditionalFormattings.Add(formatting.Copy());
+            }
+
+            foreach (var range in _mergedRanges)
+            {
+                copy._mergedRanges.Add(range);
+                copy._mergedRangeSet.Add(range);
             }
 
             copy._protection.CopyFrom(_protection);
@@ -4265,7 +4409,7 @@ internal sealed partial class LythonRuntime
             _ = context;
             EnsureCanMutate(span);
             var range = ParseCellRangeArguments(arguments, "Worksheet.merge_cells", span);
-            if (!_mergedRanges.Contains(range))
+            if (_mergedRangeSet.Add(range))
             {
                 _mergedRanges.Add(range);
             }
@@ -4278,10 +4422,12 @@ internal sealed partial class LythonRuntime
             _ = context;
             EnsureCanMutate(span);
             var range = ParseCellRangeArguments(arguments, "Worksheet.unmerge_cells", span);
-            if (!_mergedRanges.Remove(range))
+            if (!_mergedRangeSet.Remove(range))
             {
                 throw new LythonRuntimeException("ValueError", $"Cell range {range.Reference} is not merged.", span);
             }
+
+            _mergedRanges.Remove(range);
 
             return PyNone.Instance;
         }
@@ -4291,7 +4437,7 @@ internal sealed partial class LythonRuntime
 
         internal void AddLoadedMergedRange(CellRangeAddress range)
         {
-            if (!_mergedRanges.Contains(range))
+            if (_mergedRangeSet.Add(range))
             {
                 _mergedRanges.Add(range);
             }
@@ -4526,8 +4672,7 @@ internal sealed partial class LythonRuntime
                 MarkStructuralMutation();
             }
 
-            MoveRangeEntries(_cells, range, rowOffset, columnOffset);
-            MoveRangeEntries(_comments, range, rowOffset, columnOffset);
+            MoveCellAddresses(range, rowOffset, columnOffset);
             RewriteAutoFilterRange(filterRange => Contains(range, filterRange)
                 ? ShiftRange(filterRange, rowOffset, columnOffset)
                 : filterRange);
@@ -4556,7 +4701,49 @@ internal sealed partial class LythonRuntime
         private void RewriteCells(Func<CellAddress, CellAddress?> rewrite)
         {
             RewriteCellAddressedMap(_cells, rewrite);
+            RewriteCellAddressedMap(_dataTypes, rewrite);
+            RewriteCellAddressedMap(_numberFormats, rewrite);
+            RewriteCellAddressedMap(_loadedStyleIds, rewrite);
+            RewriteCellAddressedMap(_hyperlinks, rewrite);
             RewriteCellAddressedMap(_comments, rewrite);
+            RewriteCellAddressedMap(_formulaCachedValues, rewrite);
+            RewriteCellAddressedMap(_formulaXml, rewrite);
+            RewriteCellAddressedMap(_cellNamedStyles, rewrite);
+            RewriteCellStyleMap(_cellStyles, rewrite);
+            RewriteCellObjectMap(_cellObjects, rewrite);
+            _dimensionsDirty = true;
+        }
+
+        private void MoveCellAddresses(CellRangeAddress range, int rowOffset, int columnOffset)
+        {
+            MoveRangeEntries(_cells, range, rowOffset, columnOffset);
+            MoveRangeEntries(_dataTypes, range, rowOffset, columnOffset);
+            MoveRangeEntries(_numberFormats, range, rowOffset, columnOffset);
+            MoveRangeEntries(_loadedStyleIds, range, rowOffset, columnOffset);
+            MoveRangeEntries(_hyperlinks, range, rowOffset, columnOffset);
+            MoveRangeEntries(_comments, range, rowOffset, columnOffset);
+            MoveRangeEntries(_formulaCachedValues, range, rowOffset, columnOffset);
+            MoveRangeEntries(_formulaXml, range, rowOffset, columnOffset);
+            MoveRangeEntries(_cellNamedStyles, range, rowOffset, columnOffset);
+            MoveRangeStyleEntries(_cellStyles, range, rowOffset, columnOffset);
+            var movingCellObjects = _cellObjects
+                .Where(pair => Contains(range, pair.Key))
+                .ToArray();
+            foreach (var pair in movingCellObjects)
+            {
+                _cellObjects.Remove(pair.Key);
+            }
+
+            foreach (var pair in movingCellObjects)
+            {
+                var target = new CellAddress(
+                    pair.Key.Row + rowOffset,
+                    pair.Key.Column + columnOffset);
+                pair.Value.MoveTo(target);
+                _cellObjects[target] = pair.Value;
+            }
+
+            _dimensionsDirty = true;
         }
 
         private void RewriteDataValidationRanges(Func<CellRangeAddress, CellRangeAddress?> rewrite)
@@ -4627,6 +4814,59 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private static void RewriteCellStyleMap(
+            Dictionary<(CellAddress Address, string Name), object> map,
+            Func<CellAddress, CellAddress?> rewrite)
+        {
+            if (map.Count == 0)
+            {
+                return;
+            }
+
+            var rewritten = new Dictionary<(CellAddress Address, string Name), object>();
+            foreach (var pair in map)
+            {
+                var target = rewrite(pair.Key.Address);
+                if (target is not null)
+                {
+                    rewritten[(target.Value, pair.Key.Name)] = pair.Value;
+                }
+            }
+
+            map.Clear();
+            foreach (var pair in rewritten)
+            {
+                map[pair.Key] = pair.Value;
+            }
+        }
+
+        private static void RewriteCellObjectMap(
+            Dictionary<CellAddress, OpenPyxlCell> map,
+            Func<CellAddress, CellAddress?> rewrite)
+        {
+            if (map.Count == 0)
+            {
+                return;
+            }
+
+            var rewritten = new Dictionary<CellAddress, OpenPyxlCell>();
+            foreach (var pair in map)
+            {
+                var target = rewrite(pair.Key);
+                if (target is not null)
+                {
+                    pair.Value.MoveTo(target.Value);
+                    rewritten[target.Value] = pair.Value;
+                }
+            }
+
+            map.Clear();
+            foreach (var pair in rewritten)
+            {
+                map[pair.Key] = pair.Value;
+            }
+        }
+
         private static void MoveRangeEntries<T>(Dictionary<CellAddress, T> map, CellRangeAddress range, int rowOffset, int columnOffset)
         {
             var moving = map
@@ -4641,6 +4881,29 @@ internal sealed partial class LythonRuntime
             {
                 var target = new CellAddress(pair.Key.Row + rowOffset, pair.Key.Column + columnOffset);
                 map[target] = pair.Value;
+            }
+        }
+
+        private static void MoveRangeStyleEntries(
+            Dictionary<(CellAddress Address, string Name), object> map,
+            CellRangeAddress range,
+            int rowOffset,
+            int columnOffset)
+        {
+            var moving = map
+                .Where(pair => Contains(range, pair.Key.Address))
+                .ToArray();
+            foreach (var pair in moving)
+            {
+                map.Remove(pair.Key);
+            }
+
+            foreach (var pair in moving)
+            {
+                var target = new CellAddress(
+                    pair.Key.Address.Row + rowOffset,
+                    pair.Key.Address.Column + columnOffset);
+                map[(target, pair.Key.Name)] = pair.Value;
             }
         }
 
@@ -4853,9 +5116,15 @@ internal sealed partial class LythonRuntime
             Column = column;
         }
 
-        public int Row { get; }
+        public int Row { get; private set; }
 
-        public int Column { get; }
+        public int Column { get; private set; }
+
+        internal void MoveTo(CellAddress address)
+        {
+            Row = address.Row;
+            Column = address.Column;
+        }
 
         public object Value
         {

@@ -1609,6 +1609,55 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OpenPyxlWorksheet_StructuralMovesKeepCellMetadataAndDimensionsCoherent()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from openpyxl import Workbook
+from openpyxl.comments import Comment
+
+wb = Workbook()
+ws = wb.active
+cell = ws["C2"]
+cell.value = "value"
+cell.number_format = "0.00"
+cell.hyperlink = "https://example.test/"
+cell.comment = Comment("note", "author")
+
+ws.insert_rows(2)
+after_insert = cell.coordinate + ":" + cell.number_format
+ws.move_range("C3:C3", rows=1, cols=1)
+after_move = "|".join([
+    cell.coordinate,
+    cell.value,
+    cell.number_format,
+    cell.hyperlink.target,
+    cell.comment.text,
+])
+
+ws["Z100"] = "edge"
+with_edge = ws.calculate_dimension()
+ws["Z100"] = None
+without_edge = ws.calculate_dimension()
+ws.append(["tail"])
+after_append = ws.calculate_dimension()
+
+ws.merge_cells("A1:B1")
+ws.merge_cells("A1:B1")
+merged_count = str(len(ws.merged_cells.ranges))
+return "|".join([after_insert, after_move, with_edge, without_edge, after_append, merged_count])
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "C3:0.00|D4|value|0.00|https://example.test/|note|D4:Z100|D4:D4|A4:D5|1",
+            result.ReturnValue);
+    }
+
+    [Fact]
     public void OpenPyxlWorksheet_SupportsFreezePanesAndAutoFilterRef()
     {
         var host = new MockLythonHost();
