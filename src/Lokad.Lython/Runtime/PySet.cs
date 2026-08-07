@@ -73,6 +73,13 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool Add(object item)
     {
+        // At a growth boundary, probe first so a duplicate cannot allocate before
+        // the memory governor approves the next table. Otherwise Add needs one lookup.
+        if (Count < _items.EnsureCapacity(0))
+        {
+            return _items.Add(item);
+        }
+
         if (_items.Contains(item))
         {
             return false;

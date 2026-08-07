@@ -133,6 +133,19 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void PyDict_ReassignmentPreservesTheOriginalEqualKeyObject()
+    {
+        var originalKey = PyString.FromString("key");
+        var dict = new PyDict();
+
+        dict.SetItem(originalKey, PyString.FromString("first"));
+        dict.SetItem(PyString.FromString("key"), PyString.FromString("second"));
+
+        Assert.Same(originalKey, Assert.Single(dict.Keys));
+        Assert.Equal("second", Assert.IsType<PyString>(dict.GetItem(originalKey)).AsString());
+    }
+
+    [Fact]
     public void MemoryGovernor_TracksExplicitReserveCommitReleaseCounters()
     {
         var governor = new MemoryGovernor(256);

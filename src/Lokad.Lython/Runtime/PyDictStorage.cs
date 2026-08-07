@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Lokad.Lython.Runtime;
 
 internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
@@ -15,6 +18,10 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
     bool ContainsKey(object key);
 
     bool SetItem(object key, object value);
+
+    bool TrySetExisting(object key, object value);
+
+    void AddNew(object key, object value);
 
     bool Remove(object key);
 
@@ -108,22 +115,38 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
 
     public bool SetItem(object key, object value)
     {
+        if (TrySetExisting(key, value))
+        {
+            return false;
+        }
+
+        AddNew(key, value);
+        return true;
+    }
+
+    public bool TrySetExisting(object key, object value)
+    {
         for (var i = 0; i < _items.Count; i++)
         {
             if (PyValueComparer.Instance.Equals(_items[i].Key, key))
             {
-                _items[i] = new KeyValuePair<object, object>(key, value);
-                return false;
+                // Python retains the original key object when an equal key is assigned again.
+                _items[i] = new KeyValuePair<object, object>(_items[i].Key, value);
+                return true;
             }
         }
 
+        return false;
+    }
+
+    public void AddNew(object key, object value)
+    {
         if (_items.Count >= PyDictStorage.SmallCapacity)
         {
             throw new InvalidOperationException("SmallPyDictStorage is full.");
         }
 
         _items.Add(new KeyValuePair<object, object>(key, value));
-        return true;
     }
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
@@ -245,10 +268,28 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public bool SetItem(object key, object value)
     {
-        var adding = !_items.ContainsKey(key);
-        _items[key] = value;
-        return adding;
+        if (TrySetExisting(key, value))
+        {
+            return false;
+        }
+
+        AddNew(key, value);
+        return true;
     }
+
+    public bool TrySetExisting(object key, object value)
+    {
+        ref var existing = ref CollectionsMarshal.GetValueRefOrNullRef(_items, key);
+        if (Unsafe.IsNullRef(ref existing))
+        {
+            return false;
+        }
+
+        existing = value;
+        return true;
+    }
+
+    public void AddNew(object key, object value) => _items.Add(key, value);
 
     public bool Remove(object key) => _items.Remove(key);
 

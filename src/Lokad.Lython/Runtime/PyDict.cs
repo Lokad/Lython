@@ -102,15 +102,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     public void SetItem(object key, object value)
     {
         var storageKey = ToStorageKey(key);
-        if (!_items.ContainsKey(storageKey))
+        var storageValue = ToStorageValue(value);
+        if (_items.TrySetExisting(storageKey, storageValue))
         {
-            _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
+            return;
         }
 
-        if (_items.SetItem(storageKey, ToStorageValue(value)))
-        {
-            _version++;
-        }
+        _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
+        _items.AddNew(storageKey, storageValue);
+        _version++;
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
