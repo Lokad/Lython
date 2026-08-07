@@ -204,52 +204,56 @@ internal readonly record struct StaticCallShapeContract(
             return true;
         }
 
-        var assigned = new bool[ParameterNames.Length];
-        for (var i = 0; i < Math.Min(arguments.Positional.Count, ParameterNames.Length); i++)
+        var matchedKeywordCount = 0;
+        for (var index = 0; index < ParameterNames.Length; index++)
         {
-            assigned[i] = true;
-        }
-
-        foreach (var keyword in arguments.Keywords)
-        {
-            var index = Array.IndexOf(ParameterNames, keyword.Key);
-            if (index < 0)
+            var parameterName = ParameterNames[index];
+            if (!arguments.Keywords.TryGetValue(parameterName, out var keywordExpression))
             {
-                if (AllowsExtraKeywords)
-                {
-                    continue;
-                }
-
-                reason = $"callable argument contract rejected unexpected keyword '{keyword.Key}'";
-                offendingExpression = keyword.Value;
-                return true;
+                continue;
             }
 
+            matchedKeywordCount++;
             if (index < PositionalOnlyCount)
             {
-                reason = $"callable argument contract rejected positional-only keyword '{keyword.Key}'";
-                offendingExpression = keyword.Value;
+                reason = $"callable argument contract rejected positional-only keyword '{parameterName}'";
+                offendingExpression = keywordExpression;
                 return true;
             }
 
-            if (assigned[index])
+            if (index < arguments.Positional.Count)
             {
-                reason = $"callable argument contract rejected duplicate binding for '{keyword.Key}'";
-                offendingExpression = keyword.Value;
+                reason = $"callable argument contract rejected duplicate binding for '{parameterName}'";
+                offendingExpression = keywordExpression;
                 return true;
             }
-
-            assigned[index] = true;
         }
 
-        for (var i = 0; i < MinArgumentCount; i++)
+        if (!AllowsExtraKeywords && matchedKeywordCount != arguments.Keywords.Count)
         {
-            if (!assigned[i])
+            foreach (var keyword in arguments.Keywords)
             {
-                reason = $"callable argument contract rejected missing required argument '{ParameterNames[i]}'";
-                offendingExpression = null;
-                return true;
+                // This second scan runs only for an invalid call. Valid calls bind in
+                // O(parameters + keywords) without allocating an assignment bitmap.
+                if (!ParameterNames.Contains(keyword.Key, StringComparer.Ordinal))
+                {
+                    reason = $"callable argument contract rejected unexpected keyword '{keyword.Key}'";
+                    offendingExpression = keyword.Value;
+                    return true;
+                }
             }
+        }
+
+        for (var index = arguments.Positional.Count; index < MinArgumentCount; index++)
+        {
+            if (arguments.Keywords.ContainsKey(ParameterNames[index]))
+            {
+                continue;
+            }
+
+            reason = $"callable argument contract rejected missing required argument '{ParameterNames[index]}'";
+            offendingExpression = null;
+            return true;
         }
 
         reason = string.Empty;
