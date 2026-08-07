@@ -326,35 +326,40 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return result;
         }
 
-        var sequences = new List<List<PyType>>(bases.Count + 1);
-        foreach (var baseType in bases)
+        var sequences = new IReadOnlyList<PyType>[bases.Count + 1];
+        for (var i = 0; i < bases.Count; i++)
         {
-            sequences.Add(new List<PyType>(baseType.Mro));
+            sequences[i] = bases[i].Mro;
         }
 
-        sequences.Add(new List<PyType>(bases));
+        sequences[^1] = bases;
+        var offsets = new int[sequences.Length];
 
         while (true)
         {
-            sequences.RemoveAll(sequence => sequence.Count == 0);
-            if (sequences.Count == 0)
-            {
-                return result;
-            }
-
             PyType? candidate = null;
-            foreach (var sequence in sequences)
+            var hasRemainingSequence = false;
+            for (var sequenceIndex = 0; sequenceIndex < sequences.Length; sequenceIndex++)
             {
-                var head = sequence[0];
-                var isValid = true;
-                foreach (var other in sequences)
+                var sequence = sequences[sequenceIndex];
+                var offset = offsets[sequenceIndex];
+                if (offset == sequence.Count)
                 {
-                    if (ReferenceEquals(sequence, other))
+                    continue;
+                }
+
+                hasRemainingSequence = true;
+                var head = sequence[offset];
+                var isValid = true;
+                for (var otherIndex = 0; otherIndex < sequences.Length; otherIndex++)
+                {
+                    if (sequenceIndex == otherIndex)
                     {
                         continue;
                     }
 
-                    for (var i = 1; i < other.Count; i++)
+                    var other = sequences[otherIndex];
+                    for (var i = offsets[otherIndex] + 1; i < other.Count; i++)
                     {
                         if (ReferenceEquals(other[i], head))
                         {
@@ -376,6 +381,11 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
                 }
             }
 
+            if (!hasRemainingSequence)
+            {
+                return result;
+            }
+
             if (candidate is null)
             {
                 throw new InvalidOperationException(
@@ -383,11 +393,13 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             }
 
             result.Add(candidate);
-            foreach (var sequence in sequences)
+            for (var sequenceIndex = 0; sequenceIndex < sequences.Length; sequenceIndex++)
             {
-                if (sequence.Count != 0 && ReferenceEquals(sequence[0], candidate))
+                var sequence = sequences[sequenceIndex];
+                var offset = offsets[sequenceIndex];
+                if (offset < sequence.Count && ReferenceEquals(sequence[offset], candidate))
                 {
-                    sequence.RemoveAt(0);
+                    offsets[sequenceIndex]++;
                 }
             }
         }
