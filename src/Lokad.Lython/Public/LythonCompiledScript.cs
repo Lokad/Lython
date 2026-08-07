@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace Lokad.Lython;
 
+/// <summary>Represents compiled Lython source that can be run repeatedly with different hosts or options.</summary>
 public sealed class LythonCompiledScript
 {
     private readonly Func<ILythonHost, LythonRunOptions?, LythonExecutionResult> _runner;
@@ -22,18 +23,23 @@ public sealed class LythonCompiledScript
         _asyncRunner = asyncRunner;
     }
 
+    /// <summary>Gets the original Python source.</summary>
     public string Source { get; }
 
+    /// <summary>Gets diagnostics produced while compiling the source.</summary>
     public IReadOnlyList<LythonDiagnostic> Diagnostics { get; }
 
+    /// <summary>Gets whether the script has no error diagnostics and is eligible to run.</summary>
     public bool IsValid { get; }
 
+    /// <summary>Runs the script synchronously with default options.</summary>
     public LythonExecutionResult Run(
         ILythonHost host)
     {
         return RunCore(host, null);
     }
 
+    /// <summary>Runs the script synchronously with the supplied initial globals.</summary>
     public LythonExecutionResult Run(
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals)
@@ -41,6 +47,7 @@ public sealed class LythonCompiledScript
         return Run(host, new LythonRunOptions { Globals = globals });
     }
 
+    /// <summary>Runs the script synchronously with explicit execution options.</summary>
     public LythonExecutionResult Run(
         ILythonHost host,
         LythonRunOptions options)
@@ -48,12 +55,14 @@ public sealed class LythonCompiledScript
         return RunCore(host, options);
     }
 
+    /// <summary>Runs the script asynchronously with default options.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host)
     {
         return RunAsyncCore(host, null, CancellationToken.None);
     }
 
+    /// <summary>Runs the script asynchronously with an external cancellation token.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
         CancellationToken cancellationToken)
@@ -61,6 +70,7 @@ public sealed class LythonCompiledScript
         return RunAsyncCore(host, null, cancellationToken);
     }
 
+    /// <summary>Runs the script asynchronously with the supplied initial globals.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals)
@@ -68,6 +78,7 @@ public sealed class LythonCompiledScript
         return RunAsync(host, globals, CancellationToken.None);
     }
 
+    /// <summary>Runs the script asynchronously with initial globals and an external cancellation token.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
         IReadOnlyDictionary<string, object?> globals,
@@ -84,6 +95,7 @@ public sealed class LythonCompiledScript
             });
     }
 
+    /// <summary>Runs the script asynchronously with explicit execution options.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
         LythonRunOptions options)
@@ -91,6 +103,7 @@ public sealed class LythonCompiledScript
         return RunAsyncCore(host, options, CancellationToken.None);
     }
 
+    /// <summary>Runs the script asynchronously with options and an additional cancellation token.</summary>
     public Task<LythonExecutionResult> RunAsync(
         ILythonHost host,
         LythonRunOptions options,

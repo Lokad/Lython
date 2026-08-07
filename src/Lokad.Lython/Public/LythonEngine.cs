@@ -5,8 +5,10 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython;
 
+/// <summary>Compiles and executes Python source using Lython's host-mediated runtime.</summary>
 public sealed class LythonEngine
 {
+    /// <summary>Compiles source and returns both the reusable script and all frontend diagnostics.</summary>
     public LythonCompiledScript Compile(string source)
     {
         var frontend = LythonFrontend.Compile(source);
@@ -92,6 +94,7 @@ public sealed class LythonEngine
             });
     }
 
+    /// <summary>Compiles and synchronously runs source with default options.</summary>
     public LythonExecutionResult Run(
         string source,
         ILythonHost host)
@@ -99,6 +102,7 @@ public sealed class LythonEngine
         return Compile(source).Run(host);
     }
 
+    /// <summary>Compiles and synchronously runs source with initial globals.</summary>
     public LythonExecutionResult Run(
         string source,
         ILythonHost host,
@@ -107,6 +111,7 @@ public sealed class LythonEngine
         return Compile(source).Run(host, new LythonRunOptions { Globals = globals });
     }
 
+    /// <summary>Compiles and synchronously runs source with explicit execution options.</summary>
     public LythonExecutionResult Run(
         string source,
         ILythonHost host,
@@ -115,6 +120,7 @@ public sealed class LythonEngine
         return Compile(source).Run(host, options);
     }
 
+    /// <summary>Compiles and asynchronously runs source with default options.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host)
@@ -122,6 +128,7 @@ public sealed class LythonEngine
         return Compile(source).RunAsync(host);
     }
 
+    /// <summary>Compiles and asynchronously runs source with an external cancellation token.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
@@ -130,6 +137,7 @@ public sealed class LythonEngine
         return Compile(source).RunAsync(host, cancellationToken);
     }
 
+    /// <summary>Compiles and asynchronously runs source with initial globals.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
@@ -138,6 +146,7 @@ public sealed class LythonEngine
         return Compile(source).RunAsync(host, globals);
     }
 
+    /// <summary>Compiles and asynchronously runs source with initial globals and cancellation.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
@@ -147,6 +156,7 @@ public sealed class LythonEngine
         return Compile(source).RunAsync(host, globals, cancellationToken);
     }
 
+    /// <summary>Compiles and asynchronously runs source with explicit execution options.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
@@ -155,6 +165,7 @@ public sealed class LythonEngine
         return Compile(source).RunAsync(host, options);
     }
 
+    /// <summary>Compiles and asynchronously runs source with options and an additional cancellation token.</summary>
     public Task<LythonExecutionResult> RunAsync(
         string source,
         ILythonHost host,
