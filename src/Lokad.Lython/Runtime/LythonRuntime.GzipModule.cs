@@ -49,82 +49,87 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                var compressed = data.ToArray();
-                using var output = new MemoryStream();
+                var compressed = data.Memory;
+                var output = new Utf8ValueBuilder(context.MemoryGovernor, span);
                 var buffer = new byte[8192];
                 var position = 0;
                 var memberCount = 0;
-                while (position < compressed.Length)
+                try
                 {
-                    while (position < compressed.Length && compressed[position] == 0)
+                    while (position < compressed.Length)
                     {
-                        position++;
-                    }
-
-                    if (position == compressed.Length)
-                    {
-                        break;
-                    }
-
-                    position = ParseGzipHeader(compressed, position, span);
-                    var memberCrc = uint.MaxValue;
-                    uint memberLength = 0;
-                    using (var cursor = new GzipByteCursorStream(compressed, position))
-                    {
-                        using var deflate = new DeflateStream(cursor, CompressionMode.Decompress, leaveOpen: true);
-                        while (true)
+                        while (position < compressed.Length && compressed.Span[position] == 0)
                         {
-                            context.CheckExecutionBudget(span);
-                            var count = deflate.Read(buffer, 0, buffer.Length);
-                            if (count == 0)
-                            {
-                                break;
-                            }
-
-                            var newLength = checked(output.Length + count);
-                            if (newLength > int.MaxValue)
-                            {
-                                throw RuntimeErrors.Memory("gzip decompressed output is too large", span);
-                            }
-
-                            context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes((int)newLength), span);
-                            output.Write(buffer, 0, count);
-                            memberCrc = UpdateGzipCrc32(memberCrc, buffer.AsSpan(0, count));
-                            memberLength = unchecked(memberLength + (uint)count);
+                            position++;
                         }
 
-                        position = cursor.BytePosition;
+                        if (position == compressed.Length)
+                        {
+                            break;
+                        }
+
+                        position = ParseGzipHeader(compressed.Span, position, span);
+                        var memberCrc = uint.MaxValue;
+                        uint memberLength = 0;
+                        using (var cursor = new GzipByteCursorStream(compressed, position))
+                        {
+                            using var deflate = new DeflateStream(cursor, CompressionMode.Decompress, leaveOpen: true);
+                            while (true)
+                            {
+                                context.CheckExecutionBudget(span);
+                                var count = deflate.Read(buffer, 0, buffer.Length);
+                                if (count == 0)
+                                {
+                                    break;
+                                }
+
+                                var newLength = checked(output.Length + count);
+                                if (newLength > int.MaxValue)
+                                {
+                                    throw RuntimeErrors.Memory("gzip decompressed output is too large", span);
+                                }
+
+                                output.Append(buffer.AsSpan(0, count));
+                                memberCrc = UpdateGzipCrc32(memberCrc, buffer.AsSpan(0, count));
+                                memberLength = unchecked(memberLength + (uint)count);
+                            }
+
+                            position = cursor.BytePosition;
+                        }
+
+                        if (compressed.Length - position < 8)
+                        {
+                            throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                        }
+
+                        var expectedCrc = BinaryPrimitives.ReadUInt32LittleEndian(compressed.Span.Slice(position, 4));
+                        var expectedLength = BinaryPrimitives.ReadUInt32LittleEndian(compressed.Span.Slice(position + 4, 4));
+                        if (~memberCrc != expectedCrc)
+                        {
+                            throw BadGzip("CRC check failed", span);
+                        }
+
+                        if (memberLength != expectedLength)
+                        {
+                            throw BadGzip("Incorrect length of data produced", span);
+                        }
+
+                        position += 8;
+                        memberCount++;
                     }
 
-                    if (compressed.Length - position < 8)
+                    if (memberCount == 0)
                     {
-                        throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                        throw BadGzip("Not a gzipped file", span);
                     }
 
-                    var expectedCrc = BinaryPrimitives.ReadUInt32LittleEndian(compressed.AsSpan(position, 4));
-                    var expectedLength = BinaryPrimitives.ReadUInt32LittleEndian(compressed.AsSpan(position + 4, 4));
-                    if (~memberCrc != expectedCrc)
-                    {
-                        throw BadGzip("CRC check failed", span);
-                    }
-
-                    if (memberLength != expectedLength)
-                    {
-                        throw BadGzip("Incorrect length of data produced", span);
-                    }
-
-                    position += 8;
-                    memberCount++;
+                    var decompressed = output.ToArrayAndRelease();
+                    return CreateBytes(decompressed, context, span);
                 }
-
-                if (memberCount == 0)
+                finally
                 {
-                    throw BadGzip("Not a gzipped file", span);
+                    output.Release();
                 }
-
-                var decompressed = output.ToArray();
-                context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(decompressed.Length), span);
-                return CreateBytes(decompressed, context, span);
             }
             catch (LythonRuntimeException)
             {
@@ -346,8 +351,9 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly PyBytes? _binaryRead;
         private readonly PyString? _textRead;
-        private readonly byte[] _compressedPrefix;
-        private byte[] _writeBuffer = [];
+        private byte[] _compressedPrefix;
+        private readonly Utf8ValueBuilder _writeBuffer;
+        private long _compressedPrefixCharge;
         private int _readCursor;
         private bool _dirty;
         private bool _validationFailed;
@@ -366,6 +372,7 @@ internal sealed partial class LythonRuntime
             _binaryRead = binaryRead;
             _textRead = textRead;
             _compressedPrefix = compressedPrefix;
+            _writeBuffer = new Utf8ValueBuilder(context.MemoryGovernor);
             _dirty = dirty;
         }
 
@@ -414,7 +421,11 @@ internal sealed partial class LythonRuntime
                 context.MemoryGovernor.Commit(PyBytes.EstimateApproximateBytes(prefix.Length));
             }
 
-            return new GzipFileHandle(options, context, null, null, prefix, dirty: true);
+            var handle = new GzipFileHandle(options, context, null, null, prefix, dirty: true)
+            {
+                _compressedPrefixCharge = prefix.Length > 0 ? PyBytes.EstimateApproximateBytes(prefix.Length) : 0,
+            };
+            return handle;
         }
 
         public bool TryGetMember(string name, out object value)
@@ -739,13 +750,7 @@ internal sealed partial class LythonRuntime
 
         private void AppendWriteBytes(ReadOnlySpan<byte> bytes, LythonSourceSpan span)
         {
-            var newLength = checked(_writeBuffer.Length + bytes.Length);
-            _context.MemoryGovernor.Reserve(bytes.Length, span);
-            _context.MemoryGovernor.Commit(bytes.Length);
-            var combined = new byte[newLength];
-            _writeBuffer.CopyTo(combined, 0);
-            bytes.CopyTo(combined.AsSpan(_writeBuffer.Length));
-            _writeBuffer = combined;
+            _writeBuffer.Append(bytes);
             _dirty = true;
         }
 
@@ -758,9 +763,16 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = CreateCompressedWritePayload(span);
-            _context.RegisterHostCall(span);
-            _context.WriteHostBytes(_options.Path, payload, span);
-            _dirty = false;
+            try
+            {
+                _context.RegisterHostCall(span);
+                _context.WriteHostBytes(_options.Path, payload.Bytes, span);
+                _dirty = false;
+            }
+            finally
+            {
+                _context.MemoryGovernor.Release(payload.MemoryCharge);
+            }
         }
 
         private async ValueTask FlushAsync(LythonSourceSpan? span)
@@ -772,25 +784,46 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = CreateCompressedWritePayload(span);
-            _context.RegisterHostCall(span);
-            await _context.WriteHostBytesAsync(_options.Path, payload, span).ConfigureAwait(false);
-            _dirty = false;
+            try
+            {
+                _context.RegisterHostCall(span);
+                await _context.WriteHostBytesAsync(_options.Path, payload.Bytes, span).ConfigureAwait(false);
+                _dirty = false;
+            }
+            finally
+            {
+                _context.MemoryGovernor.Release(payload.MemoryCharge);
+            }
         }
 
-        private byte[] CreateCompressedWritePayload(LythonSourceSpan? span)
+        private GzipWritePayload CreateCompressedWritePayload(LythonSourceSpan? span)
         {
-            var compressed = CompressGzip(_writeBuffer, _options.CompressionLevel, 0, _context, span);
+            var compressed = CompressGzip(_writeBuffer.WrittenSpan, _options.CompressionLevel, 0, _context, span);
+            var compressedCharge = PyBytes.EstimateApproximateBytes(compressed.Length);
+            _context.MemoryGovernor.Reserve(compressedCharge, span);
+            _context.MemoryGovernor.Commit(compressedCharge);
             if (_options.Operation != "a" || _compressedPrefix.Length == 0)
             {
-                return compressed;
+                return new GzipWritePayload(compressed, compressedCharge);
             }
 
             var length = checked(_compressedPrefix.Length + compressed.Length);
-            _context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
-            var payload = new byte[length];
-            _compressedPrefix.CopyTo(payload, 0);
-            compressed.CopyTo(payload, _compressedPrefix.Length);
-            return payload;
+            var payloadCharge = PyBytes.EstimateApproximateBytes(length);
+            try
+            {
+                _context.MemoryGovernor.Reserve(payloadCharge, span);
+                var payload = new byte[length];
+                _compressedPrefix.CopyTo(payload, 0);
+                compressed.CopyTo(payload, _compressedPrefix.Length);
+                _context.MemoryGovernor.Release(compressedCharge);
+                _context.MemoryGovernor.Commit(payloadCharge);
+                return new GzipWritePayload(payload, payloadCharge);
+            }
+            catch
+            {
+                _context.MemoryGovernor.Release(compressedCharge);
+                throw;
+            }
         }
 
         private void Close(LythonSourceSpan? span)
@@ -802,6 +835,7 @@ internal sealed partial class LythonRuntime
 
             Flush(span);
             IsClosed = true;
+            ReleaseWriteBuffers();
         }
 
         private async ValueTask CloseAsync(LythonSourceSpan? span)
@@ -813,15 +847,25 @@ internal sealed partial class LythonRuntime
 
             await FlushAsync(span).ConfigureAwait(false);
             IsClosed = true;
+            ReleaseWriteBuffers();
         }
 
         private void AbortClose()
         {
             IsClosed = true;
             _dirty = false;
-            _context.MemoryGovernor.Release(_writeBuffer.Length);
-            _writeBuffer = [];
+            ReleaseWriteBuffers();
         }
+
+        private void ReleaseWriteBuffers()
+        {
+            _writeBuffer.Release();
+            _context.MemoryGovernor.Release(_compressedPrefixCharge);
+            _compressedPrefixCharge = 0;
+            _compressedPrefix = [];
+        }
+
+        private readonly record struct GzipWritePayload(byte[] Bytes, long MemoryCharge);
 
         private int FindTextLineEnd(ReadOnlySpan<byte> source, int start)
         {
@@ -1040,31 +1084,40 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Memory("gzip compressed output is too large", span);
         }
 
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes((int)maximumLength), span);
-        using var output = new MemoryStream();
-        Span<byte> header = stackalloc byte[10];
-        header[0] = 0x1f;
-        header[1] = 0x8b;
-        header[2] = 8;
-        header[3] = 0;
-        BinaryPrimitives.WriteUInt32LittleEndian(header[4..8], modificationTime);
-        header[8] = compressionLevel switch { 1 => 4, 9 => 2, _ => 0 };
-        header[9] = 255;
-        output.Write(header);
-
-        var options = new ZLibCompressionOptions { CompressionLevel = compressionLevel };
-        using (var deflate = new DeflateStream(output, options, leaveOpen: true))
+        var output = new Utf8ValueBuilder(
+            context.MemoryGovernor,
+            span,
+            maxLengthBytes: (int)maximumLength,
+            maxLengthOwner: "gzip compressed output");
+        try
         {
-            deflate.Write(data);
-        }
+            using var outputStream = new GzipBufferWriteStream(output);
+            Span<byte> header = stackalloc byte[10];
+            header[0] = 0x1f;
+            header[1] = 0x8b;
+            header[2] = 8;
+            header[3] = 0;
+            BinaryPrimitives.WriteUInt32LittleEndian(header[4..8], modificationTime);
+            header[8] = compressionLevel switch { 1 => 4, 9 => 2, _ => 0 };
+            header[9] = 255;
+            outputStream.Write(header);
 
-        Span<byte> trailer = stackalloc byte[8];
-        BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], ComputeGzipCrc32(data, context, span));
-        BinaryPrimitives.WriteUInt32LittleEndian(trailer[4..], unchecked((uint)data.Length));
-        output.Write(trailer);
-        var compressed = output.ToArray();
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(compressed.Length), span);
-        return compressed;
+            var options = new ZLibCompressionOptions { CompressionLevel = compressionLevel };
+            using (var deflate = new DeflateStream(outputStream, options, leaveOpen: true))
+            {
+                deflate.Write(data);
+            }
+
+            Span<byte> trailer = stackalloc byte[8];
+            BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], ComputeGzipCrc32(data, context, span));
+            BinaryPrimitives.WriteUInt32LittleEndian(trailer[4..], unchecked((uint)data.Length));
+            outputStream.Write(trailer);
+            return output.ToArrayAndRelease();
+        }
+        finally
+        {
+            output.Release();
+        }
     }
 
     private static int ParseCompressionLevel(object value, LythonSourceSpan span)
@@ -1136,7 +1189,7 @@ internal sealed partial class LythonRuntime
         return crc;
     }
 
-    private static int ParseGzipHeader(byte[] data, int position, LythonSourceSpan span)
+    private static int ParseGzipHeader(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)
     {
         if (data.Length - position < 10)
         {
@@ -1167,7 +1220,7 @@ internal sealed partial class LythonRuntime
                 throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
             }
 
-            var extraLength = BinaryPrimitives.ReadUInt16LittleEndian(data.AsSpan(position, 2));
+            var extraLength = BinaryPrimitives.ReadUInt16LittleEndian(data.Slice(position, 2));
             position += 2;
             if (data.Length - position < extraLength)
             {
@@ -1200,7 +1253,7 @@ internal sealed partial class LythonRuntime
         return position;
     }
 
-    private static int SkipGzipZeroTerminatedField(byte[] data, int position, LythonSourceSpan span)
+    private static int SkipGzipZeroTerminatedField(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)
     {
         while (position < data.Length)
         {
@@ -1213,11 +1266,40 @@ internal sealed partial class LythonRuntime
         throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
     }
 
+    private sealed class GzipBufferWriteStream : Stream
+    {
+        private readonly Utf8ValueBuilder _output;
+
+        public GzipBufferWriteStream(Utf8ValueBuilder output)
+        {
+            _output = output;
+        }
+
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => _output.Length;
+        public override long Position { get => _output.Length; set => throw new NotSupportedException(); }
+
+        public override void Flush()
+        {
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+            => _output.Append(buffer.AsSpan(offset, count));
+
+        public override void Write(ReadOnlySpan<byte> buffer) => _output.Append(buffer);
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+    }
+
     private sealed class GzipByteCursorStream : Stream
     {
-        private readonly byte[] _data;
+        private readonly ReadOnlyMemory<byte> _data;
 
-        public GzipByteCursorStream(byte[] data, int position)
+        public GzipByteCursorStream(ReadOnlyMemory<byte> data, int position)
         {
             _data = data;
             BytePosition = position;
@@ -1238,7 +1320,7 @@ internal sealed partial class LythonRuntime
                 return 0;
             }
 
-            buffer[offset] = _data[BytePosition++];
+            buffer[offset] = _data.Span[BytePosition++];
             return 1;
         }
 
@@ -1249,7 +1331,7 @@ internal sealed partial class LythonRuntime
                 return 0;
             }
 
-            buffer[0] = _data[BytePosition++];
+            buffer[0] = _data.Span[BytePosition++];
             return 1;
         }
 

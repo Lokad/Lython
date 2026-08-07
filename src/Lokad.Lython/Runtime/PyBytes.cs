@@ -31,6 +31,8 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     internal ReadOnlySpan<byte> Bytes => _bytes;
 
+    internal ReadOnlyMemory<byte> Memory => _bytes;
+
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
