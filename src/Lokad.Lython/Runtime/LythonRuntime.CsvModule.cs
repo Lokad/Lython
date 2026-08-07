@@ -11,10 +11,25 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private const int CsvQuoteMinimal = 0;
-    private const int CsvQuoteAll = 1;
-    private const int CsvQuoteNonNumeric = 2;
-    private const int CsvQuoteNone = 3;
+    internal enum CsvQuotingMode
+    {
+        Minimal = 0,
+        All = 1,
+        NonNumeric = 2,
+        None = 3,
+    }
+
+    internal enum CsvExtrasAction
+    {
+        Raise,
+        Ignore,
+    }
+
+    internal enum CsvCellKind
+    {
+        Text,
+        Numeric,
+    }
 
     private sealed class CsvModule : PyModule
     {
@@ -33,10 +48,10 @@ internal sealed partial class LythonRuntime
                 "DictReader" => new BuiltinCallable(LythonKnownCallableSignatures.CsvDictReader, DictReader),
                 "DictWriter" => new BuiltinCallable(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
                 "Error" => new ExceptionTypeValue("Error"),
-                "QUOTE_MINIMAL" => new BigInteger(CsvQuoteMinimal),
-                "QUOTE_ALL" => new BigInteger(CsvQuoteAll),
-                "QUOTE_NONNUMERIC" => new BigInteger(CsvQuoteNonNumeric),
-                "QUOTE_NONE" => new BigInteger(CsvQuoteNone),
+                "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
+                "QUOTE_ALL" => new BigInteger((int)CsvQuotingMode.All),
+                "QUOTE_NONNUMERIC" => new BigInteger((int)CsvQuotingMode.NonNumeric),
+                "QUOTE_NONE" => new BigInteger((int)CsvQuotingMode.None),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -168,7 +183,7 @@ internal sealed partial class LythonRuntime
             var lineterminator = GetStringOption(arguments, lineterminatorIndex, PyString.FromString("\n"), "lineterminator", allowNone: false, span);
             var strict = GetBooleanOption(arguments, strictIndex, defaultValue: false, "strict", span);
 
-            if (quoting == CsvQuoteNone && escapechar is null)
+            if (quoting == CsvQuotingMode.None && escapechar is null)
             {
                 // This is legal until escaping is actually required.
             }
@@ -273,19 +288,19 @@ internal sealed partial class LythonRuntime
             return text;
         }
 
-        private static int GetQuoting(object[] arguments, int index, LythonSourceSpan span)
+        private static CsvQuotingMode GetQuoting(object[] arguments, int index, LythonSourceSpan span)
         {
             if (arguments.Length <= index || arguments[index] is PyNone)
             {
-                return CsvQuoteMinimal;
+                return CsvQuotingMode.Minimal;
             }
 
-            if (arguments[index] is not BigInteger integer || integer < CsvQuoteMinimal || integer > CsvQuoteNone)
+            if (arguments[index] is not BigInteger integer || integer < 0 || integer > (int)CsvQuotingMode.None)
             {
                 throw new LythonRuntimeException("TypeError", "csv quoting must be one of the QUOTE_* constants.", span);
             }
 
-            return (int)integer;
+            return (CsvQuotingMode)(int)integer;
         }
 
         private static bool GetBooleanOption(object[] arguments, int index, bool defaultValue, string name, LythonSourceSpan span)
@@ -341,11 +356,11 @@ internal sealed partial class LythonRuntime
         private static object RestValue(object[] arguments, int index)
             => arguments.Length > index && arguments[index] is not PyNone ? arguments[index] : PyNone.Instance;
 
-        private static string GetExtrasAction(object[] arguments, int index, LythonSourceSpan span)
+        private static CsvExtrasAction GetExtrasAction(object[] arguments, int index, LythonSourceSpan span)
         {
             if (arguments.Length <= index || arguments[index] is PyNone)
             {
-                return "raise";
+                return CsvExtrasAction.Raise;
             }
 
             if (!PyStringOps.TryAsString(arguments[index], out var action))
@@ -360,7 +375,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "extrasaction must be 'raise' or 'ignore'.", span);
             }
 
-            return text;
+            return text == "ignore" ? CsvExtrasAction.Ignore : CsvExtrasAction.Raise;
         }
 
         private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, ExecutionContext context, LythonSourceSpan span)
@@ -612,7 +627,7 @@ internal sealed partial class LythonRuntime
     internal sealed record CsvOptions(
         PyString Delimiter,
         PyString? QuoteChar,
-        int Quoting,
+        CsvQuotingMode Quoting,
         bool DoubleQuote,
         PyString? EscapeChar,
         bool SkipInitialSpace,
@@ -728,7 +743,7 @@ internal sealed partial class LythonRuntime
 
     internal sealed class CsvDictWriterObject
     {
-        public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, string extrasAction)
+        public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, CsvExtrasAction extrasAction)
         {
             Writer = writer;
             FieldNames = fieldNames;
@@ -742,10 +757,10 @@ internal sealed partial class LythonRuntime
 
         public object RestValue { get; }
 
-        public string ExtrasAction { get; }
+        public CsvExtrasAction ExtrasAction { get; }
     }
 
-    internal readonly record struct CsvCell(PyString Text, bool IsNumeric);
+    internal readonly record struct CsvCell(PyString Text, CsvCellKind Kind);
 
     internal static class CsvReaderMembers
     {
@@ -895,11 +910,11 @@ internal sealed partial class LythonRuntime
             {
                 cells.Add(cell switch
                 {
-                    PyNone => new CsvCell(PyString.Empty, IsNumeric: false),
-                    PyString text => new CsvCell(text, IsNumeric: false),
-                    BigInteger integer => new CsvCell(PyString.FromString(integer.ToString()), IsNumeric: true),
-                    bool boolean => new CsvCell(PyString.FromString(boolean ? "True" : "False"), IsNumeric: false),
-                    double floating => new CsvCell(PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)), IsNumeric: true),
+                    PyNone => new CsvCell(PyString.Empty, CsvCellKind.Text),
+                    PyString text => new CsvCell(text, CsvCellKind.Text),
+                    BigInteger integer => new CsvCell(PyString.FromString(integer.ToString()), CsvCellKind.Numeric),
+                    bool boolean => new CsvCell(PyString.FromString(boolean ? "True" : "False"), CsvCellKind.Text),
+                    double floating => new CsvCell(PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)), CsvCellKind.Numeric),
                     _ => throw new LythonRuntimeException("TypeError", "CSV rows must contain scalar values.", span)
                 });
             }
@@ -956,15 +971,15 @@ internal sealed partial class LythonRuntime
             var quoteBytes = options.QuoteChar is null ? ReadOnlySpan<byte>.Empty : options.QuoteChar.Utf8Bytes.Span;
             var needsQuotes =
                 forceQuotes ||
-                options.Quoting == CsvQuoteAll ||
-                options.Quoting == CsvQuoteNonNumeric && !cell.IsNumeric ||
-                options.Quoting == CsvQuoteMinimal && (
+                options.Quoting == CsvQuotingMode.All ||
+                options.Quoting == CsvQuotingMode.NonNumeric && cell.Kind != CsvCellKind.Numeric ||
+                options.Quoting == CsvQuotingMode.Minimal && (
                 IndexOfBytes(fieldBytes, delimiterBytes) >= 0 ||
                 fieldBytes.IndexOf((byte)'\n') >= 0 ||
                 fieldBytes.IndexOf((byte)'\r') >= 0 ||
                 (options.QuoteChar is not null && IndexOfBytes(fieldBytes, quoteBytes) >= 0));
 
-            if (options.Quoting == CsvQuoteNone)
+            if (options.Quoting == CsvQuotingMode.None)
             {
                 if (forceQuotes)
                 {
@@ -1107,7 +1122,7 @@ internal sealed partial class LythonRuntime
             {
                 if (!known.Contains(key))
                 {
-                    if (string.Equals(writer.ExtrasAction, "ignore", StringComparison.Ordinal))
+                    if (writer.ExtrasAction == CsvExtrasAction.Ignore)
                     {
                         continue;
                     }
