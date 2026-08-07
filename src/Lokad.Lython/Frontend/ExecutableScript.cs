@@ -423,7 +423,6 @@ internal sealed class ExecutableScript
 
     public static ExecutableScript Compile(LoweredScript lowered)
     {
-        ArgumentNullException.ThrowIfNull(lowered);
         return new ExecutableScript(lowered, new Builder().CompileCodeObject("<module>", lowered.Statements));
     }
 

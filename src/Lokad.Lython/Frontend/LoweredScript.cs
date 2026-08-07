@@ -24,7 +24,6 @@ internal sealed class LoweredScript
 
     public static LoweredScript Lower(ScriptSyntax syntax)
     {
-        ArgumentNullException.ThrowIfNull(syntax);
 
         var statements = LowerStatements(syntax.Statements);
         var imports = statements.OfType<LoweredImportStatement>().ToArray();
@@ -39,7 +38,6 @@ internal sealed class LoweredScript
 
     internal static LoweredExpression LowerStandaloneExpression(ExpressionSyntax expression)
     {
-        ArgumentNullException.ThrowIfNull(expression);
         return LowerExpression(expression);
     }
 

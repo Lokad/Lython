@@ -22,10 +22,6 @@ public static class LythonSubprocessCompletion
         LythonSubprocessOutputWriter inheritStandardErrorAsync,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(inheritStandardOutputAsync);
-        ArgumentNullException.ThrowIfNull(inheritStandardErrorAsync);
-
         if (request.StandardError == LythonSubprocessStreamMode.StandardOutput)
         {
             switch (request.StandardOutput)

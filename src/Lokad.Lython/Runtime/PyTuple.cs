@@ -19,7 +19,6 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public PyTuple(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _items = MaterializeGovernedItems(items, governor, allocationSpan);
@@ -34,7 +33,6 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         var approximateBytes = EstimateApproximateBytes(items.Length);

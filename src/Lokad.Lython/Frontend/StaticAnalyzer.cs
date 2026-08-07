@@ -12,7 +12,6 @@ internal static class StaticAnalyzer
 
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script)
     {
-        ArgumentNullException.ThrowIfNull(script);
 
         var context = new StaticAnalysisContext(script);
         foreach (var pass in Passes)
@@ -25,8 +24,6 @@ internal static class StaticAnalyzer
 
     public static IReadOnlyList<LythonDiagnostic> AnalyzeHostRequirements(ScriptSyntax script, ILythonHost host)
     {
-        ArgumentNullException.ThrowIfNull(script);
-        ArgumentNullException.ThrowIfNull(host);
 
         var context = new StaticAnalysisContext(script);
         StaticHostRequirementDiagnostics.Analyze(context, host);

@@ -6,7 +6,6 @@ internal sealed class StaticAnalysisContext
 
     public StaticAnalysisContext(ScriptSyntax script)
     {
-        ArgumentNullException.ThrowIfNull(script);
         Script = script;
     }
 

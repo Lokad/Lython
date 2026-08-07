@@ -37,7 +37,6 @@ internal sealed class Utf8ValueBuilder
         int? maxLengthBytes,
         string? maxLengthOwner)
     {
-        ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _maxLengthBytes = maxLengthBytes;
@@ -96,7 +95,6 @@ internal sealed class Utf8ValueBuilder
 
     public void AppendAscii(string text)
     {
-        ArgumentNullException.ThrowIfNull(text);
         if (text.Length == 0)
         {
             return;
@@ -113,7 +111,6 @@ internal sealed class Utf8ValueBuilder
 
     public void AppendString(string text)
     {
-        ArgumentNullException.ThrowIfNull(text);
         if (text.Length == 0)
         {
             return;

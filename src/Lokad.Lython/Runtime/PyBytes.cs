@@ -11,7 +11,6 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public PyBytes(byte[] bytes)
     {
-        ArgumentNullException.ThrowIfNull(bytes);
         _bytes = bytes;
     }
 
@@ -19,8 +18,6 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public PyBytes(byte[] bytes, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(bytes);
-        ArgumentNullException.ThrowIfNull(governor);
         var approximateBytes = EstimateApproximateBytes(bytes.Length);
         governor.Reserve(approximateBytes, allocationSpan);
         governor.Commit(approximateBytes);

@@ -42,7 +42,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public static PyString FromString(string text)
     {
-        ArgumentNullException.ThrowIfNull(text);
         return new PyString(Utf8.GetBytes(text));
     }
 
@@ -51,8 +50,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public static PyString FromString(string text, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(text);
-        ArgumentNullException.ThrowIfNull(governor);
         if (text.Length == 0)
         {
             return Empty;
@@ -66,7 +63,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     internal static PyString FromOwnedUtf8(byte[] utf8)
     {
-        ArgumentNullException.ThrowIfNull(utf8);
         return utf8.Length == 0 ? Empty : new PyString(utf8);
     }
 
@@ -75,8 +71,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     internal static PyString FromOwnedUtf8(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(utf8);
-        ArgumentNullException.ThrowIfNull(governor);
         return utf8.Length == 0 ? Empty : new PyString(utf8, governor, allocationSpan);
     }
 
@@ -97,7 +91,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public static PyString FromUtf8(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(governor);
         if (utf8.Length == 0)
         {
             return Empty;

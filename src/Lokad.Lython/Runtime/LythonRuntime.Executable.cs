@@ -252,8 +252,6 @@ internal sealed partial class LythonRuntime
         ILythonHost host,
         LythonRunOptions? options)
     {
-        ArgumentNullException.ThrowIfNull(script);
-        ArgumentNullException.ThrowIfNull(host);
 
         ExecutionContext? context = null;
         try

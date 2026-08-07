@@ -87,7 +87,6 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         var text = Utf8.GetString(utf8.Span);
-        ArgumentNullException.ThrowIfNull(text);
 
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));
@@ -100,7 +99,6 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         var text = Utf8.GetString(utf8.Span);
-        ArgumentNullException.ThrowIfNull(text);
 
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));

@@ -4,8 +4,6 @@ internal static class StaticHostRequirementDiagnostics
 {
     public static void Analyze(StaticAnalysisContext context, ILythonHost host)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(host);
         AnalyzeHostExecutableStatements(context.Script.Statements, context, host);
     }
 

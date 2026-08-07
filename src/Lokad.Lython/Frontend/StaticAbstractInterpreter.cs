@@ -4,7 +4,6 @@ internal static class StaticAbstractInterpreter
 {
     public static void Analyze(StaticAnalysisContext context)
     {
-        ArgumentNullException.ThrowIfNull(context);
         AnalyzeStatements(context.Script.Statements, context.DiagnosticList, new AbstractState());
     }
 

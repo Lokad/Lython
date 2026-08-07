@@ -4,7 +4,6 @@ internal static class StaticRegexDiagnostics
 {
     public static void Analyze(StaticAnalysisContext context)
     {
-        ArgumentNullException.ThrowIfNull(context);
         Analyze(context.Script, context.DiagnosticList);
     }
 

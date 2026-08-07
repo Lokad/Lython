@@ -6,7 +6,6 @@ internal static class LythonFrontend
 {
     public static FrontendResult Compile(string source)
     {
-        ArgumentNullException.ThrowIfNull(source);
         source = NormalizeSourceText(source);
 
         if (string.IsNullOrWhiteSpace(source))

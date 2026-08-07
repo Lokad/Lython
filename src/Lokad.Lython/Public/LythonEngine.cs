@@ -9,8 +9,6 @@ public sealed class LythonEngine
 {
     public LythonCompiledScript Compile(string source)
     {
-        ArgumentNullException.ThrowIfNull(source);
-
         var frontend = LythonFrontend.Compile(source);
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);

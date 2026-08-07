@@ -19,7 +19,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this()
     {
-        ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
     }
@@ -88,7 +87,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor ??= governor;
         _allocationSpan ??= allocationSpan;
     }

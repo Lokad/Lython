@@ -15,7 +15,6 @@ internal static class PathOps
 
     public static string Normalize(string path, string? basePath)
     {
-        ArgumentNullException.ThrowIfNull(path);
         if (path.Length == 0)
         {
             path = ".";
