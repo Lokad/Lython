@@ -108,7 +108,7 @@ internal static class StaticNameBindingDiagnostics
                 maybeAssigned.Add(importStatement.BindingName);
                 if (importStatement.ImportedMembers is not null)
                 {
-                    foreach (var memberName in EnumerateImportedBindingNames(importStatement))
+                    foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     {
                         maybeAssigned.Add(memberName);
                     }
@@ -566,7 +566,7 @@ internal static class StaticNameBindingDiagnostics
                 localNames.Add(importStatement.BindingName);
                 if (importStatement.ImportedMembers is not null)
                 {
-                    foreach (var memberName in EnumerateImportedBindingNames(importStatement))
+                    foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     {
                         localNames.Add(memberName);
                     }
@@ -669,29 +669,6 @@ internal static class StaticNameBindingDiagnostics
                 if (tryStatement.ElseBody is not null) CollectLocalAssignments(tryStatement.ElseBody, localNames);
                 if (tryStatement.FinallyBody is not null) CollectLocalAssignments(tryStatement.FinallyBody, localNames);
                 break;
-        }
-    }
-
-    private static IEnumerable<string> EnumerateImportedBindingNames(ImportStatementSyntax importStatement)
-    {
-        if (importStatement.ImportedMembers is null)
-        {
-            yield break;
-        }
-
-        if (importStatement.ImportedMembers.Count == 1 && importStatement.ImportedMembers[0].Name == "*")
-        {
-            foreach (var memberName in StaticContracts.GetModuleExportedMemberNames(importStatement.ModuleName))
-            {
-                yield return memberName;
-            }
-
-            yield break;
-        }
-
-        foreach (var member in importStatement.ImportedMembers)
-        {
-            yield return member.BindingName;
         }
     }
 

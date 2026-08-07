@@ -965,7 +965,7 @@ internal sealed partial class LythonRuntime
         }
 
         var importedModule = ResolveImportedModuleHierarchy(importBinding.ModuleName, context, importBinding.Span);
-        if (IsStarImport(importBinding.ImportedMembers))
+        if (ImportSyntaxFacts.IsStarImport(importBinding.ImportedMembers))
         {
             foreach (var name in importedModule.ExportedNames)
             {

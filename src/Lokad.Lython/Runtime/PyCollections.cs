@@ -462,24 +462,14 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        if (MaxLength is null)
-        {
-            return PyRendering.JoinRenderedSequence("deque([", new RenderedItems(_items, context, interpolated: false), "])");
-        }
-
-        var items = PyRendering.JoinRenderedSequence("", new RenderedItems(_items, context, interpolated: false), "");
-        return PyString.FromString($"deque([{items.AsString()}], maxlen={MaxLength.Value})");
+        var suffix = MaxLength is null ? "])" : $"], maxlen={MaxLength.Value})";
+        return PyRendering.JoinRenderedValues("deque([", _items, suffix, context, interpolated: false);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
-        if (MaxLength is null)
-        {
-            return PyRendering.JoinRenderedSequence("deque([", new RenderedItems(_items, context, interpolated: true), "])");
-        }
-
-        var items = PyRendering.JoinRenderedSequence("", new RenderedItems(_items, context, interpolated: true), "");
-        return PyString.FromString($"deque([{items.AsString()}], maxlen={MaxLength.Value})");
+        var suffix = MaxLength is null ? "])" : $"], maxlen={MaxLength.Value})";
+        return PyRendering.JoinRenderedValues("deque([", _items, suffix, context, interpolated: true);
     }
 
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
@@ -508,29 +498,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         return backward;
     }
 
-    private sealed class RenderedItems : IEnumerable<PyString>
-    {
-        private readonly IEnumerable<object> _items;
-        private readonly PyRenderingContext _context;
-        private readonly bool _interpolated;
-
-        public RenderedItems(IEnumerable<object> items, PyRenderingContext context, bool interpolated)
-        {
-            _items = items;
-            _context = context;
-            _interpolated = interpolated;
-        }
-
-        public IEnumerator<PyString> GetEnumerator()
-        {
-            foreach (var item in _items)
-            {
-                yield return _interpolated ? PyRendering.ToInterpolatedPyString(item, _context) : PyRendering.ToPythonPyString(item, _context);
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 }
 
 internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, INamedRuntimeCallable

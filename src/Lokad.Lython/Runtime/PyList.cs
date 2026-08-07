@@ -309,27 +309,4 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     private static long EstimateArrayBytes(int count) => 32L + (16L * count);
 
-    private sealed class RenderedItems : IEnumerable<PyString>
-    {
-        private readonly IEnumerable<object> _items;
-        private readonly PyRenderingContext _context;
-        private readonly bool _interpolated;
-
-        public RenderedItems(IEnumerable<object> items, PyRenderingContext context, bool interpolated)
-        {
-            _items = items;
-            _context = context;
-            _interpolated = interpolated;
-        }
-
-        public IEnumerator<PyString> GetEnumerator()
-        {
-            foreach (var item in _items)
-            {
-                yield return _interpolated ? PyRendering.ToInterpolatedPyString(item, _context) : PyRendering.ToPythonPyString(item, _context);
-            }
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 }

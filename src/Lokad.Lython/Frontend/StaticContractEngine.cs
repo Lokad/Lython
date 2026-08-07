@@ -339,7 +339,7 @@ internal static class StaticContractEngine
         {
             foreach (var pair in pairs)
             {
-                if (AbstractValuesEqual(pair.Key, key))
+                if (AbstractValue.LiteralValuesEqual(pair.Key, key))
                 {
                     value = pair.Value.WithSpan(call.Span);
                     return true;
@@ -396,25 +396,6 @@ internal static class StaticContractEngine
         }
 
         return result.Kind == AbstractValueKind.Never ? AbstractValue.Unknown(span) : result;
-    }
-
-    private static bool AbstractValuesEqual(AbstractValue left, AbstractValue right)
-    {
-        if (left.Kind != right.Kind)
-        {
-            return false;
-        }
-
-        return left.Kind switch
-        {
-            AbstractValueKind.String or
-            AbstractValueKind.Integer or
-            AbstractValueKind.Float or
-            AbstractValueKind.Boolean => Equals(left.Value, right.Value),
-            AbstractValueKind.Bytes => ((byte[])left.Value).AsSpan().SequenceEqual((byte[])right.Value),
-            AbstractValueKind.None => true,
-            _ => false
-        };
     }
 
     private static bool IsInputCall(CallExpressionSyntax call)

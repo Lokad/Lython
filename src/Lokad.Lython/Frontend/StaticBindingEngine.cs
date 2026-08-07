@@ -29,7 +29,7 @@ internal static class StaticBindingEngine
                 }
                 else
                 {
-                    if (IsStarImport(importStatement.ImportedMembers))
+                    if (ImportSyntaxFacts.IsStarImport(importStatement.ImportedMembers))
                     {
                         foreach (var memberName in StaticContracts.GetModuleExportedMemberNames(importStatement.ModuleName))
                         {
@@ -162,9 +162,6 @@ internal static class StaticBindingEngine
             _ => false
         };
     }
-
-    private static bool IsStarImport(IReadOnlyList<ImportedMemberSyntax> members)
-        => members.Count == 1 && members[0].Name == "*";
 
     private static void RemoveAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)
     {

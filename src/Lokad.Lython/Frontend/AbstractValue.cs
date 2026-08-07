@@ -399,7 +399,7 @@ internal readonly record struct AbstractValue(
         return left.Kind switch
         {
             AbstractValueKind.String => Equals(left.Value, right.Value) ? left.WithSpan(span) : StringType(span),
-            AbstractValueKind.Bytes => ByteArraysEqual((byte[])left.Value, (byte[])right.Value) ? left.WithSpan(span) : BytesType(span),
+            AbstractValueKind.Bytes => LiteralValuesEqual(left, right) ? left.WithSpan(span) : BytesType(span),
             AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
             AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
             AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
@@ -699,7 +699,7 @@ internal readonly record struct AbstractValue(
         return true;
     }
 
-    private static bool AbstractValuesEqual(AbstractValue left, AbstractValue right)
+    public static bool LiteralValuesEqual(AbstractValue left, AbstractValue right)
     {
         if (left.Kind != right.Kind)
         {
@@ -712,10 +712,30 @@ internal readonly record struct AbstractValue(
             AbstractValueKind.Integer or
             AbstractValueKind.Float or
             AbstractValueKind.Boolean => Equals(left.Value, right.Value),
-            AbstractValueKind.Bytes => ByteArraysEqual((byte[])left.Value, (byte[])right.Value),
+            AbstractValueKind.Bytes => ((byte[])left.Value).AsSpan().SequenceEqual((byte[])right.Value),
             AbstractValueKind.None => true,
             _ => false
         };
+    }
+
+    public static bool TryGetExactSequenceLength(AbstractValue value, out int length)
+    {
+        switch (value.Kind)
+        {
+            case AbstractValueKind.String:
+                length = ((string)value.Value).Length;
+                return true;
+            case AbstractValueKind.Bytes:
+                length = ((byte[])value.Value).Length;
+                return true;
+            case AbstractValueKind.List:
+            case AbstractValueKind.Tuple:
+                length = ((IReadOnlyList<AbstractValue>)value.Value).Count;
+                return true;
+            default:
+                length = 0;
+                return false;
+        }
     }
 
     private static bool IsComparableLiteralKey(AbstractValue value)
@@ -728,7 +748,7 @@ internal readonly record struct AbstractValue(
 
     private sealed class AbstractLiteralKeyComparer : IEqualityComparer<AbstractValue>
     {
-        public bool Equals(AbstractValue left, AbstractValue right) => AbstractValuesEqual(left, right);
+        public bool Equals(AbstractValue left, AbstractValue right) => LiteralValuesEqual(left, right);
 
         public int GetHashCode(AbstractValue value)
         {
@@ -747,8 +767,6 @@ internal readonly record struct AbstractValue(
         }
     }
 
-    private static bool ByteArraysEqual(byte[] left, byte[] right)
-        => left.AsSpan().SequenceEqual(right);
 }
 
 internal readonly record struct AbstractSequenceLengthBounds(
@@ -819,7 +837,7 @@ internal sealed class AbstractState
     public void Set(string name, AbstractValue value)
     {
         _values[name] = value;
-        if (TryGetExactSequenceLength(value, out var length))
+        if (AbstractValue.TryGetExactSequenceLength(value, out var length))
         {
             _sequenceLengths[name] = AbstractSequenceLengthBounds.Exact(length);
         }
@@ -954,26 +972,6 @@ internal sealed class AbstractState
     {
         _version++;
         _abstractValueCache.Clear();
-    }
-
-    private static bool TryGetExactSequenceLength(AbstractValue value, out int length)
-    {
-        switch (value.Kind)
-        {
-            case AbstractValueKind.String:
-                length = ((string)value.Value).Length;
-                return true;
-            case AbstractValueKind.Bytes:
-                length = ((byte[])value.Value).Length;
-                return true;
-            case AbstractValueKind.List:
-            case AbstractValueKind.Tuple:
-                length = ((IReadOnlyList<AbstractValue>)value.Value).Count;
-                return true;
-            default:
-                length = 0;
-                return false;
-        }
     }
 
     private readonly record struct CachedAbstractValue(int Version, bool Success, AbstractValue Value);

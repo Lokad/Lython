@@ -28,9 +28,9 @@ internal static class PyRendering
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 BigInteger integer => PyString.FromString(integer.ToString()),
                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)),
-                LythonRuntime.DictKeysView view => JoinRenderedSequence("dict_keys([", new RenderedSequence(view, context, interpolated: true), "])", context),
-                LythonRuntime.DictValuesView view => JoinRenderedSequence("dict_values([", new RenderedSequence(view, context, interpolated: true), "])", context),
-                LythonRuntime.DictItemsView view => JoinRenderedSequence("dict_items([", new RenderedSequence(view, context, interpolated: true), "])", context),
+                LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: true),
+                LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: true),
+                LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: true),
                 PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
@@ -59,9 +59,9 @@ internal static class PyRendering
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 BigInteger integer => PyString.FromString(integer.ToString()),
                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)),
-                LythonRuntime.DictKeysView view => JoinRenderedSequence("dict_keys([", new RenderedSequence(view, context, interpolated: false), "])", context),
-                LythonRuntime.DictValuesView view => JoinRenderedSequence("dict_values([", new RenderedSequence(view, context, interpolated: false), "])", context),
-                LythonRuntime.DictItemsView view => JoinRenderedSequence("dict_items([", new RenderedSequence(view, context, interpolated: false), "])", context),
+                LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: false),
+                LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: false),
+                LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: false),
                 PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
@@ -124,6 +124,31 @@ internal static class PyRendering
             }
 
             builder.Append(item);
+            first = false;
+        }
+
+        builder.AppendString(suffix);
+        return builder.ToPyStringAndRelease();
+    }
+
+    public static PyString JoinRenderedValues(
+        string prefix,
+        IEnumerable<object> values,
+        string suffix,
+        PyRenderingContext context,
+        bool interpolated)
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        builder.AppendString(prefix);
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.AppendAscii(", ");
+            }
+
+            builder.Append(interpolated ? ToInterpolatedPyString(value, context) : ToPythonPyString(value, context));
             first = false;
         }
 
@@ -424,30 +449,6 @@ internal static class PyRendering
         }
         builder.AppendAscii(")");
         return builder.ToPyStringAndRelease();
-    }
-
-    private sealed class RenderedSequence : IEnumerable<PyString>
-    {
-        private readonly IEnumerable<object> _items;
-        private readonly PyRenderingContext _context;
-        private readonly bool _interpolated;
-
-        public RenderedSequence(IEnumerable<object> items, PyRenderingContext context, bool interpolated)
-        {
-            _items = items;
-            _context = context;
-            _interpolated = interpolated;
-        }
-
-        public IEnumerator<PyString> GetEnumerator()
-        {
-            foreach (var item in _items)
-            {
-                yield return _interpolated ? ToInterpolatedPyString(item, _context) : ToPythonPyString(item, _context);
-            }
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     internal sealed class PyStringOrdinalComparer : IComparer<PyString>

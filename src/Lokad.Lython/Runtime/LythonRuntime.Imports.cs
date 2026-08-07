@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        if (IsStarImport(statement.ImportedMembers))
+        if (ImportSyntaxFacts.IsStarImport(statement.ImportedMembers))
         {
             ExecuteStarImport(module, context, statement.Span);
             return;
@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        if (IsStarImport(statement.ImportedMembers))
+        if (ImportSyntaxFacts.IsStarImport(statement.ImportedMembers))
         {
             ExecuteStarImport(module, context, statement.Span);
             return;
@@ -311,9 +311,6 @@ internal sealed partial class LythonRuntime
             StoreName(importedMember.BindingName, value, context, statement.Span);
         }
     }
-
-    private static bool IsStarImport(IReadOnlyList<ImportedMemberSyntax> members)
-        => members.Count == 1 && members[0].Name == "*";
 
     private static void ExecuteStarImport(PyModule module, ExecutionContext context, LythonSourceSpan span)
     {

@@ -74,7 +74,7 @@ internal static class StaticStructuralDiagnostics
             return;
         }
 
-        if (TryGetExactSequenceLength(target, out var length) &&
+        if (AbstractValue.TryGetExactSequenceLength(target, out var length) &&
             IsIndexDefinitelyInvalid(indexValue, length))
         {
             AddDiagnostic(diagnostics, "LA3117", "Index is out of range.", subscript.Index.Span);
@@ -221,9 +221,9 @@ internal static class StaticStructuralDiagnostics
             return;
         }
 
-        if (!TryGetExactSequenceLength(target, out var targetLength) ||
+        if (!AbstractValue.TryGetExactSequenceLength(target, out var targetLength) ||
             !StaticAbstractValueResolver.TryResolve(slice.Expression, bindings, out var replacement) ||
-            !TryGetExactSequenceLength(replacement, out var replacementLength) ||
+            !AbstractValue.TryGetExactSequenceLength(replacement, out var replacementLength) ||
             !TryGetSliceBoundObject(slice.Start, bindings, out var startValue) ||
             !TryGetSliceBoundObject(slice.End, bindings, out var endValue))
         {
@@ -632,26 +632,6 @@ internal static class StaticStructuralDiagnostics
 
     private static bool IsSetLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Set or AbstractValueKind.SetType;
-
-    private static bool TryGetExactSequenceLength(AbstractValue value, out int length)
-    {
-        switch (value.Kind)
-        {
-            case AbstractValueKind.String:
-                length = ((string)value.Value).Length;
-                return true;
-            case AbstractValueKind.Bytes:
-                length = ((byte[])value.Value).Length;
-                return true;
-            case AbstractValueKind.List:
-            case AbstractValueKind.Tuple:
-                length = ((IReadOnlyList<AbstractValue>)value.Value).Count;
-                return true;
-            default:
-                length = 0;
-                return false;
-        }
-    }
 
     private static bool TryGetSequenceName(ExpressionSyntax expression, out string name)
     {
