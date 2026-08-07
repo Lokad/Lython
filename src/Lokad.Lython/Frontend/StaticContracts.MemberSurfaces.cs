@@ -1027,107 +1027,13 @@ internal static partial class StaticContracts
         "weibullvariate",
     };
 
-    public static bool IsKnownSealedMemberSurface(AbstractValue value)
-        => value.Kind is AbstractValueKind.Module && ModuleMembers.ContainsKey((string)value.Value) ||
-           value.Kind is AbstractValueKind.Path or
-            AbstractValueKind.String or
-            AbstractValueKind.StringType or
-            AbstractValueKind.Bytes or
-            AbstractValueKind.BytesType or
-            AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
-            AbstractValueKind.None or
-            AbstractValueKind.TextFileHandle or
-            AbstractValueKind.List or
-            AbstractValueKind.ListType or
-            AbstractValueKind.Tuple or
-            AbstractValueKind.Dict or
-            AbstractValueKind.Set or
-            AbstractValueKind.SetType or
-            AbstractValueKind.CollectionsDefaultDict or
-            AbstractValueKind.CollectionsCounter or
-            AbstractValueKind.CollectionsDeque or
-            AbstractValueKind.CollectionsChainMap or
-            AbstractValueKind.Decimal or
-            AbstractValueKind.DecimalContext or
-            AbstractValueKind.DecimalTuple or
-            AbstractValueKind.DateTimeTimedelta or
-            AbstractValueKind.DateTimeDate or
-            AbstractValueKind.DateTimeTime or
-            AbstractValueKind.DateTimeDateTime or
-            AbstractValueKind.DateTimeTimezone or
-            AbstractValueKind.StatisticsLinearRegression or
-            AbstractValueKind.StatisticsNormalDist or
-            AbstractValueKind.Random or
-            AbstractValueKind.RegexPattern or
-            AbstractValueKind.RegexMatch or
-            AbstractValueKind.ArgparseParser or
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup or
-            AbstractValueKind.CsvReader or
-            AbstractValueKind.CsvDictReader or
-            AbstractValueKind.CsvWriter or
-            AbstractValueKind.CsvDictWriter or
-            AbstractValueKind.DifflibDiffer or
-            AbstractValueKind.DifflibHtmlDiff or
-            AbstractValueKind.DifflibMatch or
-            AbstractValueKind.DifflibSequenceMatcher or
-            AbstractValueKind.PkgutilModuleInfo or
-            AbstractValueKind.PkgutilLoader or
-            AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.SubprocessPopen or
-            AbstractValueKind.DataclassField or
-            AbstractValueKind.OpenPyxlWorkbook or
-            AbstractValueKind.OpenPyxlWorksheet or
-            AbstractValueKind.OpenPyxlCell or
-            AbstractValueKind.OpenPyxlHyperlink or
-            AbstractValueKind.OpenPyxlComment or
-            AbstractValueKind.OpenPyxlFont or
-            AbstractValueKind.OpenPyxlPatternFill or
-            AbstractValueKind.OpenPyxlBorder or
-            AbstractValueKind.OpenPyxlSide or
-            AbstractValueKind.OpenPyxlAlignment or
-            AbstractValueKind.OpenPyxlProtection or
-            AbstractValueKind.OpenPyxlNamedStyle or
-            AbstractValueKind.OpenPyxlColor or
-            AbstractValueKind.OpenPyxlTable or
-            AbstractValueKind.OpenPyxlTableStyleInfo or
-            AbstractValueKind.OpenPyxlDataValidation or
-            AbstractValueKind.OpenPyxlConditionalFormattingRule or
-            AbstractValueKind.OpenPyxlAutoFilter or
-            AbstractValueKind.OpenPyxlSheetProtection or
-            AbstractValueKind.OpenPyxlWorkbookProtection or
-            AbstractValueKind.OpenPyxlDrawing or
-            AbstractValueKind.OpenPyxlChart or
-            AbstractValueKind.OpenPyxlImage or
-            AbstractValueKind.OpenPyxlSheetView or
-            AbstractValueKind.OpenPyxlSelection or
-            AbstractValueKind.OpenPyxlPageMargins or
-            AbstractValueKind.OpenPyxlPageSetup or
-            AbstractValueKind.OpenPyxlTableCollection or
-            AbstractValueKind.OpenPyxlDataValidationList or
-            AbstractValueKind.OpenPyxlConditionalFormattingCollection or
-            AbstractValueKind.OpenPyxlColumnDimension or
-            AbstractValueKind.OpenPyxlRowDimension or
-            AbstractValueKind.OpenPyxlMergedCellSet ||
-           value.Kind == AbstractValueKind.ArgparseNamespace &&
-            ((AbstractArgparseNamespaceSummary)value.Value).IsSealed ||
-           value.Kind == AbstractValueKind.UserInstance &&
-            ((AbstractInstanceSummary)value.Value).Class.IsDataclass;
-
-    public static bool HasKnownMember(AbstractValue value, string memberName)
+    public static bool IsKnownMissingMember(AbstractValue value, string memberName)
     {
-        if (value.Kind == AbstractValueKind.Module && memberName == "__name__")
+        bool? hasMember = value.Kind switch
         {
-            return true;
-        }
-
-        return value.Kind switch
-        {
-            AbstractValueKind.Module => ModuleMembers.TryGetValue((string)value.Value, out var members) && members.Contains(memberName),
+            AbstractValueKind.Module => ModuleMembers.TryGetValue((string)value.Value, out var members)
+                ? memberName == "__name__" || members.Contains(memberName)
+                : null,
             AbstractValueKind.String or AbstractValueKind.StringType => StringMembers.Contains(memberName),
             AbstractValueKind.Bytes or AbstractValueKind.BytesType => BytesMembers.Contains(memberName),
             AbstractValueKind.Integer or
@@ -1162,7 +1068,9 @@ internal static partial class StaticContracts
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),
             AbstractValueKind.ArgparseMutuallyExclusiveGroup => ArgparseGroupMembers.Contains(memberName),
-            AbstractValueKind.ArgparseNamespace => ((AbstractArgparseNamespaceSummary)value.Value).Members.ContainsKey(memberName),
+            AbstractValueKind.ArgparseNamespace => ((AbstractArgparseNamespaceSummary)value.Value).IsSealed
+                ? ((AbstractArgparseNamespaceSummary)value.Value).Members.ContainsKey(memberName)
+                : null,
             AbstractValueKind.CsvReader => CsvReaderMembers.Contains(memberName),
             AbstractValueKind.CsvDictReader => CsvDictReaderMembers.Contains(memberName),
             AbstractValueKind.CsvWriter => CsvWriterMembers.Contains(memberName),
@@ -1209,9 +1117,13 @@ internal static partial class StaticContracts
             AbstractValueKind.OpenPyxlColumnDimension => OpenPyxlColumnDimensionMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlRowDimension => OpenPyxlRowDimensionMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlMergedCellSet => OpenPyxlMergedCellSetMembers.Contains(memberName),
-            AbstractValueKind.UserInstance => HasKnownDataclassInstanceMember((AbstractInstanceSummary)value.Value, memberName),
-            _ => false
+            AbstractValueKind.UserInstance => ((AbstractInstanceSummary)value.Value).Class.IsDataclass
+                ? HasKnownDataclassInstanceMember((AbstractInstanceSummary)value.Value, memberName)
+                : null,
+            _ => null
         };
+
+        return hasMember == false;
     }
 
     private static bool HasKnownDataclassInstanceMember(AbstractInstanceSummary instance, string memberName)

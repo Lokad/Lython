@@ -453,7 +453,7 @@ internal static class StaticAbstractValueResolver
             BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate => AbstractValue.DateTimeTimedelta(span),
             BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.DateTimeDateTime(span),
             BinaryOperatorSyntax.Subtract when left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime => AbstractValue.DateTimeTimedelta(span),
-            BinaryOperatorSyntax.Multiply when IsTimedeltaNumericPair(left, right) => AbstractValue.DateTimeTimedelta(span),
+            BinaryOperatorSyntax.Multiply when StaticAbstractFacts.IsTimedeltaNumericPair(left, right) => AbstractValue.DateTimeTimedelta(span),
             BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.FloatType(span),
             BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.DateTimeTimedelta(span),
             BinaryOperatorSyntax.FloorDivide when left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta => AbstractValue.IntegerType(span),
@@ -465,10 +465,6 @@ internal static class StaticAbstractValueResolver
         return value.Kind != default;
     }
 
-    private static bool IsTimedeltaNumericPair(AbstractValue left, AbstractValue right)
-        => left.Kind == AbstractValueKind.DateTimeTimedelta && StaticAbstractFacts.IsNumericLike(right) ||
-           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
-
     private static bool TryResolveStatisticsBinaryAbstractValue(
         BinaryOperatorSyntax op,
         AbstractValue left,
@@ -478,23 +474,15 @@ internal static class StaticAbstractValueResolver
     {
         value = op switch
         {
-            BinaryOperatorSyntax.Add when IsNormalDistNumericOrDistributionPair(left, right) => AbstractValue.StatisticsNormalDist(span),
-            BinaryOperatorSyntax.Subtract when IsNormalDistNumericOrDistributionPair(left, right) => AbstractValue.StatisticsNormalDist(span),
-            BinaryOperatorSyntax.Multiply when IsNormalDistNumericPair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Add when StaticAbstractFacts.IsNormalDistAdditivePair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Subtract when StaticAbstractFacts.IsNormalDistAdditivePair(left, right) => AbstractValue.StatisticsNormalDist(span),
+            BinaryOperatorSyntax.Multiply when StaticAbstractFacts.IsNormalDistNumericPair(left, right) => AbstractValue.StatisticsNormalDist(span),
             BinaryOperatorSyntax.Divide when left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) => AbstractValue.StatisticsNormalDist(span),
             _ => default
         };
 
         return value.Kind != default;
     }
-
-    private static bool IsNormalDistNumericOrDistributionPair(AbstractValue left, AbstractValue right)
-        => left.Kind == AbstractValueKind.StatisticsNormalDist && (right.Kind == AbstractValueKind.StatisticsNormalDist || StaticAbstractFacts.IsNumericLike(right)) ||
-           (StaticAbstractFacts.IsNumericLike(left) || left.Kind == AbstractValueKind.StatisticsNormalDist) && right.Kind == AbstractValueKind.StatisticsNormalDist;
-
-    private static bool IsNormalDistNumericPair(AbstractValue left, AbstractValue right)
-        => left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
-           StaticAbstractFacts.IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
 
     private static bool TryResolveUnaryAbstractValue(UnaryExpressionSyntax unary, AbstractState bindings, out AbstractValue value)
     {

@@ -4,6 +4,20 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticAbstractFacts
 {
+    public static bool IsTimedeltaNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.DateTimeTimedelta && IsNumericLike(right) ||
+           IsNumericLike(left) && right.Kind == AbstractValueKind.DateTimeTimedelta;
+
+    public static bool IsNormalDistAdditivePair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist &&
+            (right.Kind == AbstractValueKind.StatisticsNormalDist || IsNumericLike(right)) ||
+           (IsNumericLike(left) || left.Kind == AbstractValueKind.StatisticsNormalDist) &&
+            right.Kind == AbstractValueKind.StatisticsNormalDist;
+
+    public static bool IsNormalDistNumericPair(AbstractValue left, AbstractValue right)
+        => left.Kind == AbstractValueKind.StatisticsNormalDist && IsNumericLike(right) ||
+           IsNumericLike(left) && right.Kind == AbstractValueKind.StatisticsNormalDist;
+
     public static bool IsDefinitelyNonCallable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonCallable((AbstractValue)value.Value)
