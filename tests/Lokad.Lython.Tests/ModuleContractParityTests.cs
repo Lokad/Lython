@@ -7,6 +7,21 @@ namespace Lokad.Lython.Tests;
 public sealed class ModuleContractParityTests
 {
     [Fact]
+    public void StaticBuiltinModuleInventories_AreCanonicalSnapshots()
+    {
+        Assert.Same(StaticContracts.GetKnownBuiltinModuleNames(), StaticContracts.GetKnownBuiltinModuleNames());
+        Assert.Same(StaticContracts.GetModuleMemberNames("hashlib"), StaticContracts.GetModuleMemberNames("hashlib"));
+        Assert.Same(StaticContracts.GetModuleExportedMemberNames("hashlib"), StaticContracts.GetModuleExportedMemberNames("hashlib"));
+
+        Assert.Equal(
+            StaticContracts.GetKnownBuiltinModuleNames().Order(StringComparer.Ordinal),
+            StaticContracts.GetKnownBuiltinModuleNames());
+        Assert.Equal(
+            StaticContracts.GetModuleMemberNames("hashlib").Order(StringComparer.Ordinal),
+            StaticContracts.GetModuleMemberNames("hashlib"));
+    }
+
+    [Fact]
     public void StaticBuiltinModuleSurfaceIsResolvableAtRuntime()
     {
         var host = new MockLythonHost();

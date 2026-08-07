@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
-    private static readonly Dictionary<string, HashSet<string>> ModuleMembers = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, BuiltinModuleSurface> ModuleSurfaces = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
         ["builtins"] = BuiltinModuleMembers(),
@@ -457,26 +457,31 @@ internal static partial class StaticContracts
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),
     };
 
+    private static readonly string[] KnownBuiltinModuleNames = ModuleSurfaces.Keys.Order(StringComparer.Ordinal).ToArray();
+
     public static bool IsKnownBuiltinModule(string moduleName)
-        => ModuleMembers.ContainsKey(moduleName);
+        => ModuleSurfaces.ContainsKey(moduleName);
+
+    public static bool IsKnownBuiltinModuleMember(string moduleName, string memberName)
+        => ModuleSurfaces.TryGetValue(moduleName, out var surface) && surface.Contains(memberName);
 
     public static IReadOnlyList<string> GetKnownBuiltinModuleNames()
-        => ModuleMembers.Keys.Order(StringComparer.Ordinal).ToArray();
+        => KnownBuiltinModuleNames;
 
     public static IReadOnlyList<string> GetModuleMemberNames(string moduleName)
-        => ModuleMembers.TryGetValue(moduleName, out var members)
-            ? members.Order(StringComparer.Ordinal).ToArray()
+        => ModuleSurfaces.TryGetValue(moduleName, out var surface)
+            ? surface.MemberNames
             : [];
 
     public static IReadOnlyList<string> GetModuleExportedMemberNames(string moduleName)
-        => ModuleMembers.TryGetValue(moduleName, out var members)
-            ? members.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray()
+        => ModuleSurfaces.TryGetValue(moduleName, out var surface)
+            ? surface.ExportedMemberNames
             : [];
 
     public static bool TryGetModuleMemberValue(string moduleName, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (!ModuleMembers.TryGetValue(moduleName, out var members) ||
-            !members.Contains(memberName))
+        if (!ModuleSurfaces.TryGetValue(moduleName, out var surface) ||
+            !surface.Contains(memberName))
         {
             value = default;
             return false;
@@ -740,11 +745,29 @@ internal static partial class StaticContracts
         return value.Kind != default;
     }
 
-    private static HashSet<string> Members(params string[] names)
-        => new(names, StringComparer.Ordinal);
+    private static BuiltinModuleSurface Members(params string[] names)
+        => new(names);
 
-    private static HashSet<string> BuiltinModuleMembers()
-        => new(
-            ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"]),
-            StringComparer.Ordinal);
+    private static BuiltinModuleSurface BuiltinModuleMembers()
+        => new(ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"]));
+
+    private sealed class BuiltinModuleSurface
+    {
+        private readonly HashSet<string> _memberLookup;
+
+        public BuiltinModuleSurface(IEnumerable<string> members)
+        {
+            _memberLookup = new HashSet<string>(members, StringComparer.Ordinal);
+            MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
+            ExportedMemberNames = MemberNames
+                .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
+                .ToArray();
+        }
+
+        public IReadOnlyList<string> MemberNames { get; }
+
+        public IReadOnlyList<string> ExportedMemberNames { get; }
+
+        public bool Contains(string memberName) => _memberLookup.Contains(memberName);
+    }
 }

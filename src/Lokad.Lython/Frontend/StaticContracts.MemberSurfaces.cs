@@ -1031,8 +1031,8 @@ internal static partial class StaticContracts
     {
         bool? hasMember = value.Kind switch
         {
-            AbstractValueKind.Module => ModuleMembers.TryGetValue((string)value.Value, out var members)
-                ? memberName == "__name__" || members.Contains(memberName)
+            AbstractValueKind.Module => IsKnownBuiltinModule((string)value.Value)
+                ? memberName == "__name__" || IsKnownBuiltinModuleMember((string)value.Value, memberName)
                 : null,
             AbstractValueKind.String or AbstractValueKind.StringType => StringMembers.Contains(memberName),
             AbstractValueKind.Bytes or AbstractValueKind.BytesType => BytesMembers.Contains(memberName),

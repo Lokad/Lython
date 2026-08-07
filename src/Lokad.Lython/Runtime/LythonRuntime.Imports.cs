@@ -5,11 +5,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly string[] AlwaysDiscoverableBuiltinModuleNames = StaticContracts
-        .GetKnownBuiltinModuleNames()
-        .Where(static name => name != "subprocess")
-        .ToArray();
-
     private sealed class FutureModule : PyModule
     {
         public static readonly FutureModule Instance = new();
@@ -508,25 +503,24 @@ internal sealed partial class LythonRuntime
 
     private static IEnumerable<string> EnumerateDiscoverableBuiltinModuleNames(ExecutionContext context)
     {
-        foreach (var moduleName in AlwaysDiscoverableBuiltinModuleNames)
+        foreach (var moduleName in StaticContracts.GetKnownBuiltinModuleNames())
         {
-            yield return moduleName;
-        }
-
-        if (context.Host.SubprocessRunner is not null)
-        {
-            yield return "subprocess";
+            if (!string.Equals(moduleName, "subprocess", StringComparison.Ordinal) ||
+                context.Host.SubprocessRunner is not null)
+            {
+                yield return moduleName;
+            }
         }
     }
 
     private static bool IsDiscoverableBuiltinModuleName(string moduleName, ExecutionContext context)
     {
-        if (AlwaysDiscoverableBuiltinModuleNames.Contains(moduleName, StringComparer.Ordinal))
+        if (!StaticContracts.IsKnownBuiltinModule(moduleName))
         {
-            return true;
+            return false;
         }
 
-        return string.Equals(moduleName, "subprocess", StringComparison.Ordinal) &&
+        return !string.Equals(moduleName, "subprocess", StringComparison.Ordinal) ||
             context.Host.SubprocessRunner is not null;
     }
 
