@@ -1,65 +1,66 @@
 namespace Lokad.Lython.Runtime;
 
+[Flags]
+internal enum LythonVariadicParameters
+{
+    None = 0,
+    Keywords = 1,
+    Positional = 2,
+}
+
 internal readonly record struct LythonCallableSignature(
     string Name,
     string[]? ParameterNames,
     int? RequiredCount,
     int? MaxPositionalCount,
-    bool AllowsExtraKeywords,
-    bool AllowsExtraPositional,
+    LythonVariadicParameters VariadicParameters,
     int PositionalOnlyCount)
 {
     public LythonCallableSignature(string Name)
-        : this(Name, null, null, null, false, false, 0)
+        : this(Name, null, null, null, LythonVariadicParameters.None, 0)
     {
     }
 
     public LythonCallableSignature(string Name, string[]? ParameterNames)
-        : this(Name, ParameterNames, null, null, false, false, 0)
+        : this(Name, ParameterNames, null, null, LythonVariadicParameters.None, 0)
     {
     }
 
     public LythonCallableSignature(string Name, int? RequiredCount)
-        : this(Name, null, RequiredCount, null, false, false, 0)
+        : this(Name, null, RequiredCount, null, LythonVariadicParameters.None, 0)
     {
     }
 
     public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount)
-        : this(Name, ParameterNames, RequiredCount, null, false, false, 0)
+        : this(Name, ParameterNames, RequiredCount, null, LythonVariadicParameters.None, 0)
     {
     }
 
     public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, int? MaxPositionalCount)
-        : this(Name, ParameterNames, RequiredCount, MaxPositionalCount, false, false, 0)
+        : this(Name, ParameterNames, RequiredCount, MaxPositionalCount, LythonVariadicParameters.None, 0)
     {
     }
 
-    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, bool AllowsExtraKeywords)
-        : this(Name, ParameterNames, RequiredCount, null, AllowsExtraKeywords, false, 0)
+    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, LythonVariadicParameters VariadicParameters)
+        : this(Name, ParameterNames, RequiredCount, null, VariadicParameters, 0)
     {
     }
 
-    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, int? MaxPositionalCount, bool AllowsExtraKeywords)
-        : this(Name, ParameterNames, RequiredCount, MaxPositionalCount, AllowsExtraKeywords, false, 0)
+    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, int? MaxPositionalCount, LythonVariadicParameters VariadicParameters)
+        : this(Name, ParameterNames, RequiredCount, MaxPositionalCount, VariadicParameters, 0)
     {
     }
 
-    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, bool AllowsExtraKeywords, bool AllowsExtraPositional)
-        : this(Name, ParameterNames, RequiredCount, null, AllowsExtraKeywords, AllowsExtraPositional, 0)
-    {
-    }
-
-    public LythonCallableSignature(string Name, int? RequiredCount, bool AllowsExtraKeywords, bool AllowsExtraPositional)
-        : this(Name, null, RequiredCount, null, AllowsExtraKeywords, AllowsExtraPositional, 0)
-    {
-    }
-
-    public LythonCallableSignature(string Name, string[]? ParameterNames, int? RequiredCount, int? MaxPositionalCount, bool AllowsExtraKeywords, bool AllowsExtraPositional)
-        : this(Name, ParameterNames, RequiredCount, MaxPositionalCount, AllowsExtraKeywords, AllowsExtraPositional, 0)
+    public LythonCallableSignature(string Name, int? RequiredCount, LythonVariadicParameters VariadicParameters)
+        : this(Name, null, RequiredCount, null, VariadicParameters, 0)
     {
     }
 
     public int MinimumArgumentCount => RequiredCount ?? ParameterNames?.Length ?? 0;
+
+    public bool AllowsExtraKeywords => (VariadicParameters & LythonVariadicParameters.Keywords) != 0;
+
+    public bool AllowsExtraPositional => (VariadicParameters & LythonVariadicParameters.Positional) != 0;
 
     public int? MaximumArgumentCount => AllowsExtraKeywords || AllowsExtraPositional
         ? null
@@ -76,7 +77,7 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature SysSetProfile = new("sys.setprofile", ["function"]);
     public static readonly LythonCallableSignature SysSetRecursionLimit = new("sys.setrecursionlimit", ["limit"]);
     public static readonly LythonCallableSignature SysAddAuditHook = new("sys.addaudithook", ["hook"]);
-    public static readonly LythonCallableSignature SysAudit = new("sys.audit", ["event", "args"], RequiredCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature SysAudit = new("sys.audit", ["event", "args"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
 
     public static readonly LythonCallableSignature PathlibPath = new("pathlib.Path", RequiredCount: 0);
     public static readonly LythonCallableSignature PathlibPurePath = new("pathlib.PurePath", RequiredCount: 0);
@@ -95,11 +96,11 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature CsvDictReader = new("csv.DictReader", ["f", "fieldnames", "restkey", "restval", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 1, MaxPositionalCount: 5);
     public static readonly LythonCallableSignature CsvDictWriter = new("csv.DictWriter", ["f", "fieldnames", "restval", "extrasaction", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], RequiredCount: 2, MaxPositionalCount: 5);
 
-    public static readonly LythonCallableSignature CollectionsDefaultDict = new("collections.defaultdict", ["default_factory", "iterable"], RequiredCount: 0, MaxPositionalCount: 2, AllowsExtraKeywords: true);
-    public static readonly LythonCallableSignature CollectionsCounter = new("collections.Counter", ["iterable"], RequiredCount: 0, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CollectionsDefaultDict = new("collections.defaultdict", ["default_factory", "iterable"], RequiredCount: 0, MaxPositionalCount: 2, VariadicParameters: LythonVariadicParameters.Keywords);
+    public static readonly LythonCallableSignature CollectionsCounter = new("collections.Counter", ["iterable"], RequiredCount: 0, MaxPositionalCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
     public static readonly LythonCallableSignature CollectionsDeque = new("collections.deque", ["iterable", "maxlen"], RequiredCount: 0);
     public static readonly LythonCallableSignature CollectionsNamedTuple = new("collections.namedtuple", ["typename", "field_names", "rename", "defaults", "module"], RequiredCount: 2, MaxPositionalCount: 2);
-    public static readonly LythonCallableSignature CollectionsOrderedDict = new("collections.OrderedDict", ["mapping"], RequiredCount: 0, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CollectionsOrderedDict = new("collections.OrderedDict", ["mapping"], RequiredCount: 0, MaxPositionalCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
     public static readonly LythonCallableSignature CollectionsChainMap = new("collections.ChainMap", RequiredCount: 0);
     public static readonly LythonCallableSignature CollectionsUserDict = new("collections.UserDict", RequiredCount: 0);
     public static readonly LythonCallableSignature CollectionsUserList = new("collections.UserList", RequiredCount: 0);
@@ -107,7 +108,7 @@ internal static class LythonKnownCallableSignatures
 
     public static readonly LythonCallableSignature CopyCopy = new("copy.copy", ["x"]);
     public static readonly LythonCallableSignature CopyDeepCopy = new("copy.deepcopy", ["x", "memo"], RequiredCount: 1);
-    public static readonly LythonCallableSignature CopyReplace = new("copy.replace", ["__object"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature CopyReplace = new("copy.replace", ["__object"], RequiredCount: 1, MaxPositionalCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
 
     public static readonly LythonCallableSignature ShutilCopyFile = new("shutil.copyfile", ["src", "dst", "follow_symlinks"], RequiredCount: 2, MaxPositionalCount: 2);
     public static readonly LythonCallableSignature ShutilCopy = new("shutil.copy", ["src", "dst", "follow_symlinks"], RequiredCount: 2, MaxPositionalCount: 2);
@@ -119,8 +120,8 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature FunctoolsWraps = new("functools.wraps", ["wrapped", "assigned", "updated"], RequiredCount: 1);
     public static readonly LythonCallableSignature FunctoolsTotalOrdering = new("functools.total_ordering", ["cls"]);
     public static readonly LythonCallableSignature FunctoolsReduce = new("functools.reduce", ["function", "iterable", "initializer"], RequiredCount: 2);
-    public static readonly LythonCallableSignature FunctoolsPartial = new("functools.partial", ["func"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
-    public static readonly LythonCallableSignature FunctoolsPartialMethod = new("functools.partialmethod", ["func"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature FunctoolsPartial = new("functools.partial", ["func"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
+    public static readonly LythonCallableSignature FunctoolsPartialMethod = new("functools.partialmethod", ["func"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
     public static readonly LythonCallableSignature FunctoolsCmpToKey = new("functools.cmp_to_key", ["mycmp"]);
     public static readonly LythonCallableSignature FunctoolsLruCache = new("functools.lru_cache", ["maxsize", "typed"], RequiredCount: 0);
     public static readonly LythonCallableSignature FunctoolsCache = new("functools.cache", ["user_function"]);
@@ -178,10 +179,10 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OperatorIOr = new("operator.ior", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorIXor = new("operator.ixor", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorIConcat = new("operator.iconcat", ["a", "b"]);
-    public static readonly LythonCallableSignature OperatorCall = new("operator.call", ["obj"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature OperatorCall = new("operator.call", ["obj"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
     public static readonly LythonCallableSignature OperatorItemGetter = new("operator.itemgetter", RequiredCount: 1);
     public static readonly LythonCallableSignature OperatorAttrGetter = new("operator.attrgetter", RequiredCount: 1);
-    public static readonly LythonCallableSignature OperatorMethodCaller = new("operator.methodcaller", ["name"], RequiredCount: 1, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature OperatorMethodCaller = new("operator.methodcaller", ["name"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
 
     public static readonly LythonCallableSignature Decimal = new("decimal.Decimal", ["value", "context"], RequiredCount: 0);
     public static readonly LythonCallableSignature DecimalTuple = new("decimal.DecimalTuple", ["sign", "digits", "exponent"]);
@@ -315,8 +316,8 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature MathErfc = new("math.erfc", ["x"]);
     public static readonly LythonCallableSignature MathGamma = new("math.gamma", ["x"]);
     public static readonly LythonCallableSignature MathLgamma = new("math.lgamma", ["x"]);
-    public static readonly LythonCallableSignature MathFma = new("math.fma", ["x", "y", "z"], RequiredCount: null, MaxPositionalCount: 3, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 0);
-    public static readonly LythonCallableSignature MathSumProd = new("math.sumprod", ["p", "q"], RequiredCount: null, MaxPositionalCount: 2, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 0);
+    public static readonly LythonCallableSignature MathFma = new("math.fma", ["x", "y", "z"], RequiredCount: null, MaxPositionalCount: 3, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 0);
+    public static readonly LythonCallableSignature MathSumProd = new("math.sumprod", ["p", "q"], RequiredCount: null, MaxPositionalCount: 2, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 0);
 
     public static readonly LythonCallableSignature OpenPyxlWorkbook = new("openpyxl.Workbook", ["write_only", "iso_dates"], RequiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlLoadWorkbook = new("openpyxl.load_workbook", ["filename", "read_only", "keep_vba", "data_only", "keep_links", "rich_text"], RequiredCount: 1);
@@ -381,7 +382,7 @@ internal static class LythonKnownCallableSignatures
         ],
         RequiredCount: 0,
         MaxPositionalCount: 8);
-    public static readonly LythonCallableSignature ArgparseNamespace = new("argparse.Namespace", [], RequiredCount: 0, MaxPositionalCount: 0, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature ArgparseNamespace = new("argparse.Namespace", [], RequiredCount: 0, MaxPositionalCount: 0, VariadicParameters: LythonVariadicParameters.Keywords);
     public static readonly LythonCallableSignature ArgparseFileType = new("argparse.FileType", ["mode", "bufsize", "encoding", "errors"], RequiredCount: 0);
 
     public static readonly LythonCallableSignature DataclassesDataclass = new("dataclasses.dataclass", ["cls", "init", "repr", "eq", "order", "unsafe_hash", "frozen", "match_args", "kw_only", "slots", "weakref_slot"], RequiredCount: 0, MaxPositionalCount: 1);
@@ -391,15 +392,15 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DataclassesFields = new("dataclasses.fields", ["class_or_instance"]);
     public static readonly LythonCallableSignature DataclassesAsDict = new("dataclasses.asdict", ["obj", "dict_factory"], RequiredCount: 1);
     public static readonly LythonCallableSignature DataclassesAsTuple = new("dataclasses.astuple", ["obj", "tuple_factory"], RequiredCount: 1);
-    public static readonly LythonCallableSignature DataclassesReplace = new("dataclasses.replace", ["obj"], RequiredCount: 1, MaxPositionalCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature DataclassesReplace = new("dataclasses.replace", ["obj"], RequiredCount: 1, MaxPositionalCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
 
-    public static readonly LythonCallableSignature TypingTypeVar = new("typing.TypeVar", ["name"], RequiredCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature TypingTypeVar = new("typing.TypeVar", ["name"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
     public static readonly LythonCallableSignature TypingNewType = new("typing.NewType", ["name", "tp"]);
     public static readonly LythonCallableSignature TypingCast = new("typing.cast", ["typ", "val"]);
     public static readonly LythonCallableSignature TypingGetOrigin = new("typing.get_origin", ["tp"]);
     public static readonly LythonCallableSignature TypingGetArgs = new("typing.get_args", ["tp"]);
-    public static readonly LythonCallableSignature TypingNamedTuple = new("typing.NamedTuple", ["typename", "fields"], RequiredCount: 1, AllowsExtraKeywords: true);
-    public static readonly LythonCallableSignature TypingTypedDict = new("typing.TypedDict", ["typename", "fields"], RequiredCount: 1, AllowsExtraKeywords: true);
+    public static readonly LythonCallableSignature TypingNamedTuple = new("typing.NamedTuple", ["typename", "fields"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
+    public static readonly LythonCallableSignature TypingTypedDict = new("typing.TypedDict", ["typename", "fields"], RequiredCount: 1, VariadicParameters: LythonVariadicParameters.Keywords);
 
     private static readonly string[] SubprocessParameters = ["args", "input", "cwd", "timeout", "check", "capture_output", "stdin", "stdout", "stderr", "shell", "text", "encoding", "errors", "env", "universal_newlines"];
     private static readonly string[] SubprocessPopenParameters = ["args", "bufsize", "executable", "stdin", "stdout", "stderr", "preexec_fn", "close_fds", "shell", "cwd", "env", "universal_newlines", "startupinfo", "creationflags", "restore_signals", "start_new_session", "pass_fds", "user", "group", "extra_groups", "encoding", "errors", "text", "umask", "pipesize", "process_group"];
@@ -412,7 +413,7 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature SubprocessCompletedProcess = new("subprocess.CompletedProcess", ["args", "returncode", "stdout", "stderr"], RequiredCount: 2);
     public static readonly LythonCallableSignature SubprocessTimeoutExpired = new("subprocess.TimeoutExpired", ["cmd", "timeout", "output", "stderr"], RequiredCount: 2);
     public static readonly LythonCallableSignature SubprocessList2Cmdline = new("subprocess.list2cmdline", ["seq"]);
-    public static readonly LythonCallableSignature SubprocessUnsupported = new("subprocess.unsupported", RequiredCount: 0, AllowsExtraKeywords: true, AllowsExtraPositional: true);
+    public static readonly LythonCallableSignature SubprocessUnsupported = new("subprocess.unsupported", RequiredCount: 0, VariadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
 
     public static readonly LythonCallableSignature OsListDir = new("os.listdir", ["path"], RequiredCount: 0);
     public static readonly LythonCallableSignature OsWalk = new("os.walk", ["top", "topdown", "onerror", "followlinks"], RequiredCount: 0);
@@ -537,18 +538,18 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature TimeMonotonicNs = new("time.monotonic_ns", []);
     public static readonly LythonCallableSignature TimePerfCounter = new("time.perf_counter", []);
     public static readonly LythonCallableSignature TimePerfCounterNs = new("time.perf_counter_ns", []);
-    public static readonly LythonCallableSignature TimeSleep = new("time.sleep", ["secs"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
-    public static readonly LythonCallableSignature TimeGetClockInfo = new("time.get_clock_info", ["name"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeSleep = new("time.sleep", ["secs"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeGetClockInfo = new("time.get_clock_info", ["name"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
     public static readonly LythonCallableSignature TimeProcessTime = new("time.process_time", []);
     public static readonly LythonCallableSignature TimeProcessTimeNs = new("time.process_time_ns", []);
     public static readonly LythonCallableSignature TimeThreadTime = new("time.thread_time", []);
     public static readonly LythonCallableSignature TimeThreadTimeNs = new("time.thread_time_ns", []);
-    public static readonly LythonCallableSignature TimeClockGetTime = new("time.clock_gettime", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
-    public static readonly LythonCallableSignature TimeClockGetTimeNs = new("time.clock_gettime_ns", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
-    public static readonly LythonCallableSignature TimeClockGetRes = new("time.clock_getres", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
-    public static readonly LythonCallableSignature TimeClockSetTime = new("time.clock_settime", ["clk_id", "time"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 2);
-    public static readonly LythonCallableSignature TimeClockSetTimeNs = new("time.clock_settime_ns", ["clk_id", "time_ns"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 2);
-    public static readonly LythonCallableSignature TimePthreadGetCpuClockId = new("time.pthread_getcpuclockid", ["thread_id"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockGetTime = new("time.clock_gettime", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockGetTimeNs = new("time.clock_gettime_ns", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockGetRes = new("time.clock_getres", ["clk_id"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeClockSetTime = new("time.clock_settime", ["clk_id", "time"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 2);
+    public static readonly LythonCallableSignature TimeClockSetTimeNs = new("time.clock_settime_ns", ["clk_id", "time_ns"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 2);
+    public static readonly LythonCallableSignature TimePthreadGetCpuClockId = new("time.pthread_getcpuclockid", ["thread_id"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
     public static readonly LythonCallableSignature TimeGmtime = new("time.gmtime", ["secs"], RequiredCount: 0);
     public static readonly LythonCallableSignature TimeLocaltime = new("time.localtime", ["secs"], RequiredCount: 0);
     public static readonly LythonCallableSignature TimeCtime = new("time.ctime", ["secs"], RequiredCount: 0);
@@ -556,7 +557,7 @@ internal static class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature TimeAsctime = new("time.asctime", ["t"], RequiredCount: 0);
     public static readonly LythonCallableSignature TimeStrftime = new("time.strftime", ["format", "t"], RequiredCount: 1);
     public static readonly LythonCallableSignature TimeStrptime = new("time.strptime", ["string", "format"], RequiredCount: 1);
-    public static readonly LythonCallableSignature TimeStructTime = new("time.struct_time", ["sequence"], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
+    public static readonly LythonCallableSignature TimeStructTime = new("time.struct_time", ["sequence"], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
     public static readonly LythonCallableSignature TimeTzset = new("time.tzset", []);
 
     public static readonly LythonCallableSignature ItertoolsChain = new("itertools.chain", RequiredCount: 0);

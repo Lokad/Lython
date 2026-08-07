@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1)),
+                }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1)),
                 "expandtabs" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)

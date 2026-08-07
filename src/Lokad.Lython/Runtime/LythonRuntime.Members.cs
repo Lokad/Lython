@@ -1198,10 +1198,10 @@ internal sealed partial class LythonRuntime
         private static LythonCallableSignature NoArguments(string name) => new(name, []);
 
         private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => new(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
+            => new(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
 
         private static LythonCallableSignature VariadicPositional(string name)
-            => new(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: true, PositionalOnlyCount: 0);
+            => new(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.Positional, PositionalOnlyCount: 0);
 
         private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {
