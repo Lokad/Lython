@@ -4,7 +4,12 @@ internal sealed class DelayedLythonHost : ILythonHost
 {
     private readonly MockLythonHost _inner;
 
-    public DelayedLythonHost(string cwd = "/")
+    public DelayedLythonHost()
+        : this("/")
+    {
+    }
+
+    public DelayedLythonHost(string cwd)
     {
         _inner = new MockLythonHost(cwd);
     }

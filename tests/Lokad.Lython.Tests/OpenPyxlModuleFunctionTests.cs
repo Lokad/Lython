@@ -3477,7 +3477,13 @@ wb.save("/out.xlsx")
         return stream.ToArray();
     }
 
-    private static byte[] WorkbookWithWorksheetPreservedFeaturesBytes(string? drawingXml = null, string? vmlDrawingXml = null)
+    private static byte[] WorkbookWithWorksheetPreservedFeaturesBytes()
+        => WorkbookWithWorksheetPreservedFeaturesBytes(null, null);
+
+    private static byte[] WorkbookWithWorksheetPreservedFeaturesBytes(string? drawingXml)
+        => WorkbookWithWorksheetPreservedFeaturesBytes(drawingXml, null);
+
+    private static byte[] WorkbookWithWorksheetPreservedFeaturesBytes(string? drawingXml, string? vmlDrawingXml)
     {
         using var stream = new MemoryStream();
         using (var archive = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))

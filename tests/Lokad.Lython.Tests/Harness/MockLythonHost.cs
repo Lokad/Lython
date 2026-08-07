@@ -18,7 +18,12 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     private readonly MockSubprocessRunner _subprocess = new();
     private ILythonTiming? _timing;
 
-    public MockLythonHost(string cwd = "/")
+    public MockLythonHost()
+        : this("/")
+    {
+    }
+
+    public MockLythonHost(string cwd)
     {
         Cwd = NormalizeDirectory(cwd);
         _directories.Add("/");
@@ -45,7 +50,13 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public ILythonTiming? Timing => _timing;
 
-    public MockTiming EnableTiming(long monotonicNanoseconds = 0, long resolutionNanoseconds = 1)
+    public MockTiming EnableTiming()
+        => EnableTiming(0, 1);
+
+    public MockTiming EnableTiming(long monotonicNanoseconds)
+        => EnableTiming(monotonicNanoseconds, 1);
+
+    public MockTiming EnableTiming(long monotonicNanoseconds, long resolutionNanoseconds)
     {
         var timing = new MockTiming(monotonicNanoseconds, resolutionNanoseconds);
         _timing = timing;
@@ -426,7 +437,13 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public void CompleteSubprocessAsynchronously() => _subprocess.CompleteAsynchronously = true;
 
-    public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode, string stdout = "", string stderr = "")
+    public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode)
+        => SeedSubprocessResult(args, returnCode, string.Empty, string.Empty);
+
+    public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode, string stdout)
+        => SeedSubprocessResult(args, returnCode, stdout, string.Empty);
+
+    public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode, string stdout, string stderr)
     {
         _subprocess.SeedResult(args, returnCode, stdout, stderr);
     }

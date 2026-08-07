@@ -75,8 +75,13 @@ public sealed class SubprocessCompletionSubsystemTests
 
     private static LythonSubprocessRequest Request(
         LythonSubprocessStreamMode standardOutput,
+        LythonSubprocessStreamMode standardError) =>
+        Request(standardOutput, standardError, null);
+
+    private static LythonSubprocessRequest Request(
+        LythonSubprocessStreamMode standardOutput,
         LythonSubprocessStreamMode standardError,
-        long? maxOutputBytes = null) =>
+        long? maxOutputBytes) =>
         new(
             Args: ["tool"],
             Cwd: null,

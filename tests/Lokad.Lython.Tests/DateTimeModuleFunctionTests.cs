@@ -300,7 +300,10 @@ import datetime
         }
     }
 
-    private static string EvaluateToString(string expression, MockLythonHost? host = null)
+    private static string EvaluateToString(string expression)
+        => EvaluateToString(expression, null);
+
+    private static string EvaluateToString(string expression, MockLythonHost? host)
     {
         var source = $$"""
 import datetime
