@@ -2,7 +2,37 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
+internal readonly record struct BoundCallArguments(object[] Values, ArgumentPresence Assigned);
+
+internal sealed class ArgumentPresence
+{
+    private readonly bool[] _assigned;
+
+    public ArgumentPresence(int length)
+    {
+        _assigned = new bool[length];
+    }
+
+    public static ArgumentPresence Empty { get; } = new(0);
+
+    public int Length => _assigned.Length;
+
+    public bool this[int index]
+    {
+        get => _assigned[index];
+        set => _assigned[index] = value;
+    }
+
+    public ArgumentPresence WithLength(int length)
+    {
+        var resized = new ArgumentPresence(length);
+        Array.Copy(_assigned, resized._assigned, Math.Min(length, _assigned.Length));
+        return resized;
+    }
+
+    public void MarkRange(int start, int count)
+        => Array.Fill(_assigned, true, start, count);
+}
 
 internal static class CallBinder
 {
@@ -83,9 +113,7 @@ internal static class CallBinder
         var values = new object[signature.ParameterNames.Length];
         Array.Fill(values, PyNone.Instance);
         Array.Copy(bound.Values, values, bound.Values.Length);
-        var assigned = new bool[signature.ParameterNames.Length];
-        Array.Copy(bound.Assigned, assigned, bound.Assigned.Length);
-        return new BoundCallArguments(values, assigned);
+        return new BoundCallArguments(values, bound.Assigned.WithLength(signature.ParameterNames.Length));
     }
 
     public static object[] BindNamedArguments(
@@ -116,7 +144,7 @@ internal static class CallBinder
         {
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Name is not null)
+                if (arguments[i].IsKeyword)
                 {
                     throw CallErrors.NoKeywordArguments(callableKind, callableName, span);
                 }
@@ -128,18 +156,18 @@ internal static class CallBinder
                 positionalOnly[i] = arguments[i].Value;
             }
 
-            return new BoundCallArguments(positionalOnly, Array.Empty<bool>());
+            return new BoundCallArguments(positionalOnly, ArgumentPresence.Empty);
         }
 
         var bound = new object[parameterNames.Length];
         Array.Fill(bound, PyNone.Instance);
-        var assigned = new bool[parameterNames.Length];
+        var assigned = new ArgumentPresence(parameterNames.Length);
         List<object>? extraPositional = null;
         var positionalIndex = 0;
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (maxPositionalCount.HasValue && positionalIndex >= maxPositionalCount.Value)
                 {
@@ -169,24 +197,25 @@ internal static class CallBinder
                 continue;
             }
 
-            if (parameterIndices is null || !parameterIndices.TryGetValue(argument.Name, out var index))
+            var keywordName = argument.KeywordName;
+            if (parameterIndices is null || !parameterIndices.TryGetValue(keywordName, out var index))
             {
                 if (allowsExtraKeywords)
                 {
                     continue;
                 }
 
-                throw CallErrors.UnexpectedKeyword(callableKind, callableName, argument.Name, span);
+                throw CallErrors.UnexpectedKeyword(callableKind, callableName, keywordName, span);
             }
 
             if (index < positionalOnlyCount)
             {
-                throw CallErrors.UnexpectedKeyword(callableKind, callableName, argument.Name, span);
+                throw CallErrors.UnexpectedKeyword(callableKind, callableName, keywordName, span);
             }
 
             if (assigned[index])
             {
-                throw CallErrors.MultipleValues(callableKind, callableName, argument.Name, span);
+                throw CallErrors.MultipleValues(callableKind, callableName, keywordName, span);
             }
 
             bound[index] = argument.Value;
@@ -214,7 +243,7 @@ internal static class CallBinder
 
         if (extraPositional is null || extraPositional.Count == 0)
         {
-            return new BoundCallArguments(bound[..count], assigned[..count]);
+            return new BoundCallArguments(bound[..count], assigned.WithLength(count));
         }
 
         var result = new object[count + extraPositional.Count];
@@ -224,9 +253,8 @@ internal static class CallBinder
             result[count + i] = extraPositional[i];
         }
 
-        var resultAssigned = new bool[result.Length];
-        Array.Copy(assigned, resultAssigned, count);
-        Array.Fill(resultAssigned, true, count, extraPositional.Count);
+        var resultAssigned = assigned.WithLength(result.Length);
+        resultAssigned.MarkRange(count, extraPositional.Count);
         return new BoundCallArguments(result, resultAssigned);
     }
 

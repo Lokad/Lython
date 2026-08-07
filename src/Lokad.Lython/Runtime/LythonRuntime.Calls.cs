@@ -711,7 +711,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var argument in arguments)
         {
-            if (argument.Name is null)
+            if (argument.IsPositional)
             {
                 if (positionalIndex >= plan.PositionalParameters.Count)
                 {
@@ -729,16 +729,17 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!plan.NamedParameters.TryGetValue(argument.Name, out var named))
+            var keywordName = argument.KeywordName;
+            if (!plan.NamedParameters.TryGetValue(keywordName, out var named))
             {
                 if (plan.VariadicDictionary is null)
                 {
-                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, argument.Name, span);
+                    throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
                 }
 
-                if (!extraKeywords.TryAdd(argument.Name, argument.Value))
+                if (!extraKeywords.TryAdd(keywordName, argument.Value))
                 {
-                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.Name, span);
+                    throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
                 }
 
                 continue;
@@ -746,7 +747,7 @@ internal sealed partial class LythonRuntime
 
             if (!bound.TryAdd(named.Name, argument.Value))
             {
-                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, argument.Name, span);
+                throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
             }
         }
 

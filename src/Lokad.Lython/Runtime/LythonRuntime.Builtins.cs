@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         Latin1,
     }
 
-    private readonly record struct BoundOpenArguments(object[] Values, bool[] Assigned, int Count)
+    private readonly record struct BoundOpenArguments(object[] Values, ArgumentPresence Assigned, int Count)
     {
         public static BoundOpenArguments From(BoundCallArguments bound)
         {
@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
 
         var bound = new object[8];
         Array.Fill(bound, PyNone.Instance);
-        var assigned = new bool[8];
+        var assigned = new ArgumentPresence(8);
         for (var i = 0; i < arguments.Length; i++)
         {
             bound[i] = arguments[i];
