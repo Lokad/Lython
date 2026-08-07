@@ -267,18 +267,31 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var result = CreateCounterResult(left, right, span);
-        foreach (var key in UnionCounterKeys(left, right))
+        var seen = new HashSet<object>(PyValueComparer.Instance);
+        foreach (var pair in left.Items)
         {
-            var count = combine(ExpectCounterCount(left.GetCount(key), span), ExpectCounterCount(right.GetCount(key), span));
-            if (keepPositiveOnly && CompareCounterCounts(count, BigInteger.Zero, span) <= 0)
-            {
-                continue;
-            }
+            seen.Add(pair.Key);
+            AddResult(pair.Key, pair.Value, right.GetCount(pair.Key));
+        }
 
-            result.SetItem(key, count);
+        foreach (var pair in right.Items)
+        {
+            if (seen.Add(pair.Key))
+            {
+                AddResult(pair.Key, BigInteger.Zero, pair.Value);
+            }
         }
 
         return result;
+
+        void AddResult(object key, object leftCount, object rightCount)
+        {
+            var count = combine(ExpectCounterCount(leftCount, span), ExpectCounterCount(rightCount, span));
+            if (!keepPositiveOnly || CompareCounterCounts(count, BigInteger.Zero, span) > 0)
+            {
+                result.SetItem(key, count);
+            }
+        }
     }
 
     internal static object AddCounterCounts(object left, object right, LythonSourceSpan span)
@@ -322,20 +335,6 @@ internal sealed partial class LythonRuntime
         var governor = left.OwnerMemoryGovernor ?? right?.OwnerMemoryGovernor;
         var allocationSpan = left.AllocationSpan ?? right?.AllocationSpan ?? span;
         return governor is null ? new PyCounter() : new PyCounter(governor, allocationSpan);
-    }
-
-    private static IReadOnlyList<object> UnionCounterKeys(PyCounter left, PyCounter right)
-    {
-        var keys = new List<object>();
-        foreach (var key in left.Keys.Concat(right.Keys))
-        {
-            if (!keys.Any(existing => AreEqual(existing, key)))
-            {
-                keys.Add(key);
-            }
-        }
-
-        return keys;
     }
 
     private static object EvaluateBitwiseNot(object operand, LythonSourceSpan span)

@@ -429,13 +429,15 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public object GetSlice(IEnumerable<int> indices)
     {
         var source = _items.ToArray();
-        var items = new List<object>();
-        foreach (var index in indices)
-        {
-            items.Add(source[index]);
-        }
+        return new PyDeque(EnumerateSliceItems(), MaxLength);
 
-        return new PyDeque(items, MaxLength);
+        IEnumerable<object> EnumerateSliceItems()
+        {
+            foreach (var index in indices)
+            {
+                yield return source[index];
+            }
+        }
     }
 
     public object CreateSlice(IEnumerable<object> items) => new PyDeque(items, MaxLength);

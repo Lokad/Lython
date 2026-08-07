@@ -245,23 +245,19 @@ internal sealed partial class LythonRuntime
             _ = span;
             var prefixText = prefix.AsString();
             var descriptors = CreateBuiltinDescriptors(context);
-            var topLevel = descriptors
-                .Where(static descriptor => !descriptor.Name.Contains('.'))
-                .OrderBy(static descriptor => descriptor.Name, StringComparer.Ordinal);
-
-            foreach (var descriptor in topLevel)
+            string? activePackagePrefix = null;
+            foreach (var descriptor in descriptors)
             {
-                yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
-                if (!recursive || !descriptor.IsPackage)
+                if (!descriptor.Name.Contains('.'))
                 {
+                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
+                    activePackagePrefix = recursive && descriptor.IsPackage ? descriptor.Name + "." : null;
                     continue;
                 }
 
-                foreach (var child in descriptors
-                    .Where(child => child.Name.StartsWith(descriptor.Name + ".", StringComparison.Ordinal))
-                    .OrderBy(static child => child.Name, StringComparer.Ordinal))
+                if (activePackagePrefix is not null && descriptor.Name.StartsWith(activePackagePrefix, StringComparison.Ordinal))
                 {
-                    yield return child.ToModuleInfo(prefixText + child.Name);
+                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
                 }
             }
 
@@ -587,13 +583,13 @@ internal sealed partial class LythonRuntime
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal)
                 .ToArray();
-            var nameSet = names.ToHashSet(StringComparer.Ordinal);
-            var descriptors = new List<DiscoveredModule>();
-            foreach (var name in names)
+            var descriptors = new List<DiscoveredModule>(names.Length);
+            for (var index = 0; index < names.Length; index++)
             {
+                var name = names[index];
                 descriptors.Add(new DiscoveredModule(
                     name,
-                    IsPackage: nameSet.Any(candidate => candidate.StartsWith(name + ".", StringComparison.Ordinal)),
+                    IsPackage: index + 1 < names.Length && names[index + 1].StartsWith(name + ".", StringComparison.Ordinal),
                     SourcePath: null));
             }
 
