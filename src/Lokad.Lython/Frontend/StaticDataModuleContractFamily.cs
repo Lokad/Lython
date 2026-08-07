@@ -682,14 +682,14 @@ internal static class StaticDataModuleContractFamily
 
         var instance = (AbstractInstanceSummary)value.Value;
         var hook = deep ? "__deepcopy__" : "__copy__";
-        if (instance.Class.Methods.ContainsKey(hook) || instance.Class.Fields.Any(field => field.Name == hook))
+        if (instance.Class.Methods.ContainsKey(hook) || instance.Class.FieldsByName.ContainsKey(hook))
         {
             return false;
         }
 
         foreach (var protocol in new[] { "__reduce_ex__", "__reduce__", "__getstate__", "__setstate__" })
         {
-            if (instance.Class.Methods.ContainsKey(protocol) || instance.Class.Fields.Any(field => field.Name == protocol))
+            if (instance.Class.Methods.ContainsKey(protocol) || instance.Class.FieldsByName.ContainsKey(protocol))
             {
                 AddDiagnostic(diagnostics, "LA3158", $"copy protocol {protocol} is unsupported by Lython; define {hook} instead.", expression.Span);
                 return true;
@@ -723,27 +723,13 @@ internal static class StaticDataModuleContractFamily
 
         foreach (var keyword in arguments.Keywords)
         {
-            var found = false;
-            var includeInInit = false;
-            foreach (var candidate in instance.Class.Fields)
-            {
-                if (candidate.Name != keyword.Key)
-                {
-                    continue;
-                }
-
-                found = true;
-                includeInInit = candidate.IncludeInInit;
-                break;
-            }
-
-            if (!found)
+            if (!instance.Class.FieldsByName.TryGetValue(keyword.Key, out var field))
             {
                 AddDiagnostic(diagnostics, "LA3156", $"copy.replace() got an unexpected field '{keyword.Key}'.", keyword.Value.Span);
                 return true;
             }
 
-            if (!includeInInit)
+            if (!field.IncludeInInit)
             {
                 AddDiagnostic(diagnostics, "LA3156", $"copy.replace() cannot override init=False field '{keyword.Key}'.", keyword.Value.Span);
                 return true;

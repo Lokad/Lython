@@ -1216,6 +1216,6 @@ internal static partial class StaticContracts
 
     private static bool HasKnownDataclassInstanceMember(AbstractInstanceSummary instance, string memberName)
         => instance.Class.IsDataclass &&
-           (instance.Class.Fields.Any(field => field.StoreOnInstance && string.Equals(field.Name, memberName, StringComparison.Ordinal)) ||
+           (instance.Class.FieldsByName.TryGetValue(memberName, out var field) && field.StoreOnInstance ||
             instance.Class.Methods.ContainsKey(memberName));
 }

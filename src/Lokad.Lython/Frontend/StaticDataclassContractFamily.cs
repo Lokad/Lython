@@ -114,8 +114,9 @@ internal static class StaticDataclassContractFamily
                     continue;
                 }
 
-                var field = instance.Class.Fields.FirstOrDefault(candidate => string.Equals(candidate.Name, keyword, StringComparison.Ordinal));
-                if (field.Name is not null && field.StoreOnInstance && field.IncludeInInit)
+                if (instance.Class.FieldsByName.TryGetValue(keyword, out var field) &&
+                    field.StoreOnInstance &&
+                    field.IncludeInInit)
                 {
                     fields[keyword] = arguments.ResolveKeywordValue(keyword, bindings).WithSpan(span);
                 }
@@ -156,8 +157,7 @@ internal static class StaticDataclassContractFamily
                 continue;
             }
 
-            var field = instance.Class.Fields.FirstOrDefault(candidate => string.Equals(candidate.Name, keyword, StringComparison.Ordinal));
-            if (field.Name is null)
+            if (!instance.Class.FieldsByName.TryGetValue(keyword, out var field))
             {
                 AddDiagnostic(diagnostics, "LA3156", $"dataclasses.replace() got an unexpected field '{keyword}'.", expression.Span);
                 emitted = true;
@@ -231,7 +231,7 @@ internal static class StaticDataclassContractFamily
         };
 
     private static IEnumerable<AbstractClassFieldSummary> GetVisibleDataclassFields(AbstractClassSummary summary)
-        => summary.Fields.Where(static field => field.StoreOnInstance);
+        => summary.StoredFields;
 
     private static bool IsDataclassesFieldCall(CallExpressionSyntax call)
         => call.Target is IdentifierExpressionSyntax { Name: "field" } or

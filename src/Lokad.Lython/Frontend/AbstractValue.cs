@@ -137,7 +137,20 @@ internal sealed record AbstractClassSummary(
     IReadOnlyList<AbstractClassFieldSummary> Fields,
     IReadOnlyDictionary<string, AbstractFunctionSummary> Methods,
     bool IsDataclass,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    public IReadOnlyDictionary<string, AbstractClassFieldSummary> FieldsByName { get; } =
+        Fields.ToDictionary(static field => field.Name, StringComparer.Ordinal);
+
+    public AbstractClassFieldSummary[] InitFields { get; } =
+        Fields.Where(static field => field.IncludeInInit).ToArray();
+
+    public AbstractClassFieldSummary[] PositionalInitFields { get; } =
+        Fields.Where(static field => field.IncludeInInit && !field.KeywordOnly).ToArray();
+
+    public AbstractClassFieldSummary[] StoredFields { get; } =
+        Fields.Where(static field => field.StoreOnInstance).ToArray();
+}
 
 internal readonly record struct AbstractClassFieldSummary(
     string Name,

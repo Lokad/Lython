@@ -386,8 +386,8 @@ internal static class StaticBindingEngine
             return false;
         }
 
-        var initFields = summary.Fields.Where(static field => field.IncludeInInit).ToArray();
-        var positionalFields = initFields.Where(static field => !field.KeywordOnly).ToArray();
+        var initFields = summary.InitFields;
+        var positionalFields = summary.PositionalInitFields;
         if (arguments.Positional.Count > positionalFields.Length)
         {
             value = default;
@@ -412,8 +412,9 @@ internal static class StaticBindingEngine
 
         foreach (var (keyword, expression) in arguments.Keywords)
         {
-            var field = initFields.FirstOrDefault(candidate => string.Equals(candidate.Name, keyword, StringComparison.Ordinal));
-            if (field.Name is null || !consumedFields.Add(keyword))
+            if (!summary.FieldsByName.TryGetValue(keyword, out var field) ||
+                !field.IncludeInInit ||
+                !consumedFields.Add(keyword))
             {
                 value = default;
                 return false;
@@ -526,8 +527,8 @@ internal static class StaticBindingEngine
             return false;
         }
 
-        var initFields = summary.Fields.Where(static field => field.IncludeInInit).ToArray();
-        var positionalFields = initFields.Where(static field => !field.KeywordOnly).ToArray();
+        var initFields = summary.InitFields;
+        var positionalFields = summary.PositionalInitFields;
         if (arguments.Positional.Count > positionalFields.Length)
         {
             reason = "too many positional arguments";
@@ -543,8 +544,7 @@ internal static class StaticBindingEngine
 
         foreach (var (keyword, expression) in arguments.Keywords)
         {
-            var field = initFields.FirstOrDefault(candidate => string.Equals(candidate.Name, keyword, StringComparison.Ordinal));
-            if (field.Name is null)
+            if (!summary.FieldsByName.TryGetValue(keyword, out var field) || !field.IncludeInInit)
             {
                 reason = $"unexpected keyword '{keyword}'";
                 offendingExpression = expression;
