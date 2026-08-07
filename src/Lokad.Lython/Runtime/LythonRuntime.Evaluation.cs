@@ -376,53 +376,7 @@ internal sealed partial class LythonRuntime
         var target = EvaluateExpression(statement.Target, context);
         var index = EvaluateExpression(statement.Index, context);
         var value = EvaluateExpression(statement.Expression, context);
-
-        switch (target)
-        {
-            case IMutablePySubscriptableValue subscriptable:
-                subscriptable.SetSubscript(index, value, statement.Span);
-                return;
-
-            case IMutablePySequenceValue sequence:
-                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span), value);
-                return;
-
-            case PyDict dict:
-                dict.AttachMemoryGovernor(context.MemoryGovernor, statement.Span);
-                dict.SetItem(ValidateDictionaryKey(index, statement.Span), value);
-                context.ObserveCollectionCount(dict.Count, statement.Span);
-                return;
-
-            case PyDefaultDict defaultDict:
-                defaultDict.AttachMemoryGovernor(context.MemoryGovernor, statement.Span);
-                defaultDict.SetItem(ValidateDictionaryKey(index, statement.Span), value);
-                context.ObserveCollectionCount(defaultDict.Count, statement.Span);
-                return;
-
-            case PyCounter counter:
-                counter.AttachMemoryGovernor(context.MemoryGovernor, statement.Span);
-                counter.SetItem(ValidateDictionaryKey(index, statement.Span), value);
-                context.ObserveCollectionCount(counter.Count, statement.Span);
-                return;
-
-            case PyInstance instance:
-                InvokeItemMutation(
-                    instance,
-                    "__setitem__",
-                    [new CallArgumentValue(null, index), new CallArgumentValue(null, value)],
-                    context,
-                    statement.Span);
-                return;
-
-            case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", statement.Span);
-
-            case string:
-                throw new LythonRuntimeException("TypeError", "String does not support item assignment.", statement.Span);
-
-            default:
-                throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", statement.Span);
-        }
+        SetSubscriptValue(target, index, value, statement.Span, context);
     }
 
     private static void InvokeItemMutation(
@@ -504,15 +458,18 @@ internal sealed partial class LythonRuntime
                 return;
             case PyDict dict:
                 dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                dict.SetItem(ValidateDictionaryKey(index, span), value);
+                dict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                context.ObserveCollectionCount(dict.Count, span);
                 return;
             case PyDefaultDict defaultDict:
                 defaultDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                defaultDict.SetItem(ValidateDictionaryKey(index, span), value);
+                defaultDict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                context.ObserveCollectionCount(defaultDict.Count, span);
                 return;
             case PyCounter counter:
                 counter.AttachMemoryGovernor(context.MemoryGovernor, span);
-                counter.SetItem(ValidateDictionaryKey(index, span), value);
+                counter.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                context.ObserveCollectionCount(counter.Count, span);
                 return;
             case PyInstance instance:
                 InvokeItemMutation(
@@ -524,7 +481,7 @@ internal sealed partial class LythonRuntime
                 return;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
-            case string:
+            case PyString or string:
                 throw new LythonRuntimeException("TypeError", "String does not support item assignment.", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);

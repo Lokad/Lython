@@ -222,6 +222,22 @@ right = open("/b.txt").read()
     }
 
     [Theory]
+    [InlineData("mapping = {}\nmapping['key'] = 1")]
+    [InlineData("from collections import Counter\ncounts = Counter()\ncounts['key'] = 1")]
+    [InlineData("import operator\nmapping = {}\noperator.setitem(mapping, 'key', 1)")]
+    public void ZeroCollectionLimit_RejectsSubscriptInsertion(string source)
+    {
+        var result = new LythonEngine().Run(
+            source,
+            new MockLythonHost(),
+            new LythonRunOptions { MaxCollectionSize = 0 });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Contains("maximum collection size exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("steps")]
     [InlineData("recursion")]
     [InlineData("host-calls")]

@@ -399,35 +399,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "operator.setitem(obj, key, value) expects three arguments.", span);
         }
 
-        var target = arguments[0];
-        var index = arguments[1];
-        var value = arguments[2];
-
-        switch (target)
-        {
-            case IMutablePySequenceValue sequence:
-                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, span), value);
-                return PyNone.Instance;
-            case PyDict dict:
-                dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                dict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
-                context.ObserveCollectionCount(dict.Count, span);
-                return PyNone.Instance;
-            case PyDefaultDict defaultDict:
-                defaultDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                defaultDict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
-                context.ObserveCollectionCount(defaultDict.Count, span);
-                return PyNone.Instance;
-            case PyCounter counter:
-                counter.AttachMemoryGovernor(context.MemoryGovernor, span);
-                counter.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
-                context.ObserveCollectionCount(counter.Count, span);
-                return PyNone.Instance;
-            case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
-            default:
-                throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);
-        }
+        SetSubscriptValue(arguments[0], arguments[1], arguments[2], span, context);
+        return PyNone.Instance;
     }
 
     private static object ContainsValue(object[] arguments, LythonSourceSpan span, ExecutionContext context)
