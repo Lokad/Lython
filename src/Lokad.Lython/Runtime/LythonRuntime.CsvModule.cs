@@ -107,26 +107,19 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
 
             ExecutionContext.TextFileHandle? file = null;
-            object? legacyDelimiter = null;
             if (arguments.Length > 0 && arguments[0] is not PyNone)
             {
                 if (arguments[0] is ExecutionContext.TextFileHandle handle)
                 {
                     file = handle;
                 }
-                else if (PyStringOps.TryAsString(arguments[0], out _) &&
-                    (arguments.Length <= 1 || arguments[1] is PyNone) &&
-                    (arguments.Length <= 2 || arguments[2] is PyNone))
-                {
-                    legacyDelimiter = arguments[0];
-                }
                 else
                 {
-                    throw new LythonRuntimeException("TypeError", "csv.writer(fileobj[, dialect][, ...]) expects a text file handle or a legacy delimiter string.", span);
+                    throw new LythonRuntimeException("TypeError", "csv.writer(fileobj[, dialect][, ...]) expects a text file handle.", span);
                 }
             }
 
-            var options = GetOptions(arguments, dialectIndex: 1, delimiterIndex: 2, quotecharIndex: 3, quotingIndex: 4, doublequoteIndex: 5, escapecharIndex: 6, skipinitialspaceIndex: 7, lineterminatorIndex: 8, strictIndex: 9, span, legacyDelimiter);
+            var options = GetOptions(arguments, dialectIndex: 1, delimiterIndex: 2, quotecharIndex: 3, quotingIndex: 4, doublequoteIndex: 5, escapecharIndex: 6, skipinitialspaceIndex: 7, lineterminatorIndex: 8, strictIndex: 9, span);
             return new CsvWriterObject(options, file);
         }
 
@@ -145,9 +138,6 @@ internal sealed partial class LythonRuntime
             return new CsvDictWriterObject(new CsvWriterObject(options, file), fieldNames, restVal, extrasAction);
         }
 
-        private static CsvOptions GetOptions(object[] arguments, int dialectIndex, int delimiterIndex, int quotecharIndex, int quotingIndex, int doublequoteIndex, int escapecharIndex, int skipinitialspaceIndex, int lineterminatorIndex, int strictIndex, LythonSourceSpan span)
-            => GetOptions(arguments, dialectIndex, delimiterIndex, quotecharIndex, quotingIndex, doublequoteIndex, escapecharIndex, skipinitialspaceIndex, lineterminatorIndex, strictIndex, span, null);
-
         private static CsvOptions GetOptions(
             object[] arguments,
             int dialectIndex,
@@ -159,17 +149,11 @@ internal sealed partial class LythonRuntime
             int skipinitialspaceIndex,
             int lineterminatorIndex,
             int strictIndex,
-            LythonSourceSpan span,
-            object? legacyDelimiter)
+            LythonSourceSpan span)
         {
             ValidateDialect(arguments, dialectIndex, span);
 
-            var dialectDelimiter = TryGetLegacyDialectDelimiter(arguments, dialectIndex, delimiterIndex, out var delimiterFromDialect)
-                ? delimiterFromDialect
-                : null;
-            var delimiter = (legacyDelimiter is null && dialectDelimiter is null
-                ? GetCharacterOption(arguments, delimiterIndex, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span)
-                : GetRequiredCharacter(legacyDelimiter ?? dialectDelimiter.RequireNotNull(), "delimiter", allowNone: false, span)).RequireNotNull();
+            var delimiter = GetCharacterOption(arguments, delimiterIndex, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span).RequireNotNull();
             if (delimiter.AsString() is "\r" or "\n")
             {
                 throw CsvError("csv delimiter cannot be a newline.", span);
@@ -191,27 +175,6 @@ internal sealed partial class LythonRuntime
             return new CsvOptions(delimiter, quotechar, quoting, doublequote, escapechar, skipinitialspace, lineterminator, strict);
         }
 
-        private static bool TryGetLegacyDialectDelimiter(object[] arguments, int dialectIndex, int delimiterIndex, out object delimiter)
-        {
-            if (arguments.Length > delimiterIndex && arguments[delimiterIndex] is not PyNone)
-            {
-                delimiter = PyNone.Instance;
-                return false;
-            }
-
-            if (arguments.Length > dialectIndex &&
-                arguments[dialectIndex] is not PyNone &&
-                PyStringOps.TryAsString(arguments[dialectIndex], out var text) &&
-                text.Length == 1)
-            {
-                delimiter = arguments[dialectIndex];
-                return true;
-            }
-
-            delimiter = PyNone.Instance;
-            return false;
-        }
-
         private static void ValidateDialect(object[] arguments, int index, LythonSourceSpan span)
         {
             if (arguments.Length <= index || arguments[index] is PyNone)
@@ -221,11 +184,6 @@ internal sealed partial class LythonRuntime
 
             if (PyStringOps.TryAsString(arguments[index], out var dialect) &&
                 string.Equals(dialect.AsString(), "excel", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            if (PyStringOps.TryAsString(arguments[index], out var legacyDelimiter) && legacyDelimiter.Length == 1)
             {
                 return;
             }

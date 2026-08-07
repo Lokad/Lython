@@ -5,6 +5,17 @@ namespace Lokad.Lython.Tests;
 public sealed class CsvCompatibilityTests
 {
     [Fact]
+    public void CsvWriter_RejectsUndocumentedDelimiterShorthand()
+    {
+        var result = new LythonEngine().Run("import csv\ncsv.writer(';')", new MockLythonHost());
+
+        Assert.False(result.Success);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("TypeError", failure.ExceptionType);
+        Assert.Contains("expects a text file handle", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CsvWriters_PropagateUnderlyingWriteCounts()
     {
         var host = new MockLythonHost();
