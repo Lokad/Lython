@@ -506,6 +506,99 @@ internal static class StaticAbstractInterpreter
                     break;
                 }
         }
+
+        static void AnalyzeCall(CallExpressionSyntax call, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        {
+            if (StaticAbstractValueResolver.TryResolve(call.Target, bindings, out var targetValue) &&
+                StaticAbstractFacts.IsDefinitelyNonCallable(targetValue))
+            {
+                AddDiagnostic(diagnostics, "LA3107", "Object is not callable.", call.Target.Span);
+                return;
+            }
+
+            if (!StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments))
+            {
+                return;
+            }
+
+            if (AnalyzeUserDefinedCallShape(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            if (StaticContractEngine.AnalyzeKnownCallContract(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            if (StaticContractEngine.AnalyzeCallableContract(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            _ = StaticContractEngine.TryAnalyzeCall(call, arguments, diagnostics, bindings);
+
+            static bool AnalyzeUserDefinedCallShape(
+                CallExpressionSyntax call,
+                ConcreteCallArguments arguments,
+                List<LythonDiagnostic> diagnostics,
+                AbstractState bindings)
+            {
+                if (call.Target is IdentifierExpressionSyntax identifier &&
+                    bindings.TryGet(identifier.Name, out var targetValue))
+                {
+                    if (targetValue.Kind == AbstractValueKind.Function &&
+                        StaticBindingEngine.TryGetFunctionCallShapeFailure(
+                            (AbstractFunctionSummary)targetValue.Value,
+                            arguments,
+                            out var functionReason,
+                            out var functionOffendingExpression))
+                    {
+                        AddDiagnostic(
+                            diagnostics,
+                            "LA3148",
+                            $"Function '{identifier.Name}' call does not match its parameter list: {functionReason}.",
+                            functionOffendingExpression?.Span ?? call.Span);
+                        return true;
+                    }
+
+                    if (targetValue.Kind == AbstractValueKind.UserClass &&
+                        StaticBindingEngine.TryGetDataclassConstructorShapeFailure(
+                            (AbstractClassSummary)targetValue.Value,
+                            arguments,
+                            out var constructorReason,
+                            out var constructorOffendingExpression))
+                    {
+                        AddDiagnostic(
+                            diagnostics,
+                            "LA3149",
+                            $"Constructor for '{identifier.Name}' does not match its dataclass fields: {constructorReason}.",
+                            constructorOffendingExpression?.Span ?? call.Span);
+                        return true;
+                    }
+                }
+
+                if (call.Target is MemberExpressionSyntax { Target: var receiverExpression, MemberName: var methodName } &&
+                    StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) &&
+                    receiver.Kind == AbstractValueKind.UserInstance &&
+                    StaticBindingEngine.TryGetUserInstanceMethodCallShapeFailure(
+                        receiver,
+                        methodName,
+                        arguments,
+                        out var methodReason,
+                        out var methodOffendingExpression))
+                {
+                    AddDiagnostic(
+                        diagnostics,
+                        "LA3150",
+                        $"Method '{methodName}' call does not match its parameter list: {methodReason}.",
+                        methodOffendingExpression?.Span ?? call.Span);
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 
     private static void AnalyzeExpressions(IReadOnlyList<ExpressionSyntax> expressions, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -543,105 +636,6 @@ internal static class StaticAbstractInterpreter
         }
 
         return comprehensionBindings;
-    }
-
-    private static void AnalyzeCall(CallExpressionSyntax call, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (StaticAbstractValueResolver.TryResolve(call.Target, bindings, out var targetValue) &&
-            StaticAbstractFacts.IsDefinitelyNonCallable(targetValue))
-        {
-            AddDiagnostic(diagnostics, "LA3107", "Object is not callable.", call.Target.Span);
-            return;
-        }
-
-        if (!TryGetConcreteArguments(call, bindings, out var arguments))
-        {
-            return;
-        }
-
-        if (AnalyzeUserDefinedCallShape(call, arguments, diagnostics, bindings))
-        {
-            return;
-        }
-
-        if (StaticContractEngine.AnalyzeKnownCallContract(call, arguments, diagnostics, bindings))
-        {
-            return;
-        }
-
-        if (StaticContractEngine.AnalyzeCallableContract(call, arguments, diagnostics, bindings))
-        {
-            return;
-        }
-
-        if (StaticContractEngine.TryAnalyzeCall(call, arguments, diagnostics, bindings))
-        {
-            return;
-        }
-    }
-
-    private static bool TryGetConcreteArguments(CallExpressionSyntax call, AbstractState bindings, out ConcreteCallArguments arguments)
-        => StaticCallArguments.TryGetConcreteArguments(call, bindings, out arguments);
-
-    private static bool AnalyzeUserDefinedCallShape(
-        CallExpressionSyntax call,
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (call.Target is IdentifierExpressionSyntax identifier &&
-            bindings.TryGet(identifier.Name, out var targetValue))
-        {
-            if (targetValue.Kind == AbstractValueKind.Function &&
-                StaticBindingEngine.TryGetFunctionCallShapeFailure(
-                    (AbstractFunctionSummary)targetValue.Value,
-                    arguments,
-                    out var functionReason,
-                    out var functionOffendingExpression))
-            {
-                AddDiagnostic(
-                    diagnostics,
-                    "LA3148",
-                    $"Function '{identifier.Name}' call does not match its parameter list: {functionReason}.",
-                    functionOffendingExpression?.Span ?? call.Span);
-                return true;
-            }
-
-            if (targetValue.Kind == AbstractValueKind.UserClass &&
-                StaticBindingEngine.TryGetDataclassConstructorShapeFailure(
-                    (AbstractClassSummary)targetValue.Value,
-                    arguments,
-                    out var constructorReason,
-                    out var constructorOffendingExpression))
-            {
-                AddDiagnostic(
-                    diagnostics,
-                    "LA3149",
-                    $"Constructor for '{identifier.Name}' does not match its dataclass fields: {constructorReason}.",
-                    constructorOffendingExpression?.Span ?? call.Span);
-                return true;
-            }
-        }
-
-        if (call.Target is MemberExpressionSyntax { Target: var receiverExpression, MemberName: var methodName } &&
-            StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) &&
-            receiver.Kind == AbstractValueKind.UserInstance &&
-            StaticBindingEngine.TryGetUserInstanceMethodCallShapeFailure(
-                receiver,
-                methodName,
-                arguments,
-                out var methodReason,
-                out var methodOffendingExpression))
-        {
-            AddDiagnostic(
-                diagnostics,
-                "LA3150",
-                $"Method '{methodName}' call does not match its parameter list: {methodReason}.",
-                methodOffendingExpression?.Span ?? call.Span);
-            return true;
-        }
-
-        return false;
     }
 
     private static bool TryResolveConditionTruth(ExpressionSyntax condition, AbstractState bindings, out bool truth)
