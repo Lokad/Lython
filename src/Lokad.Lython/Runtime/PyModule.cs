@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Frontend;
 
@@ -10,7 +11,7 @@ internal static class MissingMemberValue
 
 internal abstract class PyModule
 {
-    private readonly Dictionary<string, object> _memberCache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, object> _memberCache = new(StringComparer.Ordinal);
     private readonly PyString _nameValue;
 
     protected PyModule(string name)
@@ -51,7 +52,7 @@ internal abstract class PyModule
             return false;
         }
 
-        _memberCache[name] = value;
+        value = _memberCache.GetOrAdd(name, value);
         return true;
     }
 
