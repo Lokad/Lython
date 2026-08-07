@@ -146,6 +146,37 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void PyDict_ValueIterationObservesReplacementWithoutSnapshotting()
+    {
+        var first = PyString.FromString("first");
+        var second = PyString.FromString("second");
+        var dict = new PyDict();
+        dict.SetItem(first, BigInteger.One);
+        dict.SetItem(second, new BigInteger(2));
+
+        using var values = dict.Values.GetEnumerator();
+        Assert.True(values.MoveNext());
+        dict.SetItem(second, new BigInteger(3));
+
+        Assert.True(values.MoveNext());
+        Assert.Equal(new BigInteger(3), values.Current);
+    }
+
+    [Fact]
+    public void PyDict_IterationRejectsStructuralMutationBeforeAdvancingStorage()
+    {
+        var dict = new PyDict();
+        dict.SetItem(PyString.FromString("first"), BigInteger.One);
+
+        using var keys = dict.Keys.GetEnumerator();
+        Assert.True(keys.MoveNext());
+        dict.SetItem(PyString.FromString("second"), new BigInteger(2));
+
+        var exception = Assert.Throws<LythonRuntimeException>(() => keys.MoveNext());
+        Assert.Equal("RuntimeError", exception.ExceptionType);
+    }
+
+    [Fact]
     public void MemoryGovernor_TracksExplicitReserveCommitReleaseCounters()
     {
         var governor = new MemoryGovernor(256);

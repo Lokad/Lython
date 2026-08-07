@@ -206,7 +206,15 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
 
     public long ReleaseCommittedBytes() => 0;
 
-    public IEnumerator<KeyValuePair<object, object>> GetEnumerator() => _items.GetEnumerator();
+    public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+    {
+        // Index-based enumeration permits value replacement. PyDict owns the
+        // structural version check that rejects insertions and removals.
+        for (var index = 0; index < _items.Count; index++)
+        {
+            yield return _items[index];
+        }
+    }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }

@@ -54,14 +54,17 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         get
         {
             var expectedVersion = _version;
-            var keys = _items.Keys.ToArray();
-            foreach (var key in keys)
+            using var enumerator = _items.GetEnumerator();
+            while (true)
             {
                 EnsureUnmodified(expectedVersion);
-                yield return FromStorageKey(key);
-            }
+                if (!enumerator.MoveNext())
+                {
+                    yield break;
+                }
 
-            EnsureUnmodified(expectedVersion);
+                yield return FromStorageKey(enumerator.Current.Key);
+            }
         }
     }
 
@@ -70,14 +73,17 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         get
         {
             var expectedVersion = _version;
-            var keys = _items.Keys.ToArray();
-            foreach (var key in keys)
+            using var enumerator = _items.GetEnumerator();
+            while (true)
             {
                 EnsureUnmodified(expectedVersion);
-                yield return FromStorageValue(_items.GetRequired(key));
-            }
+                if (!enumerator.MoveNext())
+                {
+                    yield break;
+                }
 
-            EnsureUnmodified(expectedVersion);
+                yield return FromStorageValue(enumerator.Current.Value);
+            }
         }
     }
 
@@ -167,14 +173,18 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
     {
         var expectedVersion = _version;
-        var keys = _items.Keys.ToArray();
-        foreach (var key in keys)
+        using var enumerator = _items.GetEnumerator();
+        while (true)
         {
             EnsureUnmodified(expectedVersion);
-            yield return new KeyValuePair<object, object>(FromStorageKey(key), FromStorageValue(_items.GetRequired(key)));
-        }
+            if (!enumerator.MoveNext())
+            {
+                yield break;
+            }
 
-        EnsureUnmodified(expectedVersion);
+            var pair = enumerator.Current;
+            yield return new KeyValuePair<object, object>(FromStorageKey(pair.Key), FromStorageValue(pair.Value));
+        }
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
