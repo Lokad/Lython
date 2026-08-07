@@ -394,9 +394,17 @@ internal sealed partial class LythonRuntime
         {
             if (!_hasCommunicated)
             {
-                _communicatedStdout = _stdout is null ? PyNone.Instance : _stdout.ReadRemainingAfterCompletion(span);
-                _communicatedStderr = _stderr is null ? PyNone.Instance : _stderr.ReadRemainingAfterCompletion(span);
-                _hasCommunicated = true;
+                try
+                {
+                    _communicatedStdout = _stdout is null ? PyNone.Instance : _stdout.ReadRemainingAfterCompletion(span);
+                    _communicatedStderr = _stderr is null ? PyNone.Instance : _stderr.ReadRemainingAfterCompletion(span);
+                    _hasCommunicated = true;
+                }
+                finally
+                {
+                    _stdout?.Close();
+                    _stderr?.Close();
+                }
             }
 
             return new PyTuple([_communicatedStdout, _communicatedStderr], _context.MemoryGovernor, span);
