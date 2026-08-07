@@ -431,6 +431,8 @@ internal sealed class ExecutableScript
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
 
         private readonly List<object?> _constants = [];
+        private readonly Dictionary<object, int> _constantIndexes = new(ConstantValueComparer.Instance);
+        private int? _nullConstantIndex;
         private readonly List<string> _names = [];
         private readonly List<string> _locals = [];
         private readonly List<string> _closures = [];
@@ -1641,16 +1643,28 @@ internal sealed class ExecutableScript
 
         private int InternConstant(object? value)
         {
-            for (var i = 0; i < _constants.Count; i++)
+            if (value is null)
             {
-                if (ConstantEquals(_constants[i], value))
+                if (_nullConstantIndex is { } existingNull)
                 {
-                    return i;
+                    return existingNull;
                 }
+
+                var nullIndex = _constants.Count;
+                _constants.Add(null);
+                _nullConstantIndex = nullIndex;
+                return nullIndex;
             }
 
+            if (_constantIndexes.TryGetValue(value, out var existing))
+            {
+                return existing;
+            }
+
+            var index = _constants.Count;
             _constants.Add(value);
-            return _constants.Count - 1;
+            _constantIndexes.Add(value, index);
+            return index;
         }
 
         private int InternImport(LoweredImportStatement importStatement)
@@ -1743,14 +1757,35 @@ internal sealed class ExecutableScript
             return _expressionFallbacks.Count - 1;
         }
 
-        private static bool ConstantEquals(object? left, object? right)
+        private sealed class ConstantValueComparer : IEqualityComparer<object>
         {
-            if (left is byte[] leftBytes && right is byte[] rightBytes)
+            public static readonly ConstantValueComparer Instance = new();
+
+            public new bool Equals(object? left, object? right)
             {
-                return leftBytes.AsSpan().SequenceEqual(rightBytes);
+                if (left is byte[] leftBytes && right is byte[] rightBytes)
+                {
+                    return leftBytes.AsSpan().SequenceEqual(rightBytes);
+                }
+
+                return object.Equals(left, right);
             }
 
-            return Equals(left, right);
+            public int GetHashCode(object value)
+            {
+                if (value is not byte[] bytes)
+                {
+                    return value.GetHashCode();
+                }
+
+                var hash = new HashCode();
+                foreach (var item in bytes)
+                {
+                    hash.Add(item);
+                }
+
+                return hash.ToHashCode();
+            }
         }
 
         private static IEnumerable<string> EnumeratePatternBindingNames(PatternSyntax pattern)

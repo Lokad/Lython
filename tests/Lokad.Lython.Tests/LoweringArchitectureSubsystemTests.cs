@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -331,6 +332,24 @@ y
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.PopTop, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.ReturnNone, instruction.OpCode));
+    }
+
+    [Fact]
+    public void ExecutableScript_InternsLargeConstantTablesWithoutChangingOrder()
+    {
+        var source = string.Join(
+            Environment.NewLine,
+            Enumerable.Range(0, 4_000)
+                .Select(index => $"value_{index} = \"constant-{index}\"")
+                .Append("duplicate = \"constant-0\""));
+
+        var frontend = LythonFrontend.Compile(source);
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var executable = ExecutableScript.Compile(lowered);
+
+        Assert.Equal(4_000, executable.EntryPoint.Constants.Count);
+        Assert.Equal(PyString.FromString("constant-0"), executable.EntryPoint.Constants[0]);
+        Assert.Equal(PyString.FromString("constant-3999"), executable.EntryPoint.Constants[^1]);
     }
 
     [Fact]
