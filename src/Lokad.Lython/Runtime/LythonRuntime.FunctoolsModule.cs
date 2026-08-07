@@ -23,6 +23,31 @@ internal sealed partial class LythonRuntime
     private static readonly PyNamedTupleType FunctoolsCacheInfoType =
         new("CacheInfo", ["hits", "misses", "maxsize", "currsize"]);
 
+    private static PyDict BuildFunctoolsMetadataDictionary(IReadOnlyDictionary<string, object> metadata)
+    {
+        var dictionary = new PyDict();
+        foreach (var pair in metadata)
+        {
+            dictionary.SetItem(PyString.FromString(pair.Key), pair.Value);
+        }
+
+        return dictionary;
+    }
+
+    private static PyDict BuildFunctoolsMetadataDictionary(
+        IReadOnlyDictionary<string, object> metadata,
+        MemoryGovernor governor,
+        LythonSourceSpan span)
+    {
+        var dictionary = new PyDict(governor, span);
+        foreach (var pair in metadata)
+        {
+            dictionary.SetItem(PyString.FromString(pair.Key), pair.Value);
+        }
+
+        return dictionary;
+    }
+
     private sealed class FunctoolsModule : PyModule
     {
         public static readonly FunctoolsModule Instance = new();
@@ -150,7 +175,7 @@ internal sealed partial class LythonRuntime
                 "func" => _callable,
                 "args" => BuildArgs(),
                 "keywords" => BuildKeywords(),
-                "__dict__" => BuildMetadataDict(),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
                 "__name__" => PyString.FromString("partial"),
                 "__qualname__" => PyString.FromString("partial"),
                 _ => PyNone.Instance
@@ -170,7 +195,7 @@ internal sealed partial class LythonRuntime
                 "func" => _callable,
                 "args" => BuildArgs(context.MemoryGovernor, span),
                 "keywords" => BuildKeywords(context, span),
-                "__dict__" => BuildMetadataDict(context.MemoryGovernor, span),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
                 "__name__" => PyString.FromString("partial"),
                 "__qualname__" => PyString.FromString("partial"),
                 _ => PyNone.Instance
@@ -245,28 +270,6 @@ internal sealed partial class LythonRuntime
                 {
                     dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
                 }
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildMetadataDict()
-        {
-            var dict = new PyDict();
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildMetadataDict(MemoryGovernor governor, LythonSourceSpan span)
-        {
-            var dict = new PyDict(governor, span);
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
             }
 
             return dict;
@@ -536,7 +539,7 @@ internal sealed partial class LythonRuntime
                 "cache_clear" => new CacheClearMethod(this),
                 "cache_parameters" => new CacheParametersMethod(this),
                 "__wrapped__" => _callable,
-                "__dict__" => BuildMetadataDict(),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
                 "__name__" => PyString.FromString("lru_cache_wrapper"),
                 "__qualname__" => PyString.FromString("lru_cache_wrapper"),
                 _ => PyNone.Instance
@@ -557,7 +560,7 @@ internal sealed partial class LythonRuntime
                 "cache_clear" => new CacheClearMethod(this),
                 "cache_parameters" => new CacheParametersMethod(this),
                 "__wrapped__" => _callable,
-                "__dict__" => BuildMetadataDict(context.MemoryGovernor, span),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
                 "__name__" => PyString.FromString("lru_cache_wrapper"),
                 "__qualname__" => PyString.FromString("lru_cache_wrapper"),
                 _ => PyNone.Instance
@@ -653,28 +656,6 @@ internal sealed partial class LythonRuntime
             public object Value { get; set; }
 
             public LinkedListNode<object>? Node { get; }
-        }
-
-        private PyDict BuildMetadataDict()
-        {
-            var dict = new PyDict();
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildMetadataDict(MemoryGovernor governor, LythonSourceSpan span)
-        {
-            var dict = new PyDict(governor, span);
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
-            }
-
-            return dict;
         }
 
         private sealed class CacheInfoMethod : ICallable, IPyRenderableValue
@@ -992,7 +973,7 @@ internal sealed partial class LythonRuntime
                 "dispatch" => new SingleDispatchDispatchMethod(this),
                 "registry" => BuildRegistry(),
                 "__wrapped__" => _defaultCallable,
-                "__dict__" => BuildMetadataDict(),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
                 "__name__" => PyString.FromString("singledispatch"),
                 "__qualname__" => PyString.FromString("singledispatch"),
                 _ => PyNone.Instance
@@ -1013,7 +994,7 @@ internal sealed partial class LythonRuntime
                 "dispatch" => new SingleDispatchDispatchMethod(this),
                 "registry" => BuildRegistry(context.MemoryGovernor, span),
                 "__wrapped__" => _defaultCallable,
-                "__dict__" => BuildMetadataDict(context.MemoryGovernor, span),
+                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
                 "__name__" => PyString.FromString("singledispatch"),
                 "__qualname__" => PyString.FromString("singledispatch"),
                 _ => PyNone.Instance
@@ -1113,28 +1094,6 @@ internal sealed partial class LythonRuntime
             foreach (var registration in _registrations)
             {
                 dict.SetItem(registration.TypeSpec, registration.Callable);
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildMetadataDict()
-        {
-            var dict = new PyDict();
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildMetadataDict(MemoryGovernor governor, LythonSourceSpan span)
-        {
-            var dict = new PyDict(governor, span);
-            foreach (var pair in _metadata)
-            {
-                dict.SetItem(PyString.FromString(pair.Key), pair.Value);
             }
 
             return dict;
