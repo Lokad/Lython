@@ -24,7 +24,25 @@ internal sealed partial class LythonRuntime
         ExecutionContext classContext,
         ExecutionContext definingContext)
     {
-        StoreClassAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
+        static void StoreAnnotations(
+            ClassDefinitionStatementSyntax syntax,
+            Dictionary<string, object> members,
+            ExecutionContext context)
+        {
+            PyDict? annotations = null;
+            foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
+            {
+                annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
+                annotations.SetItem(PyString.FromString(statement.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
+            }
+
+            if (annotations is not null)
+            {
+                members["__annotations__"] = annotations;
+            }
+        }
+
+        StoreAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
 
         PyType type;
         try
@@ -47,24 +65,6 @@ internal sealed partial class LythonRuntime
         PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         return type;
-    }
-
-    private static void StoreClassAnnotations(
-        ClassDefinitionStatementSyntax syntax,
-        Dictionary<string, object> members,
-        ExecutionContext context)
-    {
-        PyDict? annotations = null;
-        foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
-        {
-            annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
-            annotations.SetItem(PyString.FromString(statement.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
-        }
-
-        if (annotations is not null)
-        {
-            members["__annotations__"] = annotations;
-        }
     }
 
     private static PyString ValidateLoweredString(PyString text, ExecutionContext context, LythonSourceSpan span)
@@ -99,28 +99,14 @@ internal sealed partial class LythonRuntime
         object target,
         ExecutionContext context)
     {
-        if (TryResolveCachedRuntimeMember(member, target, context, out var value))
+        if (context.State.TryReadRuntimeMemberCache(member, target, out var value))
         {
             return value;
         }
 
-        throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
-    }
-
-    private static bool TryResolveCachedRuntimeMember(
-        LoweredMemberExpression member,
-        object target,
-        ExecutionContext context,
-        [MaybeNullWhen(false)] out object value)
-    {
-        if (context.State.TryReadRuntimeMemberCache(member, target, out value))
-        {
-            return true;
-        }
-
         if (!TryResolveRuntimeMember(target, member.Member.MemberName, context, member.Span, out value))
         {
-            return false;
+            throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
         }
 
         if (CanCacheRuntimeMemberTarget(target))
@@ -128,7 +114,7 @@ internal sealed partial class LythonRuntime
             context.State.WriteRuntimeMemberCache(member, target, value);
         }
 
-        return true;
+        return value;
     }
 
     private static object EvaluateLoweredBinaryOperator(
