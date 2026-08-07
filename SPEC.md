@@ -114,11 +114,11 @@ The following are explicitly outside the initial scope:
 
 Lython must target a clearly identified version family of Python syntax and core semantics.
 
-The initial target is:
+The compatibility target is:
 
-- a modern Python 3 subset
+- Python 3.13 syntax and core semantics
 
-The exact reference version must be pinned by the implementation. The design intent is contemporary Python 3, not Python 2 and not an invented hybrid.
+The implementation reports this target through `LythonPythonVersion`. Later target changes require an explicit compatibility decision; Lython is not a Python 2 dialect or an invented hybrid.
 
 ### 4.2 Default Rule
 
