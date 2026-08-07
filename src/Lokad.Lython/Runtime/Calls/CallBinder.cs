@@ -1,5 +1,7 @@
 namespace Lokad.Lython.Runtime;
 
+internal readonly record struct BoundCallArguments(object[] Values, bool[] Assigned);
+
 internal static class CallBinder
 {
     public static object[] BindNamedArguments(
@@ -10,14 +12,19 @@ internal static class CallBinder
         string[]? parameterNames,
         int requiredCount)
     {
-        return BindNamedArguments(
+        return BindNamedArgumentsCore(
             arguments,
             span,
             callableName,
             callableKind,
             parameterNames,
             parameterNames is null ? null : CreateParameterIndices(parameterNames),
-            requiredCount);
+            requiredCount,
+            parameterNames?.Length,
+            parameterNames?.Length,
+            allowsExtraKeywords: false,
+            allowsExtraPositional: false,
+            positionalOnlyCount: 0).Values;
     }
 
     public static object[] BindNamedArguments(CallArgumentValue[] arguments, LythonSourceSpan span, LythonCallableSignature signature, string callableKind)
@@ -30,7 +37,7 @@ internal static class CallBinder
         string callableKind,
         IReadOnlyDictionary<string, int>? parameterIndices)
     {
-        return BindNamedArguments(
+        return BindNamedArgumentsCore(
             arguments,
             span,
             signature.Name,
@@ -42,8 +49,27 @@ internal static class CallBinder
             signature.MaxPositionalCount,
             signature.AllowsExtraKeywords,
             signature.AllowsExtraPositional,
-            signature.PositionalOnlyCount);
+            signature.PositionalOnlyCount).Values;
     }
+
+    public static BoundCallArguments BindNamedArgumentsWithPresence(
+        CallArgumentValue[] arguments,
+        LythonSourceSpan span,
+        LythonCallableSignature signature,
+        string callableKind)
+        => BindNamedArgumentsCore(
+            arguments,
+            span,
+            signature.Name,
+            callableKind,
+            signature.ParameterNames,
+            signature.ParameterNames is null ? null : CreateParameterIndices(signature.ParameterNames),
+            signature.MinimumArgumentCount,
+            signature.MaximumArgumentCount,
+            signature.MaxPositionalCount,
+            signature.AllowsExtraKeywords,
+            signature.AllowsExtraPositional,
+            signature.PositionalOnlyCount);
 
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
@@ -53,9 +79,9 @@ internal static class CallBinder
         string[]? parameterNames,
         IReadOnlyDictionary<string, int>? parameterIndices,
         int requiredCount)
-        => BindNamedArguments(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false, positionalOnlyCount: 0);
+        => BindNamedArgumentsCore(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false, positionalOnlyCount: 0).Values;
 
-    private static object[] BindNamedArguments(
+    private static BoundCallArguments BindNamedArgumentsCore(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         string callableName,
@@ -85,7 +111,7 @@ internal static class CallBinder
                 positionalOnly[i] = arguments[i].Value;
             }
 
-            return positionalOnly;
+            return new BoundCallArguments(positionalOnly, Array.Empty<bool>());
         }
 
         var bound = new object[parameterNames.Length];
@@ -171,7 +197,7 @@ internal static class CallBinder
 
         if (extraPositional is null || extraPositional.Count == 0)
         {
-            return bound[..count];
+            return new BoundCallArguments(bound[..count], assigned[..count]);
         }
 
         var result = new object[count + extraPositional.Count];
@@ -181,7 +207,10 @@ internal static class CallBinder
             result[count + i] = extraPositional[i];
         }
 
-        return result;
+        var resultAssigned = new bool[result.Length];
+        Array.Copy(assigned, resultAssigned, count);
+        Array.Fill(resultAssigned, true, count, extraPositional.Count);
+        return new BoundCallArguments(result, resultAssigned);
     }
 
     private static Dictionary<string, int> CreateParameterIndices(string[] parameterNames)

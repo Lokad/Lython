@@ -221,50 +221,18 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var values = new object?[6];
-        var assigned = new bool[6];
-        var names = new[] { "filename", "mode", "compresslevel", "encoding", "errors", "newline" };
-        var positional = 0;
-        foreach (var argument in arguments)
-        {
-            if (argument.Name is null)
-            {
-                if (positional >= values.Length)
-                {
-                    throw new LythonRuntimeException("TypeError", "gzip.open() accepts at most six positional arguments", span);
-                }
-
-                values[positional] = argument.Value;
-                assigned[positional] = true;
-                positional++;
-                continue;
-            }
-
-            var index = Array.IndexOf(names, argument.Name);
-            if (index < 0)
-            {
-                throw new LythonRuntimeException("TypeError", $"gzip.open() got an unexpected keyword argument '{argument.Name}'", span);
-            }
-
-            if (assigned[index])
-            {
-                throw new LythonRuntimeException("TypeError", $"gzip.open() got multiple values for argument '{argument.Name}'", span);
-            }
-
-            values[index] = argument.Value;
-            assigned[index] = true;
-        }
-
-        if (!assigned[0])
-        {
-            throw new LythonRuntimeException("TypeError", "gzip.open() missing required argument 'filename'", span);
-        }
+        var bound = CallBinder.BindNamedArgumentsWithPresence(
+            arguments,
+            span,
+            LythonKnownCallableSignatures.GzipOpen,
+            "Builtin");
+        var values = bound.Values;
 
         var path = PathOps.Normalize(
-            CoercePathLike(values[0].RequireNotNull(), context, span, "gzip.open()").AsString(),
+            CoercePathLike(values[0], context, span, "gzip.open()").AsString(),
             context.Host.Cwd);
-        var mode = assigned[1]
-            ? PyStringOps.TryAsString(values[1].RequireNotNull(), out var modeText)
+        var mode = IsAssigned(1)
+            ? PyStringOps.TryAsString(values[1], out var modeText)
                 ? modeText.AsString()
                 : throw new LythonRuntimeException("TypeError", "gzip.open(..., mode=...) expects a string", span)
             : "rb";
@@ -280,13 +248,13 @@ internal sealed partial class LythonRuntime
             _ when mode.StartsWith('x') => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support exclusive-creation modes", span),
             _ => throw new LythonRuntimeException("ValueError", $"Invalid mode: '{mode}'", span),
         };
-        var compressionLevel = assigned[2] ? ParseCompressionLevel(values[2].RequireNotNull(), span) : 9;
+        var compressionLevel = IsAssigned(2) ? ParseCompressionLevel(values[2], span) : 9;
 
         if (contentKind == GzipContentKind.Binary)
         {
-            if ((assigned[3] && values[3] is not PyNone) ||
-                (assigned[4] && values[4] is not PyNone) ||
-                (assigned[5] && values[5] is not PyNone))
+            if ((IsAssigned(3) && values[3] is not PyNone) ||
+                (IsAssigned(4) && values[4] is not PyNone) ||
+                (IsAssigned(5) && values[5] is not PyNone))
             {
                 throw new LythonRuntimeException("ValueError", "Argument 'encoding', 'errors', or 'newline' not supported in binary mode", span);
             }
@@ -302,16 +270,18 @@ internal sealed partial class LythonRuntime
                 TextNewlineMode.TranslateUniversal);
         }
 
-        var encoding = assigned[3]
-            ? ParseTextEncoding(values[3].RequireNotNull(), "gzip.open()", span)
+        var encoding = IsAssigned(3)
+            ? ParseTextEncoding(values[3], "gzip.open()", span)
             : TextEncodingMode.Utf8;
-        var errors = assigned[4]
-            ? ParseTextErrors(values[4].RequireNotNull(), "gzip.open()", span)
+        var errors = IsAssigned(4)
+            ? ParseTextErrors(values[4], "gzip.open()", span)
             : TextErrorMode.Strict;
-        var newline = assigned[5]
-            ? ParseTextNewline(values[5].RequireNotNull(), "gzip.open()", span)
+        var newline = IsAssigned(5)
+            ? ParseTextNewline(values[5], "gzip.open()", span)
             : TextNewlineMode.TranslateUniversal;
         return new GzipOpenOptions(path, mode, operation, GzipContentKind.Text, compressionLevel, encoding, errors, newline);
+
+        bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
     }
 
     private static object OpenGzipHandle(GzipOpenOptions options, ExecutionContext context, LythonSourceSpan span)
