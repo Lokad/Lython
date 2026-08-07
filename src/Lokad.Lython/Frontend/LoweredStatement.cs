@@ -13,6 +13,7 @@ internal enum LoweredStatementKind
 
 internal abstract record LoweredStatement(LythonSourceSpan Span)
 {
+    /// <summary>Gets the stable lowered statement discriminator used by interpreters and analyzers.</summary>
     public abstract LoweredStatementKind Kind { get; }
 }
 

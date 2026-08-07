@@ -27,8 +27,10 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
         }
     }
 
+    /// <summary>Advances once and supplies the current Python value when successful.</summary>
     public abstract bool TryMoveNext(out object value);
 
+    /// <summary>Provides async iteration with semantics identical to <see cref="TryMoveNext"/>.</summary>
     public virtual ValueTask<(bool HasValue, object Value)> TryMoveNextAsync()
         => ValueTask.FromResult(
             TryMoveNext(out var value)
@@ -37,6 +39,7 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
 
     public bool IsTruthy() => true;
 
+    /// <summary>Renders the iterator using its Python-facing representation.</summary>
     public abstract PyString RenderPython(PyRenderingContext context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

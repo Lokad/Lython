@@ -1,52 +1,87 @@
 namespace Lokad.Lython;
 
+/// <summary>
+/// Defines every ambient capability visible to a Lython execution.
+/// </summary>
+/// <remarks>
+/// Paths use the host's contained namespace. Implementations must honor cancellation,
+/// avoid ambient process-wide state, and report unsupported operations explicitly.
+/// </remarks>
 public interface ILythonHost
 {
+    /// <summary>Gets the absolute working directory used to resolve relative Lython paths.</summary>
     string Cwd { get; }
 
+    /// <summary>Gets the host-mediated local wall-clock reading.</summary>
     DateTimeOffset LocalNow { get; }
 
+    /// <summary>Gets the host-mediated UTC wall-clock reading.</summary>
     DateTimeOffset UtcNow { get; }
 
+    /// <summary>Reads a complete UTF-8 text file from the contained path.</summary>
     ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken);
 
+    /// <summary>Replaces a contained text file with the supplied well-formed UTF-8 bytes.</summary>
     ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
+    /// <summary>Appends well-formed UTF-8 bytes to a contained text file.</summary>
     ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
+    /// <summary>Reads a complete binary file when the host exposes binary I/O.</summary>
+    /// <remarks>The default implementation rejects binary access explicitly.</remarks>
     ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
         => throw new NotSupportedException("Host binary file I/O is not available.");
 
+    /// <summary>Replaces a contained binary file when the host exposes binary I/O.</summary>
+    /// <remarks>The default implementation rejects binary access explicitly.</remarks>
     ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
         => throw new NotSupportedException("Host binary file I/O is not available.");
 
+    /// <summary>Determines whether a file-system entry exists at the contained path.</summary>
     ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Lists direct child names without recursively traversing the contained directory.</summary>
     ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Creates one contained directory and fails if its parent is unavailable.</summary>
     ValueTask MkDirAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Removes one contained file or empty directory.</summary>
     ValueTask RemoveAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Copies one contained file without overwriting an existing destination.</summary>
     ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken);
 
+    /// <summary>Moves one contained file without overwriting an existing destination.</summary>
     ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken);
 
+    /// <summary>Returns precise metadata for a contained path, including missing paths.</summary>
     ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Gets optional host-mediated standard input.</summary>
     ILythonTextInput? StandardInput => null;
 
+    /// <summary>Gets optional host-mediated standard output.</summary>
     ILythonTextOutput? StandardOutput => null;
 
+    /// <summary>Gets optional host-mediated standard error.</summary>
     ILythonTextOutput? StandardError => null;
 
+    /// <summary>Gets the optional contained subprocess capability.</summary>
     ILythonSubprocessRunner? SubprocessRunner => null;
 
+    /// <summary>Gets the optional monotonic-clock and delay capability.</summary>
     ILythonTiming? Timing => null;
 
+    /// <summary>Recursively walks a contained directory without cancellation.</summary>
     IAsyncEnumerable<LythonWalkEntry> WalkAsync(string path)
         => WalkAsync(path, CancellationToken.None);
 
+    /// <summary>Recursively walks a contained directory in deterministic name order.</summary>
+    /// <remarks>
+    /// The default implementation composes <see cref="StatAsync"/> and
+    /// <see cref="ListDirAsync"/> and honors cancellation on every host call.
+    /// </remarks>
     async IAsyncEnumerable<LythonWalkEntry> WalkAsync(
         string path,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)

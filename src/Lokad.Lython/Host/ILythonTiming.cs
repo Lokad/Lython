@@ -11,9 +11,12 @@ namespace Lokad.Lython;
 /// </remarks>
 public interface ILythonTiming
 {
+    /// <summary>Gets the current non-negative monotonic-clock reading in nanoseconds.</summary>
     long MonotonicNanoseconds { get; }
 
+    /// <summary>Gets the positive monotonic-clock resolution in nanoseconds.</summary>
     long MonotonicResolutionNanoseconds => 1;
 
+    /// <summary>Delays for at least the requested non-negative duration while honoring cancellation.</summary>
     ValueTask DelayAsync(TimeSpan duration, CancellationToken cancellationToken);
 }

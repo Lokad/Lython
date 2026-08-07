@@ -2,6 +2,7 @@ namespace Lokad.Lython.Frontend;
 
 internal abstract record LoweredExpression
 {
+    /// <summary>Gets the source syntax represented by this lowered expression.</summary>
     public abstract ExpressionSyntax Syntax { get; }
 
     public LythonSourceSpan Span => Syntax.Span;

@@ -9,12 +9,16 @@ internal abstract class PyModule
 
     public string Name { get; }
 
+    /// <summary>Gets names exported by <c>from module import *</c>.</summary>
     public virtual IReadOnlyList<string> ExportedNames => [];
 
+    /// <summary>Gets names exposed through module introspection.</summary>
     public virtual IReadOnlyList<string> MemberNames => ExportedNames;
 
+    /// <summary>Resolves a module member and returns <see langword="false"/> without throwing when absent.</summary>
     public abstract bool TryGetMember(string name, out object value);
 
+    /// <summary>Assigns a writable module member, returning <see langword="false"/> when assignment is unsupported.</summary>
     public virtual bool TrySetMember(string name, object value)
     {
         _ = name;
