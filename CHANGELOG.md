@@ -21,11 +21,15 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Made every unsuccessful execution carry a non-zero process-compatible exit status and aligned synchronous/asynchronous execution behavior with differential coverage.
 - Reject asynchronous host effects before synchronous execution can perform preceding side effects.
 - Hardened captured subprocess output, gzip buffers, incremental hash state, governed byte accumulation, pipe lifecycle, and exception-handler stack restoration.
+- Made zero-valued execution limits enforce real zero budgets, reject negative limits explicitly, and retain omitted limits as the only default/unlimited case.
+- Removed avoidable buffered-output copies and quadratic work from text handles, sized Unicode reads, `functools` caches, gzip CRC processing, traceback collection, and large-integer base formatting.
 
 ### Engineering
 
 - Tightened public state contracts, nullability invariants, host implementor documentation, and optional-parameter usage to follow the repository's C# guidelines.
 - Removed friend-assembly access and unnecessary unsafe compilation, enabled warnings as errors, made benchmarks part of the solution, and normalized source formatting.
+- Consolidated shared sync/async execution semantics, removed the duplicate memory estimator, and cached stable builtin member bindings per execution.
+- Split black-box public compatibility tests from the source-linked white-box suite so agent-facing behavior is exercised against the production assembly.
 
 ## 0.7.0 - 2026-07-02
 
