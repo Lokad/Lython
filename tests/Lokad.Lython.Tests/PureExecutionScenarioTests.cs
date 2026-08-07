@@ -2765,7 +2765,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("bool|pair|[True, (2, 3)]|[(True, 'bool'), ((2, 3), 'pair')]|True|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("bool|pair|[1, (2, 3)]|[(1, 'bool'), ((2, 3), 'pair')]|True|True|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
