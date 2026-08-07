@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+This pending release closes the Studio compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.
+
+### Python Language Compatibility
+
+- Added unparenthesized tuple expression lists, collection-display unpacking, dotted imports with Python package binding, and implicit continuation throughout compound-statement headers.
+- Added old-style string interpolation and the ordinary non-mutating and mutating set method families.
+- Improved static flow analysis for short-circuit `None` guards and branch-local sequence length bounds, and made `Counter` report its number of stored keys through `len(...)`.
+
+### Standard Library Surface
+
+- Added context-correct `builtins`, contained `importlib` discovery, host-mediated `filecmp.cmp`, managed incremental `hashlib`, bounded in-memory and host-backed `gzip`, functional and iterable `shlex`, and host-clock-backed `time` support.
+- Added Latin-1 codecs across the supported text APIs while continuing to route non-UTF-8 file bytes through the host's bounded binary capability.
+- Added a lazy, bounded `subprocess.Popen` facade and in-memory pipeline composition without exposing live processes, PIDs, unmanaged pipes, signals, or ambient shell authority.
+
+### Reliability And Embedding
+
+- Made every unsuccessful execution carry a non-zero process-compatible exit status and aligned synchronous/asynchronous execution behavior with differential coverage.
+- Reject asynchronous host effects before synchronous execution can perform preceding side effects.
+- Hardened captured subprocess output, gzip buffers, incremental hash state, governed byte accumulation, pipe lifecycle, and exception-handler stack restoration.
+
+### Engineering
+
+- Tightened public state contracts, nullability invariants, host implementor documentation, and optional-parameter usage to follow the repository's C# guidelines.
+- Removed friend-assembly access and unnecessary unsafe compilation, enabled warnings as errors, made benchmarks part of the solution, and normalized source formatting.
+
 ## 0.7.0 - 2026-07-02
 
 This release improves Lython's behavior as a non-surprising Python substitute for fresh coding agents within Lython's contained scope.
