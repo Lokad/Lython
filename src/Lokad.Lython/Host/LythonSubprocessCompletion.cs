@@ -28,23 +28,46 @@ public static class LythonSubprocessCompletion
 
         if (request.StandardError == LythonSubprocessStreamMode.StandardOutput)
         {
-            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe)
+            switch (request.StandardOutput)
             {
-                EnsureWithinOutputLimit(
-                    "combined standard output",
-                    checked((long)standardOutputUtf8.Length + standardErrorUtf8.Length),
-                    request.MaxOutputBytes);
+                case LythonSubprocessStreamMode.Pipe:
+                    EnsureWithinOutputLimit(
+                        "combined standard output",
+                        checked((long)standardOutputUtf8.Length + standardErrorUtf8.Length),
+                        request.MaxOutputBytes);
+                    return new LythonSubprocessResult(
+                        returnCode,
+                        Combine(standardOutputUtf8, standardErrorUtf8),
+                        ReadOnlyMemory<byte>.Empty);
+
+                case LythonSubprocessStreamMode.Inherit:
+                    if (!standardOutputUtf8.IsEmpty)
+                    {
+                        await inheritStandardOutputAsync(standardOutputUtf8, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    if (!standardErrorUtf8.IsEmpty)
+                    {
+                        await inheritStandardOutputAsync(standardErrorUtf8, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return new LythonSubprocessResult(
+                        returnCode,
+                        ReadOnlyMemory<byte>.Empty,
+                        ReadOnlyMemory<byte>.Empty);
+
+                case LythonSubprocessStreamMode.DevNull:
+                    return new LythonSubprocessResult(
+                        returnCode,
+                        ReadOnlyMemory<byte>.Empty,
+                        ReadOnlyMemory<byte>.Empty);
+
+                case LythonSubprocessStreamMode.StandardOutput:
+                    throw new ArgumentException("subprocess.STDOUT is only valid for standard error.", nameof(request));
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(request), request.StandardOutput, null);
             }
-            var combined = Combine(standardOutputUtf8, standardErrorUtf8);
-            var captured = await RouteBufferedOutputAsync(
-                    request.StandardOutput,
-                    "combined standard output",
-                    combined,
-                    request.MaxOutputBytes,
-                    inheritStandardOutputAsync,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return new LythonSubprocessResult(returnCode, captured, ReadOnlyMemory<byte>.Empty);
         }
 
         var capturedStdout = await RouteBufferedOutputAsync(

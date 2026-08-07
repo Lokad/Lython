@@ -70,7 +70,27 @@ public sealed class SubprocessCompletionSubsystemTests
         Assert.True(result.StandardOutputUtf8.IsEmpty);
         Assert.True(result.StandardErrorUtf8.IsEmpty);
         Assert.Equal("outerr", stdout.Text);
+        Assert.Equal(2, stdout.WriteCount);
         Assert.Equal(string.Empty, stderr.Text);
+    }
+
+    [Fact]
+    public async Task CompleteBufferedAsync_DiscardsRedirectedOutputWithoutCombiningIt()
+    {
+        var result = await LythonSubprocessCompletion
+            .CompleteBufferedAsync(
+                Request(
+                    standardOutput: LythonSubprocessStreamMode.DevNull,
+                    standardError: LythonSubprocessStreamMode.StandardOutput),
+                0,
+                Bytes("out"),
+                Bytes("err"),
+                UnexpectedWriteAsync,
+                UnexpectedWriteAsync,
+                CancellationToken.None);
+
+        Assert.True(result.StandardOutputUtf8.IsEmpty);
+        Assert.True(result.StandardErrorUtf8.IsEmpty);
     }
 
     private static LythonSubprocessRequest Request(
@@ -110,9 +130,12 @@ public sealed class SubprocessCompletionSubsystemTests
 
         public string Text => _text.ToString();
 
+        public int WriteCount { get; private set; }
+
         public ValueTask WriteAsync(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            WriteCount++;
             _text.Append(SubprocessCompletionSubsystemTests.Text(utf8));
             return ValueTask.CompletedTask;
         }
