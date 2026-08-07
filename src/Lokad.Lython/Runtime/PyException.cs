@@ -4,4 +4,10 @@ internal sealed record PyException(
     string TypeName,
     string Message,
     object Value,
-    PyTuple? ExplicitArgs = null);
+    PyTuple? ExplicitArgs)
+{
+    public PyException(string TypeName, string Message, object Value)
+        : this(TypeName, Message, Value, null)
+    {
+    }
+}

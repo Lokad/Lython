@@ -436,10 +436,10 @@ internal sealed partial class LythonRuntime
                         return found;
                     }
 
-                     var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                     dict.SetItem(key, defaultValue);
-                     return defaultValue;
+                    var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+                    dict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    dict.SetItem(key, defaultValue);
+                    return defaultValue;
                 }, "dict.setdefault", ["key", "default"], 1),
                 _ => MissingMemberValue.Instance,
             };
@@ -507,10 +507,10 @@ internal sealed partial class LythonRuntime
                         return found;
                     }
 
-                     var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                     dict.SetItem(key, defaultValue);
-                     return defaultValue;
+                    var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+                    dict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    dict.SetItem(key, defaultValue);
+                    return defaultValue;
                 }, "defaultdict.setdefault", ["key", "default"], 1),
                 "copy" => new BoundCallable((arguments, span, context) =>
                 {
@@ -1198,10 +1198,10 @@ internal sealed partial class LythonRuntime
         private static LythonCallableSignature NoArguments(string name) => new(name, []);
 
         private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => new(name, [parameterName], PositionalOnlyCount: 1);
+            => new(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1);
 
         private static LythonCallableSignature VariadicPositional(string name)
-            => new(name, RequiredCount: 0, AllowsExtraPositional: true);
+            => new(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: true, PositionalOnlyCount: 0);
 
         private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {

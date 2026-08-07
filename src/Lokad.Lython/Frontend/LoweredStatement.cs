@@ -58,14 +58,49 @@ internal sealed record LoweredClassDefinitionStatement(
 internal sealed record LoweredAssignmentStatement(
     StatementSyntax Syntax,
     LoweredExpression? Expression,
-    LoweredExpression? Annotation = null,
-    LoweredExpression? Target = null,
-    LoweredExpression? Index = null,
-    LoweredExpression? Start = null,
-    LoweredExpression? End = null,
-    LoweredExpression? Step = null,
-    string? MemberName = null) : LoweredStatement(Syntax.Span)
+    LoweredExpression? Annotation,
+    LoweredExpression? Target,
+    LoweredExpression? Index,
+    LoweredExpression? Start,
+    LoweredExpression? End,
+    LoweredExpression? Step,
+    string? MemberName) : LoweredStatement(Syntax.Span)
 {
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression)
+        : this(Syntax, Expression, null, null, null, null, null, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation)
+        : this(Syntax, Expression, Annotation, null, null, null, null, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target)
+        : this(Syntax, Expression, Annotation, Target, null, null, null, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index)
+        : this(Syntax, Expression, Annotation, Target, Index, null, null, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start)
+        : this(Syntax, Expression, Annotation, Target, Index, Start, null, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start, LoweredExpression? End)
+        : this(Syntax, Expression, Annotation, Target, Index, Start, End, null, null)
+    {
+    }
+
+    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start, LoweredExpression? End, LoweredExpression? Step)
+        : this(Syntax, Expression, Annotation, Target, Index, Start, End, Step, null)
+    {
+    }
+
     public override LoweredStatementKind Kind => LoweredStatementKind.Assignment;
 }
 

@@ -156,9 +156,35 @@ internal sealed partial class LythonRuntime
     }
 
     private sealed record PendingAbruptSignal(
-        LythonRuntimeException? Exception = null,
-        ReturnSignal? Return = null,
-        ControlSignal? Control = null);
+        LythonRuntimeException? Exception,
+        ReturnSignal? Return,
+        ControlSignal? Control)
+    {
+        public PendingAbruptSignal()
+            : this(null, null, null)
+        {
+        }
+
+        public PendingAbruptSignal(LythonRuntimeException? Exception)
+            : this(Exception, null, null)
+        {
+        }
+
+        public PendingAbruptSignal(LythonRuntimeException? Exception, ReturnSignal? Return)
+            : this(Exception, Return, null)
+        {
+        }
+
+        public PendingAbruptSignal(ReturnSignal? Return)
+            : this(null, Return, null)
+        {
+        }
+
+        public PendingAbruptSignal(ControlSignal? Control)
+            : this(null, null, Control)
+        {
+        }
+    }
 
     private sealed class ExecutableMemberCache
     {

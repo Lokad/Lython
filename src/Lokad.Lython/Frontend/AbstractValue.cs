@@ -727,8 +727,13 @@ internal readonly record struct AbstractValue(
 internal readonly record struct AbstractSequenceLengthBounds(
     int? MinimumLength,
     int? MaximumLength,
-    bool IsImpossible = false)
+    bool IsImpossible)
 {
+    public AbstractSequenceLengthBounds(int? MinimumLength, int? MaximumLength)
+        : this(MinimumLength, MaximumLength, false)
+    {
+    }
+
     public static AbstractSequenceLengthBounds Exact(int length) => new(length, length);
 
     public static AbstractSequenceLengthBounds Impossible => new(null, null, IsImpossible: true);

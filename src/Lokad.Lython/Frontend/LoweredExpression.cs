@@ -167,7 +167,13 @@ internal sealed record LoweredMemberExpression(
 internal sealed record LoweredCallArgument(
     string? Name,
     LoweredExpression Expression,
-    CallArgumentKind Kind = CallArgumentKind.Positional);
+    CallArgumentKind Kind)
+{
+    public LoweredCallArgument(string? Name, LoweredExpression Expression)
+        : this(Name, Expression, CallArgumentKind.Positional)
+    {
+    }
+}
 
 internal sealed record LoweredCallExpression(
     CallExpressionSyntax Call,

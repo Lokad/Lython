@@ -230,7 +230,13 @@ internal sealed record FunctionParameterSyntax(
     string Name,
     ExpressionSyntax? Annotation,
     ExpressionSyntax? DefaultValue,
-    FunctionParameterKind Kind = FunctionParameterKind.Positional);
+    FunctionParameterKind Kind)
+{
+    public FunctionParameterSyntax(string Name, ExpressionSyntax? Annotation, ExpressionSyntax? DefaultValue)
+        : this(Name, Annotation, DefaultValue, FunctionParameterKind.Positional)
+    {
+    }
+}
 
 internal sealed record ReturnStatementSyntax(
     ExpressionSyntax? Expression,
@@ -286,9 +292,25 @@ internal sealed record FormattedStringTextPartSyntax(
 
 internal sealed record FormattedStringExpressionPartSyntax(
     ExpressionSyntax Expression,
-    char? Conversion = null,
-    string? FormatSpecifier = null,
-    IReadOnlyList<FormattedStringPartSyntax>? FormatSpecifierParts = null) : FormattedStringPartSyntax;
+    char? Conversion,
+    string? FormatSpecifier,
+    IReadOnlyList<FormattedStringPartSyntax>? FormatSpecifierParts) : FormattedStringPartSyntax
+{
+    public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression)
+        : this(Expression, null, null, null)
+    {
+    }
+
+    public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression, char? Conversion)
+        : this(Expression, Conversion, null, null)
+    {
+    }
+
+    public FormattedStringExpressionPartSyntax(ExpressionSyntax Expression, char? Conversion, string? FormatSpecifier)
+        : this(Expression, Conversion, FormatSpecifier, null)
+    {
+    }
+}
 
 internal sealed record FormattedStringExpressionSyntax(
     IReadOnlyList<FormattedStringPartSyntax> Parts,
@@ -414,7 +436,13 @@ internal enum CallArgumentKind
 internal sealed record CallArgumentSyntax(
     string? Name,
     ExpressionSyntax Expression,
-    CallArgumentKind Kind = CallArgumentKind.Positional);
+    CallArgumentKind Kind)
+{
+    public CallArgumentSyntax(string? Name, ExpressionSyntax Expression)
+        : this(Name, Expression, CallArgumentKind.Positional)
+    {
+    }
+}
 
 internal sealed record SubscriptExpressionSyntax(
     ExpressionSyntax Target,

@@ -104,12 +104,37 @@ internal enum ExecutableAugmentedOperator
 internal readonly record struct ExecutableInstruction(
     ExecutableOpCode OpCode,
     LythonSourceSpan Span,
-    int A = 0,
-    int B = 0,
-    ExecutableBinaryOperator BinaryOperator = default,
-    ExecutableUnaryOperator UnaryOperator = default,
-    ExecutableAugmentedOperator AugmentedOperator = default)
+    int A,
+    int B,
+    ExecutableBinaryOperator BinaryOperator,
+    ExecutableUnaryOperator UnaryOperator,
+    ExecutableAugmentedOperator AugmentedOperator)
 {
+    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span)
+        : this(OpCode, Span, 0, 0, default, default, default)
+    {
+    }
+
+    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A)
+        : this(OpCode, Span, A, 0, default, default, default)
+    {
+    }
+
+    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B)
+        : this(OpCode, Span, A, B, default, default, default)
+    {
+    }
+
+    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B, ExecutableBinaryOperator BinaryOperator)
+        : this(OpCode, Span, A, B, BinaryOperator, default, default)
+    {
+    }
+
+    public ExecutableInstruction(ExecutableOpCode OpCode, LythonSourceSpan Span, int A, int B, ExecutableBinaryOperator BinaryOperator, ExecutableUnaryOperator UnaryOperator)
+        : this(OpCode, Span, A, B, BinaryOperator, UnaryOperator, default)
+    {
+    }
+
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Import, span, A: importIndex);
 
@@ -204,13 +229,13 @@ internal readonly record struct ExecutableInstruction(
         => new(ExecutableOpCode.Slice, span, A: presenceFlags);
 
     public static ExecutableInstruction Binary(ExecutableBinaryOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Binary, span, BinaryOperator: op);
+        => new(ExecutableOpCode.Binary, span, 0, 0, BinaryOperator: op);
 
     public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Binary, span, AugmentedOperator: op, B: 1);
+        => new(ExecutableOpCode.Binary, span, 0, 1, default, default, AugmentedOperator: op);
 
     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)
-        => new(ExecutableOpCode.Unary, span, UnaryOperator: op);
+        => new(ExecutableOpCode.Unary, span, 0, 0, default, UnaryOperator: op);
 
     public static ExecutableInstruction Jump(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Jump, span, A: targetBlockIndex);

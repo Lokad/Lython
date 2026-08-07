@@ -429,14 +429,55 @@ internal static class PyDataclass
     }
 
     private sealed record DataclassOptions(
-        bool Init = true,
-        bool Repr = true,
-        bool Eq = true,
-        bool Order = false,
-        bool UnsafeHash = false,
-        bool Frozen = false,
-        bool KwOnly = false,
-        bool MatchArgs = true);
+        bool Init,
+        bool Repr,
+        bool Eq,
+        bool Order,
+        bool UnsafeHash,
+        bool Frozen,
+        bool KwOnly,
+        bool MatchArgs)
+    {
+        public DataclassOptions()
+            : this(true, true, true, false, false, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init)
+            : this(Init, true, true, false, false, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr)
+            : this(Init, Repr, true, false, false, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr, bool Eq)
+            : this(Init, Repr, Eq, false, false, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order)
+            : this(Init, Repr, Eq, Order, false, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash)
+            : this(Init, Repr, Eq, Order, UnsafeHash, false, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash, bool Frozen)
+            : this(Init, Repr, Eq, Order, UnsafeHash, Frozen, false, true)
+        {
+        }
+
+        public DataclassOptions(bool Init, bool Repr, bool Eq, bool Order, bool UnsafeHash, bool Frozen, bool KwOnly)
+            : this(Init, Repr, Eq, Order, UnsafeHash, Frozen, KwOnly, true)
+        {
+        }
+    }
 
     private static DataclassDecoratorSyntax ToDecorator(DataclassOptions options, LythonSourceSpan span)
         => new(options.Init, options.Repr, options.Eq, options.Order, options.UnsafeHash, options.Frozen, options.KwOnly, options.MatchArgs, span);
@@ -975,56 +1016,56 @@ internal static class PyDataclass
             }
         }
 
-            foreach (var change in changes.Keys)
+        foreach (var change in changes.Keys)
+        {
+            var field = instance.Type.DataclassFields.FirstOrDefault(candidate => candidate.Name == change);
+            if (field is null)
             {
-                var field = instance.Type.DataclassFields.FirstOrDefault(candidate => candidate.Name == change);
-                if (field is null)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{owner}() got an unexpected field '{change}'.", span);
-                }
-
-                if (!field.Init)
-                {
-                    throw new LythonRuntimeException("ValueError", $"{owner}() cannot override init=False field '{change}'.", span);
-                }
+                throw new LythonRuntimeException("TypeError", $"{owner}() got an unexpected field '{change}'.", span);
             }
 
-            var callArguments = new List<CallArgumentValue>(instance.Type.DataclassFields.Count);
-            foreach (var field in instance.Type.DataclassFields)
+            if (!field.Init)
             {
-                if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
+                throw new LythonRuntimeException("ValueError", $"{owner}() cannot override init=False field '{change}'.", span);
+            }
+        }
+
+        var callArguments = new List<CallArgumentValue>(instance.Type.DataclassFields.Count);
+        foreach (var field in instance.Type.DataclassFields)
+        {
+            if (field.Kind == DataclassFieldKind.ClassVar || !field.Init)
+            {
+                continue;
+            }
+
+            if (changes.TryGetValue(field.Name, out var changedValue))
+            {
+                callArguments.Add(new CallArgumentValue(field.Name, changedValue));
+                continue;
+            }
+
+            if (field.Kind == DataclassFieldKind.InitVar)
+            {
+                if (field.HasDefaultFactory)
                 {
+                    callArguments.Add(new CallArgumentValue(field.Name, DataclassInitMethod.InvokeDefaultFactory(field, span, context)));
                     continue;
                 }
 
-                if (changes.TryGetValue(field.Name, out var changedValue))
+                if (field.HasDefault)
                 {
-                    callArguments.Add(new CallArgumentValue(field.Name, changedValue));
+                    callArguments.Add(new CallArgumentValue(field.Name, field.DefaultValue));
                     continue;
                 }
 
-                if (field.Kind == DataclassFieldKind.InitVar)
-                {
-                    if (field.HasDefaultFactory)
-                    {
-                        callArguments.Add(new CallArgumentValue(field.Name, DataclassInitMethod.InvokeDefaultFactory(field, span, context)));
-                        continue;
-                    }
-
-                    if (field.HasDefault)
-                    {
-                        callArguments.Add(new CallArgumentValue(field.Name, field.DefaultValue));
-                        continue;
-                    }
-
-                    throw new LythonRuntimeException("ValueError", $"InitVar '{field.Name}' must be specified with {owner}().", span);
-                }
-
-                _ = instance.TryGetOwnAttribute(field.Name, out var existingValue);
-                callArguments.Add(new CallArgumentValue(field.Name, existingValue ?? PyNone.Instance));
+                throw new LythonRuntimeException("ValueError", $"InitVar '{field.Name}' must be specified with {owner}().", span);
             }
 
-            return instance.Type.Invoke(callArguments.ToArray(), span, context);
+            _ = instance.TryGetOwnAttribute(field.Name, out var existingValue);
+            callArguments.Add(new CallArgumentValue(field.Name, existingValue ?? PyNone.Instance));
+        }
+
+        return instance.Type.Invoke(callArguments.ToArray(), span, context);
     }
 
     public static object IsDataclass(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

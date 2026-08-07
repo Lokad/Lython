@@ -3,9 +3,24 @@ namespace Lokad.Lython.Frontend;
 internal readonly record struct ConcreteCallArguments(
     IReadOnlyList<ExpressionSyntax> Positional,
     IReadOnlyDictionary<string, ExpressionSyntax> Keywords,
-    IReadOnlyList<AbstractValue?>? PositionalValues = null,
-    IReadOnlyDictionary<string, AbstractValue>? KeywordValues = null)
+    IReadOnlyList<AbstractValue?>? PositionalValues,
+    IReadOnlyDictionary<string, AbstractValue>? KeywordValues)
 {
+    public ConcreteCallArguments(
+        IReadOnlyList<ExpressionSyntax> Positional,
+        IReadOnlyDictionary<string, ExpressionSyntax> Keywords)
+        : this(Positional, Keywords, null, null)
+    {
+    }
+
+    public ConcreteCallArguments(
+        IReadOnlyList<ExpressionSyntax> Positional,
+        IReadOnlyDictionary<string, ExpressionSyntax> Keywords,
+        IReadOnlyList<AbstractValue?>? PositionalValues)
+        : this(Positional, Keywords, PositionalValues, null)
+    {
+    }
+
     public bool TryGetValue(int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
         if (position < Positional.Count)

@@ -4,7 +4,13 @@ internal sealed record StaticDiagnosticProof(
     string Category,
     string Subject,
     string Reason,
-    AbstractValue? Evidence = null);
+    AbstractValue? Evidence)
+{
+    public StaticDiagnosticProof(string Category, string Subject, string Reason)
+        : this(Category, Subject, Reason, null)
+    {
+    }
+}
 
 internal static class StaticDiagnosticSink
 {

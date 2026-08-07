@@ -114,12 +114,37 @@ internal readonly record struct StaticMemberValueContract(
 internal readonly record struct StaticCallShapeContract(
     int MinArgumentCount,
     int? MaxArgumentCount,
-    string[]? ParameterNames = null,
-    int? MaxPositionalCount = null,
-    bool AllowsExtraKeywords = false,
-    bool AllowsExtraPositional = false,
-    int PositionalOnlyCount = 0)
+    string[]? ParameterNames,
+    int? MaxPositionalCount,
+    bool AllowsExtraKeywords,
+    bool AllowsExtraPositional,
+    int PositionalOnlyCount)
 {
+    public StaticCallShapeContract(int MinArgumentCount, int? MaxArgumentCount)
+        : this(MinArgumentCount, MaxArgumentCount, null, null, false, false, 0)
+    {
+    }
+
+    public StaticCallShapeContract(int MinArgumentCount, int? MaxArgumentCount, string[]? ParameterNames)
+        : this(MinArgumentCount, MaxArgumentCount, ParameterNames, null, false, false, 0)
+    {
+    }
+
+    public StaticCallShapeContract(int MinArgumentCount, int? MaxArgumentCount, string[]? ParameterNames, int? MaxPositionalCount)
+        : this(MinArgumentCount, MaxArgumentCount, ParameterNames, MaxPositionalCount, false, false, 0)
+    {
+    }
+
+    public StaticCallShapeContract(int MinArgumentCount, int? MaxArgumentCount, string[]? ParameterNames, int? MaxPositionalCount, bool AllowsExtraKeywords)
+        : this(MinArgumentCount, MaxArgumentCount, ParameterNames, MaxPositionalCount, AllowsExtraKeywords, false, 0)
+    {
+    }
+
+    public StaticCallShapeContract(int MinArgumentCount, int? MaxArgumentCount, string[]? ParameterNames, int? MaxPositionalCount, bool AllowsExtraKeywords, bool AllowsExtraPositional)
+        : this(MinArgumentCount, MaxArgumentCount, ParameterNames, MaxPositionalCount, AllowsExtraKeywords, AllowsExtraPositional, 0)
+    {
+    }
+
     public StaticCallShapeContract(LythonCallableSignature signature)
         : this(
             signature.MinimumArgumentCount,
@@ -240,10 +265,58 @@ internal readonly record struct StaticCallableContract(
     int? MaxArgumentCount,
     string DiagnosticCode,
     string Message,
-    StaticMutationKind Mutation = StaticMutationKind.None,
-    string[]? ParameterNames = null,
-    bool AllowsExtraKeywords = false)
+    StaticMutationKind Mutation,
+    string[]? ParameterNames,
+    bool AllowsExtraKeywords)
 {
+    public StaticCallableContract(
+        AbstractValueKind ReceiverKind,
+        string MemberName,
+        int MinArgumentCount,
+        int? MaxArgumentCount,
+        string DiagnosticCode,
+        string Message)
+        : this(ReceiverKind, MemberName, MinArgumentCount, MaxArgumentCount, DiagnosticCode, Message, StaticMutationKind.None, null, false)
+    {
+    }
+
+    public StaticCallableContract(
+        AbstractValueKind ReceiverKind,
+        string MemberName,
+        int MinArgumentCount,
+        int? MaxArgumentCount,
+        string DiagnosticCode,
+        string Message,
+        StaticMutationKind Mutation)
+        : this(ReceiverKind, MemberName, MinArgumentCount, MaxArgumentCount, DiagnosticCode, Message, Mutation, null, false)
+    {
+    }
+
+    public StaticCallableContract(
+        AbstractValueKind ReceiverKind,
+        string MemberName,
+        int MinArgumentCount,
+        int? MaxArgumentCount,
+        string DiagnosticCode,
+        string Message,
+        string[]? ParameterNames)
+        : this(ReceiverKind, MemberName, MinArgumentCount, MaxArgumentCount, DiagnosticCode, Message, StaticMutationKind.None, ParameterNames, false)
+    {
+    }
+
+    public StaticCallableContract(
+        AbstractValueKind ReceiverKind,
+        string MemberName,
+        int MinArgumentCount,
+        int? MaxArgumentCount,
+        string DiagnosticCode,
+        string Message,
+        StaticMutationKind Mutation,
+        string[]? ParameterNames)
+        : this(ReceiverKind, MemberName, MinArgumentCount, MaxArgumentCount, DiagnosticCode, Message, Mutation, ParameterNames, false)
+    {
+    }
+
     public bool AcceptsArgumentCount(int count)
         => Shape.AcceptsArgumentCount(count);
 
@@ -256,15 +329,20 @@ internal readonly record struct StaticCallableContract(
         out ExpressionSyntax? offendingExpression)
         => Shape.TryGetArgumentShapeFailure(arguments, out reason, out offendingExpression);
 
-    private StaticCallShapeContract Shape => new(MinArgumentCount, MaxArgumentCount, ParameterNames, AllowsExtraKeywords: AllowsExtraKeywords);
+    private StaticCallShapeContract Shape => new(MinArgumentCount, MaxArgumentCount, ParameterNames, MaxPositionalCount: null, AllowsExtraKeywords: AllowsExtraKeywords);
 }
 
 internal readonly record struct StaticKnownCallContract(
     LythonCallableSignature Signature,
     string DiagnosticCode,
     string Message,
-    StaticReturnShape ReturnShape = StaticReturnShape.Unknown)
+    StaticReturnShape ReturnShape)
 {
+    public StaticKnownCallContract(LythonCallableSignature Signature, string DiagnosticCode, string Message)
+        : this(Signature, DiagnosticCode, Message, StaticReturnShape.Unknown)
+    {
+    }
+
     public string TargetName => Signature.Name;
 
     public bool AcceptsArgumentShape(ConcreteCallArguments arguments)

@@ -70,7 +70,13 @@ internal sealed partial class LythonRuntime
         PyString Segment,
         int Pos,
         int EndPos,
-        bool IsValid = true);
+        bool IsValid)
+    {
+        public RegexSubjectRange(PyString Original, PyString Segment, int Pos, int EndPos)
+            : this(Original, Segment, Pos, EndPos, true)
+        {
+        }
+    }
 
     private sealed partial class MathModule : PyModule
     {
@@ -4791,7 +4797,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, PositionalOnlyCount: 1)),
+                }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, AllowsExtraKeywords: false, AllowsExtraPositional: false, PositionalOnlyCount: 1)),
                 "expandtabs" => new BoundCallable((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)

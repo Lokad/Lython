@@ -93,6 +93,7 @@ internal sealed class LoweredScript
                 => new LoweredAssignmentStatement(
                     augmentedAssignment,
                     LowerExpression(augmentedAssignment.Expression),
+                    Annotation: null,
                     Target: augmentedAssignment.Target switch
                     {
                         SubscriptAssignmentTargetSyntax subscript => LowerExpression(subscript.Target),
@@ -123,21 +124,34 @@ internal sealed class LoweredScript
                 => new LoweredAssignmentStatement(
                     subscriptAssignment,
                     LowerExpression(subscriptAssignment.Expression),
+                    Annotation: null,
                     Target: LowerExpression(subscriptAssignment.Target),
-                    Index: LowerExpression(subscriptAssignment.Index)),
+                    Index: LowerExpression(subscriptAssignment.Index),
+                    Start: null,
+                    End: null,
+                    Step: null,
+                    MemberName: null),
             SliceAssignmentStatementSyntax sliceAssignment
                 => new LoweredAssignmentStatement(
                     sliceAssignment,
                     LowerExpression(sliceAssignment.Expression),
+                    Annotation: null,
                     Target: LowerExpression(sliceAssignment.Target),
+                    Index: null,
                     Start: sliceAssignment.Start is null ? null : LowerExpression(sliceAssignment.Start),
                     End: sliceAssignment.End is null ? null : LowerExpression(sliceAssignment.End),
-                    Step: sliceAssignment.Step is null ? null : LowerExpression(sliceAssignment.Step)),
+                    Step: sliceAssignment.Step is null ? null : LowerExpression(sliceAssignment.Step),
+                    MemberName: null),
             MemberAssignmentStatementSyntax memberAssignment
                 => new LoweredAssignmentStatement(
                     memberAssignment,
                     LowerExpression(memberAssignment.Expression),
+                    Annotation: null,
                     Target: LowerExpression(memberAssignment.Target),
+                    Index: null,
+                    Start: null,
+                    End: null,
+                    Step: null,
                     MemberName: memberAssignment.MemberName),
             ExpressionStatementSyntax expressionStatement => new LoweredExpressionStatement(expressionStatement, LowerExpression(expressionStatement.Expression)),
             IfStatementSyntax ifStatement => new LoweredIfStatement(
