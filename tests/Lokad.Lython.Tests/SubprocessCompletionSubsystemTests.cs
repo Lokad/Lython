@@ -5,9 +5,9 @@ namespace Lokad.Lython.Tests;
 public sealed class SubprocessCompletionSubsystemTests
 {
     [Fact]
-    public async Task CompleteBufferedAsync_CapturesPipesWithOutputBound()
+    public async Task CompleteBufferedAsync_RejectsCapturedOutputBeyondTheBound()
     {
-        var result = await LythonSubprocessCompletion
+        var exception = await Assert.ThrowsAsync<LythonSubprocessOutputLimitException>(() => LythonSubprocessCompletion
             .CompleteBufferedAsync(
                 Request(
                     standardOutput: LythonSubprocessStreamMode.Pipe,
@@ -18,11 +18,11 @@ public sealed class SubprocessCompletionSubsystemTests
                 Bytes("stderr"),
                 UnexpectedWriteAsync,
                 UnexpectedWriteAsync,
-                CancellationToken.None);
+                CancellationToken.None).AsTask());
 
-        Assert.Equal(7, result.ReturnCode);
-        Assert.Equal("abc", Text(result.StandardOutputUtf8));
-        Assert.Equal("std", Text(result.StandardErrorUtf8));
+        Assert.Equal("standard output", exception.StreamName);
+        Assert.Equal(6, exception.ActualBytes);
+        Assert.Equal(3, exception.MaximumBytes);
     }
 
     [Fact]

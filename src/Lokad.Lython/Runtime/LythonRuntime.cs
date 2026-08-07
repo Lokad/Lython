@@ -3877,10 +3877,12 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
             }
 
-            return AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
+            var result = AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
+            ValidateSubprocessOutput(request, result, span);
+            return result;
         }
 
-        public ValueTask<LythonSubprocessResult> RunSubprocessAsync(LythonSubprocessRequest request, LythonSourceSpan? span)
+        public async ValueTask<LythonSubprocessResult> RunSubprocessAsync(LythonSubprocessRequest request, LythonSourceSpan? span)
         {
             var runner = Host.SubprocessRunner;
             if (runner is null)
@@ -3888,7 +3890,34 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
             }
 
-            return AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
+            var result = await AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span).ConfigureAwait(false);
+            ValidateSubprocessOutput(request, result, span);
+            return result;
+        }
+
+        private static void ValidateSubprocessOutput(
+            LythonSubprocessRequest request,
+            LythonSubprocessResult result,
+            LythonSourceSpan? span)
+        {
+            if (request.MaxOutputBytes is not { } maximum)
+            {
+                return;
+            }
+
+            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe && result.StandardOutputUtf8.Length > maximum)
+            {
+                throw RuntimeErrors.Runtime(
+                    $"subprocess standard output exceeded maximum captured output bytes ({maximum}); received {result.StandardOutputUtf8.Length} bytes.",
+                    span);
+            }
+
+            if (request.StandardError == LythonSubprocessStreamMode.Pipe && result.StandardErrorUtf8.Length > maximum)
+            {
+                throw RuntimeErrors.Runtime(
+                    $"subprocess standard error exceeded maximum captured output bytes ({maximum}); received {result.StandardErrorUtf8.Length} bytes.",
+                    span);
+            }
         }
 
         private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
@@ -3927,6 +3956,10 @@ internal sealed partial class LythonRuntime
             catch (LythonRuntimeException)
             {
                 throw;
+            }
+            catch (LythonSubprocessOutputLimitException ex)
+            {
+                throw RuntimeErrors.Runtime(ex.Message, span);
             }
             catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
             {
@@ -3967,6 +4000,10 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
+            catch (LythonSubprocessOutputLimitException ex)
+            {
+                throw RuntimeErrors.Runtime(ex.Message, span);
+            }
             catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
             {
                 throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
@@ -3999,6 +4036,10 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
+            catch (LythonSubprocessOutputLimitException ex)
+            {
+                throw RuntimeErrors.Runtime(ex.Message, span);
+            }
             catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
             {
                 throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
@@ -4022,6 +4063,10 @@ internal sealed partial class LythonRuntime
             catch (LythonRuntimeException)
             {
                 throw;
+            }
+            catch (LythonSubprocessOutputLimitException ex)
+            {
+                throw RuntimeErrors.Runtime(ex.Message, span);
             }
             catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
             {

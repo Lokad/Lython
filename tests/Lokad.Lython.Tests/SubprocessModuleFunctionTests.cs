@@ -26,6 +26,23 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SubprocessRun_RejectsOversizedCapturedHostOutput()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["t"], 0, "abcdefghijk", string.Empty);
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run(['t'], capture_output=True)\n",
+            host,
+            new LythonRunOptions { MaxStringLength = 10 });
+
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("standard output exceeded maximum captured output bytes (10)", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SubprocessRun_ThreadsInputAndCwdIntoTheHostRequest()
     {
         var host = new MockLythonHost();

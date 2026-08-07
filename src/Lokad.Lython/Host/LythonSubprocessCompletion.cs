@@ -28,9 +28,17 @@ public static class LythonSubprocessCompletion
 
         if (request.StandardError == LythonSubprocessStreamMode.StandardOutput)
         {
+            if (request.StandardOutput == LythonSubprocessStreamMode.Pipe)
+            {
+                EnsureWithinOutputLimit(
+                    "combined standard output",
+                    checked((long)standardOutputUtf8.Length + standardErrorUtf8.Length),
+                    request.MaxOutputBytes);
+            }
             var combined = Combine(standardOutputUtf8, standardErrorUtf8);
             var captured = await RouteBufferedOutputAsync(
                     request.StandardOutput,
+                    "combined standard output",
                     combined,
                     request.MaxOutputBytes,
                     inheritStandardOutputAsync,
@@ -41,6 +49,7 @@ public static class LythonSubprocessCompletion
 
         var capturedStdout = await RouteBufferedOutputAsync(
                 request.StandardOutput,
+                "standard output",
                 standardOutputUtf8,
                 request.MaxOutputBytes,
                 inheritStandardOutputAsync,
@@ -48,6 +57,7 @@ public static class LythonSubprocessCompletion
             .ConfigureAwait(false);
         var capturedStderr = await RouteBufferedOutputAsync(
                 request.StandardError,
+                "standard error",
                 standardErrorUtf8,
                 request.MaxOutputBytes,
                 inheritStandardErrorAsync,
@@ -58,6 +68,7 @@ public static class LythonSubprocessCompletion
 
     private static async ValueTask<ReadOnlyMemory<byte>> RouteBufferedOutputAsync(
         LythonSubprocessStreamMode mode,
+        string streamName,
         ReadOnlyMemory<byte> utf8,
         long? maxOutputBytes,
         LythonSubprocessOutputWriter inheritOutputAsync,
@@ -66,9 +77,8 @@ public static class LythonSubprocessCompletion
         switch (mode)
         {
             case LythonSubprocessStreamMode.Pipe:
-                return maxOutputBytes is > 0 && utf8.Length > maxOutputBytes.Value
-                    ? utf8.Slice(0, (int)maxOutputBytes.Value)
-                    : utf8;
+                EnsureWithinOutputLimit(streamName, utf8.Length, maxOutputBytes);
+                return utf8;
 
             case LythonSubprocessStreamMode.Inherit:
                 if (utf8.Length != 0)
@@ -83,6 +93,19 @@ public static class LythonSubprocessCompletion
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+        }
+    }
+
+    private static void EnsureWithinOutputLimit(string streamName, long actualBytes, long? maximumBytes)
+    {
+        if (maximumBytes is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumBytes), maximumBytes, "Subprocess output limits cannot be negative.");
+        }
+
+        if (maximumBytes is { } maximum && actualBytes > maximum)
+        {
+            throw new LythonSubprocessOutputLimitException(streamName, actualBytes, maximum);
         }
     }
 
