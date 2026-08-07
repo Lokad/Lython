@@ -780,6 +780,37 @@ return open("/sample.txt").read()
     }
 
     [Fact]
+    public void ExecutableSubset_WithStatement_InvokesUnsuppressingExitOnce()
+    {
+        var frontend = LythonFrontend.Compile("""
+events = []
+
+class Manager:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        events.append(exc_type)
+        return False
+
+try:
+    with Manager():
+        raise ValueError("boom")
+except ValueError:
+    events.append("caught")
+
+return "|".join(events)
+""");
+
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var executable = ExecutableScript.Compile(lowered);
+        var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("ValueError|caught", result.ReturnValue);
+    }
+
+    [Fact]
     public void ExecutableSubset_MatchStatement_ExecutesThroughExecutablePipeline()
     {
         var frontend = LythonFrontend.Compile("""

@@ -514,13 +514,12 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.ExitContextManager:
                                 {
                                     var manager = PopContextManager(stack, instruction.Span);
-                                    if (pendingAbrupt?.Exception is not null &&
-                                        manager.Exit(
-                                            pendingAbrupt.Exception.ExceptionType,
-                                            pendingAbrupt.Exception,
-                                            PyNone.Instance))
+                                    if (pendingAbrupt?.Exception is { } exception)
                                     {
-                                        pendingAbrupt = null;
+                                        if (manager.Exit(exception.ExceptionType, exception, PyNone.Instance))
+                                        {
+                                            pendingAbrupt = null;
+                                        }
                                     }
                                     else
                                     {
