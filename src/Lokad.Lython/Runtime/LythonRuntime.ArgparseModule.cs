@@ -304,13 +304,13 @@ internal sealed partial class LythonRuntime
                 _arguments.Add(new ArgumentSpec(
                     ["-h", "--help"],
                     "help",
-                    "help",
+                    ArgumentAction.Help,
                     Required: false,
                     DefaultValue: ArgparseSuppressValue.Instance,
                     Choices: null,
                     Converter: null,
                     IsPositional: false,
-                    Nargs: null,
+                    Nargs: ArgumentNargs.Default,
                     GroupId: null,
                     ConstValue: PyNone.Instance,
                     HelpText: "show this help message and exit",
@@ -633,18 +633,17 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             var tokens = new List<string>();
-            var fixedCount = FixedNargsCount(spec.Nargs);
-            if (fixedCount is not null)
+            if (spec.Nargs.Kind == ArgumentNargsKind.Fixed)
             {
-                for (var i = 0; i < fixedCount.Value; i++)
+                for (var i = 0; i < spec.Nargs.Count; i++)
                 {
                     if (index >= argv.Count || HasOptionalArgumentNamed(argv[index]))
                     {
-                        throw CreateParseFailure($"argument {spec.Destination}: expected {fixedCount.Value} arguments", span);
+                        throw CreateParseFailure($"argument {spec.Destination}: expected {spec.Nargs.Count} arguments", span);
                     }
 
                     tokens.Add(argv[index]);
-                    if (i + 1 < fixedCount.Value)
+                    if (i + 1 < spec.Nargs.Count)
                     {
                         index++;
                     }
@@ -653,13 +652,14 @@ internal sealed partial class LythonRuntime
                 return tokens;
             }
 
-            switch (spec.Nargs)
+            switch (spec.Nargs.Kind)
             {
-                case null:
-                case "?":
+                case ArgumentNargsKind.Default:
+                case ArgumentNargsKind.Optional:
                     tokens.Add(argv[index]);
                     return tokens;
-                case "*" or "+":
+                case ArgumentNargsKind.ZeroOrMore:
+                case ArgumentNargsKind.OneOrMore:
                     var requiredAfter = RequiredPositionalSlotsAfter(positionalSpecs, positionalIndex);
                     while (index < argv.Count &&
                            !HasOptionalArgumentNamed(argv[index]) &&
@@ -674,7 +674,7 @@ internal sealed partial class LythonRuntime
                         index++;
                     }
 
-                    if (spec.Nargs == "+" && tokens.Count == 0)
+                    if (spec.Nargs.Kind == ArgumentNargsKind.OneOrMore && tokens.Count == 0)
                     {
                         throw CreateParseFailure($"the following arguments are required: {spec.Destination}", span);
                     }
@@ -721,22 +721,22 @@ internal sealed partial class LythonRuntime
         {
             switch (spec.Action)
             {
-                case "store_true":
+                case ArgumentAction.StoreTrue:
                     values[spec.Destination] = true;
                     break;
-                case "store_false":
+                case ArgumentAction.StoreFalse:
                     values[spec.Destination] = false;
                     break;
-                case "store_const":
+                case ArgumentAction.StoreConst:
                     values[spec.Destination] = CloneDefault(spec.ConstValue, context, span);
                     break;
-                case "count":
+                case ArgumentAction.Count:
                     values[spec.Destination] = IncrementCount(values.TryGetValue(spec.Destination, out var current) ? current : PyNone.Instance);
                     break;
-                case "help":
+                case ArgumentAction.Help:
                     WriteToTarget(FormatHelpText(context), context.State.Stdout, span);
                     throw CreateSystemExit(string.Empty, span, status: 0);
-                case "version":
+                case ArgumentAction.Version:
                     var versionText = spec.VersionText ?? string.Empty;
                     if (!versionText.EndsWith('\n'))
                     {
@@ -766,14 +766,13 @@ internal sealed partial class LythonRuntime
                 tokens.Add(inlineValue);
             }
 
-            var fixedCount = FixedNargsCount(spec.Nargs);
-            if (fixedCount is not null)
+            if (spec.Nargs.Kind == ArgumentNargsKind.Fixed)
             {
-                while (tokens.Count < fixedCount.Value)
+                while (tokens.Count < spec.Nargs.Count)
                 {
                     if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
                     {
-                        throw CreateParseFailure($"argument {optionToken}: expected {fixedCount.Value} arguments", span);
+                        throw CreateParseFailure($"argument {optionToken}: expected {spec.Nargs.Count} arguments", span);
                     }
 
                     index++;
@@ -783,9 +782,9 @@ internal sealed partial class LythonRuntime
                 return tokens;
             }
 
-            switch (spec.Nargs)
+            switch (spec.Nargs.Kind)
             {
-                case null:
+                case ArgumentNargsKind.Default:
                     if (tokens.Count == 0)
                     {
                         if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
@@ -798,7 +797,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return tokens;
-                case "?":
+                case ArgumentNargsKind.Optional:
                     if (tokens.Count == 0)
                     {
                         if (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
@@ -809,14 +808,15 @@ internal sealed partial class LythonRuntime
                     }
 
                     return tokens;
-                case "*" or "+":
+                case ArgumentNargsKind.ZeroOrMore:
+                case ArgumentNargsKind.OneOrMore:
                     while (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
                     {
                         index++;
                         tokens.Add(argv[index]);
                     }
 
-                    if (spec.Nargs == "+" && tokens.Count == 0)
+                    if (spec.Nargs.Kind == ArgumentNargsKind.OneOrMore && tokens.Count == 0)
                     {
                         throw CreateParseFailure($"argument {optionToken}: expected at least one argument", span);
                     }
@@ -829,7 +829,7 @@ internal sealed partial class LythonRuntime
 
         private object CreateParsedValue(ArgumentSpec spec, IReadOnlyList<string> tokens, string displayName, LythonSourceSpan span, ExecutionContext context)
         {
-            if (spec.Nargs == "?" && tokens.Count == 0)
+            if (spec.Nargs.Kind == ArgumentNargsKind.Optional && tokens.Count == 0)
             {
                 return ReferenceEquals(spec.ConstValue, PyNone.Instance)
                     ? CloneDefault(spec.DefaultValue, context, span)
@@ -863,7 +863,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            if (spec.Action == "append")
+            if (spec.Action == ArgumentAction.Append)
             {
                 var list = values.TryGetValue(spec.Destination, out var existing) && existing is PyList existingList
                     ? existingList
@@ -920,14 +920,14 @@ internal sealed partial class LythonRuntime
             var missing = new List<string>();
             foreach (var spec in _arguments)
             {
-                if (spec.Action is "help" or "version")
+                if (spec.Action is ArgumentAction.Help or ArgumentAction.Version)
                 {
                     continue;
                 }
 
                 if (spec.IsPositional)
                 {
-                    if (spec.Nargs is "*" or "?")
+                    if (spec.Nargs.Kind is ArgumentNargsKind.ZeroOrMore or ArgumentNargsKind.Optional)
                     {
                         continue;
                     }
@@ -988,31 +988,36 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static object DefaultForAction(string action, ExecutionContext context, LythonSourceSpan span)
+        private static object DefaultForAction(ArgumentAction action, ExecutionContext context, LythonSourceSpan span)
         {
             return action switch
             {
-                "store_true" => false,
-                "store_false" => true,
-                "append" => new PyList([], context.MemoryGovernor, span),
-                "store_const" => PyNone.Instance,
-                "count" => PyNone.Instance,
-                "help" or "version" => ArgparseSuppressValue.Instance,
+                ArgumentAction.StoreTrue => false,
+                ArgumentAction.StoreFalse => true,
+                ArgumentAction.Append => new PyList([], context.MemoryGovernor, span),
+                ArgumentAction.StoreConst => PyNone.Instance,
+                ArgumentAction.Count => PyNone.Instance,
+                ArgumentAction.Help or ArgumentAction.Version => ArgparseSuppressValue.Instance,
                 _ => PyNone.Instance
             };
         }
 
-        private static void ValidateAction(string action, LythonSourceSpan span)
+        private static ArgumentAction ParseAction(string action, LythonSourceSpan span)
         {
-            if (action is "store" or "store_true" or "store_false" or "append" or "store_const" or "count" or "version")
+            return action switch
             {
-                return;
-            }
-
-            throw new LythonRuntimeException(
-                "ValueError",
-                "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', 'store_const', 'count', or 'version'.",
-                span);
+                "store" => ArgumentAction.Store,
+                "store_true" => ArgumentAction.StoreTrue,
+                "store_false" => ArgumentAction.StoreFalse,
+                "append" => ArgumentAction.Append,
+                "store_const" => ArgumentAction.StoreConst,
+                "count" => ArgumentAction.Count,
+                "version" => ArgumentAction.Version,
+                _ => throw new LythonRuntimeException(
+                    "ValueError",
+                    "argparse.ArgumentParser.add_argument(..., action=...) only supports 'store', 'store_true', 'store_false', 'append', 'store_const', 'count', or 'version'.",
+                    span),
+            };
         }
 
         private static object? ValidateConverter(object value, LythonSourceSpan span)
@@ -1033,7 +1038,7 @@ internal sealed partial class LythonRuntime
                 span);
         }
 
-        private static string? ValidateNargs(object value, string action, LythonSourceSpan span)
+        private static ArgumentNargs ValidateNargs(object value, ArgumentAction action, LythonSourceSpan span)
         {
             if (IsNoValueAction(action))
             {
@@ -1047,7 +1052,7 @@ internal sealed partial class LythonRuntime
             {
                 if (integer > BigInteger.Zero && integer <= int.MaxValue)
                 {
-                    return integer.ToString(CultureInfo.InvariantCulture);
+                    return ArgumentNargs.Fixed((int)integer);
                 }
 
                 throw new LythonRuntimeException(
@@ -1067,12 +1072,17 @@ internal sealed partial class LythonRuntime
             var nargs = text.AsString();
             if (nargs is "?" or "*" or "+")
             {
-                return nargs;
+                return nargs switch
+                {
+                    "?" => ArgumentNargs.Optional,
+                    "*" => ArgumentNargs.ZeroOrMore,
+                    _ => ArgumentNargs.OneOrMore,
+                };
             }
 
             if (int.TryParse(nargs, NumberStyles.None, CultureInfo.InvariantCulture, out var fixedCount) && fixedCount > 0)
             {
-                return nargs;
+                return ArgumentNargs.Fixed(fixedCount);
             }
 
             throw new LythonRuntimeException(
@@ -1128,9 +1138,8 @@ internal sealed partial class LythonRuntime
                 ? RequireString("dest", explicitDest, span).AsString()
                 : InferDestination(optionNames, span);
             var action = keyword.TryGetValue("action", out var actionValue)
-                ? RequireString("action", actionValue, span).AsString()
-                : "store";
-            ValidateAction(action, span);
+                ? ParseAction(RequireString("action", actionValue, span).AsString(), span)
+                : ArgumentAction.Store;
             var isPositional = optionNames[0].Length != 0 && !optionNames[0].StartsWith("-", StringComparison.Ordinal);
             if (isPositional && keyword.ContainsKey("required"))
             {
@@ -1139,18 +1148,18 @@ internal sealed partial class LythonRuntime
 
             var nargs = keyword.TryGetValue("nargs", out var nargsValue)
                 ? ValidateNargs(nargsValue, action, span)
-                : null;
+                : ArgumentNargs.Default;
             var required = keyword.TryGetValue("required", out var requiredValue) && IsTruthy(requiredValue);
             var defaultValue = keyword.TryGetValue("default", out var maybeDefault)
                 ? maybeDefault
-                : nargs == "*"
+                : nargs.Kind == ArgumentNargsKind.ZeroOrMore
                     ? new PyList([], context.MemoryGovernor, span)
                     : DefaultForAction(action, context, span);
             object[]? choices = keyword.TryGetValue("choices", out var choicesValue)
                 ? [.. ToSequence(choicesValue, span)]
                 : null;
             var converter = keyword.TryGetValue("type", out var typeValue) ? ValidateConverter(typeValue, span) : null;
-            var constValue = (action == "store_const" || nargs == "?") && keyword.TryGetValue("const", out var constant)
+            var constValue = (action == ArgumentAction.StoreConst || nargs.Kind == ArgumentNargsKind.Optional) && keyword.TryGetValue("const", out var constant)
                 ? constant
                 : PyNone.Instance;
             var suppressHelp = keyword.TryGetValue("help", out var helpValue) && IsSuppress(helpValue);
@@ -1436,7 +1445,7 @@ internal sealed partial class LythonRuntime
             var parts = new List<string> { "usage:", _options.Prog };
             foreach (var argument in _arguments)
             {
-                if (argument.Action == "help" && !_options.AddHelp || argument.SuppressHelp)
+                if (argument.Action == ArgumentAction.Help && !_options.AddHelp || argument.SuppressHelp)
                 {
                     continue;
                 }
@@ -1508,12 +1517,12 @@ internal sealed partial class LythonRuntime
         {
             if (argument.IsPositional)
             {
-                return argument.Nargs switch
+                return argument.Nargs.Kind switch
                 {
-                    "?" => $"[{argument.DisplayMetavar}]",
-                    "*" => $"[{argument.DisplayMetavar} ...]",
-                    "+" => $"{argument.DisplayMetavar} [{argument.DisplayMetavar} ...]",
-                    _ when FixedNargsCount(argument.Nargs) is int count => string.Join(" ", Enumerable.Repeat(argument.DisplayMetavar, count)),
+                    ArgumentNargsKind.Optional => $"[{argument.DisplayMetavar}]",
+                    ArgumentNargsKind.ZeroOrMore => $"[{argument.DisplayMetavar} ...]",
+                    ArgumentNargsKind.OneOrMore => $"{argument.DisplayMetavar} [{argument.DisplayMetavar} ...]",
+                    ArgumentNargsKind.Fixed => string.Join(" ", Enumerable.Repeat(argument.DisplayMetavar, argument.Nargs.Count)),
                     _ => argument.DisplayMetavar
                 };
             }
@@ -1574,16 +1583,12 @@ internal sealed partial class LythonRuntime
             => _arguments.Any(static argument =>
                 !argument.IsPositional && argument.OptionNames.Any(LooksLikeNegativeNumber));
 
-        private static bool IsNoValueAction(string action)
-            => action is "store_true" or "store_false" or "store_const" or "count" or "help" or "version";
+        private static bool IsNoValueAction(ArgumentAction action)
+            => action is ArgumentAction.StoreTrue or ArgumentAction.StoreFalse or ArgumentAction.StoreConst or
+                ArgumentAction.Count or ArgumentAction.Help or ArgumentAction.Version;
 
         private static bool ProducesListValue(ArgumentSpec spec)
-            => spec.Nargs is "*" or "+" || FixedNargsCount(spec.Nargs) is not null;
-
-        private static int? FixedNargsCount(string? nargs)
-            => nargs is not null && int.TryParse(nargs, NumberStyles.None, CultureInfo.InvariantCulture, out var count)
-                ? count
-                : null;
+            => spec.Nargs.Kind is ArgumentNargsKind.ZeroOrMore or ArgumentNargsKind.OneOrMore or ArgumentNargsKind.Fixed;
 
         private static BigInteger IncrementCount(object current)
             => current switch
@@ -1600,11 +1605,11 @@ internal sealed partial class LythonRuntime
             for (var i = index + 1; i < positionals.Count; i++)
             {
                 var spec = positionals[i];
-                count += spec.Nargs switch
+                count += spec.Nargs.Kind switch
                 {
-                    null => 1,
-                    "+" => 1,
-                    _ when FixedNargsCount(spec.Nargs) is int fixedCount => fixedCount,
+                    ArgumentNargsKind.Default => 1,
+                    ArgumentNargsKind.OneOrMore => 1,
+                    ArgumentNargsKind.Fixed => spec.Nargs.Count,
                     _ => 0
                 };
             }
@@ -1943,16 +1948,47 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private enum ArgumentAction
+    {
+        Store,
+        StoreTrue,
+        StoreFalse,
+        Append,
+        StoreConst,
+        Count,
+        Help,
+        Version,
+    }
+
+    private enum ArgumentNargsKind
+    {
+        Default,
+        Optional,
+        ZeroOrMore,
+        OneOrMore,
+        Fixed,
+    }
+
+    private readonly record struct ArgumentNargs(ArgumentNargsKind Kind, int Count)
+    {
+        public static readonly ArgumentNargs Default = new(ArgumentNargsKind.Default, 1);
+        public static readonly ArgumentNargs Optional = new(ArgumentNargsKind.Optional, 0);
+        public static readonly ArgumentNargs ZeroOrMore = new(ArgumentNargsKind.ZeroOrMore, 0);
+        public static readonly ArgumentNargs OneOrMore = new(ArgumentNargsKind.OneOrMore, 1);
+
+        public static ArgumentNargs Fixed(int count) => new(ArgumentNargsKind.Fixed, count);
+    }
+
     private sealed record ArgumentSpec(
         IReadOnlyList<string> OptionNames,
         string Destination,
-        string Action,
+        ArgumentAction Action,
         bool Required,
         object DefaultValue,
         IReadOnlyList<object>? Choices,
         object? Converter,
         bool IsPositional,
-        string? Nargs,
+        ArgumentNargs Nargs,
         int? GroupId,
         object ConstValue,
         string? HelpText,
