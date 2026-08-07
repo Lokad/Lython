@@ -353,7 +353,33 @@ internal readonly record struct AbstractValue(
 
         if (left.Kind == right.Kind)
         {
-            return JoinSameKind(left, right, span);
+            return left.Kind switch
+            {
+                AbstractValueKind.String => Equals(left.Value, right.Value) ? left.WithSpan(span) : StringType(span),
+                AbstractValueKind.Bytes => LiteralValuesEqual(left, right) ? left.WithSpan(span) : BytesType(span),
+                AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
+                AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
+                AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
+                AbstractValueKind.MaybeNone => MaybeNone(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+                AbstractValueKind.List => JoinLiteralLists(left, right, span),
+                AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+                AbstractValueKind.SetType => SetOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+                AbstractValueKind.Dict => JoinLiteralDictionaries(),
+                AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes((AbstractTextFileMode)left.Value, (AbstractTextFileMode)right.Value), span),
+                AbstractValueKind.Module => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.KnownCallable => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
+                AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
+                AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
+                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries((AbstractArgparseParserSummary)left.Value, (AbstractArgparseParserSummary)right.Value, span), span),
+                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries((AbstractArgparseNamespaceSummary)left.Value, (AbstractArgparseNamespaceSummary)right.Value, span), span),
+                AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
+                AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
+                AbstractValueKind.Function => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.UserClass => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.UserInstance => JoinUserInstances(left, right, span),
+                _ => left.WithSpan(span)
+            };
         }
 
         if (left.IsStringLike && right.IsStringLike)
@@ -392,37 +418,41 @@ internal readonly record struct AbstractValue(
         }
 
         return Unknown(span);
-    }
 
-    private static AbstractValue JoinSameKind(AbstractValue left, AbstractValue right, LythonSourceSpan span)
-    {
-        return left.Kind switch
+        AbstractValue JoinLiteralDictionaries()
         {
-            AbstractValueKind.String => Equals(left.Value, right.Value) ? left.WithSpan(span) : StringType(span),
-            AbstractValueKind.Bytes => LiteralValuesEqual(left, right) ? left.WithSpan(span) : BytesType(span),
-            AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
-            AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
-            AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
-            AbstractValueKind.MaybeNone => MaybeNone(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
-            AbstractValueKind.List => JoinLiteralLists(left, right, span),
-            AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
-            AbstractValueKind.SetType => SetOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
-            AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
-            AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes((AbstractTextFileMode)left.Value, (AbstractTextFileMode)right.Value), span),
-            AbstractValueKind.Module => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-            AbstractValueKind.KnownCallable => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-            AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
-            AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
-            AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
-            AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries((AbstractArgparseParserSummary)left.Value, (AbstractArgparseParserSummary)right.Value, span), span),
-            AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries((AbstractArgparseNamespaceSummary)left.Value, (AbstractArgparseNamespaceSummary)right.Value, span), span),
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
-            AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
-            AbstractValueKind.Function => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-            AbstractValueKind.UserClass => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-            AbstractValueKind.UserInstance => JoinUserInstances(left, right, span),
-            _ => left.WithSpan(span)
-        };
+            var leftPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)left.Value;
+            var rightPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)right.Value;
+            if (leftPairs.Count != rightPairs.Count)
+            {
+                return Unknown(span);
+            }
+
+            var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
+            foreach (var rightPair in rightPairs)
+            {
+                if (IsComparableLiteralKey(rightPair.Key))
+                {
+                    rightValues.TryAdd(rightPair.Key, rightPair.Value);
+                }
+            }
+
+            var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
+            foreach (var leftPair in leftPairs)
+            {
+                if (!IsComparableLiteralKey(leftPair.Key) ||
+                    !rightValues.TryGetValue(leftPair.Key, out var rightValue))
+                {
+                    return Unknown(span);
+                }
+
+                joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
+                    leftPair.Key.WithSpan(span),
+                    Join(leftPair.Value, rightValue, span)));
+            }
+
+            return Dict(joinedPairs, span);
+        }
     }
 
     private static AbstractArgparseParserSummary JoinArgparseParserSummaries(
@@ -539,41 +569,6 @@ internal readonly record struct AbstractValue(
         }
 
         return ListOf(JoinListItems(leftItems, rightItems, span), span);
-    }
-
-    private static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
-    {
-        var leftPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)left.Value;
-        var rightPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)right.Value;
-        if (leftPairs.Count != rightPairs.Count)
-        {
-            return Unknown(span);
-        }
-
-        var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
-        foreach (var rightPair in rightPairs)
-        {
-            if (IsComparableLiteralKey(rightPair.Key))
-            {
-                rightValues.TryAdd(rightPair.Key, rightPair.Value);
-            }
-        }
-
-        var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
-        foreach (var leftPair in leftPairs)
-        {
-            if (!IsComparableLiteralKey(leftPair.Key) ||
-                !rightValues.TryGetValue(leftPair.Key, out var rightValue))
-            {
-                return Unknown(span);
-            }
-
-            joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
-                leftPair.Key.WithSpan(span),
-                Join(leftPair.Value, rightValue, span)));
-        }
-
-        return Dict(joinedPairs, span);
     }
 
     private static AbstractValue JoinRegexPatterns(AbstractValue left, AbstractValue right, LythonSourceSpan span)
