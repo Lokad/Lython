@@ -328,6 +328,10 @@ internal sealed partial class LythonRuntime
             var callCaches = new ExecutableCallCache[codeObject.CallCacheCount];
             var blockEntryStackDepths = new int?[codeObject.Blocks.Count];
 
+            // Every control-flow edge must arrive at a block with the same value
+            // stack depth. The first arrival records that depth; edge handling
+            // below validates later arrivals. Abrupt signals remain separate so
+            // finally blocks can run before return/break/continue is rethrown.
             while (true)
             {
                 var block = codeObject.Blocks[currentBlockIndex];

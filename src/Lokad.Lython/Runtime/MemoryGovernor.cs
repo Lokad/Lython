@@ -2,6 +2,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class MemoryGovernor
 {
+    // Callers reserve before allocating, commit after ownership transfers to a
+    // governed value, and release when that value discards its backing storage.
+    // Reserved and committed bytes are both accounted so allocation cannot pass
+    // through an uncharged window; estimates intentionally need only be safe.
     public MemoryGovernor(long? maxAccountedBytes)
     {
         MaxAccountedBytes = maxAccountedBytes;

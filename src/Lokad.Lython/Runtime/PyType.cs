@@ -320,6 +320,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     private static IReadOnlyList<PyType> BuildMro(PyType self, IReadOnlyList<PyType> bases)
     {
+        // C3 merges each base MRO with the declared base list. A candidate head
+        // is eligible only when it occurs in no other remaining tail; advancing
+        // offsets instead of modifying the source MROs preserves their identity.
         var result = new List<PyType> { self };
         if (bases.Count == 0)
         {

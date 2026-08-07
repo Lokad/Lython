@@ -654,6 +654,10 @@ internal sealed partial class LythonRuntime
                     return null;
                 }
 
+                // The first successful write-mode flush replaces the file; every
+                // later flush appends only new buffered text. This also ensures a
+                // UTF-8 BOM is emitted at most once. CompleteFlush is deliberately
+                // called only after the host write succeeds, so failures are retryable.
                 var isAppend = Mode == "a" || _hasPublishedWrite;
                 var effectiveEncoding = isAppend && _encoding == TextEncodingMode.Utf8Bom
                     ? TextEncodingMode.Utf8
