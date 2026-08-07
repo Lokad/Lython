@@ -6,6 +6,7 @@
     <Project Path="benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj" />
     <Project Path="tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">

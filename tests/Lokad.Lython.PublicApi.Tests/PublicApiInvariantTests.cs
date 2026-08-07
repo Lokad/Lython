@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lokad.Lython.Tests;
+namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class PublicApiInvariantTests
 {
