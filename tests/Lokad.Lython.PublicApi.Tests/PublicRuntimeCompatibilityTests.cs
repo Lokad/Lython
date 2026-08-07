@@ -1,4 +1,5 @@
 using System.Text;
+using System.Numerics;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
@@ -89,6 +90,89 @@ return value
                 "return 1",
                 new PublicTestHost(),
                 new LythonRunOptions { MaxExecutionSteps = -1 }));
+    }
+
+    [Fact]
+    public void PublicBoundaryProjectsNestedPythonValuesToClrShapes()
+    {
+        var result = new LythonEngine().Run(
+            "return [seed, (2, None), {'name': 'lython', 'ready': True}]",
+            new PublicTestHost(),
+            new Dictionary<string, object?> { ["seed"] = 41 });
+
+        Assert.True(result.Success, result.Failure?.Message);
+        var list = Assert.IsType<List<object?>>(result.ReturnValue);
+        Assert.Equal(41, list[0]);
+
+        var tuple = Assert.IsType<object?[]>(list[1]);
+        Assert.Equal(new BigInteger(2), tuple[0]);
+        Assert.Null(tuple[1]);
+
+        var dictionary = Assert.IsType<Dictionary<object, object?>>(list[2]);
+        Assert.Equal("lython", dictionary["name"]);
+        Assert.Equal(true, dictionary["ready"]);
+    }
+
+    [Fact]
+    public void PublicRuntimeFailuresPreserveSourceAndPythonFrames()
+    {
+        var result = new LythonEngine().Run(
+            """
+def outer():
+    inner()
+
+def inner():
+    raise ValueError("boom")
+
+outer()
+""",
+            new PublicTestHost(),
+            new LythonRunOptions { SourcePath = "/agent/task.py" });
+
+        Assert.False(result.Success);
+        var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+        Assert.Equal("ValueError", failure.ExceptionType);
+        Assert.Equal("/agent/task.py", failure.SourcePath);
+        Assert.Collection(
+            failure.StackTrace,
+            frame =>
+            {
+                Assert.Equal("outer", frame.FunctionName);
+                Assert.Equal("/agent/task.py", frame.SourcePath);
+            },
+            frame =>
+            {
+                Assert.Equal("inner", frame.FunctionName);
+                Assert.Equal("/agent/task.py", frame.SourcePath);
+            });
+    }
+
+    [Fact]
+    public async Task PublicAsyncOverloadsMergeExternalCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var script = new LythonEngine().Compile("return 42");
+
+        var result = await script.RunAsync(
+            new PublicTestHost(),
+            new LythonRunOptions { MaxExecutionSteps = 10 },
+            cancellation.Token);
+
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DefaultHostBinaryCapabilityFailsExplicitly()
+    {
+        ILythonHost host = new PublicTestHost();
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+            () => host.ReadBytesAsync("/payload.bin", CancellationToken.None).AsTask());
+
+        Assert.Contains("binary file I/O is not available", exception.Message, StringComparison.Ordinal);
     }
 
     private sealed class PublicTestHost : ILythonHost, ILythonSynchronousHostCapability

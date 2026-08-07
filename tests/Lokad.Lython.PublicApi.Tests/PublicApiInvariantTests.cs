@@ -39,4 +39,39 @@ public sealed class PublicApiInvariantTests
             diagnostics: [],
             failure: null));
     }
+
+    [Fact]
+    public async Task SubprocessContractsUseValidatedDomainValues()
+    {
+        var request = new LythonSubprocessRequest(
+            Args: ["tool", "--flag"],
+            Cwd: "/work",
+            Environment: new Dictionary<string, string> { ["MODE"] = "test" },
+            StandardInputUtf8: ReadOnlyMemory<byte>.Empty,
+            StandardInput: LythonSubprocessStreamMode.Inherit,
+            StandardOutput: LythonSubprocessStreamMode.Pipe,
+            StandardError: LythonSubprocessStreamMode.Pipe,
+            InvocationMode: LythonSubprocessInvocationMode.Direct,
+            ContentMode: LythonSubprocessContentMode.Text,
+            TextEncoding: LythonSubprocessTextEncoding.Utf8,
+            TextErrorMode: LythonSubprocessTextErrorMode.Strict,
+            Timeout: TimeSpan.FromSeconds(2),
+            OutputLimit: new LythonSubprocessOutputLimit(16));
+
+        var result = await LythonSubprocessCompletion.CompleteBufferedAsync(
+            request,
+            returnCode: 3,
+            standardOutputUtf8: "out"u8.ToArray(),
+            standardErrorUtf8: "err"u8.ToArray(),
+            (_, _) => throw new InvalidOperationException("Captured output must not be inherited."),
+            (_, _) => throw new InvalidOperationException("Captured errors must not be inherited."),
+            CancellationToken.None);
+
+        Assert.Equal(TimeSpan.FromSeconds(2), request.Timeout);
+        Assert.Equal(16, request.OutputLimit?.Bytes);
+        Assert.Equal(3, result.ReturnCode);
+        Assert.Equal("out"u8.ToArray(), result.StandardOutputUtf8.ToArray());
+        Assert.Equal("err"u8.ToArray(), result.StandardErrorUtf8.ToArray());
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LythonSubprocessOutputLimit(-1));
+    }
 }
