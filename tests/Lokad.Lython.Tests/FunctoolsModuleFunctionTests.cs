@@ -311,6 +311,52 @@ return f(Child()) + "|" + f.dispatch(Child)(Child())
     }
 
     [Fact]
+    public void LruCache_MaintainsConstantTimeRecencyAndSkipsItWhenUnbounded()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import cache, lru_cache
+
+bounded_calls = []
+@lru_cache(maxsize=2)
+def bounded(value):
+    bounded_calls.append(value)
+    return value
+
+bounded(1)
+bounded(2)
+bounded(1)
+bounded(3)
+bounded(1)
+bounded(2)
+bounded_info = bounded.cache_info()
+
+unbounded_calls = []
+@cache
+def unbounded(value):
+    unbounded_calls.append(value)
+    return value * value
+
+for value in range(1000):
+    unbounded(value)
+for value in range(1000):
+    unbounded(value)
+unbounded_info = unbounded.cache_info()
+
+return "|".join([
+    str(bounded_calls),
+    str(bounded_info.hits), str(bounded_info.misses), str(bounded_info.currsize),
+    str(len(unbounded_calls)),
+    str(unbounded_info.hits), str(unbounded_info.misses), str(unbounded_info.currsize),
+])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[1, 2, 3, 2]|2|4|2|1000|1000|1000|1000", result.ReturnValue);
+    }
+
+    [Fact]
     public void SingleDispatch_PublicDispatchUsesBuiltinMroResolution()
     {
         var result = new LythonEngine().Run(

@@ -558,8 +558,8 @@ internal sealed partial class LythonRuntime
         private readonly ICallable _callable;
         private readonly int? _maxSize;
         private readonly bool _typed;
-        private readonly Dictionary<object, object> _cache = new(PyValueComparer.Instance);
-        private readonly List<object> _recency = [];
+        private readonly Dictionary<object, CacheEntry> _cache = new(PyValueComparer.Instance);
+        private readonly LinkedList<object> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
         private BigInteger _hits;
         private BigInteger _misses;
@@ -578,8 +578,8 @@ internal sealed partial class LythonRuntime
             if (_maxSize != 0 && _cache.TryGetValue(key, out var cached))
             {
                 _hits++;
-                TouchKey(key);
-                return cached;
+                Touch(cached);
+                return cached.Value;
             }
 
             _misses++;
@@ -666,28 +666,38 @@ internal sealed partial class LythonRuntime
 
         private void Store(object key, object value)
         {
-            _cache[key] = value;
-            _recency.Add(key);
-            if (_maxSize is int limit && _cache.Count > limit)
+            if (_cache.TryGetValue(key, out var existing))
             {
-                var evicted = _recency[0];
-                _recency.RemoveAt(0);
-                _cache.Remove(evicted);
+                existing.Value = value;
+                Touch(existing);
+                return;
+            }
+
+            if (_maxSize is null)
+            {
+                _cache.Add(key, new CacheEntry(value, node: null));
+                return;
+            }
+
+            var node = _recency.AddLast(key);
+            _cache.Add(key, new CacheEntry(value, node));
+            if (_cache.Count > _maxSize.Value)
+            {
+                var oldest = _recency.First.RequireNotNull();
+                _recency.RemoveFirst();
+                _cache.Remove(oldest.Value);
             }
         }
 
-        private void TouchKey(object key)
+        private void Touch(CacheEntry entry)
         {
-            for (var i = 0; i < _recency.Count; i++)
+            if (entry.Node is not { } node || ReferenceEquals(node, _recency.Last))
             {
-                if (PyValueComparer.Instance.Equals(_recency[i], key))
-                {
-                    var existing = _recency[i];
-                    _recency.RemoveAt(i);
-                    _recency.Add(existing);
-                    return;
-                }
+                return;
             }
+
+            _recency.Remove(node);
+            _recency.AddLast(node);
         }
 
         private PyNamedTupleObject BuildCacheInfo(LythonSourceSpan span)
@@ -712,6 +722,19 @@ internal sealed partial class LythonRuntime
             _recency.Clear();
             _hits = BigInteger.Zero;
             _misses = BigInteger.Zero;
+        }
+
+        private sealed class CacheEntry
+        {
+            public CacheEntry(object value, LinkedListNode<object>? node)
+            {
+                Value = value;
+                Node = node;
+            }
+
+            public object Value { get; set; }
+
+            public LinkedListNode<object>? Node { get; }
         }
 
         private PyDict BuildMetadataDict()
