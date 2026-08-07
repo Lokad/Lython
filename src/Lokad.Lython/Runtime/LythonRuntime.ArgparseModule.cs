@@ -291,6 +291,8 @@ internal sealed partial class LythonRuntime
     internal sealed class ArgumentParserObject
     {
         private readonly List<ArgumentSpec> _arguments = [];
+        private readonly Dictionary<string, ArgumentSpec> _optionalArgumentsByName = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, ArgumentSpec> _argumentsByDestination = new(StringComparer.Ordinal);
         private readonly List<ArgparseMutuallyExclusiveGroupObject> _groups = [];
         private readonly Dictionary<string, object> _defaults = new(StringComparer.Ordinal);
         private readonly ArgparseParserOptions _options;
@@ -301,7 +303,7 @@ internal sealed partial class LythonRuntime
             _options = options;
             if (_options.AddHelp)
             {
-                _arguments.Add(new ArgumentSpec(
+                RegisterArgument(new ArgumentSpec(
                     ["-h", "--help"],
                     "help",
                     ArgumentAction.Help,
@@ -347,7 +349,7 @@ internal sealed partial class LythonRuntime
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _arguments.Add(CreateArgumentSpec(arguments, span, groupId: null, context));
+            RegisterArgument(CreateArgumentSpec(arguments, span, groupId: null, context));
             return PyNone.Instance;
         }
 
@@ -372,7 +374,23 @@ internal sealed partial class LythonRuntime
 
         internal void AddArgumentToGroup(CallArgumentValue[] arguments, LythonSourceSpan span, int groupId, ExecutionContext context)
         {
-            _arguments.Add(CreateArgumentSpec(arguments, span, groupId, context));
+            RegisterArgument(CreateArgumentSpec(arguments, span, groupId, context));
+        }
+
+        private void RegisterArgument(ArgumentSpec spec)
+        {
+            _arguments.Add(spec);
+            _argumentsByDestination.TryAdd(spec.Destination, spec);
+            if (spec.IsPositional)
+            {
+                return;
+            }
+
+            foreach (var optionName in spec.OptionNames)
+            {
+                // Preserve the parser's established first-registration behavior for conflicts.
+                _optionalArgumentsByName.TryAdd(optionName, spec);
+            }
         }
 
         private object ParseArgs(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -954,16 +972,19 @@ internal sealed partial class LythonRuntime
 
         private void ValidateMutuallyExclusiveGroups(HashSet<ArgumentSpec> seenSpecs, LythonSourceSpan span)
         {
+            var presentByGroup = new Dictionary<int, int>();
+            foreach (var spec in seenSpecs)
+            {
+                if (spec.GroupId is { } groupId)
+                {
+                    presentByGroup.TryGetValue(groupId, out var count);
+                    presentByGroup[groupId] = count + 1;
+                }
+            }
+
             foreach (var group in _groups)
             {
-                var present = 0;
-                foreach (var spec in seenSpecs)
-                {
-                    if (spec.GroupId == group.Id)
-                    {
-                        present++;
-                    }
-                }
+                presentByGroup.TryGetValue(group.Id, out var present);
 
                 if (present > 1)
                 {
@@ -1238,28 +1259,19 @@ internal sealed partial class LythonRuntime
 
             if (_options.AllowAbbrev && optionToken.StartsWith("--", StringComparison.Ordinal))
             {
-                var matches = new List<ArgumentSpec>();
-                foreach (var candidate in _arguments)
+                var matches = new HashSet<ArgumentSpec>();
+                foreach (var (name, candidate) in _optionalArgumentsByName)
                 {
-                    if (candidate.IsPositional)
+                    if (name.StartsWith("--", StringComparison.Ordinal) &&
+                        name.StartsWith(optionToken, StringComparison.Ordinal))
                     {
-                        continue;
-                    }
-
-                    foreach (var name in candidate.OptionNames)
-                    {
-                        if (name.StartsWith("--", StringComparison.Ordinal) &&
-                            name.StartsWith(optionToken, StringComparison.Ordinal))
-                        {
-                            matches.Add(candidate);
-                            break;
-                        }
+                        matches.Add(candidate);
                     }
                 }
 
                 if (matches.Count == 1)
                 {
-                    return matches[0];
+                    return matches.First();
                 }
 
                 if (matches.Count > 1)
@@ -1273,17 +1285,7 @@ internal sealed partial class LythonRuntime
         }
 
         private ArgumentSpec? FindExactOptionalArgument(string token)
-        {
-            foreach (var candidate in _arguments)
-            {
-                if (!candidate.IsPositional && candidate.OptionNames.Contains(token, StringComparer.Ordinal))
-                {
-                    return candidate;
-                }
-            }
-
-            return null;
-        }
+            => _optionalArgumentsByName.GetValueOrDefault(token);
 
         private bool TryExpandShortFlagCluster(string token, out List<ArgumentSpec> specs)
         {
@@ -1416,15 +1418,9 @@ internal sealed partial class LythonRuntime
                 return parserDefault;
             }
 
-            foreach (var argument in _arguments)
-            {
-                if (string.Equals(argument.Destination, destination, StringComparison.Ordinal))
-                {
-                    return argument.DefaultValue;
-                }
-            }
-
-            return PyNone.Instance;
+            return _argumentsByDestination.TryGetValue(destination, out var argument)
+                ? argument.DefaultValue
+                : PyNone.Instance;
         }
 
         private object AddSubparsers(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
