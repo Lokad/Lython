@@ -395,6 +395,15 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
 
         var steps = (int)(offset % _items.Count);
+        if (steps > _items.Count / 2)
+        {
+            steps -= _items.Count;
+        }
+        else if (steps < -_items.Count / 2)
+        {
+            steps += _items.Count;
+        }
+
         if (steps > 0)
         {
             for (var i = 0; i < steps; i++)
@@ -413,16 +422,17 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     public void Clear() => _items.Clear();
 
-    public object GetItem(int index) => _items.ElementAt(index);
+    public object GetItem(int index) => GetNodeAt(index).Value;
 
     public object GetIndex(int index) => GetItem(index);
 
     public object GetSlice(IEnumerable<int> indices)
     {
+        var source = _items.ToArray();
         var items = new List<object>();
         foreach (var index in indices)
         {
-            items.Add(GetItem(index));
+            items.Add(source[index]);
         }
 
         return new PyDeque(items, MaxLength);
@@ -476,13 +486,24 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     private LinkedListNode<object> GetNodeAt(int index)
     {
-        var current = _items.First.RequireNotNull();
-        for (var i = 0; i < index; i++)
+        if (index < _items.Count / 2)
         {
-            current = current.Next.RequireNotNull();
+            var forward = _items.First.RequireNotNull();
+            for (var i = 0; i < index; i++)
+            {
+                forward = forward.Next.RequireNotNull();
+            }
+
+            return forward;
         }
 
-        return current;
+        var backward = _items.Last.RequireNotNull();
+        for (var i = _items.Count - 1; i > index; i--)
+        {
+            backward = backward.Previous.RequireNotNull();
+        }
+
+        return backward;
     }
 
     private sealed class RenderedItems : IEnumerable<PyString>
