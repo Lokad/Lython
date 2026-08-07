@@ -15,7 +15,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = items.ToArray();
     }
 
-    public PyTuple(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyTuple(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
+
+    public PyTuple(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
@@ -28,7 +30,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = [.. items];
     }
 
-    public PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyTuple(object[] items, MemoryGovernor governor) : this(items, governor, null) { }
+
+    public PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;

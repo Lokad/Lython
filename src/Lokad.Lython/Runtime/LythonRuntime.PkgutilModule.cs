@@ -292,6 +292,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private static IEnumerable<DiscoveredModule> DiscoverPathModules(string directory, string prefix, bool recursive, object? onerror, ExecutionContext context, LythonSourceSpan span)
+            => DiscoverPathModules(directory, prefix, recursive, onerror, context, span, null);
+
         private static IEnumerable<DiscoveredModule> DiscoverPathModules(
             string directory,
             string prefix,
@@ -299,7 +302,7 @@ internal sealed partial class LythonRuntime
             object? onerror,
             ExecutionContext context,
             LythonSourceSpan span,
-            string? errorName = null)
+            string? errorName)
         {
             IReadOnlyList<string> entries;
             try

@@ -1087,6 +1087,7 @@ internal sealed partial class LythonRuntime
         var output = new Utf8ValueBuilder(
             context.MemoryGovernor,
             span,
+            capacity: 0,
             maxLengthBytes: (int)maximumLength,
             maxLengthOwner: "gzip compressed output");
         try
@@ -1344,6 +1345,9 @@ internal sealed partial class LythonRuntime
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
-    private static LythonRuntimeException BadGzip(string message, LythonSourceSpan span, Exception? inner = null)
+    private static LythonRuntimeException BadGzip(string message, LythonSourceSpan span)
+        => BadGzip(message, span, null);
+
+    private static LythonRuntimeException BadGzip(string message, LythonSourceSpan span, Exception? inner)
         => new("BadGzipFile", message, span, inner);
 }

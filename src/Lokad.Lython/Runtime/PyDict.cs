@@ -14,7 +14,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _items = PyDictStorage.Create();
     }
 
-    public PyDict(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyDict(MemoryGovernor governor) : this(governor, null) { }
+
+    public PyDict(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
@@ -31,7 +33,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             : PyDictStorage.Create(other._items, other._memoryGovernor, other._allocationSpan);
     }
 
-    public PyDict(PyDict other, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyDict(PyDict other, MemoryGovernor governor) : this(other, governor, null) { }
+
+    public PyDict(PyDict other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
@@ -111,7 +115,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
     }
 
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor ??= governor;

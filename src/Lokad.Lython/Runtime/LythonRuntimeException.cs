@@ -2,12 +2,16 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class LythonRuntimeException : Exception
 {
+    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span) : this(exceptionType, message, span, null, null) { }
+
+    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span, Exception? innerException) : this(exceptionType, message, span, innerException, null) { }
+
     public LythonRuntimeException(
         string exceptionType,
         string message,
         LythonSourceSpan? span,
-        Exception? innerException = null,
-        object? payload = null)
+        Exception? innerException,
+        object? payload)
         : base(message, innerException)
     {
         ExceptionType = exceptionType;
@@ -33,7 +37,10 @@ internal sealed class LythonRuntimeException : Exception
         }
     }
 
-    public void AddFrame(string functionName, LythonSourceSpan span, string? sourcePath = null)
+    public void AddFrame(string functionName, LythonSourceSpan span)
+        => AddFrame(functionName, span, null);
+
+    public void AddFrame(string functionName, LythonSourceSpan span, string? sourcePath)
     {
         Frames.Insert(0, new LythonStackFrame(functionName, span, sourcePath));
     }

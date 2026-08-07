@@ -4,10 +4,16 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PathOps
 {
-    public static PyString Normalize(PyString path, PyString? basePath = null)
+    public static PyString Normalize(PyString path)
+        => Normalize(path, null);
+
+    public static PyString Normalize(PyString path, PyString? basePath)
         => PyString.FromString(Normalize(path.AsString(), basePath?.AsString()));
 
-    public static string Normalize(string path, string? basePath = null)
+    public static string Normalize(string path)
+        => Normalize(path, null);
+
+    public static string Normalize(string path, string? basePath)
     {
         ArgumentNullException.ThrowIfNull(path);
         if (path.Length == 0)
@@ -226,7 +232,13 @@ internal static class PathOps
         return normalizedPath[prefix.Length..];
     }
 
-    public static PyList Parents(PyString path, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList Parents(PyString path)
+        => Parents(path, null, null);
+
+    public static PyList Parents(PyString path, MemoryGovernor? governor)
+        => Parents(path, governor, null);
+
+    public static PyList Parents(PyString path, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var values = governor is null ? new PyList() : new PyList([], governor, span);
         var current = Parent(path);
@@ -249,7 +261,13 @@ internal static class PathOps
         return values;
     }
 
-    public static PyTuple Parts(PyString path, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyTuple Parts(PyString path)
+        => Parts(path, null, null);
+
+    public static PyTuple Parts(PyString path, MemoryGovernor? governor)
+        => Parts(path, governor, null);
+
+    public static PyTuple Parts(PyString path, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var normalized = Normalize(path.AsString());
         if (normalized == ".")

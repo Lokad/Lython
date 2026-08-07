@@ -14,7 +14,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _items = new HashSet<object>(PyValueComparer.Instance);
     }
 
-    public PySet(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PySet(MemoryGovernor governor) : this(governor, null) { }
+
+    public PySet(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this()
     {
         ArgumentNullException.ThrowIfNull(governor);
@@ -31,7 +33,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
     }
 
-    public PySet(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PySet(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
+
+    public PySet(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(governor, allocationSpan)
     {
         var materialized = items as object[] ?? items.ToArray();
@@ -53,7 +57,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
     }
 
-    public PySet(PySet other, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PySet(PySet other, MemoryGovernor governor) : this(other, governor, null) { }
+
+    public PySet(PySet other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(other._items, governor, allocationSpan)
     {
     }
@@ -77,7 +83,10 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         return _items.Add(item);
     }
 
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor ??= governor;

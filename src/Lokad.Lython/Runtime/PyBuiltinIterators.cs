@@ -7,7 +7,9 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     private readonly PyIteration.Cursor _source;
     private readonly string _displayName;
 
-    public PyEnumerableIterator(object source, LythonSourceSpan span, string displayName = "iterator")
+    public PyEnumerableIterator(object source, LythonSourceSpan span) : this(source, span, "iterator") { }
+
+    public PyEnumerableIterator(object source, LythonSourceSpan span, string displayName)
     {
         _source = PyIteration.Cursor.Create(source, span);
         _displayName = displayName;

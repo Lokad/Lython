@@ -14,7 +14,9 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     private readonly LythonRuntime.ICallable? _setter;
     private readonly LythonRuntime.ICallable? _deleter;
 
-    public PyProperty(LythonRuntime.ICallable? getter, LythonRuntime.ICallable? setter, LythonRuntime.ICallable? deleter = null)
+    public PyProperty(LythonRuntime.ICallable? getter, LythonRuntime.ICallable? setter) : this(getter, setter, null) { }
+
+    public PyProperty(LythonRuntime.ICallable? getter, LythonRuntime.ICallable? setter, LythonRuntime.ICallable? deleter)
     {
         _getter = getter;
         _setter = setter;

@@ -586,11 +586,14 @@ internal static class StaticTextIoContractFamily
         }
     }
 
+    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
+        => AddDiagnostic(diagnostics, code, message, span, null);
+
     private static void AddDiagnostic(
         List<LythonDiagnostic> diagnostics,
         string code,
         string message,
         LythonSourceSpan span,
-        StaticDiagnosticProof? proof = null)
+        StaticDiagnosticProof? proof)
         => StaticDiagnosticSink.AddError(diagnostics, code, message, span, proof);
 }

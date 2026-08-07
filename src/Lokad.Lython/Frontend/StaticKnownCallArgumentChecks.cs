@@ -103,6 +103,12 @@ internal static class StaticKnownCallArgumentChecks
         AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.IsStringLike || value.Kind == AbstractValueKind.RegexPattern);
 
+    internal static bool AnalyzeIterableOfStringsArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeIterableOfStringsArgument(arguments, position, keyword, message, diagnostics, bindings, false, false);
+
+    internal static bool AnalyzeIterableOfStringsArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings, bool rejectSingleString)
+        => AnalyzeIterableOfStringsArgument(arguments, position, keyword, message, diagnostics, bindings, rejectSingleString, false);
+
     internal static bool AnalyzeIterableOfStringsArgument(
         ConcreteCallArguments arguments,
         int position,
@@ -110,8 +116,8 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        bool rejectSingleString = false,
-        bool requireNonEmpty = false)
+        bool rejectSingleString,
+        bool requireNonEmpty)
     {
         if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
         {
@@ -171,6 +177,12 @@ internal static class StaticKnownCallArgumentChecks
         return false;
     }
 
+    internal static bool AnalyzeIterableOfPathLikeArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeIterableOfPathLikeArgument(arguments, position, keyword, message, diagnostics, bindings, false, false);
+
+    internal static bool AnalyzeIterableOfPathLikeArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings, bool rejectSinglePathLike)
+        => AnalyzeIterableOfPathLikeArgument(arguments, position, keyword, message, diagnostics, bindings, rejectSinglePathLike, false);
+
     internal static bool AnalyzeIterableOfPathLikeArgument(
         ConcreteCallArguments arguments,
         int position,
@@ -178,8 +190,8 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        bool rejectSinglePathLike = false,
-        bool requireNonEmpty = false)
+        bool rejectSinglePathLike,
+        bool requireNonEmpty)
     {
         if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
         {

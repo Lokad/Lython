@@ -159,20 +159,32 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("NotImplementedError", $"{owner} opener is not supported because file access is host-mediated.", span);
     }
 
+    private static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, ExecutionContext context, LythonSourceSpan? span)
+        => DecodeUtf8Text(utf8, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+    private static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
+        => DecodeUtf8Text(utf8, context, span, errors, TextNewlineMode.TranslateUniversal);
+
     private static PyString DecodeUtf8Text(
         ReadOnlyMemory<byte> utf8,
         ExecutionContext context,
         LythonSourceSpan? span,
-        TextErrorMode errors = TextErrorMode.Strict,
-        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+        TextErrorMode errors,
+        TextNewlineMode newline)
         => DecodeUtf8Text(utf8, context.MemoryGovernor, span, errors, newline);
+
+    internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? span)
+        => DecodeUtf8Text(utf8, governor, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+    internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? span, TextErrorMode errors)
+        => DecodeUtf8Text(utf8, governor, span, errors, TextNewlineMode.TranslateUniversal);
 
     internal static PyString DecodeUtf8Text(
         ReadOnlyMemory<byte> utf8,
         MemoryGovernor governor,
         LythonSourceSpan? span,
-        TextErrorMode errors = TextErrorMode.Strict,
-        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+        TextErrorMode errors,
+        TextNewlineMode newline)
     {
         if (utf8.Length == 0)
         {
@@ -186,13 +198,19 @@ internal sealed partial class LythonRuntime
             : PyString.FromString(decoded, governor, span);
     }
 
+    private static PyString DecodeText(ReadOnlyMemory<byte> payload, TextEncodingMode encoding, ExecutionContext context, LythonSourceSpan? span)
+        => DecodeText(payload, encoding, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+    private static PyString DecodeText(ReadOnlyMemory<byte> payload, TextEncodingMode encoding, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
+        => DecodeText(payload, encoding, context, span, errors, TextNewlineMode.TranslateUniversal);
+
     private static PyString DecodeText(
         ReadOnlyMemory<byte> payload,
         TextEncodingMode encoding,
         ExecutionContext context,
         LythonSourceSpan? span,
-        TextErrorMode errors = TextErrorMode.Strict,
-        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+        TextErrorMode errors,
+        TextNewlineMode newline)
     {
         if (encoding != TextEncodingMode.Latin1)
         {

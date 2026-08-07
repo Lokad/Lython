@@ -19,6 +19,10 @@ internal sealed class PyDecimalContext : IPyDynamicAttributes, IPyRenderableValu
     private PyDict _flags;
     private PyDict _traps;
 
+    public PyDecimalContext(int precision, string rounding, int emin, int emax, int capitals, int clamp) : this(precision, rounding, emin, emax, capitals, clamp, null, null) { }
+
+    public PyDecimalContext(int precision, string rounding, int emin, int emax, int capitals, int clamp, PyDict? flags) : this(precision, rounding, emin, emax, capitals, clamp, flags, null) { }
+
     public PyDecimalContext(
         int precision,
         string rounding,
@@ -26,8 +30,8 @@ internal sealed class PyDecimalContext : IPyDynamicAttributes, IPyRenderableValu
         int emax,
         int capitals,
         int clamp,
-        PyDict? flags = null,
-        PyDict? traps = null)
+        PyDict? flags,
+        PyDict? traps)
     {
         Precision = precision;
         Rounding = rounding;
@@ -203,11 +207,15 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
     private readonly Func<object[], LythonSourceSpan, object> _implementation;
     private readonly LythonCallableSignature _signature;
 
+    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name) : this(implementation, name, null, null) { }
+
+    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name, string[]? parameterNames) : this(implementation, name, parameterNames, null) { }
+
     public PyDecimalBoundCallable(
         Func<object[], LythonSourceSpan, object> implementation,
         string name,
-        string[]? parameterNames = null,
-        int? requiredCount = null)
+        string[]? parameterNames,
+        int? requiredCount)
     {
         _implementation = implementation;
         _signature = new LythonCallableSignature(name, parameterNames, requiredCount);

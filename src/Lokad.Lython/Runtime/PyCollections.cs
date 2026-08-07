@@ -9,13 +9,17 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 {
     private readonly PyDict _items;
 
-    public PyDefaultDict(object? defaultFactory = null)
+    public PyDefaultDict() : this(null) { }
+
+    public PyDefaultDict(object? defaultFactory)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict();
     }
 
-    public PyDefaultDict(object? defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyDefaultDict(object? defaultFactory, MemoryGovernor governor) : this(defaultFactory, governor, null) { }
+
+    public PyDefaultDict(object? defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict(governor, allocationSpan);
@@ -67,7 +71,10 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public void SetItem(object key, object value) => _items.SetItem(key, value);
 
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         => _items.AttachMemoryGovernor(governor, allocationSpan);
 
     public bool Remove(object key) => _items.Remove(key);
@@ -139,7 +146,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
         _items = new PyDict();
     }
 
-    public PyCounter(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyCounter(MemoryGovernor governor) : this(governor, null) { }
+
+    public PyCounter(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         _items = new PyDict(governor, allocationSpan);
     }
@@ -149,7 +158,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
         _items = new PyDict(other._items);
     }
 
-    public PyCounter(PyCounter other, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyCounter(PyCounter other, MemoryGovernor governor) : this(other, governor, null) { }
+
+    public PyCounter(PyCounter other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         _items = new PyDict(other._items, governor, allocationSpan);
     }
@@ -174,7 +185,10 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public void SetItem(object key, object value) => _items.SetItem(key, value);
 
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         => _items.AttachMemoryGovernor(governor, allocationSpan);
 
     public bool Remove(object key) => _items.Remove(key);
@@ -210,12 +224,16 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 {
     private readonly LinkedList<object> _items = [];
 
-    public PyDeque(int? maxLength = null)
+    public PyDeque() : this((int?)null) { }
+
+    public PyDeque(int? maxLength)
     {
         MaxLength = maxLength;
     }
 
-    public PyDeque(IEnumerable<object> items, int? maxLength = null)
+    public PyDeque(IEnumerable<object> items) : this(items, null) { }
+
+    public PyDeque(IEnumerable<object> items, int? maxLength)
     {
         MaxLength = maxLength;
         foreach (var item in items)
@@ -498,7 +516,9 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private readonly string[] _fieldNames;
     private readonly object[] _defaults;
 
-    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults = null)
+    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames) : this(typeName, fieldNames, null) { }
+
+    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults)
     {
         _typeName = typeName;
         _fieldNames = fieldNames.ToArray();

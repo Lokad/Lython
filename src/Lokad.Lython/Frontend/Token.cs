@@ -4,7 +4,9 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed class FAttribute : FromAttribute
 {
-    public FAttribute(Token parent, bool isPrivate = false) : base((int)parent, isPrivate)
+    public FAttribute(Token parent) : this(parent, false) { }
+
+    public FAttribute(Token parent, bool isPrivate) : base((int)parent, isPrivate)
     {
     }
 }

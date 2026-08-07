@@ -8,10 +8,12 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
     private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _constructor;
     private readonly Func<string, object?>? _memberFactory;
 
+    public PyBuiltinRuntimeType(string name, Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor) : this(name, constructor, null) { }
+
     public PyBuiltinRuntimeType(
         string name,
         Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor,
-        Func<string, object?>? memberFactory = null)
+        Func<string, object?>? memberFactory)
     {
         Name = name;
         _constructor = constructor;

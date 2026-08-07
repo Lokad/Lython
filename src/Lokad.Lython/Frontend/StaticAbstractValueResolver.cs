@@ -776,23 +776,23 @@ internal static class StaticAbstractValueResolver
 
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
-            {
-                var items = (IReadOnlyList<AbstractValue>)target.Value;
-                if (index.HasValue && index.Value >= 0 && index.Value < items.Count)
                 {
-                    value = items[index.Value].WithSpan(span);
-                    return true;
-                }
+                    var items = (IReadOnlyList<AbstractValue>)target.Value;
+                    if (index.HasValue && index.Value >= 0 && index.Value < items.Count)
+                    {
+                        value = items[index.Value].WithSpan(span);
+                        return true;
+                    }
 
-                if (index is null)
-                {
-                    value = StaticBindingEngine.JoinSequenceItems(items, span);
-                    return true;
-                }
+                    if (index is null)
+                    {
+                        value = StaticBindingEngine.JoinSequenceItems(items, span);
+                        return true;
+                    }
 
-                value = default;
-                return false;
-            }
+                    value = default;
+                    return false;
+                }
 
             default:
                 value = default;
@@ -932,10 +932,10 @@ internal static class StaticAbstractValueResolver
 
         return expression is IdentifierExpressionSyntax { Name: "Path" or "PurePath" or "PurePosixPath" or "PosixPath" } or
             MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: "pathlib" },
-                MemberName: "Path" or "PurePath" or "PurePosixPath" or "PosixPath"
-            };
+        {
+            Target: IdentifierExpressionSyntax { Name: "pathlib" },
+            MemberName: "Path" or "PurePath" or "PurePosixPath" or "PosixPath"
+        };
     }
 
     private static AbstractTextFileMode TryGetTextFileMode(ConcreteCallArguments arguments, int modePosition, string modeKeyword)
@@ -975,7 +975,10 @@ internal static class StaticAbstractValueResolver
            IsValidSliceBound(slice.End, bindings) &&
            IsValidSliceBound(slice.Step, bindings, rejectZero: true);
 
-    private static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings, bool rejectZero = false)
+    private static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings)
+        => IsValidSliceBound(expression, bindings, false);
+
+    private static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings, bool rejectZero)
     {
         if (expression is null || !TryResolve(expression, bindings, out var value))
         {

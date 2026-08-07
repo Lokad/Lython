@@ -15,17 +15,27 @@ internal sealed class Utf8ValueBuilder
     private readonly int? _maxLengthBytes;
     private readonly string? _maxLengthOwner;
 
-    public Utf8ValueBuilder(int capacity = 0)
+    public Utf8ValueBuilder() : this(0) { }
+
+    public Utf8ValueBuilder(int capacity)
     {
         _buffer = capacity > 0 ? new byte[capacity] : [];
     }
 
+    public Utf8ValueBuilder(MemoryGovernor governor) : this(governor, null, 0, null, null) { }
+
+    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(governor, allocationSpan, 0, null, null) { }
+
+    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity) : this(governor, allocationSpan, capacity, null, null) { }
+
+    public Utf8ValueBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity, int? maxLengthBytes) : this(governor, allocationSpan, capacity, maxLengthBytes, null) { }
+
     public Utf8ValueBuilder(
         MemoryGovernor governor,
-        LythonSourceSpan? allocationSpan = null,
-        int capacity = 0,
-        int? maxLengthBytes = null,
-        string? maxLengthOwner = null)
+        LythonSourceSpan? allocationSpan,
+        int capacity,
+        int? maxLengthBytes,
+        string? maxLengthOwner)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;

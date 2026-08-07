@@ -6,7 +6,11 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
 {
     private readonly object[] _arguments;
 
-    public PyTypingAlias(string shortName, bool qualified = true, IEnumerable<object>? arguments = null)
+    public PyTypingAlias(string shortName) : this(shortName, true, null) { }
+
+    public PyTypingAlias(string shortName, bool qualified) : this(shortName, qualified, null) { }
+
+    public PyTypingAlias(string shortName, bool qualified, IEnumerable<object>? arguments)
     {
         ShortName = shortName;
         Qualified = qualified;

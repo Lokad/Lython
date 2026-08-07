@@ -43,10 +43,14 @@ internal sealed class ExecutionState
         LoadingModules = new HashSet<string>(StringComparer.Ordinal);
         StandardOutput = new Text.Utf8ValueBuilder(
             MemoryGovernor,
+            allocationSpan: null,
+            capacity: 0,
             maxLengthBytes: Limits.MaxStandardOutputBytes,
             maxLengthOwner: "standard output");
         StandardError = new Text.Utf8ValueBuilder(
             MemoryGovernor,
+            allocationSpan: null,
+            capacity: 0,
             maxLengthBytes: Limits.MaxStandardErrorBytes,
             maxLengthOwner: "standard error");
         Stdin = new HostTextInputHandle(host.StandardInput, this);

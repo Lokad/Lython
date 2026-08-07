@@ -1178,10 +1178,10 @@ internal sealed class Parser
                 decorator = new DataclassDecoratorSyntax(init, repr, eq, order, unsafeHash, frozen, kwOnly, matchArgs, span);
                 return true;
             case MemberExpressionSyntax
-                {
-                    Target: IdentifierExpressionSyntax { Name: "dataclasses" },
-                    MemberName: "dataclass"
-                }:
+            {
+                Target: IdentifierExpressionSyntax { Name: "dataclasses" },
+                MemberName: "dataclass"
+            }:
                 decorator = new DataclassDecoratorSyntax(init, repr, eq, order, unsafeHash, frozen, kwOnly, matchArgs, span);
                 return true;
             case CallExpressionSyntax { Target: var target, Arguments: var arguments } when IsDataclassDecoratorTarget(target):
@@ -1300,14 +1300,14 @@ internal sealed class Parser
                     }
                     else
                     {
-                    var baseExpression = ParseExpression();
-                    if (baseExpression is null)
-                    {
-                        AddDiagnostic("LA1101", "Expected base class expression in class definition.", openParen);
-                        return null;
-                    }
+                        var baseExpression = ParseExpression();
+                        if (baseExpression is null)
+                        {
+                            AddDiagnostic("LA1101", "Expected base class expression in class definition.", openParen);
+                            return null;
+                        }
 
-                    bases.Add(baseExpression);
+                        bases.Add(baseExpression);
                     }
                     if (!TryRead(Token.Comma, out _))
                     {
@@ -4174,11 +4174,14 @@ internal sealed class Parser
             span));
     }
 
+    private static bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
+        => TryDecodeStringLiteral(literal, out value, out message, true);
+
     private static bool TryDecodeStringLiteral(
         string literal,
         [MaybeNullWhen(false)] out string value,
         out string message,
-        bool decodeUnicodeEscapes = true)
+        bool decodeUnicodeEscapes)
     {
         value = string.Empty;
         message = "Invalid string literal. Malformed literal body.";

@@ -15,7 +15,9 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         _bytes = bytes;
     }
 
-    public PyBytes(byte[] bytes, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyBytes(byte[] bytes, MemoryGovernor governor) : this(bytes, governor, null) { }
+
+    public PyBytes(byte[] bytes, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(bytes);
         ArgumentNullException.ThrowIfNull(governor);

@@ -102,12 +102,15 @@ internal static class StaticProcessContractFamily
         return true;
     }
 
+    private static bool AnalyzeSubprocessArgsArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings, ShellIndex);
+
     private static bool AnalyzeSubprocessArgsArgument(
         ConcreteCallArguments arguments,
         string owner,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        int shellIndex = ShellIndex)
+        int shellIndex)
     {
         if (!arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
         {
@@ -122,18 +125,21 @@ internal static class StaticProcessContractFamily
                 return false;
             }
 
-            return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, requireNonEmpty: true);
+            return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, rejectSinglePathLike: false, requireNonEmpty: true);
         }
 
         return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
     }
+
+    private static bool AnalyzeSubprocessEnvArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings, EnvIndex);
 
     private static bool AnalyzeSubprocessEnvArgument(
         ConcreteCallArguments arguments,
         string owner,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        int envIndex = EnvIndex)
+        int envIndex)
     {
         if (!arguments.TryGetValue(envIndex, "env", out var envExpression) ||
             envExpression is NoneLiteralExpressionSyntax)
@@ -348,7 +354,10 @@ internal static class StaticProcessContractFamily
     private static bool IsSubprocessMemberName(string memberName)
         => memberName is "run" or "call" or "check_call" or "check_output";
 
-    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings, int shellIndex = ShellIndex)
+    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings)
+        => IsShellKnownTrue(arguments, bindings, ShellIndex);
+
+    private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings, int shellIndex)
     {
         if (!arguments.TryGetValue(shellIndex, "shell", out var shellExpression))
         {

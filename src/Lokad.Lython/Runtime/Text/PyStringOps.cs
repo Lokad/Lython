@@ -107,7 +107,16 @@ internal static class PyStringOps
         return value;
     }
 
-    public static PyList SplitLines(PyString value, bool keepEnds = false, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList SplitLines(PyString value)
+        => SplitLines(value, false, null, null);
+
+    public static PyList SplitLines(PyString value, bool keepEnds)
+        => SplitLines(value, keepEnds, null, null);
+
+    public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor)
+        => SplitLines(value, keepEnds, governor, null);
+
+    public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -137,7 +146,13 @@ internal static class PyStringOps
         return lines;
     }
 
-    public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList SplitWhitespace(PyString value)
+        => SplitWhitespace(value, null, null);
+
+    public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor)
+        => SplitWhitespace(value, governor, null);
+
+    public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -171,7 +186,13 @@ internal static class PyStringOps
         return parts;
     }
 
-    public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList SplitWhitespace(PyString value, int maxSplit)
+        => SplitWhitespace(value, maxSplit, null, null);
+
+    public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor)
+        => SplitWhitespace(value, maxSplit, governor, null);
+
+    public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -245,7 +266,13 @@ internal static class PyStringOps
         return parts;
     }
 
-    public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList Split(PyString value, PyString separator)
+        => Split(value, separator, null, null);
+
+    public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor)
+        => Split(value, separator, governor, null);
+
+    public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -267,7 +294,13 @@ internal static class PyStringOps
         }
     }
 
-    public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList Split(PyString value, PyString separator, int maxSplit)
+        => Split(value, separator, maxSplit, null, null);
+
+    public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor)
+        => Split(value, separator, maxSplit, governor, null);
+
+    public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -303,7 +336,13 @@ internal static class PyStringOps
         return parts;
     }
 
-    public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList RSplitWhitespace(PyString value, int maxSplit)
+        => RSplitWhitespace(value, maxSplit, null, null);
+
+    public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor)
+        => RSplitWhitespace(value, maxSplit, governor, null);
+
+    public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -393,7 +432,13 @@ internal static class PyStringOps
         return governor is null ? new PyList(items) : new PyList(items, governor, span);
     }
 
-    public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyList RSplit(PyString value, PyString separator, int maxSplit)
+        => RSplit(value, separator, maxSplit, null, null);
+
+    public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor)
+        => RSplit(value, separator, maxSplit, governor, null);
+
+    public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -480,7 +525,13 @@ internal static class PyStringOps
         return SliceRange(value, start, end).EndsWith(suffix);
     }
 
-    public static PyTuple Partition(PyString value, PyString separator, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyTuple Partition(PyString value, PyString separator)
+        => Partition(value, separator, null, null);
+
+    public static PyTuple Partition(PyString value, PyString separator, MemoryGovernor? governor)
+        => Partition(value, separator, governor, null);
+
+    public static PyTuple Partition(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (separator.Length == 0)
         {
@@ -497,7 +548,13 @@ internal static class PyStringOps
             ], governor, span);
     }
 
-    public static PyTuple RPartition(PyString value, PyString separator, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static PyTuple RPartition(PyString value, PyString separator)
+        => RPartition(value, separator, null, null);
+
+    public static PyTuple RPartition(PyString value, PyString separator, MemoryGovernor? governor)
+        => RPartition(value, separator, governor, null);
+
+    public static PyTuple RPartition(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (separator.Length == 0)
         {
@@ -517,17 +574,26 @@ internal static class PyStringOps
     private static PyTuple CreateTuple(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? span)
         => governor is null ? new PyTuple(items) : new PyTuple(items, governor, span);
 
-    public static PyString Center(PyString value, int width, PyString? fillChar = null)
+    public static PyString Center(PyString value, int width)
+        => Center(value, width, null);
+
+    public static PyString Center(PyString value, int width, PyString? fillChar)
     {
         return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center);
     }
 
-    public static PyString LJust(PyString value, int width, PyString? fillChar = null)
+    public static PyString LJust(PyString value, int width)
+        => LJust(value, width, null);
+
+    public static PyString LJust(PyString value, int width, PyString? fillChar)
     {
         return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left);
     }
 
-    public static PyString RJust(PyString value, int width, PyString? fillChar = null)
+    public static PyString RJust(PyString value, int width)
+        => RJust(value, width, null);
+
+    public static PyString RJust(PyString value, int width, PyString? fillChar)
     {
         return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right);
     }
@@ -587,11 +653,17 @@ internal static class PyStringOps
         return builder.ToPyString();
     }
 
+    public static PyString Format(PyString template, IReadOnlyList<object> positional)
+        => Format(template, positional, null, null);
+
+    public static PyString Format(PyString template, IReadOnlyList<object> positional, IReadOnlyDictionary<string, object>? keywords)
+        => Format(template, positional, keywords, null);
+
     public static PyString Format(
         PyString template,
         IReadOnlyList<object> positional,
-        IReadOnlyDictionary<string, object>? keywords = null,
-        Func<string, object>? resolveCompositeField = null)
+        IReadOnlyDictionary<string, object>? keywords,
+        Func<string, object>? resolveCompositeField)
     {
         var source = template.Utf8Bytes.Span;
         var builder = CreateBuilder(template, source.Length + positional.Count * 8);
@@ -925,7 +997,10 @@ internal static class PyStringOps
         return (normalizedStart, normalizedEnd);
     }
 
-    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars = null)
+    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)
+        => SliceTrimmed(value, trimStart, trimEnd, null);
+
+    private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
         HashSet<PyString>? trimChars = chars is null ? null : new HashSet<PyString>(chars.EnumerateRunes());
         var source = value.Utf8Bytes.Span;
@@ -1242,12 +1317,18 @@ internal static class PyStringOps
         return decoded;
     }
 
-    private static Utf8ValueBuilder CreateBuilder(PyString value, int capacity = 0)
+    private static Utf8ValueBuilder CreateBuilder(PyString value)
+        => CreateBuilder(value, 0);
+
+    private static Utf8ValueBuilder CreateBuilder(PyString value, int capacity)
         => value.OwnerMemoryGovernor is null
             ? new Utf8ValueBuilder(capacity)
             : new Utf8ValueBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, capacity);
 
-    private static Utf8ValueBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span, int capacity = 0)
+    private static Utf8ValueBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span)
+        => CreateBuilder(governor, span, 0);
+
+    private static Utf8ValueBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span, int capacity)
         => governor is null ? new Utf8ValueBuilder(capacity) : new Utf8ValueBuilder(governor, span, capacity);
 
     private static PyString FromString(string text, MemoryGovernor? governor, LythonSourceSpan? span)

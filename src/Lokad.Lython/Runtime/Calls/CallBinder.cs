@@ -20,12 +20,15 @@ internal static class CallBinder
             requiredCount);
     }
 
+    public static object[] BindNamedArguments(CallArgumentValue[] arguments, LythonSourceSpan span, LythonCallableSignature signature, string callableKind)
+        => BindNamedArguments(arguments, span, signature, callableKind, null);
+
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
         string callableKind,
-        IReadOnlyDictionary<string, int>? parameterIndices = null)
+        IReadOnlyDictionary<string, int>? parameterIndices)
     {
         return BindNamedArguments(
             arguments,

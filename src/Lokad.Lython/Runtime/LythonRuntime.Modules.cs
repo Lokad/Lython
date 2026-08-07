@@ -1324,12 +1324,18 @@ internal sealed partial class LythonRuntime
             return replacementText.AsString();
         }
 
+        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range, Utf8PythonDetailedMatchData match)
+            => CreateMatchObject(pattern, range, match, null, null);
+
+        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range, Utf8PythonDetailedMatchData match, ExecutionContext? context)
+            => CreateMatchObject(pattern, range, match, context, null);
+
         internal static ReMatchObject CreateMatchObject(
             RePatternObject pattern,
             RegexSubjectRange range,
             Utf8PythonDetailedMatchData match,
-            ExecutionContext? context = null,
-            LythonSourceSpan? span = null)
+            ExecutionContext? context,
+            LythonSourceSpan? span)
         {
             if (!match.TryGetGroup(0, out var wholeGroup) || !wholeGroup.Success)
             {
@@ -1546,7 +1552,7 @@ internal sealed partial class LythonRuntime
         public static bool TryGetMember(ReMatchObject match, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
-                {
+            {
                 "re" => match.Pattern,
                 "string" => match.String,
                 "pos" => match.Pos,
@@ -1920,7 +1926,7 @@ internal sealed partial class LythonRuntime
             }
 
             var value = arguments.Length == 0 ? PyNone.Instance : arguments[0];
-            throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, payload: value);
+            throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, innerException: null, payload: value);
         }
 
         private static PyNamedTupleObject VersionInfo(ExecutionContext context)
@@ -3912,7 +3918,7 @@ internal sealed partial class LythonRuntime
                 : new LythonRuntimeException("ArgumentError", message, span);
 
         private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, BigInteger status)
-            => new("SystemExit", message, span, payload: status);
+            => new("SystemExit", message, span, innerException: null, payload: status);
 
         private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, int status)
             => CreateSystemExit(message, span, new BigInteger(status));
@@ -5382,31 +5388,45 @@ internal sealed partial class LythonRuntime
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
         private readonly LythonCallableSignature _signature;
 
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature) : this(implementation, signature, null) { }
+
         public BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
-            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
         {
             _implementation = implementation;
             _asyncImplementation = asyncImplementation;
             _signature = signature;
         }
 
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(implementation, new LythonCallableSignature("bound method")) { }
+
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name) : this(implementation, name, null, null) { }
+
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name, string[]? parameterNames) : this(implementation, name, parameterNames, null) { }
+
         public BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            string? name = null,
-            string[]? parameterNames = null,
-            int? requiredCount = null)
+            string? name,
+            string[]? parameterNames,
+            int? requiredCount)
             : this(implementation, new LythonCallableSignature(name ?? "bound method", parameterNames, requiredCount))
         {
         }
 
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation) : this(implementation, asyncImplementation, null, null, null) { }
+
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name) : this(implementation, asyncImplementation, name, null, null) { }
+
+        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name, string[]? parameterNames) : this(implementation, asyncImplementation, name, parameterNames, null) { }
+
         public BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation,
-            string? name = null,
-            string[]? parameterNames = null,
-            int? requiredCount = null)
+            string? name,
+            string[]? parameterNames,
+            int? requiredCount)
             : this(implementation, new LythonCallableSignature(name ?? "bound method", parameterNames, requiredCount), asyncImplementation)
         {
         }
@@ -6928,6 +6948,9 @@ internal sealed partial class LythonRuntime
             return new CsvDictWriterObject(new CsvWriterObject(options, file), fieldNames, restVal, extrasAction);
         }
 
+        private static CsvOptions GetOptions(object[] arguments, int dialectIndex, int delimiterIndex, int quotecharIndex, int quotingIndex, int doublequoteIndex, int escapecharIndex, int skipinitialspaceIndex, int lineterminatorIndex, int strictIndex, LythonSourceSpan span)
+            => GetOptions(arguments, dialectIndex, delimiterIndex, quotecharIndex, quotingIndex, doublequoteIndex, escapecharIndex, skipinitialspaceIndex, lineterminatorIndex, strictIndex, span, null);
+
         private static CsvOptions GetOptions(
             object[] arguments,
             int dialectIndex,
@@ -6940,7 +6963,7 @@ internal sealed partial class LythonRuntime
             int lineterminatorIndex,
             int strictIndex,
             LythonSourceSpan span,
-            object? legacyDelimiter = null)
+            object? legacyDelimiter)
         {
             ValidateDialect(arguments, dialectIndex, span);
 
@@ -7740,7 +7763,10 @@ internal sealed partial class LythonRuntime
             return builder.ToPyString();
         }
 
-        private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span, bool forceQuotes = false)
+        private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span)
+            => EscapeCsvField(cell, options, span, false);
+
+        private static PyString EscapeCsvField(CsvCell cell, CsvOptions options, LythonSourceSpan span, bool forceQuotes)
         {
             var field = cell.Text;
             var fieldBytes = field.Utf8Bytes.Span;

@@ -257,15 +257,27 @@ internal static class StaticContractChecks
         }
     }
 
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics)
+        => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, false, null, null, null);
+
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
+        => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, null, null, null);
+
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode)
+        => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, null, null);
+
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode, string? emptyMessage)
+        => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, emptyMessage, null);
+
     public static void AnalyzeIterableOfStringsLiteral(
         IReadOnlyList<AbstractValue> items,
         string code,
         string message,
         List<LythonDiagnostic> diagnostics,
-        bool requireNonEmpty = false,
-        string? emptyCode = null,
-        string? emptyMessage = null,
-        LythonSourceSpan? emptySpan = null)
+        bool requireNonEmpty,
+        string? emptyCode,
+        string? emptyMessage,
+        LythonSourceSpan? emptySpan)
     {
         if (requireNonEmpty && items.Count == 0)
         {
@@ -279,15 +291,27 @@ internal static class StaticContractChecks
         }
     }
 
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics)
+        => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, false, null, null, null);
+
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
+        => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, null, null, null);
+
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode)
+        => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, null, null);
+
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode, string? emptyMessage)
+        => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, emptyMessage, null);
+
     public static void AnalyzeIterableOfPathLikeLiteral(
         IReadOnlyList<AbstractValue> items,
         string code,
         string message,
         List<LythonDiagnostic> diagnostics,
-        bool requireNonEmpty = false,
-        string? emptyCode = null,
-        string? emptyMessage = null,
-        LythonSourceSpan? emptySpan = null)
+        bool requireNonEmpty,
+        string? emptyCode,
+        string? emptyMessage,
+        LythonSourceSpan? emptySpan)
     {
         if (requireNonEmpty && items.Count == 0)
         {

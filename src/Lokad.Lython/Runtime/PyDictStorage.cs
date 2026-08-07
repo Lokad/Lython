@@ -31,10 +31,22 @@ internal static class PyDictStorage
 
     public static IPyDictStorage Create() => new SmallPyDictStorage();
 
-    public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static IPyDictStorage Create(int targetCount)
+        => Create(targetCount, null, null);
+
+    public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor)
+        => Create(targetCount, governor, null);
+
+    public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
         => targetCount <= SmallCapacity ? new SmallPyDictStorage() : new MapPyDictStorage(targetCount, governor, span);
 
-    public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items)
+        => Create(items, null, null);
+
+    public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items, MemoryGovernor? governor)
+        => Create(items, governor, null);
+
+    public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var materialized = items as KeyValuePair<object, object>[] ?? items.ToArray();
         if (materialized.Length <= SmallCapacity)
@@ -51,7 +63,13 @@ internal static class PyDictStorage
         return new MapPyDictStorage(materialized, materialized.Length, governor, span);
     }
 
-    public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount)
+        => EnsureCapacity(storage, targetCount, null, null);
+
+    public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount, MemoryGovernor? governor)
+        => EnsureCapacity(storage, targetCount, governor, null);
+
+    public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (storage is MapPyDictStorage map)
         {
@@ -181,7 +199,11 @@ internal sealed class MapPyDictStorage : IPyDictStorage
         _items = new Dictionary<object, object>(PyValueComparer.Instance);
     }
 
-    public MapPyDictStorage(int capacity, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public MapPyDictStorage(int capacity) : this(capacity, null, null) { }
+
+    public MapPyDictStorage(int capacity, MemoryGovernor? governor) : this(capacity, governor, null) { }
+
+    public MapPyDictStorage(int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         _items = new Dictionary<object, object>(PyValueComparer.Instance);
         EnsureCapacity(capacity, governor, span);
@@ -196,7 +218,11 @@ internal sealed class MapPyDictStorage : IPyDictStorage
         }
     }
 
-    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity) : this(items, capacity, null, null) { }
+
+    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity, MemoryGovernor? governor) : this(items, capacity, governor, null) { }
+
+    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
         : this(capacity, governor, span)
     {
         foreach (var pair in items)

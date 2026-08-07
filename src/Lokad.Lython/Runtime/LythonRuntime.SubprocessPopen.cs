@@ -613,6 +613,7 @@ internal sealed partial class LythonRuntime
                 "TimeoutExpired",
                 $"Command timed out after {(timeout is PyNone ? "None" : timeout)}.",
                 span,
+                innerException: null,
                 payload: payload);
         }
 
@@ -692,6 +693,8 @@ internal sealed partial class LythonRuntime
             _context = context;
             _buffer = new Utf8ValueBuilder(
                 context.MemoryGovernor,
+                allocationSpan: null,
+                capacity: 0,
                 maxLengthBytes: context.Limits.MaxStringLength,
                 maxLengthOwner: "Popen stdin");
         }

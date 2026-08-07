@@ -18,7 +18,9 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         _items = PyListStorage.Create(items);
     }
 
-    public PyList(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public PyList(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
+
+    public PyList(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor = governor;
@@ -116,7 +118,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         ReplaceStorage(repeated);
     }
 
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan = null)
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         ArgumentNullException.ThrowIfNull(governor);
         _memoryGovernor ??= governor;

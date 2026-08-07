@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
                         throw RuntimeErrors.RaiseExpectsException(raiseStatement.Span);
                     }
 
-                    throw new LythonRuntimeException(instance.TypeName, instance.Message, raiseStatement.Span, payload: instance.Value);
+                    throw new LythonRuntimeException(instance.TypeName, instance.Message, raiseStatement.Span, innerException: null, payload: instance.Value);
 
                 case TryStatementSyntax tryStatement:
                     ExecuteTryStatement(

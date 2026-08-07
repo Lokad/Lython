@@ -432,9 +432,13 @@ internal sealed class ExecutableScript
         private readonly HashSet<string> _parentClosureCandidates;
         private ScopeDirectiveFacts _scopeFacts = ScopeDirectiveFacts.Empty;
 
+        internal Builder() : this(null, null) { }
+
+        internal Builder(IReadOnlyList<LoweredFunctionParameter>? functionParameters) : this(functionParameters, null) { }
+
         internal Builder(
-            IReadOnlyList<LoweredFunctionParameter>? functionParameters = null,
-            IEnumerable<string>? parentClosureCandidates = null)
+            IReadOnlyList<LoweredFunctionParameter>? functionParameters,
+            IEnumerable<string>? parentClosureCandidates)
         {
             _functionParameters = functionParameters;
             _parentClosureCandidates = parentClosureCandidates is null

@@ -455,6 +455,9 @@ internal static partial class StaticContracts
         AddListCallableContract(contracts, "clear", 0, 0, "LA3125", "list.clear() expects no arguments.", StaticMutationKind.MutatesReceiver);
     }
 
+    private static void AddListCallableContract(List<StaticCallableContract> contracts, string memberName, int minimumArgumentCount, int? maximumArgumentCount, string diagnosticCode, string message, params string[] parameterNames)
+        => AddListCallableContract(contracts, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, StaticMutationKind.None, parameterNames);
+
     private static void AddListCallableContract(
         List<StaticCallableContract> contracts,
         string memberName,
@@ -462,7 +465,7 @@ internal static partial class StaticContracts
         int? maximumArgumentCount,
         string diagnosticCode,
         string message,
-        StaticMutationKind mutation = StaticMutationKind.None,
+        StaticMutationKind mutation,
         params string[] parameterNames)
     {
         var parameters = parameterNames.Length == 0 ? null : parameterNames;

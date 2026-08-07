@@ -108,7 +108,9 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 {
     public static readonly PyTimezone Utc = new(TimeSpan.Zero, "UTC");
 
-    public PyTimezone(TimeSpan offset, string? name = null)
+    public PyTimezone(TimeSpan offset) : this(offset, null) { }
+
+    public PyTimezone(TimeSpan offset, string? name)
     {
         Offset = offset;
         Name = name ?? BuildDefaultName(offset);
@@ -189,7 +191,11 @@ internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public PyTime(TimeOnly value, PyTimezone? tzinfo = null, int fold = 0)
+    public PyTime(TimeOnly value) : this(value, null, 0) { }
+
+    public PyTime(TimeOnly value, PyTimezone? tzinfo) : this(value, tzinfo, 0) { }
+
+    public PyTime(TimeOnly value, PyTimezone? tzinfo, int fold)
     {
         Value = value;
         TzInfo = tzinfo;
@@ -214,7 +220,10 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public int GetPyHashCode() => HashCode.Combine(TzInfo is null ? Value.Ticks : PyDateTimeOps.AdjustTimeTicks(Value, TzInfo.Offset));
 
-    public PyString IsoFormat(string timespec = "auto")
+    public PyString IsoFormat()
+        => IsoFormat("auto");
+
+    public PyString IsoFormat(string timespec)
     {
         var text = PyDateTimeOps.FormatIsoTime(Value, timespec);
         if (TzInfo is not null)
@@ -266,7 +275,11 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public PyDateTime(DateTime value, PyTimezone? tzinfo = null, int fold = 0)
+    public PyDateTime(DateTime value) : this(value, null, 0) { }
+
+    public PyDateTime(DateTime value, PyTimezone? tzinfo) : this(value, tzinfo, 0) { }
+
+    public PyDateTime(DateTime value, PyTimezone? tzinfo, int fold)
     {
         Value = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
         TzInfo = tzinfo;
@@ -301,9 +314,15 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyTime TimePart() => new(TimeOnly.FromDateTime(Value), TzInfo, Fold);
 
-    public PyTime NaiveTimePart() => new(TimeOnly.FromDateTime(Value), fold: Fold);
+    public PyTime NaiveTimePart() => new(TimeOnly.FromDateTime(Value), tzinfo: null, fold: Fold);
 
-    public PyString IsoFormat(string separator = "T", string timespec = "auto")
+    public PyString IsoFormat()
+        => IsoFormat("T", "auto");
+
+    public PyString IsoFormat(string separator)
+        => IsoFormat(separator, "auto");
+
+    public PyString IsoFormat(string separator, string timespec)
     {
         var text = Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + separator + PyDateTimeOps.FormatIsoTime(TimeOnly.FromDateTime(Value), timespec);
         if (TzInfo is not null)
@@ -454,7 +473,11 @@ internal static class PyDateTimeOps
         private readonly string[]? _parameterNames;
         private readonly int _requiredCount;
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames = null, int? requiredCount = null)
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation) : this(name, implementation, null, null) { }
+
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames) : this(name, implementation, parameterNames, null) { }
+
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames, int? requiredCount)
         {
             _name = name;
             _implementation = implementation;
@@ -946,7 +969,10 @@ internal static class PyDateTimeOps
     public static PyTuple TimeTuple(DateOnly date)
         => CreateTimeTuple(date, TimeOnly.MinValue, isDst: -1);
 
-    public static PyTuple TimeTuple(DateTime dateTime, int isDst = -1)
+    public static PyTuple TimeTuple(DateTime dateTime)
+        => TimeTuple(dateTime, -1);
+
+    public static PyTuple TimeTuple(DateTime dateTime, int isDst)
         => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst);
 
     public static double Timestamp(PyDateTime dateTime, TimeSpan localOffset, LythonSourceSpan span)
@@ -1027,7 +1053,7 @@ internal static class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => DivideTimedeltas(delta, other, span),
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, 1.0 / scale, span, checkZero: true),
+            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '/'.", span)
         };
     }
@@ -1140,13 +1166,19 @@ internal static class PyDateTimeOps
     public static PyString Strftime(DateTime value, PyTimezone? timezone, PyString format, LythonSourceSpan span)
         => PyString.FromString(FormatStrftime(value, timezone, format.AsString(), span));
 
+    public static string FormatStrftime(DateTime value, PyTimezone? timezone, string format, LythonSourceSpan span)
+        => FormatStrftime(value, timezone, format, span, null, null);
+
+    public static string FormatStrftime(DateTime value, PyTimezone? timezone, string format, LythonSourceSpan span, int? weekdayOverride)
+        => FormatStrftime(value, timezone, format, span, weekdayOverride, null);
+
     public static string FormatStrftime(
         DateTime value,
         PyTimezone? timezone,
         string format,
         LythonSourceSpan span,
-        int? weekdayOverride = null,
-        int? yearDayOverride = null)
+        int? weekdayOverride,
+        int? yearDayOverride)
     {
         var mondayBasedWeekday = weekdayOverride ?? ((int)value.DayOfWeek + 6) % 7;
         var yearDay = yearDayOverride ?? value.DayOfYear;
@@ -2076,7 +2108,13 @@ internal static class PyDateTimeOps
         return false;
     }
 
-    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span, bool floor = false, bool checkZero = false)
+    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span)
+        => ScaleTimedelta(delta, scale, span, false, false);
+
+    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span, bool floor)
+        => ScaleTimedelta(delta, scale, span, floor, false);
+
+    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span, bool floor, bool checkZero)
     {
         if (checkZero && double.IsInfinity(scale))
         {

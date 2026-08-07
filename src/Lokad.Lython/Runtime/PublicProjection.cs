@@ -4,7 +4,10 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PublicProjection
 {
-    public static object? NormalizeValue(object value, ProjectionBudget? budget = null)
+    public static object? NormalizeValue(object value)
+        => NormalizeValue(value, null);
+
+    public static object? NormalizeValue(object value, ProjectionBudget? budget)
     {
         return value switch
         {
@@ -30,19 +33,28 @@ internal static class PublicProjection
 
     public static object? ProjectNone() => null;
 
-    public static string ProjectString(PyString text, ProjectionBudget? budget = null)
+    public static string ProjectString(PyString text)
+        => ProjectString(text, null);
+
+    public static string ProjectString(PyString text, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + (2L * text.Length));
         return text.AsString();
     }
 
-    public static byte[] ProjectBytes(PyBytes bytes, ProjectionBudget? budget = null)
+    public static byte[] ProjectBytes(PyBytes bytes)
+        => ProjectBytes(bytes, null);
+
+    public static byte[] ProjectBytes(PyBytes bytes, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + bytes.Length);
         return bytes.ToArray();
     }
 
-    public static string ProjectPath(PyPath path, ProjectionBudget? budget = null)
+    public static string ProjectPath(PyPath path)
+        => ProjectPath(path, null);
+
+    public static string ProjectPath(PyPath path, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + (2L * path.Value.Length));
         return path.Value.AsString();
@@ -75,7 +87,10 @@ internal static class PublicProjection
 
     public static TimeSpan ProjectTimezone(PyTimezone timezone) => timezone.Offset;
 
-    public static Dictionary<object, object?> ProjectDictionary(PyDict dict, ProjectionBudget? budget = null)
+    public static Dictionary<object, object?> ProjectDictionary(PyDict dict)
+        => ProjectDictionary(dict, null);
+
+    public static Dictionary<object, object?> ProjectDictionary(PyDict dict, ProjectionBudget? budget)
     {
         budget?.Reserve(64L + (32L * dict.Count));
         var normalized = new Dictionary<object, object?>(dict.Count);
@@ -87,14 +102,20 @@ internal static class PublicProjection
         return normalized;
     }
 
-    public static object ProjectDictionaryKey(object key, PyDict owner, ProjectionBudget? budget = null)
+    public static object ProjectDictionaryKey(object key, PyDict owner)
+        => ProjectDictionaryKey(key, owner, null);
+
+    public static object ProjectDictionaryKey(object key, PyDict owner, ProjectionBudget? budget)
     {
         var normalized = NormalizeValue(key, budget);
         return normalized
             ?? throw new InvalidOperationException($"Cannot normalize dictionary keys with value None to {PublicProjectionContract.Describe(owner)}.");
     }
 
-    public static List<object?> ProjectList(PyList list, ProjectionBudget? budget = null)
+    public static List<object?> ProjectList(PyList list)
+        => ProjectList(list, null);
+
+    public static List<object?> ProjectList(PyList list, ProjectionBudget? budget)
     {
         budget?.Reserve(64L + (16L * list.Count));
         var normalized = new List<object?>(list.Count);
@@ -106,7 +127,10 @@ internal static class PublicProjection
         return normalized;
     }
 
-    public static object?[] ProjectTuple(PyTuple tuple, ProjectionBudget? budget = null)
+    public static object?[] ProjectTuple(PyTuple tuple)
+        => ProjectTuple(tuple, null);
+
+    public static object?[] ProjectTuple(PyTuple tuple, ProjectionBudget? budget)
     {
         budget?.Reserve(48L + (16L * tuple.Count));
         var normalized = new object?[tuple.Count];
@@ -119,13 +143,19 @@ internal static class PublicProjection
         return normalized;
     }
 
-    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget = null)
+    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value)
+        => ProjectStructTime(value, null);
+
+    public static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget)
     {
         budget?.Reserve(48L + (16L * value.Count));
         return value.Select(item => NormalizeValue(item, budget)).ToArray();
     }
 
-    public static HashSet<object?> ProjectSet(PySet set, ProjectionBudget? budget = null)
+    public static HashSet<object?> ProjectSet(PySet set)
+        => ProjectSet(set, null);
+
+    public static HashSet<object?> ProjectSet(PySet set, ProjectionBudget? budget)
     {
         budget?.Reserve(64L + (24L * set.Count));
         var normalized = new HashSet<object?>(set.Count);
@@ -137,7 +167,10 @@ internal static class PublicProjection
         return normalized;
     }
 
-    public static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches, ProjectionBudget? budget = null)
+    public static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches)
+        => ProjectFindAllResult(matches, null);
+
+    public static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + (16L * matches.Items.Count));
         var normalized = new PyList();

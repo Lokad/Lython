@@ -127,14 +127,20 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(RenderWindowsCommandLine(items));
     }
 
+    private static object InvokeSubprocess(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind)
+        => InvokeSubprocess(arguments, span, context, owner, completionKind, null, false);
+
+    private static object InvokeSubprocess(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind, bool? forcedCheck)
+        => InvokeSubprocess(arguments, span, context, owner, completionKind, forcedCheck, false);
+
     private static object InvokeSubprocess(
         object[] arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
         SubprocessCompletionKind completionKind,
-        bool? forcedCheck = null,
-        bool forceStdoutPipe = false)
+        bool? forcedCheck,
+        bool forceStdoutPipe)
     {
         if (context.Host.SubprocessRunner is null)
         {
@@ -149,14 +155,20 @@ internal sealed partial class LythonRuntime
         return CompleteSubprocessRun(result, invocation, span, context);
     }
 
+    private static ValueTask<object> InvokeSubprocessAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind)
+        => InvokeSubprocessAsync(arguments, span, context, owner, completionKind, null, false);
+
+    private static ValueTask<object> InvokeSubprocessAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind, bool? forcedCheck)
+        => InvokeSubprocessAsync(arguments, span, context, owner, completionKind, forcedCheck, false);
+
     private static async ValueTask<object> InvokeSubprocessAsync(
         object[] arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
         SubprocessCompletionKind completionKind,
-        bool? forcedCheck = null,
-        bool forceStdoutPipe = false)
+        bool? forcedCheck,
+        bool forceStdoutPipe)
     {
         if (context.Host.SubprocessRunner is null)
         {
@@ -336,7 +348,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var payload = CreateCalledProcessErrorPayload(returnCode, command, output, stderr, context, span);
-        return new LythonRuntimeException("CalledProcessError", message, span, payload: payload);
+        return new LythonRuntimeException("CalledProcessError", message, span, innerException: null, payload: payload);
     }
 
     private static PyDict CreateCalledProcessErrorPayload(

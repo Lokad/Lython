@@ -19,12 +19,18 @@ internal sealed partial class LythonRuntime
     private static bool AreIdentical(object left, object right)
         => ReferenceEquals(left, right) || left is bool leftBoolean && right is bool rightBoolean && leftBoolean == rightBoolean;
 
+    internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span)
+        => ReadGovernedHostText(path, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+    internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
+        => ReadGovernedHostText(path, context, span, errors, TextNewlineMode.TranslateUniversal);
+
     internal static PyString ReadGovernedHostText(
         string path,
         ExecutionContext context,
         LythonSourceSpan? span,
-        TextErrorMode errors = TextErrorMode.Strict,
-        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+        TextErrorMode errors,
+        TextNewlineMode newline)
     {
         context.RegisterHostCall(span);
         var stat = context.HostStat(path, span);
@@ -50,12 +56,18 @@ internal sealed partial class LythonRuntime
         return text;
     }
 
+    internal static ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span)
+        => ReadGovernedHostTextAsync(path, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+    internal static ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
+        => ReadGovernedHostTextAsync(path, context, span, errors, TextNewlineMode.TranslateUniversal);
+
     internal static async ValueTask<PyString> ReadGovernedHostTextAsync(
         string path,
         ExecutionContext context,
         LythonSourceSpan? span,
-        TextErrorMode errors = TextErrorMode.Strict,
-        TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+        TextErrorMode errors,
+        TextNewlineMode newline)
     {
         context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
@@ -3695,11 +3707,13 @@ internal sealed partial class LythonRuntime
             NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
         }
 
+        public ExecutionContext(ExecutionContext template, bool moduleScope, string? sourcePath) : this(template, moduleScope, sourcePath, null) { }
+
         public ExecutionContext(
             ExecutionContext template,
             bool moduleScope,
-            string? sourcePath = null,
-            string? moduleName = null)
+            string? sourcePath,
+            string? moduleName)
         {
             _ = moduleScope;
             Services = template.Services;
@@ -4473,7 +4487,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object ValidateSetItem(object value, LythonSourceSpan span, MemoryGovernor? governor = null)
+    private static object ValidateSetItem(object value, LythonSourceSpan span)
+        => ValidateSetItem(value, span, null);
+
+    private static object ValidateSetItem(object value, LythonSourceSpan span, MemoryGovernor? governor)
     {
         var normalized = value switch
         {
@@ -4485,7 +4502,10 @@ internal sealed partial class LythonRuntime
         return EnsureHashableValue(normalized, span, "set elements must be hashable.");
     }
 
-    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span, MemoryGovernor? governor = null)
+    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
+        => ValidateDictionaryKey(value, span, null);
+
+    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span, MemoryGovernor? governor)
     {
         var normalized = value switch
         {

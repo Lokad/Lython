@@ -1944,10 +1944,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
         }
 
-            var reverse = false;
-            if (arguments.Length >= 3)
-            {
-                reverse = IsTruthy(arguments[2]);
+        var reverse = false;
+        if (arguments.Length >= 3)
+        {
+            reverse = IsTruthy(arguments[2]);
         }
 
         var keyed = new List<SortKeyValue>(values.Count);
@@ -2002,10 +2002,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
         }
 
-            var reverse = false;
-            if (arguments.Length >= 3)
-            {
-                reverse = IsTruthy(arguments[2]);
+        var reverse = false;
+        if (arguments.Length >= 3)
+        {
+            reverse = IsTruthy(arguments[2]);
         }
 
         var keyed = new List<SortKeyValue>(values.Count);
@@ -2792,6 +2792,10 @@ internal sealed partial class LythonRuntime
     {
         internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue
         {
+            private TextFileHandle(string path, string mode, PyString text, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline) : this(path, mode, text, context, encoding, errors, newline, default, null) { }
+
+            private TextFileHandle(string path, string mode, PyString text, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline, BigInteger appendBasePosition) : this(path, mode, text, context, encoding, errors, newline, appendBasePosition, null) { }
+
             private TextFileHandle(
                 string path,
                 string mode,
@@ -2800,8 +2804,8 @@ internal sealed partial class LythonRuntime
                 TextEncodingMode encoding,
                 TextErrorMode errors,
                 TextNewlineMode newline,
-                BigInteger appendBasePosition = default,
-                byte[]? appendPrefix = null)
+                BigInteger appendBasePosition,
+                byte[]? appendPrefix)
             {
                 Path = path;
                 Mode = mode;
@@ -2892,12 +2896,21 @@ internal sealed partial class LythonRuntime
             public object Seek(LythonSourceSpan span)
                 => throw new LythonRuntimeException("NotImplementedError", "file.seek(...) is not supported by Lython text handles.", span);
 
+            public static TextFileHandle ForRead(string path, ExecutionContext context)
+                => ForRead(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForRead(string path, ExecutionContext context, TextEncodingMode encoding)
+                => ForRead(path, context, encoding, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForRead(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors)
+                => ForRead(path, context, encoding, errors, TextNewlineMode.TranslateUniversal);
+
             public static TextFileHandle ForRead(
                 string path,
                 ExecutionContext context,
-                TextEncodingMode encoding = TextEncodingMode.Utf8,
-                TextErrorMode errors = TextErrorMode.Strict,
-                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
             {
                 if (encoding == TextEncodingMode.Latin1)
                 {
@@ -2922,12 +2935,21 @@ internal sealed partial class LythonRuntime
                 return new TextFileHandle(path, "r", text, context, encoding, errors, newline);
             }
 
+            public static ValueTask<TextFileHandle> ForReadAsync(string path, ExecutionContext context)
+                => ForReadAsync(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static ValueTask<TextFileHandle> ForReadAsync(string path, ExecutionContext context, TextEncodingMode encoding)
+                => ForReadAsync(path, context, encoding, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static ValueTask<TextFileHandle> ForReadAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors)
+                => ForReadAsync(path, context, encoding, errors, TextNewlineMode.TranslateUniversal);
+
             public static async ValueTask<TextFileHandle> ForReadAsync(
                 string path,
                 ExecutionContext context,
-                TextEncodingMode encoding = TextEncodingMode.Utf8,
-                TextErrorMode errors = TextErrorMode.Strict,
-                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
             {
                 if (encoding == TextEncodingMode.Latin1)
                 {
@@ -2952,20 +2974,38 @@ internal sealed partial class LythonRuntime
                 return new TextFileHandle(path, "r", text, context, encoding, errors, newline);
             }
 
+            public static TextFileHandle ForWrite(string path, ExecutionContext context)
+                => ForWrite(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForWrite(string path, ExecutionContext context, TextEncodingMode encoding)
+                => ForWrite(path, context, encoding, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForWrite(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors)
+                => ForWrite(path, context, encoding, errors, TextNewlineMode.TranslateUniversal);
+
             public static TextFileHandle ForWrite(
                 string path,
                 ExecutionContext context,
-                TextEncodingMode encoding = TextEncodingMode.Utf8,
-                TextErrorMode errors = TextErrorMode.Strict,
-                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
                 => new(path, "w", PyString.Empty, context, encoding, errors, newline);
+
+            public static TextFileHandle ForAppend(string path, ExecutionContext context)
+                => ForAppend(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding)
+                => ForAppend(path, context, encoding, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors)
+                => ForAppend(path, context, encoding, errors, TextNewlineMode.TranslateUniversal);
 
             public static TextFileHandle ForAppend(
                 string path,
                 ExecutionContext context,
-                TextEncodingMode encoding = TextEncodingMode.Utf8,
-                TextErrorMode errors = TextErrorMode.Strict,
-                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
             {
                 var stat = context.HostStat(path, null);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
@@ -2977,12 +3017,21 @@ internal sealed partial class LythonRuntime
                 return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition, appendPrefix);
             }
 
+            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context)
+                => ForAppendAsync(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding)
+                => ForAppendAsync(path, context, encoding, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+
+            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors)
+                => ForAppendAsync(path, context, encoding, errors, TextNewlineMode.TranslateUniversal);
+
             public static async ValueTask<TextFileHandle> ForAppendAsync(
                 string path,
                 ExecutionContext context,
-                TextEncodingMode encoding = TextEncodingMode.Utf8,
-                TextErrorMode errors = TextErrorMode.Strict,
-                TextNewlineMode newline = TextNewlineMode.TranslateUniversal)
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
             {
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
@@ -3036,7 +3085,10 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            public PyString Read(int size = -1)
+            public PyString Read()
+                => Read(-1);
+
+            public PyString Read(int size)
             {
                 EnsureOpen();
                 if (Mode != "r")
@@ -3057,7 +3109,10 @@ internal sealed partial class LythonRuntime
                 return result;
             }
 
-            public PyString ReadLine(int size = -1)
+            public PyString ReadLine()
+                => ReadLine(-1);
+
+            public PyString ReadLine(int size)
             {
                 EnsureOpen();
                 if (Mode != "r")
@@ -3082,7 +3137,10 @@ internal sealed partial class LythonRuntime
                 return line;
             }
 
-            public PyList ReadLines(int hint = -1)
+            public PyList ReadLines()
+                => ReadLines(-1);
+
+            public PyList ReadLines(int hint)
             {
                 EnsureOpen();
                 if (Mode != "r")

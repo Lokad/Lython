@@ -269,7 +269,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void Utf8ValueBuilder_GrowthAccountsForTheTransientReplacementPeak()
     {
         var governor = new MemoryGovernor(20);
-        var builder = new Utf8ValueBuilder(governor, capacity: 8);
+        var builder = new Utf8ValueBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("12345678");
 
         var exception = Assert.Throws<LythonRuntimeException>(() => builder.Append((byte)'9'));
@@ -283,7 +283,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void Utf8ValueBuilder_ToArrayAndReleaseDropsTheBuilderCapacity()
     {
         var governor = new MemoryGovernor(32);
-        var builder = new Utf8ValueBuilder(governor, capacity: 8);
+        var builder = new Utf8ValueBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("abc");
 
         var result = builder.ToArrayAndRelease();

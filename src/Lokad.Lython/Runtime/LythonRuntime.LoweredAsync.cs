@@ -1148,7 +1148,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.RaiseExpectsException(statement.Span);
         }
 
-        throw new LythonRuntimeException(instance.TypeName, instance.Message, statement.Span, payload: instance.Value);
+        throw new LythonRuntimeException(instance.TypeName, instance.Message, statement.Span, innerException: null, payload: instance.Value);
     }
 
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)

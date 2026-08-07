@@ -1097,14 +1097,32 @@ internal sealed partial class LythonRuntime
             NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 6), "protection"));
     }
 
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name)
+        => CreateNamedStyleValue(name, null, null, null, null, null, null);
+
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat)
+        => CreateNamedStyleValue(name, numberFormat, null, null, null, null, null);
+
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font)
+        => CreateNamedStyleValue(name, numberFormat, font, null, null, null, null);
+
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill)
+        => CreateNamedStyleValue(name, numberFormat, font, fill, null, null, null);
+
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill, object? border)
+        => CreateNamedStyleValue(name, numberFormat, font, fill, border, null, null);
+
+    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill, object? border, object? alignment)
+        => CreateNamedStyleValue(name, numberFormat, font, fill, border, alignment, null);
+
     private static OpenPyxlStyleValue CreateNamedStyleValue(
         object name,
-        object? numberFormat = null,
-        object? font = null,
-        object? fill = null,
-        object? border = null,
-        object? alignment = null,
-        object? protection = null)
+        object? numberFormat,
+        object? font,
+        object? fill,
+        object? border,
+        object? alignment,
+        object? protection)
     {
         return new OpenPyxlStyleValue("openpyxl.styles.NamedStyle", new Dictionary<string, object>
         {
@@ -1831,7 +1849,9 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlConditionalFormattingRule : IPyDynamicAttributes, IPyRenderableValue
     {
-        public OpenPyxlConditionalFormattingRule(string? type, string? operatorValue, int? priority, IReadOnlyList<string> formulas, XElement? sourceXml = null)
+        public OpenPyxlConditionalFormattingRule(string? type, string? operatorValue, int? priority, IReadOnlyList<string> formulas) : this(type, operatorValue, priority, formulas, null) { }
+
+        public OpenPyxlConditionalFormattingRule(string? type, string? operatorValue, int? priority, IReadOnlyList<string> formulas, XElement? sourceXml)
         {
             Type = type;
             Operator = operatorValue;

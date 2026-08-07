@@ -100,10 +100,12 @@ internal sealed partial class LythonRuntime
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
+        public ItertoolsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : this(name, implementation, null) { }
+
         public ItertoolsCallable(
             string name,
             Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation,
-            Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
         {
             _name = name;
             _implementation = implementation;

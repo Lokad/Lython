@@ -216,10 +216,12 @@ internal sealed partial class LythonRuntime
         private readonly LythonCallableSignature _signature;
         private readonly Dictionary<string, int>? _parameterIndices;
 
+        public BuiltinCallable(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(signature, implementation, null) { }
+
         public BuiltinCallable(
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
         {
             _signature = signature;
             _implementation = implementation;
@@ -227,21 +229,29 @@ internal sealed partial class LythonRuntime
             _parameterIndices = signature.ParameterNames is null ? null : CreateParameterIndices(signature.ParameterNames);
         }
 
+        public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(new LythonCallableSignature(name), implementation) { }
+
+        public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string[]? parameterNames) : this(name, implementation, parameterNames, null) { }
+
         public BuiltinCallable(
             string name,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            string[]? parameterNames = null,
-            int? requiredCount = null)
+            string[]? parameterNames,
+            int? requiredCount)
             : this(new LythonCallableSignature(name, parameterNames, requiredCount), implementation)
         {
         }
+
+        public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation) : this(name, implementation, asyncImplementation, null, null) { }
+
+        public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string[]? parameterNames) : this(name, implementation, asyncImplementation, parameterNames, null) { }
 
         public BuiltinCallable(
             string name,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation,
-            string[]? parameterNames = null,
-            int? requiredCount = null)
+            string[]? parameterNames,
+            int? requiredCount)
             : this(new LythonCallableSignature(name, parameterNames, requiredCount), implementation, asyncImplementation)
         {
         }

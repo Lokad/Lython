@@ -43,7 +43,13 @@ internal static class PyListStorage
             : new ArrayPyListStorage(materialized, governor, span);
     }
 
-    public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount)
+        => EnsureCapacity(storage, targetCount, null, null);
+
+    public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount, MemoryGovernor? governor)
+        => EnsureCapacity(storage, targetCount, governor, null);
+
+    public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (targetCount <= SmallCapacity)
         {
