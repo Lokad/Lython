@@ -2816,6 +2816,15 @@ internal sealed partial class LythonRuntime
                 _newline = newline;
                 _appendBasePosition = appendBasePosition;
                 _appendPrefix = appendPrefix ?? [];
+                _appendPrefixCharge = _appendPrefix.Length == 0
+                    ? 0
+                    : PyBytes.EstimateApproximateBytes(_appendPrefix.Length);
+                if (_appendPrefixCharge > 0)
+                {
+                    context.MemoryGovernor.Reserve(_appendPrefixCharge, null);
+                    context.MemoryGovernor.Commit(_appendPrefixCharge);
+                }
+
                 _writeBuffer = mode == "r" ? null : new Utf8ValueBuilder(context.MemoryGovernor);
             }
 
@@ -2827,6 +2836,7 @@ internal sealed partial class LythonRuntime
             private readonly TextNewlineMode _newline;
             private readonly BigInteger _appendBasePosition;
             private readonly byte[] _appendPrefix;
+            private long _appendPrefixCharge;
             private int _readCursorByte;
             private int _flushedAppendByteLength;
             private long _bufferedRuneLength;
@@ -2917,8 +2927,9 @@ internal sealed partial class LythonRuntime
             {
                 if (encoding == TextEncodingMode.Latin1)
                 {
+                    using var payload = ReadGovernedHostBytes(path, context, null);
                     var latin1Text = DecodeText(
-                        ReadGovernedHostBytes(path, context, null),
+                        payload.Memory,
                         encoding,
                         context,
                         null,
@@ -2956,8 +2967,9 @@ internal sealed partial class LythonRuntime
             {
                 if (encoding == TextEncodingMode.Latin1)
                 {
+                    using var payload = await ReadGovernedHostBytesAsync(path, context, null).ConfigureAwait(false);
                     var latin1Text = DecodeText(
-                        await ReadGovernedHostBytesAsync(path, context, null).ConfigureAwait(false),
+                        payload.Memory,
                         encoding,
                         context,
                         null,
@@ -3014,10 +3026,22 @@ internal sealed partial class LythonRuntime
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                var appendPrefix = encoding == TextEncodingMode.Latin1 && stat is { Exists: true, IsFile: true }
-                    ? ReadGovernedHostBytes(path, context, null).ToArray()
-                    : [];
-                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition, appendPrefix);
+                if (encoding == TextEncodingMode.Latin1 && stat is { Exists: true, IsFile: true })
+                {
+                    using var payload = ReadGovernedHostBytes(path, context, null);
+                    return new TextFileHandle(
+                        path,
+                        "a",
+                        PyString.Empty,
+                        context,
+                        encoding,
+                        errors,
+                        newline,
+                        appendBasePosition,
+                        payload.Memory.ToArray());
+                }
+
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition, null);
             }
 
             public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context)
@@ -3040,10 +3064,22 @@ internal sealed partial class LythonRuntime
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                var appendPrefix = encoding == TextEncodingMode.Latin1 && stat is { Exists: true, IsFile: true }
-                    ? (await ReadGovernedHostBytesAsync(path, context, null).ConfigureAwait(false)).ToArray()
-                    : [];
-                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition, appendPrefix);
+                if (encoding == TextEncodingMode.Latin1 && stat is { Exists: true, IsFile: true })
+                {
+                    using var payload = await ReadGovernedHostBytesAsync(path, context, null).ConfigureAwait(false);
+                    return new TextFileHandle(
+                        path,
+                        "a",
+                        PyString.Empty,
+                        context,
+                        encoding,
+                        errors,
+                        newline,
+                        appendBasePosition,
+                        payload.Memory.ToArray());
+                }
+
+                return new TextFileHandle(path, "a", PyString.Empty, context, encoding, errors, newline, appendBasePosition, null);
             }
 
             public object Enter() => this;
@@ -3068,6 +3104,8 @@ internal sealed partial class LythonRuntime
                 FlushCore(null);
                 IsClosed = true;
                 _writeBuffer?.Release();
+                _context.MemoryGovernor.Release(_appendPrefixCharge);
+                _appendPrefixCharge = 0;
                 return false;
             }
 
@@ -3081,6 +3119,8 @@ internal sealed partial class LythonRuntime
                 await FlushCoreAsync(null).ConfigureAwait(false);
                 IsClosed = true;
                 _writeBuffer?.Release();
+                _context.MemoryGovernor.Release(_appendPrefixCharge);
+                _appendPrefixCharge = 0;
                 return false;
             }
 

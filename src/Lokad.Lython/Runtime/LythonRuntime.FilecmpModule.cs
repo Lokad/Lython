@@ -68,8 +68,8 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            var firstBytes = ReadGovernedHostBytes(first, context, span);
-            var secondBytes = ReadGovernedHostBytes(second, context, span);
+            using var firstBytes = ReadGovernedHostBytes(first, context, span);
+            using var secondBytes = ReadGovernedHostBytes(second, context, span);
             return firstBytes.Span.SequenceEqual(secondBytes.Span);
         }
 
@@ -108,8 +108,8 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            var firstBytes = await ReadGovernedHostBytesAsync(first, context, span).ConfigureAwait(false);
-            var secondBytes = await ReadGovernedHostBytesAsync(second, context, span).ConfigureAwait(false);
+            using var firstBytes = await ReadGovernedHostBytesAsync(first, context, span).ConfigureAwait(false);
+            using var secondBytes = await ReadGovernedHostBytesAsync(second, context, span).ConfigureAwait(false);
             return firstBytes.Span.SequenceEqual(secondBytes.Span);
         }
 

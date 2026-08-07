@@ -151,6 +151,22 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void GovernedHostBytes_ChargesItsLifetimeAndReleasesOnDispose()
+    {
+        var governor = new MemoryGovernor(128);
+
+        using (var payload = new GovernedHostBytes(new byte[40], governor, null))
+        {
+            Assert.Equal(72, governor.CurrentAccountedBytes);
+            var exception = Assert.Throws<LythonRuntimeException>(
+                () => new GovernedHostBytes(new byte[40], governor, null));
+            Assert.Equal("MemoryError", exception.ExceptionType);
+        }
+
+        Assert.Equal(0, governor.CurrentAccountedBytes);
+    }
+
+    [Fact]
     public void GovernedValueAndStorageAllocations_ContributeToCommittedBytes()
     {
         var governor = new MemoryGovernor(4096);

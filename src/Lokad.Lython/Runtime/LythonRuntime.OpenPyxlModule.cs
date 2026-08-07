@@ -59,16 +59,16 @@ internal sealed partial class LythonRuntime
         {
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
-            var payload = ReadGovernedHostBytes(path, context, span);
-            return OpenPyxlPackage.Load(payload, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
+            using var payload = ReadGovernedHostBytes(path, context, span);
+            return OpenPyxlPackage.Load(payload.Memory, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
         }
 
         private static async ValueTask<object> LoadWorkbookAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
-            var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-            return OpenPyxlPackage.Load(payload, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
+            using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
+            return OpenPyxlPackage.Load(payload.Memory, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
         }
 
         private static LoadWorkbookRequest ParseLoadWorkbookArguments(object[] arguments, LythonSourceSpan span)

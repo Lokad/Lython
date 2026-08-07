@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
         return text;
     }
 
-    internal static ReadOnlyMemory<byte> ReadGovernedHostBytes(string path, ExecutionContext context, LythonSourceSpan? span)
+    internal static GovernedHostBytes ReadGovernedHostBytes(string path, ExecutionContext context, LythonSourceSpan? span)
     {
         context.RegisterHostCall(span);
         var stat = context.HostStat(path, span);
@@ -111,11 +111,10 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
         }
 
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(payload.Length), span);
-        return payload;
+        return new GovernedHostBytes(payload, context.MemoryGovernor, span);
     }
 
-    internal static async ValueTask<ReadOnlyMemory<byte>> ReadGovernedHostBytesAsync(string path, ExecutionContext context, LythonSourceSpan? span)
+    internal static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesAsync(string path, ExecutionContext context, LythonSourceSpan? span)
     {
         context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
@@ -132,8 +131,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
         }
 
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(payload.Length), span);
-        return payload;
+        return new GovernedHostBytes(payload, context.MemoryGovernor, span);
     }
 
     internal static PyTuple CreateTuple(int count, Func<int, object> itemFactory, ExecutionContext context, LythonSourceSpan? span)

@@ -2534,9 +2534,17 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            var text = encodingMode == TextEncodingMode.Latin1
-                ? DecodeText(ReadGovernedHostBytes(path, context, span), encodingMode, context, span, errors, newline)
-                : StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
+            PyString text;
+            if (encodingMode == TextEncodingMode.Latin1)
+            {
+                using var payload = ReadGovernedHostBytes(path, context, span);
+                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
+            }
+            else
+            {
+                text = StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
+            }
+
             context.ObserveString(text, span);
             return text;
         }
@@ -2549,17 +2557,19 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            var text = encodingMode == TextEncodingMode.Latin1
-                ? DecodeText(
-                    await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false),
-                    encodingMode,
-                    context,
-                    span,
-                    errors,
-                    newline)
-                : StripUtf8Bom(
+            PyString text;
+            if (encodingMode == TextEncodingMode.Latin1)
+            {
+                using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
+                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
+            }
+            else
+            {
+                text = StripUtf8Bom(
                     await ReadGovernedHostTextAsync(path, context, span, errors, newline).ConfigureAwait(false),
                     encodingMode);
+            }
+
             context.ObserveString(text, span);
             return text;
         }

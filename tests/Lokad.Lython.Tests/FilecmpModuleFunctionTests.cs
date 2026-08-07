@@ -108,6 +108,26 @@ filecmp.cmp("a.bin", "b.bin", shallow=False)
     }
 
     [Fact]
+    public void ExactComparisonAccountsForBothSimultaneousHostBuffers()
+    {
+        var host = new MockLythonHost("/repo");
+        host.SeedBytes("/repo/a.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
+        host.SeedBytes("/repo/b.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
+
+        var result = new LythonEngine().Run(
+            """
+import filecmp
+filecmp.cmp("a.bin", "b.bin", shallow=False)
+""",
+            host,
+            new LythonRunOptions { MaxExecutionMemoryBytes = 120 });
+
+        Assert.False(result.Success);
+        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        Assert.Contains("execution memory budget exceeded (120)", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void OptionalBinaryCapabilityIsNeededOnlyWhenMetadataCannotAnswer()
     {
         var host = new TextOnlyHost();

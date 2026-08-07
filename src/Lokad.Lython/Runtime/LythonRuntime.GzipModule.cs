@@ -305,8 +305,8 @@ internal sealed partial class LythonRuntime
     {
         if (options.Operation == "r")
         {
-            var compressed = ReadGovernedHostBytes(options.Path, context, span);
-            var decompressed = DecompressHostPayload(compressed, span, context);
+            using var compressed = ReadGovernedHostBytes(options.Path, context, span);
+            var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
@@ -314,10 +314,13 @@ internal sealed partial class LythonRuntime
         {
             context.RegisterHostCall(span);
             var stat = context.HostStat(options.Path, span);
-            var prefix = stat is { Exists: true, IsFile: true }
-                ? ReadGovernedHostBytes(options.Path, context, span).ToArray()
-                : [];
-            return GzipFileHandle.ForWrite(options, prefix, context);
+            if (stat is { Exists: true, IsFile: true })
+            {
+                using var compressed = ReadGovernedHostBytes(options.Path, context, span);
+                return GzipFileHandle.ForWrite(options, compressed.Memory.ToArray(), context);
+            }
+
+            return GzipFileHandle.ForWrite(options, [], context);
         }
 
         return GzipFileHandle.ForWrite(options, [], context);
@@ -330,8 +333,8 @@ internal sealed partial class LythonRuntime
     {
         if (options.Operation == "r")
         {
-            var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
-            var decompressed = DecompressHostPayload(compressed, span, context);
+            using var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
+            var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
             return GzipFileHandle.ForRead(options, decompressed, context, span);
         }
 
@@ -339,36 +342,16 @@ internal sealed partial class LythonRuntime
         {
             context.RegisterHostCall(span);
             var stat = await context.HostStatAsync(options.Path, span).ConfigureAwait(false);
-            var prefix = stat is { Exists: true, IsFile: true }
-                ? (await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false)).ToArray()
-                : [];
-            return GzipFileHandle.ForWrite(options, prefix, context);
+            if (stat is { Exists: true, IsFile: true })
+            {
+                using var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
+                return GzipFileHandle.ForWrite(options, compressed.Memory.ToArray(), context);
+            }
+
+            return GzipFileHandle.ForWrite(options, [], context);
         }
 
         return GzipFileHandle.ForWrite(options, [], context);
-    }
-
-    private static PyBytes DecompressHostPayload(
-        ReadOnlyMemory<byte> compressed,
-        LythonSourceSpan span,
-        ExecutionContext context)
-    {
-        if (compressed.IsEmpty)
-        {
-            return GzipModule.DecompressPayload(compressed, span, context);
-        }
-
-        var charge = PyBytes.EstimateApproximateBytes(compressed.Length);
-        context.MemoryGovernor.Reserve(charge, span);
-        context.MemoryGovernor.Commit(charge);
-        try
-        {
-            return GzipModule.DecompressPayload(compressed, span, context);
-        }
-        finally
-        {
-            context.MemoryGovernor.Release(charge);
-        }
     }
 
     private sealed class GzipFileHandle : IPyDynamicAttributes, IPyAsyncContextManager, IPyIteratorValue, IPyRenderableValue
