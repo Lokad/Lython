@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "copy.copy(x) expects one argument.", span);
             }
 
-            return CopyValue(arguments[0], deep: false, context, span, new CopyMemo(context, span));
+            return CopyValue(arguments[0], CopyDepth.Shallow, context, span, new CopyMemo(context, span));
         }
 
         private object DeepCopy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                 ? CopyMemo.FromExternal(arguments[1], context, span)
                 : new CopyMemo(context, span);
 
-            return CopyValue(arguments[0], deep: true, context, span, memo);
+            return CopyValue(arguments[0], CopyDepth.Deep, context, span, memo);
         }
     }
 
@@ -197,7 +197,18 @@ internal sealed partial class LythonRuntime
             => new(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value));
     }
 
-    private static object CopyValue(object value, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    internal enum CopyDepth
+    {
+        Shallow,
+        Deep
+    }
+
+    private static object CopyValue(
+        object value,
+        CopyDepth depth,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        CopyMemo memo)
     {
         if (value is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance)
         {
@@ -209,7 +220,7 @@ internal sealed partial class LythonRuntime
 
         if (value is PyInstance instance)
         {
-            if (TryInvokeCopyHook(instance, deep, context, span, memo, out var copied))
+            if (TryInvokeCopyHook(instance, depth, context, span, memo, out var copied))
             {
                 memo.Remember(value, copied);
                 return copied;
@@ -221,7 +232,11 @@ internal sealed partial class LythonRuntime
             memo.Remember(value, clone);
             foreach (var pair in instance.EnumerateOwnAttributes())
             {
-                clone.SetAttribute(pair.Key, deep ? CopyValue(pair.Value, deep: true, context, span, memo) : pair.Value);
+                clone.SetAttribute(
+                    pair.Key,
+                    depth == CopyDepth.Deep
+                        ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo)
+                        : pair.Value);
             }
 
             return clone;
@@ -229,14 +244,14 @@ internal sealed partial class LythonRuntime
 
         return value switch
         {
-            PyList list => CopyList(list, deep, context, span, memo),
-            PyDict dict => CopyDict(dict, deep, context, span, memo),
-            PySet set => CopySet(set, deep, context, span, memo),
-            PyDefaultDict defaultDict => CopyDefaultDict(defaultDict, deep, context, span, memo),
-            PyCounter counter => CopyCounter(counter, deep, context, span, memo),
-            PyDeque deque => CopyDeque(deque, deep, context, span, memo),
-            PyTuple tuple when deep => CopyTuple(tuple, context, span, memo),
-            OpenPyxlStyleValue style => style.Copy(deep),
+            PyList list => CopyList(list, depth, context, span, memo),
+            PyDict dict => CopyDict(dict, depth, context, span, memo),
+            PySet set => CopySet(set, depth, context, span, memo),
+            PyDefaultDict defaultDict => CopyDefaultDict(defaultDict, depth, context, span, memo),
+            PyCounter counter => CopyCounter(counter, depth, context, span, memo),
+            PyDeque deque => CopyDeque(deque, depth, context, span, memo),
+            PyTuple tuple when depth == CopyDepth.Deep => CopyTuple(tuple, context, span, memo),
+            OpenPyxlStyleValue style => style.Copy(depth),
             _ => value
         };
     }
@@ -249,7 +264,7 @@ internal sealed partial class LythonRuntime
         var changed = false;
         for (var i = 0; i < tuple.Count; i++)
         {
-            items[i] = CopyValue(tuple[i], deep: true, context, span, memo);
+            items[i] = CopyValue(tuple[i], CopyDepth.Deep, context, span, memo);
             changed |= !ReferenceEquals(items[i], tuple[i]);
         }
 
@@ -262,27 +277,27 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyList(PyList list, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopyList(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
         memo.Remember(list, clone);
         foreach (var item in list)
         {
-            clone.Add(deep ? CopyValue(item, deep: true, context, span, memo) : item);
+            clone.Add(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo) : item);
             context.ObserveCollectionCount(clone.Count, span);
         }
 
         return clone;
     }
 
-    private static object CopyDict(PyDict dict, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopyDict(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict)
         {
-            var key = deep ? CopyValue(pair.Key, deep: true, context, span, memo) : pair.Key;
-            var value = deep ? CopyValue(pair.Value, deep: true, context, span, memo) : pair.Value;
+            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo) : pair.Key;
+            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
@@ -290,28 +305,30 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopySet(PySet set, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopySet(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var clone = new PySet(context.MemoryGovernor, span);
         memo.Remember(set, clone);
         foreach (var item in set)
         {
-            clone.Add(ValidateSetItem(deep ? CopyValue(item, deep: true, context, span, memo) : item, span));
+            clone.Add(ValidateSetItem(
+                depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo) : item,
+                span));
             context.ObserveCollectionCount(clone.Count, span);
         }
 
         return clone;
     }
 
-    private static object CopyDefaultDict(PyDefaultDict dict, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopyDefaultDict(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var items = new PyDict(context.MemoryGovernor, span);
         var clone = new PyDefaultDict(dict.DefaultFactory, items);
         memo.Remember(dict, clone);
         foreach (var pair in dict.Items)
         {
-            var key = deep ? CopyValue(pair.Key, deep: true, context, span, memo) : pair.Key;
-            var value = deep ? CopyValue(pair.Value, deep: true, context, span, memo) : pair.Value;
+            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo) : pair.Key;
+            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
@@ -319,14 +336,14 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyCounter(PyCounter counter, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopyCounter(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var clone = new PyCounter(context.MemoryGovernor, span);
         memo.Remember(counter, clone);
         foreach (var pair in counter.Items)
         {
-            var key = deep ? CopyValue(pair.Key, deep: true, context, span, memo) : pair.Key;
-            var value = deep ? CopyValue(pair.Value, deep: true, context, span, memo) : pair.Value;
+            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo) : pair.Key;
+            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
@@ -334,21 +351,27 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyDeque(PyDeque deque, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
+    private static object CopyDeque(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
         var clone = new PyDeque(deque.MaxLength);
         memo.Remember(deque, clone);
         foreach (var item in deque)
         {
-            clone.Append(deep ? CopyValue(item, deep: true, context, span, memo) : item);
+            clone.Append(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo) : item);
         }
         context.ObserveCollectionCount(clone.Count, span);
         return clone;
     }
 
-    private static bool TryInvokeCopyHook(PyInstance instance, bool deep, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, [MaybeNullWhen(false)] out object value)
+    private static bool TryInvokeCopyHook(
+        PyInstance instance,
+        CopyDepth depth,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        CopyMemo memo,
+        [MaybeNullWhen(false)] out object value)
     {
-        var hookName = deep ? "__deepcopy__" : "__copy__";
+        var hookName = depth == CopyDepth.Deep ? "__deepcopy__" : "__copy__";
         if (!PyMemberAccess.TryResolve(instance, hookName, context, span, out var member))
         {
             value = PyNone.Instance;
@@ -360,7 +383,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{hookName} must be callable.", span);
         }
 
-        value = deep
+        value = depth == CopyDepth.Deep
             ? callable.Invoke([new CallArgumentValue(null, memo.ExternalView)], span, context)
             : callable.Invoke([], span, context);
         return true;

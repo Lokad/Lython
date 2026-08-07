@@ -15,7 +15,10 @@ internal sealed partial class LythonRuntime
 {
     private static partial class OpenPyxlPackage
     {
-        public static OpenPyxlWorkbook Load(ReadOnlyMemory<byte> payload, bool dataOnly, bool readOnly, bool keepLinks, bool keepVba, LythonSourceSpan span)
+        public static OpenPyxlWorkbook Load(
+            ReadOnlyMemory<byte> payload,
+            OpenPyxlLoadOptions options,
+            LythonSourceSpan span)
         {
             try
             {
@@ -52,11 +55,19 @@ internal sealed partial class LythonRuntime
                     var path = ResolvePackagePath("xl/workbook.xml", target);
                     worksheetPaths.Add(path);
                     var worksheet = new OpenPyxlWorksheet(name) { SourcePath = path };
-                    LoadWorksheetCells(archive, path, worksheet, sharedStrings, cellStyles, date1904, dataOnly, span);
+                    LoadWorksheetCells(
+                        archive,
+                        path,
+                        worksheet,
+                        sharedStrings,
+                        cellStyles,
+                        date1904,
+                        options.HasFlag(OpenPyxlLoadOptions.DataOnly),
+                        span);
                     worksheets.Add(worksheet);
                 }
 
-                if (!keepLinks && PackageHasExternalLinks(archive, workbook, span))
+                if (!options.HasFlag(OpenPyxlLoadOptions.KeepLinks) && PackageHasExternalLinks(archive, workbook, span))
                 {
                     throw new LythonRuntimeException(
                         "NotImplementedError",
@@ -67,14 +78,21 @@ internal sealed partial class LythonRuntime
                 LoadWorkbookDefinedNames(workbook, worksheets, span);
                 var activeIndex = ReadWorkbookActiveIndex(workbook, worksheets.Count, span);
                 var hasVbaProject = PackageHasVbaProject(archive);
-                var saveGuard = AnalyzeSaveGuard(archive, workbook, worksheetPaths, keepVba, span);
-                if (dataOnly)
+                var saveGuard = AnalyzeSaveGuard(archive, workbook, worksheetPaths, options, span);
+                if (options.HasFlag(OpenPyxlLoadOptions.DataOnly))
                 {
                     saveGuard = AddDataOnlySaveGuard(saveGuard);
                 }
 
                 var snapshot = CapturePackageSnapshot(archive);
-                var result = OpenPyxlWorkbook.FromWorksheets(worksheets, readOnly, date1904, activeIndex, saveGuard, snapshot, hasVbaProject: keepVba && hasVbaProject);
+                var result = OpenPyxlWorkbook.FromWorksheets(
+                    worksheets,
+                    options.HasFlag(OpenPyxlLoadOptions.ReadOnly),
+                    date1904,
+                    activeIndex,
+                    saveGuard,
+                    snapshot,
+                    hasVbaProject: options.HasFlag(OpenPyxlLoadOptions.KeepVba) && hasVbaProject);
                 result.SetLoadedNamedStyles(namedStyles);
                 LoadWorkbookSecurity(workbook, result.Security, span);
                 return result;
@@ -93,11 +111,11 @@ internal sealed partial class LythonRuntime
             ZipArchive archive,
             XDocument workbook,
             IReadOnlyList<string> worksheetPaths,
-            bool keepVba,
+            OpenPyxlLoadOptions options,
             LythonSourceSpan span)
         {
             var unsupported = new List<string>();
-            AddUnsupportedPackageParts(archive, unsupported, keepVba);
+            AddUnsupportedPackageParts(archive, unsupported, options.HasFlag(OpenPyxlLoadOptions.KeepVba));
             AddUnsupportedWorkbookFeatures(workbook, worksheetPaths.Count, unsupported);
             AddUnsupportedWorkbookRelationshipFeatures(archive, unsupported, span);
             foreach (var worksheetPath in worksheetPaths)

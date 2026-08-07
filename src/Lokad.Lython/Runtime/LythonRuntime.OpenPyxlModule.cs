@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
             using var payload = ReadGovernedHostBytes(path, context, span);
-            return OpenPyxlPackage.Load(payload.Memory, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
+            return OpenPyxlPackage.Load(payload.Memory, request.Options, span);
         }
 
         private static async ValueTask<object> LoadWorkbookAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
             using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-            return OpenPyxlPackage.Load(payload.Memory, request.DataOnly, request.ReadOnly, request.KeepLinks, request.KeepVba, span);
+            return OpenPyxlPackage.Load(payload.Memory, request.Options, span);
         }
 
         private static LoadWorkbookRequest ParseLoadWorkbookArguments(object[] arguments, LythonSourceSpan span)
@@ -78,18 +78,43 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "openpyxl.load_workbook(filename, ...) missing required argument 'filename'.", span);
             }
 
-            var keepVba = OptionalBool(arguments, 2, false, "openpyxl.load_workbook", "keep_vba", span);
+            var options = OpenPyxlLoadOptions.None;
+            if (OptionalBool(arguments, 1, false, "openpyxl.load_workbook", "read_only", span))
+            {
+                options |= OpenPyxlLoadOptions.ReadOnly;
+            }
+
+            if (OptionalBool(arguments, 2, false, "openpyxl.load_workbook", "keep_vba", span))
+            {
+                options |= OpenPyxlLoadOptions.KeepVba;
+            }
+
+            if (OptionalBool(arguments, 3, false, "openpyxl.load_workbook", "data_only", span))
+            {
+                options |= OpenPyxlLoadOptions.DataOnly;
+            }
+
+            if (OptionalBool(arguments, 4, true, "openpyxl.load_workbook", "keep_links", span))
+            {
+                options |= OpenPyxlLoadOptions.KeepLinks;
+            }
+
             _ = OptionalBool(arguments, 5, false, "openpyxl.load_workbook", "rich_text", span);
 
-            return new LoadWorkbookRequest(
-                arguments[0],
-                OptionalBool(arguments, 1, false, "openpyxl.load_workbook", "read_only", span),
-                OptionalBool(arguments, 3, false, "openpyxl.load_workbook", "data_only", span),
-                OptionalBool(arguments, 4, true, "openpyxl.load_workbook", "keep_links", span),
-                keepVba);
+            return new LoadWorkbookRequest(arguments[0], options);
         }
 
-        private sealed record LoadWorkbookRequest(object Filename, bool ReadOnly, bool DataOnly, bool KeepLinks, bool KeepVba);
+        private sealed record LoadWorkbookRequest(object Filename, OpenPyxlLoadOptions Options);
+    }
+
+    [Flags]
+    private enum OpenPyxlLoadOptions
+    {
+        None = 0,
+        ReadOnly = 1,
+        DataOnly = 2,
+        KeepLinks = 4,
+        KeepVba = 8
     }
 
     private class OpenPyxlDeferredModule : PyModule
@@ -816,13 +841,13 @@ internal sealed partial class LythonRuntime
 
         public string QualifiedName { get; }
 
-        public OpenPyxlStyleValue Copy(bool deep)
+        internal OpenPyxlStyleValue Copy(CopyDepth depth)
         {
             var members = new Dictionary<string, object>(StringComparer.Ordinal);
             foreach (var pair in _members)
             {
-                members[pair.Key] = deep && pair.Value is OpenPyxlStyleValue style
-                    ? style.Copy(deep: true)
+                members[pair.Key] = depth == CopyDepth.Deep && pair.Value is OpenPyxlStyleValue style
+                    ? style.Copy(CopyDepth.Deep)
                     : pair.Value;
             }
 
