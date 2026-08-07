@@ -302,11 +302,10 @@ internal sealed partial class LythonRuntime
 
         private static string SummarizeUnsupportedContent(List<string> unsupported)
         {
-            var distinct = unsupported.Distinct(StringComparer.Ordinal).Take(6).ToArray();
-            var suffix = unsupported.Distinct(StringComparer.Ordinal).Count() > distinct.Length
-                ? ", ..."
-                : string.Empty;
-            return string.Join(", ", distinct) + suffix;
+            var distinct = unsupported.Distinct(StringComparer.Ordinal).Take(7).ToArray();
+            var displayedCount = Math.Min(6, distinct.Length);
+            var suffix = distinct.Length > displayedCount ? ", ..." : string.Empty;
+            return string.Join(", ", distinct, 0, displayedCount) + suffix;
         }
 
         public static byte[] Save(OpenPyxlWorkbook workbook, ExecutionContext context, LythonSourceSpan span)
