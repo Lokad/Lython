@@ -920,6 +920,15 @@ internal sealed partial class LythonRuntime
         var left = EvaluateLoweredExpression(binary.Left, context);
         var right = EvaluateLoweredExpression(binary.Right, context);
 
+        return EvaluateLoweredBinaryOperator(binary, left, right, context);
+    }
+
+    private static object EvaluateLoweredBinaryOperator(
+        LoweredBinaryExpression binary,
+        object left,
+        object right,
+        ExecutionContext context)
+    {
         return binary.Binary.Operator switch
         {
             BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, binary.Span),
@@ -968,6 +977,11 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredUnary(LoweredUnaryExpression unary, ExecutionContext context)
     {
         var operand = EvaluateLoweredExpression(unary.Operand, context);
+        return EvaluateLoweredUnaryOperator(unary, operand);
+    }
+
+    private static object EvaluateLoweredUnaryOperator(LoweredUnaryExpression unary, object operand)
+    {
         return unary.Unary.Operator switch
         {
             UnaryOperatorSyntax.Not => !IsTruthy(operand),
@@ -1011,41 +1025,8 @@ internal sealed partial class LythonRuntime
 
                 var target = EvaluateLoweredExpression(subscript.Target, context);
                 var index = EvaluateLoweredExpression(subscript.Index, context);
-                switch (target)
-                {
-                    case IDeletablePySubscriptableValue subscriptable:
-                        subscriptable.DeleteSubscript(index, statement.Span);
-                        return;
-                    case IMutablePySequenceValue sequence:
-                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span));
-                        return;
-                    case PyDict dict:
-                        if (!dict.Remove(ValidateDictionaryKey(index, statement.Span)))
-                        {
-                            throw new LythonRuntimeException("KeyError", "Key was not found.", statement.Span);
-                        }
-
-                        return;
-                    case PyDefaultDict defaultDict:
-                        if (!defaultDict.Remove(ValidateDictionaryKey(index, statement.Span)))
-                        {
-                            throw new LythonRuntimeException("KeyError", "Key was not found.", statement.Span);
-                        }
-
-                        return;
-                    case PyCounter counter:
-                        _ = counter.Remove(ValidateDictionaryKey(index, statement.Span));
-                        return;
-                    case PyInstance instance:
-                        InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, statement.Span);
-                        return;
-                    case PyTuple:
-                        throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", statement.Span);
-                    case PyString:
-                        throw new LythonRuntimeException("TypeError", "String does not support item deletion.", statement.Span);
-                    default:
-                        throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
-                }
+                ExecuteResolvedSubscriptDeletion(target, index, statement.Span, context);
+                return;
 
             case SliceExpressionSyntax:
                 if (statement.Target is not LoweredSliceExpression slice)
@@ -1079,26 +1060,68 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", statement.Span);
     }
 
+    private static void ExecuteResolvedSubscriptDeletion(
+        object target,
+        object index,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        switch (target)
+        {
+            case IDeletablePySubscriptableValue subscriptable:
+                subscriptable.DeleteSubscript(index, span);
+                return;
+            case IMutablePySequenceValue sequence:
+                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span));
+                return;
+            case PyDict dict:
+                if (!dict.Remove(ValidateDictionaryKey(index, span)))
+                {
+                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                }
+
+                return;
+            case PyDefaultDict defaultDict:
+                if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
+                {
+                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                }
+
+                return;
+            case PyCounter counter:
+                _ = counter.Remove(ValidateDictionaryKey(index, span));
+                return;
+            case PyInstance instance:
+                InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, span);
+                return;
+            case PyTuple:
+                throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", span);
+            case PyString:
+                throw new LythonRuntimeException("TypeError", "String does not support item deletion.", span);
+            default:
+                throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
+        }
+    }
+
     private static void ExecuteLoweredRaiseStatement(LoweredRaiseStatement statement, ExecutionContext context)
     {
         var raised = EvaluateLoweredExpression(statement.Expression, context);
+        ThrowLoweredRaisedValue(raised, statement.Span);
+    }
+
+    private static void ThrowLoweredRaisedValue(object raised, LythonSourceSpan span)
+    {
         if (raised is not PyException instance)
         {
-            throw RuntimeErrors.RaiseExpectsException(statement.Span);
+            throw RuntimeErrors.RaiseExpectsException(span);
         }
 
-        throw new LythonRuntimeException(instance.TypeName, instance.Message, statement.Span, innerException: null, payload: instance.Value);
+        throw new LythonRuntimeException(instance.TypeName, instance.Message, span, innerException: null, payload: instance.Value);
     }
 
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = lambda.Lambda.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
+        var loweredParameters = LowerLambdaParameters(lambda);
         return new LambdaFunction(
             loweredParameters,
             lambda.Body,
@@ -1106,9 +1129,26 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
     }
 
+    private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)
+        => lambda.Lambda.Parameters
+            .Select(parameter => new LoweredFunctionParameter(
+                parameter.Name,
+                parameter.Kind,
+                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
+                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
+            .ToArray();
+
     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)
     {
         var value = EvaluateLoweredExpression(assignment.Expression, context);
+        return StoreLoweredAssignmentResult(assignment, value, context);
+    }
+
+    private static object StoreLoweredAssignmentResult(
+        LoweredAssignmentExpression assignment,
+        object value,
+        ExecutionContext context)
+    {
         StoreName(assignment.Assignment.Name, value, context, assignment.Span);
         return value;
     }

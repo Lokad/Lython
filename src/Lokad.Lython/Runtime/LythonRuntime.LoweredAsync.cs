@@ -980,33 +980,7 @@ internal sealed partial class LythonRuntime
 
         var left = await EvaluateLoweredExpressionAsync(binary.Left, context).ConfigureAwait(false);
         var right = await EvaluateLoweredExpressionAsync(binary.Right, context).ConfigureAwait(false);
-
-        return binary.Binary.Operator switch
-        {
-            BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, binary.Span),
-            BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
-            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
-            BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
-            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => Compare(left, right, binary.Span) < 0,
-            BinaryOperatorSyntax.LessEqual => Compare(left, right, binary.Span) <= 0,
-            BinaryOperatorSyntax.Greater => Compare(left, right, binary.Span) > 0,
-            BinaryOperatorSyntax.GreaterEqual => Compare(left, right, binary.Span) >= 0,
-            BinaryOperatorSyntax.Is => AreIdentical(left, right),
-            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.Equal => AreEqual(left, right),
-            BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
-            _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Binary.Operator}")
-        };
+        return EvaluateLoweredBinaryOperator(binary, left, right, context);
     }
 
     private static async ValueTask<bool> EvaluateLoweredChainedComparisonAsync(LoweredChainedComparisonExpression chained, ExecutionContext context)
@@ -1029,14 +1003,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredUnaryAsync(LoweredUnaryExpression unary, ExecutionContext context)
     {
         var operand = await EvaluateLoweredExpressionAsync(unary.Operand, context).ConfigureAwait(false);
-        return unary.Unary.Operator switch
-        {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand),
-            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
-            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
-            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
-            _ => throw new InvalidOperationException($"Unknown unary operator: {unary.Unary.Operator}")
-        };
+        return EvaluateLoweredUnaryOperator(unary, operand);
     }
 
     private static async ValueTask ExecuteLoweredAssertStatementAsync(LoweredAssertStatement statement, ExecutionContext context)
@@ -1072,41 +1039,8 @@ internal sealed partial class LythonRuntime
 
                 var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
                 var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                switch (target)
-                {
-                    case IDeletablePySubscriptableValue subscriptable:
-                        subscriptable.DeleteSubscript(index, statement.Span);
-                        return;
-                    case IMutablePySequenceValue sequence:
-                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span));
-                        return;
-                    case PyDict dict:
-                        if (!dict.Remove(ValidateDictionaryKey(index, statement.Span)))
-                        {
-                            throw new LythonRuntimeException("KeyError", "Key was not found.", statement.Span);
-                        }
-
-                        return;
-                    case PyDefaultDict defaultDict:
-                        if (!defaultDict.Remove(ValidateDictionaryKey(index, statement.Span)))
-                        {
-                            throw new LythonRuntimeException("KeyError", "Key was not found.", statement.Span);
-                        }
-
-                        return;
-                    case PyCounter counter:
-                        _ = counter.Remove(ValidateDictionaryKey(index, statement.Span));
-                        return;
-                    case PyInstance instance:
-                        InvokeItemMutation(instance, "__delitem__", [new CallArgumentValue(null, index)], context, statement.Span);
-                        return;
-                    case PyTuple:
-                        throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", statement.Span);
-                    case PyString:
-                        throw new LythonRuntimeException("TypeError", "String does not support item deletion.", statement.Span);
-                    default:
-                        throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
-                }
+                ExecuteResolvedSubscriptDeletion(target, index, statement.Span, context);
+                return;
 
             case SliceExpressionSyntax:
                 if (statement.Target is not LoweredSliceExpression slice)
@@ -1143,30 +1077,18 @@ internal sealed partial class LythonRuntime
     private static async ValueTask ExecuteLoweredRaiseStatementAsync(LoweredRaiseStatement statement, ExecutionContext context)
     {
         var raised = await EvaluateLoweredExpressionAsync(statement.Expression, context).ConfigureAwait(false);
-        if (raised is not PyException instance)
-        {
-            throw RuntimeErrors.RaiseExpectsException(statement.Span);
-        }
-
-        throw new LythonRuntimeException(instance.TypeName, instance.Message, statement.Span, innerException: null, payload: instance.Value);
+        ThrowLoweredRaisedValue(raised, statement.Span);
     }
 
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)
     {
         var value = await EvaluateLoweredExpressionAsync(assignment.Expression, context).ConfigureAwait(false);
-        StoreName(assignment.Assignment.Name, value, context, assignment.Span);
-        return value;
+        return StoreLoweredAssignmentResult(assignment, value, context);
     }
 
     private static async ValueTask<object> CreateLoweredLambdaAsync(LoweredLambdaExpression lambda, ExecutionContext context)
     {
-        var loweredParameters = lambda.Lambda.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
+        var loweredParameters = LowerLambdaParameters(lambda);
         return new LambdaFunction(
             loweredParameters,
             lambda.Body,
