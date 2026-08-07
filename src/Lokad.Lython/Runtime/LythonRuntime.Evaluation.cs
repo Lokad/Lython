@@ -69,74 +69,74 @@ internal sealed partial class LythonRuntime
         {
             context.LeaveInterpreterFrame();
         }
-    }
 
-    private static PyList CreateListLiteral(ListLiteralExpressionSyntax list, ExecutionContext context)
-    {
-        if (list.UnpackingFlags.Any(flag => flag))
+        static PyList CreateListLiteral(ListLiteralExpressionSyntax list, ExecutionContext context)
         {
-            var expanded = new PyList([], context.MemoryGovernor, list.Span);
+            if (list.UnpackingFlags.Any(flag => flag))
+            {
+                var expanded = new PyList([], context.MemoryGovernor, list.Span);
+                for (var i = 0; i < list.Items.Count; i++)
+                {
+                    var value = RuntimeValue(EvaluateExpression(list.Items[i], context));
+                    if (!list.UnpackingFlags[i])
+                    {
+                        expanded.Add(value);
+                        context.ObserveCollectionCount(expanded.Count, list.Span);
+                        continue;
+                    }
+
+                    foreach (var item in ToSequence(value, list.Items[i].Span, context))
+                    {
+                        expanded.Add(RuntimeValue(item));
+                        context.ObserveCollectionCount(expanded.Count, list.Span);
+                    }
+                }
+
+                return expanded;
+            }
+
+            context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
+            var items = new object[list.Items.Count];
             for (var i = 0; i < list.Items.Count; i++)
             {
-                var value = RuntimeValue(EvaluateExpression(list.Items[i], context));
-                if (!list.UnpackingFlags[i])
+                items[i] = RuntimeValue(EvaluateExpression(list.Items[i], context));
+            }
+
+            return new PyList(items, context.MemoryGovernor, list.Span);
+        }
+
+        static PyTuple CreateTupleLiteral(TupleLiteralExpressionSyntax tuple, ExecutionContext context)
+        {
+            if (!tuple.UnpackingFlags.Any(flag => flag))
+            {
+                return CreateTuple(
+                    tuple.Items.Count,
+                    i => RuntimeValue(EvaluateExpression(tuple.Items[i], context)),
+                    context,
+                    tuple.Span);
+            }
+
+            var expanded = new List<object>();
+            for (var i = 0; i < tuple.Items.Count; i++)
+            {
+                var value = RuntimeValue(EvaluateExpression(tuple.Items[i], context));
+                if (!tuple.UnpackingFlags[i])
                 {
+                    EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
                     expanded.Add(value);
-                    context.ObserveCollectionCount(expanded.Count, list.Span);
                     continue;
                 }
 
-                foreach (var item in ToSequence(value, list.Items[i].Span, context))
+                foreach (var item in ToSequence(value, tuple.Items[i].Span, context))
                 {
+                    EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
                     expanded.Add(RuntimeValue(item));
-                    context.ObserveCollectionCount(expanded.Count, list.Span);
                 }
             }
 
-            return expanded;
+            context.ObserveCollectionCount(expanded.Count, tuple.Span);
+            return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
         }
-
-        context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
-        var items = new object[list.Items.Count];
-        for (var i = 0; i < list.Items.Count; i++)
-        {
-            items[i] = RuntimeValue(EvaluateExpression(list.Items[i], context));
-        }
-
-        return new PyList(items, context.MemoryGovernor, list.Span);
-    }
-
-    private static PyTuple CreateTupleLiteral(TupleLiteralExpressionSyntax tuple, ExecutionContext context)
-    {
-        if (!tuple.UnpackingFlags.Any(flag => flag))
-        {
-            return CreateTuple(
-                tuple.Items.Count,
-                i => RuntimeValue(EvaluateExpression(tuple.Items[i], context)),
-                context,
-                tuple.Span);
-        }
-
-        var expanded = new List<object>();
-        for (var i = 0; i < tuple.Items.Count; i++)
-        {
-            var value = RuntimeValue(EvaluateExpression(tuple.Items[i], context));
-            if (!tuple.UnpackingFlags[i])
-            {
-                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
-                expanded.Add(value);
-                continue;
-            }
-
-            foreach (var item in ToSequence(value, tuple.Items[i].Span, context))
-            {
-                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
-                expanded.Add(RuntimeValue(item));
-            }
-        }
-
-        context.ObserveCollectionCount(expanded.Count, tuple.Span);
-        return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
     }
 
     private static void EnsureTupleExpansionCapacity(int count, ExecutionContext context, LythonSourceSpan span)

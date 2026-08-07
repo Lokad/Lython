@@ -465,29 +465,29 @@ internal sealed partial class Parser
         }
 
         return ParsePowerExpression();
-    }
 
-    private ExpressionSyntax? ParsePowerExpression()
-    {
-        var expression = ParsePostfixExpression();
-        if (expression is null)
+        ExpressionSyntax? ParsePowerExpression()
         {
-            return null;
-        }
+            var expression = ParsePostfixExpression();
+            if (expression is null)
+            {
+                return null;
+            }
 
-        if (CurrentToken != Token.StarStar)
-        {
-            return expression;
-        }
+            if (CurrentToken != Token.StarStar)
+            {
+                return expression;
+            }
 
-        var operatorToken = ReadToken();
-        var right = ParseUnaryExpression();
-        if (right is null)
-        {
-            AddDiagnostic("LA1066", "Expected expression after '**'.", operatorToken);
-            return null;
-        }
+            var operatorToken = ReadToken();
+            var right = ParseUnaryExpression();
+            if (right is null)
+            {
+                AddDiagnostic("LA1066", "Expected expression after '**'.", operatorToken);
+                return null;
+            }
 
-        return new BinaryExpressionSyntax(expression, BinaryOperatorSyntax.Power, right, Merge(expression.Span, right.Span));
+            return new BinaryExpressionSyntax(expression, BinaryOperatorSyntax.Power, right, Merge(expression.Span, right.Span));
+        }
     }
 }
