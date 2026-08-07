@@ -2816,9 +2816,11 @@ internal sealed partial class LythonRuntime
                 _newline = newline;
                 _appendBasePosition = appendBasePosition;
                 _appendPrefix = appendPrefix ?? [];
+                _writeBuffer = mode == "r" ? null : new Utf8ValueBuilder(context.MemoryGovernor);
             }
 
-            private PyString _text;
+            private readonly PyString _text;
+            private readonly Utf8ValueBuilder? _writeBuffer;
             private readonly ExecutionContext _context;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
@@ -2827,6 +2829,7 @@ internal sealed partial class LythonRuntime
             private readonly byte[] _appendPrefix;
             private int _readCursorByte;
             private int _flushedAppendByteLength;
+            private long _bufferedRuneLength;
 
             public string Path { get; }
 
@@ -3064,6 +3067,7 @@ internal sealed partial class LythonRuntime
 
                 FlushCore(null);
                 IsClosed = true;
+                _writeBuffer?.Release();
                 return false;
             }
 
@@ -3076,6 +3080,7 @@ internal sealed partial class LythonRuntime
 
                 await FlushCoreAsync(null).ConfigureAwait(false);
                 IsClosed = true;
+                _writeBuffer?.Release();
                 return false;
             }
 
@@ -3216,8 +3221,14 @@ internal sealed partial class LythonRuntime
                         TextNewlineMode.PreserveUniversal);
                 }
 
-                _text = _text.Concat(text);
-                _context.ObserveString(_text, null);
+                var bufferedRuneLength = _bufferedRuneLength + text.Length;
+                if (_context.Limits.MaxStringLength is { } maximumLength && bufferedRuneLength > maximumLength)
+                {
+                    throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximumLength})", null);
+                }
+
+                _writeBuffer.RequireNotNull().Append(text);
+                _bufferedRuneLength = bufferedRuneLength;
                 return new BigInteger(inputLength);
             }
 
@@ -3243,15 +3254,7 @@ internal sealed partial class LythonRuntime
             }
 
             private int ByteOffsetAfterRunes(int startByte, int runeCount)
-            {
-                if (runeCount <= 0)
-                {
-                    return startByte;
-                }
-
-                var currentRune = _text.ByteIndexToRuneIndex(startByte);
-                return _text.GetByteIndexForRuneBoundary(currentRune + runeCount);
-            }
+                => _text.GetByteIndexAfterRunes(startByte, runeCount);
 
             private int FindLineEndByte(ReadOnlySpan<byte> source, int startByte)
             {
@@ -3303,8 +3306,9 @@ internal sealed partial class LythonRuntime
 
                 if (Mode == "w")
                 {
-                    _context.ObserveString(_text, span);
-                    var payload = EncodeBufferedText(span);
+                    var text = BufferedText();
+                    _context.ObserveString(text, span);
+                    var payload = EncodeBufferedText(text, span);
                     _context.RegisterHostCall(span);
                     WriteEncodedPayload(payload, span);
                     return;
@@ -3322,8 +3326,9 @@ internal sealed partial class LythonRuntime
 
                 if (Mode == "w")
                 {
-                    _context.ObserveString(_text, span);
-                    var payload = EncodeBufferedText(span);
+                    var text = BufferedText();
+                    _context.ObserveString(text, span);
+                    var payload = EncodeBufferedText(text, span);
                     _context.RegisterHostCall(span);
                     await WriteEncodedPayloadAsync(payload, span).ConfigureAwait(false);
                     return;
@@ -3334,68 +3339,78 @@ internal sealed partial class LythonRuntime
 
             private void FlushAppendCore(LythonSourceSpan? span)
             {
-                if (_flushedAppendByteLength >= _text.Utf8Bytes.Length)
+                var buffer = _writeBuffer.RequireNotNull();
+                if (_flushedAppendByteLength >= buffer.Length)
                 {
                     return;
                 }
 
-                var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
+                var suffix = PyString.FromUtf8(
+                    buffer.WrittenMemory[_flushedAppendByteLength..],
+                    _context.MemoryGovernor,
+                    span);
                 _context.ObserveString(suffix, span);
                 if (_encoding == TextEncodingMode.Latin1)
                 {
-                    var payload = EncodeLatin1AppendPayload(span);
+                    var payload = EncodeLatin1AppendPayload(BufferedText(), span);
                     _context.RegisterHostCall(span);
                     _context.WriteHostBytes(Path, payload, span);
-                    _flushedAppendByteLength = _text.Utf8Bytes.Length;
+                    _flushedAppendByteLength = buffer.Length;
                     return;
                 }
 
                 _context.RegisterHostCall(span);
                 _context.AppendTextUtf8(Path, EncodeAppendText(suffix, span), span);
-                _flushedAppendByteLength = _text.Utf8Bytes.Length;
+                _flushedAppendByteLength = buffer.Length;
             }
 
             private async ValueTask FlushAppendCoreAsync(LythonSourceSpan? span)
             {
-                if (_flushedAppendByteLength >= _text.Utf8Bytes.Length)
+                var buffer = _writeBuffer.RequireNotNull();
+                if (_flushedAppendByteLength >= buffer.Length)
                 {
                     return;
                 }
 
-                var suffix = _text.SliceByByteRange(_flushedAppendByteLength, _text.Utf8Bytes.Length);
+                var suffix = PyString.FromUtf8(
+                    buffer.WrittenMemory[_flushedAppendByteLength..],
+                    _context.MemoryGovernor,
+                    span);
                 _context.ObserveString(suffix, span);
                 if (_encoding == TextEncodingMode.Latin1)
                 {
-                    var payload = EncodeLatin1AppendPayload(span);
+                    var payload = EncodeLatin1AppendPayload(BufferedText(), span);
                     _context.RegisterHostCall(span);
                     await _context.WriteHostBytesAsync(Path, payload, span).ConfigureAwait(false);
-                    _flushedAppendByteLength = _text.Utf8Bytes.Length;
+                    _flushedAppendByteLength = buffer.Length;
                     return;
                 }
 
                 _context.RegisterHostCall(span);
                 await _context.AppendTextUtf8Async(Path, EncodeAppendText(suffix, span), span).ConfigureAwait(false);
-                _flushedAppendByteLength = _text.Utf8Bytes.Length;
+                _flushedAppendByteLength = buffer.Length;
             }
 
-            private byte[] EncodeBufferedText(LythonSourceSpan? span)
-                => EncodeText(_text, _encoding, _errors, _newline, _context, span);
+            private PyString BufferedText()
+                => _writeBuffer.RequireNotNull().ToPyString();
+
+            private byte[] EncodeBufferedText(PyString text, LythonSourceSpan? span)
+                => EncodeText(text, _encoding, _errors, _newline, _context, span);
 
             private byte[] EncodeAppendText(PyString suffix, LythonSourceSpan? span)
                 => EncodeText(suffix, TextEncodingMode.Utf8, _errors, _newline, _context, span);
 
             private BigInteger EncodedTextLength()
-                => new(EncodeText(
-                    _text,
-                    _encoding,
-                    _errors,
-                    TextNewlineMode.PreserveUniversal,
-                    _context,
-                    null).Length);
+                => _encoding switch
+                {
+                    TextEncodingMode.Latin1 => new BigInteger(_bufferedRuneLength),
+                    TextEncodingMode.Utf8Bom => new BigInteger(_writeBuffer.RequireNotNull().Length + 3L),
+                    _ => new BigInteger(_writeBuffer.RequireNotNull().Length)
+                };
 
-            private byte[] EncodeLatin1AppendPayload(LythonSourceSpan? span)
+            private byte[] EncodeLatin1AppendPayload(PyString text, LythonSourceSpan? span)
             {
-                var appended = EncodeBufferedText(span);
+                var appended = EncodeBufferedText(text, span);
                 var length = checked(_appendPrefix.Length + appended.Length);
                 _context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
                 var payload = new byte[length];

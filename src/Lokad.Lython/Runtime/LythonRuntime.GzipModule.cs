@@ -598,7 +598,7 @@ internal sealed partial class LythonRuntime
 
                 var end = size < 0
                     ? text.Utf8Bytes.Length
-                    : text.GetByteIndexForRuneBoundary(text.ByteIndexToRuneIndex(_readCursor) + size);
+                    : text.GetByteIndexAfterRunes(_readCursor, size);
                 var result = text.SliceByByteRange(_readCursor, end);
                 _readCursor = end;
                 return result;
@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
                 var end = FindTextLineEnd(source, _readCursor);
                 if (size >= 0)
                 {
-                    end = Math.Min(end, text.GetByteIndexForRuneBoundary(text.ByteIndexToRuneIndex(_readCursor) + size));
+                    end = Math.Min(end, text.GetByteIndexAfterRunes(_readCursor, size));
                 }
 
                 var line = text.SliceByByteRange(_readCursor, end);

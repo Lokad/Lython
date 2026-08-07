@@ -433,6 +433,22 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return _utf8.Length;
     }
 
+    internal int GetByteIndexAfterRunes(int startByte, int runeCount)
+    {
+        if (runeCount <= 0 || startByte >= _utf8.Length)
+        {
+            return Math.Min(startByte, _utf8.Length);
+        }
+
+        var byteIndex = startByte;
+        for (var remaining = runeCount; remaining > 0 && byteIndex < _utf8.Length; remaining--)
+        {
+            byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+        }
+
+        return byteIndex;
+    }
+
     internal PyString SliceByByteRange(int startByte, int endByte)
     {
         if (startByte >= endByte)

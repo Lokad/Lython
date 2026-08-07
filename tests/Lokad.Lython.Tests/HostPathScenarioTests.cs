@@ -348,6 +348,29 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SizedTextReads_AdvanceByUnicodeCodePointsFromTheCurrentCursor()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/input.txt", string.Concat(Enumerable.Repeat("aé😀", 200)));
+
+        var result = new LythonEngine().Run(
+            """
+parts = []
+with open("/input.txt", "r") as reader:
+    while True:
+        part = reader.read(1)
+        if not part:
+            break
+        parts.append(part)
+return "".join(parts)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(string.Concat(Enumerable.Repeat("aé😀", 200)), result.ReturnValue);
+    }
+
+    [Fact]
     public void OpenFileIteration_ConsumesFromCurrentCursorAndStopsAtEof()
     {
         var host = new MockLythonHost();

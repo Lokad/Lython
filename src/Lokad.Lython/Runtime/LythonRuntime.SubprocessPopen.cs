@@ -1202,15 +1202,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static int ByteOffsetAfterRunes(PyString content, int startByte, int runeCount)
-        {
-            if (runeCount <= 0)
-            {
-                return startByte;
-            }
-
-            var currentRune = content.ByteIndexToRuneIndex(startByte);
-            return content.GetByteIndexForRuneBoundary(currentRune + runeCount);
-        }
+            => content.GetByteIndexAfterRunes(startByte, runeCount);
     }
 
     private readonly record struct PipelinePayload(ReadOnlyMemory<byte> Input, long CumulativeOutputBytes);

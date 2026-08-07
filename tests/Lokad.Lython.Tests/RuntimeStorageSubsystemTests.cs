@@ -294,6 +294,25 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void TextFileHandle_RepeatedWritesUseOneGovernedMutableBuffer()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(
+            host,
+            new LythonRunOptions { MaxExecutionMemoryBytes = 4_096 });
+        var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
+
+        for (var i = 0; i < 200; i++)
+        {
+            _ = handle.Write(PyString.FromString("x"));
+        }
+
+        Assert.Equal(0, context.State.LegacyApproximateMemoryDiagnostics.CurrentBytes);
+        _ = handle.Exit();
+        Assert.Equal(new string('x', 200), host.ReadText("/output.txt"));
+    }
+
+    [Fact]
     public void ExecutionServices_GovernedValuesDoNotInflateLegacyApproximateDiagnostics()
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
