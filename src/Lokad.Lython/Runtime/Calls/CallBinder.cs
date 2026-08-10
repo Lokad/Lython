@@ -2,61 +2,75 @@ namespace Lokad.Lython.Runtime;
 
 internal readonly record struct BoundCallArguments(object[] Values, ArgumentPresence Assigned);
 
-internal sealed class ArgumentPresence
+internal struct ArgumentPresence
 {
-    private readonly bool[] _assigned;
+    private ulong _firstAssignments;
+    private readonly bool[] _remainingAssignments;
 
     public ArgumentPresence(int length)
     {
-        _assigned = new bool[length];
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        Length = length;
+        _firstAssignments = 0;
+        _remainingAssignments = length > 64 ? new bool[length - 64] : [];
     }
 
     public static ArgumentPresence Empty { get; } = new(0);
 
-    public int Length => _assigned.Length;
+    public int Length { get; }
 
     public bool this[int index]
     {
-        get => _assigned[index];
-        set => _assigned[index] = value;
+        get
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)Length);
+            return index < 64
+                ? (_firstAssignments & (1UL << index)) != 0
+                : _remainingAssignments[index - 64];
+        }
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)Length);
+            if (index < 64)
+            {
+                var mask = 1UL << index;
+                _firstAssignments = value ? _firstAssignments | mask : _firstAssignments & ~mask;
+                return;
+            }
+
+            _remainingAssignments[index - 64] = value;
+        }
     }
 
     public ArgumentPresence WithLength(int length)
     {
+        if (length == Length)
+        {
+            return this;
+        }
+
         var resized = new ArgumentPresence(length);
-        Array.Copy(_assigned, resized._assigned, Math.Min(length, _assigned.Length));
+        resized._firstAssignments = length >= 64
+            ? _firstAssignments
+            : _firstAssignments & ((1UL << length) - 1);
+        Array.Copy(
+            _remainingAssignments,
+            resized._remainingAssignments,
+            Math.Min(_remainingAssignments.Length, resized._remainingAssignments.Length));
         return resized;
     }
 
     public void MarkRange(int start, int count)
-        => Array.Fill(_assigned, true, start, count);
+    {
+        for (var index = start; index < start + count; index++)
+        {
+            this[index] = true;
+        }
+    }
 }
 
 internal static class CallBinder
 {
-    public static object[] BindNamedArguments(
-        CallArgumentValue[] arguments,
-        LythonSourceSpan span,
-        string callableName,
-        PythonCallableKind callableKind,
-        string[]? parameterNames,
-        int requiredCount)
-    {
-        return BindNamedArgumentsCore(
-            arguments,
-            span,
-            callableName,
-            callableKind,
-            parameterNames,
-            parameterNames is null ? null : CreateParameterIndices(parameterNames),
-            requiredCount,
-            parameterNames?.Length,
-            parameterNames?.Length,
-            allowsExtraKeywords: false,
-            allowsExtraPositional: false,
-            positionalOnlyCount: 0).Values;
-    }
-
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
@@ -107,16 +121,6 @@ internal static class CallBinder
         Array.Copy(bound.Values, values, bound.Values.Length);
         return new BoundCallArguments(values, bound.Assigned.WithLength(signature.ParameterNames.Length));
     }
-
-    public static object[] BindNamedArguments(
-        CallArgumentValue[] arguments,
-        LythonSourceSpan span,
-        string callableName,
-        PythonCallableKind callableKind,
-        string[]? parameterNames,
-        IReadOnlyDictionary<string, int>? parameterIndices,
-        int requiredCount)
-        => BindNamedArgumentsCore(arguments, span, callableName, callableKind, parameterNames, parameterIndices, requiredCount, parameterNames?.Length, parameterNames?.Length, allowsExtraKeywords: false, allowsExtraPositional: false, positionalOnlyCount: 0).Values;
 
     private static BoundCallArguments BindNamedArgumentsCore(
         CallArgumentValue[] arguments,
@@ -235,7 +239,12 @@ internal static class CallBinder
 
         if (extraPositional is null || extraPositional.Count == 0)
         {
-            return new BoundCallArguments(bound[..count], assigned.WithLength(count));
+            if (count != bound.Length)
+            {
+                Array.Resize(ref bound, count);
+            }
+
+            return new BoundCallArguments(bound, assigned.WithLength(count));
         }
 
         var result = new object[count + extraPositional.Count];
@@ -250,14 +259,4 @@ internal static class CallBinder
         return new BoundCallArguments(result, resultAssigned);
     }
 
-    private static IReadOnlyDictionary<string, int> CreateParameterIndices(string[] parameterNames)
-    {
-        var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
-        for (var index = 0; index < parameterNames.Length; index++)
-        {
-            indices[parameterNames[index]] = index;
-        }
-
-        return indices;
-    }
 }

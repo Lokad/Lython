@@ -44,6 +44,20 @@ internal sealed class LythonCallableSignature
         VariadicParameters = variadicParameters;
         PositionalOnlyCount = positionalOnlyCount;
         ParameterIndices = ParameterNames is null ? null : CreateParameterIndices(ParameterNames, name);
+
+        static IReadOnlyDictionary<string, int> CreateParameterIndices(string[] parameterNames, string callableName)
+        {
+            var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
+            for (var index = 0; index < parameterNames.Length; index++)
+            {
+                if (!indices.TryAdd(parameterNames[index], index))
+                {
+                    throw new ArgumentException($"Callable signature '{callableName}' contains duplicate parameter '{parameterNames[index]}'.", nameof(parameterNames));
+                }
+            }
+
+            return indices;
+        }
     }
 
     public string Name { get; }
@@ -124,20 +138,6 @@ internal sealed class LythonCallableSignature
     public int? MaximumArgumentCount => AllowsExtraKeywords || AllowsExtraPositional
         ? null
         : ParameterNames?.Length;
-
-    private static IReadOnlyDictionary<string, int> CreateParameterIndices(string[] parameterNames, string callableName)
-    {
-        var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
-        for (var index = 0; index < parameterNames.Length; index++)
-        {
-            if (!indices.TryAdd(parameterNames[index], index))
-            {
-                throw new ArgumentException($"Callable signature '{callableName}' contains duplicate parameter '{parameterNames[index]}'.", nameof(parameterNames));
-            }
-        }
-
-        return indices;
-    }
 
     private bool HasShape(
         string[]? parameterNames,

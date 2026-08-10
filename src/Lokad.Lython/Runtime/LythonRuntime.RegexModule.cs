@@ -245,13 +245,17 @@ internal sealed partial class LythonRuntime
 
         private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
         {
+            private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
+                "re.RegexFlag",
+                ["value"],
+                RequiredCount: 0);
+
             public string Name => "re.RegexFlag";
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var signature = LythonCallableSignature.Create("re.RegexFlag", ["value"], RequiredCount: 0);
-                var bound = CallBinder.BindNamedArguments(arguments, span, signature, PythonCallableKind.Builtin);
+                var bound = CallBinder.BindNamedArguments(arguments, span, CallSignature, PythonCallableKind.Builtin);
                 if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
                 {
                     return BigInteger.Zero;

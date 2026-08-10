@@ -11,6 +11,12 @@ namespace Lokad.Lython.Tests;
 public sealed class CallBindingSubsystemTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
+    private static readonly LythonCallableSignature OptionalDemoSignature = LythonCallableSignature.Create(
+        "demo",
+        ["first", "second", "third"],
+        RequiredCount: 1);
+    private static readonly LythonCallableSignature RequiredDemoSignature = LythonCallableSignature.Create("demo", ["first"]);
+    private static readonly LythonCallableSignature NoParameterNamesDemoSignature = LythonCallableSignature.Create("demo");
 
     [Fact]
     public void BindNamedArguments_CombinesPositionalKeywordAndOptionalTail()
@@ -21,10 +27,8 @@ public sealed class CallBindingSubsystemTests
                 CallArgumentValue.Keyword("third", 3)
             ],
             Span,
-            "demo",
-            PythonCallableKind.Builtin,
-            ["first", "second", "third"],
-            requiredCount: 1);
+            OptionalDemoSignature,
+            PythonCallableKind.Builtin);
 
         Assert.Equal([1, (object)PyNone.Instance, 3], result);
     }
@@ -38,10 +42,8 @@ public sealed class CallBindingSubsystemTests
                 CallArgumentValue.Keyword("first", 2)
             ],
             Span,
-            "demo",
-            PythonCallableKind.Builtin,
-            ["first"],
-            requiredCount: 1));
+            RequiredDemoSignature,
+            PythonCallableKind.Builtin));
 
         Assert.Equal("TypeError", ex.ExceptionType);
         Assert.Contains("multiple values", ex.Message, StringComparison.Ordinal);
@@ -53,10 +55,8 @@ public sealed class CallBindingSubsystemTests
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
             [CallArgumentValue.Keyword("nope", 1)],
             Span,
-            "demo",
-            PythonCallableKind.Method,
-            ["value"],
-            requiredCount: 1));
+            LythonCallableSignature.Create("demo", ["value"]),
+            PythonCallableKind.Method));
 
         Assert.Equal("TypeError", ex.ExceptionType);
         Assert.Contains("unexpected keyword", ex.Message, StringComparison.Ordinal);
@@ -68,13 +68,29 @@ public sealed class CallBindingSubsystemTests
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
             [CallArgumentValue.Keyword("value", 1)],
             Span,
-            "demo",
-            PythonCallableKind.Builtin,
-            null,
-            requiredCount: 0));
+            NoParameterNamesDemoSignature,
+            PythonCallableKind.Builtin));
 
         Assert.Equal("TypeError", ex.ExceptionType);
         Assert.Contains("does not accept keyword arguments", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BindNamedArguments_TracksParametersBeyondInlinePresenceCapacity()
+    {
+        var parameterNames = Enumerable.Range(0, 65).Select(index => $"arg{index}").ToArray();
+        var signature = LythonCallableSignature.Create("wide", parameterNames, RequiredCount: 0);
+
+        var result = CallBinder.BindNamedArgumentsWithPresence(
+            [CallArgumentValue.Keyword("arg64", 64)],
+            Span,
+            signature,
+            PythonCallableKind.Builtin);
+
+        Assert.Equal(65, result.Values.Length);
+        Assert.Equal(64, result.Values[64]);
+        Assert.True(result.Assigned[64]);
+        Assert.False(result.Assigned[63]);
     }
 
     [Fact]

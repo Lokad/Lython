@@ -336,6 +336,11 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
 internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPySizedValue
 {
+    private static readonly LythonCallableSignature GetCallSignature = LythonCallableSignature.Create(
+        "ChainMap.get",
+        ["key", "default"],
+        RequiredCount: 1);
+
     private readonly List<PyDict> _maps;
 
     public PyChainMap(IEnumerable<PyDict> maps)
@@ -497,7 +502,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var bound = CallBinder.BindNamedArguments(arguments, span, "ChainMap.get", PythonCallableKind.Method, ["key", "default"], requiredCount: 1);
+            var bound = CallBinder.BindNamedArguments(arguments, span, GetCallSignature, PythonCallableKind.Method);
             var key = LythonRuntime.ValidateDictionaryKey(bound[0], span, context.MemoryGovernor);
             return _owner.GetOrDefault(key, bound.Length == 2 ? bound[1] : PyNone.Instance);
         }

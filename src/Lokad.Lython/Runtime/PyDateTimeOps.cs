@@ -11,6 +11,24 @@ internal static partial class PyDateTimeOps
 {
     private static readonly int[] IsoDatePrefixLengths = [10, 8, 7];
 
+    private static readonly LythonCallableSignature TimedeltaCallSignature = LythonCallableSignature.Create(
+        "datetime.timedelta",
+        ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"],
+        RequiredCount: 0);
+    private static readonly LythonCallableSignature DateCallSignature = LythonCallableSignature.Create("datetime.date", ["year", "month", "day"]);
+    private static readonly LythonCallableSignature TimeCallSignature = LythonCallableSignature.Create(
+        "datetime.time",
+        ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
+        RequiredCount: 0);
+    private static readonly LythonCallableSignature DateTimeCallSignature = LythonCallableSignature.Create(
+        "datetime.datetime",
+        ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
+        RequiredCount: 3);
+    private static readonly LythonCallableSignature TimezoneCallSignature = LythonCallableSignature.Create(
+        "datetime.timezone",
+        ["offset", "name"],
+        RequiredCount: 1);
+
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Regex OffsetTextRegex = new(
         @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
@@ -28,9 +46,7 @@ internal static partial class PyDateTimeOps
     private sealed class TypeMemberCallable : LythonRuntime.ICallable
     {
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
-        private readonly string _name;
-        private readonly string[]? _parameterNames;
-        private readonly int _requiredCount;
+        private readonly LythonCallableSignature _signature;
 
         public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation) : this(name, implementation, null, null) { }
 
@@ -38,15 +54,13 @@ internal static partial class PyDateTimeOps
 
         public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames, int? requiredCount)
         {
-            _name = name;
             _implementation = implementation;
-            _parameterNames = parameterNames;
-            _requiredCount = requiredCount ?? parameterNames?.Length ?? 0;
+            _signature = LythonCallableSignature.Create(name, parameterNames, requiredCount);
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var positional = CallBinder.BindNamedArguments(arguments, span, _name, PythonCallableKind.Builtin, _parameterNames, _requiredCount);
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
             return _implementation(positional, span, context);
         }
     }
@@ -126,13 +140,7 @@ internal static partial class PyDateTimeOps
     public static object CreateTimedelta(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
-        var bound = CallBinder.BindNamedArguments(
-            arguments,
-            span,
-            "datetime.timedelta",
-            PythonCallableKind.Builtin,
-            ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"],
-            0);
+        var bound = CallBinder.BindNamedArguments(arguments, span, TimedeltaCallSignature, PythonCallableKind.Builtin);
 
         var days = GetReal(ArgAt(bound, 0), "datetime.timedelta", span);
         var seconds = GetReal(ArgAt(bound, 1), "datetime.timedelta", span);
@@ -164,13 +172,7 @@ internal static partial class PyDateTimeOps
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
-        var bound = CallBinder.BindNamedArguments(
-            arguments,
-            span,
-            "datetime.date",
-            PythonCallableKind.Builtin,
-            ["year", "month", "day"],
-            3);
+        var bound = CallBinder.BindNamedArguments(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
 
         return new PyDate(new DateOnly(
             GetInteger(ArgAt(bound, 0), "datetime.date", span),
@@ -181,13 +183,7 @@ internal static partial class PyDateTimeOps
     public static object CreateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
-        var bound = CallBinder.BindNamedArguments(
-            arguments,
-            span,
-            "datetime.time",
-            PythonCallableKind.Builtin,
-            ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-            0);
+        var bound = CallBinder.BindNamedArguments(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
 
         var fold = GetFold(ArgAt(bound, 5), "datetime.time", span);
         return new PyTime(
@@ -204,13 +200,7 @@ internal static partial class PyDateTimeOps
     public static object CreateDateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
-        var bound = CallBinder.BindNamedArguments(
-            arguments,
-            span,
-            "datetime.datetime",
-            PythonCallableKind.Builtin,
-            ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-            3);
+        var bound = CallBinder.BindNamedArguments(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
 
         var microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
         var fold = GetFold(ArgAt(bound, 8), "datetime.datetime", span);
@@ -242,13 +232,7 @@ internal static partial class PyDateTimeOps
     public static object CreateTimezone(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _ = context;
-        var bound = CallBinder.BindNamedArguments(
-            arguments,
-            span,
-            "datetime.timezone",
-            PythonCallableKind.Builtin,
-            ["offset", "name"],
-            1);
+        var bound = CallBinder.BindNamedArguments(arguments, span, TimezoneCallSignature, PythonCallableKind.Builtin);
 
         if (ArgAt(bound, 0) is not PyTimedelta delta)
         {

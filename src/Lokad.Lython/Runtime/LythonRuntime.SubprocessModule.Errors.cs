@@ -38,6 +38,11 @@ internal sealed partial class LythonRuntime
     {
         public static readonly SubprocessCalledProcessErrorType Instance = new();
 
+        private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
+            "subprocess.CalledProcessError",
+            ["returncode", "cmd", "output", "stderr"],
+            RequiredCount: 2);
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -55,7 +60,7 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArguments(
                 arguments,
                 span,
-                LythonCallableSignature.Create("subprocess.CalledProcessError", ["returncode", "cmd", "output", "stderr"], RequiredCount: 2),
+                CallSignature,
                 PythonCallableKind.Builtin);
             var returnCode = bound[0] switch
             {
