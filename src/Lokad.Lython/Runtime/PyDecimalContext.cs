@@ -320,7 +320,7 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
 
         return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
-public int GetPyHashCode()
+    public int GetPyHashCode()
     {
         var hash = new HashCode();
         hash.Add(Sign);

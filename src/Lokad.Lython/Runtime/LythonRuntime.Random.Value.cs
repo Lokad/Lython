@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
-public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+            public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
             public PyString RenderPython(PyRenderingContext context)
             {

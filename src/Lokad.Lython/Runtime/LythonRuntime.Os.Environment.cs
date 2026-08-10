@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context) => ToPyDict(context.Context, null).RenderPython(context);
+        public PyString RenderPython(PyRenderingContext context) => ToPyDict(context.Context, null).RenderPython(context);
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 

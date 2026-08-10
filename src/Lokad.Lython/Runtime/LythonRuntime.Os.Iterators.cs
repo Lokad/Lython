@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public override PyString RenderPython(PyRenderingContext context)
+        public override PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<ScandirIterator>");
@@ -199,7 +199,7 @@ public override PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<DirEntry '{_name}'>");

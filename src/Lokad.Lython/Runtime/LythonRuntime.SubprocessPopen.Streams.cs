@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public BigInteger Write(PyString text, LythonSourceSpan span)
+        public BigInteger Write(PyString text, LythonSourceSpan span)
         {
             EnsureWritable(span);
             _buffer.Append(text);
@@ -279,7 +279,7 @@ public BigInteger Write(PyString text, LythonSourceSpan span)
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public IEnumerable<object> Iterate()
+        public IEnumerable<object> Iterate()
         {
             while (TryMoveNext(out var value))
             {

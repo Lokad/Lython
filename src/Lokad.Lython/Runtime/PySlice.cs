@@ -35,15 +35,15 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue
 
         return value is not PyNone || name is "start" or "stop" or "step";
     }
-public PyString RenderPython(PyRenderingContext context)
-        => PyString.FromString(
-            "slice(" +
-            PyRendering.ToReprPyString(Start, context).AsString() +
-            ", " +
-            PyRendering.ToReprPyString(Stop, context).AsString() +
-            ", " +
-            PyRendering.ToReprPyString(Step, context).AsString() +
-            ")");
+    public PyString RenderPython(PyRenderingContext context)
+            => PyString.FromString(
+                "slice(" +
+                PyRendering.ToReprPyString(Start, context).AsString() +
+                ", " +
+                PyRendering.ToReprPyString(Stop, context).AsString() +
+                ", " +
+                PyRendering.ToReprPyString(Step, context).AsString() +
+                ")");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }

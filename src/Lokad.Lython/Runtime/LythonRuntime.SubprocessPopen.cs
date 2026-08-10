@@ -289,7 +289,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public object Enter() => this;
+        public object Enter() => this;
 
         public ValueTask<object> EnterAsync() => ValueTask.FromResult<object>(this);
 

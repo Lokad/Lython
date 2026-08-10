@@ -372,7 +372,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public object GetSubscript(object index, LythonSourceSpan span)
+        public object GetSubscript(object index, LythonSourceSpan span)
         {
             var name = ExpectString(index, "Worksheet.tables[...] key", span);
             if (!_worksheet.Tables.TryGetValue(name, out var table))

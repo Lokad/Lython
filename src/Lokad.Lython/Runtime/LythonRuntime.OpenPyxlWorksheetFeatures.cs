@@ -475,7 +475,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public IEnumerable<object> Iterate() => _worksheet.DataValidations;
+        public IEnumerable<object> Iterate() => _worksheet.DataValidations;
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
@@ -536,7 +536,7 @@ public IEnumerable<object> Iterate() => _worksheet.DataValidations;
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.formatting.rule.Rule>");
@@ -603,7 +603,7 @@ public PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public object GetSubscript(object index, LythonSourceSpan span)
+        public object GetSubscript(object index, LythonSourceSpan span)
         {
             var reference = NormalizeCellOrRangeReference(ExpectString(index, "Worksheet.conditional_formatting[...] key", span), span);
             var formatting = _worksheet.ConditionalFormattings.FirstOrDefault(item => string.Equals(item.Sqref, reference, StringComparison.Ordinal));
@@ -692,7 +692,7 @@ public object GetSubscript(object index, LythonSourceSpan span)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.drawing.spreadsheet_drawing.SpreadsheetDrawing path='{ContentPath(PackagePath)}'>");
@@ -732,7 +732,7 @@ public PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.chart._chart.Chart path='{ContentPath(PackagePath)}'>");
@@ -776,7 +776,7 @@ public PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.drawing.image.Image path='{ContentPath(PackagePath)}'>");

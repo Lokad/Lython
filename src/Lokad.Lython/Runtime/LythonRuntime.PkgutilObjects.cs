@@ -143,11 +143,11 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public bool Equals(PkgutilModuleInfoObject? other)
-            => other is not null &&
-                PyEquality.AreEqual(ModuleFinder, other.ModuleFinder) &&
-                Name.Equals(other.Name) &&
-                IsPackage == other.IsPackage;
+        public bool Equals(PkgutilModuleInfoObject? other)
+                    => other is not null &&
+                        PyEquality.AreEqual(ModuleFinder, other.ModuleFinder) &&
+                        Name.Equals(other.Name) &&
+                        IsPackage == other.IsPackage;
 
         public override bool Equals(object? obj) => obj is PkgutilModuleInfoObject other && Equals(other);
 
@@ -265,8 +265,8 @@ public bool Equals(PkgutilModuleInfoObject? other)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
-            => PyString.FromString($"<lython loader for {PyRendering.ToReprPyString(Name, context).AsString()}>");
+        public PyString RenderPython(PyRenderingContext context)
+                    => PyString.FromString($"<lython loader for {PyRendering.ToReprPyString(Name, context).AsString()}>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }

@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString ToPyString() => PyString.FromString(ColorIndexText());
+        public PyString ToPyString() => PyString.FromString(ColorIndexText());
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -186,7 +186,7 @@ public PyString ToPyString() => PyString.FromString(ColorIndexText());
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => _members.TryGetValue(name, out value);
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             if (QualifiedName == "openpyxl.styles.NamedStyle" &&

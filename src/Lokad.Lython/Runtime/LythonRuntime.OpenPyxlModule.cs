@@ -527,7 +527,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.chart.reference.Reference>");
@@ -580,7 +580,7 @@ public PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.chart.series.Series>");

@@ -133,8 +133,8 @@ internal sealed partial class LythonRuntime
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
-public bool Equals(StatisticsLinearRegressionResult? other)
-                => other is not null && Slope.Equals(other.Slope) && Intercept.Equals(other.Intercept);
+            public bool Equals(StatisticsLinearRegressionResult? other)
+                            => other is not null && Slope.Equals(other.Slope) && Intercept.Equals(other.Intercept);
 
             public override bool Equals(object? obj) => obj is StatisticsLinearRegressionResult other && Equals(other);
 
@@ -345,8 +345,8 @@ public bool Equals(StatisticsLinearRegressionResult? other)
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
-public bool Equals(PyNormalDist? other)
-                => other is not null && Mean.Equals(other.Mean) && Stdev.Equals(other.Stdev);
+            public bool Equals(PyNormalDist? other)
+                            => other is not null && Mean.Equals(other.Mean) && Stdev.Equals(other.Stdev);
 
             public override bool Equals(object? obj) => obj is PyNormalDist other && Equals(other);
 

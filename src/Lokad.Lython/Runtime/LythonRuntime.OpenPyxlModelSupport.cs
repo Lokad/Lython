@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.worksheet.hyperlink.Hyperlink ref='{Reference}' target='{Target}'>");
@@ -227,8 +227,8 @@ public PyString RenderPython(PyRenderingContext context)
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public IEnumerable<object> Iterate()
-            => _ranges.Select(range => (object)PyString.FromString(range.Reference));
+        public IEnumerable<object> Iterate()
+                    => _ranges.Select(range => (object)PyString.FromString(range.Reference));
 
         public PyString RenderPython(PyRenderingContext context)
         {

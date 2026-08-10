@@ -431,7 +431,7 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
 
         return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
-public PyString RenderPython(PyRenderingContext context)
+    public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
         return PyString.FromString($"datetime.IsoCalendarDate(year={Year}, week={Week}, weekday={Weekday})");

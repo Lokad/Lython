@@ -527,13 +527,13 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
-            => PyString.FromString(
-                "namespace(" +
-                $"adjustable={PyRendering.ToPythonString(adjustable, context)}, " +
-                $"implementation={PyRendering.ToPythonString(PyString.FromString(implementation), context)}, " +
-                $"monotonic={PyRendering.ToPythonString(monotonic, context)}, " +
-                $"resolution={PyRendering.ToPythonString(resolution, context)})");
+        public PyString RenderPython(PyRenderingContext context)
+                    => PyString.FromString(
+                        "namespace(" +
+                        $"adjustable={PyRendering.ToPythonString(adjustable, context)}, " +
+                        $"implementation={PyRendering.ToPythonString(PyString.FromString(implementation), context)}, " +
+                        $"monotonic={PyRendering.ToPythonString(monotonic, context)}, " +
+                        $"resolution={PyRendering.ToPythonString(resolution, context)})");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
@@ -587,7 +587,7 @@ public PyString RenderPython(PyRenderingContext context)
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public PyString RenderPython(PyRenderingContext context)
+        public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<class 'time.struct_time'>");
@@ -683,7 +683,7 @@ public PyString RenderPython(PyRenderingContext context)
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public int GetPyHashCode()
+        public int GetPyHashCode()
         {
             var hash = new HashCode();
             foreach (var value in _values)

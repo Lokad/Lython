@@ -437,7 +437,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(
@@ -480,7 +480,7 @@ public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Execu
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(

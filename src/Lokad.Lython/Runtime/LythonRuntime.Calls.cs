@@ -285,7 +285,7 @@ internal sealed partial class LythonRuntime
             value = PyNone.Instance;
             return false;
         }
-public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin, _parameterIndices);
