@@ -86,29 +86,30 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public ExecutionContext(ExecutionContext template, bool moduleScope, string? sourcePath) : this(template, moduleScope, sourcePath, null) { }
-
-        public ExecutionContext(
+        public static ExecutionContext CreateModule(
             ExecutionContext template,
-            bool moduleScope,
             string? sourcePath,
-            string? moduleName)
+            string moduleName)
+            => new(template, new ModuleScope(sourcePath, moduleName));
+
+        public static ExecutionContext CreateClassBody(ExecutionContext parent)
+            => new(parent, ClassBodyScope.Instance);
+
+        private ExecutionContext(ExecutionContext template, ModuleScope scope)
         {
-            _ = moduleScope;
             Services = template.Services;
-            SourcePath = sourcePath;
+            SourcePath = scope.SourcePath;
             Frame = new ExecutionFrame(
                 parent: null,
-                CreateModuleVariables(State.BuiltinVariables, sourcePath, moduleName ?? "__main__"));
+                CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
         }
 
-        public ExecutionContext(ExecutionContext parent, bool classBodyScope)
+        private ExecutionContext(ExecutionContext parent, ClassBodyScope _)
         {
-            _ = classBodyScope;
             Services = parent.Services;
             SourcePath = parent.SourcePath;
             Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
@@ -116,6 +117,15 @@ internal sealed partial class LythonRuntime
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+        }
+
+        private readonly record struct ModuleScope(string? SourcePath, string Name);
+
+        private sealed class ClassBodyScope
+        {
+            public static readonly ClassBodyScope Instance = new();
+
+            private ClassBodyScope() { }
         }
 
         public ExecutionServices Services { get; }

@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
             }
 
-            var moduleContext = new ExecutionContext(context, moduleScope: true, sourcePath: path, moduleName: moduleName);
+            var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
             var signal = ExecuteStatements(LoweredScript.Lower(frontend.Script).Statements, moduleContext);
             if (signal is BreakSignal or ContinueSignal)
             {
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
             }
 
-            var moduleContext = new ExecutionContext(context, moduleScope: true, sourcePath: path, moduleName: moduleName);
+            var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
             var signal = await ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script).Statements, moduleContext).ConfigureAwait(false);
             if (signal is BreakSignal or ContinueSignal)
             {
