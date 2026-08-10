@@ -361,11 +361,8 @@ internal static partial class StaticAbstractInterpreter
     {
         switch (target)
         {
-            case UnpackingAssignmentTargetGroupSyntax unpacking:
-                foreach (var nestedTarget in unpacking.Targets)
-                {
-                    _ = nestedTarget;
-                }
+            case NameAssignmentTargetSyntax or UnpackingAssignmentTargetGroupSyntax:
+                // These targets contain names only; StaticBindingEngine owns their binding effects.
                 break;
 
             case SubscriptAssignmentTargetSyntax subscript:
