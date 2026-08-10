@@ -5,21 +5,7 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticProcessContractFamily
 {
-    private const int ArgsIndex = 0;
-    private const int InputIndex = 1;
-    private const int CwdIndex = 2;
-    private const int TimeoutIndex = 3;
-    private const int CheckIndex = 4;
-    private const int CaptureOutputIndex = 5;
-    private const int StdinIndex = 6;
-    private const int StdoutIndex = 7;
-    private const int StderrIndex = 8;
-    private const int ShellIndex = 9;
-    private const int TextIndex = 10;
-    private const int EncodingIndex = 11;
-    private const int ErrorsIndex = 12;
-    private const int EnvIndex = 13;
-    private const int UniversalNewlinesIndex = 14;
+    private static readonly SubprocessRunArgumentLayout RunLayout = SubprocessRunArgumentLayout.Standard;
     private const int PopenBufsizeIndex = 1;
     private const int PopenStdinIndex = 3;
     private const int PopenStdoutIndex = 4;
@@ -67,21 +53,21 @@ internal static class StaticProcessContractFamily
 
         var owner = targetName;
         var emitted = AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings);
-        emitted |= AnalyzeStringOrNoneArgument(arguments, InputIndex, "input", $"{owner}(..., input=...) expects a string or None.", diagnostics, bindings);
-        emitted |= AnalyzePathLikeOrNoneArgument(arguments, CwdIndex, "cwd", $"{owner}(..., cwd=...) expects a string, Path, or None.", diagnostics, bindings);
-        emitted |= AnalyzeIntegerOrNoneArgument(arguments, TimeoutIndex, "timeout", $"{owner}(..., timeout=...) expects an integer or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, CheckIndex, "check", $"{owner}(..., check=...) expects a bool or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, CaptureOutputIndex, "capture_output", $"{owner}(..., capture_output=...) expects a bool or None.", diagnostics, bindings);
-        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StdinIndex, "stdin", $"{owner}(..., stdin=...) expects a subprocess stream constant or None.", diagnostics, bindings);
-        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StdoutIndex, "stdout", $"{owner}(..., stdout=...) expects a subprocess stream constant or None.", diagnostics, bindings);
-        emitted |= AnalyzeIntegerOrNoneArgument(arguments, StderrIndex, "stderr", $"{owner}(..., stderr=...) expects a subprocess stream constant or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, ShellIndex, "shell", $"{owner}(..., shell=...) expects a bool or None.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, TextIndex, "text", $"{owner}(..., text=...) expects a bool or None.", diagnostics, bindings);
-        emitted |= AnalyzeStringOrNoneArgument(arguments, EncodingIndex, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
-        emitted |= AnalyzeStringOrNoneArgument(arguments, ErrorsIndex, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
-        emitted |= AnalyzeUtf8Encoding(arguments, EncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        emitted |= AnalyzeTextErrors(arguments, ErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
-        emitted |= AnalyzeBooleanOrNoneArgument(arguments, UniversalNewlinesIndex, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, RunLayout.Input, "input", $"{owner}(..., input=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzePathLikeOrNoneArgument(arguments, RunLayout.CurrentDirectory, "cwd", $"{owner}(..., cwd=...) expects a string, Path, or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, RunLayout.Timeout, "timeout", $"{owner}(..., timeout=...) expects an integer or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.Check, "check", $"{owner}(..., check=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.CaptureOutput, "capture_output", $"{owner}(..., capture_output=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, RunLayout.StandardInput, "stdin", $"{owner}(..., stdin=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, RunLayout.StandardOutput, "stdout", $"{owner}(..., stdout=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeIntegerOrNoneArgument(arguments, RunLayout.StandardError, "stderr", $"{owner}(..., stderr=...) expects a subprocess stream constant or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.Shell, "shell", $"{owner}(..., shell=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.Text, "text", $"{owner}(..., text=...) expects a bool or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, RunLayout.Encoding, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeStringOrNoneArgument(arguments, RunLayout.Errors, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
+        emitted |= AnalyzeUtf8Encoding(arguments, RunLayout.Encoding, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        emitted |= AnalyzeTextErrors(arguments, RunLayout.Errors, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.UniversalNewlines, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
         emitted |= AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings);
         return emitted;
     }
@@ -103,7 +89,7 @@ internal static class StaticProcessContractFamily
     }
 
     private static bool AnalyzeSubprocessArgsArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings, ShellIndex);
+        => AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings, RunLayout.Shell);
 
     private static bool AnalyzeSubprocessArgsArgument(
         ConcreteCallArguments arguments,
@@ -112,7 +98,7 @@ internal static class StaticProcessContractFamily
         AbstractState bindings,
         int shellIndex)
     {
-        if (!arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
+        if (!arguments.TryGetValue(RunLayout.Args, "args", out var argsExpression))
         {
             return false;
         }
@@ -125,14 +111,14 @@ internal static class StaticProcessContractFamily
                 return false;
             }
 
-            return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, rejectSinglePathLike: false, requireNonEmpty: true);
+            return AnalyzeIterableOfPathLikeArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, rejectSinglePathLike: false, requireNonEmpty: true);
         }
 
-        return AnalyzeIterableOfPathLikeArgument(arguments, ArgsIndex, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
+        return AnalyzeIterableOfPathLikeArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
     }
 
     private static bool AnalyzeSubprocessEnvArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings, EnvIndex);
+        => AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings, RunLayout.Environment);
 
     private static bool AnalyzeSubprocessEnvArgument(
         ConcreteCallArguments arguments,
@@ -165,7 +151,7 @@ internal static class StaticProcessContractFamily
     private static void AnalyzeSubprocessCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         var owner = "subprocess." + memberName;
-        if (arguments.TryGetValue(ArgsIndex, "args", out var argsExpression))
+        if (arguments.TryGetValue(RunLayout.Args, "args", out var argsExpression))
         {
             if (!IsShellKnownTrue(arguments, bindings) &&
                 StaticAbstractValueResolver.TryResolveKnownString(argsExpression, bindings, out _))
@@ -192,7 +178,7 @@ internal static class StaticProcessContractFamily
 
         StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
             arguments,
-            InputIndex,
+            RunLayout.Input,
             "input",
             "LA3022",
             $"{owner}(..., input=...) expects a string or None.",
@@ -200,7 +186,7 @@ internal static class StaticProcessContractFamily
             bindings);
         AnalyzeKnownPathLikeOrNoneArgument(
             arguments,
-            CwdIndex,
+            RunLayout.CurrentDirectory,
             "cwd",
             "LA3023",
             $"{owner}(..., cwd=...) expects a string, Path, or None.",
@@ -208,7 +194,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
-            TimeoutIndex,
+            RunLayout.Timeout,
             "timeout",
             "LA3024",
             $"{owner}(..., timeout=...) expects an integer or None.",
@@ -216,7 +202,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            CheckIndex,
+            RunLayout.Check,
             "check",
             "LA3025",
             $"{owner}(..., check=...) expects a bool or None.",
@@ -224,7 +210,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            CaptureOutputIndex,
+            RunLayout.CaptureOutput,
             "capture_output",
             "LA3026",
             $"{owner}(..., capture_output=...) expects a bool or None.",
@@ -232,7 +218,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
-            StdinIndex,
+            RunLayout.StandardInput,
             "stdin",
             "LA3028",
             $"{owner}(..., stdin=...) expects a subprocess stream constant or None.",
@@ -240,7 +226,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
-            StdoutIndex,
+            RunLayout.StandardOutput,
             "stdout",
             "LA3028",
             $"{owner}(..., stdout=...) expects a subprocess stream constant or None.",
@@ -248,7 +234,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
-            StderrIndex,
+            RunLayout.StandardError,
             "stderr",
             "LA3028",
             $"{owner}(..., stderr=...) expects a subprocess stream constant or None.",
@@ -256,7 +242,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            ShellIndex,
+            RunLayout.Shell,
             "shell",
             "LA3029",
             $"{owner}(..., shell=...) expects a bool or None.",
@@ -264,7 +250,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            TextIndex,
+            RunLayout.Text,
             "text",
             "LA3030",
             $"{owner}(..., text=...) expects a bool or None.",
@@ -272,7 +258,7 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
             arguments,
-            EncodingIndex,
+            RunLayout.Encoding,
             "encoding",
             "LA3031",
             $"{owner}(..., encoding=...) expects a string or None.",
@@ -280,17 +266,17 @@ internal static class StaticProcessContractFamily
             bindings);
         StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
             arguments,
-            ErrorsIndex,
+            RunLayout.Errors,
             "errors",
             "LA3032",
             $"{owner}(..., errors=...) expects a string or None.",
             diagnostics,
             bindings);
-        AnalyzeUtf8Encoding(arguments, EncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        AnalyzeTextErrors(arguments, ErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        AnalyzeUtf8Encoding(arguments, RunLayout.Encoding, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
+        AnalyzeTextErrors(arguments, RunLayout.Errors, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
-            UniversalNewlinesIndex,
+            RunLayout.UniversalNewlines,
             "universal_newlines",
             "LA3030",
             $"{owner}(..., universal_newlines=...) expects a bool or None.",
@@ -349,7 +335,7 @@ internal static class StaticProcessContractFamily
         => memberName is "run" or "call" or "check_call" or "check_output";
 
     private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings)
-        => IsShellKnownTrue(arguments, bindings, ShellIndex);
+        => IsShellKnownTrue(arguments, bindings, RunLayout.Shell);
 
     private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings, int shellIndex)
     {

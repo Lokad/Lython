@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -8,22 +9,6 @@ internal sealed partial class LythonRuntime
     private const int SubprocessPipe = -1;
     private const int SubprocessStdout = -2;
     private const int SubprocessDevNull = -3;
-
-    private const int SubprocessArgsIndex = 0;
-    private const int SubprocessInputIndex = 1;
-    private const int SubprocessCwdIndex = 2;
-    private const int SubprocessTimeoutIndex = 3;
-    private const int SubprocessCheckIndex = 4;
-    private const int SubprocessCaptureOutputIndex = 5;
-    private const int SubprocessStdinIndex = 6;
-    private const int SubprocessStdoutIndex = 7;
-    private const int SubprocessStderrIndex = 8;
-    private const int SubprocessShellIndex = 9;
-    private const int SubprocessTextIndex = 10;
-    private const int SubprocessEncodingIndex = 11;
-    private const int SubprocessErrorsIndex = 12;
-    private const int SubprocessEnvIndex = 13;
-    private const int SubprocessUniversalNewlinesIndex = 14;
 
     private sealed class SubprocessModule : PyModule
     {
@@ -60,28 +45,28 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Run(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => InvokeSubprocess(arguments, span, context, "subprocess.run", SubprocessCompletionKind.CompletedProcess);
+        => InvokeSubprocess(arguments, span, context, "subprocess.run", SubprocessInvocationPolicy.Run);
 
     private static async ValueTask<object> RunAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.run", SubprocessCompletionKind.CompletedProcess).ConfigureAwait(false);
+        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.run", SubprocessInvocationPolicy.Run).ConfigureAwait(false);
 
     private static object Call(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => InvokeSubprocess(arguments, span, context, "subprocess.call", SubprocessCompletionKind.ReturnCode, forcedCheck: false);
+        => InvokeSubprocess(arguments, span, context, "subprocess.call", SubprocessInvocationPolicy.Call);
 
     private static async ValueTask<object> CallAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.call", SubprocessCompletionKind.ReturnCode, forcedCheck: false).ConfigureAwait(false);
+        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.call", SubprocessInvocationPolicy.Call).ConfigureAwait(false);
 
     private static object CheckCall(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => InvokeSubprocess(arguments, span, context, "subprocess.check_call", SubprocessCompletionKind.ReturnCode, forcedCheck: true);
+        => InvokeSubprocess(arguments, span, context, "subprocess.check_call", SubprocessInvocationPolicy.CheckCall);
 
     private static async ValueTask<object> CheckCallAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.check_call", SubprocessCompletionKind.ReturnCode, forcedCheck: true).ConfigureAwait(false);
+        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.check_call", SubprocessInvocationPolicy.CheckCall).ConfigureAwait(false);
 
     private static object CheckOutput(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => InvokeSubprocess(arguments, span, context, "subprocess.check_output", SubprocessCompletionKind.Stdout, forcedCheck: true, forceStdoutPipe: true);
+        => InvokeSubprocess(arguments, span, context, "subprocess.check_output", SubprocessInvocationPolicy.CheckOutput);
 
     private static async ValueTask<object> CheckOutputAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.check_output", SubprocessCompletionKind.Stdout, forcedCheck: true, forceStdoutPipe: true).ConfigureAwait(false);
+        => await InvokeSubprocessAsync(arguments, span, context, "subprocess.check_output", SubprocessInvocationPolicy.CheckOutput).ConfigureAwait(false);
 
     private static object CompletedProcess(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -127,27 +112,19 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(RenderWindowsCommandLine(items));
     }
 
-    private static object InvokeSubprocess(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind)
-        => InvokeSubprocess(arguments, span, context, owner, completionKind, null, false);
-
-    private static object InvokeSubprocess(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind, bool? forcedCheck)
-        => InvokeSubprocess(arguments, span, context, owner, completionKind, forcedCheck, false);
-
     private static object InvokeSubprocess(
         object[] arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
-        SubprocessCompletionKind completionKind,
-        bool? forcedCheck,
-        bool forceStdoutPipe)
+        SubprocessInvocationPolicy policy)
     {
         if (context.Host.SubprocessRunner is null)
         {
             throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
         }
 
-        var invocation = BuildSubprocessInvocation(arguments, span, context, owner, completionKind, forcedCheck, forceStdoutPipe);
+        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
 
         context.RegisterHostCall(span);
         var result = context.RunSubprocess(invocation.Request, span);
@@ -155,27 +132,19 @@ internal sealed partial class LythonRuntime
         return CompleteSubprocessRun(result, invocation, span, context);
     }
 
-    private static ValueTask<object> InvokeSubprocessAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind)
-        => InvokeSubprocessAsync(arguments, span, context, owner, completionKind, null, false);
-
-    private static ValueTask<object> InvokeSubprocessAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner, SubprocessCompletionKind completionKind, bool? forcedCheck)
-        => InvokeSubprocessAsync(arguments, span, context, owner, completionKind, forcedCheck, false);
-
     private static async ValueTask<object> InvokeSubprocessAsync(
         object[] arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
-        SubprocessCompletionKind completionKind,
-        bool? forcedCheck,
-        bool forceStdoutPipe)
+        SubprocessInvocationPolicy policy)
     {
         if (context.Host.SubprocessRunner is null)
         {
             throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
         }
 
-        var invocation = BuildSubprocessInvocation(arguments, span, context, owner, completionKind, forcedCheck, forceStdoutPipe);
+        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
 
         context.RegisterHostCall(span);
         var result = await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false);
@@ -184,46 +153,49 @@ internal sealed partial class LythonRuntime
     }
 
     private static SubprocessInvocation BuildSubprocessInvocation(
-        object[] arguments,
+        BoundSubprocessArguments arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
-        SubprocessCompletionKind completionKind,
-        bool? forcedCheck,
-        bool forceStdoutPipe)
+        SubprocessInvocationPolicy policy)
     {
-        if (arguments.Length == 0)
+        if (!arguments.HasArgs)
         {
             throw new LythonRuntimeException("TypeError", $"{owner}(args, ...) expects at least one argument.", span);
         }
 
-        var shell = ParseSubprocessOptionalBool(arguments, SubprocessShellIndex, false, owner, "shell", span);
-        var args = ParseSubprocessArgs(GetArgument(arguments, SubprocessArgsIndex), shell, owner, span);
-        int? timeout = HasArgument(arguments, SubprocessTimeoutIndex)
-            ? ParseOptionalInt(GetArgument(arguments, SubprocessTimeoutIndex), $"{owner}(..., timeout=...)", span)
+        var shell = ParseSubprocessOptionalBool(arguments.Shell, false, owner, "shell", span);
+        var args = ParseSubprocessArgs(arguments.Args, shell, owner, span);
+        int? timeout = arguments.HasTimeout
+            ? ParseOptionalInt(arguments.Timeout, $"{owner}(..., timeout=...)", span)
             : null;
-        var check = forcedCheck ?? ParseSubprocessOptionalBool(arguments, SubprocessCheckIndex, false, owner, "check", span);
-        var captureOutput = ParseSubprocessOptionalBool(arguments, SubprocessCaptureOutputIndex, false, owner, "capture_output", span);
+        var check = policy.Check switch
+        {
+            SubprocessCheckPolicy.FromArguments => ParseSubprocessOptionalBool(arguments.Check, false, owner, "check", span),
+            SubprocessCheckPolicy.Disabled => false,
+            SubprocessCheckPolicy.Enabled => true,
+            _ => throw new InvalidOperationException($"Unknown subprocess check policy: {policy.Check}"),
+        };
+        var captureOutput = ParseSubprocessOptionalBool(arguments.CaptureOutput, false, owner, "capture_output", span);
         var textMode = ParseSubprocessTextMode(arguments, owner, span);
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
-        var environment = ParseSubprocessEnvironment(GetArgument(arguments, SubprocessEnvIndex), owner, span);
-        var cwd = ParseSubprocessCwd(GetArgument(arguments, SubprocessCwdIndex), owner, span);
+        var environment = ParseSubprocessEnvironment(arguments.Environment, owner, span);
+        var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span);
 
-        var stdin = ParseSubprocessInputMode(GetArgument(arguments, SubprocessStdinIndex), owner, span);
-        var stdout = ParseSubprocessOutputMode(GetArgument(arguments, SubprocessStdoutIndex), owner, "stdout", span);
-        var stderr = ParseSubprocessOutputMode(GetArgument(arguments, SubprocessStderrIndex), owner, "stderr", span);
+        var stdin = ParseSubprocessInputMode(arguments.StandardInput, owner, span);
+        var stdout = ParseSubprocessOutputMode(arguments.StandardOutput, owner, "stdout", span);
+        var stderr = ParseSubprocessOutputMode(arguments.StandardError, owner, "stderr", span);
         var standardInput = ReadOnlyMemory<byte>.Empty;
 
-        if (HasArgument(arguments, SubprocessInputIndex))
+        if (arguments.HasInput)
         {
-            if (HasArgument(arguments, SubprocessStdinIndex))
+            if (arguments.HasStandardInput)
             {
                 throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine input=... and stdin=....", span);
             }
 
-            var inputValue = GetArgument(arguments, SubprocessInputIndex);
-            if (!PyStringOps.TryAsString(inputValue, out var input))
+            if (!PyStringOps.TryAsString(arguments.Input, out var input))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(..., input=...) expects a string or None.", span);
             }
@@ -234,7 +206,7 @@ internal sealed partial class LythonRuntime
 
         if (captureOutput)
         {
-            if (HasArgument(arguments, SubprocessStdoutIndex) || HasArgument(arguments, SubprocessStderrIndex))
+            if (arguments.HasStandardOutput || arguments.HasStandardError)
             {
                 throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine capture_output=True with stdout=... or stderr=....", span);
             }
@@ -243,9 +215,9 @@ internal sealed partial class LythonRuntime
             stderr = LythonSubprocessStreamMode.Pipe;
         }
 
-        if (forceStdoutPipe)
+        if (policy.StandardOutput == SubprocessStandardOutputPolicy.ForcePipe)
         {
-            if (HasArgument(arguments, SubprocessStdoutIndex))
+            if (arguments.HasStandardOutput)
             {
                 throw new LythonRuntimeException("ValueError", $"{owner}(...) does not support an explicit stdout=... argument.", span);
             }
@@ -272,7 +244,7 @@ internal sealed partial class LythonRuntime
                     ? new LythonSubprocessOutputLimit(maximumOutputBytes)
                     : null),
             check,
-            completionKind);
+            policy.Completion);
     }
 
     private static object CompleteSubprocessRun(
@@ -564,17 +536,90 @@ internal sealed partial class LythonRuntime
         return payload;
     }
 
+    private readonly record struct BoundSubprocessArguments(object[] Values)
+    {
+        private static readonly SubprocessRunArgumentLayout Layout = SubprocessRunArgumentLayout.Standard;
+
+        public bool HasArgs => Values.Length > Layout.Args;
+        public object Args => GetArgument(Values, Layout.Args);
+        public bool HasInput => HasArgument(Values, Layout.Input);
+        public object Input => GetArgument(Values, Layout.Input);
+        public object CurrentDirectory => GetArgument(Values, Layout.CurrentDirectory);
+        public bool HasTimeout => HasArgument(Values, Layout.Timeout);
+        public object Timeout => GetArgument(Values, Layout.Timeout);
+        public object Check => GetArgument(Values, Layout.Check);
+        public object CaptureOutput => GetArgument(Values, Layout.CaptureOutput);
+        public bool HasStandardInput => HasArgument(Values, Layout.StandardInput);
+        public object StandardInput => GetArgument(Values, Layout.StandardInput);
+        public bool HasStandardOutput => HasArgument(Values, Layout.StandardOutput);
+        public object StandardOutput => GetArgument(Values, Layout.StandardOutput);
+        public bool HasStandardError => HasArgument(Values, Layout.StandardError);
+        public object StandardError => GetArgument(Values, Layout.StandardError);
+        public object Shell => GetArgument(Values, Layout.Shell);
+        public object Text => GetArgument(Values, Layout.Text);
+        public bool HasEncoding => HasArgument(Values, Layout.Encoding);
+        public object Encoding => GetArgument(Values, Layout.Encoding);
+        public bool HasErrors => HasArgument(Values, Layout.Errors);
+        public object Errors => GetArgument(Values, Layout.Errors);
+        public object Environment => GetArgument(Values, Layout.Environment);
+        public object UniversalNewlines => GetArgument(Values, Layout.UniversalNewlines);
+    }
+
     private readonly record struct SubprocessInvocation(
         string Owner,
         LythonSubprocessRequest Request,
         bool Check,
         SubprocessCompletionKind CompletionKind);
 
+    private readonly record struct SubprocessInvocationPolicy(
+        SubprocessCompletionKind Completion,
+        SubprocessCheckPolicy Check,
+        SubprocessStandardOutputPolicy StandardOutput)
+    {
+        public static readonly SubprocessInvocationPolicy Run = new(
+            SubprocessCompletionKind.CompletedProcess,
+            SubprocessCheckPolicy.FromArguments,
+            SubprocessStandardOutputPolicy.FromArguments);
+
+        public static readonly SubprocessInvocationPolicy Call = new(
+            SubprocessCompletionKind.ReturnCode,
+            SubprocessCheckPolicy.Disabled,
+            SubprocessStandardOutputPolicy.FromArguments);
+
+        public static readonly SubprocessInvocationPolicy CheckCall = new(
+            SubprocessCompletionKind.ReturnCode,
+            SubprocessCheckPolicy.Enabled,
+            SubprocessStandardOutputPolicy.FromArguments);
+
+        public static readonly SubprocessInvocationPolicy CheckOutput = new(
+            SubprocessCompletionKind.Stdout,
+            SubprocessCheckPolicy.Enabled,
+            SubprocessStandardOutputPolicy.ForcePipe);
+
+        public static readonly SubprocessInvocationPolicy Popen = new(
+            SubprocessCompletionKind.CompletedProcess,
+            SubprocessCheckPolicy.Disabled,
+            SubprocessStandardOutputPolicy.FromArguments);
+    }
+
     private enum SubprocessCompletionKind
     {
         CompletedProcess,
         ReturnCode,
         Stdout,
+    }
+
+    private enum SubprocessCheckPolicy
+    {
+        FromArguments,
+        Disabled,
+        Enabled,
+    }
+
+    private enum SubprocessStandardOutputPolicy
+    {
+        FromArguments,
+        ForcePipe,
     }
 
     private static IReadOnlyList<string> ParseSubprocessArgs(object value, bool shell, string owner, LythonSourceSpan span)
@@ -624,18 +669,18 @@ internal sealed partial class LythonRuntime
         return items;
     }
 
-    private static bool ParseSubprocessTextMode(object[] arguments, string owner, LythonSourceSpan span)
+    private static bool ParseSubprocessTextMode(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
     {
-        var text = ParseSubprocessOptionalBool(arguments, SubprocessTextIndex, false, owner, "text", span);
-        var universalNewlines = ParseSubprocessOptionalBool(arguments, SubprocessUniversalNewlinesIndex, false, owner, "universal_newlines", span);
+        var text = ParseSubprocessOptionalBool(arguments.Text, false, owner, "text", span);
+        var universalNewlines = ParseSubprocessOptionalBool(arguments.UniversalNewlines, false, owner, "universal_newlines", span);
         return text || universalNewlines ||
-            HasArgument(arguments, SubprocessEncodingIndex) ||
-            HasArgument(arguments, SubprocessErrorsIndex);
+            arguments.HasEncoding ||
+            arguments.HasErrors;
     }
 
-    private static LythonSubprocessTextEncoding ParseSubprocessEncoding(object[] arguments, string owner, LythonSourceSpan span)
+    private static LythonSubprocessTextEncoding ParseSubprocessEncoding(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
     {
-        var value = GetArgument(arguments, SubprocessEncodingIndex);
+        var value = arguments.Encoding;
         if (value is PyNone or null)
         {
             return LythonSubprocessTextEncoding.Utf8;
@@ -653,9 +698,9 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static LythonSubprocessTextErrorMode ParseSubprocessErrors(object[] arguments, string owner, LythonSourceSpan span)
+    private static LythonSubprocessTextErrorMode ParseSubprocessErrors(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
     {
-        var value = GetArgument(arguments, SubprocessErrorsIndex);
+        var value = arguments.Errors;
         if (value is PyNone or null)
         {
             return LythonSubprocessTextErrorMode.Strict;
@@ -767,9 +812,8 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", $"{owner}(..., {parameterName}=...) expects a subprocess stream constant or None.", span);
     }
 
-    private static bool ParseSubprocessOptionalBool(object[] arguments, int index, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
+    private static bool ParseSubprocessOptionalBool(object value, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
     {
-        var value = GetArgument(arguments, index);
         if (value is PyNone or null)
         {
             return defaultValue;

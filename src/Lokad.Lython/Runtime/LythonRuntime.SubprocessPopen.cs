@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -45,30 +46,29 @@ internal sealed partial class LythonRuntime
 
         ValidatePopenCompatibilityOptions(arguments, span);
         var pipelineInput = GetArgument(arguments, PopenStdinIndex) as PopenOutputStream;
-        var shared = new object[15];
+        var layout = SubprocessRunArgumentLayout.Standard;
+        var shared = new object[layout.UniversalNewlines + 1];
         Array.Fill(shared, PyNone.Instance);
-        shared[SubprocessArgsIndex] = GetArgument(arguments, PopenArgsIndex);
-        shared[SubprocessCwdIndex] = GetArgument(arguments, PopenCwdIndex);
-        shared[SubprocessStdinIndex] = pipelineInput is null
+        shared[layout.Args] = GetArgument(arguments, PopenArgsIndex);
+        shared[layout.CurrentDirectory] = GetArgument(arguments, PopenCwdIndex);
+        shared[layout.StandardInput] = pipelineInput is null
             ? GetArgument(arguments, PopenStdinIndex)
             : new BigInteger(SubprocessPipe);
-        shared[SubprocessStdoutIndex] = GetArgument(arguments, PopenStdoutIndex);
-        shared[SubprocessStderrIndex] = GetArgument(arguments, PopenStderrIndex);
-        shared[SubprocessShellIndex] = GetArgument(arguments, PopenShellIndex);
-        shared[SubprocessTextIndex] = GetArgument(arguments, PopenTextIndex);
-        shared[SubprocessEncodingIndex] = GetArgument(arguments, PopenEncodingIndex);
-        shared[SubprocessErrorsIndex] = GetArgument(arguments, PopenErrorsIndex);
-        shared[SubprocessEnvIndex] = GetArgument(arguments, PopenEnvIndex);
-        shared[SubprocessUniversalNewlinesIndex] = GetArgument(arguments, PopenUniversalNewlinesIndex);
+        shared[layout.StandardOutput] = GetArgument(arguments, PopenStdoutIndex);
+        shared[layout.StandardError] = GetArgument(arguments, PopenStderrIndex);
+        shared[layout.Shell] = GetArgument(arguments, PopenShellIndex);
+        shared[layout.Text] = GetArgument(arguments, PopenTextIndex);
+        shared[layout.Encoding] = GetArgument(arguments, PopenEncodingIndex);
+        shared[layout.Errors] = GetArgument(arguments, PopenErrorsIndex);
+        shared[layout.Environment] = GetArgument(arguments, PopenEnvIndex);
+        shared[layout.UniversalNewlines] = GetArgument(arguments, PopenUniversalNewlinesIndex);
 
         var invocation = BuildSubprocessInvocation(
-            shared,
+            new BoundSubprocessArguments(shared),
             span,
             context,
             "subprocess.Popen",
-            SubprocessCompletionKind.CompletedProcess,
-            forcedCheck: false,
-            forceStdoutPipe: false);
+            SubprocessInvocationPolicy.Popen);
         var args = new PyList(
             invocation.Request.Args.Select<string, object>(PyString.FromString),
             context.MemoryGovernor,
