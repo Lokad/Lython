@@ -93,7 +93,7 @@ Lython is not trying to become a general-purpose Python runtime.
 
 ## 3. Non-Goals
 
-The following are explicitly outside the initial scope:
+The following are explicitly outside the supported scope:
 
 - full Python compatibility
 - third-party package installation
@@ -261,7 +261,7 @@ This section therefore focuses on the additional Python-surface commitments that
 
 ### 8.1 Supported Python-Surface Additions
 
-The initial subset must support:
+The supported subset must support:
 
 - named function definitions
 - positional parameters
@@ -279,7 +279,7 @@ The initial subset must support:
 - `continue`
 - `pass`
 
-The initial subset must support:
+The supported subset must support:
 
 - nested blocks
 - `break` and `continue` inside loops
@@ -384,7 +384,7 @@ and placeholder partial application must fail explicitly.
 
 ### 8.3 Supported Literal Surface
 
-The initial subset must support exactly the following literal forms:
+The supported subset must support exactly the following literal forms:
 
 - decimal integer literals
 - decimal integer literals with `_` separators
@@ -477,11 +477,11 @@ For supported statically known sized values, comparison of `len(value)` with a k
 
 ### 9.3 `None`, Comparison, Membership, and Indexing
 
-The initial subset must include the value `None`.
+The supported subset must include the value `None`.
 
 `return` without a value must produce `None`.
 
-The initial subset must support Python comparison semantics for the supported subset, including:
+The supported subset must support Python comparison semantics, including:
 
 - `==`
 - `!=`
@@ -505,7 +505,7 @@ Membership semantics must follow Python for the supported subset:
 - tuple membership tests element equality
 - dictionary membership tests keys
 
-The initial subset must support indexing with Python semantics for the supported subset:
+The supported subset must support indexing with Python semantics:
 
 - string indexing
 - list indexing
@@ -514,7 +514,7 @@ The initial subset must support indexing with Python semantics for the supported
 
 Negative indices for strings, lists, and tuples must behave as in Python.
 
-The initial subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
+The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
 ### 9.3.1 Assignment Semantics
 
@@ -556,7 +556,7 @@ Assignment expressions using `:=` are supported for simple-name targets only. Th
 
 Numeric behavior for the supported subset must follow Python semantics.
 
-The initial subset supports integer values, floating-point values, and boolean values.
+The supported subset includes integer values, floating-point values, and boolean values.
 
 `int` must have Python integer semantics:
 
@@ -573,7 +573,7 @@ The initial subset supports integer values, floating-point values, and boolean v
 
 `float` must have Python floating-point semantics for the supported subset.
 
-The initial subset must support numeric operators with Python semantics for the supported subset, including:
+The supported subset must support numeric operators with Python semantics, including:
 
 - `+`
 - `-`
@@ -588,9 +588,9 @@ Division and remainder semantics must follow Python exactly:
 - `//` is floor division
 - `%` satisfies Python remainder semantics, including for negative operands
 
-The initial subset must support mixed `int` and `float` arithmetic for these operators with Python result semantics.
+The supported subset must support mixed `int` and `float` arithmetic for these operators with Python result semantics.
 
-The initial subset must support numeric comparisons between `int` and `float` with Python semantics.
+The supported subset must support numeric comparisons between `int` and `float` with Python semantics.
 
 The identity `a == (a // b) * b + (a % b)` must hold for supported numeric values when `b != 0` and Python defines the expression.
 
@@ -610,7 +610,7 @@ In particular, this includes:
 - return-value behavior
 - recursion behavior for supported functions
 
-Additional function features are outside the initial subset. If they are added later, they must be implemented faithfully or rejected explicitly.
+Function features not specified here remain unsupported. Any future additions must be implemented faithfully or rejected explicitly.
 
 ### 9.6 Collections
 
@@ -624,7 +624,7 @@ In particular:
 
 Tuple behavior must follow Python semantics for the supported subset.
 
-The initial subset must support:
+The supported subset must support:
 
 - tuple indexing
 - tuple iteration
@@ -656,7 +656,7 @@ For the supported old-style interpolation surface, `str % value` follows Python'
 
 ### 9.8 Iteration
 
-The initial subset must support iteration over:
+The supported subset must support iteration over:
 
 - strings
 - lists
@@ -692,9 +692,9 @@ Unbounded forms such as `count`, `repeat(..., times=None)`, and `cycle` must rem
 
 ### 9.9 Exceptions
 
-The initial subset must support Python-style exception propagation.
+The supported subset must support Python-style exception propagation.
 
-The initial subset must support at least the following exception classes:
+The supported subset must support at least the following exception classes:
 
 - `Exception`
 - `ValueError`
@@ -702,7 +702,7 @@ The initial subset must support at least the following exception classes:
 - `IndexError`
 - `RuntimeError`
 
-The initial subset must support:
+The supported subset must support:
 
 - `raise ExceptionType("message")`
 - `raise variable`
@@ -716,7 +716,7 @@ not part of the current subset.
 
 If an uncaught exception reaches the top level of the script, execution must fail.
 
-The initial subset must raise the following exception types for the following runtime conditions:
+The supported subset must raise the following exception types for the following runtime conditions:
 
 - division or remainder by zero: `ValueError`
 - invalid integer conversion through `int(...)`: `ValueError`
@@ -776,7 +776,7 @@ Lython must not introduce alternate names for supported Python builtins or suppo
 
 ### 11.1 Supported Builtins
 
-The initial builtin environment must include exactly the following builtins and builtin exception classes:
+The builtin environment must include exactly the following builtins and builtin exception classes:
 
 - `len`
 - `range`
@@ -871,7 +871,7 @@ The initial builtin environment must include exactly the following builtins and 
 - `OverflowError`
 - `SystemExit`
 
-No builtin outside this set is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
+No builtin outside this set is supported unless it is explicitly added elsewhere in this specification.
 
 `sorted(iterable, *, key=None, reverse=False)` and `list.sort(...)` must be
 stable, including when `reverse=True`. The key function is evaluated exactly
@@ -945,7 +945,7 @@ Paths in the language surface are strings.
 
 The path separator in the language surface is `/`.
 
-The initial subset must support:
+The supported subset must support:
 
 - absolute paths
 - relative paths
@@ -998,14 +998,14 @@ such as `os.path.exists`, `os.path.isfile`, `os.path.isdir`, `Path.exists()`,
 
 ### 11.5 Path Helper Surface
 
-The initial subset must support Python-shaped path helpers such as
+The supported subset must support Python-shaped path helpers such as
 `os.path.join`, `os.path.dirname`, `os.path.basename`, `Path` composition with
 `/`, `Path.parent`, and `Path.name`. These helpers must operate on the
 language-level path model defined by this specification.
 
 ### 11.6 Supported String, List, and Dictionary Surface
 
-The initial subset must support the following string methods:
+The supported subset must support the following string methods:
 
 - `split`
 - `splitlines`
@@ -1021,7 +1021,7 @@ The initial subset must support the following string methods:
 - `upper`
 - `format`
 
-The initial subset must support the following list methods:
+The supported subset must support the following list methods:
 
 - `append`
 - `extend`
@@ -1041,7 +1041,7 @@ Lists must support Python-style slice assignment and deletion for ordinary conti
 
 Lists and tuples must support lexicographic ordering when their corresponding elements are comparable.
 
-The initial subset must support the following dictionary methods:
+The supported subset must support the following dictionary methods:
 
 - `get`
 - `keys`
@@ -1773,18 +1773,21 @@ Behavioral drift in these areas is costly because agents will assume Python.
 
 ---
 
-## 19. Initial Supported Subset
+## 19. Supported Subset Summary
 
-The initial supported subset consists of the exact Python-surface subset defined in section 8, together with:
+The current supported subset is defined normatively throughout sections 8 through 17. In particular, it includes:
 
-- the `re`, `json`, `csv`, and `fnmatch` subsets defined in sections 11.7 through 11.10
-- structured delimited text processing and tabular reshaping
-- controlled path-space operations
+- the syntax, expression, function, class, exception, iteration, and data-model surfaces defined in sections 8 through 10
+- the builtin environment and allowlisted standard-library modules defined in section 11, including the module inventory in section 8.1
+- structured delimited-text, archive, spreadsheet, regex, path, and data-transformation workflows
+- controlled path-space operations through public host capabilities
 - host-mediated subprocess execution as defined in section 11.12, when the host provides the capability
 
-The initial subset explicitly excludes ambient shell command execution outside host mediation.
+The module inventory and individual module contracts are authoritative; this summary is deliberately not a second closed list that can drift as support expands.
 
-This subset must be sufficient for a coding agent to naturally write scripts such as:
+The supported subset explicitly excludes ambient shell command execution outside host mediation.
+
+The subset must be sufficient for a coding agent to naturally write scripts such as:
 
 - read a file
 - modify the text
