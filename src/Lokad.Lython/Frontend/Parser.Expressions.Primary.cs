@@ -7,6 +7,95 @@ internal sealed partial class Parser
 {
     private ExpressionSyntax? ParsePrimaryExpression()
     {
+        ExpressionSyntax? ParseListLiteral()
+        {
+            var openBracket = ReadToken();
+            var items = new List<ExpressionSyntax>();
+            var unpackingFlags = new List<bool>();
+            SkipGroupedExpressionTrivia();
+
+            if (CurrentToken == Token.End)
+            {
+                AddDiagnostic("LA1021", "Unexpected end of file while parsing list literal; expected ']'.", openBracket);
+                return null;
+            }
+
+            if (CurrentToken != Token.CloseBracket)
+            {
+                while (true)
+                {
+                    if (CurrentToken == Token.End)
+                    {
+                        AddDiagnostic("LA1021", "Unexpected end of file while parsing list literal; expected ']'.", openBracket);
+                        return null;
+                    }
+
+                    var isUnpacking = CurrentToken == Token.Star;
+                    if (isUnpacking)
+                    {
+                        ReadToken();
+                    }
+
+                    var item = ParseExpression();
+                    if (item is null)
+                    {
+                        return null;
+                    }
+
+                    items.Add(item);
+                    unpackingFlags.Add(isUnpacking);
+                    SkipGroupedExpressionTrivia();
+
+                    if (CurrentToken == Token.For)
+                    {
+                        if (items.Count != 1 || isUnpacking)
+                        {
+                            AddDiagnostic("LA2000", "Unsupported Python construct 'iterable unpacking in comprehension'.", _position);
+                            return null;
+                        }
+
+                        if (!TryParseComprehensionClauses(out var clauses, out _))
+                        {
+                            return null;
+                        }
+
+                        SkipGroupedExpressionTrivia();
+                        if (!TryRead(Token.CloseBracket, out var closeComprehension))
+                        {
+                            AddDiagnostic("LA1021", "Expected ']' after list literal.", openBracket);
+                            return null;
+                        }
+
+                        return new ListComprehensionExpressionSyntax(
+                            item,
+                            clauses,
+                            Merge(SpanOf(openBracket), SpanOf(closeComprehension)));
+                    }
+
+                    if (CurrentToken != Token.Comma)
+                    {
+                        break;
+                    }
+
+                    ReadToken();
+                    SkipGroupedExpressionTrivia();
+                    if (CurrentToken == Token.CloseBracket)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            SkipGroupedExpressionTrivia();
+            if (!TryRead(Token.CloseBracket, out var closeBracket))
+            {
+                AddDiagnostic("LA1021", "Expected ']' after list literal.", openBracket);
+                return null;
+            }
+
+            return new ListLiteralExpressionSyntax(items, unpackingFlags, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
+        }
+
         if (TryParseUnsupportedExpression(out var unsupported))
         {
             return unsupported;
