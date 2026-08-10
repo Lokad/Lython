@@ -101,12 +101,6 @@ internal sealed partial class LythonRuntime
 
         public IReadOnlyList<OpenPyxlConditionalFormatting> ConditionalFormattings => _conditionalFormattings;
 
-        public IReadOnlyList<OpenPyxlLoadedDrawing> Drawings => _drawings;
-
-        public IReadOnlyList<OpenPyxlLoadedChart> Charts => _charts;
-
-        public IReadOnlyList<OpenPyxlLoadedImage> Images => _images;
-
         public IReadOnlyList<CellRangeAddress> MergedRanges => _mergedRanges;
 
         public IReadOnlyDictionary<int, OpenPyxlColumnDimension> ColumnDimensions => _columnDimensions;

@@ -12,10 +12,6 @@ internal sealed class PyProductIterator : PyIteratorBase
     private bool _started;
     private bool _done;
 
-    public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools) : this(pools, null, null) { }
-
-    public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools, MemoryGovernor? memoryGovernor) : this(pools, memoryGovernor, null) { }
-
     public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan)
     {
         _pools = pools;
@@ -90,10 +86,6 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private bool _done;
-
-    public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span) : this(iterables, fillValue, span, null, null) { }
-
-    public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor) : this(iterables, fillValue, span, memoryGovernor, null) { }
 
     public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan)
     {

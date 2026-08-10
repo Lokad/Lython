@@ -86,28 +86,6 @@ internal static class StaticContractChecks
         }
     }
 
-    public static void AnalyzeKnownNonByteStringArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression))
-        {
-            return;
-        }
-
-        if (!StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out _) &&
-            !StaticAbstractValueResolver.IsDefinitelyKnownBytesLiteral(expression, bindings) &&
-            StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
-        }
-    }
-
     public static void AnalyzeCallableOrNoneArgument(
         ConcreteCallArguments arguments,
         int position,

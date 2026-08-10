@@ -301,24 +301,6 @@ internal static class StaticAbstractFacts
         return false;
     }
 
-    public static string DescribeLiteralType(ExpressionSyntax expression)
-    {
-        return expression switch
-        {
-            IntegerLiteralExpressionSyntax => "int",
-            FloatLiteralExpressionSyntax => "float",
-            BooleanLiteralExpressionSyntax => "bool",
-            BytesLiteralExpressionSyntax => "bytes",
-            StringLiteralExpressionSyntax => "str",
-            NoneLiteralExpressionSyntax => "NoneType",
-            ListLiteralExpressionSyntax => "list",
-            TupleLiteralExpressionSyntax => "tuple",
-            DictLiteralExpressionSyntax => "dict",
-            SetLiteralExpressionSyntax => "set",
-            _ => "object"
-        };
-    }
-
     public static string DescribeValue(AbstractValue value)
     {
         return value.Kind switch

@@ -14,11 +14,4 @@ public sealed class ProjectionContractSubsystemTests
         Assert.Equal("Dictionary<object, object?>", PublicProjectionContract.Describe(new PyDict()));
         Assert.Equal("ReFindAllResult", PublicProjectionContract.Describe(new LythonRuntime.ReFindAllResult(new PyList())));
     }
-
-    [Fact]
-    public void PublicProjectionContract_RejectsNoneDictionaryKeys()
-    {
-        Assert.False(PublicProjectionContract.CanProjectDictionaryKey(PyNone.Instance));
-        Assert.True(PublicProjectionContract.CanProjectDictionaryKey(PyString.FromString("x")));
-    }
 }

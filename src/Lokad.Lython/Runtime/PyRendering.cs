@@ -198,27 +198,6 @@ internal static class PyRendering
         return interpolated ? ToInterpolatedPyString(key, context) : ToPythonPyString(key, context);
     }
 
-    public static PyString RenderSet(PySet set, PyRenderingContext context, bool interpolated)
-    {
-        if (set.Count == 0)
-        {
-            return EmptySetLiteral;
-        }
-
-        var rendered = new List<PyString>(set.Count);
-        foreach (var item in set)
-        {
-            rendered.Add(interpolated ? ToInterpolatedPyString(item, context) : ToPythonPyString(item, context));
-        }
-
-        rendered.Sort(PyStringOrdinalComparer.Instance);
-        return JoinRenderedSequence(
-            "{",
-            rendered,
-            "}",
-            context);
-    }
-
     private static PyString ToReprPyStringCore(object value, PyRenderingContext context, HashSet<object> activeContainers)
     {
         if (PyStringOps.TryAsString(value, out var text))

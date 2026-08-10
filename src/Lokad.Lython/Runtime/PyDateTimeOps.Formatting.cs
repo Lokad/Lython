@@ -209,20 +209,6 @@ internal static partial class PyDateTimeOps
         return builder.ToString();
     }
 
-    public static bool MatchesBuiltinType(string typeName, object value)
-    {
-        return typeName switch
-        {
-            "datetime.timedelta" => value is PyTimedelta,
-            "datetime.date" => value is PyDate,
-            "datetime.time" => value is PyTime,
-            "datetime.datetime" => value is PyDateTime,
-            "datetime.timezone" => value is PyTimezone,
-            "datetime.tzinfo" => value is PyTimezone,
-            _ => false
-        };
-    }
-
     private static object SubtractDateTimes(PyDateTime left, PyDateTime right, LythonSourceSpan span)
     {
         if ((left.TzInfo is null) != (right.TzInfo is null))
