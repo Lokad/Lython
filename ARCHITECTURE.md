@@ -50,10 +50,17 @@ added.
 
 `AbstractValue` is a closed analysis value: its factories establish the payload
 required by each `AbstractValueKind`, and `RequirePayload<T>` is the checked
-access path. `AbstractValue.Join` computes conservative control-flow merges.
-Protected `try` bodies suppress abstract runtime diagnostics when an `except`
-body can catch them, but their successful-path facts still flow into `else` and
-the post-`try` merge.
+access path. `AbstractValueTraitFacts` is the exhaustive source of negative
+callability, iteration, sizing, and subscription facts. `AbstractValue.Join`
+delegates conservative control-flow merges to the focused lattice-join
+component. Protected `try` bodies suppress abstract runtime diagnostics when an
+`except` body can catch them, but their successful-path facts still flow into
+`else` and the post-`try` merge.
+
+`ScopeDirectiveFactsCollector` owns function-local name discovery as well as
+`global` and `nonlocal` facts. Name-binding diagnostics, static analysis, and
+execution must reuse those facts so exception aliases, pattern captures,
+parameters, and assignment targets cannot acquire path-specific scope rules.
 
 ## Lowering And Execution
 
@@ -61,6 +68,11 @@ the post-`try` merge.
 and async execution support it. `ExecutableScript` is an optional, block-based
 representation for the synchronous fast path. Unsupported executable lowering
 falls back to `LoweredScript`; it is not a compilation error.
+
+Lowered assignments are closed variants for names, chains, annotations,
+unpacking, subscripts, slices, members, and augmented targets. Consumers should
+dispatch on those variants rather than reconstructing target shape from
+nullable fields or from the original syntax node.
 
 The executable path has two layers:
 
@@ -89,6 +101,17 @@ their corresponding subdirectories. Cross-cutting behavior is expressed through
 small protocols such as callability, truthiness, indexing, rendering, and member
 access.
 
+`PyString` is the sole Python text representation after values enter the runtime.
+Public host/global inputs normalize CLR strings at the boundary, and public
+projection converts governed values back for consumers. Runtime switches must
+not accept raw CLR strings as a second, partially compatible Python value kind.
+
+Protocol-aware unary, binary, comparison, and augmented-assignment dispatch is
+centralized so syntax-tree, lowered, executable, and `operator`-module paths do
+not drift. Python sorting uses a stable merge operation with one key evaluation
+per item and ordered sync/async comparisons; proportional scratch storage must
+be accounted for before allocation.
+
 Dynamic attributes deliberately distinguish reading from mutation:
 
 - `IPyDynamicAttributes` provides lookup.
@@ -108,6 +131,11 @@ default struct value is the ended state.
 subprocesses, timing, and standard streams. Module implementations must not use
 ambient filesystem APIs, process APIs, environment variables, clocks, delays,
 or entropy as fallbacks.
+
+Default methods for unavailable optional host operations throw
+`LythonHostCapabilityUnavailableException`. Host-boundary translation uses that
+type, rather than matching exception messages, to produce the corresponding
+Python-shaped unavailable-capability failure.
 
 Before a host operation, runtime code registers the call with the execution
 budget. Synchronous entry points reject operations that require unavailable
@@ -156,4 +184,3 @@ Before committing a behavior change:
    changes.
 3. Run the complete solution tests with warnings treated as errors.
 4. Keep package/version changes in a separate, explicit release commit.
-

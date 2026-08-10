@@ -43,6 +43,9 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Replaced ambiguous iteration, abstract-value, cached-resolution, and workbook-save states with closed domain contracts; separated readable from mutable dynamic attributes.
 - Centralized host-exception translation, localized incidental single-caller helpers, and split path-host dispatch and executable-frame interpretation into cohesive components.
 - Added a maintainer architecture guide covering compilation, execution paths, containment invariants, runtime protocols, and verification boundaries.
+- Centralized protocol-aware operator dispatch across execution paths and made Python sorting stable and subquadratic with governed scratch storage and one key evaluation per item.
+- Replaced weak lowered-assignment, text-flush, codec-option, and missing-capability states with closed variants or typed failures; made `PyString` the sole runtime text representation.
+- Consolidated tuple-like recognition, OpenPyXL style inventories, abstract-value capabilities, lattice joins, and function-local binding facts; removed the superseded internal APIs those sources of truth replaced.
 
 ## 0.7.0 - 2026-07-02
 

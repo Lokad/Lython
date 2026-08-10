@@ -873,6 +873,13 @@ The initial builtin environment must include exactly the following builtins and 
 
 No builtin outside this set is part of the initial supported subset unless it is explicitly added elsewhere in this specification.
 
+`sorted(iterable, *, key=None, reverse=False)` and `list.sort(...)` must be
+stable, including when `reverse=True`. The key function is evaluated exactly
+once per item before comparisons begin. Comparisons follow Lython's
+Python-shaped rich-comparison protocol in deterministic order in both
+synchronous and asynchronous execution; sorting must not delegate observable
+comparison effects to a CLR comparer callback.
+
 ### 11.2 Contained File And Path Surface
 
 For path and text-resource manipulation, scripts must use Python-shaped APIs:
