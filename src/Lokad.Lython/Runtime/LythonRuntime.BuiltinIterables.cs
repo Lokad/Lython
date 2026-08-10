@@ -9,6 +9,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private readonly record struct MinMaxArguments(
+        IReadOnlyList<object> Positional,
+        ICallable? Key,
+        object? DefaultValue);
+
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -188,11 +193,11 @@ internal sealed partial class LythonRuntime
 
     private static object MinMax(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {
-        var (positional, keyCallable, hasDefault, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
         using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span) : positional).GetEnumerator();
         if (!enumerator.MoveNext())
         {
-            if (hasDefault)
+            if (defaultValue is not null)
             {
                 return defaultValue;
             }
@@ -256,7 +261,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
     {
-        var (positional, keyCallable, hasDefault, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
         if (positional.Count > 1)
         {
             return await MinMaxValuesAsync(positional, keyCallable, isMin, span, context).ConfigureAwait(false);
@@ -266,7 +271,7 @@ internal sealed partial class LythonRuntime
         var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            if (hasDefault)
+            if (defaultValue is not null)
             {
                 return defaultValue;
             }
@@ -327,7 +332,7 @@ internal sealed partial class LythonRuntime
         return best;
     }
 
-    private static (IReadOnlyList<object> Positional, ICallable? Key, bool HasDefault, object Default) BindMinMaxArguments(
+    private static MinMaxArguments BindMinMaxArguments(
         CallArgumentValue[] arguments,
         string name,
         LythonSourceSpan span)
@@ -335,8 +340,7 @@ internal sealed partial class LythonRuntime
         var positional = new List<object>();
         ICallable? key = null;
         var sawKey = false;
-        var hasDefault = false;
-        object defaultValue = PyNone.Instance;
+        object? defaultValue = null;
         foreach (var argument in arguments)
         {
             if (argument.IsPositional)
@@ -364,12 +368,11 @@ internal sealed partial class LythonRuntime
 
             if (argument.KeywordName == "default")
             {
-                if (hasDefault)
+                if (defaultValue is not null)
                 {
                     throw new LythonRuntimeException("TypeError", $"{name}() got multiple values for keyword argument 'default'", span);
                 }
 
-                hasDefault = true;
                 defaultValue = argument.Value;
                 continue;
             }
@@ -382,12 +385,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{name} expected at least 1 argument, got 0", span);
         }
 
-        if (positional.Count > 1 && hasDefault)
+        if (positional.Count > 1 && defaultValue is not null)
         {
             throw new LythonRuntimeException("TypeError", $"Cannot specify a default for {name}() with multiple positional arguments", span);
         }
 
-        return (positional, key, hasDefault, defaultValue);
+        return new MinMaxArguments(positional, key, defaultValue);
     }
 
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)

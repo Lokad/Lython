@@ -9,6 +9,10 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class StatisticsModule : PyModule
     {
+        private readonly record struct PairedNumericValues(List<double> X, List<double> Y);
+
+        private readonly record struct CenteredSums(double SumXX, double SumYY, double SumXY);
+
         private static object Mean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var values = GetNumericValues(arguments, "statistics.mean", span, context);
@@ -440,7 +444,7 @@ internal sealed partial class LythonRuntime
             return values;
         }
 
-        private static (List<double> X, List<double> Y) GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span)
+        private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span)
         {
             if (arguments.Length != 2)
             {
@@ -454,10 +458,10 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("StatisticsError", $"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
             }
 
-            return (x, y);
+            return new PairedNumericValues(x, y);
         }
 
-        private static (double SumXX, double SumYY, double SumXY) ComputeCenteredSums(IReadOnlyList<double> x, IReadOnlyList<double> y)
+        private static CenteredSums ComputeCenteredSums(IReadOnlyList<double> x, IReadOnlyList<double> y)
         {
             var xMean = x.Average();
             var yMean = y.Average();
@@ -473,7 +477,7 @@ internal sealed partial class LythonRuntime
                 sumXY += dx * dy;
             }
 
-            return (sumXX, sumYY, sumXY);
+            return new CenteredSums(sumXX, sumYY, sumXY);
         }
 
         private static double InterpolateInclusiveQuantile(IReadOnlyList<double> values, int cut, int partitions)

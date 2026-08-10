@@ -51,6 +51,8 @@ internal sealed partial class LythonRuntime
 
     internal static class ReMatchMembers
     {
+        private readonly record struct RegexGroupBounds(BigInteger Start, BigInteger End);
+
         public static bool TryGetMember(ReMatchObject match, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -197,19 +199,19 @@ internal sealed partial class LythonRuntime
             return ResolveIndexedGroup(match, number, span);
         }
 
-        private static (BigInteger Start, BigInteger End) ResolveGroupBounds(ReMatchObject match, object group, LythonSourceSpan span)
+        private static RegexGroupBounds ResolveGroupBounds(ReMatchObject match, object group, LythonSourceSpan span)
         {
             if (TryResolveGroupIndex(match, group, span, out var index))
             {
                 if (index == 0)
                 {
-                    return (match.Start, match.End);
+                    return new RegexGroupBounds(match.Start, match.End);
                 }
 
                 var capture = match.Captures[index - 1];
                 return capture is null
-                    ? (new BigInteger(-1), new BigInteger(-1))
-                    : (capture.Start, capture.End);
+                    ? new RegexGroupBounds(new BigInteger(-1), new BigInteger(-1))
+                    : new RegexGroupBounds(capture.Start, capture.End);
             }
 
             throw new LythonRuntimeException("TypeError", "Regex group identifier must be an integer or group name.", span);

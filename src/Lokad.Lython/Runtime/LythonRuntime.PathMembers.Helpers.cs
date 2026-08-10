@@ -8,6 +8,23 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class PathMembers
     {
+        private readonly record struct PathOpenOptions(
+            string Mode,
+            TextEncodingMode EncodingMode,
+            TextErrorMode Errors,
+            TextNewlineMode Newline);
+
+        private readonly record struct PathReadTextOptions(
+            TextEncodingMode EncodingMode,
+            TextErrorMode Errors,
+            TextNewlineMode Newline);
+
+        private readonly record struct PathWriteTextOptions(
+            PyString Text,
+            TextEncodingMode EncodingMode,
+            TextErrorMode Errors,
+            TextNewlineMode Newline);
+
         private static BoundCallable UnsupportedPathMember(string name, string message)
             => new((object[] arguments, LythonSourceSpan span, ExecutionContext context) =>
             {
@@ -330,7 +347,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static (string Mode, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParsePathOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
+        private static PathOpenOptions ParsePathOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
         {
             var arguments = boundArguments.Values;
             if (boundArguments.Count > 5)
@@ -361,10 +378,10 @@ internal sealed partial class LythonRuntime
                 ? ParseTextNewline(arguments[4], "Path.open()", span)
                 : TextNewlineMode.TranslateUniversal;
 
-            return (ParseTextOpenMode(mode, "Path.open()", span), encodingMode, errors, newline);
+            return new PathOpenOptions(ParseTextOpenMode(mode, "Path.open()", span), encodingMode, errors, newline);
         }
 
-        private static (TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParsePathReadTextArguments(object[] arguments, LythonSourceSpan span)
+        private static PathReadTextOptions ParsePathReadTextArguments(object[] arguments, LythonSourceSpan span)
         {
             if (arguments.Length > 3)
             {
@@ -381,10 +398,10 @@ internal sealed partial class LythonRuntime
                 ? ParseTextNewline(arguments[2], "Path.read_text()", span)
                 : TextNewlineMode.TranslateUniversal;
 
-            return (encodingMode, errors, newline);
+            return new PathReadTextOptions(encodingMode, errors, newline);
         }
 
-        private static (PyString Text, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParsePathWriteTextArguments(object[] arguments, LythonSourceSpan span)
+        private static PathWriteTextOptions ParsePathWriteTextArguments(object[] arguments, LythonSourceSpan span)
         {
             if (arguments.Length is < 1 or > 4 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
@@ -401,7 +418,7 @@ internal sealed partial class LythonRuntime
                 ? ParseTextNewline(arguments[3], "Path.write_text()", span)
                 : TextNewlineMode.TranslateUniversal;
 
-            return (text, encodingMode, errors, newline);
+            return new PathWriteTextOptions(text, encodingMode, errors, newline);
         }
 
         private static PyString ReadPathText(

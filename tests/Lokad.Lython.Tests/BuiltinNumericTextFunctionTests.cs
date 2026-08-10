@@ -44,6 +44,7 @@ values = []
 values.append(str(min(3, 1, 2)))
 values.append(str(max("a", "bbb", "cc", key=len)))
 values.append(str(min([], default=7)))
+values.append(repr(max([], default=None)))
 try:
     max(1, 2, default=0)
 except TypeError:
@@ -53,7 +54,7 @@ return "|".join(values)
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("1|bbb|7|caught", result.ReturnValue);
+        Assert.Equal("1|bbb|7|None|caught", result.ReturnValue);
     }
 
     [Fact]

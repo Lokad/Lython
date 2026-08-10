@@ -9,6 +9,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class RandomModule : PyModule
     {
+        private readonly record struct RangeArguments(BigInteger Start, BigInteger Stop, BigInteger Step);
+
         private static object Uniform(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
@@ -241,7 +243,7 @@ internal sealed partial class LythonRuntime
             return hash;
         }
 
-        private static (BigInteger Start, BigInteger Stop, BigInteger Step) ParseRangeArguments(object[] arguments, string owner, LythonSourceSpan span)
+        private static RangeArguments ParseRangeArguments(object[] arguments, string owner, LythonSourceSpan span)
         {
             if (arguments.Length is < 1 or > 3)
             {
@@ -270,7 +272,7 @@ internal sealed partial class LythonRuntime
             }
 
             var step = stepArg is PyNone ? BigInteger.One : ExpectInteger(stepArg, $"{owner}(...) expects integer arguments.", span);
-            return (start, stop, step);
+            return new RangeArguments(start, stop, step);
         }
     }
 }

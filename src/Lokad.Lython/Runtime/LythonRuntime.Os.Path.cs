@@ -8,6 +8,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private readonly record struct PathSplit(string Head, string Tail);
+
+    private readonly record struct ExtensionSplit(string Root, string Extension);
+
     private static object OsPathJoin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
@@ -494,17 +498,17 @@ internal sealed partial class LythonRuntime
         return normalized.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
     }
 
-    private static (string Head, string Tail) SplitPath(string path)
+    private static PathSplit SplitPath(string path)
     {
         if (path.Length == 0)
         {
-            return (string.Empty, string.Empty);
+            return new PathSplit(string.Empty, string.Empty);
         }
 
         var slash = path.LastIndexOf('/') + 1;
         if (slash < 0)
         {
-            return (string.Empty, path);
+            return new PathSplit(string.Empty, path);
         }
 
         var head = path[..slash];
@@ -514,14 +518,14 @@ internal sealed partial class LythonRuntime
             head = head.TrimEnd('/');
         }
 
-        return (head, tail);
+        return new PathSplit(head, tail);
     }
 
-    private static (string Root, string Extension) SplitExt(string path)
+    private static ExtensionSplit SplitExt(string path)
     {
         if (path.Length == 0)
         {
-            return (string.Empty, string.Empty);
+            return new ExtensionSplit(string.Empty, string.Empty);
         }
 
         var slash = path.LastIndexOf('/');
@@ -529,10 +533,10 @@ internal sealed partial class LythonRuntime
         var dot = path.LastIndexOf('.');
         if (dot <= segmentStart)
         {
-            return (path, string.Empty);
+            return new ExtensionSplit(path, string.Empty);
         }
 
-        return (path[..dot], path[dot..]);
+        return new ExtensionSplit(path[..dot], path[dot..]);
     }
 
     private static string ParentDirectory(string path)

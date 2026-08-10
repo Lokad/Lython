@@ -13,6 +13,8 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        private readonly record struct StringSearchBounds(int Start, int End, bool StartBeyondLength);
+
         private static readonly IStringMemberProvider[] Providers =
         [
             BasicStringMemberProvider.Instance,
@@ -50,7 +52,7 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static (int Start, int End, bool StartBeyondLength) ParseStringBounds(
+        private static StringSearchBounds ParseStringBounds(
             int textLength,
             object[] arguments,
             LythonSourceSpan span,
@@ -67,7 +69,7 @@ internal sealed partial class LythonRuntime
                     int integer => integer > textLength,
                     _ => false
                 };
-                return (normalized.Start, normalized.End, startBeyondLength);
+                return new StringSearchBounds(normalized.Start, normalized.End, startBeyondLength);
             }
             catch (InvalidOperationException)
             {

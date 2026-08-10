@@ -13,6 +13,8 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class MathModule : PyModule
     {
+        private readonly record struct BinaryRealArguments(double X, double Y);
+
         public static readonly MathModule Instance = new();
 
         private MathModule() : base("math")
@@ -461,7 +463,7 @@ internal sealed partial class LythonRuntime
             return ExpectReal(arguments[0], owner, span);
         }
 
-        private static (double X, double Y) ExpectBinaryReal(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static BinaryRealArguments ExpectBinaryReal(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
             if (arguments.Length != 2)
@@ -469,7 +471,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two numeric arguments.", span);
             }
 
-            return (ExpectReal(arguments[0], owner, span), ExpectReal(arguments[1], owner, span));
+            return new BinaryRealArguments(ExpectReal(arguments[0], owner, span), ExpectReal(arguments[1], owner, span));
         }
 
         private static object UnaryFloat(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, Func<double, double> func)

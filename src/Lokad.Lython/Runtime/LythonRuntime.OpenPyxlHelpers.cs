@@ -43,6 +43,8 @@ internal sealed partial class LythonRuntime
         public string CellOrRangeReference => Start.Equals(End) ? CellReference(Start.Row, Start.Column) : Reference;
     }
 
+    private readonly record struct PrintTitleParts(string? Rows, string? Columns);
+
     private static string WorkbookContentType(OpenPyxlWorkbook workbook)
     {
         if (workbook.HasVbaProject)
@@ -390,7 +392,7 @@ internal sealed partial class LythonRuntime
         return new CellAddress(row, column);
     }
 
-    private static (CellAddress Start, CellAddress End) ParseRange(string reference, LythonSourceSpan? span)
+    private static CellRangeAddress ParseRange(string reference, LythonSourceSpan? span)
     {
         var parts = reference.Split(':', 2);
         if (parts.Length != 2)
@@ -400,7 +402,7 @@ internal sealed partial class LythonRuntime
 
         var start = ParseCellAddress(parts[0], span);
         var end = ParseCellAddress(parts[1], span);
-        return (
+        return new CellRangeAddress(
             new CellAddress(Math.Min(start.Row, end.Row), Math.Min(start.Column, end.Column)),
             new CellAddress(Math.Max(start.Row, end.Row), Math.Max(start.Column, end.Column)));
     }
@@ -513,7 +515,7 @@ internal sealed partial class LythonRuntime
         return ColumnName(Math.Min(start, end)) + ":" + ColumnName(Math.Max(start, end));
     }
 
-    private static (string? Rows, string? Columns) NormalizePrintTitlesText(string text, LythonSourceSpan? span)
+    private static PrintTitleParts NormalizePrintTitlesText(string text, LythonSourceSpan? span)
     {
         string? rows = null;
         string? columns = null;
@@ -533,7 +535,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return (rows, columns);
+        return new PrintTitleParts(rows, columns);
     }
 
     private static string StripDefinedNameSheetPrefix(string reference)

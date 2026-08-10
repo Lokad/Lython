@@ -30,6 +30,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private readonly record struct TextOpenArguments(
+        PyString Path,
+        string Mode,
+        TextEncodingMode EncodingMode,
+        TextErrorMode Errors,
+        TextNewlineMode Newline);
+
     private static object Open(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => Open(BindPositionalOpenArguments(arguments, span), span, context);
 
@@ -57,7 +64,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static (PyString Path, string Mode, TextEncodingMode EncodingMode, TextErrorMode Errors, TextNewlineMode Newline) ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context)
+    private static TextOpenArguments ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context)
     {
         var arguments = boundArguments.Values;
         if (boundArguments.Count is < 1 or > 8)
@@ -100,7 +107,7 @@ internal sealed partial class LythonRuntime
             ValidateOpener(arguments[7], "open()", span);
         }
 
-        return (path, ParseTextOpenMode(mode, "open()", span), encodingMode, errors, newline);
+        return new TextOpenArguments(path, ParseTextOpenMode(mode, "open()", span), encodingMode, errors, newline);
     }
 
     private static BoundOpenArguments BindPositionalOpenArguments(object[] arguments, LythonSourceSpan span)

@@ -79,6 +79,16 @@ internal sealed partial class LythonRuntime
 
     private sealed class ReModule : PyModule
     {
+        private readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
+
+        private readonly record struct RegexSubstituteInputs(
+            RePatternObject Pattern,
+            object Replacement,
+            RegexSubjectRange Range,
+            int Count);
+
+        private readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
+
         public static readonly ReModule Instance = new();
 
         private ReModule() : base("re")
@@ -312,7 +322,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static (RePatternObject Pattern, RegexSubjectRange Range) CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span)
+        private static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span)
         {
             if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
             {
@@ -329,13 +339,15 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
                 }
 
-                return (compiled, CreateSubjectRange(text, pos, endPos));
+                return new RegexPatternRange(compiled, CreateSubjectRange(text, pos, endPos));
             }
 
-            return (CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span), CreateSubjectRange(text, pos, endPos));
+            return new RegexPatternRange(
+                CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span),
+                CreateSubjectRange(text, pos, endPos));
         }
 
-        private static (RePatternObject Pattern, object Replacement, RegexSubjectRange Range, int Count) CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span)
+        private static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span)
         {
             if (arguments.Length is < 3 or > 7 || !PyStringOps.TryAsString(arguments[2], out var text))
             {
@@ -377,7 +389,7 @@ internal sealed partial class LythonRuntime
             var pattern = patternArguments[0] is RePatternObject existing
                 ? existing
                 : CreatePattern(patternArguments, signature, span);
-            return (pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
+            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
         }
 
         internal static object ExecuteSubstitute(RePatternObject pattern, object replacement, RegexSubjectRange range, int count, LythonSourceSpan span, ExecutionContext context, bool includeCount)
@@ -413,7 +425,7 @@ internal sealed partial class LythonRuntime
                 : resultText;
         }
 
-        private static (RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit) CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span)
+        private static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span)
         {
             if (arguments.Length is < 2 or > 6 || !PyStringOps.TryAsString(arguments[1], out var text))
             {
@@ -449,7 +461,7 @@ internal sealed partial class LythonRuntime
             var pattern = patternArguments[0] is RePatternObject existing
                 ? existing
                 : CreatePattern(patternArguments, signature, span);
-            return (pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
+            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
         }
 
         private static PythonReCompileOptions ParseFlags(object value, string signature, LythonSourceSpan span)

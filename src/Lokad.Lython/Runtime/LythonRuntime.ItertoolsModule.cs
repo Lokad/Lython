@@ -4,6 +4,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private readonly record struct PredicateIteratorBinding(ICallable Predicate, object Iterable);
+
     private sealed class ItertoolsModule : PyModule
     {
         public static readonly ItertoolsModule Instance = new();
@@ -497,7 +499,7 @@ internal sealed partial class LythonRuntime
         return positional;
     }
 
-    private static (ICallable Predicate, object Iterable) BindPredicateIterator(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
+    private static PredicateIteratorBinding BindPredicateIterator(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
     {
         var positional = PositionalOnly(arguments, owner, span);
         if (positional.Length != 2 || positional[0] is not ICallable predicate)
@@ -505,7 +507,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{owner}(predicate, iterable) expects a callable and an iterable.", span);
         }
 
-        return (predicate, positional[1]);
+        return new PredicateIteratorBinding(predicate, positional[1]);
     }
 
     private static BoundCallArguments BindArguments(
