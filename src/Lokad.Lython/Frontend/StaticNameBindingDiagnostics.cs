@@ -11,41 +11,15 @@ internal static class StaticNameBindingDiagnostics
     {
         foreach (var statement in statements)
         {
-            switch (statement)
+            if (statement is FunctionDefinitionStatementSyntax functionDefinition)
             {
-                case FunctionDefinitionStatementSyntax functionDefinition:
-                    AnalyzeFunctionDefinition(functionDefinition, context);
-                    break;
-                case ClassDefinitionStatementSyntax classDefinition:
-                    AnalyzeNestedFunctionDefinitions(classDefinition.Body, context);
-                    break;
-                case IfStatementSyntax ifStatement:
-                    AnalyzeNestedFunctionDefinitions(ifStatement.ThenStatements, context);
-                    if (ifStatement.ElseStatements is not null) AnalyzeNestedFunctionDefinitions(ifStatement.ElseStatements, context);
-                    break;
-                case ForStatementSyntax forStatement:
-                    AnalyzeNestedFunctionDefinitions(forStatement.Body, context);
-                    if (forStatement.ElseStatements is not null) AnalyzeNestedFunctionDefinitions(forStatement.ElseStatements, context);
-                    break;
-                case WhileStatementSyntax whileStatement:
-                    AnalyzeNestedFunctionDefinitions(whileStatement.Body, context);
-                    if (whileStatement.ElseStatements is not null) AnalyzeNestedFunctionDefinitions(whileStatement.ElseStatements, context);
-                    break;
-                case WithStatementSyntax withStatement:
-                    AnalyzeNestedFunctionDefinitions(withStatement.Body, context);
-                    break;
-                case TryStatementSyntax tryStatement:
-                    AnalyzeNestedFunctionDefinitions(tryStatement.TryBody, context);
-                    if (tryStatement.ExceptBody is not null) AnalyzeNestedFunctionDefinitions(tryStatement.ExceptBody, context);
-                    if (tryStatement.ElseBody is not null) AnalyzeNestedFunctionDefinitions(tryStatement.ElseBody, context);
-                    if (tryStatement.FinallyBody is not null) AnalyzeNestedFunctionDefinitions(tryStatement.FinallyBody, context);
-                    break;
-                case MatchStatementSyntax matchStatement:
-                    foreach (var matchCase in matchStatement.Cases)
-                    {
-                        AnalyzeNestedFunctionDefinitions(matchCase.Body, context);
-                    }
-                    break;
+                AnalyzeFunctionDefinition(functionDefinition, context);
+                continue;
+            }
+
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+            {
+                AnalyzeNestedFunctionDefinitions(body, context);
             }
         }
     }
@@ -99,6 +73,11 @@ internal static class StaticNameBindingDiagnostics
         HashSet<string> localNames,
         HashSet<string> maybeAssigned)
     {
+        foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+        {
+            AnalyzeExpression(expression, context, localNames, maybeAssigned);
+        }
+
         switch (statement)
         {
             case ImportStatementSyntax importStatement:
@@ -113,12 +92,10 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case AssignmentStatementSyntax assignment:
-                AnalyzeExpression(assignment.Expression, context, localNames, maybeAssigned);
                 maybeAssigned.Add(assignment.Name);
                 break;
 
             case ChainedAssignmentStatementSyntax chained:
-                AnalyzeExpression(chained.Expression, context, localNames, maybeAssigned);
                 foreach (var target in chained.Targets)
                 {
                     AddAssignmentTarget(target, maybeAssigned);
@@ -126,56 +103,28 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case AnnotatedAssignmentStatementSyntax annotated:
-                AnalyzeExpression(annotated.Annotation, context, localNames, maybeAssigned);
                 if (annotated.Expression is not null)
                 {
-                    AnalyzeExpression(annotated.Expression, context, localNames, maybeAssigned);
                     maybeAssigned.Add(annotated.Name);
                 }
                 break;
 
-            case SubscriptAssignmentStatementSyntax subscript:
-                AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
-                AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
-                AnalyzeExpression(subscript.Expression, context, localNames, maybeAssigned);
-                break;
-
-            case SliceAssignmentStatementSyntax slice:
-                AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
-                AnalyzeExpression(slice.Expression, context, localNames, maybeAssigned);
-                break;
-
-            case MemberAssignmentStatementSyntax member:
-                AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
-                AnalyzeExpression(member.Expression, context, localNames, maybeAssigned);
-                break;
-
             case AugmentedAssignmentStatementSyntax augmented:
-                AnalyzeAugmentedAssignmentTarget(augmented.Target);
-                AnalyzeExpression(augmented.Expression, context, localNames, maybeAssigned);
                 if (augmented.Target is NameAssignmentTargetSyntax augmentedName)
                 {
+                    AnalyzeLocalRead(augmentedName.Name, augmentedName.Span, context, localNames, maybeAssigned);
                     maybeAssigned.Add(augmentedName.Name);
                 }
                 break;
 
             case UnpackingAssignmentStatementSyntax unpacking:
-                AnalyzeExpression(unpacking.Expression, context, localNames, maybeAssigned);
                 foreach (var target in unpacking.Targets)
                 {
                     maybeAssigned.Add(target.Name);
                 }
                 break;
 
-            case ExpressionStatementSyntax expressionStatement:
-                AnalyzeExpression(expressionStatement.Expression, context, localNames, maybeAssigned);
-                break;
-
             case WithStatementSyntax withStatement:
-                AnalyzeExpression(withStatement.ContextExpression, context, localNames, maybeAssigned);
                 if (withStatement.VariableName is not null)
                 {
                     maybeAssigned.Add(withStatement.VariableName);
@@ -187,7 +136,6 @@ internal static class StaticNameBindingDiagnostics
                 {
                     // This is deliberately a may-assignment analysis: unioning branch
                     // results avoids claiming a name is certainly unbound after a branch.
-                    AnalyzeExpression(ifStatement.Condition, context, localNames, maybeAssigned);
                     var thenAssigned = Clone(maybeAssigned);
                     AnalyzeStatements(ifStatement.ThenStatements, context, localNames, thenAssigned);
                     var elseAssigned = Clone(maybeAssigned);
@@ -202,7 +150,6 @@ internal static class StaticNameBindingDiagnostics
 
             case ForStatementSyntax forStatement:
                 {
-                    AnalyzeExpression(forStatement.Iterable, context, localNames, maybeAssigned);
                     var bodyAssigned = Clone(maybeAssigned);
                     AddLoopTarget(forStatement.Target, bodyAssigned);
                     AnalyzeStatements(forStatement.Body, context, localNames, bodyAssigned);
@@ -218,7 +165,6 @@ internal static class StaticNameBindingDiagnostics
 
             case WhileStatementSyntax whileStatement:
                 {
-                    AnalyzeExpression(whileStatement.Condition, context, localNames, maybeAssigned);
                     var bodyAssigned = Clone(maybeAssigned);
                     AnalyzeStatements(whileStatement.Body, context, localNames, bodyAssigned);
                     maybeAssigned.UnionWith(bodyAssigned);
@@ -233,14 +179,9 @@ internal static class StaticNameBindingDiagnostics
 
             case MatchStatementSyntax matchStatement:
                 {
-                    AnalyzeExpression(matchStatement.Subject, context, localNames, maybeAssigned);
                     var unionAssigned = Clone(maybeAssigned);
                     foreach (var matchCase in matchStatement.Cases)
                     {
-                        if (matchCase.Guard is not null)
-                        {
-                            AnalyzeExpression(matchCase.Guard, context, localNames, maybeAssigned);
-                        }
                         var caseAssigned = Clone(maybeAssigned);
                         AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
                         unionAssigned.UnionWith(caseAssigned);
@@ -249,13 +190,7 @@ internal static class StaticNameBindingDiagnostics
                     break;
                 }
 
-            case AssertStatementSyntax assertStatement:
-                AnalyzeExpression(assertStatement.Condition, context, localNames, maybeAssigned);
-                if (assertStatement.Message is not null) AnalyzeExpression(assertStatement.Message, context, localNames, maybeAssigned);
-                break;
-
             case DeleteStatementSyntax deleteStatement:
-                AnalyzeExpression(deleteStatement.Target, context, localNames, maybeAssigned);
                 if (deleteStatement.Target is IdentifierExpressionSyntax identifier)
                 {
                     maybeAssigned.Remove(identifier.Name);
@@ -263,46 +198,13 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
-                foreach (var decorator in functionDefinition.Decorators)
-                {
-                    AnalyzeExpression(decorator, context, localNames, maybeAssigned);
-                }
-                foreach (var parameter in functionDefinition.Parameters)
-                {
-                    if (parameter.Annotation is not null) AnalyzeExpression(parameter.Annotation, context, localNames, maybeAssigned);
-                    if (parameter.DefaultValue is not null) AnalyzeExpression(parameter.DefaultValue, context, localNames, maybeAssigned);
-                }
-                if (functionDefinition.ReturnAnnotation is not null)
-                {
-                    AnalyzeExpression(functionDefinition.ReturnAnnotation, context, localNames, maybeAssigned);
-                }
                 maybeAssigned.Add(functionDefinition.Name);
                 AnalyzeFunctionDefinition(functionDefinition, context);
                 break;
 
             case ClassDefinitionStatementSyntax classDefinition:
-                foreach (var decorator in classDefinition.Decorators)
-                {
-                    AnalyzeExpression(decorator, context, localNames, maybeAssigned);
-                }
-                foreach (var @base in classDefinition.Bases)
-                {
-                    AnalyzeExpression(@base, context, localNames, maybeAssigned);
-                }
-                foreach (var keywordArgument in classDefinition.KeywordArguments)
-                {
-                    AnalyzeExpression(keywordArgument.Value, context, localNames, maybeAssigned);
-                }
                 maybeAssigned.Add(classDefinition.Name);
                 AnalyzeNestedFunctionDefinitions(classDefinition.Body, context);
-                break;
-
-            case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
-                AnalyzeExpression(returnStatement.Expression, context, localNames, maybeAssigned);
-                break;
-
-            case RaiseStatementSyntax raiseStatement:
-                AnalyzeExpression(raiseStatement.Expression, context, localNames, maybeAssigned);
                 break;
 
             case TryStatementSyntax tryStatement:
@@ -330,32 +232,6 @@ internal static class StaticNameBindingDiagnostics
                 }
         }
 
-        void AnalyzeAugmentedAssignmentTarget(AssignmentTargetSyntax target)
-        {
-            switch (target)
-            {
-                case NameAssignmentTargetSyntax nameTarget:
-                    AnalyzeLocalRead(nameTarget.Name, target.Span, context, localNames, maybeAssigned);
-                    break;
-
-                case SubscriptAssignmentTargetSyntax subscript:
-                    AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
-                    AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
-                    break;
-
-                case SliceAssignmentTargetSyntax slice:
-                    AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
-                    AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
-                    AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
-                    AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
-                    break;
-
-                case MemberAssignmentTargetSyntax member:
-                    AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
-                    break;
-            }
-        }
-
         static void AddAssignmentTarget(AssignmentTargetSyntax target, HashSet<string> maybeAssigned)
         {
             switch (target)
@@ -370,18 +246,6 @@ internal static class StaticNameBindingDiagnostics
                     }
                     break;
             }
-        }
-    }
-
-    private static void AnalyzeExpressionIfPresent(
-        ExpressionSyntax? expression,
-        StaticAnalysisContext context,
-        HashSet<string> localNames,
-        HashSet<string> maybeAssigned)
-    {
-        if (expression is not null)
-        {
-            AnalyzeExpression(expression, context, localNames, maybeAssigned);
         }
     }
 

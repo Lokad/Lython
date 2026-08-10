@@ -35,221 +35,28 @@ internal static class StaticRegexDiagnostics
         Dictionary<string, string> stringBindings,
         HashSet<string> localeFlagBindings)
     {
-        switch (statement)
-        {
-            case AssignmentStatementSyntax assignment:
-                AnalyzeRegexStaticExpression(assignment.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case ChainedAssignmentStatementSyntax chained:
-                AnalyzeRegexStaticExpression(chained.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null:
-                AnalyzeRegexStaticExpression(annotated.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case SubscriptAssignmentStatementSyntax subscript:
-                AnalyzeRegexStaticExpression(subscript.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(subscript.Index, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(subscript.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case SliceAssignmentStatementSyntax slice:
-                AnalyzeRegexStaticExpression(slice.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.Start, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.End, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.Step, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(slice.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case MemberAssignmentStatementSyntax member:
-                AnalyzeRegexStaticExpression(member.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(member.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case AugmentedAssignmentStatementSyntax augmented:
-                AnalyzeRegexStaticAssignmentTarget(augmented.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(augmented.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case UnpackingAssignmentStatementSyntax unpacking:
-                AnalyzeRegexStaticExpression(unpacking.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case ExpressionStatementSyntax expressionStatement:
-                AnalyzeRegexStaticExpression(expressionStatement.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case WithStatementSyntax withStatement:
-                AnalyzeRegexStaticExpression(withStatement.ContextExpression, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexNestedStatements(withStatement.Body, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case IfStatementSyntax ifStatement:
-                AnalyzeRegexStaticExpression(ifStatement.Condition, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexNestedStatements(ifStatement.ThenStatements, diagnostics, stringBindings, localeFlagBindings);
-                if (ifStatement.ElseStatements is not null)
-                {
-                    AnalyzeRegexNestedStatements(ifStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-
-            case ForStatementSyntax forStatement:
-                AnalyzeRegexStaticExpression(forStatement.Iterable, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexNestedStatements(forStatement.Body, diagnostics, stringBindings, localeFlagBindings);
-                if (forStatement.ElseStatements is not null)
-                {
-                    AnalyzeRegexNestedStatements(forStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-
-            case WhileStatementSyntax whileStatement:
-                AnalyzeRegexStaticExpression(whileStatement.Condition, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexNestedStatements(whileStatement.Body, diagnostics, stringBindings, localeFlagBindings);
-                if (whileStatement.ElseStatements is not null)
-                {
-                    AnalyzeRegexNestedStatements(whileStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-
-            case MatchStatementSyntax matchStatement:
-                AnalyzeRegexStaticExpression(matchStatement.Subject, diagnostics, stringBindings, localeFlagBindings);
-                foreach (var matchCase in matchStatement.Cases)
-                {
-                    if (matchCase.Guard is not null)
-                    {
-                        AnalyzeRegexStaticExpression(matchCase.Guard, diagnostics, stringBindings, localeFlagBindings);
-                    }
-
-                    AnalyzeRegexNestedStatements(matchCase.Body, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-
-            case AssertStatementSyntax assertStatement:
-                AnalyzeRegexStaticExpression(assertStatement.Condition, diagnostics, stringBindings, localeFlagBindings);
-                if (assertStatement.Message is not null)
-                {
-                    AnalyzeRegexStaticExpression(assertStatement.Message, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-
-            case DeleteStatementSyntax deleteStatement:
-                AnalyzeRegexStaticExpression(deleteStatement.Target, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case FunctionDefinitionStatementSyntax functionDefinition:
-                foreach (var decorator in functionDefinition.Decorators)
-                {
-                    AnalyzeRegexStaticExpression(decorator, diagnostics, stringBindings, localeFlagBindings);
-                }
-                foreach (var parameter in functionDefinition.Parameters)
-                {
-                    if (parameter.Annotation is not null)
-                    {
-                        AnalyzeRegexStaticExpression(parameter.Annotation, diagnostics, stringBindings, localeFlagBindings);
-                    }
-
-                    if (parameter.DefaultValue is not null)
-                    {
-                        AnalyzeRegexStaticExpression(parameter.DefaultValue, diagnostics, stringBindings, localeFlagBindings);
-                    }
-                }
-
-                if (functionDefinition.ReturnAnnotation is not null)
-                {
-                    AnalyzeRegexStaticExpression(functionDefinition.ReturnAnnotation, diagnostics, stringBindings, localeFlagBindings);
-                }
-
-                var functionStringBindings = new Dictionary<string, string>(stringBindings, StringComparer.Ordinal);
-                var functionLocaleBindings = new HashSet<string>(localeFlagBindings, StringComparer.Ordinal);
-                foreach (var parameter in functionDefinition.Parameters)
-                {
-                    functionStringBindings.Remove(parameter.Name);
-                    functionLocaleBindings.Remove(parameter.Name);
-                }
-
-                AnalyzeRegexStaticStatements(functionDefinition.Body, diagnostics, functionStringBindings, functionLocaleBindings);
-                break;
-
-            case ClassDefinitionStatementSyntax classDefinition:
-                foreach (var decorator in classDefinition.Decorators)
-                {
-                    AnalyzeRegexStaticExpression(decorator, diagnostics, stringBindings, localeFlagBindings);
-                }
-                foreach (var @base in classDefinition.Bases)
-                {
-                    AnalyzeRegexStaticExpression(@base, diagnostics, stringBindings, localeFlagBindings);
-                }
-                foreach (var keywordArgument in classDefinition.KeywordArguments)
-                {
-                    AnalyzeRegexStaticExpression(keywordArgument.Value, diagnostics, stringBindings, localeFlagBindings);
-                }
-
-                AnalyzeRegexNestedStatements(classDefinition.Body, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
-                AnalyzeRegexStaticExpression(returnStatement.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case RaiseStatementSyntax raiseStatement:
-                AnalyzeRegexStaticExpression(raiseStatement.Expression, diagnostics, stringBindings, localeFlagBindings);
-                break;
-
-            case TryStatementSyntax tryStatement:
-                AnalyzeRegexNestedStatements(tryStatement.TryBody, diagnostics, stringBindings, localeFlagBindings);
-                if (tryStatement.ExceptBody is not null)
-                {
-                    AnalyzeRegexNestedStatements(tryStatement.ExceptBody, diagnostics, stringBindings, localeFlagBindings);
-                }
-                if (tryStatement.ElseBody is not null)
-                {
-                    AnalyzeRegexNestedStatements(tryStatement.ElseBody, diagnostics, stringBindings, localeFlagBindings);
-                }
-                if (tryStatement.FinallyBody is not null)
-                {
-                    AnalyzeRegexNestedStatements(tryStatement.FinallyBody, diagnostics, stringBindings, localeFlagBindings);
-                }
-                break;
-        }
-    }
-
-    private static void AnalyzeRegexStaticExpressionIfPresent(
-        ExpressionSyntax? expression,
-        List<LythonDiagnostic> diagnostics,
-        Dictionary<string, string> stringBindings,
-        HashSet<string> localeFlagBindings)
-    {
-        if (expression is not null)
+        foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
             AnalyzeRegexStaticExpression(expression, diagnostics, stringBindings, localeFlagBindings);
         }
-    }
 
-    private static void AnalyzeRegexStaticAssignmentTarget(
-        AssignmentTargetSyntax target,
-        List<LythonDiagnostic> diagnostics,
-        Dictionary<string, string> stringBindings,
-        HashSet<string> localeFlagBindings)
-    {
-        switch (target)
+        if (statement is FunctionDefinitionStatementSyntax functionDefinition)
         {
-            case SubscriptAssignmentTargetSyntax subscript:
-                AnalyzeRegexStaticExpression(subscript.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpression(subscript.Index, diagnostics, stringBindings, localeFlagBindings);
-                break;
+            var functionStringBindings = new Dictionary<string, string>(stringBindings, StringComparer.Ordinal);
+            var functionLocaleBindings = new HashSet<string>(localeFlagBindings, StringComparer.Ordinal);
+            foreach (var parameter in functionDefinition.Parameters)
+            {
+                functionStringBindings.Remove(parameter.Name);
+                functionLocaleBindings.Remove(parameter.Name);
+            }
 
-            case SliceAssignmentTargetSyntax slice:
-                AnalyzeRegexStaticExpression(slice.Target, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.Start, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.End, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticExpressionIfPresent(slice.Step, diagnostics, stringBindings, localeFlagBindings);
-                break;
+            AnalyzeRegexStaticStatements(functionDefinition.Body, diagnostics, functionStringBindings, functionLocaleBindings);
+            return;
+        }
 
-            case MemberAssignmentTargetSyntax member:
-                AnalyzeRegexStaticExpression(member.Target, diagnostics, stringBindings, localeFlagBindings);
-                break;
+        foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+        {
+            AnalyzeRegexNestedStatements(body, diagnostics, stringBindings, localeFlagBindings);
         }
     }
 
