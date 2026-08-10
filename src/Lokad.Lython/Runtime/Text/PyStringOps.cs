@@ -33,30 +33,6 @@ internal static partial class PyStringOps
         }
     }
 
-    public static PyString NormalizeNewlines(PyString value)
-    {
-        var source = value.Utf8Bytes.Span;
-        var builder = CreateBuilder(value, source.Length);
-        for (var i = 0; i < source.Length; i++)
-        {
-            if (source[i] == (byte)'\r')
-            {
-                if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
-                {
-                    i++;
-                }
-
-                builder.Append((byte)'\n');
-            }
-            else
-            {
-                builder.Append(source[i]);
-            }
-        }
-
-        return builder.ToPyStringAndRelease();
-    }
-
     public static PyString TrimTrailingNewline(PyString value)
     {
         var bytes = value.Utf8Bytes.Span;

@@ -85,8 +85,6 @@ internal sealed partial class LythonRuntime
 
         public IReadOnlyDictionary<(CellAddress Address, string Name), object> CellStyles => _cellStyles;
 
-        public IReadOnlyDictionary<CellAddress, string> CellNamedStyles => _cellNamedStyles;
-
         public IReadOnlyDictionary<CellAddress, string> Hyperlinks => _hyperlinks;
 
         public IReadOnlyDictionary<CellAddress, OpenPyxlComment> Comments => _comments;

@@ -7,14 +7,10 @@ namespace Lokad.Lython.Tests;
 public sealed class PyStringOpsPrimitiveTests
 {
     [Fact]
-    public void NormalizeNewlinesAndSplitLines_AreUtf8Native()
+    public void SplitLines_IsUtf8Native()
     {
-        var text = PyString.FromString("a\r\nb\rc\n");
+        var lines = PyStringOps.SplitLines(PyString.FromString("a\nb\nc\n"));
 
-        var normalized = PyStringOps.NormalizeNewlines(text);
-        var lines = PyStringOps.SplitLines(normalized);
-
-        Assert.Equal("a\nb\nc\n", normalized.AsString());
         Assert.Equal(["a", "b", "c"], lines.Select(item => ((PyString)item).AsString()).ToArray());
     }
 

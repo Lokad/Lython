@@ -304,36 +304,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return Utf8.GetString(_utf8, start, length);
     }
 
-    public int RuneIndexFromUtf16Index(int utf16Index)
-    {
-        if (utf16Index <= 0)
-        {
-            return 0;
-        }
-
-        var runeIndex = 0;
-        var consumedUtf16 = 0;
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
-        {
-            Rune.DecodeFromUtf8(_utf8.AsSpan(byteIndex), out var rune, out var runeLength);
-            if (consumedUtf16 >= utf16Index)
-            {
-                break;
-            }
-
-            consumedUtf16 += rune.Utf16SequenceLength;
-            if (consumedUtf16 > utf16Index)
-            {
-                break;
-            }
-
-            runeIndex++;
-            byteIndex += runeLength;
-        }
-
-        return runeIndex;
-    }
-
     public bool StartsWith(PyString prefix)
     {
         var prefixBytes = prefix._utf8.AsSpan();

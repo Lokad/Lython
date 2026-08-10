@@ -14,8 +14,6 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         _state = state;
     }
 
-    public bool IsAvailable => _input is not null;
-
     public PyString ReadAll(LythonSourceSpan? span)
     {
         if (_input is null)
@@ -102,8 +100,6 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         _name = name;
         _state = state;
     }
-
-    public bool IsAvailable => _output is not null || _capture is not null;
 
     public BigInteger Write(PyString text, LythonSourceSpan? span)
     {

@@ -15,8 +15,6 @@ public sealed class PyStringPrimitiveTests
         Assert.Equal("😀", text.Index(1).AsString());
         Assert.Equal("é", text.Index(3).AsString());
         Assert.Equal("😀é", text.Slice([1, 3]).AsString());
-        Assert.Equal(1, text.RuneIndexFromUtf16Index(1));
-        Assert.Equal(2, text.RuneIndexFromUtf16Index(3));
     }
 
     [Fact]
