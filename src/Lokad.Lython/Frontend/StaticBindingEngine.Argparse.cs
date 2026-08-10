@@ -21,7 +21,7 @@ internal static partial class StaticBindingEngine
             return false;
         }
 
-        var parser = (AbstractArgparseParserSummary)parserValue.Value;
+        var parser = parserValue.RequirePayload<AbstractArgparseParserSummary>();
         var members = new Dictionary<string, AbstractValue>(parser.Members, StringComparer.Ordinal)
         {
             [destination] = InferArgparseMemberValue(arguments, bindings, call.Span)
@@ -47,7 +47,7 @@ internal static partial class StaticBindingEngine
         if (bindings.TryGet(receiverName, out var groupValue) &&
             groupValue.Kind == AbstractValueKind.ArgparseMutuallyExclusiveGroup)
         {
-            var group = (AbstractArgparseGroupSummary)groupValue.Value;
+            var group = groupValue.RequirePayload<AbstractArgparseGroupSummary>();
             if (!string.IsNullOrEmpty(group.ParserName) &&
                 bindings.TryGet(group.ParserName, out parserValue) &&
                 parserValue.Kind == AbstractValueKind.ArgparseParser)

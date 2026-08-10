@@ -64,8 +64,7 @@ internal static class StaticDataclassContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesFields.Name, StringComparison.Ordinal) &&
             TryResolveDataclassClass(arguments, bindings, out var classSummary))
         {
-            value = new AbstractValue(
-                AbstractValueKind.Tuple,
+            value = AbstractValue.Tuple(
                 GetVisibleDataclassFields(classSummary)
                     .Select(field => AbstractValue.DataclassField(field.Name, span))
                     .ToArray(),
@@ -94,8 +93,7 @@ internal static class StaticDataclassContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsTuple.Name, StringComparison.Ordinal) &&
             TryResolveDataclassInstance(arguments, bindings, out instance))
         {
-            value = new AbstractValue(
-                AbstractValueKind.Tuple,
+            value = AbstractValue.Tuple(
                 GetVisibleDataclassFields(instance.Class)
                     .Select(field => instance.Fields.TryGetValue(field.Name, out var fieldValue) ? fieldValue.WithSpan(span) : AbstractValue.Unknown(span))
                     .ToArray(),
@@ -143,7 +141,7 @@ internal static class StaticDataclassContractFamily
             return false;
         }
 
-        var instance = (AbstractInstanceSummary)objValue.Value;
+        var instance = objValue.RequirePayload<AbstractInstanceSummary>();
         if (!instance.Class.IsDataclass)
         {
             return false;
@@ -194,13 +192,13 @@ internal static class StaticDataclassContractFamily
         {
             if (target.Kind == AbstractValueKind.UserClass)
             {
-                summary = (AbstractClassSummary)target.Value;
+                summary = target.RequirePayload<AbstractClassSummary>();
                 return summary.IsDataclass;
             }
 
             if (target.Kind == AbstractValueKind.UserInstance)
             {
-                summary = ((AbstractInstanceSummary)target.Value).Class;
+                summary = (target.RequirePayload<AbstractInstanceSummary>()).Class;
                 return summary.IsDataclass;
             }
         }
@@ -214,7 +212,7 @@ internal static class StaticDataclassContractFamily
         if (TryResolveDataclassTarget(arguments, bindings, out var target) &&
             target.Kind == AbstractValueKind.UserInstance)
         {
-            instance = (AbstractInstanceSummary)target.Value;
+            instance = target.RequirePayload<AbstractInstanceSummary>();
             return instance.Class.IsDataclass;
         }
 
@@ -225,8 +223,8 @@ internal static class StaticDataclassContractFamily
     private static bool IsDataclassAbstractValue(AbstractValue value)
         => value.Kind switch
         {
-            AbstractValueKind.UserClass => ((AbstractClassSummary)value.Value).IsDataclass,
-            AbstractValueKind.UserInstance => ((AbstractInstanceSummary)value.Value).Class.IsDataclass,
+            AbstractValueKind.UserClass => (value.RequirePayload<AbstractClassSummary>()).IsDataclass,
+            AbstractValueKind.UserInstance => (value.RequirePayload<AbstractInstanceSummary>()).Class.IsDataclass,
             _ => false
         };
 

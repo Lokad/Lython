@@ -24,25 +24,31 @@ internal static partial class StaticAbstractValueResolver
                 case AbstractValueKind.List:
                 case AbstractValueKind.Tuple:
                 case AbstractValueKind.Set:
-                    items.AddRange((IReadOnlyList<AbstractValue>)resolved.Value);
+                    items.AddRange(resolved.RequirePayload<IReadOnlyList<AbstractValue>>());
                     break;
                 case AbstractValueKind.String:
-                    items.AddRange(((string)resolved.Value).Select(character =>
+                    items.AddRange((resolved.RequirePayload<string>()).Select(character =>
                         AbstractValue.String(character.ToString(), expressions[i].Span)));
                     break;
                 case AbstractValueKind.Bytes:
-                    items.AddRange(((byte[])resolved.Value).Select(value =>
+                    items.AddRange((resolved.RequirePayload<byte[]>()).Select(value =>
                         AbstractValue.Integer(value.ToString(System.Globalization.CultureInfo.InvariantCulture), expressions[i].Span)));
                     break;
                 case AbstractValueKind.Dict:
-                    items.AddRange(((IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)resolved.Value).Select(pair => pair.Key));
+                    items.AddRange((resolved.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>()).Select(pair => pair.Key));
                     break;
                 default:
                     return AbstractValue.Unknown(span);
             }
         }
 
-        return new AbstractValue(kind, items, span);
+        return kind switch
+        {
+            AbstractValueKind.List => AbstractValue.List(items, span),
+            AbstractValueKind.Tuple => AbstractValue.Tuple(items, span),
+            AbstractValueKind.Set => AbstractValue.Set(items, span),
+            _ => throw new InvalidOperationException($"{kind} is not a literal sequence kind.")
+        };
     }
 
     private static AbstractValue ResolveAbstractDictValue(DictLiteralExpressionSyntax dict, AbstractState bindings)
@@ -58,7 +64,7 @@ internal static partial class StaticAbstractValueResolver
                     return AbstractValue.Unknown(dict.Span);
                 }
 
-                pairs.AddRange((IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)mapping.Value);
+                pairs.AddRange(mapping.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>());
                 continue;
             }
 

@@ -23,7 +23,7 @@ public sealed class AbstractValueTests
         var joined = AbstractValue.Join(left, right, Span);
 
         Assert.Equal(AbstractValueKind.Dict, joined.Kind);
-        var pairs = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>(joined.Value);
+        var pairs = joined.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
         Assert.Equal(AbstractValueKind.StringType, pairs[1].Value.Kind);
     }
 
@@ -37,6 +37,26 @@ public sealed class AbstractValueTests
         var joined = AbstractValue.Join(left, right, Span);
 
         Assert.Equal(AbstractValueKind.Unknown, joined.Kind);
+    }
+
+    [Fact]
+    public void DefaultValue_IsAValidUnknownWithoutAPayload()
+    {
+        AbstractValue value = default;
+
+        Assert.Equal(AbstractValueKind.Unknown, value.Kind);
+        Assert.Throws<InvalidOperationException>(() => value.RequirePayload<string>());
+    }
+
+    [Fact]
+    public void Factories_ExposeOnlyTheirTypedPayloads()
+    {
+        var value = AbstractValue.List([AbstractValue.Integer("1", Span)], Span);
+
+        var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+        Assert.Single(items);
+        Assert.Equal("1", items[0].RequirePayload<string>());
+        Assert.Throws<InvalidOperationException>(() => value.RequirePayload<string>());
     }
 
     private static KeyValuePair<AbstractValue, AbstractValue> Pair(AbstractValue key, AbstractValue value)

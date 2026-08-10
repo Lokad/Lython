@@ -152,16 +152,16 @@ internal static partial class StaticBindingEngine
         switch (expression)
         {
             case IdentifierExpressionSyntax { Name: "list" }:
-                value = new AbstractValue(AbstractValueKind.List, Array.Empty<AbstractValue>(), span);
+                value = AbstractValue.List([], span);
                 return true;
             case IdentifierExpressionSyntax { Name: "tuple" }:
-                value = new AbstractValue(AbstractValueKind.Tuple, Array.Empty<AbstractValue>(), span);
+                value = AbstractValue.Tuple([], span);
                 return true;
             case IdentifierExpressionSyntax { Name: "dict" }:
                 value = AbstractValue.Dict(Array.Empty<KeyValuePair<AbstractValue, AbstractValue>>(), span);
                 return true;
             case IdentifierExpressionSyntax { Name: "set" }:
-                value = new AbstractValue(AbstractValueKind.Set, Array.Empty<AbstractValue>(), span);
+                value = AbstractValue.Set([], span);
                 return true;
             case IdentifierExpressionSyntax { Name: "str" }:
                 value = AbstractValue.StringType(span);

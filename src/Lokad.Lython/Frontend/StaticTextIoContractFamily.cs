@@ -403,7 +403,7 @@ internal static class StaticTextIoContractFamily
         else if (StaticAbstractValueResolver.TryResolve(linesExpression, bindings, out var linesValue) &&
                  linesValue.Kind == AbstractValueKind.ListType)
         {
-            var item = (AbstractValue)linesValue.Value;
+            var item = linesValue.RequirePayload<AbstractValue>();
             if (!item.IsStringLike)
             {
                 AddDiagnostic(diagnostics, "LA3112", "file.writelines(lines) expects an iterable of strings.", linesExpression.Span);
@@ -547,7 +547,7 @@ internal static class StaticTextIoContractFamily
         if (!arguments.TryGetValue(6, "closefd", out var closeFdExpression) ||
             !StaticAbstractValueResolver.TryResolve(closeFdExpression, bindings, out var value) ||
             value.Kind != AbstractValueKind.Boolean ||
-            value.Value is not false)
+            value.RequirePayload<bool>())
         {
             return;
         }

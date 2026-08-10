@@ -16,10 +16,9 @@ internal static partial class StaticAbstractValueResolver
 
         if (arguments.Positional.Count == 0 && arguments.Keywords.Count == 0)
         {
-            value = new AbstractValue(
-                constructorName == "list" ? AbstractValueKind.List : AbstractValueKind.Tuple,
-                Array.Empty<AbstractValue>(),
-                call.Span);
+            value = constructorName == "list"
+                ? AbstractValue.List([], call.Span)
+                : AbstractValue.Tuple([], call.Span);
             return true;
         }
 
@@ -32,10 +31,10 @@ internal static partial class StaticAbstractValueResolver
 
         if (StaticBindingEngine.TryGetOrderedUnpackingItems(iterableExpression, bindings, out var items))
         {
-            value = new AbstractValue(
-                constructorName == "list" ? AbstractValueKind.List : AbstractValueKind.Tuple,
-                items.Select(item => item.WithSpan(call.Span)).ToArray(),
-                call.Span);
+            var sequenceItems = items.Select(item => item.WithSpan(call.Span)).ToArray();
+            value = constructorName == "list"
+                ? AbstractValue.List(sequenceItems, call.Span)
+                : AbstractValue.Tuple(sequenceItems, call.Span);
             return true;
         }
 
@@ -118,7 +117,7 @@ internal static partial class StaticAbstractValueResolver
         if (target.Kind == AbstractValueKind.Dict &&
             TryResolve(subscript.Index, bindings, out var key))
         {
-            var pairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)target.Value;
+            var pairs = target.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
             foreach (var pair in pairs)
             {
                 if (AbstractValue.LiteralValuesEqual(pair.Key, key))
@@ -208,10 +207,10 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.BytesType(slice.Span);
                 return true;
             case AbstractValueKind.List:
-                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems((IReadOnlyList<AbstractValue>)target.Value, slice.Span), slice.Span);
+                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems(target.RequirePayload<IReadOnlyList<AbstractValue>>(), slice.Span), slice.Span);
                 return true;
             case AbstractValueKind.ListType:
-                value = AbstractValue.ListOf(((AbstractValue)target.Value).WithSpan(slice.Span), slice.Span);
+                value = AbstractValue.ListOf((target.RequirePayload<AbstractValue>()).WithSpan(slice.Span), slice.Span);
                 return true;
             default:
                 value = default;
@@ -234,13 +233,13 @@ internal static partial class StaticAbstractValueResolver
                 return true;
 
             case AbstractValueKind.ListType:
-                value = ((AbstractValue)target.Value).WithSpan(span);
+                value = (target.RequirePayload<AbstractValue>()).WithSpan(span);
                 return true;
 
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
                 {
-                    var items = (IReadOnlyList<AbstractValue>)target.Value;
+                    var items = target.RequirePayload<IReadOnlyList<AbstractValue>>();
                     if (index.HasValue && index.Value >= 0 && index.Value < items.Count)
                     {
                         value = items[index.Value].WithSpan(span);

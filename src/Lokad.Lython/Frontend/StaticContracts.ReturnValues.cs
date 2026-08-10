@@ -22,12 +22,12 @@ internal static partial class StaticContracts
             StaticReturnShape.Dict => AbstractValue.Dict([], span),
             StaticReturnShape.Integer => AbstractValue.IntegerType(span),
             StaticReturnShape.Float => AbstractValue.FloatType(span),
-            StaticReturnShape.TupleFloatInteger => new(AbstractValueKind.Tuple, new[]
+            StaticReturnShape.TupleFloatInteger => AbstractValue.Tuple(new[]
             {
                 AbstractValue.FloatType(span),
                 AbstractValue.IntegerType(span),
             }, span),
-            StaticReturnShape.TupleFloatFloat => new(AbstractValueKind.Tuple, new[]
+            StaticReturnShape.TupleFloatFloat => AbstractValue.Tuple(new[]
             {
                 AbstractValue.FloatType(span),
                 AbstractValue.FloatType(span),
@@ -120,8 +120,8 @@ internal static partial class StaticContracts
     {
         return receiver.Kind switch
         {
-            AbstractValueKind.ListType => ((AbstractValue)receiver.Value).WithSpan(span),
-            AbstractValueKind.List => JoinSequenceItems((IReadOnlyList<AbstractValue>)receiver.Value, span),
+            AbstractValueKind.ListType => (receiver.RequirePayload<AbstractValue>()).WithSpan(span),
+            AbstractValueKind.List => JoinSequenceItems(receiver.RequirePayload<IReadOnlyList<AbstractValue>>(), span),
             _ => AbstractValue.Unknown(span)
         };
     }

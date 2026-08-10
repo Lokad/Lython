@@ -92,7 +92,7 @@ internal static class StaticStructuralDiagnostics
             return;
         }
 
-        var pairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)target.Value;
+        var pairs = target.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
         foreach (var pair in pairs)
         {
             if (!pair.Key.IsLiteralLike)
@@ -318,11 +318,11 @@ internal static class StaticStructuralDiagnostics
                 value = null;
                 return true;
             case AbstractValueKind.Boolean:
-                value = (bool)resolved.Value ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
+                value = resolved.RequirePayload<bool>() ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
                 return true;
             case AbstractValueKind.Integer:
                 if (System.Numerics.BigInteger.TryParse(
-                    ((string)resolved.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                    (resolved.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
                     out var integer))
                 {
                     value = integer;
@@ -440,14 +440,14 @@ internal static class StaticStructuralDiagnostics
             return true;
         }
 
-        if (!TryInspectPercentFormat((string)left.Value, out var positionalCount, out var hasMapping))
+        if (!TryInspectPercentFormat(left.RequirePayload<string>(), out var positionalCount, out var hasMapping))
         {
             return false;
         }
 
         if (right.Kind == AbstractValueKind.Tuple)
         {
-            return !hasMapping && ((IReadOnlyList<AbstractValue>)right.Value).Count == positionalCount;
+            return !hasMapping && (right.RequirePayload<IReadOnlyList<AbstractValue>>()).Count == positionalCount;
         }
 
         if (hasMapping && positionalCount == 0)
@@ -679,11 +679,11 @@ internal static class StaticStructuralDiagnostics
             case AbstractValueKind.Integer:
             case AbstractValueKind.Float:
             case AbstractValueKind.Boolean:
-                equal = Equals(left.Value, right.Value);
+                equal = left.HasSamePayload(right);
                 return true;
 
             case AbstractValueKind.Bytes:
-                equal = ((byte[])left.Value).AsSpan().SequenceEqual((byte[])right.Value);
+                equal = (left.RequirePayload<byte[]>()).AsSpan().SequenceEqual(right.RequirePayload<byte[]>());
                 return true;
 
             case AbstractValueKind.None:
@@ -692,8 +692,8 @@ internal static class StaticStructuralDiagnostics
 
             case AbstractValueKind.Tuple:
                 return TrySequenceValuesEqual(
-                    (IReadOnlyList<AbstractValue>)left.Value,
-                    (IReadOnlyList<AbstractValue>)right.Value,
+                    left.RequirePayload<IReadOnlyList<AbstractValue>>(),
+                    right.RequirePayload<IReadOnlyList<AbstractValue>>(),
                     out equal);
 
             default:
@@ -734,7 +734,7 @@ internal static class StaticStructuralDiagnostics
 
     private static string DescribeDictionaryKey(AbstractValue key)
         => key.Kind == AbstractValueKind.String
-            ? $"'{key.Value}'"
+            ? $"'{key.RequirePayload<string>()}'"
             : StaticAbstractFacts.DescribeValue(key);
 
     private static string DescribeBinaryOperator(BinaryOperatorSyntax op)

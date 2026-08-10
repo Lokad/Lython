@@ -155,7 +155,7 @@ internal static class StaticRegexContractFamily
             return false;
         }
 
-        var summary = (AbstractRegexPatternSummary)receiver.Value;
+        var summary = receiver.RequirePayload<AbstractRegexPatternSummary>();
         if (memberName is "search" or "match" or "fullmatch")
         {
             var operation = memberName switch
@@ -204,12 +204,11 @@ internal static class StaticRegexContractFamily
         {
             "group" when arguments.Positional.Count == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
             "group" => AbstractValue.Unknown(call.Span),
-            "groups" => new AbstractValue(AbstractValueKind.Tuple, Array.Empty<AbstractValue>(), call.Span),
+            "groups" => AbstractValue.Tuple([], call.Span),
             "groupdict" => AbstractValue.Unknown(call.Span),
             "expand" => AbstractValue.StringType(call.Span),
             "start" or "end" => AbstractValue.IntegerType(call.Span),
-            "span" => new AbstractValue(
-                AbstractValueKind.Tuple,
+            "span" => AbstractValue.Tuple(
                 new[] { AbstractValue.IntegerType(call.Span), AbstractValue.IntegerType(call.Span) },
                 call.Span),
             _ => default
@@ -303,7 +302,7 @@ internal static class StaticRegexContractFamily
         AbstractState bindings,
         AbstractValue receiver)
     {
-        var summary = (AbstractRegexMatchSummary)receiver.Value;
+        var summary = receiver.RequirePayload<AbstractRegexMatchSummary>();
         var emitted = false;
         for (var i = 0; i < arguments.Positional.Count; i++)
         {
@@ -333,7 +332,7 @@ internal static class StaticRegexContractFamily
 
             if (value.Kind == AbstractValueKind.String)
             {
-                var name = (string)value.Value;
+                var name = value.RequirePayload<string>();
                 if (summary.CaptureSlotCount.HasValue &&
                     !summary.NamedGroups.ContainsKey(name))
                 {
@@ -385,7 +384,7 @@ internal static class StaticRegexContractFamily
             return false;
         }
 
-        var summary = (AbstractRegexMatchSummary)receiver.Value;
+        var summary = receiver.RequirePayload<AbstractRegexMatchSummary>();
         if (TryGetInt32(value, out var index))
         {
             if (summary.CaptureSlotCount.HasValue &&
@@ -405,7 +404,7 @@ internal static class StaticRegexContractFamily
 
         if (value.Kind == AbstractValueKind.String)
         {
-            var name = (string)value.Value;
+            var name = value.RequirePayload<string>();
             if (summary.CaptureSlotCount.HasValue &&
                 !summary.NamedGroups.ContainsKey(name))
             {
@@ -457,7 +456,7 @@ internal static class StaticRegexContractFamily
             textValue.Kind == AbstractValueKind.String &&
             TryCompileRegex(patternSummary.PatternText, GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), out var regex))
         {
-            var text = (string)textValue.Value;
+            var text = textValue.RequirePayload<string>();
             var bytes = Encoding.UTF8.GetBytes(text);
             var match = operation switch
             {
@@ -491,7 +490,7 @@ internal static class StaticRegexContractFamily
             textValue.Kind == AbstractValueKind.String &&
             TryCompileRegex(patternSummary.PatternText, PythonReCompileOptions.None, out var regex))
         {
-            var text = (string)textValue.Value;
+            var text = textValue.RequirePayload<string>();
             var bytes = Encoding.UTF8.GetBytes(text);
             var match = operation switch
             {
@@ -530,7 +529,7 @@ internal static class StaticRegexContractFamily
 
         if (allowCompiledPattern && patternValue.Kind == AbstractValueKind.RegexPattern)
         {
-            summary = (AbstractRegexPatternSummary)patternValue.Value;
+            summary = patternValue.RequirePayload<AbstractRegexPatternSummary>();
             return true;
         }
 
@@ -540,7 +539,7 @@ internal static class StaticRegexContractFamily
             return false;
         }
 
-        summary = CreateRegexPatternSummary((string)patternValue.Value);
+        summary = CreateRegexPatternSummary(patternValue.RequirePayload<string>());
         return true;
     }
 

@@ -78,7 +78,7 @@ internal static class StaticStringContractFamily
         if (StaticAbstractValueResolver.TryResolveKnownValue(prefixExpression, bindings, out var prefixValue) &&
             prefixValue.Kind == AbstractValueKind.Tuple)
         {
-            foreach (var item in (IReadOnlyList<AbstractValue>)prefixValue.Value)
+            foreach (var item in prefixValue.RequirePayload<IReadOnlyList<AbstractValue>>())
             {
                 if (item.Kind != AbstractValueKind.String)
                 {

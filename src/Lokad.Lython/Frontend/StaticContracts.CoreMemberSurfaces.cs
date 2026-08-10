@@ -451,8 +451,8 @@ internal static partial class StaticContracts
     {
         bool? hasMember = value.Kind switch
         {
-            AbstractValueKind.Module => IsKnownBuiltinModule((string)value.Value)
-                ? memberName == "__name__" || IsKnownBuiltinModuleMember((string)value.Value, memberName)
+            AbstractValueKind.Module => IsKnownBuiltinModule(value.RequirePayload<string>())
+                ? memberName == "__name__" || IsKnownBuiltinModuleMember(value.RequirePayload<string>(), memberName)
                 : null,
             AbstractValueKind.String or AbstractValueKind.StringType => StringMembers.Contains(memberName),
             AbstractValueKind.Bytes or AbstractValueKind.BytesType => BytesMembers.Contains(memberName),
@@ -488,8 +488,8 @@ internal static partial class StaticContracts
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),
             AbstractValueKind.ArgparseMutuallyExclusiveGroup => ArgparseGroupMembers.Contains(memberName),
-            AbstractValueKind.ArgparseNamespace => ((AbstractArgparseNamespaceSummary)value.Value).IsSealed
-                ? ((AbstractArgparseNamespaceSummary)value.Value).Members.ContainsKey(memberName)
+            AbstractValueKind.ArgparseNamespace => (value.RequirePayload<AbstractArgparseNamespaceSummary>()).IsSealed
+                ? (value.RequirePayload<AbstractArgparseNamespaceSummary>()).Members.ContainsKey(memberName)
                 : null,
             AbstractValueKind.CsvReader => CsvReaderMembers.Contains(memberName),
             AbstractValueKind.CsvDictReader => CsvDictReaderMembers.Contains(memberName),
@@ -537,8 +537,8 @@ internal static partial class StaticContracts
             AbstractValueKind.OpenPyxlColumnDimension => OpenPyxlColumnDimensionMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlRowDimension => OpenPyxlRowDimensionMembers.Contains(memberName),
             AbstractValueKind.OpenPyxlMergedCellSet => OpenPyxlMergedCellSetMembers.Contains(memberName),
-            AbstractValueKind.UserInstance => ((AbstractInstanceSummary)value.Value).Class.IsDataclass
-                ? HasKnownDataclassInstanceMember((AbstractInstanceSummary)value.Value, memberName)
+            AbstractValueKind.UserInstance => (value.RequirePayload<AbstractInstanceSummary>()).Class.IsDataclass
+                ? HasKnownDataclassInstanceMember(value.RequirePayload<AbstractInstanceSummary>(), memberName)
                 : null,
             _ => null
         };

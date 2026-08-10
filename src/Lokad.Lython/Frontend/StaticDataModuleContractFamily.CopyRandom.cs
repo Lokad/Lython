@@ -53,7 +53,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        var instance = (AbstractInstanceSummary)value.Value;
+        var instance = value.RequirePayload<AbstractInstanceSummary>();
         var hook = deep ? "__deepcopy__" : "__copy__";
         if (instance.Class.Methods.ContainsKey(hook) || instance.Class.FieldsByName.ContainsKey(hook))
         {
@@ -88,7 +88,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        var instance = (AbstractInstanceSummary)value.Value;
+        var instance = value.RequirePayload<AbstractInstanceSummary>();
         if (!instance.Class.IsDataclass)
         {
             return false;

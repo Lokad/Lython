@@ -170,16 +170,33 @@ internal sealed record AbstractDataclassFieldSummary(
     string Name,
     LythonSourceSpan Span);
 
-internal readonly record struct AbstractValue(
-    AbstractValueKind Kind,
-    object Value,
-    LythonSourceSpan Span)
+internal readonly record struct AbstractValue
 {
     private static readonly LythonSourceSpan SyntheticSpan = new(0, 0, 0, 0);
     private static readonly IEqualityComparer<AbstractValue> LiteralKeyComparer = new AbstractLiteralKeyComparer();
+    private static readonly object NonePayload = new();
+    private readonly object? _payload;
+
+    private AbstractValue(AbstractValueKind kind, object? payload, LythonSourceSpan span)
+    {
+        Kind = kind;
+        _payload = payload;
+        Span = span;
+    }
+
+    public AbstractValueKind Kind { get; }
+
+    public LythonSourceSpan Span { get; }
+
+    public T RequirePayload<T>() where T : notnull
+        => _payload is T payload
+            ? payload
+            : throw new InvalidOperationException($"Abstract value {Kind} does not carry a {typeof(T).Name} payload.");
+
+    public bool HasSamePayload(AbstractValue other) => Equals(_payload, other._payload);
 
     public static AbstractValue Unknown() => Unknown(SyntheticSpan);
-    public static AbstractValue Unknown(LythonSourceSpan span) => new(AbstractValueKind.Unknown, "unknown", span);
+    public static AbstractValue Unknown(LythonSourceSpan span) => new(AbstractValueKind.Unknown, null, span);
     public static AbstractValue Never() => Never(SyntheticSpan);
     public static AbstractValue Never(LythonSourceSpan span) => new(AbstractValueKind.Never, "never", span);
     public static AbstractValue String(string value, LythonSourceSpan span) => new(AbstractValueKind.String, value, span);
@@ -192,7 +209,7 @@ internal readonly record struct AbstractValue(
     public static AbstractValue FloatType(LythonSourceSpan span) => new(AbstractValueKind.FloatType, "float", span);
     public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, value, span);
     public static AbstractValue BooleanType(LythonSourceSpan span) => new(AbstractValueKind.BooleanType, "bool", span);
-    public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, new object(), span);
+    public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, NonePayload, span);
     public static AbstractValue MaybeNone(AbstractValue nonNoneValue, LythonSourceSpan span)
         => nonNoneValue.Kind switch
         {
@@ -201,6 +218,9 @@ internal readonly record struct AbstractValue(
             _ => new(AbstractValueKind.MaybeNone, nonNoneValue.WithSpan(span), span)
         };
     public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, item, span);
+    public static AbstractValue List(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.List, items, span);
+    public static AbstractValue Tuple(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Tuple, items, span);
+    public static AbstractValue Set(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Set, items, span);
     public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, item, span);
     public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, pairs, span);
     public static AbstractValue Path(LythonSourceSpan span) => new(AbstractValueKind.Path, "pathlib.Path", span);
@@ -305,7 +325,7 @@ internal readonly record struct AbstractValue(
             not AbstractValueKind.String and
             not AbstractValueKind.StringType;
 
-    public AbstractValue WithSpan(LythonSourceSpan span) => this with { Span = span };
+    public AbstractValue WithSpan(LythonSourceSpan span) => new(Kind, _payload, span);
 
     public static AbstractValue Join(AbstractValue left, AbstractValue right)
         => Join(left, right, left.Span);
@@ -349,8 +369,8 @@ internal readonly record struct AbstractValue(
 
         if (left.Kind == AbstractValueKind.MaybeNone || right.Kind == AbstractValueKind.MaybeNone)
         {
-            var leftValue = left.Kind == AbstractValueKind.MaybeNone ? (AbstractValue)left.Value : left;
-            var rightValue = right.Kind == AbstractValueKind.MaybeNone ? (AbstractValue)right.Value : right;
+            var leftValue = left.Kind == AbstractValueKind.MaybeNone ? left.RequirePayload<AbstractValue>() : left;
+            var rightValue = right.Kind == AbstractValueKind.MaybeNone ? right.RequirePayload<AbstractValue>() : right;
             return MaybeNone(Join(leftValue, rightValue, span), span);
         }
 
@@ -358,28 +378,28 @@ internal readonly record struct AbstractValue(
         {
             return left.Kind switch
             {
-                AbstractValueKind.String => Equals(left.Value, right.Value) ? left.WithSpan(span) : StringType(span),
+                AbstractValueKind.String => left.HasSamePayload(right) ? left.WithSpan(span) : StringType(span),
                 AbstractValueKind.Bytes => LiteralValuesEqual(left, right) ? left.WithSpan(span) : BytesType(span),
-                AbstractValueKind.Integer => Equals(left.Value, right.Value) ? left.WithSpan(span) : IntegerType(span),
-                AbstractValueKind.Float => Equals(left.Value, right.Value) ? left.WithSpan(span) : FloatType(span),
-                AbstractValueKind.Boolean => Equals(left.Value, right.Value) ? left.WithSpan(span) : BooleanType(span),
-                AbstractValueKind.MaybeNone => MaybeNone(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+                AbstractValueKind.Integer => left.HasSamePayload(right) ? left.WithSpan(span) : IntegerType(span),
+                AbstractValueKind.Float => left.HasSamePayload(right) ? left.WithSpan(span) : FloatType(span),
+                AbstractValueKind.Boolean => left.HasSamePayload(right) ? left.WithSpan(span) : BooleanType(span),
+                AbstractValueKind.MaybeNone => MaybeNone(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
                 AbstractValueKind.List => JoinLiteralLists(left, right, span),
-                AbstractValueKind.ListType => ListOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
-                AbstractValueKind.SetType => SetOf(Join((AbstractValue)left.Value, (AbstractValue)right.Value, span), span),
+                AbstractValueKind.ListType => ListOf(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
+                AbstractValueKind.SetType => SetOf(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
                 AbstractValueKind.Dict => JoinLiteralDictionaries(),
-                AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes((AbstractTextFileMode)left.Value, (AbstractTextFileMode)right.Value), span),
-                AbstractValueKind.Module => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-                AbstractValueKind.KnownCallable => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes(left.RequirePayload<AbstractTextFileMode>(), right.RequirePayload<AbstractTextFileMode>()), span),
+                AbstractValueKind.Module => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.KnownCallable => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
                 AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
                 AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
-                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries((AbstractArgparseParserSummary)left.Value, (AbstractArgparseParserSummary)right.Value, span), span),
-                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries((AbstractArgparseNamespaceSummary)left.Value, (AbstractArgparseNamespaceSummary)right.Value, span), span),
+                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries(left.RequirePayload<AbstractArgparseParserSummary>(), right.RequirePayload<AbstractArgparseParserSummary>(), span), span),
+                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries(left.RequirePayload<AbstractArgparseNamespaceSummary>(), right.RequirePayload<AbstractArgparseNamespaceSummary>(), span), span),
                 AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
                 AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
-                AbstractValueKind.Function => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
-                AbstractValueKind.UserClass => Equals(left.Value, right.Value) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.Function => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
+                AbstractValueKind.UserClass => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.UserInstance => JoinUserInstances(left, right, span),
                 _ => left.WithSpan(span)
             };
@@ -424,8 +444,8 @@ internal readonly record struct AbstractValue(
 
         AbstractValue JoinLiteralDictionaries()
         {
-            var leftPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)left.Value;
-            var rightPairs = (IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>)right.Value;
+            var leftPairs = left.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+            var rightPairs = right.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
             if (leftPairs.Count != rightPairs.Count)
             {
                 return Unknown(span);
@@ -512,8 +532,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinDataclassFields(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftField = (AbstractDataclassFieldSummary)left.Value;
-        var rightField = (AbstractDataclassFieldSummary)right.Value;
+        var leftField = left.RequirePayload<AbstractDataclassFieldSummary>();
+        var rightField = right.RequirePayload<AbstractDataclassFieldSummary>();
         return string.Equals(leftField.Name, rightField.Name, StringComparison.Ordinal)
             ? DataclassField(leftField.Name, span)
             : Unknown(span);
@@ -521,8 +541,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinArgparseGroups(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftGroup = (AbstractArgparseGroupSummary)left.Value;
-        var rightGroup = (AbstractArgparseGroupSummary)right.Value;
+        var leftGroup = left.RequirePayload<AbstractArgparseGroupSummary>();
+        var rightGroup = right.RequirePayload<AbstractArgparseGroupSummary>();
         return string.Equals(leftGroup.ParserName, rightGroup.ParserName, StringComparison.Ordinal)
             ? ArgparseMutuallyExclusiveGroup(leftGroup.ParserName, span)
             : ArgparseMutuallyExclusiveGroup(span);
@@ -530,8 +550,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftInstance = (AbstractInstanceSummary)left.Value;
-        var rightInstance = (AbstractInstanceSummary)right.Value;
+        var leftInstance = left.RequirePayload<AbstractInstanceSummary>();
+        var rightInstance = right.RequirePayload<AbstractInstanceSummary>();
         if (!Equals(leftInstance.Class, rightInstance.Class))
         {
             return Unknown(span);
@@ -554,8 +574,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinLiteralLists(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftItems = (IReadOnlyList<AbstractValue>)left.Value;
-        var rightItems = (IReadOnlyList<AbstractValue>)right.Value;
+        var leftItems = left.RequirePayload<IReadOnlyList<AbstractValue>>();
+        var rightItems = right.RequirePayload<IReadOnlyList<AbstractValue>>();
         if (leftItems.Count == rightItems.Count)
         {
             var allSame = true;
@@ -579,8 +599,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinRegexPatterns(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftSummary = (AbstractRegexPatternSummary)left.Value;
-        var rightSummary = (AbstractRegexPatternSummary)right.Value;
+        var leftSummary = left.RequirePayload<AbstractRegexPatternSummary>();
+        var rightSummary = right.RequirePayload<AbstractRegexPatternSummary>();
         return RegexPatternSummariesEqual(leftSummary, rightSummary)
             ? RegexPattern(leftSummary, span)
             : RegexPattern(span);
@@ -588,8 +608,8 @@ internal readonly record struct AbstractValue(
 
     private static AbstractValue JoinRegexMatches(AbstractValue left, AbstractValue right, LythonSourceSpan span, bool maybe)
     {
-        var leftSummary = (AbstractRegexMatchSummary)left.Value;
-        var rightSummary = (AbstractRegexMatchSummary)right.Value;
+        var leftSummary = left.RequirePayload<AbstractRegexMatchSummary>();
+        var rightSummary = right.RequirePayload<AbstractRegexMatchSummary>();
         if (!RegexMatchSummariesEqual(leftSummary, rightSummary))
         {
             return maybe ? MaybeRegexMatch(span) : RegexMatch(span);
@@ -618,13 +638,13 @@ internal readonly record struct AbstractValue(
     {
         if (value.Kind == AbstractValueKind.ListType)
         {
-            item = (AbstractValue)value.Value;
+            item = value.RequirePayload<AbstractValue>();
             return true;
         }
 
         if (value.Kind == AbstractValueKind.List)
         {
-            item = JoinListItems((IReadOnlyList<AbstractValue>)value.Value, Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequirePayload<IReadOnlyList<AbstractValue>>(), Array.Empty<AbstractValue>(), value.Span);
             return true;
         }
 
@@ -636,13 +656,13 @@ internal readonly record struct AbstractValue(
     {
         if (value.Kind == AbstractValueKind.SetType)
         {
-            item = (AbstractValue)value.Value;
+            item = value.RequirePayload<AbstractValue>();
             return true;
         }
 
         if (value.Kind == AbstractValueKind.Set)
         {
-            item = JoinListItems((IReadOnlyList<AbstractValue>)value.Value, Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequirePayload<IReadOnlyList<AbstractValue>>(), Array.Empty<AbstractValue>(), value.Span);
             return true;
         }
 
@@ -712,8 +732,8 @@ internal readonly record struct AbstractValue(
             AbstractValueKind.String or
             AbstractValueKind.Integer or
             AbstractValueKind.Float or
-            AbstractValueKind.Boolean => Equals(left.Value, right.Value),
-            AbstractValueKind.Bytes => ((byte[])left.Value).AsSpan().SequenceEqual((byte[])right.Value),
+            AbstractValueKind.Boolean => left.HasSamePayload(right),
+            AbstractValueKind.Bytes => (left.RequirePayload<byte[]>()).AsSpan().SequenceEqual(right.RequirePayload<byte[]>()),
             AbstractValueKind.None => true,
             _ => false
         };
@@ -724,14 +744,14 @@ internal readonly record struct AbstractValue(
         switch (value.Kind)
         {
             case AbstractValueKind.String:
-                length = ((string)value.Value).Length;
+                length = (value.RequirePayload<string>()).Length;
                 return true;
             case AbstractValueKind.Bytes:
-                length = ((byte[])value.Value).Length;
+                length = (value.RequirePayload<byte[]>()).Length;
                 return true;
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
-                length = ((IReadOnlyList<AbstractValue>)value.Value).Count;
+                length = (value.RequirePayload<IReadOnlyList<AbstractValue>>()).Count;
                 return true;
             default:
                 length = 0;
@@ -757,11 +777,11 @@ internal readonly record struct AbstractValue(
             hash.Add(value.Kind);
             if (value.Kind == AbstractValueKind.Bytes)
             {
-                hash.AddBytes((byte[])value.Value);
+                hash.AddBytes(value.RequirePayload<byte[]>());
             }
             else if (value.Kind != AbstractValueKind.None)
             {
-                hash.Add(value.Value);
+                hash.Add(value._payload);
             }
 
             return hash.ToHashCode();

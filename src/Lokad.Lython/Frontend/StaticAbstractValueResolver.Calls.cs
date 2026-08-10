@@ -64,7 +64,7 @@ internal static partial class StaticAbstractValueResolver
             functionValue.Kind == AbstractValueKind.Function &&
             StaticCallArguments.TryGetConcreteArguments(call, bindings, out var functionArguments) &&
             StaticBindingEngine.TryResolveFunctionCallReturn(
-                (AbstractFunctionSummary)functionValue.Value,
+                functionValue.RequirePayload<AbstractFunctionSummary>(),
                 functionArguments,
                 bindings,
                 call.Span,
@@ -77,7 +77,7 @@ internal static partial class StaticAbstractValueResolver
             bindings.TryGet(classIdentifier.Name, out var classValue) &&
             classValue.Kind == AbstractValueKind.UserClass &&
             StaticCallArguments.TryGetConcreteArguments(call, bindings, out var classArguments) &&
-            StaticBindingEngine.TryInstantiateUserClass((AbstractClassSummary)classValue.Value, classArguments, bindings, call.Span, out value))
+            StaticBindingEngine.TryInstantiateUserClass(classValue.RequirePayload<AbstractClassSummary>(), classArguments, bindings, call.Span, out value))
         {
             return true;
         }
@@ -161,10 +161,10 @@ internal static partial class StaticAbstractValueResolver
         switch (value.Kind)
         {
             case AbstractValueKind.ListType:
-                item = (AbstractValue)value.Value;
+                item = value.RequirePayload<AbstractValue>();
                 return true;
             case AbstractValueKind.List:
-                item = StaticBindingEngine.JoinSequenceItems((IReadOnlyList<AbstractValue>)value.Value, value.Span);
+                item = StaticBindingEngine.JoinSequenceItems(value.RequirePayload<IReadOnlyList<AbstractValue>>(), value.Span);
                 return true;
             default:
                 item = default;

@@ -83,7 +83,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.TextFileHandle)
         {
-            var mode = (AbstractTextFileMode)value.Value;
+            var mode = value.RequirePayload<AbstractTextFileMode>();
             if (mode is AbstractTextFileMode.Write or AbstractTextFileMode.Append)
             {
                 AddDiagnostic(diagnostics, "LA3109", "file is not open for reading.", expression.Span);
@@ -111,7 +111,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.TextFileHandle)
         {
-            var mode = (AbstractTextFileMode)value.Value;
+            var mode = value.RequirePayload<AbstractTextFileMode>();
             if (mode == AbstractTextFileMode.Read)
             {
                 AddDiagnostic(diagnostics, "LA3111", "file is not open for writing.", expression.Span);
@@ -160,7 +160,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.Tuple or AbstractValueKind.List)
         {
-            var items = (IReadOnlyList<AbstractValue>)value.Value;
+            var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
             if (items.Count == 2 && items.All(static item => item.IsStringLike || StaticKnownCallArgumentChecks.IsUnknown(item)))
             {
                 return;
@@ -242,7 +242,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.TextFileHandle)
         {
-            var mode = (AbstractTextFileMode)value.Value;
+            var mode = value.RequirePayload<AbstractTextFileMode>();
             if (mode == AbstractTextFileMode.Read)
             {
                 AddDiagnostic(diagnostics, "LA3111", "file is not open for writing.", expression.Span);

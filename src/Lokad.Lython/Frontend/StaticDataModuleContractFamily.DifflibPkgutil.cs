@@ -206,7 +206,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            foreach (var item in (IReadOnlyList<AbstractValue>)value.Value)
+            foreach (var item in value.RequirePayload<IReadOnlyList<AbstractValue>>())
             {
                 if (!IsPathLike(item) && !IsUnknown(item))
                 {
@@ -220,7 +220,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
-            var item = (AbstractValue)value.Value;
+            var item = value.RequirePayload<AbstractValue>();
             if (!IsPathLike(item) && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
@@ -301,7 +301,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            foreach (var item in (IReadOnlyList<AbstractValue>)value.Value)
+            foreach (var item in value.RequirePayload<IReadOnlyList<AbstractValue>>())
             {
                 if (!IsBytesLike(item) && !IsUnknown(item))
                 {
@@ -315,7 +315,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
-            var item = (AbstractValue)value.Value;
+            var item = value.RequirePayload<AbstractValue>();
             if (!IsBytesLike(item) && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, item.Span);
@@ -485,7 +485,7 @@ internal static partial class StaticDataModuleContractFamily
     {
         if (value.Kind == AbstractValueKind.Integer &&
             int.TryParse(
-                ((string)value.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
                 out var integer))
@@ -496,7 +496,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.Float &&
             double.TryParse(
-                ((string)value.Value).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Float,
                 CultureInfo.InvariantCulture,
                 out var floating))
@@ -507,7 +507,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.Boolean)
         {
-            number = (bool)value.Value ? 1.0 : 0.0;
+            number = value.RequirePayload<bool>() ? 1.0 : 0.0;
             return true;
         }
 

@@ -44,14 +44,14 @@ internal static class StaticConditionRefinements
             if (identifierValue.Kind == AbstractValueKind.MaybeRegexMatch)
             {
                 bindings.Set(identifier.Name, assumedTruth
-                    ? AbstractValue.RegexMatch((AbstractRegexMatchSummary)identifierValue.Value, identifier.Span)
+                    ? AbstractValue.RegexMatch(identifierValue.RequirePayload<AbstractRegexMatchSummary>(), identifier.Span)
                     : AbstractValue.None(identifier.Span));
                 return;
             }
 
             if (identifierValue.Kind == AbstractValueKind.MaybeNone)
             {
-                var nonNoneValue = ((AbstractValue)identifierValue.Value).WithSpan(identifier.Span);
+                var nonNoneValue = (identifierValue.RequirePayload<AbstractValue>()).WithSpan(identifier.Span);
                 if (assumedTruth)
                 {
                     bindings.Set(identifier.Name, nonNoneValue);
@@ -153,7 +153,7 @@ internal static class StaticConditionRefinements
         {
             bindings.Set(identifier.Name, meansNone
                 ? AbstractValue.None(identifier.Span)
-                : AbstractValue.RegexMatch((AbstractRegexMatchSummary)value.Value, identifier.Span));
+                : AbstractValue.RegexMatch(value.RequirePayload<AbstractRegexMatchSummary>(), identifier.Span));
             return;
         }
 
@@ -161,7 +161,7 @@ internal static class StaticConditionRefinements
         {
             bindings.Set(identifier.Name, meansNone
                 ? AbstractValue.None(identifier.Span)
-                : ((AbstractValue)value.Value).WithSpan(identifier.Span));
+                : (value.RequirePayload<AbstractValue>()).WithSpan(identifier.Span));
         }
     }
 
