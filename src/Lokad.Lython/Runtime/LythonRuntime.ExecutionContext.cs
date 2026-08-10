@@ -297,117 +297,16 @@ internal sealed partial class LythonRuntime
         }
 
         private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-        {
-            RequireSynchronousCapability(capability, name, span);
-            try
-            {
-                var valueTask = operation();
-                if (valueTask.IsCompletedSuccessfully)
-                {
-                    return valueTask.Result;
-                }
-
-                var task = valueTask.AsTask();
-                if (!task.IsCompleted)
-                {
-                    throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
-                }
-
-                if (task.IsCanceled)
-                {
-                    throw RuntimeErrors.Runtime("execution canceled", span);
-                }
-
-                if (task.IsFaulted)
-                {
-                    throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-                }
-
-                return task.Result;
-            }
-            catch (Exception ex)
-            {
-                var translated = TranslateHostException(ex, name, span);
-                if (ReferenceEquals(translated, ex)) throw;
-                throw translated;
-            }
-        }
+            => HostOperation.Await(capability, operation, name, span);
 
         private void AwaitHost(object capability, Func<ValueTask> operation, string name, LythonSourceSpan? span)
-        {
-            RequireSynchronousCapability(capability, name, span);
-            try
-            {
-                var task = operation().AsTask();
-                if (!task.IsCompleted)
-                {
-                    throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
-                }
+            => HostOperation.Await(capability, operation, name, span);
 
-                if (task.IsCanceled)
-                {
-                    throw RuntimeErrors.Runtime("execution canceled", span);
-                }
+        private static ValueTask<T> AwaitHostAsync<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
+            => HostOperation.AwaitAsync(operation, name, span);
 
-                if (task.IsFaulted)
-                {
-                    throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-                }
-            }
-            catch (Exception ex)
-            {
-                var translated = TranslateHostException(ex, name, span);
-                if (ReferenceEquals(translated, ex)) throw;
-                throw translated;
-            }
-        }
-
-        private static void RequireSynchronousCapability(object capability, string name, LythonSourceSpan? span)
-        {
-            if (capability is not ILythonSynchronousHostCapability { CompletesSynchronously: true })
-            {
-                throw RuntimeErrors.Runtime($"{name} cannot run synchronously; use RunAsync because the host capability is asynchronous.", span);
-            }
-        }
-
-        private static async ValueTask<T> AwaitHostAsync<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-        {
-            try
-            {
-                return await operation().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                var translated = TranslateHostException(ex, name, span);
-                if (ReferenceEquals(translated, ex)) throw;
-                throw translated;
-            }
-        }
-
-        private static async ValueTask AwaitHostAsync(Func<ValueTask> operation, string name, LythonSourceSpan? span)
-        {
-            try
-            {
-                await operation().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                var translated = TranslateHostException(ex, name, span);
-                if (ReferenceEquals(translated, ex)) throw;
-                throw translated;
-            }
-        }
-
-        private static Exception TranslateHostException(Exception exception, string name, LythonSourceSpan? span)
-            => exception switch
-            {
-                OperationCanceledException => RuntimeErrors.Runtime("execution canceled", span),
-                LythonRuntimeException or OutOfMemoryException => exception,
-                LythonSubprocessOutputLimitException outputLimit => RuntimeErrors.Runtime(outputLimit.Message, span),
-                NotSupportedException notSupported when notSupported.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase)
-                    => RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span),
-                _ => RuntimeErrors.Host(name, exception, span)
-            };
+        private static ValueTask AwaitHostAsync(Func<ValueTask> operation, string name, LythonSourceSpan? span)
+            => HostOperation.AwaitAsync(operation, name, span);
 
         public bool TryGetBuiltinType(string name, [MaybeNullWhen(false)] out PyType type)
         {

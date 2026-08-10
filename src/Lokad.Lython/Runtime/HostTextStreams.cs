@@ -23,7 +23,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
-        var utf8 = AwaitHost(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
         CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
     }
@@ -35,7 +35,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
-        var utf8 = await AwaitHostAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
         CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
     }
@@ -47,7 +47,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
-        var utf8 = AwaitHost(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
@@ -64,7 +64,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
-        var utf8 = await AwaitHostAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
@@ -86,76 +86,6 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
     }
 
-    private static T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-    {
-        RequireSynchronousCapability(capability, name, span);
-        try
-        {
-            var valueTask = operation();
-            if (valueTask.IsCompletedSuccessfully)
-            {
-                return valueTask.Result;
-            }
-
-            var task = valueTask.AsTask();
-            if (!task.IsCompleted)
-            {
-                throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
-            }
-
-            if (task.IsCanceled)
-            {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-
-            if (task.IsFaulted)
-            {
-                throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-            }
-
-            return task.Result;
-        }
-        catch (OperationCanceledException)
-        {
-            throw RuntimeErrors.Runtime("execution canceled", span);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            throw RuntimeErrors.Host(name, ex, span);
-        }
-    }
-
-    private static void RequireSynchronousCapability(object capability, string name, LythonSourceSpan? span)
-    {
-        if (capability is not ILythonSynchronousHostCapability { CompletesSynchronously: true })
-        {
-            throw RuntimeErrors.Runtime($"{name} cannot run synchronously; use RunAsync because the host capability is asynchronous.", span);
-        }
-    }
-
-    private static async ValueTask<T> AwaitHostAsync<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-    {
-        try
-        {
-            return await operation().ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw RuntimeErrors.Runtime("execution canceled", span);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            throw RuntimeErrors.Host(name, ex, span);
-        }
-    }
 }
 
 internal sealed class HostTextOutputHandle : IPyRenderableValue
@@ -184,7 +114,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_output is not null)
         {
-            RequireSynchronousCapability(_output, _name + ".write", span);
+            HostOperation.RequireSynchronousCapability(_output, _name + ".write", span);
         }
 
         if (_capture is not null)
@@ -194,7 +124,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_output is not null)
         {
-            AwaitHost(_output, () => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span);
+            HostOperation.Await(_output, () => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span);
         }
 
         return new BigInteger(text.Length);
@@ -214,7 +144,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_output is not null)
         {
-            await AwaitHostAsync(() => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
+            await HostOperation.AwaitAsync(() => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
         }
 
         return new BigInteger(text.Length);
@@ -232,7 +162,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
         }
 
-        AwaitHost(_output, () => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
+        HostOperation.Await(_output, () => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
         return PyNone.Instance;
     }
 
@@ -248,7 +178,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
         }
 
-        await AwaitHostAsync(() => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
+        await HostOperation.AwaitAsync(() => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -256,68 +186,6 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    private static void AwaitHost(object capability, Func<ValueTask> operation, string name, LythonSourceSpan? span)
-    {
-        RequireSynchronousCapability(capability, name, span);
-        try
-        {
-            var task = operation().AsTask();
-            if (!task.IsCompleted)
-            {
-                throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
-            }
-
-            if (task.IsCanceled)
-            {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-
-            if (task.IsFaulted)
-            {
-                throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            throw RuntimeErrors.Runtime("execution canceled", span);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            throw RuntimeErrors.Host(name, ex, span);
-        }
-    }
-
-    private static void RequireSynchronousCapability(object capability, string name, LythonSourceSpan? span)
-    {
-        if (capability is not ILythonSynchronousHostCapability { CompletesSynchronously: true })
-        {
-            throw RuntimeErrors.Runtime($"{name} cannot run synchronously; use RunAsync because the host capability is asynchronous.", span);
-        }
-    }
-
-    private static async ValueTask AwaitHostAsync(Func<ValueTask> operation, string name, LythonSourceSpan? span)
-    {
-        try
-        {
-            await operation().ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw RuntimeErrors.Runtime("execution canceled", span);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            throw RuntimeErrors.Host(name, ex, span);
-        }
-    }
 }
 
 internal sealed class PyCompletedProcess : IPyRenderableValue

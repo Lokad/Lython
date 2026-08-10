@@ -781,7 +781,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            var value = ReadTimingValue(() => timing.MonotonicNanoseconds, "time.monotonic", span);
+            var value = HostOperation.Invoke(() => timing.MonotonicNanoseconds, "time.monotonic", span);
             if (value < 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a negative monotonic reading.", span);
@@ -794,7 +794,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            var value = ReadTimingValue(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span);
+            var value = HostOperation.Invoke(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span);
             if (value <= 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a non-positive monotonic resolution.", span);
@@ -807,14 +807,14 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            AwaitHost(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+            HostOperation.Await(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
         }
 
         public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
             RegisterHostCall(span);
-            return AwaitHostAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+            return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
         }
 
         private ILythonTiming RequireHostTiming(LythonSourceSpan? span)
@@ -822,20 +822,5 @@ internal sealed partial class LythonRuntime
                 "host timing/sleep capability is not available in this host.",
                 span);
 
-        private static long ReadTimingValue(Func<long> read, string name, LythonSourceSpan? span)
-        {
-            try
-            {
-                return read();
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                throw RuntimeErrors.Host(name, ex, span);
-            }
-        }
     }
 }
