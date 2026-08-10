@@ -289,9 +289,8 @@ internal sealed partial class Parser
             return null;
         }
 
-        if (items.OfType<MatchStarPatternSyntax>().Count() > 1)
+        if (!ValidateSequenceStarPattern(items, openParen))
         {
-            AddDiagnostic("LA1096", "Sequence pattern cannot contain multiple starred patterns.", openParen);
             return null;
         }
 
@@ -333,9 +332,8 @@ internal sealed partial class Parser
             return null;
         }
 
-        if (items.OfType<MatchStarPatternSyntax>().Count() > 1)
+        if (!ValidateSequenceStarPattern(items, openBracket))
         {
-            AddDiagnostic("LA1096", "Sequence pattern cannot contain multiple starred patterns.", openBracket);
             return null;
         }
 
@@ -360,6 +358,28 @@ internal sealed partial class Parser
         return name == "_"
             ? new MatchStarPatternSyntax(null, Merge(SpanOf(starToken), SpanOf(targetToken)))
             : new MatchStarPatternSyntax(name, Merge(SpanOf(starToken), SpanOf(targetToken)));
+    }
+
+    private bool ValidateSequenceStarPattern(IReadOnlyList<PatternSyntax> items, int openingToken)
+    {
+        var foundStar = false;
+        foreach (var item in items)
+        {
+            if (item is not MatchStarPatternSyntax)
+            {
+                continue;
+            }
+
+            if (foundStar)
+            {
+                AddDiagnostic("LA1096", "Sequence pattern cannot contain multiple starred patterns.", openingToken);
+                return false;
+            }
+
+            foundStar = true;
+        }
+
+        return true;
     }
 
     private PatternSyntax? ParseMappingPattern()
