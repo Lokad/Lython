@@ -13,7 +13,7 @@ internal static class StaticStructuralDiagnostics
         AddDiagnostic(
             diagnostics,
             "LA3113",
-            $"{DescribeValue(receiver)} has no member '{member.MemberName}'.",
+            $"{StaticAbstractFacts.DescribeValue(receiver)} has no member '{member.MemberName}'.",
             member.Span);
     }
 
@@ -735,7 +735,7 @@ internal static class StaticStructuralDiagnostics
     private static string DescribeDictionaryKey(AbstractValue key)
         => key.Kind == AbstractValueKind.String
             ? $"'{key.Value}'"
-            : StaticAbstractFacts.DescribeLiteralType(key);
+            : StaticAbstractFacts.DescribeValue(key);
 
     private static string DescribeBinaryOperator(BinaryOperatorSyntax op)
         => op switch
@@ -754,99 +754,6 @@ internal static class StaticStructuralDiagnostics
             BinaryOperatorSyntax.RightShift => ">>",
             _ => op.ToString()
         };
-
-    private static string DescribeValue(AbstractValue value)
-    {
-        return value.Kind switch
-        {
-            AbstractValueKind.String or AbstractValueKind.StringType => "str",
-            AbstractValueKind.Bytes or AbstractValueKind.BytesType => "bytes",
-            AbstractValueKind.Integer or AbstractValueKind.IntegerType => "int",
-            AbstractValueKind.Float or AbstractValueKind.FloatType => "float",
-            AbstractValueKind.Boolean or AbstractValueKind.BooleanType => "bool",
-            AbstractValueKind.None => "NoneType",
-            AbstractValueKind.MaybeNone => DescribeValue((AbstractValue)value.Value) + " | None",
-            AbstractValueKind.List or AbstractValueKind.ListType => "list",
-            AbstractValueKind.Tuple => "tuple",
-            AbstractValueKind.Dict => "dict",
-            AbstractValueKind.Set or AbstractValueKind.SetType => "set",
-            AbstractValueKind.Path => "pathlib.Path",
-            AbstractValueKind.TextFileHandle => "file",
-            AbstractValueKind.Module => $"module '{value.Value}'",
-            AbstractValueKind.KnownCallable => $"callable '{value.Value}'",
-            AbstractValueKind.RegexPattern => "re.Pattern",
-            AbstractValueKind.MaybeRegexMatch => "re.Match | None",
-            AbstractValueKind.RegexMatch => "re.Match",
-            AbstractValueKind.ArgparseParser => "argparse.ArgumentParser",
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup => "argparse._MutuallyExclusiveGroup",
-            AbstractValueKind.ArgparseNamespace => "argparse.Namespace",
-            AbstractValueKind.CsvReader => "csv.reader",
-            AbstractValueKind.CsvDictReader => "csv.DictReader",
-            AbstractValueKind.CsvWriter => "csv.writer",
-            AbstractValueKind.CsvDictWriter => "csv.DictWriter",
-            AbstractValueKind.CollectionsDefaultDict => "collections.defaultdict",
-            AbstractValueKind.CollectionsCounter => "collections.Counter",
-            AbstractValueKind.CollectionsDeque => "collections.deque",
-            AbstractValueKind.CollectionsChainMap => "collections.ChainMap",
-            AbstractValueKind.Decimal => "decimal.Decimal",
-            AbstractValueKind.DecimalContext => "decimal.Context",
-            AbstractValueKind.DecimalTuple => "decimal.DecimalTuple",
-            AbstractValueKind.DateTimeTimedelta => "datetime.timedelta",
-            AbstractValueKind.DateTimeDate => "datetime.date",
-            AbstractValueKind.DateTimeTime => "datetime.time",
-            AbstractValueKind.DateTimeDateTime => "datetime.datetime",
-            AbstractValueKind.DateTimeTimezone => "datetime.timezone",
-            AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
-            AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
-            AbstractValueKind.Random => "random.Random",
-            AbstractValueKind.DifflibDiffer => "difflib.Differ",
-            AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
-            AbstractValueKind.DifflibMatch => "difflib.Match",
-            AbstractValueKind.DifflibSequenceMatcher => "difflib.SequenceMatcher",
-            AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
-            AbstractValueKind.PkgutilLoader => "pkgutil.Loader",
-            AbstractValueKind.SubprocessCompletedProcess => "subprocess.CompletedProcess",
-            AbstractValueKind.SubprocessPopen => "subprocess.Popen",
-            AbstractValueKind.DataclassField => "dataclasses.Field",
-            AbstractValueKind.OpenPyxlWorkbook => "openpyxl.Workbook",
-            AbstractValueKind.OpenPyxlWorksheet => "openpyxl.worksheet.worksheet.Worksheet",
-            AbstractValueKind.OpenPyxlCell => "openpyxl.cell.cell.Cell",
-            AbstractValueKind.OpenPyxlHyperlink => "openpyxl.worksheet.hyperlink.Hyperlink",
-            AbstractValueKind.OpenPyxlComment => "openpyxl.comments.Comment",
-            AbstractValueKind.OpenPyxlFont => "openpyxl.styles.Font",
-            AbstractValueKind.OpenPyxlPatternFill => "openpyxl.styles.PatternFill",
-            AbstractValueKind.OpenPyxlBorder => "openpyxl.styles.Border",
-            AbstractValueKind.OpenPyxlSide => "openpyxl.styles.Side",
-            AbstractValueKind.OpenPyxlAlignment => "openpyxl.styles.Alignment",
-            AbstractValueKind.OpenPyxlProtection => "openpyxl.styles.Protection",
-            AbstractValueKind.OpenPyxlNamedStyle => "openpyxl.styles.NamedStyle",
-            AbstractValueKind.OpenPyxlColor => "openpyxl.styles.colors.Color",
-            AbstractValueKind.OpenPyxlTable => "openpyxl.worksheet.table.Table",
-            AbstractValueKind.OpenPyxlTableStyleInfo => "openpyxl.worksheet.table.TableStyleInfo",
-            AbstractValueKind.OpenPyxlDataValidation => "openpyxl.worksheet.datavalidation.DataValidation",
-            AbstractValueKind.OpenPyxlConditionalFormattingRule => "openpyxl.formatting.rule.Rule",
-            AbstractValueKind.OpenPyxlAutoFilter => "openpyxl.worksheet.filters.AutoFilter",
-            AbstractValueKind.OpenPyxlSheetProtection => "openpyxl.worksheet.protection.SheetProtection",
-            AbstractValueKind.OpenPyxlWorkbookProtection => "openpyxl.workbook.protection.WorkbookProtection",
-            AbstractValueKind.OpenPyxlDrawing => "openpyxl.drawing.spreadsheet_drawing.SpreadsheetDrawing",
-            AbstractValueKind.OpenPyxlChart => "openpyxl.chart._chart.ChartBase",
-            AbstractValueKind.OpenPyxlImage => "openpyxl.drawing.image.Image",
-            AbstractValueKind.OpenPyxlSheetView => "openpyxl.worksheet.views.SheetView",
-            AbstractValueKind.OpenPyxlSelection => "openpyxl.worksheet.views.Selection",
-            AbstractValueKind.OpenPyxlPageMargins => "openpyxl.worksheet.page.PageMargins",
-            AbstractValueKind.OpenPyxlPageSetup => "openpyxl.worksheet.page.PrintPageSetup",
-            AbstractValueKind.OpenPyxlTableCollection => "openpyxl.worksheet.table.TableList",
-            AbstractValueKind.OpenPyxlDataValidationList => "openpyxl.worksheet.datavalidation.DataValidationList",
-            AbstractValueKind.OpenPyxlConditionalFormattingCollection => "openpyxl.formatting.formatting.ConditionalFormattingList",
-            AbstractValueKind.OpenPyxlColumnDimension => "openpyxl.worksheet.dimensions.ColumnDimension",
-            AbstractValueKind.OpenPyxlRowDimension => "openpyxl.worksheet.dimensions.RowDimension",
-            AbstractValueKind.OpenPyxlMergedCellSet => "openpyxl.worksheet.cell_range.MultiCellRange",
-            AbstractValueKind.Function => "function",
-            AbstractValueKind.UserClass => ((AbstractClassSummary)value.Value).Name,
-            AbstractValueKind.UserInstance => ((AbstractInstanceSummary)value.Value).Class.Name,
-            _ => "object"
-        };
-    }
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
     {

@@ -186,6 +186,23 @@ Path("/repo/in.bin").read_bytes()
     }
 
     [Fact]
+    public void StructuralDiagnostics_UseCanonicalExpandedLibraryTypeNames()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+from collections import Counter
+from decimal import Decimal
+
+Counter().not_a_counter_member
+Decimal("1").not_a_decimal_member
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("collections.Counter has no member", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("decimal.Decimal has no member", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void PathReadTextDefaultDictAndArgparseTypeLiteralMisuse_ReportAtCompileTime()
     {
         var compiled = new LythonEngine().Compile(
@@ -2296,6 +2313,8 @@ cell.offset(1, 2, 3)
         Assert.True(
             compiled.Diagnostics.Count(d => d.Code == "LA3113") >= 15,
             string.Join(" | ", compiled.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("openpyxl.Workbook has no member", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("openpyxl.styles.Font has no member", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3161");
 
         var worksheetSatellites = new LythonEngine().Compile(

@@ -86,8 +86,8 @@ internal static class StaticStringContractFamily
                         diagnostics,
                         "LA3074",
                         memberName == "startswith"
-                            ? $"tuple for startswith must only contain str, not {StaticAbstractFacts.DescribeLiteralType(item)}"
-                            : $"tuple for endswith must only contain str, not {StaticAbstractFacts.DescribeLiteralType(item)}",
+                            ? $"tuple for startswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}"
+                            : $"tuple for endswith must only contain str, not {StaticAbstractFacts.DescribeValue(item)}",
                         item.Span);
                     return;
                 }
