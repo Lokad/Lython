@@ -154,7 +154,7 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
-                AnalyzeAugmentedAssignmentTarget(augmented.Target, context, localNames, maybeAssigned);
+                AnalyzeAugmentedAssignmentTarget(augmented.Target);
                 AnalyzeExpression(augmented.Expression, context, localNames, maybeAssigned);
                 if (augmented.Target is NameAssignmentTargetSyntax augmentedName)
                 {
@@ -326,6 +326,48 @@ internal static class StaticNameBindingDiagnostics
                     }
                     break;
                 }
+        }
+
+        void AnalyzeAugmentedAssignmentTarget(AssignmentTargetSyntax target)
+        {
+            switch (target)
+            {
+                case NameAssignmentTargetSyntax nameTarget:
+                    AnalyzeLocalRead(nameTarget.Name, target.Span, context, localNames, maybeAssigned);
+                    break;
+
+                case SubscriptAssignmentTargetSyntax subscript:
+                    AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
+                    AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
+                    break;
+
+                case SliceAssignmentTargetSyntax slice:
+                    AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
+                    AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
+                    AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
+                    AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
+                    break;
+
+                case MemberAssignmentTargetSyntax member:
+                    AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
+                    break;
+            }
+        }
+
+        static void AddAssignmentTarget(AssignmentTargetSyntax target, HashSet<string> maybeAssigned)
+        {
+            switch (target)
+            {
+                case NameAssignmentTargetSyntax nameTarget:
+                    maybeAssigned.Add(nameTarget.Name);
+                    break;
+                case UnpackingAssignmentTargetGroupSyntax unpacking:
+                    foreach (var nested in unpacking.Targets)
+                    {
+                        maybeAssigned.Add(nested.Name);
+                    }
+                    break;
+            }
         }
     }
 
@@ -516,36 +558,6 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static void AnalyzeAugmentedAssignmentTarget(
-        AssignmentTargetSyntax target,
-        StaticAnalysisContext context,
-        HashSet<string> localNames,
-        HashSet<string> maybeAssigned)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax nameTarget:
-                AnalyzeLocalRead(nameTarget.Name, target.Span, context, localNames, maybeAssigned);
-                break;
-
-            case SubscriptAssignmentTargetSyntax subscript:
-                AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
-                AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
-                break;
-
-            case SliceAssignmentTargetSyntax slice:
-                AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.Start, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.End, context, localNames, maybeAssigned);
-                AnalyzeExpressionIfPresent(slice.Step, context, localNames, maybeAssigned);
-                break;
-
-            case MemberAssignmentTargetSyntax member:
-                AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
-                break;
-        }
-    }
-
     private static void AnalyzeExpressionForNestedFunctions(ExpressionSyntax expression, StaticAnalysisContext context)
     {
         if (expression is LambdaExpressionSyntax lambda)
@@ -555,22 +567,6 @@ internal static class StaticNameBindingDiagnostics
                 lambda.Parameters.Select(static parameter => parameter.Name),
                 StringComparer.Ordinal);
             AnalyzeExpression(lambda.Body, context, localNames, maybeAssigned);
-        }
-    }
-
-    private static void AddAssignmentTarget(AssignmentTargetSyntax target, HashSet<string> maybeAssigned)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax nameTarget:
-                maybeAssigned.Add(nameTarget.Name);
-                break;
-            case UnpackingAssignmentTargetGroupSyntax unpacking:
-                foreach (var nested in unpacking.Targets)
-                {
-                    maybeAssigned.Add(nested.Name);
-                }
-                break;
         }
     }
 
