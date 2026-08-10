@@ -12,6 +12,35 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static void RewriteDistinctCellRanges(
+        List<CellRangeAddress> ranges,
+        Func<CellRangeAddress, CellRangeAddress?> rewrite)
+    {
+        if (ranges.Count == 0)
+        {
+            return;
+        }
+
+        var originalCount = ranges.Count;
+        var seen = new HashSet<CellRangeAddress>(originalCount);
+        var writeIndex = 0;
+        for (var readIndex = 0; readIndex < originalCount; readIndex++)
+        {
+            var target = rewrite(ranges[readIndex]);
+            if (target is not { } rewritten || !seen.Add(rewritten))
+            {
+                continue;
+            }
+
+            ranges[writeIndex++] = rewritten;
+        }
+
+        if (writeIndex < originalCount)
+        {
+            ranges.RemoveRange(writeIndex, originalCount - writeIndex);
+        }
+    }
+
     private sealed class OpenPyxlWorksheetModule : OpenPyxlDeferredModule
     {
         public static readonly OpenPyxlWorksheetModule Instance = new();
@@ -325,25 +354,7 @@ internal sealed partial class LythonRuntime
             => _ranges.Add(ParseCellOrRange(reference, span));
 
         internal void RewriteRanges(Func<CellRangeAddress, CellRangeAddress?> rewrite)
-        {
-            if (_ranges.Count == 0)
-            {
-                return;
-            }
-
-            var rewritten = new List<CellRangeAddress>();
-            foreach (var range in _ranges)
-            {
-                var target = rewrite(range);
-                if (target is not null && !rewritten.Contains(target.Value))
-                {
-                    rewritten.Add(target.Value);
-                }
-            }
-
-            _ranges.Clear();
-            _ranges.AddRange(rewritten);
-        }
+            => RewriteDistinctCellRanges(_ranges, rewrite);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -580,25 +591,7 @@ internal sealed partial class LythonRuntime
             => new(_ranges, Rules);
 
         internal void RewriteRanges(Func<CellRangeAddress, CellRangeAddress?> rewrite)
-        {
-            if (_ranges.Count == 0)
-            {
-                return;
-            }
-
-            var rewritten = new List<CellRangeAddress>();
-            foreach (var range in _ranges)
-            {
-                var target = rewrite(range);
-                if (target is not null && !rewritten.Contains(target.Value))
-                {
-                    rewritten.Add(target.Value);
-                }
-            }
-
-            _ranges.Clear();
-            _ranges.AddRange(rewritten);
-        }
+            => RewriteDistinctCellRanges(_ranges, rewrite);
     }
 
     private sealed class OpenPyxlConditionalFormattingCollection :

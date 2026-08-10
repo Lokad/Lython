@@ -2749,6 +2749,33 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OpenPyxlDataValidation_StructuralEditsDeduplicateRewrittenRanges()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from openpyxl import Workbook
+from openpyxl.worksheet.datavalidation import DataValidation
+
+wb = Workbook()
+ws = wb.active
+validation = DataValidation(type="whole")
+validation.add("A1")
+validation.add("A1")
+ws.add_data_validation(validation)
+ws.insert_rows(1)
+
+with open("/out.txt", "w") as output:
+    output.write(validation.sqref)
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("A2:A2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OpenPyxlSave_RejectsStructuralEditsThatWouldStalePreservedWorksheetFeatures()
     {
         foreach (var (operation, label) in new[]
