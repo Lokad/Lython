@@ -61,7 +61,7 @@ internal static class PyEquality
             return true;
         }
 
-        if (TryAsTupleLike(left, out var leftTuple) && TryAsTupleLike(right, out var rightTuple))
+        if (PyTupleLike.TryGetItems(left, out var leftTuple) && PyTupleLike.TryGetItems(right, out var rightTuple))
         {
             if (leftTuple.Count != rightTuple.Count)
             {
@@ -174,28 +174,6 @@ internal static class PyEquality
         }
 
         return Equals(left, right);
-    }
-
-    private static bool TryAsTupleLike(object value, out IReadOnlyList<object> sequence)
-    {
-        switch (value)
-        {
-            case PyTuple tuple:
-                sequence = tuple;
-                return true;
-            case PyNamedTupleObject namedTuple:
-                sequence = namedTuple;
-                return true;
-            case PyTypingNamedTupleObject typingNamedTuple:
-                sequence = typingNamedTuple;
-                return true;
-            case LythonRuntime.TimeStructTimeValue structTime:
-                sequence = structTime;
-                return true;
-            default:
-                sequence = Array.Empty<object>();
-                return false;
-        }
     }
 
 }
