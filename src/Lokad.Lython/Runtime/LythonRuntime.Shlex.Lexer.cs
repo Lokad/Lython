@@ -76,16 +76,8 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "get_token" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        RequireNoArguments(arguments, "shlex.get_token()", span);
-                        return GetToken(span);
-                    }, "shlex.get_token", []),
-                    "read_token" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        RequireNoArguments(arguments, "shlex.read_token()", span);
-                        return ReadToken(span);
-                    }, "shlex.read_token", []),
+                    "get_token" => BoundCallable.CreateNoArguments(this, "shlex.get_token", static (receiver, span, _) => receiver.GetToken(span)),
+                    "read_token" => BoundCallable.CreateNoArguments(this, "shlex.read_token", static (receiver, span, _) => receiver.ReadToken(span)),
                     "push_token" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -103,23 +95,21 @@ internal sealed partial class LythonRuntime
                         "shlex.push_source",
                         ["newstream", "newfile"],
                         1),
-                    "pop_source" => BoundCallable.Create((arguments, span, _) =>
+                    "pop_source" => BoundCallable.CreateNoArguments(this, "shlex.pop_source", static (receiver, span, _) =>
                     {
-                        RequireNoArguments(arguments, "shlex.pop_source()", span);
-                        PopSource(span);
+                        receiver.PopSource(span);
                         return PyNone.Instance;
-                    }, "shlex.pop_source", []),
-                    "__next__" => BoundCallable.Create((arguments, span, _) =>
+                    }),
+                    "__next__" => BoundCallable.CreateNoArguments(this, "shlex.__next__", static (receiver, span, _) =>
                     {
-                        RequireNoArguments(arguments, "shlex.__next__()", span);
-                        var token = GetToken(span);
-                        if (AreEqual(token, _eof))
+                        var token = receiver.GetToken(span);
+                        if (AreEqual(token, receiver._eof))
                         {
                             throw new LythonRuntimeException("StopIteration", "iterator is exhausted", span);
                         }
 
                         return token;
-                    }, "shlex.__next__", []),
+                    }),
                     "lineno" => new BigInteger(LineNumber),
                     "infile" => _infile,
                     "instream" => _instream,
@@ -640,14 +630,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 return text.AsString();
-            }
-
-            private static void RequireNoArguments(object[] arguments, string signature, LythonSourceSpan span)
-            {
-                if (arguments.Length != 0)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} expects no arguments.", span);
-                }
             }
 
             private static LythonRuntimeException SourceInclusionUnsupported(LythonSourceSpan span)

@@ -101,12 +101,11 @@ internal sealed partial class LythonRuntime
                 "mode" => PyString.FromString(_options.Mode),
                 "encoding" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(EncodingName),
                 "errors" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(ErrorsName),
-                "__enter__" => BoundCallable.Create((arguments, span, _) =>
+                "__enter__" => BoundCallable.CreateNoArguments(this, "gzip file.__enter__", static (receiver, span, _) =>
                 {
-                    RequireNoArguments(arguments, "gzip file __enter__()", span);
-                    EnsureOpen(span);
-                    return this;
-                }, "gzip file.__enter__", []),
+                    receiver.EnsureOpen(span);
+                    return receiver;
+                }),
                 "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
@@ -141,34 +140,46 @@ internal sealed partial class LythonRuntime
                     }
                     return false;
                 }),
-                "close" => BoundCallable.Create((arguments, span, _) =>
+                "close" => BoundCallable.CreateNoArguments(this, "gzip file.close", static (receiver, span, _) =>
                 {
-                    RequireNoArguments(arguments, "gzip file.close()", span);
-                    Close(span);
+                    receiver.Close(span);
                     return PyNone.Instance;
                 },
-                async (arguments, span, _) =>
+                static async (receiver, span, _) =>
                 {
-                    RequireNoArguments(arguments, "gzip file.close()", span);
-                    await CloseAsync(span).ConfigureAwait(false);
+                    await receiver.CloseAsync(span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
-                "flush" => BoundCallable.Create((arguments, span, _) =>
+                "flush" => BoundCallable.CreateNoArguments(this, "gzip file.flush", static (receiver, span, _) =>
                 {
-                    RequireNoArguments(arguments, "gzip file.flush()", span);
-                    Flush(span);
+                    receiver.Flush(span);
                     return PyNone.Instance;
                 },
-                async (arguments, span, _) =>
+                static async (receiver, span, _) =>
                 {
-                    RequireNoArguments(arguments, "gzip file.flush()", span);
-                    await FlushAsync(span).ConfigureAwait(false);
+                    await receiver.FlushAsync(span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
-                "readable" => NoArgumentMethod("gzip file.readable", (_, span) => { EnsureOpen(span); return _options.Operation == GzipOperation.Read; }),
-                "writable" => NoArgumentMethod("gzip file.writable", (_, span) => { EnsureOpen(span); return _options.Operation is GzipOperation.Write or GzipOperation.Append; }),
-                "seekable" => NoArgumentMethod("gzip file.seekable", (_, span) => { EnsureOpen(span); return false; }),
-                "tell" => NoArgumentMethod("gzip file.tell", (_, span) => { EnsureOpen(span); return new BigInteger(_options.Operation == GzipOperation.Read ? _readCursor : _writeBuffer.Length); }),
+                "readable" => BoundCallable.CreateNoArguments(this, "gzip file.readable", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return receiver._options.Operation == GzipOperation.Read;
+                }),
+                "writable" => BoundCallable.CreateNoArguments(this, "gzip file.writable", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return receiver._options.Operation is GzipOperation.Write or GzipOperation.Append;
+                }),
+                "seekable" => BoundCallable.CreateNoArguments(this, "gzip file.seekable", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return false;
+                }),
+                "tell" => BoundCallable.CreateNoArguments(this, "gzip file.tell", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return new BigInteger(receiver._options.Operation == GzipOperation.Read ? receiver._readCursor : receiver._writeBuffer.Length);
+                }),
                 "seek" => BoundCallable.Create((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),
                 "read" => BoundCallable.Create((arguments, span, _) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span), span), "gzip file.read", ["size"], 0),
                 "readline" => BoundCallable.Create((arguments, span, _) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span), span), "gzip file.readline", ["size"], 0),
@@ -587,21 +598,6 @@ internal sealed partial class LythonRuntime
             if (_options.Operation == GzipOperation.Read)
             {
                 throw new LythonRuntimeException("ValueError", "read-only gzip file", span);
-            }
-        }
-
-        private BoundCallable NoArgumentMethod(string name, Func<object[], LythonSourceSpan, object> implementation)
-            => BoundCallable.Create((arguments, span, _) =>
-            {
-                RequireNoArguments(arguments, name + "()", span);
-                return implementation(arguments, span);
-            }, name, []);
-
-        private static void RequireNoArguments(object[] arguments, string owner, LythonSourceSpan span)
-        {
-            if (arguments.Length != 0)
-            {
-                throw new LythonRuntimeException("TypeError", owner + " expects no arguments", span);
             }
         }
 

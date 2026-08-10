@@ -14,15 +14,10 @@ internal sealed partial class LythonRuntime
                 "days" => delta.Days,
                 "seconds" => delta.Seconds,
                 "microseconds" => delta.Microseconds,
-                "total_seconds" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "timedelta.total_seconds() expects no arguments.", span);
-                    }
-
-                    return delta.TotalSeconds();
-                }),
+                "total_seconds" => BoundCallable.CreateNoArguments(
+                    delta,
+                    "timedelta.total_seconds",
+                    static (receiver, _, _) => receiver.TotalSeconds()),
                 _ => MissingMemberValue.Instance
             };
 
@@ -39,69 +34,13 @@ internal sealed partial class LythonRuntime
                 "year" => date.Year,
                 "month" => date.Month,
                 "day" => date.Day,
-                "weekday" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.weekday() expects no arguments.", span);
-                    }
-
-                    return new BigInteger(date.Weekday());
-                }),
-                "isoweekday" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.isoweekday() expects no arguments.", span);
-                    }
-
-                    return new BigInteger(date.IsoWeekday());
-                }),
-                "isocalendar" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.isocalendar() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.IsoCalendar(date.Value);
-                }),
-                "toordinal" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.toordinal() expects no arguments.", span);
-                    }
-
-                    return date.ToOrdinal();
-                }),
-                "timetuple" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.timetuple() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.TimeTuple(date.Value);
-                }),
-                "ctime" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.ctime() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.CTime(date.Value);
-                }),
-                "isoformat" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "date.isoformat() expects no arguments.", span);
-                    }
-
-                    return date.IsoFormat();
-                }),
+                "weekday" => BoundCallable.CreateNoArguments(date, "date.weekday", static (receiver, _, _) => new BigInteger(receiver.Weekday())),
+                "isoweekday" => BoundCallable.CreateNoArguments(date, "date.isoweekday", static (receiver, _, _) => new BigInteger(receiver.IsoWeekday())),
+                "isocalendar" => BoundCallable.CreateNoArguments(date, "date.isocalendar", static (receiver, _, _) => PyDateTimeOps.IsoCalendar(receiver.Value)),
+                "toordinal" => BoundCallable.CreateNoArguments(date, "date.toordinal", static (receiver, _, _) => receiver.ToOrdinal()),
+                "timetuple" => BoundCallable.CreateNoArguments(date, "date.timetuple", static (receiver, _, _) => PyDateTimeOps.TimeTuple(receiver.Value)),
+                "ctime" => BoundCallable.CreateNoArguments(date, "date.ctime", static (receiver, _, _) => PyDateTimeOps.CTime(receiver.Value)),
+                "isoformat" => BoundCallable.CreateNoArguments(date, "date.isoformat", static (receiver, _, _) => receiver.IsoFormat()),
                 "__format__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
@@ -146,33 +85,15 @@ internal sealed partial class LythonRuntime
                 "microsecond" => time.Microsecond,
                 "tzinfo" => time.TzInfo is null ? PyNone.Instance : time.TzInfo,
                 "fold" => new BigInteger(time.Fold),
-                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "time.utcoffset() expects no arguments.", span);
-                    }
-
-                    return time.TzInfo is null ? PyNone.Instance : new PyTimedelta(time.TzInfo.Offset);
-                }),
-                "tzname" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "time.tzname() expects no arguments.", span);
-                    }
-
-                    return time.TzInfo is null ? PyNone.Instance : PyString.FromString(time.TzInfo.Name);
-                }),
-                "dst" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "time.dst() expects no arguments.", span);
-                    }
-
-                    return PyNone.Instance;
-                }),
+                "utcoffset" => BoundCallable.CreateNoArguments(
+                    time,
+                    "time.utcoffset",
+                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : new PyTimedelta(receiver.TzInfo.Offset)),
+                "tzname" => BoundCallable.CreateNoArguments(
+                    time,
+                    "time.tzname",
+                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : PyString.FromString(receiver.TzInfo.Name)),
+                "dst" => BoundCallable.CreateNoArguments(time, "time.dst", static (_, _, _) => PyNone.Instance),
                 "isoformat" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
@@ -240,142 +161,45 @@ internal sealed partial class LythonRuntime
                 "microsecond" => dateTime.Microsecond,
                 "tzinfo" => dateTime.TzInfo is null ? PyNone.Instance : dateTime.TzInfo,
                 "fold" => new BigInteger(dateTime.Fold),
-                "date" => BoundCallable.Create((arguments, span, _) =>
+                "date" => BoundCallable.CreateNoArguments(dateTime, "datetime.date", static (receiver, _, _) => receiver.DatePart()),
+                "time" => BoundCallable.CreateNoArguments(dateTime, "datetime.time", static (receiver, _, _) => receiver.NaiveTimePart()),
+                "timetz" => BoundCallable.CreateNoArguments(dateTime, "datetime.timetz", static (receiver, _, _) => receiver.TimePart()),
+                "weekday" => BoundCallable.CreateNoArguments(dateTime, "datetime.weekday", static (receiver, _, _) => new BigInteger(receiver.DatePart().Weekday())),
+                "isoweekday" => BoundCallable.CreateNoArguments(dateTime, "datetime.isoweekday", static (receiver, _, _) => new BigInteger(receiver.DatePart().IsoWeekday())),
+                "isocalendar" => BoundCallable.CreateNoArguments(dateTime, "datetime.isocalendar", static (receiver, _, _) => PyDateTimeOps.IsoCalendar(receiver.DatePart().Value)),
+                "toordinal" => BoundCallable.CreateNoArguments(dateTime, "datetime.toordinal", static (receiver, _, _) => receiver.ToOrdinal()),
+                "timetuple" => BoundCallable.CreateNoArguments(
+                    dateTime,
+                    "datetime.timetuple",
+                    static (receiver, _, _) => PyDateTimeOps.TimeTuple(receiver.Value, receiver.TzInfo is null ? -1 : 0)),
+                "utctimetuple" => BoundCallable.CreateNoArguments(dateTime, "datetime.utctimetuple", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.date() expects no arguments.", span);
-                    }
-
-                    return dateTime.DatePart();
-                }),
-                "time" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.time() expects no arguments.", span);
-                    }
-
-                    return dateTime.NaiveTimePart();
-                }),
-                "timetz" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.timetz() expects no arguments.", span);
-                    }
-
-                    return dateTime.TimePart();
-                }),
-                "weekday" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.weekday() expects no arguments.", span);
-                    }
-
-                    return new BigInteger(dateTime.DatePart().Weekday());
-                }),
-                "isoweekday" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.isoweekday() expects no arguments.", span);
-                    }
-
-                    return new BigInteger(dateTime.DatePart().IsoWeekday());
-                }),
-                "isocalendar" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.isocalendar() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.IsoCalendar(dateTime.DatePart().Value);
-                }),
-                "toordinal" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.toordinal() expects no arguments.", span);
-                    }
-
-                    return dateTime.ToOrdinal();
-                }),
-                "timetuple" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.timetuple() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.TimeTuple(dateTime.Value, dateTime.TzInfo is null ? -1 : 0);
-                }),
-                "utctimetuple" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.utctimetuple() expects no arguments.", span);
-                    }
-
-                    var utcValue = dateTime.TzInfo is null
-                        ? dateTime.Value
-                        : new DateTime(dateTime.ToUtcTicks(), DateTimeKind.Unspecified);
+                    var utcValue = receiver.TzInfo is null
+                        ? receiver.Value
+                        : new DateTime(receiver.ToUtcTicks(), DateTimeKind.Unspecified);
                     return PyDateTimeOps.TimeTuple(utcValue, 0);
                 }),
-                "ctime" => BoundCallable.Create((arguments, span, _) =>
+                "ctime" => BoundCallable.CreateNoArguments(dateTime, "datetime.ctime", static (receiver, _, _) => PyDateTimeOps.CTime(receiver.Value)),
+                "timestamp" => BoundCallable.CreateNoArguments(dateTime, "datetime.timestamp", static (receiver, span, context) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.ctime() expects no arguments.", span);
-                    }
-
-                    return PyDateTimeOps.CTime(dateTime.Value);
-                }),
-                "timestamp" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.timestamp() expects no arguments.", span);
-                    }
-
                     var localOffset = TimeSpan.Zero;
-                    if (dateTime.TzInfo is null)
+                    if (receiver.TzInfo is null)
                     {
                         context.RegisterHostCall(span);
                         localOffset = context.Host.LocalNow.Offset;
                     }
 
-                    return PyDateTimeOps.Timestamp(dateTime, localOffset, span);
+                    return PyDateTimeOps.Timestamp(receiver, localOffset, span);
                 }),
-                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.utcoffset() expects no arguments.", span);
-                    }
-
-                    return dateTime.TzInfo is null ? PyNone.Instance : new PyTimedelta(dateTime.TzInfo.Offset);
-                }),
-                "tzname" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.tzname() expects no arguments.", span);
-                    }
-
-                    return dateTime.TzInfo is null ? PyNone.Instance : PyString.FromString(dateTime.TzInfo.Name);
-                }),
-                "dst" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "datetime.dst() expects no arguments.", span);
-                    }
-
-                    return PyNone.Instance;
-                }),
+                "utcoffset" => BoundCallable.CreateNoArguments(
+                    dateTime,
+                    "datetime.utcoffset",
+                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : new PyTimedelta(receiver.TzInfo.Offset)),
+                "tzname" => BoundCallable.CreateNoArguments(
+                    dateTime,
+                    "datetime.tzname",
+                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : PyString.FromString(receiver.TzInfo.Name)),
+                "dst" => BoundCallable.CreateNoArguments(dateTime, "datetime.dst", static (_, _, _) => PyNone.Instance),
                 "astimezone" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)

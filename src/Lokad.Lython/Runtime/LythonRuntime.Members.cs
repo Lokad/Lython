@@ -123,37 +123,22 @@ internal sealed partial class LythonRuntime
                     list.RemoveAt(index);
                     return item;
                 }, "list.pop", ["index"], 0),
-                "reverse" => BoundCallable.Create((arguments, span, _) =>
+                "reverse" => BoundCallable.CreateNoArguments(list, "list.reverse", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "list.reverse() expects no arguments.", span);
-                    }
-
-                    list.Reverse();
+                    receiver.Reverse();
                     return PyNone.Instance;
                 }),
                 "sort" => BoundCallable.Create(
                     (arguments, span, context) => SortList(list, arguments, span, context),
                     LythonCallableSignature.Create("list.sort", ["key", "reverse"], RequiredCount: 0, MaxPositionalCount: 0),
                     (arguments, span, context) => SortListAsync(list, arguments, span, context)),
-                "copy" => BoundCallable.Create((arguments, span, context) =>
+                "copy" => BoundCallable.CreateNoArguments(
+                    list,
+                    "list.copy",
+                    static (receiver, span, context) => new PyList(receiver.ToArray(), context.MemoryGovernor, span)),
+                "clear" => BoundCallable.CreateNoArguments(list, "list.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "list.copy() expects no arguments.", span);
-                    }
-
-                    return new PyList(list.ToArray(), context.MemoryGovernor, span);
-                }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "list.clear() expects no arguments.", span);
-                    }
-
-                    list.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
                 _ => MissingMemberValue.Instance,
@@ -266,33 +251,9 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "dict.get", ["key", "default"], 1),
-                "keys" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.keys() expects no arguments.", span);
-                    }
-
-                    return new DictKeysView(dict);
-                }),
-                "values" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.values() expects no arguments.", span);
-                    }
-
-                    return new DictValuesView(dict);
-                }),
-                "items" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.items() expects no arguments.", span);
-                    }
-
-                    return new DictItemsView(dict);
-                }),
+                "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, _, _) => new DictKeysView(receiver)),
+                "values" => BoundCallable.CreateNoArguments(dict, "dict.values", static (receiver, _, _) => new DictValuesView(receiver)),
+                "items" => BoundCallable.CreateNoArguments(dict, "dict.items", static (receiver, _, _) => new DictItemsView(receiver)),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)),
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -323,23 +284,13 @@ internal sealed partial class LythonRuntime
                     dict.Remove(key);
                     return found;
                 }, "dict.pop", ["key", "default"], 1),
-                "copy" => BoundCallable.Create((arguments, span, context) =>
+                "copy" => BoundCallable.CreateNoArguments(
+                    dict,
+                    "dict.copy",
+                    static (receiver, span, context) => new PyDict(receiver, context.MemoryGovernor, span)),
+                "clear" => BoundCallable.CreateNoArguments(dict, "dict.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.copy() expects no arguments.", span);
-                    }
-
-                    return new PyDict(dict, context.MemoryGovernor, span);
-                }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.clear() expects no arguments.", span);
-                    }
-
-                    dict.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
@@ -386,33 +337,18 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "defaultdict.get", ["key", "default"], 1),
-                "keys" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.keys() expects no arguments.", span);
-                    }
-
-                    return new PyList(dict.Keys, context.MemoryGovernor, span);
-                }),
-                "values" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.values() expects no arguments.", span);
-                    }
-
-                    return new PyList(dict.Values, context.MemoryGovernor, span);
-                }),
-                "items" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.items() expects no arguments.", span);
-                    }
-
-                    return BuildItemsList(dict, context, span);
-                }),
+                "keys" => BoundCallable.CreateNoArguments(
+                    dict,
+                    "defaultdict.keys",
+                    static (receiver, span, context) => new PyList(receiver.Keys, context.MemoryGovernor, span)),
+                "values" => BoundCallable.CreateNoArguments(
+                    dict,
+                    "defaultdict.values",
+                    static (receiver, span, context) => new PyList(receiver.Values, context.MemoryGovernor, span)),
+                "items" => BoundCallable.CreateNoArguments(
+                    dict,
+                    "defaultdict.items",
+                    static (receiver, span, context) => BuildItemsList(receiver, context, span)),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
@@ -431,29 +367,19 @@ internal sealed partial class LythonRuntime
                     dict.SetItem(key, defaultValue);
                     return defaultValue;
                 }, "defaultdict.setdefault", ["key", "default"], 1),
-                "copy" => BoundCallable.Create((arguments, span, context) =>
+                "copy" => BoundCallable.CreateNoArguments(dict, "defaultdict.copy", static (receiver, span, context) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.copy() expects no arguments.", span);
-                    }
-
                     var copy = new PyDict(context.MemoryGovernor, span);
-                    foreach (var pair in dict.Items)
+                    foreach (var pair in receiver.Items)
                     {
                         copy.SetItem(pair.Key, pair.Value);
                     }
 
-                    return new PyDefaultDict(dict.DefaultFactory, copy);
+                    return new PyDefaultDict(receiver.DefaultFactory, copy);
                 }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
+                "clear" => BoundCallable.CreateNoArguments(dict, "defaultdict.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "defaultdict.clear() expects no arguments.", span);
-                    }
-
-                    dict.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
                 _ => MissingMemberValue.Instance,
@@ -483,21 +409,16 @@ internal sealed partial class LythonRuntime
                 }, "Counter.get", ["key", "default"], 1),
                 "update" => new CounterUpdateCallable(counter, subtract: false),
                 "subtract" => new CounterUpdateCallable(counter, subtract: true),
-                "total" => BoundCallable.Create((arguments, span, _) =>
+                "total" => BoundCallable.CreateNoArguments(counter, "Counter.total", static (receiver, span, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.total() expects no arguments.", span);
-                    }
-
                     object total = BigInteger.Zero;
-                    foreach (var pair in counter.Items)
+                    foreach (var pair in receiver.Items)
                     {
                         total = AddCounterCounts(total, ExpectCounterCount(pair.Value, span), span);
                     }
 
                     return total;
-                }, "Counter.total", []),
+                }),
                 "most_common" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -537,15 +458,10 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(items, context.MemoryGovernor, span);
                 }, "Counter.most_common", ["n"], 0),
-                "elements" => BoundCallable.Create((arguments, span, context) =>
+                "elements" => BoundCallable.CreateNoArguments(counter, "Counter.elements", static (receiver, span, context) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.elements() expects no arguments.", span);
-                    }
-
                     var items = new List<object>();
-                    foreach (var pair in counter.Items)
+                    foreach (var pair in receiver.Items)
                     {
                         if (!PyNumberOps.TryAsInteger(pair.Value, out var count))
                         {
@@ -564,52 +480,27 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(items, context.MemoryGovernor, span);
                 }),
-                "copy" => BoundCallable.Create((arguments, span, context) =>
+                "copy" => BoundCallable.CreateNoArguments(
+                    counter,
+                    "Counter.copy",
+                    static (receiver, span, context) => new PyCounter(receiver, context.MemoryGovernor, span)),
+                "clear" => BoundCallable.CreateNoArguments(counter, "Counter.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.copy() expects no arguments.", span);
-                    }
-
-                    return new PyCounter(counter, context.MemoryGovernor, span);
-                }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.clear() expects no arguments.", span);
-                    }
-
-                    counter.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
-                "keys" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.keys() expects no arguments.", span);
-                    }
-
-                    return new PyList(counter.Keys, context.MemoryGovernor, span);
-                }),
-                "values" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.values() expects no arguments.", span);
-                    }
-
-                    return new PyList(counter.Values, context.MemoryGovernor, span);
-                }),
-                "items" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.items() expects no arguments.", span);
-                    }
-
-                    return BuildItemsList(counter, context, span);
-                }),
+                "keys" => BoundCallable.CreateNoArguments(
+                    counter,
+                    "Counter.keys",
+                    static (receiver, span, context) => new PyList(receiver.Keys, context.MemoryGovernor, span)),
+                "values" => BoundCallable.CreateNoArguments(
+                    counter,
+                    "Counter.values",
+                    static (receiver, span, context) => new PyList(receiver.Values, context.MemoryGovernor, span)),
+                "items" => BoundCallable.CreateNoArguments(
+                    counter,
+                    "Counter.items",
+                    static (receiver, span, context) => BuildItemsList(receiver, context, span)),
                 _ => MissingMemberValue.Instance,
             };
 

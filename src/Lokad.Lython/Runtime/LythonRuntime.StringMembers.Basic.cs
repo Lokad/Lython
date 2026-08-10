@@ -64,32 +64,22 @@ internal sealed partial class LythonRuntime
                         var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.endswith(suffix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
                     }, "str.endswith", ["suffix", "start", "end"], 1),
-                    "lower" => NoArgumentMethod("str.lower", text.ToLowerInvariant),
-                    "capitalize" => NoArgumentMethod("str.capitalize", () => PyStringOps.Capitalize(text)),
-                    "islower" => NoArgumentMethod("str.islower", () => PyStringOps.IsLower(text)),
-                    "upper" => NoArgumentMethod("str.upper", text.ToUpperInvariant),
-                    "swapcase" => NoArgumentMethod("str.swapcase", () => PyStringOps.SwapCase(text)),
-                    "title" => NoArgumentMethod("str.title", () => PyStringOps.Title(text)),
-                    "isupper" => NoArgumentMethod("str.isupper", () => PyStringOps.IsUpper(text)),
-                    "isalpha" => NoArgumentMethod("str.isalpha", () => PyStringOps.IsAlpha(text)),
-                    "isdigit" => NoArgumentMethod("str.isdigit", () => PyStringOps.IsDigit(text)),
-                    "isalnum" => NoArgumentMethod("str.isalnum", () => PyStringOps.IsAlnum(text)),
-                    "isspace" => NoArgumentMethod("str.isspace", () => PyStringOps.IsSpace(text)),
+                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, _, _) => receiver.ToLowerInvariant()),
+                    "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, _, _) => PyStringOps.Capitalize(receiver)),
+                    "islower" => BoundCallable.CreateNoArguments(text, "str.islower", static (receiver, _, _) => PyStringOps.IsLower(receiver)),
+                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, _, _) => receiver.ToUpperInvariant()),
+                    "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, _, _) => PyStringOps.SwapCase(receiver)),
+                    "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, _, _) => PyStringOps.Title(receiver)),
+                    "isupper" => BoundCallable.CreateNoArguments(text, "str.isupper", static (receiver, _, _) => PyStringOps.IsUpper(receiver)),
+                    "isalpha" => BoundCallable.CreateNoArguments(text, "str.isalpha", static (receiver, _, _) => PyStringOps.IsAlpha(receiver)),
+                    "isdigit" => BoundCallable.CreateNoArguments(text, "str.isdigit", static (receiver, _, _) => PyStringOps.IsDigit(receiver)),
+                    "isalnum" => BoundCallable.CreateNoArguments(text, "str.isalnum", static (receiver, _, _) => PyStringOps.IsAlnum(receiver)),
+                    "isspace" => BoundCallable.CreateNoArguments(text, "str.isspace", static (receiver, _, _) => PyStringOps.IsSpace(receiver)),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
-                static BoundCallable NoArgumentMethod(string methodName, Func<object> operation)
-                    => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", $"{methodName}() expects no arguments.", span);
-                        }
-
-                        return operation();
-                    });
             }
         }
     }

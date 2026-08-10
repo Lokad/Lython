@@ -26,42 +26,16 @@ internal sealed partial class LythonRuntime
                     "drive" => PyString.Empty,
                     "root" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
                     "anchor" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
-                    "__fspath__" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.__fspath__() expects no arguments.", span);
-                        }
-
-                        return path.Value;
-                    }, "Path.__fspath__", []),
-                    "is_absolute" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.is_absolute() expects no arguments.", span);
-                        }
-
-                        return PathOps.IsAbsolute(path.Value.AsString());
-                    }),
-                    "is_mount" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.is_mount() expects no arguments.", span);
-                        }
-
-                        return string.Equals(PathOps.Normalize(path.Value.AsString()), "/", StringComparison.Ordinal);
-                    }, "Path.is_mount", []),
-                    "is_reserved" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.is_reserved() expects no arguments.", span);
-                        }
-
-                        return false;
-                    }, "Path.is_reserved", []),
+                    "__fspath__" => BoundCallable.CreateNoArguments(path, "Path.__fspath__", static (receiver, _, _) => receiver.Value),
+                    "is_absolute" => BoundCallable.CreateNoArguments(
+                        path,
+                        "Path.is_absolute",
+                        static (receiver, _, _) => PathOps.IsAbsolute(receiver.Value.AsString())),
+                    "is_mount" => BoundCallable.CreateNoArguments(
+                        path,
+                        "Path.is_mount",
+                        static (receiver, _, _) => string.Equals(PathOps.Normalize(receiver.Value.AsString()), "/", StringComparison.Ordinal)),
+                    "is_reserved" => BoundCallable.CreateNoArguments(path, "Path.is_reserved", static (_, _, _) => false),
                     "joinpath" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length == 0)
@@ -117,33 +91,15 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }, "Path.is_relative_to", ["other"]),
-                    "as_posix" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.as_posix() expects no arguments.", span);
-                        }
-
-                        return path.Value;
-                    }),
-                    "resolve" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.resolve() expects no arguments.", span);
-                        }
-
-                        return new PyPath(PathOps.Normalize(path.Value, PyString.FromString(context.Host.Cwd)));
-                    }),
-                    "absolute" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.absolute() expects no arguments.", span);
-                        }
-
-                        return new PyPath(PathOps.MakeAbsoluteLexical(path.Value, PyString.FromString(context.Host.Cwd)));
-                    }),
+                    "as_posix" => BoundCallable.CreateNoArguments(path, "Path.as_posix", static (receiver, _, _) => receiver.Value),
+                    "resolve" => BoundCallable.CreateNoArguments(
+                        path,
+                        "Path.resolve",
+                        static (receiver, _, context) => new PyPath(PathOps.Normalize(receiver.Value, PyString.FromString(context.Host.Cwd)))),
+                    "absolute" => BoundCallable.CreateNoArguments(
+                        path,
+                        "Path.absolute",
+                        static (receiver, _, context) => new PyPath(PathOps.MakeAbsoluteLexical(receiver.Value, PyString.FromString(context.Host.Cwd)))),
                     "relative_to" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)

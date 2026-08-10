@@ -35,32 +35,22 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.CreateNoArguments(deque, "deque.pop", static (receiver, span, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "deque.pop() expects no arguments.", span);
-                    }
-
                     try
                     {
-                        return deque.Pop();
+                        return receiver.Pop();
                     }
                     catch (InvalidOperationException)
                     {
                         throw new LythonRuntimeException("IndexError", "pop from an empty deque", span);
                     }
                 }),
-                "popleft" => BoundCallable.Create((arguments, span, _) =>
+                "popleft" => BoundCallable.CreateNoArguments(deque, "deque.popleft", static (receiver, span, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "deque.popleft() expects no arguments.", span);
-                    }
-
                     try
                     {
-                        return deque.PopLeft();
+                        return receiver.PopLeft();
                     }
                     catch (InvalidOperationException)
                     {
@@ -89,25 +79,15 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
+                "clear" => BoundCallable.CreateNoArguments(deque, "deque.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "deque.clear() expects no arguments.", span);
-                    }
-
-                    deque.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
-                "copy" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "deque.copy() expects no arguments.", span);
-                    }
-
-                    return new PyDeque(deque, deque.MaxLength);
-                }),
+                "copy" => BoundCallable.CreateNoArguments(
+                    deque,
+                    "deque.copy",
+                    static (receiver, _, _) => new PyDeque(receiver, receiver.MaxLength)),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -168,14 +148,9 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "deque.remove", ["value"]),
-                "reverse" => BoundCallable.Create((arguments, span, _) =>
+                "reverse" => BoundCallable.CreateNoArguments(deque, "deque.reverse", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "deque.reverse() expects no arguments.", span);
-                    }
-
-                    deque.Reverse();
+                    receiver.Reverse();
                     return PyNone.Instance;
                 }),
                 "rotate" => BoundCallable.Create((arguments, span, _) =>
@@ -277,34 +252,24 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, OnePositional("set.remove", "value")),
-                "copy" => BoundCallable.Create((arguments, span, context) =>
+                "copy" => BoundCallable.CreateNoArguments(
+                    set,
+                    "set.copy",
+                    static (receiver, span, context) => new PySet(receiver, context.MemoryGovernor, span)),
+                "clear" => BoundCallable.CreateNoArguments(set, "set.clear", static (receiver, _, _) =>
                 {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "set.copy() expects no arguments.", span);
-                    }
-
-                    return new PySet(set, context.MemoryGovernor, span);
-                }),
-                "clear" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "set.clear() expects no arguments.", span);
-                    }
-
-                    set.Clear();
+                    receiver.Clear();
                     return PyNone.Instance;
                 }),
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.CreateNoArguments(set, "set.pop", static (receiver, span, _) =>
                 {
-                    if (!set.TryPop(out var item))
+                    if (!receiver.TryPop(out var item))
                     {
                         throw new LythonRuntimeException("KeyError", "pop from an empty set", span);
                     }
 
                     return item;
-                }, NoArguments("set.pop")),
+                }),
                 "union" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var result = new PySet(set, context.MemoryGovernor, span);
@@ -403,8 +368,6 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        private static LythonCallableSignature NoArguments(string name) => LythonCallableSignature.Create(name, []);
 
         private static LythonCallableSignature OnePositional(string name, string parameterName)
             => LythonCallableSignature.Create(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);

@@ -394,6 +394,19 @@ internal sealed partial class LythonRuntime
             int? requiredCount)
             => Create(implementation, LythonCallableSignature.Create(name ?? "bound method", parameterNames, requiredCount), asyncImplementation);
 
+        public static ICallable CreateNoArguments<TReceiver>(
+            TReceiver receiver,
+            string name,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, object> implementation)
+            => NoArgumentsReceiverBoundCallable<TReceiver>.Create(receiver, name, implementation, null);
+
+        public static ICallable CreateNoArguments<TReceiver>(
+            TReceiver receiver,
+            string name,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
+            => NoArgumentsReceiverBoundCallable<TReceiver>.Create(receiver, name, implementation, asyncImplementation);
+
         /// <inheritdoc />
         protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => _implementation(arguments, span, context);
@@ -403,6 +416,58 @@ internal sealed partial class LythonRuntime
             => _asyncImplementation is null
                 ? ValueTask.FromResult(_implementation(arguments, span, context))
                 : _asyncImplementation(arguments, span, context);
+    }
+
+    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable
+    {
+        private readonly Func<TReceiver, LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
+        private readonly TReceiver _receiver;
+
+        private NoArgumentsReceiverBoundCallable(
+            TReceiver receiver,
+            string name,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+        {
+            Name = name;
+            _receiver = receiver;
+            _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
+        }
+
+        public static NoArgumentsReceiverBoundCallable<TReceiver> Create(
+            TReceiver receiver,
+            string name,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+            => new(receiver, name, implementation, asyncImplementation);
+
+        private string Name { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            RejectArguments(arguments, span);
+            return _implementation(_receiver, span, context);
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            RejectArguments(arguments, span);
+            return _asyncImplementation is null
+                ? ValueTask.FromResult(_implementation(_receiver, span, context))
+                : _asyncImplementation(_receiver, span, context);
+        }
+
+        private void RejectArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", $"{Name}() expects no arguments.", span);
+            }
+        }
     }
 
     private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
