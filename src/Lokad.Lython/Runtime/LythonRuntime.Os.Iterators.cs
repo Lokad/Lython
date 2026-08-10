@@ -327,7 +327,7 @@ internal sealed partial class LythonRuntime
                     if (_topdown)
                     {
                         frame.Yielded = true;
-                        return (true, CreateTuple(frame));
+                        return PyIterationResult.Yield(CreateTuple(frame));
                     }
                 }
 
@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
                 if (!_topdown && !frame.Yielded)
                 {
                     frame.Yielded = true;
-                    return (true, CreateTuple(frame));
+                    return PyIterationResult.Yield(CreateTuple(frame));
                 }
 
                 _frames.Pop();
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         private bool TryScan(WalkFrame frame)

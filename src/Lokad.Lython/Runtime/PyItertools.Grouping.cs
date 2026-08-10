@@ -58,13 +58,13 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         var (hasValue, item, key) = await TryReadNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         _activeGroupId++;
         _activeGroup = new PyGroupIterator(this, _activeGroupId, key, item);
         var value = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.groupby object>");
@@ -182,30 +182,30 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         {
             if (_done || _parent._activeGroupId != _id)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             if (_firstPending)
             {
                 _firstPending = false;
-                return (true, _firstItem);
+                return PyIterationResult.Yield(_firstItem);
             }
 
             var (hasValue, item, key) = await _parent.TryReadNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
                 _done = true;
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             if (PyEquality.AreEqual(key, _key))
             {
-                return (true, item);
+                return PyIterationResult.Yield(item);
             }
 
             _parent.StoreLookahead(item, key);
             _done = true;
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         public void Drain()
@@ -324,19 +324,19 @@ internal sealed class PyTeeSharedState
         {
             var queued = ownQueue.Dequeue();
             _memoryGovernor.Release(QueuedItemBytes);
-            return (true, queued);
+            return PyIterationResult.Yield(queued);
         }
 
         if (_sourceExhausted)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
             _sourceExhausted = true;
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var value = LythonRuntime.RuntimeValue(current);
@@ -353,6 +353,6 @@ internal sealed class PyTeeSharedState
             _context.ObserveCollectionCount(_queues[i].Count, _span);
         }
 
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 }

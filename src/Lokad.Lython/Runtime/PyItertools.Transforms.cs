@@ -77,30 +77,30 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
             if (_hasInitial)
             {
                 _total = LythonRuntime.RuntimeValue(_initial);
-                return (true, _total);
+                return PyIterationResult.Yield(_total);
             }
 
             var (hasFirst, first) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasFirst)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             _total = LythonRuntime.RuntimeValue(first);
-            return (true, _total);
+            return PyIterationResult.Yield(_total);
         }
 
         var (hasCurrent, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasCurrent)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
             ? LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_total, next, _context, _span))
             : LythonRuntime.RuntimeValue(await _function.InvokeAsync([CallArgumentValue.Positional(_total), CallArgumentValue.Positional(next)], _span, _context).ConfigureAwait(false));
-        return (true, _total);
+        return PyIterationResult.Yield(_total);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.accumulate object>");
@@ -139,18 +139,18 @@ internal sealed class PyCompressIterator : PyIteratorBase
             var (hasData, data) = await _data.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasData)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             var (hasSelector, selector) = await _selectors.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasSelector)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             if (PyTruthiness.IsTruthy(selector))
             {
-                return (true, LythonRuntime.RuntimeValue(data));
+                return PyIterationResult.Yield(LythonRuntime.RuntimeValue(data));
             }
         }
     }
@@ -245,7 +245,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         _context.CheckExecutionBudget(_span);
         if (_done)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         while (true)
@@ -253,7 +253,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
             var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             var item = LythonRuntime.RuntimeValue(current);
@@ -263,7 +263,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                 case PyPredicateIteratorMode.FilterFalse:
                     if (!matched)
                     {
-                        return (true, item);
+                        return PyIterationResult.Yield(item);
                     }
 
                     break;
@@ -272,7 +272,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     if (!_dropping || !matched)
                     {
                         _dropping = false;
-                        return (true, item);
+                        return PyIterationResult.Yield(item);
                     }
 
                     break;
@@ -281,10 +281,10 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     if (!matched)
                     {
                         _done = true;
-                        return (false, PyNone.Instance);
+                        return PyIterationResult.End;
                     }
 
-                    return (true, item);
+                    return PyIterationResult.Yield(item);
             }
         }
     }
@@ -345,7 +345,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var values = await PyIteration.MaterializeAsync(current, _span).ConfigureAwait(false);
@@ -353,7 +353,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
             .ToArray();
         var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(args, _span, _context).ConfigureAwait(false));
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.starmap object>");
@@ -407,7 +407,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
             var (hasFirst, first) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasFirst)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             _previous = LythonRuntime.RuntimeValue(first);
@@ -417,13 +417,13 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         var (hasNext, next) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasNext)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var current = LythonRuntime.RuntimeValue(next);
         var value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
         _previous = current;
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.pairwise object>");

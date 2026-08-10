@@ -31,8 +31,8 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     {
         var (hasValue, value) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         return hasValue
-            ? (true, LythonRuntime.RuntimeValue(value))
-            : (false, PyNone.Instance);
+            ? PyIterationResult.Yield(LythonRuntime.RuntimeValue(value))
+            : PyIterationResult.End;
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -81,10 +81,10 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         var result = LythonRuntime.RuntimeValue(await _callable.InvokeAsync([], _span, _context).ConfigureAwait(false));
         if (PyEquality.AreEqual(result, _sentinel))
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
-        return (true, result);
+        return PyIterationResult.Yield(result);
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -175,14 +175,14 @@ internal sealed class PyMapIterator : PyIteratorBase
             var (hasValue, current) = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
         var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -238,7 +238,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
             var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             var candidate = LythonRuntime.RuntimeValue(current);
@@ -248,7 +248,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
 
             if (keep)
             {
-                return (true, candidate);
+                return PyIterationResult.Yield(candidate);
             }
         }
     }

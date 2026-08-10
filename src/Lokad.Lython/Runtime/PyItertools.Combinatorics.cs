@@ -148,7 +148,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     {
         if (_done || _iterators.Length == 0)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var items = new object[_iterators.Length];
@@ -170,13 +170,13 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         if (!anyAdvanced)
         {
             _done = true;
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var value = _memoryGovernor is null
             ? new PyTuple(items)
             : new PyTuple(items, _memoryGovernor, _allocationSpan);
-        return (true, value);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.zip_longest object>");
@@ -309,7 +309,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
                 _memoryGovernor.Commit(CachedItemBytes);
                 _saved.Add(value);
                 _context.ObserveCollectionCount(_saved.Count, _span);
-                return (true, value);
+                return PyIterationResult.Yield(value);
             }
 
             _sourceExhausted = true;
@@ -317,12 +317,12 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
         if (_saved.Count == 0)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var saved = _saved[_index];
         _index = (_index + 1) % _saved.Count;
-        return (true, saved);
+        return PyIterationResult.Yield(saved);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.cycle object>");

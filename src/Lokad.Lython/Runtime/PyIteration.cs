@@ -116,8 +116,8 @@ internal static class PyIteration
             if (_value is IPyIteratorValue iterator)
             {
                 return iterator.TryMoveNext(out var value)
-                    ? (true, value)
-                    : (false, PyNone.Instance);
+                    ? PyIterationResult.Yield(value)
+                    : PyIterationResult.End;
             }
 
             if (_value is IPyAsyncIterableValue asyncIterable)
@@ -125,15 +125,15 @@ internal static class PyIteration
                 _asyncEnumerator ??= asyncIterable.IterateAsync().GetAsyncEnumerator();
                 if (await _asyncEnumerator.MoveNextAsync().ConfigureAwait(false))
                 {
-                    return (true, _asyncEnumerator.Current);
+                    return PyIterationResult.Yield(_asyncEnumerator.Current);
                 }
 
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             return TryMoveNext(out var syncValue)
-                ? (true, syncValue)
-                : (false, PyNone.Instance);
+                ? PyIterationResult.Yield(syncValue)
+                : PyIterationResult.End;
         }
 
         public void Dispose()

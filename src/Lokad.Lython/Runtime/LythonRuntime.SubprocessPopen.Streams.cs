@@ -336,7 +336,7 @@ internal sealed partial class LythonRuntime
             EnsureOpen(PopenSyntheticSpan);
             var content = await _owner.GetOutputAsync(_isStandardError, PopenSyntheticSpan).ConfigureAwait(false);
             var line = ReadLineCore(content, -1, PopenSyntheticSpan);
-            return line.Length == 0 ? (false, PyNone.Instance) : (true, line);
+            return line.Length == 0 ? PyIterationResult.End : PyIterationResult.Yield(line);
         }
 
         public object Enter()

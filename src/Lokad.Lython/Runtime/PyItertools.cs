@@ -34,8 +34,8 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
     public virtual ValueTask<PyIterationResult> TryMoveNextAsync()
         => ValueTask.FromResult<PyIterationResult>(
             TryMoveNext(out var value)
-                ? (true, value)
-                : (false, (object)PyNone.Instance));
+                ? PyIterationResult.Yield(value)
+                : PyIterationResult.End);
 
     public bool IsTruthy() => true;
 
@@ -99,14 +99,14 @@ internal sealed class PyChainIterator : PyIteratorBase
                 var (hasCurrent, current) = await _current.TryMoveNextAsync().ConfigureAwait(false);
                 if (hasCurrent)
                 {
-                    return (true, LythonRuntime.RuntimeValue(current));
+                    return PyIterationResult.Yield(LythonRuntime.RuntimeValue(current));
                 }
             }
 
             var (hasNext, next) = await TryOpenNextCursorAsync().ConfigureAwait(false);
             if (!hasNext)
             {
-                return (false, PyNone.Instance);
+                return PyIterationResult.End;
             }
 
             _current = next;
@@ -217,13 +217,13 @@ internal sealed class PyIsliceIterator : PyIteratorBase
     {
         if (!await SkipStartAsync().ConfigureAwait(false) || _stop is { } stop && _position >= stop)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         _position++;
@@ -240,7 +240,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
             _position++;
         }
 
-        return (true, LythonRuntime.RuntimeValue(current));
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(current));
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.islice object>");

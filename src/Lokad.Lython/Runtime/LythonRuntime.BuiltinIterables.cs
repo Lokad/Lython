@@ -828,8 +828,8 @@ internal sealed partial class LythonRuntime
         {
             IPyAsyncIteratorValue asyncIterator => await asyncIterator.TryMoveNextAsync().ConfigureAwait(false),
             IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
-                ? (true, item)
-                : (false, PyNone.Instance),
+                ? PyIterationResult.Yield(item)
+                : PyIterationResult.End,
             _ => throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span),
         };
         if (hasValue)

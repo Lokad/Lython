@@ -66,7 +66,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
 
         if (count == 0)
         {
-            return (false, PyNone.Instance);
+            return PyIterationResult.End;
         }
 
         if (_strict && count < _size)
@@ -79,7 +79,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             Array.Resize(ref items, count);
         }
 
-        return (true, PyTuple.FromOwnedArray(items, _memoryGovernor, _span));
+        return PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _memoryGovernor, _span));
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.batched object>");

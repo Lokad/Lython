@@ -83,8 +83,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         if (_iterator is not null)
         {
             return TryMoveNext(out var syncValue)
-                ? (true, syncValue)
-                : (false, PyNone.Instance);
+                ? PyIterationResult.Yield(syncValue)
+                : PyIterationResult.End;
         }
 
         if (_asyncItems is null)
@@ -95,10 +95,10 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
         if (_asyncIndex < _asyncItems.Count)
         {
-            return (true, _asyncItems[_asyncIndex++]);
+            return PyIterationResult.Yield(_asyncItems[_asyncIndex++]);
         }
 
-        return (false, PyNone.Instance);
+        return PyIterationResult.End;
     }
 
     private IEnumerable<object> IterateClauses(
