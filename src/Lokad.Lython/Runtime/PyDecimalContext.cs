@@ -5,6 +5,18 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+internal enum DecimalRoundingMode
+{
+    Ceiling,
+    Floor,
+    HalfUp,
+    HalfDown,
+    HalfEven,
+    Down,
+    Up,
+    ZeroFiveUp,
+}
+
 internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRenderableValue, IPyTruthyValue
 {
     public const string RoundCeiling = "ROUND_CEILING";
@@ -19,13 +31,13 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     private PyDict _flags;
     private PyDict _traps;
 
-    public PyDecimalContext(int precision, string rounding, int emin, int emax, int capitals, int clamp) : this(precision, rounding, emin, emax, capitals, clamp, null, null) { }
+    public PyDecimalContext(int precision, DecimalRoundingMode rounding, int emin, int emax, int capitals, int clamp) : this(precision, rounding, emin, emax, capitals, clamp, null, null) { }
 
-    public PyDecimalContext(int precision, string rounding, int emin, int emax, int capitals, int clamp, PyDict? flags) : this(precision, rounding, emin, emax, capitals, clamp, flags, null) { }
+    public PyDecimalContext(int precision, DecimalRoundingMode rounding, int emin, int emax, int capitals, int clamp, PyDict? flags) : this(precision, rounding, emin, emax, capitals, clamp, flags, null) { }
 
     public PyDecimalContext(
         int precision,
-        string rounding,
+        DecimalRoundingMode rounding,
         int emin,
         int emax,
         int capitals,
@@ -45,7 +57,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     public int Precision { get; private set; }
 
-    public string Rounding { get; private set; }
+    public DecimalRoundingMode Rounding { get; private set; }
 
     public int Emin { get; private set; }
 
@@ -56,13 +68,13 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     public int Clamp { get; private set; }
 
     public static PyDecimalContext Default()
-        => new(28, RoundHalfEven, -999999, 999999, 1, 0);
+        => new(28, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0);
 
     public static PyDecimalContext Basic()
-        => new(9, RoundHalfUp, -999999, 999999, 1, 0);
+        => new(9, DecimalRoundingMode.HalfUp, -999999, 999999, 1, 0);
 
     public static PyDecimalContext Extended()
-        => new(9, RoundHalfEven, -999999, 999999, 1, 0);
+        => new(9, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0);
 
     public PyDecimalContext Copy()
         => new(Precision, Rounding, Emin, Emax, Capitals, Clamp, _flags, _traps);
@@ -73,7 +85,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     {
         _ = context;
         return PyString.FromString(
-            $"Context(prec={Precision}, rounding='{Rounding}', Emin={Emin}, Emax={Emax}, capitals={Capitals}, clamp={Clamp})");
+            $"Context(prec={Precision}, rounding='{RoundingName(Rounding)}', Emin={Emin}, Emax={Emax}, capitals={Capitals}, clamp={Clamp})");
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -83,7 +95,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         value = name switch
         {
             "prec" => new BigInteger(Precision),
-            "rounding" => PyString.FromString(Rounding),
+            "rounding" => PyString.FromString(RoundingName(Rounding)),
             "Emin" => new BigInteger(Emin),
             "Emax" => new BigInteger(Emax),
             "capitals" => new BigInteger(Capitals),
@@ -166,28 +178,44 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         }
     }
 
-    public static string ExpectRounding(object value)
+    public static DecimalRoundingMode ExpectRounding(object value)
     {
         if (!PyStringOps.TryAsString(value, out var text))
         {
             throw new LythonRuntimeException("TypeError", "Decimal rounding mode must be a rounding constant.", null);
         }
 
-        var mode = text.AsString();
-        return IsSupportedRounding(mode)
-            ? mode
-            : throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", null);
+        return ParseRoundingName(text.AsString())
+            ?? throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", null);
     }
 
-    public static bool IsSupportedRounding(string mode)
-        => mode is RoundCeiling or
-            RoundFloor or
-            RoundHalfUp or
-            RoundHalfDown or
-            RoundHalfEven or
-            RoundDown or
-            RoundUp or
-            Round05Up;
+    public static DecimalRoundingMode? ParseRoundingName(string mode)
+        => mode switch
+        {
+            RoundCeiling => DecimalRoundingMode.Ceiling,
+            RoundFloor => DecimalRoundingMode.Floor,
+            RoundHalfUp => DecimalRoundingMode.HalfUp,
+            RoundHalfDown => DecimalRoundingMode.HalfDown,
+            RoundHalfEven => DecimalRoundingMode.HalfEven,
+            RoundDown => DecimalRoundingMode.Down,
+            RoundUp => DecimalRoundingMode.Up,
+            Round05Up => DecimalRoundingMode.ZeroFiveUp,
+            _ => null,
+        };
+
+    public static string RoundingName(DecimalRoundingMode mode)
+        => mode switch
+        {
+            DecimalRoundingMode.Ceiling => RoundCeiling,
+            DecimalRoundingMode.Floor => RoundFloor,
+            DecimalRoundingMode.HalfUp => RoundHalfUp,
+            DecimalRoundingMode.HalfDown => RoundHalfDown,
+            DecimalRoundingMode.HalfEven => RoundHalfEven,
+            DecimalRoundingMode.Down => RoundDown,
+            DecimalRoundingMode.Up => RoundUp,
+            DecimalRoundingMode.ZeroFiveUp => Round05Up,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown decimal rounding mode."),
+        };
 
     private static int ExpectIntInRange(object value, int min, int max, string message)
     {

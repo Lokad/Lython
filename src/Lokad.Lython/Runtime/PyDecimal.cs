@@ -492,14 +492,14 @@ internal static class PyDecimalOps
         var mode = ResolveRounding(rounding, context, span);
         return mode switch
         {
-            PyDecimalContext.RoundHalfEven => decimal.Round(value, scale, MidpointRounding.ToEven),
-            PyDecimalContext.RoundHalfUp => RoundHalfUp(value, scale),
-            PyDecimalContext.RoundHalfDown => RoundHalfDown(value, scale),
-            PyDecimalContext.RoundDown => TruncateToScale(value, scale),
-            PyDecimalContext.RoundUp => AwayFromZeroToScale(value, scale),
-            PyDecimalContext.RoundCeiling => CeilingToScale(value, scale),
-            PyDecimalContext.RoundFloor => FloorToScale(value, scale),
-            PyDecimalContext.Round05Up => Round05Up(value, scale),
+            DecimalRoundingMode.HalfEven => decimal.Round(value, scale, MidpointRounding.ToEven),
+            DecimalRoundingMode.HalfUp => RoundHalfUp(value, scale),
+            DecimalRoundingMode.HalfDown => RoundHalfDown(value, scale),
+            DecimalRoundingMode.Down => TruncateToScale(value, scale),
+            DecimalRoundingMode.Up => AwayFromZeroToScale(value, scale),
+            DecimalRoundingMode.Ceiling => CeilingToScale(value, scale),
+            DecimalRoundingMode.Floor => FloorToScale(value, scale),
+            DecimalRoundingMode.ZeroFiveUp => Round05Up(value, scale),
             _ => throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span),
         };
     }
@@ -589,11 +589,11 @@ internal static class PyDecimalOps
         return result;
     }
 
-    private static string ResolveRounding(object? rounding, PyDecimalContext? context, LythonSourceSpan span)
+    private static DecimalRoundingMode ResolveRounding(object? rounding, PyDecimalContext? context, LythonSourceSpan span)
     {
         if (rounding is null or PyNone)
         {
-            return context?.Rounding ?? PyDecimalContext.RoundHalfEven;
+            return context?.Rounding ?? DecimalRoundingMode.HalfEven;
         }
 
         if (!PyStringOps.TryAsString(rounding, out var mode))
@@ -601,10 +601,8 @@ internal static class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal rounding argument expects a rounding constant.", span);
         }
 
-        var text = mode.AsString();
-        return PyDecimalContext.IsSupportedRounding(text)
-            ? text
-            : throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span);
+        return PyDecimalContext.ParseRoundingName(mode.AsString())
+            ?? throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span);
     }
 
     private static decimal TruncateToScale(decimal value, int scale)
