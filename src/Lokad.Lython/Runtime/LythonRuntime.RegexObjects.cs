@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             _range = range;
             _context = context;
             _span = span;
-            _matches = ReModule.CreateDetailedFindMatches(pattern, range).GetEnumerator();
+            _matches = RegexMatcher.CreateDetailedFindMatches(pattern, range).GetEnumerator();
         }
 
         public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
             }
 
             _context.CheckExecutionBudget(_span);
-            value = ReModule.CreateMatchObject(_pattern, _range, (Utf8PythonDetailedMatchData)_matches.Current.RequireNotNull(), _context, _span);
+            value = RegexMatcher.CreateMatchObject(_pattern, _range, (Utf8PythonDetailedMatchData)_matches.Current.RequireNotNull(), _context, _span);
             return true;
         }
 
@@ -404,17 +404,17 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Compiled regex method expects string, optional pos, and optional endpos.", span);
             }
 
-            var range = ReModule.CreateSubjectRange(
+            var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? ReModule.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "compiled regex method", span) : 0,
-                arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "compiled regex method", span) : text.Length);
+                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "compiled regex method", span) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "compiled regex method", span) : text.Length);
             if (!range.IsValid)
             {
                 return PyNone.Instance;
             }
 
             var match = operation(pattern.Regex, range.Segment.Utf8Bytes.Span);
-            return match.Success ? ReModule.CreateMatchObject(pattern, range, match, context, span) : PyNone.Instance;
+            return match.Success ? RegexMatcher.CreateMatchObject(pattern, range, match, context, span) : PyNone.Instance;
         }
 
         private static object ExecuteFindAll(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -425,11 +425,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "pattern.findall(string[, pos[, endpos]]) expects a string argument.", span);
             }
 
-            var range = ReModule.CreateSubjectRange(
+            var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? ReModule.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.findall", span) : 0,
-                arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.findall", span) : text.Length);
-            return ReModule.CreateFindAllResult(pattern, range, span, context);
+                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.findall", span) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.findall", span) : text.Length);
+            return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
         }
 
         internal static PyList ProjectFindAllResult(Utf8PythonFindAllUtf8Result result, LythonSourceSpan span, ExecutionContext context)
@@ -475,11 +475,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "pattern.finditer(string[, pos[, endpos]]) expects a string argument.", span);
             }
 
-            var range = ReModule.CreateSubjectRange(
+            var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? ReModule.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.finditer", span) : 0,
-                arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.finditer", span) : text.Length);
-            return ReModule.CreateFindIterMatches(pattern, range, context, span);
+                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.finditer", span) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.finditer", span) : text.Length);
+            return RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
         }
 
         private static object ExecuteSub(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool includeCount)
@@ -500,12 +500,12 @@ internal sealed partial class LythonRuntime
                     : "pattern.sub(...) replacement must be a string or callable.", span);
             }
 
-            var count = arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], 0, "count", includeCount ? "pattern.subn" : "pattern.sub", span) : 0;
-            var range = ReModule.CreateSubjectRange(
+            var count = arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], 0, "count", includeCount ? "pattern.subn" : "pattern.sub", span) : 0;
+            var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 4 ? ReModule.ParseOptionalIntOrDefault(arguments[3], 0, "pos", includeCount ? "pattern.subn" : "pattern.sub", span) : 0,
-                arguments.Length >= 5 ? ReModule.ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", includeCount ? "pattern.subn" : "pattern.sub", span) : text.Length);
-            return ReModule.ExecuteSubstitute(pattern, replacement, range, count, span, context, includeCount);
+                arguments.Length >= 4 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[3], 0, "pos", includeCount ? "pattern.subn" : "pattern.sub", span) : 0,
+                arguments.Length >= 5 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", includeCount ? "pattern.subn" : "pattern.sub", span) : text.Length);
+            return RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, includeCount);
         }
 
         private static object ExecuteSplit(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -516,12 +516,12 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects a string and optional maxsplit/pos/endpos.", span);
             }
 
-            var maxSplit = arguments.Length >= 2 ? ReModule.ParseOptionalIntOrDefault(arguments[1], 0, "maxsplit", "pattern.split", span) : 0;
-            var range = ReModule.CreateSubjectRange(
+            var maxSplit = arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "maxsplit", "pattern.split", span) : 0;
+            var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 3 ? ReModule.ParseOptionalIntOrDefault(arguments[2], 0, "pos", "pattern.split", span) : 0,
-                arguments.Length >= 4 ? ReModule.ParseOptionalIntOrDefault(arguments[3], text.Length, "endpos", "pattern.split", span) : text.Length);
-            return ReModule.ProjectSplitResult(pattern.Regex.SplitDetailed(range.Segment.Utf8Bytes.Span, maxSplit), span, context);
+                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], 0, "pos", "pattern.split", span) : 0,
+                arguments.Length >= 4 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[3], text.Length, "endpos", "pattern.split", span) : text.Length);
+            return RegexMatcher.ProjectSplitResult(pattern.Regex.SplitDetailed(range.Segment.Utf8Bytes.Span, maxSplit), span, context);
         }
     }
 

@@ -1,10 +1,5 @@
-using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
-using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
 
@@ -79,16 +74,6 @@ internal sealed partial class LythonRuntime
 
     private sealed class ReModule : PyModule
     {
-        private readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
-
-        private readonly record struct RegexSubstituteInputs(
-            RePatternObject Pattern,
-            object Replacement,
-            RegexSubjectRange Range,
-            int Count);
-
-        private readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
-
         public static readonly ReModule Instance = new();
 
         private ReModule() : base("re")
@@ -114,21 +99,14 @@ internal sealed partial class LythonRuntime
                 "PatternError" => new ExceptionTypeValue("PatternError"),
                 "RegexFlag" => new RegexFlagFactory(),
                 "NOFLAG" => BigInteger.Zero,
-                "IGNORECASE" => new BigInteger(PythonIgnoreCaseFlag),
-                "I" => new BigInteger(PythonIgnoreCaseFlag),
-                "UNICODE" => new BigInteger(PythonUnicodeFlag),
-                "U" => new BigInteger(PythonUnicodeFlag),
-                "MULTILINE" => new BigInteger(PythonMultilineFlag),
-                "M" => new BigInteger(PythonMultilineFlag),
-                "DOTALL" => new BigInteger(PythonDotAllFlag),
-                "S" => new BigInteger(PythonDotAllFlag),
-                "VERBOSE" => new BigInteger(PythonVerboseFlag),
-                "X" => new BigInteger(PythonVerboseFlag),
-                "ASCII" => new BigInteger(PythonAsciiFlag),
-                "A" => new BigInteger(PythonAsciiFlag),
-                "LOCALE" => new BigInteger(PythonLocaleFlag),
-                "L" => new BigInteger(PythonLocaleFlag),
-                "DEBUG" => new BigInteger(RegexDebugFlag),
+                "IGNORECASE" or "I" => new BigInteger(RegexCompiler.PythonIgnoreCaseFlag),
+                "UNICODE" or "U" => new BigInteger(RegexCompiler.PythonUnicodeFlag),
+                "MULTILINE" or "M" => new BigInteger(RegexCompiler.PythonMultilineFlag),
+                "DOTALL" or "S" => new BigInteger(RegexCompiler.PythonDotAllFlag),
+                "VERBOSE" or "X" => new BigInteger(RegexCompiler.PythonVerboseFlag),
+                "ASCII" or "A" => new BigInteger(RegexCompiler.PythonAsciiFlag),
+                "LOCALE" or "L" => new BigInteger(RegexCompiler.PythonLocaleFlag),
+                "DEBUG" => new BigInteger(RegexCompiler.RegexDebugFlag),
                 "Pattern" => PyString.FromString("re.Pattern"),
                 "Match" => PyString.FromString("re.Match"),
                 _ => MissingMemberValue.Instance,
@@ -137,132 +115,46 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private const int PythonIgnoreCaseFlag = 2;
-        private const int PythonLocaleFlag = 4;
-        private const int PythonMultilineFlag = 8;
-        private const int PythonDotAllFlag = 16;
-        private const int PythonUnicodeFlag = 32;
-        private const int PythonVerboseFlag = 64;
-        private const int RegexDebugFlag = 128;
-        private const int PythonAsciiFlag = 256;
-        private const int SupportedPythonFlags =
-            PythonIgnoreCaseFlag |
-            PythonLocaleFlag |
-            PythonMultilineFlag |
-            PythonDotAllFlag |
-            PythonUnicodeFlag |
-            PythonVerboseFlag |
-            RegexDebugFlag |
-            PythonAsciiFlag;
-
-        private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
-        {
-            public string Name => "re.RegexFlag";
-
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                context.CheckExecutionBudget(span);
-                var bound = CallBinder.BindNamedArguments(arguments, span, new LythonCallableSignature("re.RegexFlag", ["value"], RequiredCount: 0), PythonCallableKind.Builtin);
-                if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
-                {
-                    return BigInteger.Zero;
-                }
-
-                return bound[0] switch
-                {
-                    BigInteger integer => integer,
-                    int integer => new BigInteger(integer),
-                    _ => throw new LythonRuntimeException("TypeError", "re.RegexFlag(value=0) expects an integer value.", span)
-                };
-            }
-
-            public PyString RenderPython(PyRenderingContext context)
-            {
-                _ = context;
-                return PyString.FromString(Name);
-            }
-
-            public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-        }
-
         private object Compile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return CreatePattern(arguments, "re.compile(pattern[, flags])", span);
+            return RegexCompiler.CreatePattern(arguments, "re.compile(pattern[, flags])", span);
         }
 
         private object Search(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var (pattern, range) = CreatePatternAndRange(arguments, "re.search(pattern, string[, flags][, pos][, endpos])", span);
-            if (!range.IsValid)
-            {
-                return PyNone.Instance;
-            }
-
-            var match = pattern.Regex.SearchDetailedData(range.Segment.Utf8Bytes.Span);
-            return match.Success ? CreateMatchObject(pattern, range, match, context, span) : PyNone.Instance;
-        }
+            => ExecuteMatch(arguments, span, context, RegexMatchMode.Search);
 
         private object Match(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var (pattern, range) = CreatePatternAndRange(arguments, "re.match(pattern, string[, flags][, pos][, endpos])", span);
-            if (!range.IsValid)
-            {
-                return PyNone.Instance;
-            }
-
-            var match = pattern.Regex.MatchDetailedData(range.Segment.Utf8Bytes.Span);
-            return match.Success ? CreateMatchObject(pattern, range, match, context, span) : PyNone.Instance;
-        }
+            => ExecuteMatch(arguments, span, context, RegexMatchMode.Match);
 
         private object FullMatch(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var (pattern, range) = CreatePatternAndRange(arguments, "re.fullmatch(pattern, string[, flags][, pos][, endpos])", span);
-            if (!range.IsValid)
-            {
-                return PyNone.Instance;
-            }
-
-            var match = pattern.Regex.FullMatchDetailedData(range.Segment.Utf8Bytes.Span);
-            return match.Success ? CreateMatchObject(pattern, range, match, context, span) : PyNone.Instance;
-        }
+            => ExecuteMatch(arguments, span, context, RegexMatchMode.FullMatch);
 
         private object FindAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var (pattern, range) = CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span);
-            return CreateFindAllResult(pattern, range, span, context);
+            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span);
+            return RegexMatcher.CreateFindAllResult(inputs.Pattern, inputs.Range, span, context);
         }
 
         private object FindIter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var (pattern, range) = CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span);
-            return CreateFindIterMatches(pattern, range, context, span);
+            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span);
+            return RegexMatcher.CreateFindIterMatches(inputs.Pattern, inputs.Range, context, span);
         }
 
         private object Substitute(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var (pattern, replacement, range, count) = CreateSubstituteInputs(arguments, "re.sub(pattern, replacement, string[, count][, flags][, pos][, endpos])", span);
-            return ExecuteSubstitute(pattern, replacement, range, count, span, context, includeCount: false);
-        }
+            => ExecuteSubstitute(arguments, span, context, includeCount: false);
 
         private object SubstituteCount(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var (pattern, replacement, range, count) = CreateSubstituteInputs(arguments, "re.subn(pattern, replacement, string[, count][, flags][, pos][, endpos])", span);
-            return ExecuteSubstitute(pattern, replacement, range, count, span, context, includeCount: true);
-        }
+            => ExecuteSubstitute(arguments, span, context, includeCount: true);
 
         private object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var (pattern, range, maxSplit) = CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span);
-            return ProjectSplitResult(pattern.Regex.SplitDetailed(range.Segment.Utf8Bytes.Span, maxSplit), span, context);
+            var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span);
+            return RegexMatcher.ProjectSplitResult(inputs.Pattern.Regex.SplitDetailed(inputs.Range.Segment.Utf8Bytes.Span, inputs.MaxSplit), span, context);
         }
 
         private object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -287,573 +179,99 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span)
+        private static object ExecuteMatch(
+            object[] arguments,
+            LythonSourceSpan span,
+            ExecutionContext context,
+            RegexMatchMode mode)
         {
-            if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+            context.CheckExecutionBudget(span);
+            var operationName = mode switch
             {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects a string pattern and optional flags.", span);
-            }
-
-            var options = arguments.Length == 2
-                ? ParseFlags(arguments[1], signature, span)
-                : PythonReCompileOptions.None;
-
-            try
-            {
-                var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
-                var groupSummary = RegexPatternFacts.SummarizeGroups(pattern.AsString());
-                var reportedFlags = ToPythonFlags(options) | ParseLeadingInlinePythonFlags(pattern.AsString());
-                if ((reportedFlags & PythonAsciiFlag) == 0)
-                {
-                    reportedFlags |= PythonUnicodeFlag;
-                }
-
-                return new RePatternObject(
-                    pattern,
-                    options,
-                    reportedFlags,
-                    compiled,
-                    groupSummary.CaptureSlotCount,
-                    groupSummary.NamedGroups);
-            }
-            catch (PythonRePatternException ex)
-            {
-                throw new LythonRuntimeException("error", ex.Message, span);
-            }
-        }
-
-        private static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span)
-        {
-            if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
-            }
-
-            var pos = arguments.Length >= 4 ? ParseOptionalIntOrDefault(arguments[3], 0, "pos", signature, span) : 0;
-            var endPos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", signature, span) : text.Length;
-
-            if (arguments[0] is RePatternObject compiled)
-            {
-                if (arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
-                return new RegexPatternRange(compiled, CreateSubjectRange(text, pos, endPos));
-            }
-
-            return new RegexPatternRange(
-                CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span),
-                CreateSubjectRange(text, pos, endPos));
-        }
-
-        private static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span)
-        {
-            if (arguments.Length is < 3 or > 7 || !PyStringOps.TryAsString(arguments[2], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, replacement, text, optional count, flags, pos, and endpos.", span);
-            }
-
-            var replacement = arguments[1];
-            if (!PyStringOps.TryAsString(replacement, out _) && replacement is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects replacement to be a string or callable.", span);
-            }
-
-            var count = 0;
-            var pos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], 0, "pos", signature, span) : 0;
-            var endPos = arguments.Length >= 7 ? ParseOptionalIntOrDefault(arguments[6], text.Length, "endpos", signature, span) : text.Length;
-            object[] patternArguments;
-            if (arguments[0] is RePatternObject compiled)
-            {
-                if (arguments.Length >= 5 && !ReferenceEquals(arguments[4], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
-                patternArguments = [compiled];
-                if (arguments.Length >= 4)
-                {
-                    count = ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span);
-                }
-            }
-            else
-            {
-                patternArguments = arguments.Length >= 5 ? [arguments[0], arguments[4]] : [arguments[0]];
-                if (arguments.Length >= 4)
-                {
-                    count = ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span);
-                }
-            }
-
-            var pattern = patternArguments[0] is RePatternObject existing
-                ? existing
-                : CreatePattern(patternArguments, signature, span);
-            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
-        }
-
-        internal static object ExecuteSubstitute(RePatternObject pattern, object replacement, RegexSubjectRange range, int count, LythonSourceSpan span, ExecutionContext context, bool includeCount)
-        {
-            if (UsesDotStarLazyProgression(pattern))
-            {
-                return ExecuteDotStarLazySubstitute(pattern, replacement, range, count, span, context, includeCount);
-            }
-
-            if (PyStringOps.TryAsString(replacement, out var replacementText))
-            {
-                if (!includeCount)
-                {
-                    var replacedText = CreateUtf8String(pattern.Regex.Replace(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count), context, span);
-                    return SpliceRangeResult(range, replacedText);
-                }
-
-                var result = pattern.Regex.Subn(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count);
-                var replacedTextWithCount = CreateUtf8String(result.ResultBytes, context, span);
-                return new PyTuple([SpliceRangeResult(range, replacedTextWithCount), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span);
-            }
-
-            if (replacement is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", includeCount
-                    ? "re.subn(...) replacement must be a string or callable."
-                    : "re.sub(...) replacement must be a string or callable.", span);
-            }
-
-            var (resultText, replacementCount) = ExecuteCallableSubstitute(pattern, replacement, range, count, span, context);
-            return includeCount
-                ? new PyTuple([resultText, new BigInteger(replacementCount)], context.MemoryGovernor, span)
-                : resultText;
-        }
-
-        private static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span)
-        {
-            if (arguments.Length is < 2 or > 6 || !PyStringOps.TryAsString(arguments[1], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional maxsplit, flags, pos, and endpos.", span);
-            }
-
-            var maxSplit = 0;
-            var pos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], 0, "pos", signature, span) : 0;
-            var endPos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], text.Length, "endpos", signature, span) : text.Length;
-            object[] patternArguments;
-            if (arguments[0] is RePatternObject compiled)
-            {
-                if (arguments.Length >= 4 && !ReferenceEquals(arguments[3], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
-                patternArguments = [compiled];
-                if (arguments.Length == 3)
-                {
-                    maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span);
-                }
-            }
-            else
-            {
-                patternArguments = arguments.Length >= 4 ? [arguments[0], arguments[3]] : [arguments[0]];
-                if (arguments.Length >= 3)
-                {
-                    maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span);
-                }
-            }
-
-            var pattern = patternArguments[0] is RePatternObject existing
-                ? existing
-                : CreatePattern(patternArguments, signature, span);
-            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
-        }
-
-        private static PythonReCompileOptions ParseFlags(object value, string signature, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return PythonReCompileOptions.None;
-            }
-
-            var flags = value switch
-            {
-                BigInteger integer => integer,
-                int integer => new BigInteger(integer),
-                _ => throw new LythonRuntimeException("TypeError", $"{signature} expects flags to be an integer bitmask.", span)
+                RegexMatchMode.Search => "search",
+                RegexMatchMode.Match => "match",
+                RegexMatchMode.FullMatch => "fullmatch",
+                _ => throw new InvalidOperationException(),
             };
-
-            if (flags < 0 || flags > int.MaxValue)
+            var inputs = RegexCompiler.CreatePatternAndRange(
+                arguments,
+                $"re.{operationName}(pattern, string[, flags][, pos][, endpos])",
+                span);
+            if (!inputs.Range.IsValid)
             {
-                throw new LythonRuntimeException("ValueError", "Regex flags are out of range.", span);
+                return PyNone.Instance;
             }
 
-            var flagBits = (int)flags;
-            if ((flagBits & ~SupportedPythonFlags) != 0)
+            var match = mode switch
             {
-                throw new LythonRuntimeException("ValueError", "Unsupported regular expression flags.", span);
-            }
-
-            if ((flagBits & RegexDebugFlag) != 0)
-            {
-                throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
-            }
-
-            if ((flagBits & PythonLocaleFlag) != 0)
-            {
-                throw new LythonRuntimeException("NotImplementedError", "re.LOCALE is not supported by Lython's Unicode-only regex runtime.", span);
-            }
-
-            if ((flagBits & PythonAsciiFlag) != 0 && (flagBits & PythonUnicodeFlag) != 0)
-            {
-                throw new LythonRuntimeException("ValueError", "ASCII and UNICODE flags are incompatible.", span);
-            }
-
-            var options = PythonReCompileOptions.None;
-            if ((flagBits & PythonIgnoreCaseFlag) != 0) options |= PythonReCompileOptions.IgnoreCase;
-            if ((flagBits & PythonMultilineFlag) != 0) options |= PythonReCompileOptions.Multiline;
-            if ((flagBits & PythonDotAllFlag) != 0) options |= PythonReCompileOptions.DotAll;
-            if ((flagBits & PythonVerboseFlag) != 0) options |= PythonReCompileOptions.Verbose;
-            if ((flagBits & PythonAsciiFlag) != 0) options |= PythonReCompileOptions.Ascii;
-            return options;
-        }
-
-        private static int ToPythonFlags(PythonReCompileOptions options)
-        {
-            var flags = 0;
-            if ((options & PythonReCompileOptions.IgnoreCase) != 0) flags |= PythonIgnoreCaseFlag;
-            if ((options & PythonReCompileOptions.Multiline) != 0) flags |= PythonMultilineFlag;
-            if ((options & PythonReCompileOptions.DotAll) != 0) flags |= PythonDotAllFlag;
-            if ((options & PythonReCompileOptions.Verbose) != 0) flags |= PythonVerboseFlag;
-            if ((options & PythonReCompileOptions.Ascii) != 0) flags |= PythonAsciiFlag;
-            return flags;
-        }
-
-        private static int ParseLeadingInlinePythonFlags(string pattern)
-        {
-            if (!pattern.StartsWith("(?", StringComparison.Ordinal))
-            {
-                return 0;
-            }
-
-            var flags = 0;
-            for (var index = 2; index < pattern.Length; index++)
-            {
-                switch (pattern[index])
-                {
-                    case ')': return flags;
-                    case 'a': flags |= PythonAsciiFlag; break;
-                    case 'i': flags |= PythonIgnoreCaseFlag; break;
-                    case 'm': flags |= PythonMultilineFlag; break;
-                    case 's': flags |= PythonDotAllFlag; break;
-                    case 'u': flags |= PythonUnicodeFlag; break;
-                    case 'x': flags |= PythonVerboseFlag; break;
-                    default: return 0;
-                }
-            }
-
-            return 0;
-        }
-
-        internal static int ParseOptionalInt(object value, string name, string signature, LythonSourceSpan span)
-        {
-            return value switch
-            {
-                BigInteger integer => integer < int.MinValue || integer > int.MaxValue
-                    ? throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span)
-                    : (int)integer,
-                int integer => integer,
-                _ => throw new LythonRuntimeException("TypeError", $"{signature} expects {name} to be an integer.", span)
+                RegexMatchMode.Search => inputs.Pattern.Regex.SearchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
+                RegexMatchMode.Match => inputs.Pattern.Regex.MatchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
+                RegexMatchMode.FullMatch => inputs.Pattern.Regex.FullMatchDetailedData(inputs.Range.Segment.Utf8Bytes.Span),
+                _ => throw new InvalidOperationException(),
             };
+            return match.Success
+                ? RegexMatcher.CreateMatchObject(inputs.Pattern, inputs.Range, match, context, span)
+                : PyNone.Instance;
         }
 
-        internal static int ParseOptionalIntOrDefault(object value, int defaultValue, string name, string signature, LythonSourceSpan span)
-            => ReferenceEquals(value, PyNone.Instance)
-                ? defaultValue
-                : ParseOptionalInt(value, name, signature, span);
-
-        internal static RegexSubjectRange CreateSubjectRange(PyString text, int pos, int endPos)
-        {
-            var length = text.Length;
-            var normalizedPos = Math.Clamp(pos, 0, length);
-            var normalizedEnd = Math.Clamp(endPos, 0, length);
-            if (normalizedEnd < normalizedPos)
-            {
-                return new RegexSubjectRange(text, PyString.Empty, normalizedPos, normalizedEnd, IsValid: false);
-            }
-
-            var startByte = text.GetByteIndexForRuneBoundary(normalizedPos);
-            var endByte = text.GetByteIndexForRuneBoundary(normalizedEnd);
-            return new RegexSubjectRange(text, text.SliceByByteRange(startByte, endByte), normalizedPos, normalizedEnd);
-        }
-
-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString segmentReplacement)
-        {
-            if (range.Pos == 0 && range.EndPos == range.Original.Length)
-            {
-                return segmentReplacement;
-            }
-
-            var startByte = range.Original.GetByteIndexForRuneBoundary(range.Pos);
-            var endByte = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
-            var prefix = range.Original.SliceByByteRange(0, startByte);
-            var suffix = range.Original.SliceByByteRange(endByte, range.Original.Utf8Bytes.Length);
-            return prefix.Concat(segmentReplacement).Concat(suffix);
-        }
-
-        internal static PyRegexFindIterator CreateFindIterMatches(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
-            => new(pattern, range, context, span);
-
-        internal static ReFindAllResult CreateFindAllResult(RePatternObject pattern, RegexSubjectRange range, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (!UsesDotStarLazyProgression(pattern))
-            {
-                return new ReFindAllResult(RePatternMembers.ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context));
-            }
-
-            var values = CreateDotStarLazyMatches(pattern, range)
-                .Select(match => (object)CreateString(match.Value.ValueText, context, span));
-            return new ReFindAllResult(new PyList(values, context.MemoryGovernor, span));
-        }
-
-        internal static IReadOnlyList<Utf8PythonDetailedMatchData> CreateDetailedFindMatches(RePatternObject pattern, RegexSubjectRange range)
-            => UsesDotStarLazyProgression(pattern)
-                ? CreateDotStarLazyMatches(pattern, range)
-                : range.IsValid ? pattern.Regex.FindIterDetailed(range.Segment.Utf8Bytes.Span) : [];
-
-        private static bool UsesDotStarLazyProgression(RePatternObject pattern)
-            => pattern.Pattern.AsString() == ".*?" && pattern.CaptureSlotCount == 1;
-
-        private static Utf8PythonDetailedMatchData[] CreateDotStarLazyMatches(RePatternObject pattern, RegexSubjectRange range)
-        {
-            if (!range.IsValid)
-            {
-                return [];
-            }
-
-            var matches = new List<Utf8PythonDetailedMatchData>(range.Segment.Length * 2 + 1);
-            var dotAll = (pattern.Options & PythonReCompileOptions.DotAll) != 0;
-            for (var runeIndex = 0; runeIndex <= range.Segment.Length; runeIndex++)
-            {
-                var startByte = range.Segment.GetByteIndexForRuneBoundary(runeIndex);
-                matches.Add(CreateSyntheticDetailedMatch(startByte, startByte, runeIndex, runeIndex, string.Empty));
-                if (runeIndex == range.Segment.Length)
-                {
-                    continue;
-                }
-
-                var endByte = range.Segment.GetByteIndexForRuneBoundary(runeIndex + 1);
-                var value = range.Segment.SliceByByteRange(startByte, endByte).AsString();
-                if (dotAll || value != "\n")
-                {
-                    matches.Add(CreateSyntheticDetailedMatch(startByte, endByte, runeIndex, runeIndex + value.Length, value));
-                }
-            }
-
-            return [.. matches];
-        }
-
-        private static Utf8PythonDetailedMatchData CreateSyntheticDetailedMatch(int startByte, int endByte, int startUtf16, int endUtf16, string value)
-            => new()
-            {
-                Groups =
-                [
-                    new Utf8PythonGroupMatchData
-                    {
-                        Number = 0,
-                        Success = true,
-                        StartOffsetInBytes = startByte,
-                        EndOffsetInBytes = endByte,
-                        StartOffsetInUtf16 = startUtf16,
-                        EndOffsetInUtf16 = endUtf16,
-                        HasContiguousByteRange = true,
-                        ValueText = value,
-                    }
-                ],
-                NameEntries = [],
-            };
-
-        private static object ExecuteDotStarLazySubstitute(
-            RePatternObject pattern,
-            object replacement,
-            RegexSubjectRange range,
-            int count,
+        private static object ExecuteSubstitute(
+            object[] arguments,
             LythonSourceSpan span,
             ExecutionContext context,
             bool includeCount)
         {
-            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-            var sourceBytes = range.Segment.Utf8Bytes.Span;
-            var lastByte = 0;
-            var replaced = 0;
-            foreach (var match in CreateDotStarLazyMatches(pattern, range))
-            {
-                if (count != 0 && replaced >= count)
-                {
-                    break;
-                }
-
-                var whole = match.Value;
-                builder.Append(sourceBytes[lastByte..whole.StartOffsetInBytes]);
-                var matchObject = CreateMatchObject(pattern, range, match, context, span);
-                if (PyStringOps.TryAsString(replacement, out var template))
-                {
-                    builder.Append(ReMatchMembers.ExpandReplacementTemplate(matchObject, template, context, span));
-                }
-                else
-                {
-                    var replacementValue = InvokeCallableTarget(
-                        replacement,
-                        span,
-                        span,
-                        context,
-                        () => [CallArgumentValue.Positional(matchObject)]);
-                    if (!PyStringOps.TryAsString(replacementValue, out var replacementText))
-                    {
-                        throw new LythonRuntimeException("TypeError", "Regex replacement callable must return a string.", span);
-                    }
-
-                    builder.Append(replacementText);
-                }
-
-                lastByte = whole.EndOffsetInBytes;
-                replaced++;
-            }
-
-            builder.Append(sourceBytes[lastByte..]);
-            var result = SpliceRangeResult(range, builder.ToPyStringAndRelease());
-            return includeCount
-                ? new PyTuple([result, new BigInteger(replaced)], context.MemoryGovernor, span)
-                : result;
+            context.CheckExecutionBudget(span);
+            var operationName = includeCount ? "subn" : "sub";
+            var inputs = RegexCompiler.CreateSubstituteInputs(
+                arguments,
+                $"re.{operationName}(pattern, replacement, string[, count][, flags][, pos][, endpos])",
+                span);
+            return RegexMatcher.ExecuteSubstitute(
+                inputs.Pattern,
+                inputs.Replacement,
+                inputs.Range,
+                inputs.Count,
+                span,
+                context,
+                includeCount);
         }
 
-        internal static (PyString Result, int ReplacementCount) ExecuteCallableSubstitute(
-            RePatternObject pattern,
-            object replacement,
-            RegexSubjectRange range,
-            int count,
-            LythonSourceSpan span,
-            ExecutionContext context)
+        private enum RegexMatchMode
         {
-            var state = new RegexReplacementState(pattern, range, replacement, span, context);
-            var result = pattern.Regex.Subn(
-                range.Segment.Utf8Bytes.Span,
-                state,
-                static (replacementState, match) => EvaluateRegexReplacement(replacementState, match),
-                count);
-            return (SpliceRangeResult(range, CreateUtf8String(result.ResultBytes, context, span)), result.ReplacementCount);
+            Search,
+            Match,
+            FullMatch,
         }
 
-        private sealed record RegexReplacementState(
-            RePatternObject Pattern,
-            RegexSubjectRange Range,
-            object Replacement,
-            LythonSourceSpan Span,
-            ExecutionContext Context);
-
-        private static string EvaluateRegexReplacement(RegexReplacementState state, Utf8PythonDetailedMatchData match)
+        private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
         {
-            state.Context.CheckExecutionBudget(state.Span);
-            var matchObject = CreateMatchObject(state.Pattern, state.Range, match, state.Context, state.Span);
-            var replacementValue = InvokeCallableTarget(
-                state.Replacement,
-                state.Span,
-                state.Span,
-                state.Context,
-                () => [CallArgumentValue.Positional(matchObject)]);
+            public string Name => "re.RegexFlag";
 
-            if (!PyStringOps.TryAsString(replacementValue, out var replacementText))
-            {
-                throw new LythonRuntimeException("TypeError", "Regex replacement callable must return a string.", state.Span);
-            }
-
-            return replacementText.AsString();
-        }
-
-        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range, Utf8PythonDetailedMatchData match)
-            => CreateMatchObject(pattern, range, match, null, null);
-
-        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range, Utf8PythonDetailedMatchData match, ExecutionContext? context)
-            => CreateMatchObject(pattern, range, match, context, null);
-
-        internal static ReMatchObject CreateMatchObject(
-            RePatternObject pattern,
-            RegexSubjectRange range,
-            Utf8PythonDetailedMatchData match,
-            ExecutionContext? context,
-            LythonSourceSpan? span)
-        {
-            if (!match.TryGetGroup(0, out var wholeGroup) || !wholeGroup.Success)
-            {
-                throw new InvalidOperationException("Detailed regex match is missing the whole-match capture.");
-            }
-
-            var wholeStart = wholeGroup.HasContiguousByteRange
-                ? range.Pos + range.Segment.ByteIndexToRuneIndex(wholeGroup.StartOffsetInBytes)
-                : wholeGroup.StartOffsetInUtf16;
-            var wholeEnd = wholeGroup.HasContiguousByteRange
-                ? range.Pos + range.Segment.ByteIndexToRuneIndex(wholeGroup.EndOffsetInBytes)
-                : wholeGroup.EndOffsetInUtf16;
-            var wholeValue = context is null ? PyString.FromString(wholeGroup.ValueText) : CreateString(wholeGroup.ValueText, context, span);
-
-            ReCapture?[] captures;
-            if (match.CaptureSlotCount <= 1)
-            {
-                captures = [];
-            }
-            else
-            {
-                captures = new ReCapture?[match.CaptureSlotCount - 1];
-            }
-
-            for (var i = 1; i < match.CaptureSlotCount; i++)
-            {
-                if (!match.TryGetGroup(i, out var group) || !group.Success)
-                {
-                    continue;
-                }
-
-                var start = group.HasContiguousByteRange
-                    ? range.Pos + range.Segment.ByteIndexToRuneIndex(group.StartOffsetInBytes)
-                    : group.StartOffsetInUtf16;
-                var end = group.HasContiguousByteRange
-                    ? range.Pos + range.Segment.ByteIndexToRuneIndex(group.EndOffsetInBytes)
-                    : group.EndOffsetInUtf16;
-
-                captures[i - 1] = new ReCapture(
-                    context is null ? PyString.FromString(group.ValueText) : CreateString(group.ValueText, context, span),
-                    new BigInteger(start),
-                    new BigInteger(end));
-            }
-
-            Dictionary<string, int>? namedGroups = null;
-            foreach (var entry in match.NameEntries)
-            {
-                namedGroups ??= new Dictionary<string, int>(StringComparer.Ordinal);
-                namedGroups[entry.Name] = entry.Number;
-            }
-
-            return new ReMatchObject(
-                wholeValue,
-                new BigInteger(wholeStart),
-                new BigInteger(wholeEnd),
-                pattern,
-                range.Original,
-                new BigInteger(range.Pos),
-                new BigInteger(range.EndPos),
-                match.CaptureSlotCount,
-                captures,
-                namedGroups ?? pattern.NamedGroups);
-        }
-
-        internal static PyList ProjectSplitResult(Utf8PythonSplitItem[] parts, LythonSourceSpan span, ExecutionContext context)
-        {
-            var items = new object[parts.Length];
-            for (var i = 0; i < parts.Length; i++)
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var part = parts[i];
-                items[i] = part.ValueText is null ? PyNone.Instance : CreateString(part.ValueText, context, span);
+                var signature = new LythonCallableSignature("re.RegexFlag", ["value"], RequiredCount: 0);
+                var bound = CallBinder.BindNamedArguments(arguments, span, signature, PythonCallableKind.Builtin);
+                if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
+                {
+                    return BigInteger.Zero;
+                }
+
+                return bound[0] switch
+                {
+                    BigInteger integer => integer,
+                    int integer => new BigInteger(integer),
+                    _ => throw new LythonRuntimeException("TypeError", "re.RegexFlag(value=0) expects an integer value.", span)
+                };
             }
 
-            return new PyList(items, context.MemoryGovernor, span);
+            public PyString RenderPython(PyRenderingContext context)
+            {
+                _ = context;
+                return PyString.FromString(Name);
+            }
+
+            public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
-
     }
-
 }
