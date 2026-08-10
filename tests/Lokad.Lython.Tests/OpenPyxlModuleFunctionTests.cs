@@ -662,6 +662,24 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OpenPyxlColor_DerivesKindFromPayloadAndIgnoresLegacyTypeArgument()
+    {
+        var result = new LythonEngine().Run(
+            """
+from openpyxl.styles.colors import Color
+
+indexed = Color(rgb="FF0000", indexed=4, type="bogus")
+rgb = Color(rgb="00FF00", type=123)
+print(indexed.type, indexed.indexed, indexed.rgb is None)
+print(rgb.type, rgb.rgb, rgb.indexed is None)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("indexed 4 True\nrgb 0000FF00 True\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void OpenPyxlWorkbook_SupportsNamedStyleRegistrationAndAssignment()
     {
         var host = new MockLythonHost();

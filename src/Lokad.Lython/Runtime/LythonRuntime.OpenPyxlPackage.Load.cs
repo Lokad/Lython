@@ -301,22 +301,22 @@ internal sealed partial class LythonRuntime
             var tint = ReadColorDoubleAttribute(color, "tint") ?? 0d;
             if ((string?)color.Attribute("rgb") is { } rgb)
             {
-                return new OpenPyxlColor("rgb", rgb, null, null, tint, null);
+                return OpenPyxlColor.FromRgb(rgb, tint);
             }
 
             if (ReadColorIntegerAttribute(color, "indexed") is { } indexed)
             {
-                return new OpenPyxlColor("indexed", null, indexed, null, tint, null);
+                return OpenPyxlColor.FromIndexed(indexed, tint);
             }
 
             if (ReadColorIntegerAttribute(color, "theme") is { } theme)
             {
-                return new OpenPyxlColor("theme", null, null, theme, tint, null);
+                return OpenPyxlColor.FromTheme(theme, tint);
             }
 
             if (ReadColorBooleanAttribute(color, "auto") is { } auto)
             {
-                return new OpenPyxlColor("auto", null, null, null, tint, auto);
+                return OpenPyxlColor.FromAuto(auto, tint);
             }
 
             return PyNone.Instance;

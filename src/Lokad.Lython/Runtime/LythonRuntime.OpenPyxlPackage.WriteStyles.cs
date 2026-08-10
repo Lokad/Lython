@@ -195,24 +195,26 @@ internal sealed partial class LythonRuntime
             if (value is OpenPyxlColor color)
             {
                 var attributes = new List<XAttribute>();
-                switch (color.Type)
+                switch (color.Kind)
                 {
-                    case "indexed" when color.Indexed is { } indexed:
+                    case OpenPyxlColorKind.Indexed when color.Indexed is { } indexed:
                         attributes.Add(new XAttribute("indexed", indexed.ToString(CultureInfo.InvariantCulture)));
                         break;
-                    case "theme" when color.Theme is { } theme:
+                    case OpenPyxlColorKind.Theme when color.Theme is { } theme:
                         attributes.Add(new XAttribute("theme", theme.ToString(CultureInfo.InvariantCulture)));
                         break;
-                    case "auto" when color.Auto is { } auto:
+                    case OpenPyxlColorKind.Auto when color.Auto is { } auto:
                         attributes.Add(new XAttribute("auto", auto ? "1" : "0"));
                         break;
-                    default:
+                    case OpenPyxlColorKind.Rgb:
                         if (color.Rgb is { } rgb)
                         {
                             attributes.Add(new XAttribute("rgb", rgb));
                         }
 
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(color), color.Kind, "Unknown openpyxl color kind.");
                 }
 
                 if (Math.Abs(color.Tint) > double.Epsilon)

@@ -51,33 +51,46 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlColor : IPyDynamicAttributes, IPyRenderableValue, IPyStringCoercibleValue, IEquatable<OpenPyxlColor>
     {
-        public OpenPyxlColor(
-            string type,
-            string? rgb,
-            BigInteger? indexed,
-            BigInteger? theme,
-            double tint,
-            bool? auto)
+        private readonly ColorValue _value;
+
+        private OpenPyxlColor(ColorValue value, double tint)
         {
-            Type = type;
-            Rgb = rgb is null ? null : NormalizeRgbColor(rgb, "openpyxl color", null);
-            Indexed = indexed;
-            Theme = theme;
+            _value = value;
             Tint = tint;
-            Auto = auto;
         }
 
-        public string Type { get; }
+        public static OpenPyxlColor FromRgb(string? rgb, double tint)
+            => new(new RgbColorValue(rgb is null ? null : NormalizeRgbColor(rgb, "openpyxl color", null)), tint);
 
-        public string? Rgb { get; }
+        public static OpenPyxlColor FromIndexed(BigInteger? indexed, double tint)
+            => new(new IndexedColorValue(indexed), tint);
 
-        public BigInteger? Indexed { get; }
+        public static OpenPyxlColor FromTheme(BigInteger? theme, double tint)
+            => new(new ThemeColorValue(theme), tint);
 
-        public BigInteger? Theme { get; }
+        public static OpenPyxlColor FromAuto(bool? auto, double tint)
+            => new(new AutoColorValue(auto), tint);
+
+        public OpenPyxlColorKind Kind => _value.Kind;
+
+        public string Type => Kind switch
+        {
+            OpenPyxlColorKind.Rgb => "rgb",
+            OpenPyxlColorKind.Indexed => "indexed",
+            OpenPyxlColorKind.Theme => "theme",
+            OpenPyxlColorKind.Auto => "auto",
+            _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, "Unknown openpyxl color kind."),
+        };
+
+        public string? Rgb => (_value as RgbColorValue)?.Value;
+
+        public BigInteger? Indexed => (_value as IndexedColorValue)?.Value;
+
+        public BigInteger? Theme => (_value as ThemeColorValue)?.Value;
 
         public double Tint { get; }
 
-        public bool? Auto { get; }
+        public bool? Auto => (_value as AutoColorValue)?.Value;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -107,16 +120,12 @@ internal sealed partial class LythonRuntime
 
         public bool Equals(OpenPyxlColor? other)
             => other is not null &&
-               string.Equals(Type, other.Type, StringComparison.Ordinal) &&
-               string.Equals(Rgb, other.Rgb, StringComparison.Ordinal) &&
-               Indexed == other.Indexed &&
-               Theme == other.Theme &&
-               Tint.Equals(other.Tint) &&
-               Auto == other.Auto;
+               _value == other._value &&
+               Tint.Equals(other.Tint);
 
         public override bool Equals(object? obj) => obj is OpenPyxlColor other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Type, Rgb, Indexed, Theme, Tint, Auto);
+        public override int GetHashCode() => HashCode.Combine(_value, Tint);
 
         public string Key
             => string.Join(
@@ -130,26 +139,23 @@ internal sealed partial class LythonRuntime
                 Auto?.ToString() ?? string.Empty);
 
         private object ColorIndexValue()
-            => Type switch
+            => Kind switch
             {
-                "rgb" => OptionalStringValue(Rgb),
-                "indexed" => OptionalIntegerValue(Indexed),
-                "theme" => OptionalIntegerValue(Theme),
-                "auto" => Auto is { } auto ? auto : PyNone.Instance,
-                _ => OptionalStringValue(Rgb),
+                OpenPyxlColorKind.Rgb => OptionalStringValue(Rgb),
+                OpenPyxlColorKind.Indexed => OptionalIntegerValue(Indexed),
+                OpenPyxlColorKind.Theme => OptionalIntegerValue(Theme),
+                OpenPyxlColorKind.Auto => Auto is { } auto ? auto : PyNone.Instance,
+                _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, "Unknown openpyxl color kind."),
             };
 
         private string ColorIndexText()
-            => Type switch
+            => Kind switch
             {
-                "rgb" => Rgb ?? string.Empty,
-                "indexed" => Indexed?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
-                "theme" => Theme?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
-                "auto" => Auto is { } auto ? (auto ? "1" : "0") : string.Empty,
-                _ => Rgb ??
-                    Indexed?.ToString(CultureInfo.InvariantCulture) ??
-                    Theme?.ToString(CultureInfo.InvariantCulture) ??
-                    string.Empty,
+                OpenPyxlColorKind.Rgb => Rgb ?? string.Empty,
+                OpenPyxlColorKind.Indexed => Indexed?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+                OpenPyxlColorKind.Theme => Theme?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+                OpenPyxlColorKind.Auto => Auto is { } auto ? (auto ? "1" : "0") : string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, "Unknown openpyxl color kind."),
             };
 
         private static object OptionalStringValue(string? value)
@@ -157,6 +163,24 @@ internal sealed partial class LythonRuntime
 
         private static object OptionalIntegerValue(BigInteger? value)
             => value is null ? PyNone.Instance : value.Value;
+
+        private abstract record ColorValue(OpenPyxlColorKind Kind);
+
+        private sealed record RgbColorValue(string? Value) : ColorValue(OpenPyxlColorKind.Rgb);
+
+        private sealed record IndexedColorValue(BigInteger? Value) : ColorValue(OpenPyxlColorKind.Indexed);
+
+        private sealed record ThemeColorValue(BigInteger? Value) : ColorValue(OpenPyxlColorKind.Theme);
+
+        private sealed record AutoColorValue(bool? Value) : ColorValue(OpenPyxlColorKind.Auto);
+    }
+
+    internal enum OpenPyxlColorKind
+    {
+        Rgb,
+        Indexed,
+        Theme,
+        Auto,
     }
 
     internal sealed class OpenPyxlStyleValue : IPyDynamicAttributes, IPyRenderableValue, IEquatable<OpenPyxlStyleValue>
@@ -302,14 +326,16 @@ internal sealed partial class LythonRuntime
         var auto = OptionalColorBool(arguments, 2, "openpyxl.styles.colors.Color.auto", span);
         var theme = OptionalColorInteger(arguments, 3, "openpyxl.styles.colors.Color.theme", span);
         var tint = OptionalColorDouble(arguments, 4, 0d, "openpyxl.styles.colors.Color.tint", span);
-        var explicitType = OptionalColorString(arguments, 5, "openpyxl.styles.colors.Color.type", span);
-        var type = explicitType ??
-            (indexed is not null ? "indexed" :
-                auto is not null ? "auto" :
-                theme is not null ? "theme" :
-                "rgb");
 
-        return new OpenPyxlColor(type, rgb, indexed, theme, tint, auto);
+        // openpyxl accepts its legacy `type` argument but derives the actual kind
+        // exclusively from the first populated payload in this precedence order.
+        return indexed is not null
+            ? OpenPyxlColor.FromIndexed(indexed, tint)
+            : auto is not null
+                ? OpenPyxlColor.FromAuto(auto, tint)
+                : theme is not null
+                    ? OpenPyxlColor.FromTheme(theme, tint)
+                    : OpenPyxlColor.FromRgb(rgb, tint);
     }
 
     private static object CreateFont(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
@@ -601,7 +627,7 @@ internal sealed partial class LythonRuntime
         }
 
         return PyStringOps.TryAsString(value, out var text)
-            ? new OpenPyxlColor("rgb", NormalizeRgbColor(text.AsString(), "openpyxl style color", null), null, null, 0d, null)
+            ? OpenPyxlColor.FromRgb(NormalizeRgbColor(text.AsString(), "openpyxl style color", null), 0d)
             : value;
     }
 
