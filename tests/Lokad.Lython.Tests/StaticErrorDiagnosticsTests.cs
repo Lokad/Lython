@@ -2122,6 +2122,29 @@ bad()
     }
 
     [Fact]
+    public void PatternAndExceptionBindings_AreFunctionLocalsBeforeTheirStatementsRun()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+def bad_exception():
+    error.find("x")
+    try:
+        pass
+    except Exception as error:
+        pass
+
+def bad_pattern(subject):
+    captured.find("x")
+    match subject:
+        case {"value": captured}:
+            pass
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Equal(2, compiled.Diagnostics.Count(diagnostic => diagnostic.Code == "LA3146"));
+    }
+
+    [Fact]
     public void FunctionLocalMaybeAssignedBranches_RemainAccepted()
     {
         var compiled = new LythonEngine().Compile(

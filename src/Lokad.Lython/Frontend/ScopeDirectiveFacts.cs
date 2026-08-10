@@ -65,6 +65,15 @@ internal static class ScopeDirectiveFactsCollector
                 DefaultValue: null)).ToArray(),
             functionDefinition.Body);
 
+    public static HashSet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
+    {
+        var localNames = new HashSet<string>(
+            lambda.Parameters.Select(static parameter => parameter.Name),
+            StringComparer.Ordinal);
+        CollectExpressionBindings(lambda.Body, localNames);
+        return localNames;
+    }
+
     public static ScopeDirectiveFacts ForLoweredStatements(
         IReadOnlyList<LoweredFunctionParameter>? parameters,
         IReadOnlyList<LoweredStatement> statements)

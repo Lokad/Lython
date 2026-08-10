@@ -70,11 +70,8 @@ internal static class StaticNameBindingDiagnostics
             AnalyzeExpressionForNestedFunctions(decorator, context);
         }
 
-        var localNames = new HashSet<string>(StringComparer.Ordinal);
-        CollectLocalAssignments(functionDefinition.Body, localNames);
         var scopeFacts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
-        localNames.ExceptWith(scopeFacts.GlobalNames);
-        localNames.ExceptWith(scopeFacts.NonlocalNames);
+        var localNames = new HashSet<string>(scopeFacts.LocalNames, StringComparer.Ordinal);
 
         var maybeAssigned = new HashSet<string>(
             functionDefinition.Parameters
@@ -461,8 +458,7 @@ internal static class StaticNameBindingDiagnostics
 
             case LambdaExpressionSyntax lambda:
                 {
-                    var lambdaLocalNames = new HashSet<string>(StringComparer.Ordinal);
-                    CollectLocalAssignments(lambda.Body, lambdaLocalNames);
+                    var lambdaLocalNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
                     var lambdaAssigned = new HashSet<string>(
                         lambda.Parameters.Select(static parameter => parameter.Name),
                         StringComparer.Ordinal);
@@ -550,264 +546,11 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static void CollectLocalAssignments(IReadOnlyList<StatementSyntax> statements, HashSet<string> localNames)
-    {
-        foreach (var statement in statements)
-        {
-            CollectLocalAssignments(statement, localNames);
-        }
-    }
-
-    private static void CollectLocalAssignments(StatementSyntax statement, HashSet<string> localNames)
-    {
-        switch (statement)
-        {
-            case ImportStatementSyntax importStatement:
-                localNames.Add(importStatement.BindingName);
-                if (importStatement.ImportedMembers is not null)
-                {
-                    foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
-                    {
-                        localNames.Add(memberName);
-                    }
-                }
-                break;
-            case AssignmentStatementSyntax assignment:
-                localNames.Add(assignment.Name);
-                CollectLocalAssignments(assignment.Expression, localNames);
-                break;
-            case ChainedAssignmentStatementSyntax chained:
-                foreach (var target in chained.Targets) CollectAssignmentTargetNames(target, localNames);
-                CollectLocalAssignments(chained.Expression, localNames);
-                break;
-            case AnnotatedAssignmentStatementSyntax annotated:
-                localNames.Add(annotated.Name);
-                if (annotated.Expression is not null) CollectLocalAssignments(annotated.Expression, localNames);
-                break;
-            case AugmentedAssignmentStatementSyntax augmented:
-                if (augmented.Target is NameAssignmentTargetSyntax augmentedName)
-                {
-                    localNames.Add(augmentedName.Name);
-                }
-                CollectLocalAssignments(augmented.Target, localNames);
-                CollectLocalAssignments(augmented.Expression, localNames);
-                break;
-            case UnpackingAssignmentStatementSyntax unpacking:
-                foreach (var target in unpacking.Targets) localNames.Add(target.Name);
-                CollectLocalAssignments(unpacking.Expression, localNames);
-                break;
-            case WithStatementSyntax withStatement:
-                if (withStatement.VariableName is not null) localNames.Add(withStatement.VariableName);
-                CollectLocalAssignments(withStatement.ContextExpression, localNames);
-                CollectLocalAssignments(withStatement.Body, localNames);
-                break;
-            case ForStatementSyntax forStatement:
-                CollectLoopTargetNames(forStatement.Target, localNames);
-                CollectLocalAssignments(forStatement.Iterable, localNames);
-                CollectLocalAssignments(forStatement.Body, localNames);
-                if (forStatement.ElseStatements is not null) CollectLocalAssignments(forStatement.ElseStatements, localNames);
-                break;
-            case WhileStatementSyntax whileStatement:
-                CollectLocalAssignments(whileStatement.Condition, localNames);
-                CollectLocalAssignments(whileStatement.Body, localNames);
-                if (whileStatement.ElseStatements is not null) CollectLocalAssignments(whileStatement.ElseStatements, localNames);
-                break;
-            case IfStatementSyntax ifStatement:
-                CollectLocalAssignments(ifStatement.Condition, localNames);
-                CollectLocalAssignments(ifStatement.ThenStatements, localNames);
-                if (ifStatement.ElseStatements is not null) CollectLocalAssignments(ifStatement.ElseStatements, localNames);
-                break;
-            case FunctionDefinitionStatementSyntax functionDefinition:
-                localNames.Add(functionDefinition.Name);
-                break;
-            case ClassDefinitionStatementSyntax classDefinition:
-                localNames.Add(classDefinition.Name);
-                break;
-            case ExpressionStatementSyntax expressionStatement:
-                CollectLocalAssignments(expressionStatement.Expression, localNames);
-                break;
-            case SubscriptAssignmentStatementSyntax subscript:
-                CollectLocalAssignments(subscript.Target, localNames);
-                CollectLocalAssignments(subscript.Index, localNames);
-                CollectLocalAssignments(subscript.Expression, localNames);
-                break;
-            case SliceAssignmentStatementSyntax slice:
-                CollectLocalAssignments(slice.Target, localNames);
-                if (slice.Start is not null) CollectLocalAssignments(slice.Start, localNames);
-                if (slice.End is not null) CollectLocalAssignments(slice.End, localNames);
-                if (slice.Step is not null) CollectLocalAssignments(slice.Step, localNames);
-                CollectLocalAssignments(slice.Expression, localNames);
-                break;
-            case MemberAssignmentStatementSyntax member:
-                CollectLocalAssignments(member.Target, localNames);
-                CollectLocalAssignments(member.Expression, localNames);
-                break;
-            case MatchStatementSyntax matchStatement:
-                CollectLocalAssignments(matchStatement.Subject, localNames);
-                foreach (var matchCase in matchStatement.Cases)
-                {
-                    if (matchCase.Guard is not null) CollectLocalAssignments(matchCase.Guard, localNames);
-                    CollectLocalAssignments(matchCase.Body, localNames);
-                }
-                break;
-            case AssertStatementSyntax assertStatement:
-                CollectLocalAssignments(assertStatement.Condition, localNames);
-                if (assertStatement.Message is not null) CollectLocalAssignments(assertStatement.Message, localNames);
-                break;
-            case DeleteStatementSyntax deleteStatement:
-                CollectLocalAssignments(deleteStatement.Target, localNames);
-                break;
-            case ReturnStatementSyntax { Expression: { } expression }:
-                CollectLocalAssignments(expression, localNames);
-                break;
-            case RaiseStatementSyntax raiseStatement:
-                CollectLocalAssignments(raiseStatement.Expression, localNames);
-                break;
-            case TryStatementSyntax tryStatement:
-                CollectLocalAssignments(tryStatement.TryBody, localNames);
-                if (tryStatement.ExceptBody is not null) CollectLocalAssignments(tryStatement.ExceptBody, localNames);
-                if (tryStatement.ElseBody is not null) CollectLocalAssignments(tryStatement.ElseBody, localNames);
-                if (tryStatement.FinallyBody is not null) CollectLocalAssignments(tryStatement.FinallyBody, localNames);
-                break;
-        }
-    }
-
-    private static void CollectLocalAssignments(AssignmentTargetSyntax target, HashSet<string> localNames)
-    {
-        switch (target)
-        {
-            case SubscriptAssignmentTargetSyntax subscript:
-                CollectLocalAssignments(subscript.Target, localNames);
-                CollectLocalAssignments(subscript.Index, localNames);
-                break;
-
-            case SliceAssignmentTargetSyntax slice:
-                CollectLocalAssignments(slice.Target, localNames);
-                if (slice.Start is not null) CollectLocalAssignments(slice.Start, localNames);
-                if (slice.End is not null) CollectLocalAssignments(slice.End, localNames);
-                if (slice.Step is not null) CollectLocalAssignments(slice.Step, localNames);
-                break;
-
-            case MemberAssignmentTargetSyntax member:
-                CollectLocalAssignments(member.Target, localNames);
-                break;
-        }
-    }
-
-    private static void CollectLocalAssignments(ExpressionSyntax expression, HashSet<string> localNames)
-    {
-        switch (expression)
-        {
-            case AssignmentExpressionSyntax assignment:
-                localNames.Add(assignment.Name);
-                CollectLocalAssignments(assignment.Expression, localNames);
-                break;
-            case FormattedStringExpressionSyntax formatted:
-                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
-                {
-                    CollectLocalAssignments(nestedExpression, localNames);
-                }
-                break;
-            case ListLiteralExpressionSyntax list:
-                foreach (var item in list.Items) CollectLocalAssignments(item, localNames);
-                break;
-            case ListComprehensionExpressionSyntax listComprehension:
-                CollectLocalAssignments(listComprehension.ItemExpression, localNames);
-                foreach (var clause in listComprehension.Clauses)
-                {
-                    CollectLoopTargetNames(clause.Target, localNames);
-                    CollectLocalAssignments(clause.Iterable, localNames);
-                    if (clause.Condition is not null) CollectLocalAssignments(clause.Condition, localNames);
-                }
-                break;
-            case GeneratorExpressionSyntax generator:
-                CollectLocalAssignments(generator.ItemExpression, localNames);
-                foreach (var clause in generator.Clauses)
-                {
-                    CollectLoopTargetNames(clause.Target, localNames);
-                    CollectLocalAssignments(clause.Iterable, localNames);
-                    if (clause.Condition is not null) CollectLocalAssignments(clause.Condition, localNames);
-                }
-                break;
-            case DictLiteralExpressionSyntax dict:
-                foreach (var item in dict.Items)
-                {
-                    CollectLocalAssignments(item.Key, localNames);
-                    if (!item.IsUnpacking)
-                    {
-                        CollectLocalAssignments(item.Value, localNames);
-                    }
-                }
-                break;
-            case SetLiteralExpressionSyntax set:
-                foreach (var item in set.Items) CollectLocalAssignments(item, localNames);
-                break;
-            case SetComprehensionExpressionSyntax setComprehension:
-                CollectLocalAssignments(setComprehension.ItemExpression, localNames);
-                foreach (var clause in setComprehension.Clauses)
-                {
-                    CollectLoopTargetNames(clause.Target, localNames);
-                    CollectLocalAssignments(clause.Iterable, localNames);
-                    if (clause.Condition is not null) CollectLocalAssignments(clause.Condition, localNames);
-                }
-                break;
-            case DictComprehensionExpressionSyntax dictComprehension:
-                CollectLocalAssignments(dictComprehension.KeyExpression, localNames);
-                CollectLocalAssignments(dictComprehension.ValueExpression, localNames);
-                foreach (var clause in dictComprehension.Clauses)
-                {
-                    CollectLoopTargetNames(clause.Target, localNames);
-                    CollectLocalAssignments(clause.Iterable, localNames);
-                    if (clause.Condition is not null) CollectLocalAssignments(clause.Condition, localNames);
-                }
-                break;
-            case TupleLiteralExpressionSyntax tuple:
-                foreach (var item in tuple.Items) CollectLocalAssignments(item, localNames);
-                break;
-            case ParenthesizedExpressionSyntax parenthesized:
-                CollectLocalAssignments(parenthesized.Inner, localNames);
-                break;
-            case MemberExpressionSyntax member:
-                CollectLocalAssignments(member.Target, localNames);
-                break;
-            case CallExpressionSyntax call:
-                CollectLocalAssignments(call.Target, localNames);
-                foreach (var argument in call.Arguments) CollectLocalAssignments(argument.Expression, localNames);
-                break;
-            case SubscriptExpressionSyntax subscript:
-                CollectLocalAssignments(subscript.Target, localNames);
-                CollectLocalAssignments(subscript.Index, localNames);
-                break;
-            case SliceExpressionSyntax slice:
-                CollectLocalAssignments(slice.Target, localNames);
-                if (slice.Start is not null) CollectLocalAssignments(slice.Start, localNames);
-                if (slice.End is not null) CollectLocalAssignments(slice.End, localNames);
-                if (slice.Step is not null) CollectLocalAssignments(slice.Step, localNames);
-                break;
-            case BinaryExpressionSyntax binary:
-                CollectLocalAssignments(binary.Left, localNames);
-                CollectLocalAssignments(binary.Right, localNames);
-                break;
-            case ChainedComparisonExpressionSyntax chained:
-                foreach (var operand in chained.Operands) CollectLocalAssignments(operand, localNames);
-                break;
-            case UnaryExpressionSyntax unary:
-                CollectLocalAssignments(unary.Operand, localNames);
-                break;
-            case ConditionalExpressionSyntax conditional:
-                CollectLocalAssignments(conditional.Condition, localNames);
-                CollectLocalAssignments(conditional.Consequent, localNames);
-                CollectLocalAssignments(conditional.Alternative, localNames);
-                break;
-        }
-    }
-
     private static void AnalyzeExpressionForNestedFunctions(ExpressionSyntax expression, StaticAnalysisContext context)
     {
         if (expression is LambdaExpressionSyntax lambda)
         {
-            var localNames = new HashSet<string>(StringComparer.Ordinal);
-            CollectLocalAssignments(lambda.Body, localNames);
+            var localNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
             var maybeAssigned = new HashSet<string>(
                 lambda.Parameters.Select(static parameter => parameter.Name),
                 StringComparer.Ordinal);
@@ -831,22 +574,6 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static void CollectAssignmentTargetNames(AssignmentTargetSyntax target, HashSet<string> localNames)
-    {
-        switch (target)
-        {
-            case NameAssignmentTargetSyntax nameTarget:
-                localNames.Add(nameTarget.Name);
-                break;
-            case UnpackingAssignmentTargetGroupSyntax unpacking:
-                foreach (var nested in unpacking.Targets)
-                {
-                    localNames.Add(nested.Name);
-                }
-                break;
-        }
-    }
-
     private static void AddLoopTarget(LoopTargetSyntax target, HashSet<string> maybeAssigned)
     {
         switch (target)
@@ -856,19 +583,6 @@ internal static class StaticNameBindingDiagnostics
                 break;
             case LoopTupleTargetSyntax tupleTarget:
                 foreach (var item in tupleTarget.Items) AddLoopTarget(item, maybeAssigned);
-                break;
-        }
-    }
-
-    private static void CollectLoopTargetNames(LoopTargetSyntax target, HashSet<string> localNames)
-    {
-        switch (target)
-        {
-            case LoopNameTargetSyntax nameTarget:
-                localNames.Add(nameTarget.Name);
-                break;
-            case LoopTupleTargetSyntax tupleTarget:
-                foreach (var item in tupleTarget.Items) CollectLoopTargetNames(item, localNames);
                 break;
         }
     }
