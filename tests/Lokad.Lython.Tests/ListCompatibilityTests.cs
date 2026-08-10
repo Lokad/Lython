@@ -5,6 +5,35 @@ namespace Lokad.Lython.Tests;
 public sealed class ListCompatibilityTests
 {
     [Fact]
+    public void SortingIsStableAndUsesSubquadraticComparisons()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import cmp_to_key
+
+comparisons = 0
+def compare(left, right):
+    global comparisons
+    comparisons += 1
+    return left - right
+
+values = list(range(256))
+values.reverse()
+ordered = sorted(values, key=cmp_to_key(compare))
+rows = [("first", 1), ("second", 1), ("third", 0)]
+copy = sorted(rows, key=lambda row: row[1], reverse=True)
+rows.sort(key=lambda row: row[1], reverse=True)
+
+assert comparisons < 4096
+return str(ordered[:3]) + "|" + str(copy) + "|" + str(rows)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[0, 1, 2]|[('first', 1), ('second', 1), ('third', 0)]|[('first', 1), ('second', 1), ('third', 0)]", result.ReturnValue);
+    }
+
+    [Fact]
     public void ReverseSortIsStableAndExtendSelfSnapshotsSource()
     {
         var result = new LythonEngine().Run(

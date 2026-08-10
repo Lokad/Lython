@@ -69,8 +69,6 @@ internal sealed partial class LythonRuntime
         return governor is null ? new PyTuple(items) : new PyTuple(items, governor, span);
     }
 
-    private sealed record SortKeyValue(object Value, object Key);
-
     private static long EstimateObjectArrayBytes(int count) => 32L + (16L * count);
 
     internal sealed class ExecutionLimits

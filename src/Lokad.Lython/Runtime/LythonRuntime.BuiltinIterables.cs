@@ -56,11 +56,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
         }
 
-        var values = new List<object>();
-        foreach (var item in ToSequence(arguments[0], span, context))
-        {
-            values.Add(item);
-        }
         var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
         if (keyCallable is not null &&
             !ReferenceEquals(keyCallable, PyNone.Instance) &&
@@ -75,36 +70,12 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        var keyed = new List<SortKeyValue>(values.Count);
-        foreach (var item in values)
-        {
-            keyed.Add(new SortKeyValue(
-                item,
-                keyCallable is ICallable callable
-                    ? callable.Invoke([CallArgumentValue.Positional(item)], span, context)
-                    : item));
-        }
-
-        for (var i = 1; i < keyed.Count; i++)
-        {
-            var current = keyed[i];
-            var j = i - 1;
-            while (j >= 0 && (reverse
-                ? CompareSortKeys(keyed[j].Key, current.Key, span, context) < 0
-                : CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0))
-            {
-                keyed[j + 1] = keyed[j];
-                j--;
-            }
-
-            keyed[j + 1] = current;
-        }
-
-        var items = new object[keyed.Count];
-        for (var i = 0; i < keyed.Count; i++)
-        {
-            items[i] = keyed[i].Value;
-        }
+        var items = SortItems(
+            ToSequence(arguments[0], span, context),
+            keyCallable as ICallable,
+            reverse,
+            span,
+            context);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -133,36 +104,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        var keyed = new List<SortKeyValue>(values.Count);
-        foreach (var item in values)
-        {
-            keyed.Add(new SortKeyValue(
-                item,
-                keyCallable is ICallable callable
-                    ? await callable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)
-                    : item));
-        }
-
-        for (var i = 1; i < keyed.Count; i++)
-        {
-            var current = keyed[i];
-            var j = i - 1;
-            while (j >= 0 && (reverse
-                ? await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) < 0
-                : await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0))
-            {
-                keyed[j + 1] = keyed[j];
-                j--;
-            }
-
-            keyed[j + 1] = current;
-        }
-
-        var items = new object[keyed.Count];
-        for (var i = 0; i < keyed.Count; i++)
-        {
-            items[i] = keyed[i].Value;
-        }
+        var items = await SortItemsAsync(values, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -514,19 +456,19 @@ internal sealed partial class LythonRuntime
             span);
     }
 
-    private static int CompareSortKeys(object left, object right, LythonSourceSpan span, ExecutionContext context)
+    private static bool IsSortKeyLessThan(object left, object right, LythonSourceSpan span, ExecutionContext context)
     {
         if (left is PyCmpKey leftKey &&
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
         {
-            return leftKey.CompareTo(rightKey, span, context);
+            return leftKey.CompareTo(rightKey, span, context) < 0;
         }
 
-        return Compare(left, right, span);
+        return EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0);
     }
 
-    private static async ValueTask<int> CompareSortKeysAsync(object left, object right, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<bool> IsSortKeyLessThanAsync(object left, object right, LythonSourceSpan span, ExecutionContext context)
     {
         if (left is PyCmpKey leftKey &&
             right is PyCmpKey rightKey &&
@@ -542,10 +484,63 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
             }
 
-            return integer.Sign;
+            return integer.Sign < 0;
         }
 
-        return Compare(left, right, span);
+        return await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false);
+    }
+
+    private static object[] SortItems(
+        IEnumerable<object> values,
+        ICallable? keyCallable,
+        bool reverse,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        var entries = new List<PyStableSort.Entry>();
+        foreach (var item in values)
+        {
+            entries.Add(new PyStableSort.Entry(
+                item,
+                keyCallable is null
+                    ? item
+                    : keyCallable.Invoke([CallArgumentValue.Positional(item)], span, context)));
+        }
+
+        context.MemoryGovernor.EnsureCanReserve(PyStableSort.EstimateTemporaryBytes(entries.Count), span);
+        var sorted = entries.ToArray();
+        PyStableSort.Sort(
+            sorted,
+            reverse,
+            (left, right) => IsSortKeyLessThan(left, right, span, context));
+        return sorted.Select(static entry => entry.Value).ToArray();
+    }
+
+    private static async ValueTask<object[]> SortItemsAsync(
+        IEnumerable<object> values,
+        ICallable? keyCallable,
+        bool reverse,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        var entries = new List<PyStableSort.Entry>();
+        foreach (var item in values)
+        {
+            entries.Add(new PyStableSort.Entry(
+                item,
+                keyCallable is null
+                    ? item
+                    : await keyCallable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)));
+        }
+
+        context.MemoryGovernor.EnsureCanReserve(PyStableSort.EstimateTemporaryBytes(entries.Count), span);
+        var sorted = entries.ToArray();
+        await PyStableSort.SortAsync(
+                sorted,
+                reverse,
+                (left, right) => IsSortKeyLessThanAsync(left, right, span, context))
+            .ConfigureAwait(false);
+        return sorted.Select(static entry => entry.Value).ToArray();
     }
 
     private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span)

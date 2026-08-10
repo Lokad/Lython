@@ -152,6 +152,34 @@ return (lambda: Box() + Box())()
     }
 
     [Fact]
+    public async Task AsyncSortingAwaitsUserComparisonProtocols()
+    {
+        const string source = """
+class Key:
+    def __init__(self, value):
+        self.value = value
+    def __lt__(self, other):
+        with open("/permission.txt") as source:
+            allowed = source.read() == "yes"
+        return allowed and self.value < other.value
+
+values = [Key(3), Key(1), Key(2)]
+return str([item.value for item in sorted(values)])
+""";
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/permission.txt", "yes");
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/permission.txt", "yes");
+
+        var sync = new LythonEngine().Run(source, syncHost);
+        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+
+        AssertEquivalent(sync, asyncResult);
+        Assert.Equal("[1, 2, 3]", asyncResult.ReturnValue);
+        Assert.True(asyncHost.CompletedAsynchronously > 0);
+    }
+
+    [Fact]
     public async Task SyncAndAsyncRuntimesAgreeForRuntimeFailures()
     {
         const string source = "def fail():\n    raise ValueError('bad')\nfail()\n";

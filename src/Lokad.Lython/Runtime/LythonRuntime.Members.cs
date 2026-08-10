@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            var sorted = SortListItems([.. list], keyCallable, reverse, span, context);
+            var sorted = SortItems(list, keyCallable as ICallable, reverse, span, context);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }
@@ -199,89 +199,9 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            var sorted = await SortListItemsAsync([.. list], keyCallable, reverse, span, context).ConfigureAwait(false);
+            var sorted = await SortItemsAsync(list, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
-        }
-
-        private static object[] SortListItems(
-            object[] values,
-            object? keyCallable,
-            bool reverse,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var keyed = new List<SortKeyValue>(values.Length);
-            foreach (var item in values)
-            {
-                keyed.Add(new SortKeyValue(
-                    item,
-                    keyCallable is ICallable callable
-                        ? callable.Invoke([CallArgumentValue.Positional(item)], span, context)
-                        : item));
-            }
-
-            SortKeyedItems(keyed, reverse, span, context);
-
-            return keyed.Select(item => item.Value).ToArray();
-        }
-
-        private static async ValueTask<object[]> SortListItemsAsync(
-            object[] values,
-            object? keyCallable,
-            bool reverse,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var keyed = new List<SortKeyValue>(values.Length);
-            foreach (var item in values)
-            {
-                keyed.Add(new SortKeyValue(
-                    item,
-                    keyCallable is ICallable callable
-                        ? await callable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)
-                        : item));
-            }
-
-            await SortKeyedItemsAsync(keyed, reverse, span, context).ConfigureAwait(false);
-
-            return keyed.Select(item => item.Value).ToArray();
-        }
-
-        private static void SortKeyedItems(List<SortKeyValue> keyed, bool reverse, LythonSourceSpan span, ExecutionContext context)
-        {
-            for (var i = 1; i < keyed.Count; i++)
-            {
-                var current = keyed[i];
-                var j = i - 1;
-                while (j >= 0 && (reverse
-                    ? CompareSortKeys(keyed[j].Key, current.Key, span, context) < 0
-                    : CompareSortKeys(keyed[j].Key, current.Key, span, context) > 0))
-                {
-                    keyed[j + 1] = keyed[j];
-                    j--;
-                }
-
-                keyed[j + 1] = current;
-            }
-        }
-
-        private static async ValueTask SortKeyedItemsAsync(List<SortKeyValue> keyed, bool reverse, LythonSourceSpan span, ExecutionContext context)
-        {
-            for (var i = 1; i < keyed.Count; i++)
-            {
-                var current = keyed[i];
-                var j = i - 1;
-                while (j >= 0 && (reverse
-                    ? await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) < 0
-                    : await CompareSortKeysAsync(keyed[j].Key, current.Key, span, context).ConfigureAwait(false) > 0))
-                {
-                    keyed[j + 1] = keyed[j];
-                    j--;
-                }
-
-                keyed[j + 1] = current;
-            }
         }
 
         private static int NormalizeListSearchBound(object? value, int length, int defaultValue, LythonSourceSpan span)
