@@ -143,37 +143,13 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateLoweredFormattedString(LoweredFormattedStringExpression formatted, ExecutionContext context)
-        => EvaluateLoweredFormattedStringParts(formatted.Parts, context, formatted.Span);
-
-    private static PyString EvaluateLoweredFormattedStringParts(
-        IReadOnlyList<LoweredFormattedStringPart> parts,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var builder = new LoweredFormattedStringBuilder(context, span);
-        foreach (var part in parts)
-        {
-            switch (part)
-            {
-                case LoweredFormattedStringTextPart text:
-                    builder.AppendText(text.Text);
-                    break;
-                case LoweredFormattedStringExpressionPart expression:
-                    var formatSpecifier = expression.FormatSpecifierParts is null
-                        ? expression.FormatSpecifier
-                        : EvaluateLoweredFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
-                    builder.AppendValue(
-                        EvaluateLoweredExpression(expression.Expression, context),
-                        expression.Conversion,
-                        formatSpecifier);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
-            }
-        }
-
-        return builder.Complete();
-    }
+        => EvaluateLoweredFormattedStringPartsCoreAsync(
+                formatted.Parts,
+                context,
+                formatted.Span,
+                expression => ValueTask.FromResult(EvaluateLoweredExpression(expression, context)))
+            .GetAwaiter()
+            .GetResult();
 
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {

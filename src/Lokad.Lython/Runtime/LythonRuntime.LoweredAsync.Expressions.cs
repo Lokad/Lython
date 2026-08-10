@@ -152,40 +152,12 @@ internal sealed partial class LythonRuntime
     }
 
     private static async ValueTask<object> EvaluateLoweredFormattedStringAsync(LoweredFormattedStringExpression formatted, ExecutionContext context)
-        => await EvaluateLoweredFormattedStringPartsAsync(formatted.Parts, context, formatted.Span).ConfigureAwait(false);
-
-    private static async ValueTask<PyString> EvaluateLoweredFormattedStringPartsAsync(
-        IReadOnlyList<LoweredFormattedStringPart> parts,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var builder = new LoweredFormattedStringBuilder(context, span);
-        foreach (var part in parts)
-        {
-            switch (part)
-            {
-                case LoweredFormattedStringTextPart text:
-                    builder.AppendText(text.Text);
-                    break;
-                case LoweredFormattedStringExpressionPart expression:
-                    var formatSpecifier = expression.FormatSpecifierParts is null
-                        ? expression.FormatSpecifier
-                        : (await EvaluateLoweredFormattedStringPartsAsync(
-                            expression.FormatSpecifierParts,
-                            context,
-                            span).ConfigureAwait(false)).AsString();
-                    builder.AppendValue(
-                        await EvaluateLoweredExpressionAsync(expression.Expression, context).ConfigureAwait(false),
-                        expression.Conversion,
-                        formatSpecifier);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
-            }
-        }
-
-        return builder.Complete();
-    }
+        => await EvaluateLoweredFormattedStringPartsCoreAsync(
+                formatted.Parts,
+                context,
+                formatted.Span,
+                expression => EvaluateLoweredExpressionAsync(expression, context))
+            .ConfigureAwait(false);
 
     private static async ValueTask<object> EvaluateLoweredListComprehensionAsync(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {

@@ -10,6 +10,8 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
 
+    private delegate ValueTask<object> LoweredExpressionEvaluator(LoweredExpression expression);
+
     private static async ValueTask DispatchLoweredStatementAsync(
         LoweredStatement statement,
         ExecutionContext context,
@@ -177,6 +179,41 @@ internal sealed partial class LythonRuntime
             _context.ObserveString(value, _span);
             return value;
         }
+    }
+
+    private static async ValueTask<PyString> EvaluateLoweredFormattedStringPartsCoreAsync(
+        IReadOnlyList<LoweredFormattedStringPart> parts,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        LoweredExpressionEvaluator evaluateExpression)
+    {
+        var builder = new LoweredFormattedStringBuilder(context, span);
+        foreach (var part in parts)
+        {
+            switch (part)
+            {
+                case LoweredFormattedStringTextPart text:
+                    builder.AppendText(text.Text);
+                    break;
+                case LoweredFormattedStringExpressionPart expression:
+                    var formatSpecifier = expression.FormatSpecifierParts is null
+                        ? expression.FormatSpecifier
+                        : (await EvaluateLoweredFormattedStringPartsCoreAsync(
+                            expression.FormatSpecifierParts,
+                            context,
+                            span,
+                            evaluateExpression).ConfigureAwait(false)).AsString();
+                    builder.AppendValue(
+                        await evaluateExpression(expression.Expression).ConfigureAwait(false),
+                        expression.Conversion,
+                        formatSpecifier);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
+            }
+        }
+
+        return builder.Complete();
     }
 
     private static async ValueTask ExecuteTryStatementCoreAsync(
