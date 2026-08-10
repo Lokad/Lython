@@ -325,25 +325,11 @@ internal sealed partial class LythonRuntime
 
                 return task.Result;
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-            catch (LythonSubprocessOutputLimitException ex)
-            {
-                throw RuntimeErrors.Runtime(ex.Message, span);
-            }
-            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
-            {
-                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                throw RuntimeErrors.Host(name, ex, span);
+                var translated = TranslateHostException(ex, name, span);
+                if (ReferenceEquals(translated, ex)) throw;
+                throw translated;
             }
         }
 
@@ -368,25 +354,11 @@ internal sealed partial class LythonRuntime
                     throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-            catch (LythonSubprocessOutputLimitException ex)
-            {
-                throw RuntimeErrors.Runtime(ex.Message, span);
-            }
-            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
-            {
-                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                throw RuntimeErrors.Host(name, ex, span);
+                var translated = TranslateHostException(ex, name, span);
+                if (ReferenceEquals(translated, ex)) throw;
+                throw translated;
             }
         }
 
@@ -404,25 +376,11 @@ internal sealed partial class LythonRuntime
             {
                 return await operation().ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-            catch (LythonSubprocessOutputLimitException ex)
-            {
-                throw RuntimeErrors.Runtime(ex.Message, span);
-            }
-            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
-            {
-                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                throw RuntimeErrors.Host(name, ex, span);
+                var translated = TranslateHostException(ex, name, span);
+                if (ReferenceEquals(translated, ex)) throw;
+                throw translated;
             }
         }
 
@@ -432,27 +390,24 @@ internal sealed partial class LythonRuntime
             {
                 await operation().ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-            catch (LythonSubprocessOutputLimitException ex)
-            {
-                throw RuntimeErrors.Runtime(ex.Message, span);
-            }
-            catch (NotSupportedException ex) when (ex.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase))
-            {
-                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                throw RuntimeErrors.Host(name, ex, span);
+                var translated = TranslateHostException(ex, name, span);
+                if (ReferenceEquals(translated, ex)) throw;
+                throw translated;
             }
         }
+
+        private static Exception TranslateHostException(Exception exception, string name, LythonSourceSpan? span)
+            => exception switch
+            {
+                OperationCanceledException => RuntimeErrors.Runtime("execution canceled", span),
+                LythonRuntimeException or OutOfMemoryException => exception,
+                LythonSubprocessOutputLimitException outputLimit => RuntimeErrors.Runtime(outputLimit.Message, span),
+                NotSupportedException notSupported when notSupported.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase)
+                    => RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span),
+                _ => RuntimeErrors.Host(name, exception, span)
+            };
 
         public bool TryGetBuiltinType(string name, [MaybeNullWhen(false)] out PyType type)
         {
