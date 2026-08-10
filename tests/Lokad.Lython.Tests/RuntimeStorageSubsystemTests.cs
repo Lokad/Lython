@@ -455,6 +455,27 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void TextFileHandle_TellTracksPendingCrLfExpansionIncrementally()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite(
+            "/output.txt",
+            context,
+            LythonRuntime.TextEncodingMode.Utf8,
+            LythonRuntime.TextErrorMode.Strict,
+            LythonRuntime.TextNewlineMode.PreserveCarriageReturnLineFeed);
+
+        _ = handle.Write(PyString.FromString("a\n"));
+        Assert.Equal(new BigInteger(3), handle.Tell());
+        _ = handle.Write(PyString.FromString("b\n"));
+        Assert.Equal(new BigInteger(6), handle.Tell());
+
+        _ = handle.Exit();
+        Assert.Equal("a\r\nb\r\n", host.ReadText("/output.txt"));
+    }
+
+    [Fact]
     public async Task TextFileHandle_AsyncLatin1AppendDoesNotRetainOrRewritePrefix()
     {
         var host = new DelayedLythonHost();
