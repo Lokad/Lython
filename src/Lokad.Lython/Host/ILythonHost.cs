@@ -30,12 +30,12 @@ public interface ILythonHost
     /// <summary>Reads a complete binary file when the host exposes binary I/O.</summary>
     /// <remarks>The default implementation rejects binary access explicitly.</remarks>
     ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-        => throw new NotSupportedException("Host binary file I/O is not available.");
+        => throw new LythonHostCapabilityUnavailableException("binary file I/O");
 
     /// <summary>Replaces a contained binary file when the host exposes binary I/O.</summary>
     /// <remarks>The default implementation rejects binary access explicitly.</remarks>
     ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-        => throw new NotSupportedException("Host binary file I/O is not available.");
+        => throw new LythonHostCapabilityUnavailableException("binary file I/O");
 
     /// <summary>Appends bytes to a contained binary file when the host exposes binary I/O.</summary>
     /// <remarks>

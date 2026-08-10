@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Lokad.Lython.Runtime;
 
 internal static class HostOperation
@@ -8,10 +10,9 @@ internal static class HostOperation
         {
             return operation();
         }
-        catch (Exception exception)
+        catch (Exception exception) when (RequiresTranslation(exception))
         {
-            RethrowTranslated(exception, name, span);
-            throw new InvalidOperationException("Unreachable.");
+            return ThrowTranslated<T>(exception, name, span);
         }
     }
 
@@ -48,10 +49,9 @@ internal static class HostOperation
 
             return task.Result;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (RequiresTranslation(exception))
         {
-            RethrowTranslated(exception, name, span);
-            throw new InvalidOperationException("Unreachable.");
+            return ThrowTranslated<T>(exception, name, span);
         }
     }
 
@@ -86,9 +86,9 @@ internal static class HostOperation
                 throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
             }
         }
-        catch (Exception exception)
+        catch (Exception exception) when (RequiresTranslation(exception))
         {
-            RethrowTranslated(exception, name, span);
+            ThrowTranslated<object>(exception, name, span);
         }
     }
 
@@ -101,10 +101,9 @@ internal static class HostOperation
         {
             return await operation().ConfigureAwait(false);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (RequiresTranslation(exception))
         {
-            RethrowTranslated(exception, name, span);
-            throw new InvalidOperationException("Unreachable.");
+            return ThrowTranslated<T>(exception, name, span);
         }
     }
 
@@ -117,9 +116,9 @@ internal static class HostOperation
         {
             await operation().ConfigureAwait(false);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (RequiresTranslation(exception))
         {
-            RethrowTranslated(exception, name, span);
+            ThrowTranslated<object>(exception, name, span);
         }
     }
 
@@ -136,26 +135,19 @@ internal static class HostOperation
         }
     }
 
-    private static void RethrowTranslated(
+    private static bool RequiresTranslation(Exception exception)
+        => exception is not LythonRuntimeException and not OutOfMemoryException;
+
+    [DoesNotReturn]
+    private static T ThrowTranslated<T>(
         Exception exception,
         string name,
         LythonSourceSpan? span)
-    {
-        switch (exception)
+        => exception switch
         {
-            case OperationCanceledException:
-                throw RuntimeErrors.Runtime("execution canceled", span);
-            case LythonRuntimeException:
-            case OutOfMemoryException:
-                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
-                break;
-            case LythonSubprocessOutputLimitException outputLimit:
-                throw RuntimeErrors.Runtime(outputLimit.Message, span);
-            case NotSupportedException notSupported
-                when notSupported.Message.Contains("binary file I/O", StringComparison.OrdinalIgnoreCase):
-                throw RuntimeErrors.Runtime("host binary file I/O is not available in this host.", span);
-            default:
-                throw RuntimeErrors.Host(name, exception, span);
-        }
-    }
+            OperationCanceledException => throw RuntimeErrors.Runtime("execution canceled", span),
+            LythonSubprocessOutputLimitException outputLimit => throw RuntimeErrors.Runtime(outputLimit.Message, span),
+            LythonHostCapabilityUnavailableException unavailable => throw RuntimeErrors.Runtime($"host {unavailable.Capability} is not available in this host.", span),
+            _ => throw RuntimeErrors.Host(name, exception, span),
+        };
 }
