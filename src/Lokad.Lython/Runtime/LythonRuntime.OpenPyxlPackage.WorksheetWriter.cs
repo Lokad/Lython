@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                 CreateConditionalFormattingXml(worksheet),
                 CreateDataValidationsXml(worksheet),
                 CreateSheetProtectionXml(worksheet),
-                CreateHyperlinksXml(worksheet, relationshipPlan),
+                CreateHyperlinksXml(relationshipPlan),
                 CreatePageMarginsXml(worksheet),
                 CreatePageSetupXml(worksheet));
 
@@ -387,20 +387,20 @@ internal sealed partial class LythonRuntime
             return new XElement(XlsxMain + "sheetProtection", attributes);
         }
 
-        private static XElement? CreateHyperlinksXml(OpenPyxlWorksheet worksheet, OpenPyxlWorksheetRelationshipPlan relationshipPlan)
+        private static XElement? CreateHyperlinksXml(OpenPyxlWorksheetRelationshipPlan relationshipPlan)
         {
-            if (worksheet.Hyperlinks.Count == 0)
+            if (relationshipPlan.Hyperlinks.Count == 0)
             {
                 return null;
             }
 
             var hyperlinks = new XElement(XlsxMain + "hyperlinks");
-            foreach (var pair in worksheet.Hyperlinks.OrderBy(pair => pair.Key.Row).ThenBy(pair => pair.Key.Column))
+            foreach (var hyperlink in relationshipPlan.Hyperlinks)
             {
                 hyperlinks.Add(new XElement(
                     XlsxMain + "hyperlink",
-                    new XAttribute("ref", CellReference(pair.Key.Row, pair.Key.Column)),
-                    new XAttribute(XlsxRelationships + "id", relationshipPlan.HyperlinkIds[pair.Key])));
+                    new XAttribute("ref", CellReference(hyperlink.Address.Row, hyperlink.Address.Column)),
+                    new XAttribute(XlsxRelationships + "id", hyperlink.Id)));
             }
 
             return hyperlinks;

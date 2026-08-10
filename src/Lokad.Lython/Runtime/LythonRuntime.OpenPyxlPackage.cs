@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
                     WriteXml(archive, worksheetPath, CreateWorksheetXml(workbook.Worksheets[i], styleRegistry, preserveLoadedStyleIds, worksheetRelationshipPlan));
                     if (worksheetRelationshipPlan.HasRelationships)
                     {
-                        WriteXml(archive, WorksheetRelationshipsPath(worksheetPath), CreateWorksheetRelationships(workbook.Worksheets[i], worksheetRelationshipPlan));
+                        WriteXml(archive, WorksheetRelationshipsPath(worksheetPath), CreateWorksheetRelationships(worksheetRelationshipPlan));
                     }
                 }
 

@@ -241,7 +241,7 @@ internal sealed partial class LythonRuntime
             var title = ExpectString(value, "Worksheet.title", null);
             Title = Workbook is null
                 ? ValidateDetachedSheetTitle(title)
-                : Workbook.MakeUniqueSheetTitle(title, this, null);
+                : Workbook.RenameWorksheet(this, title, null);
             return true;
         }
 

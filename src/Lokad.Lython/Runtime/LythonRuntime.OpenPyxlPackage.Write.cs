@@ -232,9 +232,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private sealed record OpenPyxlWorksheetRelationshipPlan(IReadOnlyDictionary<CellAddress, string> HyperlinkIds, IReadOnlyList<XElement> PreservedRelationships)
+        private sealed record OpenPyxlHyperlinkRelationship(CellAddress Address, string Target, string Id);
+
+        private sealed record OpenPyxlWorksheetRelationshipPlan(IReadOnlyList<OpenPyxlHyperlinkRelationship> Hyperlinks, IReadOnlyList<XElement> PreservedRelationships)
         {
-            public bool HasRelationships => HyperlinkIds.Count > 0 || PreservedRelationships.Count > 0;
+            public bool HasRelationships => Hyperlinks.Count > 0 || PreservedRelationships.Count > 0;
         }
 
         private static OpenPyxlWorksheetRelationshipPlan CreateWorksheetRelationshipPlan(OpenPyxlWorksheet worksheet)
@@ -244,18 +246,18 @@ internal sealed partial class LythonRuntime
                 .Select(relationship => (string?)relationship.Attribute("Id"))
                 .OfType<string>()
                 .ToHashSet(StringComparer.Ordinal);
-            var hyperlinkIds = new Dictionary<CellAddress, string>();
+            var hyperlinks = new List<OpenPyxlHyperlinkRelationship>(worksheet.Hyperlinks.Count);
             foreach (var pair in worksheet.Hyperlinks.OrderBy(pair => pair.Key.Row).ThenBy(pair => pair.Key.Column))
             {
                 var id = NextRelationshipId(usedIds);
                 usedIds.Add(id);
-                hyperlinkIds[pair.Key] = id;
+                hyperlinks.Add(new OpenPyxlHyperlinkRelationship(pair.Key, pair.Value, id));
             }
 
-            return new OpenPyxlWorksheetRelationshipPlan(hyperlinkIds, preserved);
+            return new OpenPyxlWorksheetRelationshipPlan(hyperlinks, preserved);
         }
 
-        private static XDocument CreateWorksheetRelationships(OpenPyxlWorksheet worksheet, OpenPyxlWorksheetRelationshipPlan plan)
+        private static XDocument CreateWorksheetRelationships(OpenPyxlWorksheetRelationshipPlan plan)
         {
             var root = new XElement(PackageRelationships + "Relationships");
             foreach (var relationship in plan.PreservedRelationships)
@@ -263,13 +265,13 @@ internal sealed partial class LythonRuntime
                 root.Add(new XElement(relationship));
             }
 
-            foreach (var pair in worksheet.Hyperlinks.OrderBy(pair => pair.Key.Row).ThenBy(pair => pair.Key.Column))
+            foreach (var hyperlink in plan.Hyperlinks)
             {
                 root.Add(new XElement(
                     PackageRelationships + "Relationship",
-                    new XAttribute("Id", plan.HyperlinkIds[pair.Key]),
+                    new XAttribute("Id", hyperlink.Id),
                     new XAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"),
-                    new XAttribute("Target", pair.Value),
+                    new XAttribute("Target", hyperlink.Target),
                     new XAttribute("TargetMode", "External")));
             }
 
