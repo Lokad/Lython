@@ -195,7 +195,10 @@ internal sealed partial class LythonRuntime
         private static readonly IPathMemberProvider[] Providers =
         [
             LexicalPathMemberProvider.Instance,
-            HostPathMemberProvider.Instance,
+            HostStatusPathMemberProvider.Instance,
+            HostMutationPathMemberProvider.Instance,
+            UnsupportedHostPathMemberProvider.Instance,
+            HostContentPathMemberProvider.Instance,
         ];
 
         private interface IPathMemberProvider

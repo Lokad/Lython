@@ -8,9 +8,9 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class PathMembers
     {
-        private sealed class HostPathMemberProvider : IPathMemberProvider
+        private sealed class HostStatusPathMemberProvider : IPathMemberProvider
         {
-            public static readonly HostPathMemberProvider Instance = new();
+            public static readonly HostStatusPathMemberProvider Instance = new();
 
             public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
             {
@@ -125,6 +125,21 @@ internal sealed partial class LythonRuntime
 
                         return false;
                     }),
+                    _ => MissingMemberValue.Instance,
+                };
+
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
+            }
+        }
+
+        private sealed class HostMutationPathMemberProvider : IPathMemberProvider
+        {
+            public static readonly HostMutationPathMemberProvider Instance = new();
+
+            public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
+            {
+                value = name switch
+                {
                     "unlink" => new BoundCallable((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
@@ -271,6 +286,22 @@ internal sealed partial class LythonRuntime
                         await PathTouchAsync(path.Value.AsString(), arguments, span, context).ConfigureAwait(false);
                         return PyNone.Instance;
                     }, "Path.touch", ["mode", "exist_ok"], 0),
+                    _ => MissingMemberValue.Instance,
+                };
+
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
+            }
+        }
+
+        private sealed class UnsupportedHostPathMemberProvider : IPathMemberProvider
+        {
+            public static readonly UnsupportedHostPathMemberProvider Instance = new();
+
+            public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
+            {
+                _ = path;
+                value = name switch
+                {
                     "read_bytes" => UnsupportedPathMember("Path.read_bytes", "Path.read_bytes() is not supported by Lython under the text-only host boundary."),
                     "write_bytes" => UnsupportedPathMember("Path.write_bytes", "Path.write_bytes(data) is not supported by Lython under the text-only host boundary."),
                     "readlink" => UnsupportedPathMember("Path.readlink", "Path.readlink() is not supported by Lython because symlink targets are not exposed by the host path model."),
@@ -279,6 +310,21 @@ internal sealed partial class LythonRuntime
                     "chmod" => UnsupportedPathMember("Path.chmod", "Path.chmod(mode) is not supported by Lython because permissions are not exposed by the host path model."),
                     "owner" => UnsupportedPathMember("Path.owner", "Path.owner() is not supported by Lython because user ownership is not exposed by the host path model."),
                     "group" => UnsupportedPathMember("Path.group", "Path.group() is not supported by Lython because group ownership is not exposed by the host path model."),
+                    _ => MissingMemberValue.Instance,
+                };
+
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
+            }
+        }
+
+        private sealed class HostContentPathMemberProvider : IPathMemberProvider
+        {
+            public static readonly HostContentPathMemberProvider Instance = new();
+
+            public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
+            {
+                value = name switch
+                {
                     "open" => new PathOpenCallable(path.Value.AsString()),
                     "glob" => new BoundCallable((arguments, span, context) =>
                     {
