@@ -55,12 +55,14 @@ internal sealed class PyGroupByIterator : PyIteratorBase
             await _activeGroup.DrainAsync().ConfigureAwait(false);
         }
 
-        var (hasValue, item, key) = await TryReadNextAsync().ConfigureAwait(false);
-        if (!hasValue)
+        var next = await TryReadNextAsync().ConfigureAwait(false);
+        if (!next.HasValue)
         {
             return PyIterationResult.End;
         }
 
+        var item = next.Value.Item;
+        var key = next.Value.Key;
         _activeGroupId++;
         _activeGroup = new PyGroupIterator(this, _activeGroupId, key, item);
         var value = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
@@ -91,23 +93,23 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         return true;
     }
 
-    private async ValueTask<(bool HasValue, object Item, object Key)> TryReadNextAsync()
+    private async ValueTask<OptionalValue<GroupItem>> TryReadNextAsync()
     {
         if (_hasLookahead)
         {
             _hasLookahead = false;
-            return (true, _lookaheadItem, _lookaheadKey);
+            return OptionalValue<GroupItem>.Present(new GroupItem(_lookaheadItem, _lookaheadKey));
         }
 
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            return (false, PyNone.Instance, PyNone.Instance);
+            return OptionalValue<GroupItem>.Missing;
         }
 
         var item = LythonRuntime.RuntimeValue(current);
         var key = await ComputeKeyAsync(item).ConfigureAwait(false);
-        return (true, item, key);
+        return OptionalValue<GroupItem>.Present(new GroupItem(item, key));
     }
 
     private object ComputeKey(object item)
@@ -191,13 +193,15 @@ internal sealed class PyGroupByIterator : PyIteratorBase
                 return PyIterationResult.Yield(_firstItem);
             }
 
-            var (hasValue, item, key) = await _parent.TryReadNextAsync().ConfigureAwait(false);
-            if (!hasValue)
+            var next = await _parent.TryReadNextAsync().ConfigureAwait(false);
+            if (!next.HasValue)
             {
                 _done = true;
                 return PyIterationResult.End;
             }
 
+            var item = next.Value.Item;
+            var key = next.Value.Key;
             if (PyEquality.AreEqual(key, _key))
             {
                 return PyIterationResult.Yield(item);
@@ -229,6 +233,8 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools._grouper object>");
     }
+
+    private readonly record struct GroupItem(object Item, object Key);
 }
 
 internal sealed class PyTeeIterator : PyIteratorBase

@@ -103,13 +103,13 @@ internal sealed class PyChainIterator : PyIteratorBase
                 }
             }
 
-            var (hasNext, next) = await TryOpenNextCursorAsync().ConfigureAwait(false);
-            if (!hasNext)
+            var next = await TryOpenNextCursorAsync().ConfigureAwait(false);
+            if (!next.HasValue)
             {
                 return PyIterationResult.End;
             }
 
-            _current = next;
+            _current = next.Value;
         }
     }
 
@@ -139,16 +139,16 @@ internal sealed class PyChainIterator : PyIteratorBase
         return false;
     }
 
-    private async ValueTask<(bool HasValue, PyIteration.Cursor? Cursor)> TryOpenNextCursorAsync()
+    private async ValueTask<OptionalValue<PyIteration.Cursor>> TryOpenNextCursorAsync()
     {
         if (_sources is not null)
         {
             if (_sourceIndex >= _sources.Length)
             {
-                return (false, null);
+                return OptionalValue<PyIteration.Cursor>.Missing;
             }
 
-            return (true, _sources[_sourceIndex++]);
+            return OptionalValue<PyIteration.Cursor>.Present(_sources[_sourceIndex++]);
         }
 
         if (_outer is not null)
@@ -156,11 +156,11 @@ internal sealed class PyChainIterator : PyIteratorBase
             var (hasNested, nested) = await _outer.TryMoveNextAsync().ConfigureAwait(false);
             if (hasNested)
             {
-                return (true, PyIteration.Cursor.Create(nested, _span));
+                return OptionalValue<PyIteration.Cursor>.Present(PyIteration.Cursor.Create(nested, _span));
             }
         }
 
-        return (false, null);
+        return OptionalValue<PyIteration.Cursor>.Missing;
     }
 }
 
