@@ -209,24 +209,61 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
-    private sealed class BuiltinCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private abstract class BoundArgumentsCallable : ICallable
     {
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
-        private readonly LythonCallableSignature _signature;
+        private readonly PythonCallableKind _callableKind;
         private readonly IReadOnlyDictionary<string, int>? _parameterIndices;
 
+        protected BoundArgumentsCallable(
+            LythonCallableSignature signature,
+            Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation,
+            PythonCallableKind callableKind,
+            IReadOnlyDictionary<string, int>? parameterIndices)
+        {
+            Signature = signature;
+            _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
+            _callableKind = callableKind;
+            _parameterIndices = parameterIndices;
+        }
+
+        protected LythonCallableSignature Signature { get; }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var positional = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, _parameterIndices);
+            return _implementation(positional, span, context);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var positional = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind, _parameterIndices);
+            return _asyncImplementation is null
+                ? _implementation(positional, span, context)
+                : await _asyncImplementation(positional, span, context).ConfigureAwait(false);
+        }
+    }
+
+    private sealed class BuiltinCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    {
         public BuiltinCallable(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(signature, implementation, null) { }
 
         public BuiltinCallable(
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+            : base(
+                signature,
+                implementation,
+                asyncImplementation,
+                PythonCallableKind.Builtin,
+                signature.ParameterNames is null ? null : CallBinder.GetParameterIndices(signature.ParameterNames))
         {
-            _signature = signature;
-            _implementation = implementation;
-            _asyncImplementation = asyncImplementation;
-            _parameterIndices = signature.ParameterNames is null ? null : CallBinder.GetParameterIndices(signature.ParameterNames);
         }
 
         public BuiltinCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(new LythonCallableSignature(name), implementation) { }
@@ -256,7 +293,7 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public string Name => _signature.Name;
+        public string Name => Signature.Name;
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -284,21 +321,6 @@ internal sealed partial class LythonRuntime
 
             value = PyNone.Instance;
             return false;
-        }
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin, _parameterIndices);
-            return _implementation(positional, span, context);
-        }
-
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin, _parameterIndices);
-            return _asyncImplementation is null
-                ? _implementation(positional, span, context)
-                : await _asyncImplementation(positional, span, context).ConfigureAwait(false);
         }
     }
 

@@ -39,22 +39,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : ICallable
+    private sealed class BoundCallable : BoundArgumentsCallable
     {
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
-        private readonly LythonCallableSignature _signature;
-
         public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature) : this(implementation, signature, null) { }
 
         public BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+            : base(signature, implementation, asyncImplementation, PythonCallableKind.Method, parameterIndices: null)
         {
-            _implementation = implementation;
-            _asyncImplementation = asyncImplementation;
-            _signature = signature;
         }
 
         public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(implementation, new LythonCallableSignature("bound method")) { }
@@ -88,21 +82,6 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
-            return _implementation(positional, span, context);
-        }
-
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecutionBudget(span);
-            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
-            return _asyncImplementation is null
-                ? _implementation(positional, span, context)
-                : await _asyncImplementation(positional, span, context).ConfigureAwait(false);
-        }
     }
 
     private sealed class RawBoundCallable(
