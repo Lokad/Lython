@@ -123,9 +123,9 @@ internal sealed partial class LythonRuntime
                 "replace" => new BoundCallable((arguments, span, _) =>
                 {
                     return new PyDate(new DateOnly(
-                        ArgAt(arguments, 0) is null or PyNone ? (int)date.Year : ToInt(ArgAt(arguments, 0).RequireNotNull(), "date.replace", span),
-                        ArgAt(arguments, 1) is null or PyNone ? (int)date.Month : ToInt(ArgAt(arguments, 1).RequireNotNull(), "date.replace", span),
-                        ArgAt(arguments, 2) is null or PyNone ? (int)date.Day : ToInt(ArgAt(arguments, 2).RequireNotNull(), "date.replace", span)));
+                        ReplacementInt(arguments, 0, (int)date.Year, "date.replace", span),
+                        ReplacementInt(arguments, 1, (int)date.Month, "date.replace", span),
+                        ReplacementInt(arguments, 2, (int)date.Day, "date.replace", span)));
                 }, "date.replace", ["year", "month", "day"], 0),
                 _ => MissingMemberValue.Instance
             };
@@ -210,18 +210,12 @@ internal sealed partial class LythonRuntime
                     var fold = foldArg is null or PyNone ? time.Fold : ToFold(foldArg, "time.replace", span);
                     return new PyTime(
                         new TimeOnly(
-                            ArgAt(arguments, 0) is null or PyNone ? (int)time.Hour : ToInt(ArgAt(arguments, 0).RequireNotNull(), "time.replace", span),
-                            ArgAt(arguments, 1) is null or PyNone ? (int)time.Minute : ToInt(ArgAt(arguments, 1).RequireNotNull(), "time.replace", span),
-                            ArgAt(arguments, 2) is null or PyNone ? (int)time.Second : ToInt(ArgAt(arguments, 2).RequireNotNull(), "time.replace", span),
+                            ReplacementInt(arguments, 0, (int)time.Hour, "time.replace", span),
+                            ReplacementInt(arguments, 1, (int)time.Minute, "time.replace", span),
+                            ReplacementInt(arguments, 2, (int)time.Second, "time.replace", span),
                             microsecond / 1000,
                             microsecond % 1000),
-                        ArgAt(arguments, 4) switch
-                        {
-                            null => time.TzInfo,
-                            PyNone => null,
-                            PyTimezone tz => tz,
-                            _ => throw new LythonRuntimeException("TypeError", "time.replace(..., tzinfo=...) expects a timezone or None.", span)
-                        },
+                        ReplacementTimezone(arguments, 4, time.TzInfo, "time.replace", span),
                         fold);
                 }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -436,21 +430,15 @@ internal sealed partial class LythonRuntime
                     var fold = foldArg is null or PyNone ? dateTime.Fold : ToFold(foldArg, "datetime.replace", span);
                     return new PyDateTime(
                         new DateTime(
-                            ArgAt(arguments, 0) is null or PyNone ? (int)dateTime.Year : ToInt(ArgAt(arguments, 0).RequireNotNull(), "datetime.replace", span),
-                            ArgAt(arguments, 1) is null or PyNone ? (int)dateTime.Month : ToInt(ArgAt(arguments, 1).RequireNotNull(), "datetime.replace", span),
-                            ArgAt(arguments, 2) is null or PyNone ? (int)dateTime.Day : ToInt(ArgAt(arguments, 2).RequireNotNull(), "datetime.replace", span),
-                            ArgAt(arguments, 3) is null or PyNone ? (int)dateTime.Hour : ToInt(ArgAt(arguments, 3).RequireNotNull(), "datetime.replace", span),
-                            ArgAt(arguments, 4) is null or PyNone ? (int)dateTime.Minute : ToInt(ArgAt(arguments, 4).RequireNotNull(), "datetime.replace", span),
-                            ArgAt(arguments, 5) is null or PyNone ? (int)dateTime.Second : ToInt(ArgAt(arguments, 5).RequireNotNull(), "datetime.replace", span),
+                            ReplacementInt(arguments, 0, (int)dateTime.Year, "datetime.replace", span),
+                            ReplacementInt(arguments, 1, (int)dateTime.Month, "datetime.replace", span),
+                            ReplacementInt(arguments, 2, (int)dateTime.Day, "datetime.replace", span),
+                            ReplacementInt(arguments, 3, (int)dateTime.Hour, "datetime.replace", span),
+                            ReplacementInt(arguments, 4, (int)dateTime.Minute, "datetime.replace", span),
+                            ReplacementInt(arguments, 5, (int)dateTime.Second, "datetime.replace", span),
                             microsecond / 1000,
                             DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-                        ArgAt(arguments, 7) switch
-                        {
-                            null => dateTime.TzInfo,
-                            PyNone => null,
-                            PyTimezone tz => tz,
-                            _ => throw new LythonRuntimeException("TypeError", "datetime.replace(..., tzinfo=...) expects a timezone or None.", span)
-                        },
+                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, "datetime.replace", span),
                         fold);
                 }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -459,15 +447,6 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static int ToInt(object value, string owner, LythonSourceSpan span)
-        {
-            if (value is BigInteger integer)
-            {
-                return (int)integer;
-            }
-
-            throw new LythonRuntimeException("TypeError", $"{owner} expects integer fields.", span);
-        }
     }
 
     internal static class TimezoneMembers
@@ -519,6 +498,31 @@ internal sealed partial class LythonRuntime
 
         throw new LythonRuntimeException("TypeError", $"{owner} expects integer fields.", span);
     }
+
+    private static int ReplacementInt(
+        object[] arguments,
+        int index,
+        int currentValue,
+        string owner,
+        LythonSourceSpan span)
+    {
+        var value = ArgAt(arguments, index);
+        return value is null or PyNone ? currentValue : ToInt(value, owner, span);
+    }
+
+    private static PyTimezone? ReplacementTimezone(
+        object[] arguments,
+        int index,
+        PyTimezone? currentValue,
+        string owner,
+        LythonSourceSpan span)
+        => ArgAt(arguments, index) switch
+        {
+            null => currentValue,
+            PyNone => null,
+            PyTimezone timezone => timezone,
+            _ => throw new LythonRuntimeException("TypeError", $"{owner}(..., tzinfo=...) expects a timezone or None.", span),
+        };
 
     private static int ToFold(object value, string owner, LythonSourceSpan span)
     {
