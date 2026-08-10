@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Collections.Frozen;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -8,6 +9,17 @@ internal sealed partial class LythonRuntime
     private sealed class PkgutilModule : PyModule
     {
         public static readonly PkgutilModule Instance = new();
+
+        private static readonly DiscoveredModule[] BuiltinDescriptors =
+            CreateBuiltinDescriptors(GetKnownBuiltinModuleNames());
+        private static readonly DiscoveredModule[] CapabilityFreeBuiltinDescriptors =
+            CreateBuiltinDescriptors(GetKnownBuiltinModuleNames()
+                .Where(static name => !string.Equals(name, "subprocess", StringComparison.Ordinal))
+                .ToArray());
+        private static readonly FrozenDictionary<string, DiscoveredModule> BuiltinDescriptorsByName =
+            BuiltinDescriptors.ToFrozenDictionary(static descriptor => descriptor.Name, StringComparer.Ordinal);
+        private static readonly FrozenDictionary<string, DiscoveredModule> CapabilityFreeBuiltinDescriptorsByName =
+            CapabilityFreeBuiltinDescriptors.ToFrozenDictionary(static descriptor => descriptor.Name, StringComparer.Ordinal);
 
         private PkgutilModule() : base("pkgutil")
         {
@@ -516,9 +528,8 @@ internal sealed partial class LythonRuntime
 
         private static bool TryCreateLoader(string fullname, ExecutionContext context, LythonSourceSpan span, out object loader)
         {
-            var builtins = CreateBuiltinDescriptors(context);
-            var builtin = builtins.FirstOrDefault(descriptor => string.Equals(descriptor.Name, fullname, StringComparison.Ordinal));
-            if (builtin.Name is not null)
+            var builtins = GetBuiltinDescriptorLookup(context);
+            if (builtins.TryGetValue(fullname, out var builtin))
             {
                 loader = new PkgutilLoaderObject(PyString.FromString(fullname), builtin.IsPackage, sourcePath: null);
                 return true;
@@ -568,19 +579,21 @@ internal sealed partial class LythonRuntime
         }
 
         private static IReadOnlyList<DiscoveredModule> CreateBuiltinDescriptors(ExecutionContext context)
+            => context.Host.SubprocessRunner is null ? CapabilityFreeBuiltinDescriptors : BuiltinDescriptors;
+
+        private static IReadOnlyDictionary<string, DiscoveredModule> GetBuiltinDescriptorLookup(ExecutionContext context)
+            => context.Host.SubprocessRunner is null ? CapabilityFreeBuiltinDescriptorsByName : BuiltinDescriptorsByName;
+
+        private static DiscoveredModule[] CreateBuiltinDescriptors(IReadOnlyList<string> names)
         {
-            var names = EnumerateDiscoverableBuiltinModuleNames(context)
-                .Distinct(StringComparer.Ordinal)
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-            var descriptors = new List<DiscoveredModule>(names.Length);
-            for (var index = 0; index < names.Length; index++)
+            var descriptors = new DiscoveredModule[names.Count];
+            for (var index = 0; index < names.Count; index++)
             {
                 var name = names[index];
-                descriptors.Add(new DiscoveredModule(
+                descriptors[index] = new DiscoveredModule(
                     name,
-                    IsPackage: index + 1 < names.Length && names[index + 1].StartsWith(name + ".", StringComparison.Ordinal),
-                    SourcePath: null));
+                    IsPackage: index + 1 < names.Count && names[index + 1].StartsWith(name + ".", StringComparison.Ordinal),
+                    SourcePath: null);
             }
 
             return descriptors;

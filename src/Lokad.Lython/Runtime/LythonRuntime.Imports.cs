@@ -309,79 +309,10 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyModule? ResolveBuiltinModule(string moduleName, ExecutionContext context)
-    {
-        return moduleName switch
-        {
-            "__future__" => FutureModule.Instance,
-            "builtins" => new BuiltinsModule(context),
-            "sys" => new SysModule(context),
-            "argparse" => ArgparseModule.Instance,
-            "dataclasses" => DataclassesModule.Instance,
-            "typing" => TypingModule.Instance,
-            "pathlib" => PathlibModule.Instance,
-            "pkgutil" => PkgutilModule.Instance,
-            "collections" => CollectionsModule.Instance,
-            "collections.abc" => CollectionsAbcModule.Instance,
-            "itertools" => ItertoolsModule.Instance,
-            "os" => OsModule.Instance,
-            "os.path" => OsPathModule.Instance,
-            "glob" => GlobModule.Instance,
-            "gzip" => GzipModule.Instance,
-            "hashlib" => HashlibModule.Instance,
-            "importlib" => ImportlibModule.Instance,
-            "importlib.util" => ImportlibUtilModule.Instance,
-            "decimal" => DecimalModule.Instance,
-            "math" => MathModule.Instance,
-            "datetime" => DatetimeModule.Instance,
-            "statistics" => StatisticsModule.Instance,
-            "time" => TimeModule.Instance,
-            "random" => new RandomModule(context.State.RandomState),
-            "copy" => CopyModule.Instance,
-            "operator" => OperatorModule.Instance,
-            "openpyxl" => OpenPyxlModule.Instance,
-            "openpyxl.reader" => OpenPyxlReaderModule.Instance,
-            "openpyxl.reader.excel" => OpenPyxlReaderExcelModule.Instance,
-            "openpyxl.utils" => OpenPyxlUtilsModule.Instance,
-            "openpyxl.utils.cell" => OpenPyxlUtilsCellModule.Instance,
-            "openpyxl.utils.exceptions" => OpenPyxlUtilsExceptionsModule.Instance,
-            "openpyxl.workbook" => OpenPyxlWorkbookModule.Instance,
-            "openpyxl.cell" => OpenPyxlCellModule.Instance,
-            "openpyxl.cell.cell" => OpenPyxlCellCellModule.Instance,
-            "openpyxl.styles" => OpenPyxlStylesModule.Instance,
-            "openpyxl.styles.colors" => OpenPyxlStylesColorsModule.Instance,
-            "openpyxl.comments" => OpenPyxlCommentsModule.Instance,
-            "openpyxl.chart" => OpenPyxlChartModule.Instance,
-            "openpyxl.worksheet" => OpenPyxlWorksheetModule.Instance,
-            "openpyxl.worksheet.worksheet" => OpenPyxlWorksheetWorksheetModule.Instance,
-            "openpyxl.worksheet.table" => OpenPyxlWorksheetTableModule.Instance,
-            "openpyxl.worksheet.datavalidation" => OpenPyxlWorksheetDataValidationModule.Instance,
-            "openpyxl.drawing" => OpenPyxlDrawingModule.Instance,
-            "openpyxl.drawing.image" => OpenPyxlDrawingImageModule.Instance,
-            "functools" => FunctoolsModule.Instance,
-            "re" => ReModule.Instance,
-            "shlex" => ShlexModule.Instance,
-            "shutil" => ShutilModule.Instance,
-            "filecmp" => FilecmpModule.Instance,
-            "fnmatch" => FnMatchModule.Instance,
-            "difflib" => DifflibModule.Instance,
-            "json" => JsonModule.Instance,
-            "csv" => CsvModule.Instance,
-            "subprocess" when context.Host.SubprocessRunner is not null => SubprocessModule.Instance,
-            _ => null,
-        };
-    }
+        => BuiltinModuleCatalog.Resolve(moduleName, context);
 
-    private static IEnumerable<string> EnumerateDiscoverableBuiltinModuleNames(ExecutionContext context)
-    {
-        foreach (var moduleName in StaticContracts.GetKnownBuiltinModuleNames())
-        {
-            if (!string.Equals(moduleName, "subprocess", StringComparison.Ordinal) ||
-                context.Host.SubprocessRunner is not null)
-            {
-                yield return moduleName;
-            }
-        }
-    }
+    private static IReadOnlyList<string> EnumerateDiscoverableBuiltinModuleNames(ExecutionContext context)
+        => BuiltinModuleCatalog.GetDiscoverableNames(context);
 
     private static async ValueTask<PyModule> ResolveImportedModuleHierarchyCore(
         string moduleName,
@@ -504,15 +435,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool IsDiscoverableBuiltinModuleName(string moduleName, ExecutionContext context)
-    {
-        if (!StaticContracts.IsKnownBuiltinModule(moduleName))
-        {
-            return false;
-        }
-
-        return !string.Equals(moduleName, "subprocess", StringComparison.Ordinal) ||
-            context.Host.SubprocessRunner is not null;
-    }
+        => BuiltinModuleCatalog.IsDiscoverable(moduleName, context);
 
     private static bool ImportsOnlyFutureAnnotations(IReadOnlyList<ImportedMemberSyntax> importedMembers)
     {

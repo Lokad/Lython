@@ -457,7 +457,20 @@ internal static partial class StaticContracts
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),
     };
 
-    private static readonly string[] KnownBuiltinModuleNames = ModuleSurfaces.Keys.Order(StringComparer.Ordinal).ToArray();
+    private static readonly string[] KnownBuiltinModuleNames = [.. LythonRuntime.GetKnownBuiltinModuleNames()];
+
+    static StaticContracts()
+    {
+        var declaredSurfaces = new HashSet<string>(ModuleSurfaces.Keys, StringComparer.Ordinal);
+        if (!declaredSurfaces.SetEquals(KnownBuiltinModuleNames))
+        {
+            var missingSurfaces = KnownBuiltinModuleNames.Where(name => !declaredSurfaces.Contains(name));
+            var missingRuntimeModules = declaredSurfaces.Where(name => !KnownBuiltinModuleNames.Contains(name, StringComparer.Ordinal));
+            throw new InvalidOperationException(
+                $"Builtin module catalog mismatch. Missing surfaces: {string.Join(", ", missingSurfaces)}. " +
+                $"Missing runtime registrations: {string.Join(", ", missingRuntimeModules)}.");
+        }
+    }
 
     public static bool IsKnownBuiltinModule(string moduleName)
         => ModuleSurfaces.ContainsKey(moduleName);
