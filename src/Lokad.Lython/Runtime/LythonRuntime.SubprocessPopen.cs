@@ -39,12 +39,36 @@ internal sealed partial class LythonRuntime
 
     private static object Popen(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        static void ValidateCompatibilityOptions(object[] arguments, LythonSourceSpan span)
+        {
+            if (HasArgument(arguments, PopenBufsizeIndex) &&
+                !PyNumberOps.TryAsInteger(GetArgument(arguments, PopenBufsizeIndex), out _))
+            {
+                throw new LythonRuntimeException("TypeError", "subprocess.Popen(..., bufsize=...) expects an integer.", span);
+            }
+
+            RequirePopenNone(arguments, PopenExecutableIndex, "executable", span);
+            RequirePopenNone(arguments, PopenPreExecIndex, "preexec_fn", span);
+            RequirePopenNone(arguments, PopenStartupInfoIndex, "startupinfo", span);
+            RequirePopenIntegerDefault(arguments, PopenCreationFlagsIndex, "creationflags", BigInteger.Zero, span);
+            RequirePopenBooleanDefault(arguments, PopenCloseFdsIndex, "close_fds", expected: true, span);
+            RequirePopenBooleanDefault(arguments, PopenRestoreSignalsIndex, "restore_signals", expected: true, span);
+            RequirePopenBooleanDefault(arguments, PopenStartNewSessionIndex, "start_new_session", expected: false, span);
+            RequirePopenEmptySequence(arguments, PopenPassFdsIndex, "pass_fds", span);
+            RequirePopenNone(arguments, PopenUserIndex, "user", span);
+            RequirePopenNone(arguments, PopenGroupIndex, "group", span);
+            RequirePopenNone(arguments, PopenExtraGroupsIndex, "extra_groups", span);
+            RequirePopenIntegerDefault(arguments, PopenUmaskIndex, "umask", new BigInteger(-1), span);
+            RequirePopenIntegerDefault(arguments, PopenPipeSizeIndex, "pipesize", new BigInteger(-1), span);
+            RequirePopenNone(arguments, PopenProcessGroupIndex, "process_group", span);
+        }
+
         if (context.Host.SubprocessRunner is null)
         {
             throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
         }
 
-        ValidatePopenCompatibilityOptions(arguments, span);
+        ValidateCompatibilityOptions(arguments, span);
         var pipelineInput = GetArgument(arguments, PopenStdinIndex) as PopenOutputStream;
         var layout = SubprocessRunArgumentLayout.Standard;
         var shared = new object[layout.UniversalNewlines + 1];
@@ -75,30 +99,6 @@ internal sealed partial class LythonRuntime
             span);
         context.ObserveCollectionCount(args.Count, span);
         return new PyPopen(invocation.Request, args, pipelineInput, context, span);
-    }
-
-    private static void ValidatePopenCompatibilityOptions(object[] arguments, LythonSourceSpan span)
-    {
-        if (HasArgument(arguments, PopenBufsizeIndex) &&
-            !PyNumberOps.TryAsInteger(GetArgument(arguments, PopenBufsizeIndex), out _))
-        {
-            throw new LythonRuntimeException("TypeError", "subprocess.Popen(..., bufsize=...) expects an integer.", span);
-        }
-
-        RequirePopenNone(arguments, PopenExecutableIndex, "executable", span);
-        RequirePopenNone(arguments, PopenPreExecIndex, "preexec_fn", span);
-        RequirePopenNone(arguments, PopenStartupInfoIndex, "startupinfo", span);
-        RequirePopenIntegerDefault(arguments, PopenCreationFlagsIndex, "creationflags", BigInteger.Zero, span);
-        RequirePopenBooleanDefault(arguments, PopenCloseFdsIndex, "close_fds", expected: true, span);
-        RequirePopenBooleanDefault(arguments, PopenRestoreSignalsIndex, "restore_signals", expected: true, span);
-        RequirePopenBooleanDefault(arguments, PopenStartNewSessionIndex, "start_new_session", expected: false, span);
-        RequirePopenEmptySequence(arguments, PopenPassFdsIndex, "pass_fds", span);
-        RequirePopenNone(arguments, PopenUserIndex, "user", span);
-        RequirePopenNone(arguments, PopenGroupIndex, "group", span);
-        RequirePopenNone(arguments, PopenExtraGroupsIndex, "extra_groups", span);
-        RequirePopenIntegerDefault(arguments, PopenUmaskIndex, "umask", new BigInteger(-1), span);
-        RequirePopenIntegerDefault(arguments, PopenPipeSizeIndex, "pipesize", new BigInteger(-1), span);
-        RequirePopenNone(arguments, PopenProcessGroupIndex, "process_group", span);
     }
 
     private static void RequirePopenNone(object[] arguments, int index, string name, LythonSourceSpan span)
