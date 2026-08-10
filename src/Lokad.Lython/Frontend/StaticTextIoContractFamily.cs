@@ -25,7 +25,7 @@ internal static class StaticTextIoContractFamily
 
         if (member.MemberName == "write_text")
         {
-            AnalyzeTextBoundaryStringArgument(arguments, 0, "text", TextBoundaryCode, TextBoundaryMessage, diagnostics, bindings);
+            StaticContractChecks.AnalyzeTextBoundaryStringArgument(arguments, 0, "text", TextBoundaryCode, TextBoundaryMessage, diagnostics, bindings);
             if (StaticAbstractValueResolver.TryResolveKnownPath(member.Target, bindings))
             {
                 AnalyzePathWriteTextCall(arguments, diagnostics, bindings);
@@ -553,31 +553,6 @@ internal static class StaticTextIoContractFamily
         }
 
         AddDiagnostic(diagnostics, "LA3006", "open(..., closefd=False) is not supported for host-mediated paths.", closeFdExpression.Span);
-    }
-
-    private static void AnalyzeTextBoundaryStringArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression))
-        {
-            return;
-        }
-
-        if (StaticAbstractValueResolver.IsDefinitelyKnownBytesLiteral(expression, bindings))
-        {
-            AddDiagnostic(
-                diagnostics,
-                code,
-                message,
-                expression.Span,
-                new StaticDiagnosticProof("contract", keyword, "bytes cannot cross a text-only host boundary"));
-        }
     }
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)

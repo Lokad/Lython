@@ -253,7 +253,12 @@ internal static class StaticContractChecks
 
         if (StaticAbstractValueResolver.IsDefinitelyKnownBytesLiteral(expression, bindings))
         {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
+            StaticDiagnosticSink.AddError(
+                diagnostics,
+                code,
+                message,
+                expression.Span,
+                new StaticDiagnosticProof("contract", keyword, "bytes cannot cross a text-only host boundary"));
         }
     }
 
