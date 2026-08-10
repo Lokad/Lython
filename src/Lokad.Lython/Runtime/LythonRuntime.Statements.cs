@@ -6,6 +6,8 @@ internal sealed partial class LythonRuntime
 {
     private static void ExecuteStatement(StatementSyntax statement, ExecutionContext context)
     {
+        // Every syntax-level statement owns an interpreter frame, including nested
+        // statements. Control-flow signals deliberately unwind through this boundary.
         context.EnterInterpreterFrame(statement.Span);
         try
         {
@@ -59,71 +61,15 @@ internal sealed partial class LythonRuntime
                     return;
 
                 case IfStatementSyntax ifStatement:
-                    var branch = IsTruthy(EvaluateExpression(ifStatement.Condition, context), context, ifStatement.Condition.Span)
-                        ? ifStatement.ThenStatements
-                        : ifStatement.ElseStatements;
-
-                    if (branch is not null)
-                    {
-                        foreach (var nested in branch)
-                        {
-                            ExecuteStatement(nested, context);
-                        }
-                    }
+                    ExecuteIfStatement(ifStatement, context);
                     return;
 
                 case ForStatementSyntax forStatement:
-                    var iterable = EvaluateExpression(forStatement.Iterable, context);
-                    var broke = false;
-                    foreach (var item in ToSequence(iterable, forStatement.Iterable.Span, context))
-                    {
-                        AssignLoopTarget(forStatement.Target, item, forStatement.Iterable.Span, context);
-                        var signal = ExecuteStatements(forStatement.Body, context);
-                        if (signal is ContinueSignal)
-                        {
-                            continue;
-                        }
-
-                        if (signal is BreakSignal)
-                        {
-                            broke = true;
-                            break;
-                        }
-                    }
-
-                    if (!broke && forStatement.ElseStatements is not null)
-                    {
-                        foreach (var nested in forStatement.ElseStatements)
-                        {
-                            ExecuteStatement(nested, context);
-                        }
-                    }
+                    ExecuteForStatement(forStatement, context);
                     return;
 
                 case WhileStatementSyntax whileStatement:
-                    var whileBroke = false;
-                    while (IsTruthy(EvaluateExpression(whileStatement.Condition, context), context, whileStatement.Condition.Span))
-                    {
-                        var signal = ExecuteStatements(whileStatement.Body, context);
-                        if (signal is ContinueSignal)
-                        {
-                            continue;
-                        }
-
-                        if (signal is BreakSignal)
-                        {
-                            whileBroke = true;
-                            break;
-                        }
-                    }
-
-                    if (!whileBroke && whileStatement.ElseStatements is not null)
-                    {
-                        foreach (var nested in whileStatement.ElseStatements)
-                        {
-                            ExecuteStatement(nested, context);
-                        }
-                    }
+                    ExecuteWhileStatement(whileStatement, context);
                     return;
 
                 case MatchStatementSyntax matchStatement:
@@ -148,37 +94,11 @@ internal sealed partial class LythonRuntime
                     return;
 
                 case FunctionDefinitionStatementSyntax functionDefinition:
-                    var loweredParameters = functionDefinition.Parameters
-                        .Select(parameter => new LoweredFunctionParameter(
-                            parameter.Name,
-                            parameter.Kind,
-                            parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                            parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-                        .ToArray();
-                    var function = new PyFunction(
-                        functionDefinition.Name,
-                        loweredParameters,
-                        LoweredScript.Lower(new ScriptSyntax(functionDefinition.Body)).Statements,
-                        context.FunctionClosureContext,
-                        BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
-                        ScopeDirectiveFactsCollector.ForFunction(functionDefinition));
-                    StoreName(
-                        functionDefinition.Name,
-                        ApplyDecorators(function, functionDefinition.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), functionDefinition.Span, context),
-                        context,
-                        functionDefinition.Span);
+                    ExecuteFunctionDefinition(functionDefinition, context);
                     return;
 
                 case ClassDefinitionStatementSyntax classDefinition:
-                    var loweredBases = classDefinition.Bases.Select(LoweredScript.LowerStandaloneExpression).ToArray();
-                    ExecuteLoweredClassDefinition(
-                        new LoweredClassDefinitionStatement(
-                            classDefinition,
-                            classDefinition.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(),
-                            loweredBases,
-                            classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LoweredScript.LowerStandaloneExpression(argument.Value))).ToArray(),
-                            LoweredScript.Lower(new ScriptSyntax(classDefinition.Body)).Statements),
-                        context);
+                    ExecuteClassDefinition(classDefinition, context);
                     return;
 
                 case ReturnStatementSyntax returnStatement:
@@ -187,23 +107,11 @@ internal sealed partial class LythonRuntime
                         : RuntimeValue(EvaluateExpression(returnStatement.Expression, context)));
 
                 case RaiseStatementSyntax raiseStatement:
-                    var raised = EvaluateExpression(raiseStatement.Expression, context);
-                    if (raised is not PyException instance)
-                    {
-                        throw RuntimeErrors.RaiseExpectsException(raiseStatement.Span);
-                    }
-
-                    throw new LythonRuntimeException(instance.TypeName, instance.Message, raiseStatement.Span, innerException: null, payload: instance.Value);
+                    ExecuteRaiseStatement(raiseStatement, context);
+                    return;
 
                 case TryStatementSyntax tryStatement:
-                    ExecuteTryStatement(
-                        new LoweredTryStatement(
-                            tryStatement,
-                            LoweredScript.Lower(new ScriptSyntax(tryStatement.TryBody)).Statements,
-                            tryStatement.ExceptBody is null ? null : LoweredScript.Lower(new ScriptSyntax(tryStatement.ExceptBody)).Statements,
-                            tryStatement.ElseBody is null ? null : LoweredScript.Lower(new ScriptSyntax(tryStatement.ElseBody)).Statements,
-                            tryStatement.FinallyBody is null ? null : LoweredScript.Lower(new ScriptSyntax(tryStatement.FinallyBody)).Statements),
-                        context);
+                    ExecuteTryStatementSyntax(tryStatement, context);
                     return;
 
                 default:
@@ -215,6 +123,137 @@ internal sealed partial class LythonRuntime
             context.LeaveInterpreterFrame();
         }
     }
+
+    private static void ExecuteIfStatement(IfStatementSyntax statement, ExecutionContext context)
+    {
+        var branch = IsTruthy(EvaluateExpression(statement.Condition, context), context, statement.Condition.Span)
+            ? statement.ThenStatements
+            : statement.ElseStatements;
+
+        if (branch is null)
+        {
+            return;
+        }
+
+        foreach (var nested in branch)
+        {
+            ExecuteStatement(nested, context);
+        }
+    }
+
+    private static void ExecuteForStatement(ForStatementSyntax statement, ExecutionContext context)
+    {
+        var iterable = EvaluateExpression(statement.Iterable, context);
+        var broke = false;
+        foreach (var item in ToSequence(iterable, statement.Iterable.Span, context))
+        {
+            AssignLoopTarget(statement.Target, item, statement.Iterable.Span, context);
+            var signal = ExecuteStatements(statement.Body, context);
+            if (signal is ContinueSignal)
+            {
+                continue;
+            }
+
+            if (signal is BreakSignal)
+            {
+                broke = true;
+                break;
+            }
+        }
+
+        // Python's loop else-clause runs only after natural exhaustion.
+        if (!broke && statement.ElseStatements is not null)
+        {
+            foreach (var nested in statement.ElseStatements)
+            {
+                ExecuteStatement(nested, context);
+            }
+        }
+    }
+
+    private static void ExecuteWhileStatement(WhileStatementSyntax statement, ExecutionContext context)
+    {
+        var broke = false;
+        while (IsTruthy(EvaluateExpression(statement.Condition, context), context, statement.Condition.Span))
+        {
+            var signal = ExecuteStatements(statement.Body, context);
+            if (signal is ContinueSignal)
+            {
+                continue;
+            }
+
+            if (signal is BreakSignal)
+            {
+                broke = true;
+                break;
+            }
+        }
+
+        if (!broke && statement.ElseStatements is not null)
+        {
+            foreach (var nested in statement.ElseStatements)
+            {
+                ExecuteStatement(nested, context);
+            }
+        }
+    }
+
+    private static void ExecuteFunctionDefinition(FunctionDefinitionStatementSyntax statement, ExecutionContext context)
+    {
+        var loweredParameters = statement.Parameters
+            .Select(parameter => new LoweredFunctionParameter(
+                parameter.Name,
+                parameter.Kind,
+                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
+                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
+            .ToArray();
+        var function = new PyFunction(
+            statement.Name,
+            loweredParameters,
+            LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements,
+            context.FunctionClosureContext,
+            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
+            ScopeDirectiveFactsCollector.ForFunction(statement));
+        StoreName(
+            statement.Name,
+            ApplyDecorators(function, statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), statement.Span, context),
+            context,
+            statement.Span);
+    }
+
+    private static void ExecuteClassDefinition(ClassDefinitionStatementSyntax statement, ExecutionContext context)
+    {
+        var loweredBases = statement.Bases.Select(LoweredScript.LowerStandaloneExpression).ToArray();
+        ExecuteLoweredClassDefinition(
+            new LoweredClassDefinitionStatement(
+                statement,
+                statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(),
+                loweredBases,
+                statement.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LoweredScript.LowerStandaloneExpression(argument.Value))).ToArray(),
+                LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements),
+            context);
+    }
+
+    private static void ExecuteRaiseStatement(RaiseStatementSyntax statement, ExecutionContext context)
+    {
+        var raised = EvaluateExpression(statement.Expression, context);
+        if (raised is not PyException instance)
+        {
+            throw RuntimeErrors.RaiseExpectsException(statement.Span);
+        }
+
+        throw new LythonRuntimeException(instance.TypeName, instance.Message, statement.Span, innerException: null, payload: instance.Value);
+    }
+
+    private static void ExecuteTryStatementSyntax(TryStatementSyntax statement, ExecutionContext context)
+        => ExecuteTryStatement(
+            new LoweredTryStatement(
+                statement,
+                LoweredScript.Lower(new ScriptSyntax(statement.TryBody)).Statements,
+                statement.ExceptBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.ExceptBody)).Statements,
+                statement.ElseBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.ElseBody)).Statements,
+                statement.FinallyBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.FinallyBody)).Statements),
+            context);
 
     private static void ExecuteTryStatement(LoweredTryStatement statement, ExecutionContext context)
     {
