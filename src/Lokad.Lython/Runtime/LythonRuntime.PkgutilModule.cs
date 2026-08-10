@@ -314,16 +314,6 @@ internal sealed partial class LythonRuntime
             {
                 throw;
             }
-            catch (Exception ex)
-            {
-                if (onerror is not null)
-                {
-                    CallOnError(onerror, PyString.FromString(errorName ?? directory), span, context);
-                    yield break;
-                }
-
-                throw new LythonRuntimeException("RuntimeError", "pkgutil explicit path discovery failed: " + ex.Message, span);
-            }
 
             foreach (var entry in entries.Order(StringComparer.Ordinal))
             {
