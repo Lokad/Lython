@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
@@ -457,6 +458,59 @@ internal static partial class StaticContracts
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),
     };
 
+    private static readonly FrozenDictionary<ModuleMemberName, string> ModuleMemberModules =
+        new Dictionary<ModuleMemberName, string>
+        {
+            [new("os", "path")] = "os.path",
+            [new("importlib", "util")] = "importlib.util",
+            [new("openpyxl", "utils")] = "openpyxl.utils",
+            [new("openpyxl", "workbook")] = "openpyxl.workbook",
+            [new("openpyxl", "reader")] = "openpyxl.reader",
+            [new("openpyxl", "styles")] = "openpyxl.styles",
+            [new("openpyxl", "comments")] = "openpyxl.comments",
+            [new("openpyxl", "chart")] = "openpyxl.chart",
+            [new("openpyxl", "cell")] = "openpyxl.cell",
+            [new("openpyxl", "worksheet")] = "openpyxl.worksheet",
+            [new("openpyxl", "drawing")] = "openpyxl.drawing",
+            [new("openpyxl.reader", "excel")] = "openpyxl.reader.excel",
+            [new("openpyxl.cell", "cell")] = "openpyxl.cell.cell",
+            [new("openpyxl.utils", "cell")] = "openpyxl.utils.cell",
+            [new("openpyxl.utils", "exceptions")] = "openpyxl.utils.exceptions",
+            [new("openpyxl.styles", "colors")] = "openpyxl.styles.colors",
+            [new("openpyxl.worksheet", "table")] = "openpyxl.worksheet.table",
+            [new("openpyxl.worksheet", "datavalidation")] = "openpyxl.worksheet.datavalidation",
+            [new("openpyxl.worksheet", "worksheet")] = "openpyxl.worksheet.worksheet",
+            [new("openpyxl.drawing", "image")] = "openpyxl.drawing.image",
+        }.ToFrozenDictionary();
+
+    private static readonly FrozenDictionary<ModuleMemberName, string> ModuleMemberCallableAliases =
+        new Dictionary<ModuleMemberName, string>
+        {
+            [new("openpyxl.workbook", "Workbook")] = "openpyxl.Workbook",
+            [new("openpyxl.reader.excel", "load_workbook")] = "openpyxl.load_workbook",
+            [new("openpyxl.utils.cell", "get_column_letter")] = "openpyxl.utils.get_column_letter",
+            [new("openpyxl.utils.cell", "column_index_from_string")] = "openpyxl.utils.column_index_from_string",
+            [new("openpyxl.utils.cell", "coordinate_from_string")] = "openpyxl.utils.coordinate_from_string",
+            [new("openpyxl.utils.cell", "coordinate_to_tuple")] = "openpyxl.utils.coordinate_to_tuple",
+            [new("openpyxl.utils.cell", "range_boundaries")] = "openpyxl.utils.range_boundaries",
+            [new("openpyxl.utils.cell", "get_column_interval")] = "openpyxl.utils.get_column_interval",
+            [new("openpyxl.utils.cell", "absolute_coordinate")] = "openpyxl.utils.absolute_coordinate",
+            [new("openpyxl.utils.cell", "quote_sheetname")] = "openpyxl.utils.quote_sheetname",
+            [new("openpyxl.utils.cell", "rows_from_range")] = "openpyxl.utils.rows_from_range",
+            [new("openpyxl.utils.cell", "cols_from_range")] = "openpyxl.utils.cols_from_range",
+            [new("openpyxl.styles", "Font")] = "openpyxl.styles.Font",
+            [new("openpyxl.styles", "PatternFill")] = "openpyxl.styles.PatternFill",
+            [new("openpyxl.styles", "Border")] = "openpyxl.styles.Border",
+            [new("openpyxl.styles", "Side")] = "openpyxl.styles.Side",
+            [new("openpyxl.styles", "Alignment")] = "openpyxl.styles.Alignment",
+            [new("openpyxl.styles", "Protection")] = "openpyxl.styles.Protection",
+            [new("openpyxl.styles", "NamedStyle")] = "openpyxl.styles.NamedStyle",
+            [new("openpyxl.comments", "Comment")] = "openpyxl.comments.Comment",
+            [new("openpyxl.worksheet.table", "Table")] = "openpyxl.worksheet.table.Table",
+            [new("openpyxl.worksheet.table", "TableStyleInfo")] = "openpyxl.worksheet.table.TableStyleInfo",
+            [new("openpyxl.worksheet.datavalidation", "DataValidation")] = "openpyxl.worksheet.datavalidation.DataValidation",
+        }.ToFrozenDictionary();
+
     private static readonly string[] KnownBuiltinModuleNames = [.. LythonRuntime.GetKnownBuiltinModuleNames()];
 
     static StaticContracts()
@@ -469,6 +523,26 @@ internal static partial class StaticContracts
             throw new InvalidOperationException(
                 $"Builtin module catalog mismatch. Missing surfaces: {string.Join(", ", missingSurfaces)}. " +
                 $"Missing runtime registrations: {string.Join(", ", missingRuntimeModules)}.");
+        }
+
+        foreach (var (member, targetModuleName) in ModuleMemberModules)
+        {
+            if (!IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName) ||
+                !IsKnownBuiltinModule(targetModuleName))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid builtin submodule mapping '{member.ModuleName}.{member.MemberName}' -> '{targetModuleName}'.");
+            }
+        }
+
+        foreach (var (member, targetName) in ModuleMemberCallableAliases)
+        {
+            if (!IsKnownBuiltinModuleMember(member.ModuleName, member.MemberName) ||
+                !TryGetKnownCallContract(targetName, out _))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid builtin callable alias '{member.ModuleName}.{member.MemberName}' -> '{targetName}'.");
+            }
         }
     }
 
@@ -500,149 +574,14 @@ internal static partial class StaticContracts
             return false;
         }
 
-        if (string.Equals(moduleName, "os", StringComparison.Ordinal) &&
-            string.Equals(memberName, "path", StringComparison.Ordinal))
+        var member = new ModuleMemberName(moduleName, memberName);
+        if (ModuleMemberModules.TryGetValue(member, out var targetModuleName))
         {
-            value = AbstractValue.Module("os.path", span);
+            value = AbstractValue.Module(targetModuleName, span);
             return true;
         }
 
-        if (string.Equals(moduleName, "importlib", StringComparison.Ordinal) &&
-            string.Equals(memberName, "util", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("importlib.util", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "utils", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.utils", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "workbook", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.workbook", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "reader", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.reader", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "styles", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.styles", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "comments", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.comments", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "chart", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.chart", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "cell", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.cell", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "worksheet", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.worksheet", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl", StringComparison.Ordinal) &&
-            string.Equals(memberName, "drawing", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.drawing", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.reader", StringComparison.Ordinal) &&
-            string.Equals(memberName, "excel", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.reader.excel", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.cell", StringComparison.Ordinal) &&
-            string.Equals(memberName, "cell", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.cell.cell", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.utils", StringComparison.Ordinal) &&
-            string.Equals(memberName, "cell", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.utils.cell", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.utils", StringComparison.Ordinal) &&
-            string.Equals(memberName, "exceptions", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.utils.exceptions", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.styles", StringComparison.Ordinal) &&
-            string.Equals(memberName, "colors", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.styles.colors", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.worksheet", StringComparison.Ordinal) &&
-            string.Equals(memberName, "table", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.worksheet.table", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.worksheet", StringComparison.Ordinal) &&
-            string.Equals(memberName, "datavalidation", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.worksheet.datavalidation", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.worksheet", StringComparison.Ordinal) &&
-            string.Equals(memberName, "worksheet", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.worksheet.worksheet", span);
-            return true;
-        }
-
-        if (string.Equals(moduleName, "openpyxl.drawing", StringComparison.Ordinal) &&
-            string.Equals(memberName, "image", StringComparison.Ordinal))
-        {
-            value = AbstractValue.Module("openpyxl.drawing.image", span);
-            return true;
-        }
-
-        var targetName = TryMapOpenPyxlCallableAlias(moduleName, memberName, out var openPyxlTargetName)
-            ? openPyxlTargetName
-            : $"{moduleName}.{memberName}";
+        var targetName = ModuleMemberCallableAliases.GetValueOrDefault(member) ?? $"{moduleName}.{memberName}";
         if (TryGetKnownCallContract(targetName, out _))
         {
             value = AbstractValue.KnownCallable(targetName, span);
@@ -653,39 +592,6 @@ internal static partial class StaticContracts
             ? constant
             : AbstractValue.Unknown(span);
         return true;
-    }
-
-    private static bool TryMapOpenPyxlCallableAlias(string moduleName, string memberName, out string targetName)
-    {
-        targetName = (moduleName, memberName) switch
-        {
-            ("openpyxl.workbook", "Workbook") => "openpyxl.Workbook",
-            ("openpyxl.reader.excel", "load_workbook") => "openpyxl.load_workbook",
-            ("openpyxl.utils.cell", "get_column_letter") => "openpyxl.utils.get_column_letter",
-            ("openpyxl.utils.cell", "column_index_from_string") => "openpyxl.utils.column_index_from_string",
-            ("openpyxl.utils.cell", "coordinate_from_string") => "openpyxl.utils.coordinate_from_string",
-            ("openpyxl.utils.cell", "coordinate_to_tuple") => "openpyxl.utils.coordinate_to_tuple",
-            ("openpyxl.utils.cell", "range_boundaries") => "openpyxl.utils.range_boundaries",
-            ("openpyxl.utils.cell", "get_column_interval") => "openpyxl.utils.get_column_interval",
-            ("openpyxl.utils.cell", "absolute_coordinate") => "openpyxl.utils.absolute_coordinate",
-            ("openpyxl.utils.cell", "quote_sheetname") => "openpyxl.utils.quote_sheetname",
-            ("openpyxl.utils.cell", "rows_from_range") => "openpyxl.utils.rows_from_range",
-            ("openpyxl.utils.cell", "cols_from_range") => "openpyxl.utils.cols_from_range",
-            ("openpyxl.styles", "Font") => "openpyxl.styles.Font",
-            ("openpyxl.styles", "PatternFill") => "openpyxl.styles.PatternFill",
-            ("openpyxl.styles", "Border") => "openpyxl.styles.Border",
-            ("openpyxl.styles", "Side") => "openpyxl.styles.Side",
-            ("openpyxl.styles", "Alignment") => "openpyxl.styles.Alignment",
-            ("openpyxl.styles", "Protection") => "openpyxl.styles.Protection",
-            ("openpyxl.styles", "NamedStyle") => "openpyxl.styles.NamedStyle",
-            ("openpyxl.comments", "Comment") => "openpyxl.comments.Comment",
-            ("openpyxl.worksheet.table", "Table") => "openpyxl.worksheet.table.Table",
-            ("openpyxl.worksheet.table", "TableStyleInfo") => "openpyxl.worksheet.table.TableStyleInfo",
-            ("openpyxl.worksheet.datavalidation", "DataValidation") => "openpyxl.worksheet.datavalidation.DataValidation",
-            _ => string.Empty
-        };
-
-        return targetName.Length != 0;
     }
 
     private static bool TryCreateKnownModuleConstant(string moduleName, string memberName, LythonSourceSpan span, out AbstractValue value)
@@ -766,11 +672,11 @@ internal static partial class StaticContracts
 
     private sealed class BuiltinModuleSurface
     {
-        private readonly HashSet<string> _memberLookup;
+        private readonly FrozenSet<string> _memberLookup;
 
         public BuiltinModuleSurface(IEnumerable<string> members)
         {
-            _memberLookup = new HashSet<string>(members, StringComparer.Ordinal);
+            _memberLookup = members.ToFrozenSet(StringComparer.Ordinal);
             MemberNames = _memberLookup.Order(StringComparer.Ordinal).ToArray();
             ExportedMemberNames = MemberNames
                 .Where(static name => !name.StartsWith("_", StringComparison.Ordinal))
@@ -783,4 +689,6 @@ internal static partial class StaticContracts
 
         public bool Contains(string memberName) => _memberLookup.Contains(memberName);
     }
+
+    private readonly record struct ModuleMemberName(string ModuleName, string MemberName);
 }
