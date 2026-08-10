@@ -153,6 +153,32 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private sealed class LoweredFormattedStringBuilder
+    {
+        private readonly ExecutionContext _context;
+        private readonly LythonSourceSpan _span;
+        private readonly GovernedByteBuilder _builder;
+
+        public LoweredFormattedStringBuilder(ExecutionContext context, LythonSourceSpan span)
+        {
+            _context = context;
+            _span = span;
+            _builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        }
+
+        public void AppendText(string text) => _builder.AppendString(text);
+
+        public void AppendValue(object value, char? conversion, string? formatSpecifier)
+            => _builder.Append(FormatInterpolatedStringPart(value, conversion, formatSpecifier, _context, _span));
+
+        public PyString Complete()
+        {
+            var value = _builder.ToPyStringAndRelease();
+            _context.ObserveString(value, _span);
+            return value;
+        }
+    }
+
     private static async ValueTask ExecuteTryStatementCoreAsync(
         LoweredTryStatement statement,
         ExecutionContext context,

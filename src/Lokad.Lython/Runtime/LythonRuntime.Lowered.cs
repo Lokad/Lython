@@ -537,33 +537,29 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        var builder = new LoweredFormattedStringBuilder(context, span);
         foreach (var part in parts)
         {
             switch (part)
             {
                 case LoweredFormattedStringTextPart text:
-                    builder.AppendString(text.Text);
+                    builder.AppendText(text.Text);
                     break;
                 case LoweredFormattedStringExpressionPart expression:
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : EvaluateLoweredFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
-                    builder.Append(FormatInterpolatedStringPart(
+                    builder.AppendValue(
                         EvaluateLoweredExpression(expression.Expression, context),
                         expression.Conversion,
-                        formatSpecifier,
-                        context,
-                        span));
+                        formatSpecifier);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
             }
         }
 
-        var value = builder.ToPyStringAndRelease();
-        context.ObserveString(value, span);
-        return value;
+        return builder.Complete();
     }
 
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
