@@ -306,7 +306,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PyNamedTupleObject namedTuple => namedTuple.Type,
             PyDict => GetBuiltinTypeObject(context, "dict", span),
             PySet => GetBuiltinTypeObject(context, "set", span),
-            PyString or string => GetBuiltinTypeObject(context, "str", span),
+            PyString => GetBuiltinTypeObject(context, "str", span),
             PyBytes => GetBuiltinTypeObject(context, "bytes", span),
             PyPath => GetBuiltinTypeObject(context, "pathlib.Path", span),
             PyTimedelta => PyDateTimeOps.TimedeltaType,

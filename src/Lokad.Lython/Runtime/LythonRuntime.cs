@@ -14,7 +14,14 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal static object RuntimeValue(object? value) => value ?? PyNone.Instance;
+    /// <summary>Normalizes Python's null result and rejects text that bypassed the governed host boundary.</summary>
+    internal static object RuntimeValue(object? value)
+        => value switch
+        {
+            null => PyNone.Instance,
+            string => throw new InvalidOperationException("Raw CLR strings must be normalized to PyString at the runtime boundary."),
+            _ => value
+        };
 
     private static bool AreIdentical(object left, object right)
         => ReferenceEquals(left, right) || left is bool leftBoolean && right is bool rightBoolean && leftBoolean == rightBoolean;

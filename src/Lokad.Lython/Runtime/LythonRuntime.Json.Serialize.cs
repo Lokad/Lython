@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static bool IsSupportedJsonObjectKey(object key)
-            => key is PyString or string or BigInteger or int or bool or PyNone ||
+            => key is PyString or BigInteger or int or bool or PyNone ||
                key is double floating && double.IsFinite(floating);
 
         private static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index)

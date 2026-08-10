@@ -164,7 +164,6 @@ internal sealed partial class LythonRuntime
             var text = instream switch
             {
                 PyString value => value,
-                string value => PyString.FromString(value),
                 ExecutionContext.TextFileHandle handle => handle.Read(),
                 HostTextInputHandle handle => handle.ReadAll(span),
                 GzipFileHandle handle => handle.ReadRemainingTextForLexer(span),

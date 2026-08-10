@@ -140,7 +140,6 @@ internal sealed partial class LythonRuntime
         var text = value switch
         {
             PyString pyString => pyString.AsString(),
-            string raw => raw,
             _ => ToInterpolatedString(value, context)
         };
 

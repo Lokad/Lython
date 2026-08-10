@@ -312,7 +312,6 @@ internal sealed partial class LythonRuntime
                         var renderedKey = key switch
                         {
                             PyString text => text.AsString(),
-                            string text => text,
                             _ => null
                         };
                         throw new LythonRuntimeException(

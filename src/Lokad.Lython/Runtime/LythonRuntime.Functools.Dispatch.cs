@@ -274,7 +274,7 @@ internal sealed partial class LythonRuntime
                 bool => "bool",
                 BigInteger or int => "int",
                 double => "float",
-                PyString or string => "str",
+                PyString => "str",
                 PyBytes => "bytes",
                 PyList => "list",
                 PyTuple => "tuple",

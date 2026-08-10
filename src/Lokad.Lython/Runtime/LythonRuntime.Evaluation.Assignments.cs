@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
                 return;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
-            case PyString or string:
+            case PyString:
                 throw new LythonRuntimeException("TypeError", "String does not support item assignment.", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);

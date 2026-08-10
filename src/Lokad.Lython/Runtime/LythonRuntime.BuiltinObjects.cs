@@ -462,7 +462,7 @@ internal sealed partial class LythonRuntime
             "tuple" => value is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or TimeStructTimeValue,
             "dict" => value is PyDict,
             "set" => value is PySet,
-            "str" => value is PyString or string,
+            "str" => value is PyString,
             "bytes" => value is PyBytes,
             "pathlib.Path" or "pathlib.PurePath" or "pathlib.PurePosixPath" or "pathlib.PosixPath" => value is PyPath,
             "datetime.timedelta" => value is PyTimedelta,
@@ -713,7 +713,7 @@ internal sealed partial class LythonRuntime
                 names.Add("type");
                 return names;
 
-            case PyString or string:
+            case PyString:
                 names.AddRange(StringDirNames);
                 return names;
 

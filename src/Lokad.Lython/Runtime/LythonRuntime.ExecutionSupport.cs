@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
         var normalized = value switch
         {
             PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateSetItem(item, span, governor), governor, span),
-            IPyHashableValue or string or bool or BigInteger or double => value,
+            IPyHashableValue or bool or BigInteger or double => value,
             _ => throw RuntimeErrors.SetElementsMustBeHashable(span)
         };
 
@@ -36,7 +36,6 @@ internal sealed partial class LythonRuntime
     {
         var normalized = value switch
         {
-            string text => PyString.FromString(text),
             PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateDictionaryKey(item, span, governor), governor, span),
             IPyHashableValue or bool or BigInteger or double => value,
             _ => throw new LythonRuntimeException("TypeError", "dictionary keys must be hashable.", span)

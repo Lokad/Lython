@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
             "tuple" => subject is PyTuple,
             "dict" => subject is PyDict,
             "set" => subject is PySet,
-            "str" => subject is PyString or string,
+            "str" => subject is PyString,
             "bytes" => subject is PyBytes,
             "bool" => subject is bool,
             "int" => subject is BigInteger or int or bool,

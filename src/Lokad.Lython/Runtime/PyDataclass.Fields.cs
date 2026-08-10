@@ -341,7 +341,6 @@ internal static partial class PyDataclass
             PyDataclassKwOnlyMarker => true,
             PyDataclassAnnotationValue syntax => IsKwOnlyMarker(syntax.Expression),
             PyString text when text.AsString() == "KW_ONLY" || text.AsString() == "dataclasses.KW_ONLY" => true,
-            string text when text == "KW_ONLY" || text == "dataclasses.KW_ONLY" => true,
             _ => false
         };
 
@@ -368,8 +367,6 @@ internal static partial class PyDataclass
             PyTypingAlias { ShortName: "ClassVar" } => DataclassFieldKind.ClassVar,
             PyString text when IsClassVarText(text.AsString()) => DataclassFieldKind.ClassVar,
             PyString text when IsInitVarText(text.AsString()) => DataclassFieldKind.InitVar,
-            string text when IsClassVarText(text) => DataclassFieldKind.ClassVar,
-            string text when IsInitVarText(text) => DataclassFieldKind.InitVar,
             _ => DataclassFieldKind.Normal
         };
 

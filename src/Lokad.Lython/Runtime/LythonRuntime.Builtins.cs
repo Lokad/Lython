@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
             }
 
             numberBase = (int)parsedBase;
-            if (arguments[0] is not PyString and not string and not PyBytes)
+            if (arguments[0] is not PyString and not PyBytes)
             {
                 throw new LythonRuntimeException("TypeError", "int() can't convert non-string with explicit base", span);
             }
@@ -281,7 +281,6 @@ internal sealed partial class LythonRuntime
                 double floating => FloatToInteger(floating, "int", span, Math.Truncate),
                 PyDecimal decimalValue => new BigInteger(decimal.Truncate(decimalValue.Value)),
                 PyString text => ParsePythonIntegerText(text.AsString(), numberBase, span),
-                string text => ParsePythonIntegerText(text, numberBase, span),
                 PyBytes bytes => ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)

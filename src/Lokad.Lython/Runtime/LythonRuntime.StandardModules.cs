@@ -178,7 +178,6 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer),
                 double => 24,
                 PyString text => 40 + text.Utf8Bytes.Length,
-                string text => 40 + global::System.Text.Encoding.UTF8.GetByteCount(text),
                 PyBytes bytes => 40 + bytes.Length,
                 PyPath path => 40 + path.Value.Utf8Bytes.Length,
                 PyList list => 32 + (16L * list.Count),

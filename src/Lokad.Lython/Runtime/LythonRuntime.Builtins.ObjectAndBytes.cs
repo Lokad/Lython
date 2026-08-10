@@ -46,7 +46,6 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => (double)integer,
                 PyDecimal decimalValue => (double)decimalValue.Value,
                 PyString text => ParsePythonFloatText(text.AsString()),
-                string text => ParsePythonFloatText(text),
                 bool boolean => boolean ? 1.0 : 0.0,
                 _ => throw new LythonRuntimeException("TypeError", "float() does not support this value.", span)
             };

@@ -20,7 +20,6 @@ internal sealed partial class LythonRuntime
         return arguments[0] switch
         {
             IPySizedValue sized => new BigInteger(sized.Length),
-            string text => new BigInteger(PyString.FromString(text).Length),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
             PyInstance instance => GetInstanceLength(instance, context, span),

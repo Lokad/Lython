@@ -7,6 +7,16 @@ namespace Lokad.Lython.Tests;
 public sealed class RuntimeProtocolSubsystemTests
 {
     [Fact]
+    public void RuntimeValue_RejectsTextThatBypassesBoundaryNormalization()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => LythonRuntime.RuntimeValue("raw"));
+
+        Assert.Contains("normalized to PyString", exception.Message, StringComparison.Ordinal);
+        Assert.Same(PyNone.Instance, LythonRuntime.RuntimeValue(null));
+        Assert.Same(PyString.Empty, LythonRuntime.RuntimeValue(PyString.Empty));
+    }
+
+    [Fact]
     public void TruthinessProtocol_IsOwnedByCoreRuntimeValues()
     {
         IPyTruthyValue emptyText = PyString.Empty;
