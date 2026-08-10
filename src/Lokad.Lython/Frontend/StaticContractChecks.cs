@@ -240,6 +240,27 @@ internal static class StaticContractChecks
         }
     }
 
+    public static bool AnalyzeSupportedTextErrorArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string code,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (!arguments.TryGetValue(position, keyword, out var expression) ||
+            expression is NoneLiteralExpressionSyntax ||
+            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
+            StaticTextContractFacts.IsSupportedErrorName(text))
+        {
+            return false;
+        }
+
+        StaticDiagnosticSink.AddError(diagnostics, code, message, expression.Span);
+        return true;
+    }
+
     public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics)
         => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, false, null, null, null);
 

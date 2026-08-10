@@ -66,7 +66,7 @@ internal static class StaticProcessContractFamily
         emitted |= AnalyzeStringOrNoneArgument(arguments, RunLayout.Encoding, "encoding", $"{owner}(..., encoding=...) expects a string or None.", diagnostics, bindings);
         emitted |= AnalyzeStringOrNoneArgument(arguments, RunLayout.Errors, "errors", $"{owner}(..., errors=...) expects a string or None.", diagnostics, bindings);
         emitted |= AnalyzeUtf8Encoding(arguments, RunLayout.Encoding, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        emitted |= AnalyzeTextErrors(arguments, RunLayout.Errors, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        emitted |= StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, RunLayout.Errors, "errors", "LA3032", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         emitted |= AnalyzeBooleanOrNoneArgument(arguments, RunLayout.UniversalNewlines, "universal_newlines", $"{owner}(..., universal_newlines=...) expects a bool or None.", diagnostics, bindings);
         emitted |= AnalyzeSubprocessEnvArgument(arguments, owner, diagnostics, bindings);
         return emitted;
@@ -111,10 +111,10 @@ internal static class StaticProcessContractFamily
                 return false;
             }
 
-            return AnalyzeIterableOfPathLikeArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, rejectSinglePathLike: false, requireNonEmpty: true);
+            return AnalyzePathLikeCollectionArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a string command or an iterable of strings or Paths.", diagnostics, bindings, PathLikeArgumentPolicy.AllowSinglePath | PathLikeArgumentPolicy.RequireNonEmpty);
         }
 
-        return AnalyzeIterableOfPathLikeArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
+        return AnalyzePathLikeCollectionArgument(arguments, RunLayout.Args, "args", $"{owner}(args) expects a non-empty iterable of strings or Paths, not a single string.", diagnostics, bindings, PathLikeArgumentPolicy.RequireNonEmpty);
     }
 
     private static bool AnalyzeSubprocessEnvArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -273,7 +273,7 @@ internal static class StaticProcessContractFamily
             diagnostics,
             bindings);
         AnalyzeUtf8Encoding(arguments, RunLayout.Encoding, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        AnalyzeTextErrors(arguments, RunLayout.Errors, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, RunLayout.Errors, "errors", "LA3032", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
             RunLayout.UniversalNewlines,
@@ -302,26 +302,6 @@ internal static class StaticProcessContractFamily
         }
 
         StaticDiagnosticSink.AddError(diagnostics, "LA3031", message, expression.Span);
-        return true;
-    }
-
-    private static bool AnalyzeTextErrors(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax ||
-            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
-            StaticTextContractFacts.IsSupportedErrorName(text))
-        {
-            return false;
-        }
-
-        StaticDiagnosticSink.AddError(diagnostics, "LA3032", message, expression.Span);
         return true;
     }
 
@@ -374,7 +354,7 @@ internal static class StaticProcessContractFamily
         emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenUmaskIndex, "umask", $"{owner}(..., umask=...) expects an integer.", diagnostics, bindings);
         emitted |= AnalyzeIntegerOrNoneArgument(arguments, PopenPipeSizeIndex, "pipesize", $"{owner}(..., pipesize=...) expects an integer.", diagnostics, bindings);
         emitted |= AnalyzeUtf8Encoding(arguments, PopenEncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        emitted |= AnalyzeTextErrors(arguments, PopenErrorsIndex, "errors", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+        emitted |= StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, PopenErrorsIndex, "errors", "LA3032", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         return emitted;
     }
 

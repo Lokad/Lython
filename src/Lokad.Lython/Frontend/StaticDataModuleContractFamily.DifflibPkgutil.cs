@@ -126,14 +126,14 @@ internal static partial class StaticDataModuleContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterModules.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.iter_modules(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.iter_modules(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
             emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.iter_modules(..., prefix=...) expects a string.", diagnostics, bindings);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilWalkPackages.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.walk_packages(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.walk_packages(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
             emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.walk_packages(..., prefix=...) expects a string.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "onerror", "pkgutil.walk_packages(..., onerror=...) expects a callable or None.", diagnostics, bindings);
             return emitted;
@@ -160,7 +160,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilExtendPath.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzePkgutilPathArgument(arguments, 0, "path", "pkgutil.extend_path(path, name) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings);
+            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.extend_path(path, name) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
             emitted |= AnalyzeStringArgument(arguments, 1, "name", "pkgutil.extend_path(path, name) expects a package name string.", diagnostics, bindings);
             return emitted;
         }
@@ -181,59 +181,6 @@ internal static partial class StaticDataModuleContractFamily
             string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterZipimportModules.Name, StringComparison.Ordinal))
         {
             return AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil importer helpers expect prefix to be a string.", diagnostics, bindings);
-        }
-
-        return false;
-    }
-
-    private static bool AnalyzePkgutilPathArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
-        {
-            return false;
-        }
-
-        if (IsUnknown(value) || value.Kind == AbstractValueKind.None || IsPathLike(value))
-        {
-            return false;
-        }
-
-        if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
-        {
-            foreach (var item in value.RequirePayload<IReadOnlyList<AbstractValue>>())
-            {
-                if (!IsPathLike(item) && !IsUnknown(item))
-                {
-                    AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
-        {
-            var item = value.RequirePayload<AbstractValue>();
-            if (!IsPathLike(item) && !IsUnknown(item))
-            {
-                AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
-                return true;
-            }
-
-            return false;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyNonIterable(value))
-        {
-            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
-            return true;
         }
 
         return false;

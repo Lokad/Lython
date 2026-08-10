@@ -32,7 +32,7 @@ internal static class StaticArgparseContractFamily
             emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "encoding", "argparse.FileType(..., encoding=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "errors", "argparse.FileType(..., errors=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeTextEncoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.", diagnostics, bindings);
-            emitted |= AnalyzeTextErrors(arguments, 3, "errors", "argparse.FileType only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
+            emitted |= StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, 3, "errors", "LA3151", "argparse.FileType only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
             return emitted;
         }
 
@@ -245,26 +245,6 @@ internal static class StaticArgparseContractFamily
             text.Equals("latin-1", StringComparison.OrdinalIgnoreCase) ||
             text.Equals("latin1", StringComparison.OrdinalIgnoreCase) ||
             text.Equals("iso-8859-1", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        StaticDiagnosticSink.AddError(diagnostics, "LA3151", message, expression.Span);
-        return true;
-    }
-
-    private static bool AnalyzeTextErrors(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax ||
-            !StaticAbstractValueResolver.TryResolveKnownString(expression, bindings, out var text) ||
-            StaticTextContractFacts.IsSupportedErrorName(text))
         {
             return false;
         }

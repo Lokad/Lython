@@ -137,7 +137,7 @@ internal static class StaticFilesystemContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsPathCommonPath.Name, StringComparison.Ordinal))
         {
-            return AnalyzeIterableOfPathLikeArgument(arguments, 0, "paths", "os.path.commonpath(paths) expects a non-empty iterable of path-like values, not a single path.", diagnostics, bindings, rejectSinglePathLike: true, requireNonEmpty: true);
+            return AnalyzePathLikeCollectionArgument(arguments, 0, "paths", "os.path.commonpath(paths) expects a non-empty iterable of path-like values, not a single path.", diagnostics, bindings, PathLikeArgumentPolicy.RequireNonEmpty);
         }
 
         return false;

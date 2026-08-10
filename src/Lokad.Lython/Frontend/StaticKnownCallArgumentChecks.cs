@@ -2,6 +2,15 @@ using System.Globalization;
 
 namespace Lokad.Lython.Frontend;
 
+[Flags]
+internal enum PathLikeArgumentPolicy
+{
+    RequireIterable = 0,
+    AllowNone = 1,
+    AllowSinglePath = 2,
+    RequireNonEmpty = 4,
+}
+
 internal static class StaticKnownCallArgumentChecks
 {
     internal static bool AnalyzeStringArgument(
@@ -177,34 +186,33 @@ internal static class StaticKnownCallArgumentChecks
         return false;
     }
 
-    internal static bool AnalyzeIterableOfPathLikeArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeIterableOfPathLikeArgument(arguments, position, keyword, message, diagnostics, bindings, false, false);
-
-    internal static bool AnalyzeIterableOfPathLikeArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings, bool rejectSinglePathLike)
-        => AnalyzeIterableOfPathLikeArgument(arguments, position, keyword, message, diagnostics, bindings, rejectSinglePathLike, false);
-
-    internal static bool AnalyzeIterableOfPathLikeArgument(
+    internal static bool AnalyzePathLikeCollectionArgument(
         ConcreteCallArguments arguments,
         int position,
         string keyword,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        bool rejectSinglePathLike,
-        bool requireNonEmpty)
+        PathLikeArgumentPolicy policy)
     {
         if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
         {
             return false;
         }
 
-        if (IsUnknown(value))
+        if (IsUnknown(value) ||
+            value.Kind == AbstractValueKind.None && policy.HasFlag(PathLikeArgumentPolicy.AllowNone))
         {
             return false;
         }
 
-        if (rejectSinglePathLike && IsPathLike(value))
+        if (IsPathLike(value))
         {
+            if (policy.HasFlag(PathLikeArgumentPolicy.AllowSinglePath))
+            {
+                return false;
+            }
+
             AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
             return true;
         }
@@ -212,7 +220,7 @@ internal static class StaticKnownCallArgumentChecks
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
             var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
-            if (requireNonEmpty && items.Count == 0)
+            if (policy.HasFlag(PathLikeArgumentPolicy.RequireNonEmpty) && items.Count == 0)
             {
                 AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
                 return true;
