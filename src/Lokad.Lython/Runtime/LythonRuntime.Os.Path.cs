@@ -10,31 +10,37 @@ internal sealed partial class LythonRuntime
 {
     private static object OsPathJoin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             throw new LythonRuntimeException("TypeError", "os.path.join(...) expects one or more string arguments.", span);
         }
 
-        var current = GetPath(arguments[0], "os.path.join", span);
+        var first = GetPath(arguments[0], "os.path.join", span);
+        using var reservation = context.MemoryGovernor.ReserveTemporary(64L + (4L * first.Length), span);
+        var current = new StringBuilder(first);
         for (var i = 1; i < arguments.Length; i++)
         {
             var next = GetPath(arguments[i], "os.path.join", span);
-            if (next.StartsWith("/", StringComparison.Ordinal) || current.Length == 0)
+            reservation.Grow(4L + (4L * next.Length), span);
+            if ((next.Length > 0 && next[0] == '/') || current.Length == 0)
             {
-                current = next;
-            }
-            else if (current.EndsWith("/", StringComparison.Ordinal))
-            {
-                current += next;
+                // POSIX join discards the accumulated prefix at an absolute
+                // component; Clear retains capacity without copying prefixes.
+                current.Clear();
+                current.Append(next);
             }
             else
             {
-                current += "/" + next;
+                if (current[^1] != '/')
+                {
+                    current.Append('/');
+                }
+
+                current.Append(next);
             }
         }
 
-        return PyString.FromString(current);
+        return CreateString(current.ToString(), context, span);
     }
 
     private static object OsPathSplit(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -445,13 +445,14 @@ internal sealed partial class LythonRuntime
         private static XElement? CreateCalcPropertiesXml(OpenPyxlWorkbook workbook, XElement? originalRoot)
         {
             var element = CloneWorkbookChild(originalRoot, XlsxMain + "calcPr");
-            if (element is null && !workbook.HasFormulaCells)
+            var hasFormulaCells = workbook.HasFormulaCells;
+            if (element is null && !hasFormulaCells)
             {
                 return null;
             }
 
             element ??= new XElement(XlsxMain + "calcPr");
-            if (workbook.HasFormulaCells)
+            if (hasFormulaCells)
             {
                 element.SetAttributeValue("fullCalcOnLoad", "1");
                 element.SetAttributeValue("forceFullCalc", "1");

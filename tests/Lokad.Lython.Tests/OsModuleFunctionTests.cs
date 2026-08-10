@@ -21,6 +21,9 @@ vals.append(os.sep)
 vals.append(os.fspath(Path("/repo/docs/guide.md")))
 vals.append(path.join(Path("/repo"), "docs", Path("guide.md")))
 vals.append(path.join("/repo", "docs", "guide.md"))
+vals.append(path.join("discarded", "/root", "leaf"))
+vals.append(path.join("", "", "leaf"))
+vals.append(path.join("root", ""))
 vals.append(str(path.split("/repo/docs/guide.md")))
 vals.append(str(path.splitext("/repo/docs/guide.md")))
 vals.append(path.basename("/repo/docs/guide.md"))
@@ -38,7 +41,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("/|/repo/docs/guide.md|/repo/docs/guide.md|/repo/docs/guide.md|('/repo/docs', 'guide.md')|('/repo/docs/guide', '.md')|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
+        Assert.Equal("/|/repo/docs/guide.md|/repo/docs/guide.md|/repo/docs/guide.md|/root/leaf|leaf|root/|('/repo/docs', 'guide.md')|('/repo/docs/guide', '.md')|guide.md|/repo/docs|True|/repo/site/page.md|/repo/docs/guide.md|/repo/docs/guide.md|docs/guide.md|/repo/docs", host.ReadText("/out.txt"));
     }
 
     [Fact]
