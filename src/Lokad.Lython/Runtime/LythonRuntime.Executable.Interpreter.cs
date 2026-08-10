@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Subscript:
                     var index = Pop(_stack, instruction.Span);
                     var target = Pop(_stack, instruction.Span);
-                    PushObserved(ExecuteExecutableSubscript(target, index, instruction.Span, context), instruction.Span);
+                    PushObserved(ReadSubscriptValue(target, index, instruction.Span, context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.Slice:

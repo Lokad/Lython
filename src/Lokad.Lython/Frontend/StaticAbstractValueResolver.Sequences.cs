@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticAbstractValueResolver
@@ -151,7 +153,7 @@ internal static partial class StaticAbstractValueResolver
 
         if (target.Kind == AbstractValueKind.OpenPyxlWorksheet &&
             TryResolveKnownString(subscript.Index, bindings, out var reference) &&
-            IsOpenPyxlCellReference(reference))
+            OpenPyxlReferenceFacts.IsCellReference(reference))
         {
             value = AbstractValue.OpenPyxlCell(subscript.Span);
             return true;
@@ -170,20 +172,6 @@ internal static partial class StaticAbstractValueResolver
 
         value = default;
         return false;
-    }
-
-    private static bool IsOpenPyxlCellReference(string text)
-    {
-        var normalized = text.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
-        var index = 0;
-        while (index < normalized.Length && char.IsLetter(normalized[index]))
-        {
-            index++;
-        }
-
-        return index > 0 &&
-            index < normalized.Length &&
-            normalized.Skip(index).All(char.IsDigit);
     }
 
     private static bool TryResolveSliceAbstractValue(SliceExpressionSyntax slice, AbstractState bindings, out AbstractValue value)

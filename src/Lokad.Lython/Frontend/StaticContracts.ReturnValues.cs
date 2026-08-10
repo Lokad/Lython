@@ -121,19 +121,8 @@ internal static partial class StaticContracts
         return receiver.Kind switch
         {
             AbstractValueKind.ListType => (receiver.RequirePayload<AbstractValue>()).WithSpan(span),
-            AbstractValueKind.List => JoinSequenceItems(receiver.RequirePayload<IReadOnlyList<AbstractValue>>(), span),
+            AbstractValueKind.List => StaticBindingEngine.JoinSequenceItems(receiver.RequirePayload<IReadOnlyList<AbstractValue>>(), span),
             _ => AbstractValue.Unknown(span)
         };
-    }
-
-    private static AbstractValue JoinSequenceItems(IReadOnlyList<AbstractValue> items, LythonSourceSpan span)
-    {
-        var result = AbstractValue.Never(span);
-        foreach (var item in items)
-        {
-            result = AbstractValue.Join(result, item, span);
-        }
-
-        return result.Kind == AbstractValueKind.Never ? AbstractValue.Unknown(span) : result;
     }
 }

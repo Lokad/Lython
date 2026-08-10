@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
 
         private static double ExpectReal(object value, string owner, LythonSourceSpan span)
         {
-            if (!TryAsReal(value, out var real))
+            if (!PyRealNumber.TryAsDouble(value, out var real))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);
             }
@@ -85,24 +85,6 @@ internal sealed partial class LythonRuntime
             }
 
             return real;
-        }
-
-        private static bool TryAsReal(object value, out double real)
-        {
-            if (PyNumberOps.TryAsNumber(value, out var number))
-            {
-                real = number.ToDouble();
-                return true;
-            }
-
-            if (value is PyDecimal decimalValue)
-            {
-                real = (double)decimalValue.Value;
-                return true;
-            }
-
-            real = default;
-            return false;
         }
 
         private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span)

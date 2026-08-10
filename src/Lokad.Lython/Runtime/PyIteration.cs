@@ -5,18 +5,7 @@ namespace Lokad.Lython.Runtime;
 internal static class PyIteration
 {
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
-    {
-        return value switch
-        {
-            PyNone => throw RuntimeErrors.Type("Object is not iterable.", span),
-            PyDict dict => dict.Keys,
-            IPyIteratorValue iterator => EnumerateIterator(iterator),
-            IPyIterableValue iterable => iterable.Iterate(),
-            IEnumerable<object> typed => typed,
-            System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
-            _ => throw RuntimeErrors.Type("Object is not iterable.", span)
-        };
-    }
+        => GetSyncEnumerable(value, span);
 
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
         => EnumerateCursorAsync(Cursor.Create(value, span));
@@ -46,6 +35,20 @@ internal static class PyIteration
         {
             yield return LythonRuntime.RuntimeValue(value);
         }
+    }
+
+    private static IEnumerable<object> GetSyncEnumerable(object value, LythonSourceSpan span)
+    {
+        return value switch
+        {
+            PyNone => throw RuntimeErrors.Type("Object is not iterable.", span),
+            PyDict dict => dict.Keys,
+            IPyIteratorValue iterator => EnumerateIterator(iterator),
+            IPyIterableValue iterable => iterable.Iterate(),
+            IEnumerable<object> typed => typed,
+            System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
+            _ => throw RuntimeErrors.Type("Object is not iterable.", span)
+        };
     }
 
     private static async IAsyncEnumerable<object> EnumerateCursorAsync(Cursor cursor)
@@ -150,18 +153,5 @@ internal static class PyIteration
             }
         }
 
-        private static IEnumerable<object> GetSyncEnumerable(object value, LythonSourceSpan span)
-        {
-            return value switch
-            {
-                PyNone => throw RuntimeErrors.Type("Object is not iterable.", span),
-                PyDict dict => dict.Keys,
-                IPyIteratorValue iterator => EnumerateIterator(iterator),
-                IPyIterableValue iterable => iterable.Iterate(),
-                IEnumerable<object> typed => typed,
-                System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
-                _ => throw RuntimeErrors.Type("Object is not iterable.", span)
-            };
-        }
     }
 }

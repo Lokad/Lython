@@ -49,21 +49,6 @@ internal sealed partial class LythonRuntime
         return set;
     }
 
-    private static object ExecuteExecutableSubscript(object target, object index, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (target is PyDefaultDict defaultDict)
-        {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
-        }
-
-        if (target is PyInstance instance)
-        {
-            return GetUserItem(instance, index, context, span);
-        }
-
-        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span);
-    }
-
     private static IPyContextManager PopContextManager(ExecutableValueStack stack, LythonSourceSpan span)
     {
         var value = Pop(stack, span);

@@ -343,8 +343,8 @@ internal sealed partial class LythonRuntime
             normalizedEnd = default;
             if (!TryGetString(start, out var startText) ||
                 !TryGetString(end, out var endText) ||
-                !LooksLikeCellReference(startText) ||
-                !LooksLikeCellReference(endText))
+                !OpenPyxlReferenceFacts.IsCellReference(startText) ||
+                !OpenPyxlReferenceFacts.IsCellReference(endText))
             {
                 return false;
             }
@@ -454,20 +454,6 @@ internal sealed partial class LythonRuntime
 
             ValidateRowColumn(row, 1, span);
             return true;
-        }
-
-        private static bool LooksLikeCellReference(string text)
-        {
-            var normalized = text.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
-            var index = 0;
-            while (index < normalized.Length && char.IsLetter(normalized[index]))
-            {
-                index++;
-            }
-
-            return index > 0 &&
-                   index < normalized.Length &&
-                   normalized.Skip(index).All(char.IsDigit);
         }
 
         public PyString RenderPython(PyRenderingContext context)

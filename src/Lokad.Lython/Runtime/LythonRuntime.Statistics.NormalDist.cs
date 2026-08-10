@@ -49,8 +49,8 @@ internal sealed partial class LythonRuntime
             value = (left, right) switch
             {
                 (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean + rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
-                (PyNormalDist lhs, _) when TryAsReal(right, out var amount) => new PyNormalDist(lhs.Mean + amount, lhs.Stdev),
-                (_, PyNormalDist rhs) when TryAsReal(left, out var amount) => new PyNormalDist(amount + rhs.Mean, rhs.Stdev),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => new PyNormalDist(lhs.Mean + amount, lhs.Stdev),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => new PyNormalDist(amount + rhs.Mean, rhs.Stdev),
                 _ => MissingMemberValue.Instance
             };
 
@@ -63,8 +63,8 @@ internal sealed partial class LythonRuntime
             value = (left, right) switch
             {
                 (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean - rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
-                (PyNormalDist lhs, _) when TryAsReal(right, out var amount) => new PyNormalDist(lhs.Mean - amount, lhs.Stdev),
-                (_, PyNormalDist rhs) when TryAsReal(left, out var amount) => new PyNormalDist(amount - rhs.Mean, rhs.Stdev),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => new PyNormalDist(lhs.Mean - amount, lhs.Stdev),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => new PyNormalDist(amount - rhs.Mean, rhs.Stdev),
                 _ => MissingMemberValue.Instance
             };
 
@@ -76,8 +76,8 @@ internal sealed partial class LythonRuntime
             _ = span;
             value = (left, right) switch
             {
-                (PyNormalDist lhs, _) when TryAsReal(right, out var factor) => new PyNormalDist(lhs.Mean * factor, lhs.Stdev * Math.Abs(factor)),
-                (_, PyNormalDist rhs) when TryAsReal(left, out var factor) => new PyNormalDist(factor * rhs.Mean, Math.Abs(factor) * rhs.Stdev),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var factor) => new PyNormalDist(lhs.Mean * factor, lhs.Stdev * Math.Abs(factor)),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var factor) => new PyNormalDist(factor * rhs.Mean, Math.Abs(factor) * rhs.Stdev),
                 _ => MissingMemberValue.Instance
             };
 
@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
         public static bool TryDivideNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = null;
-            if (left is not PyNormalDist lhs || !TryAsReal(right, out var divisor))
+            if (left is not PyNormalDist lhs || !PyRealNumber.TryAsDouble(right, out var divisor))
             {
                 return false;
             }
@@ -113,27 +113,9 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private static bool TryAsReal(object value, out double real)
-        {
-            if (PyNumberOps.TryAsNumber(value, out var number))
-            {
-                real = number.ToDouble();
-                return true;
-            }
-
-            if (value is PyDecimal decimalValue)
-            {
-                real = (double)decimalValue.Value;
-                return true;
-            }
-
-            real = default;
-            return false;
-        }
-
         private static double ExpectReal(object value, string owner, LythonSourceSpan span)
         {
-            if (!TryAsReal(value, out var real))
+            if (!PyRealNumber.TryAsDouble(value, out var real))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);
             }
@@ -159,7 +141,7 @@ internal sealed partial class LythonRuntime
 
         private static double ExpectRealForStatistics(object value, string owner, LythonSourceSpan span)
         {
-            if (!TryAsReal(value, out var real))
+            if (!PyRealNumber.TryAsDouble(value, out var real))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects real numbers.", span);
             }
