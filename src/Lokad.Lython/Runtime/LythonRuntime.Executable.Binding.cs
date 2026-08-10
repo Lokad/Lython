@@ -121,10 +121,7 @@ internal sealed partial class LythonRuntime
             MatchesExecutableExceptionType(region.ExceptionTypeNames, exception.ExceptionType))
         {
             pendingAbrupt = null;
-            var pyException = new PyException(
-                exception.ExceptionType,
-                exception.Message,
-                exception.Payload ?? PyNone.Instance);
+            var pyException = CreatePythonExceptionInstance(exception);
             if (region.ExceptionVariableName is not null)
             {
                 StoreName(region.ExceptionVariableName, pyException, context, span);

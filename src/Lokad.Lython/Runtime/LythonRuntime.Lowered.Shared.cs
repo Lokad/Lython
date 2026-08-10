@@ -206,7 +206,7 @@ internal sealed partial class LythonRuntime
                 (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
             {
                 var exceptContext = new ExecutionContext(context);
-                var pyException = new PyException(ex.ExceptionType, ex.Message, ex.Payload ?? PyNone.Instance);
+                var pyException = CreatePythonExceptionInstance(ex);
                 if (statement.Syntax.ExceptionVariableName is not null)
                 {
                     StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);

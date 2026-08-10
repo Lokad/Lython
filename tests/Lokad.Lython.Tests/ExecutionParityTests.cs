@@ -10,6 +10,7 @@ public sealed class ExecutionParityTests
         "def f(a, b=2, *, c=3):\n    return a + b + c\nreturn str(f(1, c=4))\n",
         "def f(*args, **kwargs):\n    return [args, kwargs]\nreturn str(f('head', *[1, 2], **{'name': 'value'}))\n",
         "class Base:\n    def value(self):\n        return 'base'\nclass Child(Base):\n    def value(self):\n        return super().value() + '-child'\nreturn Child().value()\n",
+        "class Manager:\n    def __enter__(self):\n        return self\n    def __exit__(self, exc_type, exc, traceback):\n        return exc_type is ValueError and exc_type.__name__ == exc.type\nwith Manager():\n    raise ValueError('boom')\nreturn 'suppressed'\n",
         "values = []\nfor value in [0, 1]:\n    try:\n        values.append(str(4 // value))\n    except ZeroDivisionError as ex:\n        values.append(ex.type)\nreturn '|'.join(values)\n",
         "import json\nreturn json.dumps(json.loads('{\"b\":2,\"a\":[1,true,null]}'), sort_keys=True)\n",
         "import re\nreturn str(re.findall(r'(a+)(b?)', 'aaab aab'))\n",

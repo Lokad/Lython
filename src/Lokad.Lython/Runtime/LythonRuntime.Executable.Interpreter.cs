@@ -193,7 +193,10 @@ internal sealed partial class LythonRuntime
                     // are normal exits to __exit__ and remain pending afterward.
                     if (_pendingAbrupt is PendingException { Exception: var exception })
                     {
-                        if (exitingManager.Exit(exception.ExceptionType, exception, PyNone.Instance))
+                        if (exitingManager.Exit(
+                                ResolvePythonExceptionType(exception, context),
+                                CreatePythonExceptionInstance(exception),
+                                PyNone.Instance))
                         {
                             _pendingAbrupt = null;
                         }

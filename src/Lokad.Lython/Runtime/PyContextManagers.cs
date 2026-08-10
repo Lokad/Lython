@@ -38,7 +38,10 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            if (!protocol.Exit(ex.ExceptionType, ex, PyNone.Instance))
+            if (!protocol.Exit(
+                    LythonRuntime.ResolvePythonExceptionType(ex, context),
+                    LythonRuntime.CreatePythonExceptionInstance(ex),
+                    PyNone.Instance))
             {
                 throw;
             }
@@ -81,7 +84,13 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            if (!await ExitAsync(protocol, ex.ExceptionType, ex, PyNone.Instance, span, context).ConfigureAwait(false))
+            if (!await ExitAsync(
+                    protocol,
+                    LythonRuntime.ResolvePythonExceptionType(ex, context),
+                    LythonRuntime.CreatePythonExceptionInstance(ex),
+                    PyNone.Instance,
+                    span,
+                    context).ConfigureAwait(false))
             {
                 throw;
             }

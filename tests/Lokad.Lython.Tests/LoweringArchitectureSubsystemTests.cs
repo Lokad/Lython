@@ -824,7 +824,7 @@ class Manager:
         return self
 
     def __exit__(self, exc_type, exc, traceback):
-        events.append(exc_type)
+        events.append(exc_type.__name__)
         return False
 
 try:
