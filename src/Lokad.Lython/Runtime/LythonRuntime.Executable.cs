@@ -155,36 +155,15 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed record PendingAbruptSignal(
-        LythonRuntimeException? Exception,
-        ReturnSignal? Return,
-        ControlSignal? Control)
-    {
-        public PendingAbruptSignal()
-            : this(null, null, null)
-        {
-        }
+    // A finally block may delay exactly one abrupt outcome. Distinct variants
+    // prevent an impossible empty or multiply-populated pending state.
+    private abstract record PendingAbruptSignal;
 
-        public PendingAbruptSignal(LythonRuntimeException? Exception)
-            : this(Exception, null, null)
-        {
-        }
+    private sealed record PendingException(LythonRuntimeException Exception) : PendingAbruptSignal;
 
-        public PendingAbruptSignal(LythonRuntimeException? Exception, ReturnSignal? Return)
-            : this(Exception, Return, null)
-        {
-        }
+    private sealed record PendingReturn(ReturnSignal Return) : PendingAbruptSignal;
 
-        public PendingAbruptSignal(ReturnSignal? Return)
-            : this(null, Return, null)
-        {
-        }
-
-        public PendingAbruptSignal(ControlSignal? Control)
-            : this(null, null, Control)
-        {
-        }
-    }
+    private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
     private sealed class ExecutableMemberCache
     {
@@ -497,7 +476,7 @@ internal sealed partial class LythonRuntime
                         var exitingManager = PopContextManager(stack, instruction.Span);
                         // Only exceptions are suppressible. Return/break/continue
                         // are normal exits to __exit__ and remain pending afterward.
-                        if (pendingAbrupt?.Exception is { } exception)
+                        if (pendingAbrupt is PendingException { Exception: var exception })
                         {
                             if (exitingManager.Exit(exception.ExceptionType, exception, PyNone.Instance))
                             {
@@ -734,7 +713,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ReturnSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Return: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingReturn(signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }
@@ -743,7 +722,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ControlSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Control: signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingControl(signal), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }
@@ -752,7 +731,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (LythonRuntimeException ex)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingAbruptSignal(Exception: ex), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, stack, blockEntryStackDepths, currentBlockIndex, new PendingException(ex), instruction.Span, ref pendingAbrupt, ref currentBlockIndex))
                         {
                             throw;
                         }

@@ -84,19 +84,16 @@ internal sealed partial class LythonRuntime
 
     private static void PropagatePendingAbrupt(PendingAbruptSignal pending)
     {
-        if (pending.Exception is not null)
+        switch (pending)
         {
-            throw pending.Exception;
-        }
-
-        if (pending.Return is not null)
-        {
-            throw pending.Return;
-        }
-
-        if (pending.Control is not null)
-        {
-            throw pending.Control;
+            case PendingException exception:
+                throw exception.Exception;
+            case PendingReturn returned:
+                throw returned.Return;
+            case PendingControl control:
+                throw control.Control;
+            default:
+                throw new InvalidOperationException($"Unknown pending abrupt signal: {pending.GetType().Name}");
         }
     }
 
@@ -119,15 +116,15 @@ internal sealed partial class LythonRuntime
 
         RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
 
-        if (abrupt.Exception is not null &&
+        if (abrupt is PendingException { Exception: var exception } &&
             region.ExceptBlockIndex is int exceptBlock &&
-            MatchesExecutableExceptionType(region.ExceptionTypeNames, abrupt.Exception.ExceptionType))
+            MatchesExecutableExceptionType(region.ExceptionTypeNames, exception.ExceptionType))
         {
             pendingAbrupt = null;
             var pyException = new PyException(
-                abrupt.Exception.ExceptionType,
-                abrupt.Exception.Message,
-                abrupt.Exception.Payload ?? PyNone.Instance);
+                exception.ExceptionType,
+                exception.Message,
+                exception.Payload ?? PyNone.Instance);
             if (region.ExceptionVariableName is not null)
             {
                 StoreName(region.ExceptionVariableName, pyException, context, span);
