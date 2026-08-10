@@ -97,57 +97,57 @@ internal sealed partial class ExecutableScript
 
         private int CompileAssignmentStatement(LoweredAssignmentStatement assignment, int currentBlock)
         {
-            switch (assignment.Syntax)
+            switch (assignment)
             {
-                case AssignmentStatementSyntax simple:
-                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
-                    CompileStoreBoundName(simple.Name, assignment.Span, currentBlock);
+                case LoweredNameAssignmentStatement simple:
+                    CompileExpression(simple.Expression, currentBlock);
+                    CompileStoreBoundName(simple.Assignment.Name, simple.Span, currentBlock);
                     return currentBlock;
 
-                case AnnotatedAssignmentStatementSyntax annotated:
-                    if (assignment.Expression is null)
+                case LoweredAnnotatedAssignmentStatement annotated:
+                    if (annotated.Expression is null)
                     {
-                        throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {assignment.Syntax.GetType().Name}.");
+                        throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
                     }
 
-                    CompileExpression(assignment.Expression, currentBlock);
-                    CompileStoreBoundName(annotated.Name, assignment.Span, currentBlock);
+                    CompileExpression(annotated.Expression, currentBlock);
+                    CompileStoreBoundName(annotated.Assignment.Name, annotated.Span, currentBlock);
                     return currentBlock;
 
-                case AugmentedAssignmentStatementSyntax augmented:
-                    if (augmented.Target is not NameAssignmentTargetSyntax augmentedName)
+                case LoweredAugmentedAssignmentStatement augmented:
+                    if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
                     {
                         AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
                         return currentBlock;
                     }
 
-                    CompileLoadIdentifier(augmentedName.Name, assignment.Span, currentBlock);
-                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Operator), assignment.Span));
-                    CompileStoreBoundName(augmentedName.Name, assignment.Span, currentBlock);
+                    CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
+                    CompileExpression(augmented.Expression, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                    CompileStoreBoundName(augmentedName.Target.Name, augmented.Span, currentBlock);
                     return currentBlock;
 
-                case ChainedAssignmentStatementSyntax chained:
-                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
-                    for (var i = 0; i < chained.Targets.Count; i++)
+                case LoweredChainedAssignmentStatement chained:
+                    CompileExpression(chained.Expression, currentBlock);
+                    for (var i = 0; i < chained.Assignment.Targets.Count; i++)
                     {
-                        if (chained.Targets[i] is not NameAssignmentTargetSyntax name)
+                        if (chained.Assignment.Targets[i] is not NameAssignmentTargetSyntax name)
                         {
-                            throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support chained assignment target {chained.Targets[i].GetType().Name}.");
+                            throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support chained assignment target {chained.Assignment.Targets[i].GetType().Name}.");
                         }
 
-                        if (i < chained.Targets.Count - 1)
+                        if (i < chained.Assignment.Targets.Count - 1)
                         {
-                            AddInstruction(currentBlock, ExecutableInstruction.Dup(assignment.Span));
+                            AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                         }
 
-                        CompileStoreBoundName(name.Name, assignment.Span, currentBlock);
+                        CompileStoreBoundName(name.Name, chained.Span, currentBlock);
                     }
                     return currentBlock;
 
-                case UnpackingAssignmentStatementSyntax unpacking:
-                    CompileExpression(assignment.Expression.RequireNotNull(), currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Targets, assignment.Span), assignment.Span));
+                case LoweredUnpackingAssignmentStatement unpacking:
+                    CompileExpression(unpacking.Expression, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span));
                     return currentBlock;
 
                 default:

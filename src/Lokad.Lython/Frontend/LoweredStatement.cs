@@ -55,54 +55,77 @@ internal sealed record LoweredClassDefinitionStatement(
     public override LoweredStatementKind Kind => LoweredStatementKind.ClassDefinition;
 }
 
-internal sealed record LoweredAssignmentStatement(
-    StatementSyntax Syntax,
-    LoweredExpression? Expression,
-    LoweredExpression? Annotation,
-    LoweredExpression? Target,
-    LoweredExpression? Index,
+internal abstract record LoweredAssignmentStatement(
+    StatementSyntax Syntax) : LoweredStatement(Syntax.Span)
+{
+    public override LoweredStatementKind Kind => LoweredStatementKind.Assignment;
+}
+
+internal sealed record LoweredNameAssignmentStatement(
+    AssignmentStatementSyntax Assignment,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+
+internal sealed record LoweredChainedAssignmentStatement(
+    ChainedAssignmentStatementSyntax Assignment,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+
+internal sealed record LoweredAnnotatedAssignmentStatement(
+    AnnotatedAssignmentStatementSyntax Assignment,
+    LoweredExpression Annotation,
+    LoweredExpression? Expression) : LoweredAssignmentStatement(Assignment);
+
+internal abstract record LoweredAugmentedAssignmentTarget(
+    AssignmentTargetSyntax Syntax)
+{
+    public LythonSourceSpan Span => Syntax.Span;
+}
+
+internal sealed record LoweredNameAugmentedAssignmentTarget(
+    NameAssignmentTargetSyntax Target) : LoweredAugmentedAssignmentTarget(Target);
+
+internal sealed record LoweredSubscriptAugmentedAssignmentTarget(
+    SubscriptAssignmentTargetSyntax Target,
+    LoweredExpression Receiver,
+    LoweredExpression Index) : LoweredAugmentedAssignmentTarget(Target);
+
+internal sealed record LoweredSliceAugmentedAssignmentTarget(
+    SliceAssignmentTargetSyntax Target,
+    LoweredExpression Receiver,
+    LoweredExpression? Start,
+    LoweredExpression? End,
+    LoweredExpression? Step) : LoweredAugmentedAssignmentTarget(Target);
+
+internal sealed record LoweredMemberAugmentedAssignmentTarget(
+    MemberAssignmentTargetSyntax Target,
+    LoweredExpression Receiver) : LoweredAugmentedAssignmentTarget(Target);
+
+internal sealed record LoweredAugmentedAssignmentStatement(
+    AugmentedAssignmentStatementSyntax Assignment,
+    LoweredAugmentedAssignmentTarget Target,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+
+internal sealed record LoweredUnpackingAssignmentStatement(
+    UnpackingAssignmentStatementSyntax Assignment,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+
+internal sealed record LoweredSubscriptAssignmentStatement(
+    SubscriptAssignmentStatementSyntax Assignment,
+    LoweredExpression Receiver,
+    LoweredExpression Index,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+
+internal sealed record LoweredSliceAssignmentStatement(
+    SliceAssignmentStatementSyntax Assignment,
+    LoweredExpression Receiver,
     LoweredExpression? Start,
     LoweredExpression? End,
     LoweredExpression? Step,
-    string? MemberName) : LoweredStatement(Syntax.Span)
-{
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression)
-        : this(Syntax, Expression, null, null, null, null, null, null, null)
-    {
-    }
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
 
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation)
-        : this(Syntax, Expression, Annotation, null, null, null, null, null, null)
-    {
-    }
-
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target)
-        : this(Syntax, Expression, Annotation, Target, null, null, null, null, null)
-    {
-    }
-
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index)
-        : this(Syntax, Expression, Annotation, Target, Index, null, null, null, null)
-    {
-    }
-
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start)
-        : this(Syntax, Expression, Annotation, Target, Index, Start, null, null, null)
-    {
-    }
-
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start, LoweredExpression? End)
-        : this(Syntax, Expression, Annotation, Target, Index, Start, End, null, null)
-    {
-    }
-
-    public LoweredAssignmentStatement(StatementSyntax Syntax, LoweredExpression? Expression, LoweredExpression? Annotation, LoweredExpression? Target, LoweredExpression? Index, LoweredExpression? Start, LoweredExpression? End, LoweredExpression? Step)
-        : this(Syntax, Expression, Annotation, Target, Index, Start, End, Step, null)
-    {
-    }
-
-    public override LoweredStatementKind Kind => LoweredStatementKind.Assignment;
-}
+internal sealed record LoweredMemberAssignmentStatement(
+    MemberAssignmentStatementSyntax Assignment,
+    LoweredExpression Receiver,
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
 
 internal sealed record LoweredExpressionStatement(
     ExpressionStatementSyntax Syntax,

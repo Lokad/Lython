@@ -28,7 +28,7 @@ value = 2
         Assert.Equal(lowered.Syntax.Statements.Count, lowered.Statements.Count);
         Assert.IsType<LoweredImportStatement>(lowered.Statements[0]);
         var function = Assert.IsType<LoweredFunctionDefinitionStatement>(lowered.Statements[1]);
-        var assignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[2]);
+        var assignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[2]);
         var loweredIf = Assert.IsType<LoweredIfStatement>(function.Body[0]);
         Assert.IsType<LoweredBooleanLiteralExpression>(loweredIf.Condition);
         Assert.Contains(function.Body, statement => statement is LoweredReturnStatement);
@@ -67,7 +67,7 @@ unique = {f"{item}" for item in [1, 2] if item}
 """);
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
-        var listAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
+        var listAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         var listComprehension = Assert.IsType<LoweredListComprehensionExpression>(listAssignment.Expression);
         var listFormatted = Assert.IsType<LoweredFormattedStringExpression>(listComprehension.ItemExpression);
         var listPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(listFormatted.Parts));
@@ -76,14 +76,14 @@ unique = {f"{item}" for item in [1, 2] if item}
         Assert.IsType<LoweredListLiteralExpression>(listComprehension.Clauses[0].Iterable);
         Assert.IsType<LoweredIdentifierExpression>(listComprehension.Clauses[0].Condition);
 
-        var dictAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[1]);
+        var dictAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[1]);
         var dictComprehension = Assert.IsType<LoweredDictComprehensionExpression>(dictAssignment.Expression);
         Assert.IsType<LoweredIdentifierExpression>(dictComprehension.KeyExpression);
         var dictFormatted = Assert.IsType<LoweredFormattedStringExpression>(dictComprehension.ValueExpression);
         var dictPart = Assert.IsType<LoweredFormattedStringExpressionPart>(Assert.Single(dictFormatted.Parts));
         Assert.Equal('s', dictPart.Conversion);
 
-        var setAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[2]);
+        var setAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[2]);
         var setComprehension = Assert.IsType<LoweredSetComprehensionExpression>(setAssignment.Expression);
         Assert.IsType<LoweredFormattedStringExpression>(setComprehension.ItemExpression);
         Assert.Single(setComprehension.Clauses);
@@ -102,7 +102,7 @@ ok = left < middle < right
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
-        var valueAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
+        var valueAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         var binary = Assert.IsType<LoweredBinaryExpression>(valueAssignment.Expression);
         var subscript = Assert.IsType<LoweredSubscriptExpression>(binary.Left);
         Assert.IsType<LoweredMemberExpression>(subscript.Target);
@@ -110,13 +110,13 @@ ok = left < middle < right
         var conditional = Assert.IsType<LoweredConditionalExpression>(parenthesized.Inner);
         Assert.IsType<LoweredUnaryExpression>(conditional.Consequent);
 
-        var resultAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[1]);
+        var resultAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[1]);
         var call = Assert.IsType<LoweredCallExpression>(resultAssignment.Expression);
         Assert.IsType<LoweredMemberExpression>(call.Target);
         Assert.Contains(call.Arguments, argument => argument.Kind == CallArgumentKind.StarredList);
         Assert.Contains(call.Arguments, argument => argument.Kind == CallArgumentKind.StarredDictionary);
 
-        var comparisonAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[2]);
+        var comparisonAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[2]);
         var chained = Assert.IsType<LoweredChainedComparisonExpression>(comparisonAssignment.Expression);
         Assert.Equal(3, chained.Operands.Count);
     }
@@ -136,7 +136,7 @@ else:
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
-        var lambdaAssignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
+        var lambdaAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         var lambda = Assert.IsType<LoweredLambdaExpression>(lambdaAssignment.Expression);
         Assert.IsType<LoweredBinaryExpression>(lambda.Body);
         Assert.Equal(FunctionParameterKind.KeywordOnly, lambda.Lambda.Parameters[1].Kind);
@@ -208,8 +208,8 @@ helper.value = b"x"
         Assert.IsType<LoweredBytesLiteralExpression>(Assert.IsType<LoweredSubscriptExpression>(tuple.Items[0]).Target);
         Assert.IsType<LoweredGeneratorExpression>(tuple.Items[1]);
 
-        var assignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[1]);
-        Assert.Equal("value", assignment.MemberName);
+        var assignment = Assert.IsType<LoweredMemberAssignmentStatement>(lowered.Statements[1]);
+        Assert.Equal("value", assignment.Assignment.MemberName);
         Assert.IsType<LoweredBytesLiteralExpression>(assignment.Expression);
     }
 
@@ -225,10 +225,44 @@ return value, 3
         Assert.Empty(frontend.Diagnostics);
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
-        var assignment = Assert.IsType<LoweredAssignmentStatement>(lowered.Statements[0]);
+        var assignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         Assert.Equal(2, Assert.IsType<LoweredTupleLiteralExpression>(assignment.Expression).Items.Count);
         var returnStatement = Assert.IsType<LoweredReturnStatement>(lowered.Statements[1]);
         Assert.Equal(2, Assert.IsType<LoweredTupleLiteralExpression>(returnStatement.Expression).Items.Count);
+    }
+
+    [Fact]
+    public void LoweredScript_RepresentsEveryAssignmentFormWithItsClosedVariant()
+    {
+        var frontend = LythonFrontend.Compile(
+            """
+value = 1
+first = second = 2
+annotated: int = 3
+value += 4
+items[0] += 5
+items[1:2] += [6]
+owner.member += 7
+left, right = (8, 9)
+items[0] = 10
+items[1:2] = [11]
+owner.member = 12
+""");
+
+        Assert.Empty(frontend.Diagnostics);
+        var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;
+
+        Assert.IsType<LoweredNameAssignmentStatement>(statements[0]);
+        Assert.IsType<LoweredChainedAssignmentStatement>(statements[1]);
+        Assert.IsType<LoweredAnnotatedAssignmentStatement>(statements[2]);
+        Assert.IsType<LoweredNameAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[3]).Target);
+        Assert.IsType<LoweredSubscriptAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[4]).Target);
+        Assert.IsType<LoweredSliceAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[5]).Target);
+        Assert.IsType<LoweredMemberAugmentedAssignmentTarget>(Assert.IsType<LoweredAugmentedAssignmentStatement>(statements[6]).Target);
+        Assert.IsType<LoweredUnpackingAssignmentStatement>(statements[7]);
+        Assert.IsType<LoweredSubscriptAssignmentStatement>(statements[8]);
+        Assert.IsType<LoweredSliceAssignmentStatement>(statements[9]);
+        Assert.IsType<LoweredMemberAssignmentStatement>(statements[10]);
     }
 
     [Fact]
@@ -1026,33 +1060,9 @@ return helper(payload["items"]) + "|" + text
                     }
                     break;
                 case LoweredAssignmentStatement assignment:
-                    if (assignment.Expression is not null)
+                    foreach (var loweredExpression in GetAssignmentExpressions(assignment))
                     {
-                        foreach (var expression in FlattenExpressions(assignment.Expression))
-                        {
-                            yield return expression;
-                        }
-                    }
-
-                    if (assignment.Annotation is not null)
-                    {
-                        foreach (var expression in FlattenExpressions(assignment.Annotation))
-                        {
-                            yield return expression;
-                        }
-                    }
-
-                    if (assignment.Target is not null)
-                    {
-                        foreach (var expression in FlattenExpressions(assignment.Target))
-                        {
-                            yield return expression;
-                        }
-                    }
-
-                    if (assignment.Index is not null)
-                    {
-                        foreach (var expression in FlattenExpressions(assignment.Index))
+                        foreach (var expression in FlattenExpressions(loweredExpression))
                         {
                             yield return expression;
                         }
@@ -1121,6 +1131,90 @@ return helper(payload["items"]) + "|" + text
                     }
                     break;
             }
+        }
+    }
+
+    private static IEnumerable<LoweredExpression> GetAssignmentExpressions(LoweredAssignmentStatement assignment)
+    {
+        switch (assignment)
+        {
+            case LoweredNameAssignmentStatement name:
+                yield return name.Expression;
+                break;
+            case LoweredChainedAssignmentStatement chained:
+                yield return chained.Expression;
+                break;
+            case LoweredAnnotatedAssignmentStatement annotated:
+                yield return annotated.Annotation;
+                if (annotated.Expression is not null)
+                {
+                    yield return annotated.Expression;
+                }
+                break;
+            case LoweredAugmentedAssignmentStatement augmented:
+                foreach (var expression in GetAugmentedTargetExpressions(augmented.Target))
+                {
+                    yield return expression;
+                }
+                yield return augmented.Expression;
+                break;
+            case LoweredUnpackingAssignmentStatement unpacking:
+                yield return unpacking.Expression;
+                break;
+            case LoweredSubscriptAssignmentStatement subscript:
+                yield return subscript.Receiver;
+                yield return subscript.Index;
+                yield return subscript.Expression;
+                break;
+            case LoweredSliceAssignmentStatement slice:
+                yield return slice.Receiver;
+                if (slice.Start is not null)
+                {
+                    yield return slice.Start;
+                }
+                if (slice.End is not null)
+                {
+                    yield return slice.End;
+                }
+                if (slice.Step is not null)
+                {
+                    yield return slice.Step;
+                }
+                yield return slice.Expression;
+                break;
+            case LoweredMemberAssignmentStatement member:
+                yield return member.Receiver;
+                yield return member.Expression;
+                break;
+        }
+    }
+
+    private static IEnumerable<LoweredExpression> GetAugmentedTargetExpressions(LoweredAugmentedAssignmentTarget target)
+    {
+        switch (target)
+        {
+            case LoweredSubscriptAugmentedAssignmentTarget subscript:
+                yield return subscript.Receiver;
+                yield return subscript.Index;
+                break;
+            case LoweredSliceAugmentedAssignmentTarget slice:
+                yield return slice.Receiver;
+                if (slice.Start is not null)
+                {
+                    yield return slice.Start;
+                }
+                if (slice.End is not null)
+                {
+                    yield return slice.End;
+                }
+                if (slice.Step is not null)
+                {
+                    yield return slice.Step;
+                }
+                break;
+            case LoweredMemberAugmentedAssignmentTarget member:
+                yield return member.Receiver;
+                break;
         }
     }
 

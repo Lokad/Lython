@@ -75,82 +75,46 @@ internal sealed class LoweredScript
                 classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LowerExpression(argument.Value))).ToArray(),
                 LowerStatements(classDefinition.Body)),
             AssignmentStatementSyntax assignment
-                => new LoweredAssignmentStatement(
+                => new LoweredNameAssignmentStatement(
                     assignment,
                     LowerExpression(assignment.Expression)),
             ChainedAssignmentStatementSyntax chainedAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredChainedAssignmentStatement(
                     chainedAssignment,
                     LowerExpression(chainedAssignment.Expression)),
             AnnotatedAssignmentStatementSyntax annotatedAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredAnnotatedAssignmentStatement(
                     annotatedAssignment,
-                    annotatedAssignment.Expression is null ? null : LowerExpression(annotatedAssignment.Expression),
-                    LowerExpression(annotatedAssignment.Annotation)),
+                    LowerExpression(annotatedAssignment.Annotation),
+                    annotatedAssignment.Expression is null ? null : LowerExpression(annotatedAssignment.Expression)),
             AugmentedAssignmentStatementSyntax augmentedAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredAugmentedAssignmentStatement(
                     augmentedAssignment,
-                    LowerExpression(augmentedAssignment.Expression),
-                    Annotation: null,
-                    Target: augmentedAssignment.Target switch
-                    {
-                        SubscriptAssignmentTargetSyntax subscript => LowerExpression(subscript.Target),
-                        SliceAssignmentTargetSyntax slice => LowerExpression(slice.Target),
-                        MemberAssignmentTargetSyntax member => LowerExpression(member.Target),
-                        _ => null
-                    },
-                    Index: augmentedAssignment.Target is SubscriptAssignmentTargetSyntax subscriptTarget
-                        ? LowerExpression(subscriptTarget.Index)
-                        : null,
-                    Start: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTarget && sliceTarget.Start is not null
-                        ? LowerExpression(sliceTarget.Start)
-                        : null,
-                    End: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTargetForEnd && sliceTargetForEnd.End is not null
-                        ? LowerExpression(sliceTargetForEnd.End)
-                        : null,
-                    Step: augmentedAssignment.Target is SliceAssignmentTargetSyntax sliceTargetForStep && sliceTargetForStep.Step is not null
-                        ? LowerExpression(sliceTargetForStep.Step)
-                        : null,
-                    MemberName: augmentedAssignment.Target is MemberAssignmentTargetSyntax memberTarget
-                        ? memberTarget.MemberName
-                        : null),
+                    LowerAugmentedAssignmentTarget(augmentedAssignment.Target),
+                    LowerExpression(augmentedAssignment.Expression)),
             UnpackingAssignmentStatementSyntax unpackingAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredUnpackingAssignmentStatement(
                     unpackingAssignment,
                     LowerExpression(unpackingAssignment.Expression)),
             SubscriptAssignmentStatementSyntax subscriptAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredSubscriptAssignmentStatement(
                     subscriptAssignment,
-                    LowerExpression(subscriptAssignment.Expression),
-                    Annotation: null,
-                    Target: LowerExpression(subscriptAssignment.Target),
-                    Index: LowerExpression(subscriptAssignment.Index),
-                    Start: null,
-                    End: null,
-                    Step: null,
-                    MemberName: null),
+                    LowerExpression(subscriptAssignment.Target),
+                    LowerExpression(subscriptAssignment.Index),
+                    LowerExpression(subscriptAssignment.Expression)),
             SliceAssignmentStatementSyntax sliceAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredSliceAssignmentStatement(
                     sliceAssignment,
-                    LowerExpression(sliceAssignment.Expression),
-                    Annotation: null,
-                    Target: LowerExpression(sliceAssignment.Target),
-                    Index: null,
-                    Start: sliceAssignment.Start is null ? null : LowerExpression(sliceAssignment.Start),
-                    End: sliceAssignment.End is null ? null : LowerExpression(sliceAssignment.End),
-                    Step: sliceAssignment.Step is null ? null : LowerExpression(sliceAssignment.Step),
-                    MemberName: null),
+                    LowerExpression(sliceAssignment.Target),
+                    sliceAssignment.Start is null ? null : LowerExpression(sliceAssignment.Start),
+                    sliceAssignment.End is null ? null : LowerExpression(sliceAssignment.End),
+                    sliceAssignment.Step is null ? null : LowerExpression(sliceAssignment.Step),
+                    LowerExpression(sliceAssignment.Expression)),
             MemberAssignmentStatementSyntax memberAssignment
-                => new LoweredAssignmentStatement(
+                => new LoweredMemberAssignmentStatement(
                     memberAssignment,
-                    LowerExpression(memberAssignment.Expression),
-                    Annotation: null,
-                    Target: LowerExpression(memberAssignment.Target),
-                    Index: null,
-                    Start: null,
-                    End: null,
-                    Step: null,
-                    MemberName: memberAssignment.MemberName),
+                    LowerExpression(memberAssignment.Target),
+                    LowerExpression(memberAssignment.Expression)),
             ExpressionStatementSyntax expressionStatement => new LoweredExpressionStatement(expressionStatement, LowerExpression(expressionStatement.Expression)),
             IfStatementSyntax ifStatement => new LoweredIfStatement(
                 ifStatement,
@@ -202,6 +166,26 @@ internal sealed class LoweredScript
             _ => new LoweredOtherStatement(statement)
         };
     }
+
+    private static LoweredAugmentedAssignmentTarget LowerAugmentedAssignmentTarget(AssignmentTargetSyntax target)
+        => target switch
+        {
+            NameAssignmentTargetSyntax name => new LoweredNameAugmentedAssignmentTarget(name),
+            SubscriptAssignmentTargetSyntax subscript => new LoweredSubscriptAugmentedAssignmentTarget(
+                subscript,
+                LowerExpression(subscript.Target),
+                LowerExpression(subscript.Index)),
+            SliceAssignmentTargetSyntax slice => new LoweredSliceAugmentedAssignmentTarget(
+                slice,
+                LowerExpression(slice.Target),
+                slice.Start is null ? null : LowerExpression(slice.Start),
+                slice.End is null ? null : LowerExpression(slice.End),
+                slice.Step is null ? null : LowerExpression(slice.Step)),
+            MemberAssignmentTargetSyntax member => new LoweredMemberAugmentedAssignmentTarget(
+                member,
+                LowerExpression(member.Target)),
+            _ => throw new InvalidOperationException($"Unsupported augmented assignment target: {target.GetType().Name}"),
+        };
 
     private static LoweredExpression LowerExpression(ExpressionSyntax expression)
     {
