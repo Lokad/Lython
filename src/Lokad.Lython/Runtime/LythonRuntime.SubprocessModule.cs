@@ -356,42 +356,42 @@ internal sealed partial class LythonRuntime
         }
 
         return builder.ToString();
-    }
 
-    private static void AppendWindowsCommandLineArgument(System.Text.StringBuilder builder, string argument)
-    {
-        var needsQuotes = argument.Length == 0 || argument.Any(static ch => char.IsWhiteSpace(ch) || ch == '"');
-        if (!needsQuotes)
+        static void AppendWindowsCommandLineArgument(System.Text.StringBuilder builder, string argument)
         {
-            builder.Append(argument);
-            return;
-        }
-
-        builder.Append('"');
-        var backslashes = 0;
-        foreach (var ch in argument)
-        {
-            if (ch == '\\')
+            var needsQuotes = argument.Length == 0 || argument.Any(static ch => char.IsWhiteSpace(ch) || ch == '"');
+            if (!needsQuotes)
             {
-                backslashes++;
-                continue;
+                builder.Append(argument);
+                return;
             }
 
-            if (ch == '"')
+            builder.Append('"');
+            var backslashes = 0;
+            foreach (var ch in argument)
             {
-                builder.Append('\\', backslashes * 2 + 1);
-                builder.Append('"');
+                if (ch == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                if (ch == '"')
+                {
+                    builder.Append('\\', backslashes * 2 + 1);
+                    builder.Append('"');
+                    backslashes = 0;
+                    continue;
+                }
+
+                builder.Append('\\', backslashes);
                 backslashes = 0;
-                continue;
+                builder.Append(ch);
             }
 
-            builder.Append('\\', backslashes);
-            backslashes = 0;
-            builder.Append(ch);
+            builder.Append('\\', backslashes * 2);
+            builder.Append('"');
         }
-
-        builder.Append('\\', backslashes * 2);
-        builder.Append('"');
     }
 
     private sealed class UnsupportedSubprocessCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue

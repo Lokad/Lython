@@ -28,11 +28,40 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         _utf8 = utf8;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
+
+        static void ChargeGovernedAllocation(MemoryGovernor governor, LythonSourceSpan? allocationSpan, long bytes)
+        {
+            if (bytes <= 0)
+            {
+                return;
+            }
+
+            governor.Reserve(bytes, allocationSpan);
+            governor.Commit(bytes);
+        }
     }
 
     public static PyString Empty { get; } = new([]);
 
-    public int Length => _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(_utf8));
+    public int Length
+    {
+        get
+        {
+            return _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(_utf8));
+
+            static int CountRunes(byte[] utf8)
+            {
+                var count = 0;
+                for (var i = 0; i < utf8.Length;)
+                {
+                    i += GetRuneLength(utf8[i]);
+                    count++;
+                }
+
+                return count;
+            }
+        }
+    }
 
     public ReadOnlyMemory<byte> Utf8Bytes => _utf8;
 
@@ -541,18 +570,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
         => haystack.IndexOf(needle);
 
-    private static int CountRunes(byte[] utf8)
-    {
-        var count = 0;
-        for (var i = 0; i < utf8.Length;)
-        {
-            i += GetRuneLength(utf8[i]);
-            count++;
-        }
-
-        return count;
-    }
-
     private (int Start, int Length) GetRuneByteRange(int runeIndex)
     {
         if (runeIndex < 0)
@@ -641,17 +658,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         owned = [];
         return false;
-    }
-
-    private static void ChargeGovernedAllocation(MemoryGovernor governor, LythonSourceSpan? allocationSpan, long bytes)
-    {
-        if (bytes <= 0)
-        {
-            return;
-        }
-
-        governor.Reserve(bytes, allocationSpan);
-        governor.Commit(bytes);
     }
 
     private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan)

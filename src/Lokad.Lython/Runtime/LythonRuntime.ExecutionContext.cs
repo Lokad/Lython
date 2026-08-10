@@ -61,6 +61,29 @@ internal sealed partial class LythonRuntime
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
             NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
+
+            static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+            {
+                var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+                foreach (var name in scopeFacts.NonlocalNames)
+                {
+                    for (var current = parent; current is not null && current.Parent is not null; current = current.Parent)
+                    {
+                        if (current.ScopeFacts.LocalNames.Contains(name))
+                        {
+                            targets[name] = current;
+                            break;
+                        }
+                    }
+
+                    if (!targets.ContainsKey(name))
+                    {
+                        throw RuntimeErrors.NameNotDefined(name, null);
+                    }
+                }
+
+                return targets;
+            }
         }
 
         public ExecutionContext(ExecutionContext template, bool moduleScope, string? sourcePath) : this(template, moduleScope, sourcePath, null) { }
@@ -133,29 +156,6 @@ internal sealed partial class LythonRuntime
 
         internal bool TryGetNonlocalTarget(string name, [MaybeNullWhen(false)] out ExecutionContext context)
             => NonlocalTargets.TryGetValue(name, out context);
-
-        private static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
-        {
-            var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
-            foreach (var name in scopeFacts.NonlocalNames)
-            {
-                for (var current = parent; current is not null && current.Parent is not null; current = current.Parent)
-                {
-                    if (current.ScopeFacts.LocalNames.Contains(name))
-                    {
-                        targets[name] = current;
-                        break;
-                    }
-                }
-
-                if (!targets.ContainsKey(name))
-                {
-                    throw RuntimeErrors.NameNotDefined(name, null);
-                }
-            }
-
-            return targets;
-        }
 
         internal void EnterExecutableSlots(ExecutableFrameState frame) => CurrentExecutableFrame = frame;
 
@@ -590,105 +590,105 @@ internal sealed partial class LythonRuntime
                 PyDict dict => NormalizePyDict(dict, context),
                 _ => value
             };
-        }
 
-        private static PyList NormalizePyList(PyList list, ExecutionContext context)
-        {
-            var items = new object[list.Count];
-            for (var i = 0; i < list.Count; i++)
+            static PyList NormalizePyList(PyList list, ExecutionContext context)
             {
-                items[i] = NormalizeRuntimeValue(list[i], context);
+                var items = new object[list.Count];
+                for (var i = 0; i < list.Count; i++)
+                {
+                    items[i] = NormalizeRuntimeValue(list[i], context);
+                }
+
+                return new PyList(items, context.MemoryGovernor, null);
             }
 
-            return new PyList(items, context.MemoryGovernor, null);
-        }
-
-        private static PyTuple NormalizePyTuple(PyTuple tuple, ExecutionContext context)
-        {
-            var items = new object[tuple.Count];
-            for (var i = 0; i < tuple.Count; i++)
+            static PyTuple NormalizePyTuple(PyTuple tuple, ExecutionContext context)
             {
-                items[i] = NormalizeRuntimeValue(tuple[i], context);
+                var items = new object[tuple.Count];
+                for (var i = 0; i < tuple.Count; i++)
+                {
+                    items[i] = NormalizeRuntimeValue(tuple[i], context);
+                }
+
+                return new PyTuple(items, context.MemoryGovernor, null);
             }
 
-            return new PyTuple(items, context.MemoryGovernor, null);
-        }
-
-        private static PyList NormalizeObjectList(List<object?> list, ExecutionContext context)
-        {
-            var items = new object[list.Count];
-            for (var i = 0; i < list.Count; i++)
+            static PyList NormalizeObjectList(List<object?> list, ExecutionContext context)
             {
-                items[i] = NormalizeRuntimeValue(list[i], context);
+                var items = new object[list.Count];
+                for (var i = 0; i < list.Count; i++)
+                {
+                    items[i] = NormalizeRuntimeValue(list[i], context);
+                }
+
+                return new PyList(items, context.MemoryGovernor, null);
             }
 
-            return new PyList(items, context.MemoryGovernor, null);
-        }
-
-        private static PyTuple NormalizeObjectArray(object?[] tuple, ExecutionContext context)
-        {
-            var items = new object[tuple.Length];
-            for (var i = 0; i < tuple.Length; i++)
+            static PyTuple NormalizeObjectArray(object?[] tuple, ExecutionContext context)
             {
-                items[i] = NormalizeRuntimeValue(tuple[i], context);
+                var items = new object[tuple.Length];
+                for (var i = 0; i < tuple.Length; i++)
+                {
+                    items[i] = NormalizeRuntimeValue(tuple[i], context);
+                }
+
+                return new PyTuple(items, context.MemoryGovernor, null);
             }
 
-            return new PyTuple(items, context.MemoryGovernor, null);
-        }
-
-        private static PySet NormalizePySet(PySet set, ExecutionContext context)
-        {
-            var normalized = new PySet(context.MemoryGovernor, null);
-            foreach (var item in set)
+            static PySet NormalizePySet(PySet set, ExecutionContext context)
             {
-                normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                var normalized = new PySet(context.MemoryGovernor, null);
+                foreach (var item in set)
+                {
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                }
+
+                return normalized;
             }
 
-            return normalized;
-        }
-
-        private static PySet NormalizeObjectSet(HashSet<object?> set, ExecutionContext context)
-        {
-            var normalized = new PySet(context.MemoryGovernor, null);
-            foreach (var item in set)
+            static PySet NormalizeObjectSet(HashSet<object?> set, ExecutionContext context)
             {
-                normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                var normalized = new PySet(context.MemoryGovernor, null);
+                foreach (var item in set)
+                {
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                }
+
+                return normalized;
             }
 
-            return normalized;
-        }
-
-        private static PyDict NormalizeStringKeyDictionary(Dictionary<string, object?> dict, ExecutionContext context)
-        {
-            var normalized = new PyDict(context.MemoryGovernor, null);
-            foreach (var pair in dict)
+            static PyDict NormalizeStringKeyDictionary(Dictionary<string, object?> dict, ExecutionContext context)
             {
-                normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context));
+                var normalized = new PyDict(context.MemoryGovernor, null);
+                foreach (var pair in dict)
+                {
+                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context));
+                }
+
+                return normalized;
             }
 
-            return normalized;
-        }
-
-        private static PyDict NormalizeObjectKeyDictionary(Dictionary<object, object?> dict, ExecutionContext context)
-        {
-            var normalized = new PyDict(context.MemoryGovernor, null);
-            foreach (var pair in dict)
+            static PyDict NormalizeObjectKeyDictionary(Dictionary<object, object?> dict, ExecutionContext context)
             {
-                normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
+                var normalized = new PyDict(context.MemoryGovernor, null);
+                foreach (var pair in dict)
+                {
+                    normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
+                }
+
+                return normalized;
             }
 
-            return normalized;
-        }
-
-        private static PyDict NormalizePyDict(PyDict dict, ExecutionContext context)
-        {
-            var normalized = new PyDict(context.MemoryGovernor, null);
-            foreach (var pair in dict)
+            static PyDict NormalizePyDict(PyDict dict, ExecutionContext context)
             {
-                normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
-            }
+                var normalized = new PyDict(context.MemoryGovernor, null);
+                foreach (var pair in dict)
+                {
+                    normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
+                }
 
-            return normalized;
+                return normalized;
+            }
         }
 
         public void CheckExecutionBudget(LythonSourceSpan? span) => Services.CheckExecutionBudget(span);
