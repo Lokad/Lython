@@ -396,17 +396,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects one or two arguments.", span);
         }
 
-        var hasDigits = arguments.Length == 2 && arguments[1] is not PyNone;
-        var digits = hasDigits
+        var digits = arguments.Length == 2 && arguments[1] is not PyNone
             ? ToInt32(ExpectBuiltinInteger(arguments[1], "round(number[, ndigits]) expects ndigits to be an integer.", span), "round(number[, ndigits])", span)
-            : 0;
+            : (int?)null;
 
         return arguments[0] switch
         {
-            bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, hasDigits, digits, span),
-            BigInteger integer => RoundInteger(integer, hasDigits, digits, span),
-            double floating => RoundFloat(floating, hasDigits, digits, span),
-            PyDecimal decimalValue => RoundDecimal(decimalValue, hasDigits, digits, context.DecimalContext, span),
+            bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, digits, span),
+            BigInteger integer => RoundInteger(integer, digits, span),
+            double floating => RoundFloat(floating, digits, span),
+            PyDecimal decimalValue => RoundDecimal(decimalValue, digits, context.DecimalContext, span),
             _ => throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects a numeric value.", span)
         };
     }
@@ -550,14 +549,14 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(sign + prefix + digits);
     }
 
-    private static object RoundInteger(BigInteger value, bool hasDigits, int digits, LythonSourceSpan span)
+    private static object RoundInteger(BigInteger value, int? digits, LythonSourceSpan span)
     {
-        if (!hasDigits || digits >= 0)
+        if (digits is null || digits >= 0)
         {
             return value;
         }
 
-        var factor = BigInteger.Pow(10, checked(-digits));
+        var factor = BigInteger.Pow(10, checked(-digits.Value));
         var sign = value < BigInteger.Zero ? -1 : 1;
         var quotient = BigInteger.DivRem(BigInteger.Abs(value), factor, out var remainder);
         var comparison = (remainder * 2).CompareTo(factor);
@@ -569,16 +568,16 @@ internal sealed partial class LythonRuntime
         return quotient * factor * sign;
     }
 
-    private static object RoundFloat(double value, bool hasDigits, int digits, LythonSourceSpan span)
+    private static object RoundFloat(double value, int? digits, LythonSourceSpan span)
     {
-        if (!hasDigits)
+        if (digits is null)
         {
             return FloatToInteger(value, "round", span, static number => Math.Round(number, MidpointRounding.ToEven));
         }
 
         if (digits is >= 0 and <= 15)
         {
-            return Math.Round(value, digits, MidpointRounding.ToEven);
+            return Math.Round(value, digits.Value, MidpointRounding.ToEven);
         }
 
         if (digits > 15)
@@ -586,7 +585,7 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var factor = Math.Pow(10.0, -digits);
+        var factor = Math.Pow(10.0, -digits.Value);
         return Math.Round(value / factor, MidpointRounding.ToEven) * factor;
     }
 
@@ -706,16 +705,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object RoundDecimal(PyDecimal value, bool hasDigits, int digits, PyDecimalContext context, LythonSourceSpan span)
+    private static object RoundDecimal(PyDecimal value, int? digits, PyDecimalContext context, LythonSourceSpan span)
     {
-        if (!hasDigits)
+        if (digits is null)
         {
             return new BigInteger(decimal.Round(value.Value, 0, MidpointRounding.ToEven));
         }
 
         if (digits is >= 0 and <= 28)
         {
-            return new PyDecimal(PyDecimalOps.Round(value.Value, digits, PyNone.Instance, context, span));
+            return new PyDecimal(PyDecimalOps.Round(value.Value, digits.Value, PyNone.Instance, context, span));
         }
 
         if (digits > 28)
@@ -723,7 +722,7 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var factor = DecimalPowerOfTen(checked(-digits), span);
+        var factor = DecimalPowerOfTen(checked(-digits.Value), span);
         return new PyDecimal(PyDecimalOps.Round(value.Value / factor, 0, PyNone.Instance, context, span) * factor);
     }
 

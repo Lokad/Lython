@@ -4,10 +4,17 @@ namespace Lokad.Lython.Runtime.Numbers;
 
 internal readonly record struct PyNumber
 {
-    private PyNumber(bool isFloat, BigInteger integer, double floating)
+    private PyNumber(BigInteger integer)
     {
-        IsFloat = isFloat;
+        IsFloat = false;
         Integer = integer;
+        Floating = 0.0;
+    }
+
+    private PyNumber(double floating)
+    {
+        IsFloat = true;
+        Integer = BigInteger.Zero;
         Floating = floating;
     }
 
@@ -22,11 +29,11 @@ internal readonly record struct PyNumber
     public double ToDouble() => IsFloat ? Floating : (double)Integer;
 
     public static PyNumber FromBoolean(bool value)
-        => new(false, value ? BigInteger.One : BigInteger.Zero, value ? 1.0 : 0.0);
+        => new(value ? BigInteger.One : BigInteger.Zero);
 
     public static PyNumber FromInteger(BigInteger value)
-        => new(false, value, 0.0);
+        => new(value);
 
     public static PyNumber FromFloat(double value)
-        => new(true, BigInteger.Zero, value);
+        => new(value);
 }

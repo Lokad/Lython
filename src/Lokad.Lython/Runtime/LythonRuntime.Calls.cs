@@ -302,20 +302,20 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class MinMaxCallable(bool isMin) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        public string Name => isMin ? "min" : "max";
+        public string Name => operation == ExtremumOperation.Minimum ? "min" : "max";
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return MinMax(arguments, isMin, span, context);
+            return MinMax(arguments, operation, span, context);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return MinMaxAsync(arguments, isMin, span, context);
+            return MinMaxAsync(arguments, operation, span, context);
         }
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);

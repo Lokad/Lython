@@ -14,6 +14,12 @@ internal sealed partial class LythonRuntime
         ICallable? Key,
         object? DefaultValue);
 
+    private enum ExtremumOperation
+    {
+        Minimum,
+        Maximum,
+    }
+
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -191,9 +197,10 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static object MinMax(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
+    private static object MinMax(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
-        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
         using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span) : positional).GetEnumerator();
         if (!enumerator.MoveNext())
         {
@@ -202,7 +209,7 @@ internal sealed partial class LythonRuntime
                 return defaultValue;
             }
 
-            throw new LythonRuntimeException("ValueError", $"{(isMin ? "min" : "max")}() arg is an empty sequence", span);
+            throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
         }
 
         var best = enumerator.Current;
@@ -216,7 +223,7 @@ internal sealed partial class LythonRuntime
                 ? candidate
                 : keyCallable.Invoke([CallArgumentValue.Positional(candidate)], span, context);
             var comparison = Compare(candidateKey, bestKey, span);
-            if (isMin ? comparison < 0 : comparison > 0)
+            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
                 bestKey = candidateKey;
@@ -259,12 +266,13 @@ internal sealed partial class LythonRuntime
     private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
     private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
 
-    private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, bool isMin, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
-        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, isMin ? "min" : "max", span);
+        var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
         if (positional.Count > 1)
         {
-            return await MinMaxValuesAsync(positional, keyCallable, isMin, span, context).ConfigureAwait(false);
+            return await MinMaxValuesAsync(positional, keyCallable, operation, span, context).ConfigureAwait(false);
         }
 
         await using var cursor = PyIteration.Cursor.Create(positional[0], span);
@@ -276,7 +284,7 @@ internal sealed partial class LythonRuntime
                 return defaultValue;
             }
 
-            throw new LythonRuntimeException("ValueError", $"{(isMin ? "min" : "max")}() arg is an empty sequence", span);
+            throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
         }
 
         var bestKey = keyCallable is null
@@ -294,7 +302,7 @@ internal sealed partial class LythonRuntime
                 ? candidate
                 : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
-            if (isMin ? comparison < 0 : comparison > 0)
+            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
                 bestKey = candidateKey;
@@ -307,7 +315,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> MinMaxValuesAsync(
         IReadOnlyList<object> values,
         ICallable? keyCallable,
-        bool isMin,
+        ExtremumOperation operation,
         LythonSourceSpan span,
         ExecutionContext context)
     {
@@ -322,7 +330,7 @@ internal sealed partial class LythonRuntime
                 ? candidate
                 : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
-            if (isMin ? comparison < 0 : comparison > 0)
+            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
                 bestKey = candidateKey;
