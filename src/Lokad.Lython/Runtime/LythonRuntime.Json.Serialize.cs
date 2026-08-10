@@ -37,6 +37,62 @@ internal sealed partial class LythonRuntime
             int depth,
             HashSet<object>? active)
         {
+            void AppendDictionary(PyDict dict)
+            {
+                if (active is not null && !active.Add(dict))
+                {
+                    throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
+                }
+
+                try
+                {
+                    var entries = new List<(object OriginalKey, object Value)>();
+                    foreach (var pair in dict)
+                    {
+                        context.CheckExecutionBudget(span);
+                        if (IsSupportedJsonObjectKey(pair.Key))
+                        {
+                            entries.Add((pair.Key, pair.Value));
+                        }
+                        else if (!options.SkipKeys)
+                        {
+                            throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                        }
+                    }
+
+                    if (options.SortKeys)
+                    {
+                        entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
+                    }
+
+                    builder.Append('{');
+                    for (var index = 0; index < entries.Count; index++)
+                    {
+                        if (index > 0)
+                        {
+                            builder.Append(options.ItemSeparator);
+                        }
+
+                        AppendJsonValuePrefix(builder, options, depth + 1, index);
+                        _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
+                        AppendJsonString(builder, key, options.EnsureAscii);
+                        builder.Append(options.KeySeparator);
+                        AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, active);
+                    }
+
+                    if (entries.Count > 0)
+                    {
+                        AppendJsonContainerSuffix(builder, options, depth);
+                    }
+
+                    builder.Append('}');
+                }
+                finally
+                {
+                    _ = active?.Remove(dict);
+                }
+            }
+
             context.CheckExecutionBudget(span);
             if (depth >= ExecutionLimits.MaxInterpreterDepth)
             {
@@ -79,7 +135,7 @@ internal sealed partial class LythonRuntime
                     AppendJsonSequence(builder, tuple, options, context, span, depth, active);
                     return;
                 case PyDict dict:
-                    AppendJsonDict(builder, dict, options, context, span, depth, active);
+                    AppendDictionary(dict);
                     return;
                 default:
                     if (options.DefaultCallable is not null)
@@ -139,69 +195,6 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _ = active?.Remove(sequence);
-            }
-        }
-
-        private static void AppendJsonDict(
-            StringBuilder builder,
-            PyDict dict,
-            JsonDumpOptions options,
-            ExecutionContext context,
-            LythonSourceSpan span,
-            int depth,
-            HashSet<object>? active)
-        {
-            if (active is not null && !active.Add(dict))
-            {
-                throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
-            }
-
-            try
-            {
-                var entries = new List<(object OriginalKey, object Value)>();
-                foreach (var pair in dict)
-                {
-                    context.CheckExecutionBudget(span);
-                    if (IsSupportedJsonObjectKey(pair.Key))
-                    {
-                        entries.Add((pair.Key, pair.Value));
-                    }
-                    else if (!options.SkipKeys)
-                    {
-                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                    }
-                }
-
-                if (options.SortKeys)
-                {
-                    entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
-                }
-
-                builder.Append('{');
-                for (var index = 0; index < entries.Count; index++)
-                {
-                    if (index > 0)
-                    {
-                        builder.Append(options.ItemSeparator);
-                    }
-
-                    AppendJsonValuePrefix(builder, options, depth + 1, index);
-                    _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
-                    AppendJsonString(builder, key, options.EnsureAscii);
-                    builder.Append(options.KeySeparator);
-                    AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, active);
-                }
-
-                if (entries.Count > 0)
-                {
-                    AppendJsonContainerSuffix(builder, options, depth);
-                }
-
-                builder.Append('}');
-            }
-            finally
-            {
-                _ = active?.Remove(dict);
             }
         }
 
