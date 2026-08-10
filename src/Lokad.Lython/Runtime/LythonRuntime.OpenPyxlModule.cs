@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class OpenPyxlComment : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlComment : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         public OpenPyxlComment(string text, string author)
         {
@@ -326,7 +326,7 @@ internal sealed partial class LythonRuntime
         return new OpenPyxlImageStub(source);
     }
 
-    internal sealed class OpenPyxlChartStub : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlChartStub : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly List<object> _series = new();
         private object? _categories;
@@ -453,7 +453,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class OpenPyxlChartAxis : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlChartAxis : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         public string? Title { get; private set; }
 
@@ -527,15 +527,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.chart.reference.Reference>");
@@ -588,15 +580,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.chart.series.Series>");
@@ -605,7 +589,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlImageStub : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlImageStub : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         public OpenPyxlImageStub(string source)
         {

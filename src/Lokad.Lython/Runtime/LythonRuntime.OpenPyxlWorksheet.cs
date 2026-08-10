@@ -13,7 +13,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed partial class OpenPyxlWorksheet :
-        IPyDynamicAttributes,
+        IPyMutableDynamicAttributes,
         IMutablePySubscriptableValue,
         IPySliceableValue,
         IPyRenderableValue

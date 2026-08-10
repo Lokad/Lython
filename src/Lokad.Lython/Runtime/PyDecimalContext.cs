@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDecimalContext : IPyDynamicAttributes, IPyRenderableValue, IPyTruthyValue
+internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRenderableValue, IPyTruthyValue
 {
     public const string RoundCeiling = "ROUND_CEILING";
     public const string RoundFloor = "ROUND_FLOOR";
@@ -320,15 +320,7 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
 
         return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public int GetPyHashCode()
+public int GetPyHashCode()
     {
         var hash = new HashCode();
         hash.Add(Sign);

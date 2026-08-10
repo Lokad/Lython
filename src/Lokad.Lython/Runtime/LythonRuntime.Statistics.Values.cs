@@ -133,15 +133,7 @@ internal sealed partial class LythonRuntime
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
-
-            public bool TrySetMember(string name, object value)
-            {
-                _ = name;
-                _ = value;
-                return false;
-            }
-
-            public bool Equals(StatisticsLinearRegressionResult? other)
+public bool Equals(StatisticsLinearRegressionResult? other)
                 => other is not null && Slope.Equals(other.Slope) && Intercept.Equals(other.Intercept);
 
             public override bool Equals(object? obj) => obj is StatisticsLinearRegressionResult other && Equals(other);
@@ -353,15 +345,7 @@ internal sealed partial class LythonRuntime
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
-
-            public bool TrySetMember(string name, object value)
-            {
-                _ = name;
-                _ = value;
-                return false;
-            }
-
-            public bool Equals(PyNormalDist? other)
+public bool Equals(PyNormalDist? other)
                 => other is not null && Mean.Equals(other.Mean) && Stdev.Equals(other.Stdev);
 
             public override bool Equals(object? obj) => obj is PyNormalDist other && Equals(other);

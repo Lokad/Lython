@@ -481,15 +481,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
 
         return value is not PyNone;
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         => PyString.FromString($"<class '{Name}'>");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -627,15 +619,7 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
 
         return value is not PyNone;
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
     {
         var parts = _fieldNames
             .Select((fieldName, index) => $"{fieldName}={PyRendering.ToPythonString(_values[index], context)}");

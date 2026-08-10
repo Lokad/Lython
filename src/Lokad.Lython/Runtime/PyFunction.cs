@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyDynamicAttributes
+internal sealed class PyFunction : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes
 {
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly IReadOnlyList<LoweredStatement> _body;

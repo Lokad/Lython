@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class OpenPyxlTable : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlTable : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         public OpenPyxlTable(string displayName, string reference)
         {
@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlTableStyleInfo : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlTableStyleInfo : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         public OpenPyxlTableStyleInfo(string name, bool showFirstColumn, bool showLastColumn, bool showRowStripes, bool showColumnStripes)
         {
@@ -272,7 +272,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class OpenPyxlDataValidation : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlDataValidation : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly List<CellRangeAddress> _ranges = new();
 
@@ -475,15 +475,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public IEnumerable<object> Iterate() => _worksheet.DataValidations;
+public IEnumerable<object> Iterate() => _worksheet.DataValidations;
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
@@ -544,15 +536,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString("<openpyxl.formatting.rule.Rule>");
@@ -619,15 +603,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public object GetSubscript(object index, LythonSourceSpan span)
+public object GetSubscript(object index, LythonSourceSpan span)
         {
             var reference = NormalizeCellOrRangeReference(ExpectString(index, "Worksheet.conditional_formatting[...] key", span), span);
             var formatting = _worksheet.ConditionalFormattings.FirstOrDefault(item => string.Equals(item.Sqref, reference, StringComparison.Ordinal));
@@ -716,15 +692,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.drawing.spreadsheet_drawing.SpreadsheetDrawing path='{ContentPath(PackagePath)}'>");
@@ -764,15 +732,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.chart._chart.Chart path='{ContentPath(PackagePath)}'>");
@@ -816,15 +776,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.drawing.image.Image path='{ContentPath(PackagePath)}'>");

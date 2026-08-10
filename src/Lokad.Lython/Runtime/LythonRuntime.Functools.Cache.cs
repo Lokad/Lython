@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
     private sealed class PyLruCacheWrapper :
         ICallable,
         IPyBindableCallable,
-        IPyDynamicAttributes,
+        IPyMutableDynamicAttributes,
         IPyContextualDynamicAttributes,
         IPyRenderableValue,
         IClassOwnedMember
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class PyCachedProperty : IPyDescriptor, IClassNamedMember, IClassOwnedMember, IPyDynamicAttributes, IPyRenderableValue
+    private sealed class PyCachedProperty : IPyDescriptor, IClassNamedMember, IClassOwnedMember, IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly ICallable _callable;
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);

@@ -291,15 +291,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<{AlgorithmName} _hashlib.HASH object>");

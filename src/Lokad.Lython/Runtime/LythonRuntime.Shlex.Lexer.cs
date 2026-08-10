@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ShlexModule : PyModule
     {
-        private sealed class ShlexLexer : IPyDynamicAttributes, IPyIteratorValue, IPyRenderableValue
+        private sealed class ShlexLexer : IPyMutableDynamicAttributes, IPyIteratorValue, IPyRenderableValue
         {
             private const string BasicWordChars = "abcdfeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
             private const string PosixWordChars = "ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ";

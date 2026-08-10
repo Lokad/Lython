@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class OpenPyxlSheetView : IPyDynamicAttributes, IPyRenderableValue
+    private sealed class OpenPyxlSheetView : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class OpenPyxlSelection : IPyDynamicAttributes, IPyRenderableValue
+    private sealed class OpenPyxlSelection : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlPageMargins : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlPageMargins : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlPageSetup : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlPageSetup : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -372,15 +372,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public object GetSubscript(object index, LythonSourceSpan span)
+public object GetSubscript(object index, LythonSourceSpan span)
         {
             var name = ExpectString(index, "Worksheet.tables[...] key", span);
             if (!_worksheet.Tables.TryGetValue(name, out var table))
@@ -444,7 +436,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class OpenPyxlColumnDimension : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlColumnDimension : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -506,7 +498,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlRowDimension : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlRowDimension : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 

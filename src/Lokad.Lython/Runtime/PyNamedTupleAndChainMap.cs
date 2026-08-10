@@ -105,15 +105,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
         return value is not PyNone;
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
         return PyString.FromString($"<class '{_typeName}'>");
@@ -232,15 +224,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
         return value is not PyNone;
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public int GetPyHashCode()
+public int GetPyHashCode()
     {
         var hash = new HashCode();
         foreach (var value in _values)
@@ -417,15 +401,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         return value is not PyNone;
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(_maps, context), ")");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

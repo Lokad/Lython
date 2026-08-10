@@ -95,15 +95,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString ToPyString() => PyString.FromString(ColorIndexText());
+public PyString ToPyString() => PyString.FromString(ColorIndexText());
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -194,15 +186,7 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => _members.TryGetValue(name, out value);
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             if (QualifiedName == "openpyxl.styles.NamedStyle" &&

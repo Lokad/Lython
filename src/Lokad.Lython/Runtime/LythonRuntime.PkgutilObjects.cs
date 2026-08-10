@@ -143,15 +143,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public bool Equals(PkgutilModuleInfoObject? other)
+public bool Equals(PkgutilModuleInfoObject? other)
             => other is not null &&
                 PyEquality.AreEqual(ModuleFinder, other.ModuleFinder) &&
                 Name.Equals(other.Name) &&
@@ -273,15 +265,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
             => PyString.FromString($"<lython loader for {PyRendering.ToReprPyString(Name, context).AsString()}>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

@@ -47,15 +47,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public BigInteger Write(PyString text, LythonSourceSpan span)
+public BigInteger Write(PyString text, LythonSourceSpan span)
         {
             EnsureWritable(span);
             _buffer.Append(text);
@@ -287,15 +279,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public IEnumerable<object> Iterate()
+public IEnumerable<object> Iterate()
         {
             while (TryMoveNext(out var value))
             {

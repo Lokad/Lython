@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString(path), isPackage, locations);
     }
 
-    internal sealed class ImportlibModuleSpecObject : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class ImportlibModuleSpecObject : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly Dictionary<string, object> _members;
 

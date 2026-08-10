@@ -35,15 +35,7 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue
 
         return value is not PyNone || name is "start" or "stop" or "step";
     }
-
-    public bool TrySetMember(string name, object value)
-    {
-        _ = name;
-        _ = value;
-        return false;
-    }
-
-    public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         => PyString.FromString(
             "slice(" +
             PyRendering.ToReprPyString(Start, context).AsString() +

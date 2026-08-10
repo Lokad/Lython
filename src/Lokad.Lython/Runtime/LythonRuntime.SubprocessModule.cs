@@ -437,15 +437,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(
@@ -488,15 +480,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(

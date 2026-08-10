@@ -350,7 +350,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal sealed class ArgparseNamespaceObject
-        : IPyDynamicAttributes, IPyRenderableValue
+        : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly Dictionary<string, object> _members;
 

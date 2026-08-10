@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed class OpenPyxlCell : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlCell : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -199,15 +199,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
+public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
             return PyString.FromString($"<openpyxl.worksheet.hyperlink.Hyperlink ref='{Reference}' target='{Target}'>");
@@ -235,15 +227,7 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TrySetMember(string name, object value)
-        {
-            _ = name;
-            _ = value;
-            return false;
-        }
-
-        public IEnumerable<object> Iterate()
+public IEnumerable<object> Iterate()
             => _ranges.Select(range => (object)PyString.FromString(range.Reference));
 
         public PyString RenderPython(PyRenderingContext context)
@@ -258,7 +242,7 @@ internal sealed partial class LythonRuntime
             => new(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray());
     }
 
-    private sealed class OpenPyxlAutoFilter : IPyDynamicAttributes, IPyRenderableValue
+    private sealed class OpenPyxlAutoFilter : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -299,7 +283,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class OpenPyxlSheetProtection : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlSheetProtection : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
 
@@ -452,7 +436,7 @@ internal sealed partial class LythonRuntime
             => value is PyNone ? null : ExpectString(value, owner, null);
     }
 
-    internal sealed class OpenPyxlWorkbookSecurity : IPyDynamicAttributes, IPyRenderableValue
+    internal sealed class OpenPyxlWorkbookSecurity : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly OpenPyxlWorkbook _workbook;
 

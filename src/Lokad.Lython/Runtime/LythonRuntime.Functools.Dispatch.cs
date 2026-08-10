@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
     private sealed class PySingleDispatchDispatcher :
         ICallable,
         IPyBindableCallable,
-        IPyDynamicAttributes,
+        IPyMutableDynamicAttributes,
         IPyContextualDynamicAttributes,
         IPyRenderableValue,
         IClassOwnedMember
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class PySingleDispatchMethod : IPyDescriptor, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
+    private sealed class PySingleDispatchMethod : IPyDescriptor, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
     {
         private readonly PySingleDispatchDispatcher _dispatcher;
 

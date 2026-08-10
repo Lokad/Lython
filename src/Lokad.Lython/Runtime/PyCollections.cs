@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyDynamicAttributes, IPySizedValue
+internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue
 {
     private readonly PyDict _items;
 

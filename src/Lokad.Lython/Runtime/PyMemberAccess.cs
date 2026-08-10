@@ -150,7 +150,7 @@ internal static class PyMemberAccess
             return true;
         }
 
-        if (target is IPyDynamicAttributes dynamicAttributes && dynamicAttributes.TrySetMember(memberName, value))
+        if (target is IPyMutableDynamicAttributes dynamicAttributes && dynamicAttributes.TrySetMember(memberName, value))
         {
             return true;
         }

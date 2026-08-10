@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class PyPartial : ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    private sealed class PyPartial : ICallable, IPyRenderableValue, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes
     {
         private readonly ICallable _callable;
         private readonly CallArgumentValue[] _boundArguments;
@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             var parsed = ParseUpdateWrapperArguments(arguments, span);
-            if (parsed.Wrapper is not IPyDynamicAttributes mutableWrapper || parsed.Wrapped is null)
+            if (parsed.Wrapper is not IPyMutableDynamicAttributes mutableWrapper || parsed.Wrapped is null)
             {
                 throw new LythonRuntimeException("TypeError", "functools.update_wrapper(wrapper, wrapped) expects a mutable callable wrapper and a wrapped object.", span);
             }
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static void ApplyUpdateWrapper(
-        IPyDynamicAttributes mutableWrapper,
+        IPyMutableDynamicAttributes mutableWrapper,
         object wrapper,
         object wrapped,
         IReadOnlyList<string> assigned,
