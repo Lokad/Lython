@@ -267,7 +267,31 @@ internal static partial class StaticDataModuleContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        AnalyzeCsvDialect(arguments, layout.Dialect, diagnostics, bindings);
+        static void AnalyzeDialect(
+            ConcreteCallArguments arguments,
+            int position,
+            List<LythonDiagnostic> diagnostics,
+            AbstractState bindings)
+        {
+            if (!arguments.TryGetValue(position, "dialect", out var dialectExpression) ||
+                dialectExpression is NoneLiteralExpressionSyntax)
+            {
+                return;
+            }
+
+            if (StaticAbstractValueResolver.TryResolveKnownString(dialectExpression, bindings, out var text) &&
+                (string.Equals(text, "excel", StringComparison.Ordinal) || text.Length == 1))
+            {
+                return;
+            }
+
+            if (StaticAbstractFacts.IsDefinitelyKnownLiteral(dialectExpression, bindings))
+            {
+                AddDiagnostic(diagnostics, "LA3067", "csv dialect registry is unsupported; pass explicit CSV options instead.", dialectExpression.Span);
+            }
+        }
+
+        AnalyzeDialect(arguments, layout.Dialect, diagnostics, bindings);
         AnalyzeCsvCharacterOption(arguments, layout.Delimiter, "delimiter", allowNone: false, diagnostics, bindings);
         AnalyzeCsvCharacterOption(arguments, layout.QuoteCharacter, "quotechar", allowNone: true, diagnostics, bindings);
         AnalyzeCsvQuoting(arguments, layout.Quoting, diagnostics, bindings);
@@ -276,30 +300,6 @@ internal static partial class StaticDataModuleContractFamily
         AnalyzeBooleanArgument(arguments, layout.SkipInitialSpace, "skipinitialspace", "csv skipinitialspace must be a bool.", diagnostics, bindings);
         AnalyzeStringArgument(arguments, layout.LineTerminator, "lineterminator", "csv lineterminator must be a string.", diagnostics, bindings);
         AnalyzeBooleanArgument(arguments, layout.Strict, "strict", "csv strict must be a bool.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeCsvDialect(ConcreteCallArguments arguments, int position, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, "dialect", out var dialectExpression))
-        {
-            return;
-        }
-
-        if (dialectExpression is NoneLiteralExpressionSyntax)
-        {
-            return;
-        }
-
-        if (StaticAbstractValueResolver.TryResolveKnownString(dialectExpression, bindings, out var text) &&
-            (string.Equals(text, "excel", StringComparison.Ordinal) || text.Length == 1))
-        {
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(dialectExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3067", "csv dialect registry is unsupported; pass explicit CSV options instead.", dialectExpression.Span);
-        }
     }
 
     private static void AnalyzeCsvCharacterOption(ConcreteCallArguments arguments, int position, string keyword, bool allowNone, List<LythonDiagnostic> diagnostics, AbstractState bindings)
