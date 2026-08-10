@@ -580,24 +580,20 @@ internal sealed partial class LythonRuntime
                 }
 
                 _context.RegisterHostCall(span);
-                if (pending.Value.IsBinary)
+                switch (pending.Value.Operation)
                 {
-                    if (pending.Value.IsAppend)
-                    {
-                        _context.AppendHostBytes(Path, pending.Value.Payload, span);
-                    }
-                    else
-                    {
+                    case PendingTextFlushOperation.WriteText:
+                        _context.WriteTextUtf8(Path, pending.Value.Payload, span);
+                        break;
+                    case PendingTextFlushOperation.AppendText:
+                        _context.AppendTextUtf8(Path, pending.Value.Payload, span);
+                        break;
+                    case PendingTextFlushOperation.WriteBytes:
                         _context.WriteHostBytes(Path, pending.Value.Payload, span);
-                    }
-                }
-                else if (pending.Value.IsAppend)
-                {
-                    _context.AppendTextUtf8(Path, pending.Value.Payload, span);
-                }
-                else
-                {
-                    _context.WriteTextUtf8(Path, pending.Value.Payload, span);
+                        break;
+                    case PendingTextFlushOperation.AppendBytes:
+                        _context.AppendHostBytes(Path, pending.Value.Payload, span);
+                        break;
                 }
 
                 CompleteFlush(pending.Value.Payload.Length);
@@ -612,24 +608,20 @@ internal sealed partial class LythonRuntime
                 }
 
                 _context.RegisterHostCall(span);
-                if (pending.Value.IsBinary)
+                switch (pending.Value.Operation)
                 {
-                    if (pending.Value.IsAppend)
-                    {
-                        await _context.AppendHostBytesAsync(Path, pending.Value.Payload, span).ConfigureAwait(false);
-                    }
-                    else
-                    {
+                    case PendingTextFlushOperation.WriteText:
+                        await _context.WriteTextUtf8Async(Path, pending.Value.Payload, span).ConfigureAwait(false);
+                        break;
+                    case PendingTextFlushOperation.AppendText:
+                        await _context.AppendTextUtf8Async(Path, pending.Value.Payload, span).ConfigureAwait(false);
+                        break;
+                    case PendingTextFlushOperation.WriteBytes:
                         await _context.WriteHostBytesAsync(Path, pending.Value.Payload, span).ConfigureAwait(false);
-                    }
-                }
-                else if (pending.Value.IsAppend)
-                {
-                    await _context.AppendTextUtf8Async(Path, pending.Value.Payload, span).ConfigureAwait(false);
-                }
-                else
-                {
-                    await _context.WriteTextUtf8Async(Path, pending.Value.Payload, span).ConfigureAwait(false);
+                        break;
+                    case PendingTextFlushOperation.AppendBytes:
+                        await _context.AppendHostBytesAsync(Path, pending.Value.Payload, span).ConfigureAwait(false);
+                        break;
                 }
 
                 CompleteFlush(pending.Value.Payload.Length);
@@ -660,7 +652,14 @@ internal sealed partial class LythonRuntime
                     ? PyString.Empty
                     : PyString.FromUtf8(buffer.WrittenMemory);
                 var payload = EncodeText(text, effectiveEncoding, _errors, _newline, _context, span);
-                return new PendingTextFlush(payload, isAppend, effectiveEncoding == TextEncodingMode.Latin1);
+                var operation = (isAppend, effectiveEncoding == TextEncodingMode.Latin1) switch
+                {
+                    (false, false) => PendingTextFlushOperation.WriteText,
+                    (true, false) => PendingTextFlushOperation.AppendText,
+                    (false, true) => PendingTextFlushOperation.WriteBytes,
+                    (true, true) => PendingTextFlushOperation.AppendBytes,
+                };
+                return new PendingTextFlush(payload, operation);
             }
 
             private BigInteger PendingEncodedTextLength()
@@ -696,7 +695,15 @@ internal sealed partial class LythonRuntime
                 _bufferedRuneLength = 0;
             }
 
-            private readonly record struct PendingTextFlush(byte[] Payload, bool IsAppend, bool IsBinary);
+            private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation);
+
+            private enum PendingTextFlushOperation
+            {
+                WriteText,
+                AppendText,
+                WriteBytes,
+                AppendBytes,
+            }
 
             private void EnsureOpen()
             {
