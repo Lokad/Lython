@@ -59,6 +59,19 @@ public sealed class AbstractValueTests
         Assert.Throws<InvalidOperationException>(() => value.RequirePayload<string>());
     }
 
+    [Fact]
+    public void TraitTable_ClassifiesEveryAbstractValueKindWithoutContradictions()
+    {
+        foreach (var kind in Enum.GetValues<AbstractValueKind>())
+        {
+            var traits = AbstractValueTraitFacts.Get(kind);
+            Assert.False(
+                traits.HasFlag(AbstractValueTraits.DefinitelySized) &&
+                traits.HasFlag(AbstractValueTraits.DefinitelyNonSized),
+                $"{kind} cannot be both sized and non-sized.");
+        }
+    }
+
     private static KeyValuePair<AbstractValue, AbstractValue> Pair(AbstractValue key, AbstractValue value)
         => new(key, value);
 }

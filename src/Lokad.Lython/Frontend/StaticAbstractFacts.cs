@@ -48,63 +48,7 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyNonCallable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonCallable(value.RequirePayload<AbstractValue>())
-            : (value.Kind is AbstractValueKind.String or
-            AbstractValueKind.StringType or
-            AbstractValueKind.Bytes or
-            AbstractValueKind.BytesType or
-            AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
-            AbstractValueKind.None or
-            AbstractValueKind.List or
-            AbstractValueKind.ListType or
-            AbstractValueKind.Tuple or
-            AbstractValueKind.Dict or
-            AbstractValueKind.Set or
-            AbstractValueKind.SetType or
-            AbstractValueKind.Path or
-            AbstractValueKind.TextFileHandle or
-            AbstractValueKind.Module or
-            AbstractValueKind.RegexPattern or
-            AbstractValueKind.MaybeRegexMatch or
-            AbstractValueKind.RegexMatch or
-            AbstractValueKind.ArgparseParser or
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup or
-            AbstractValueKind.ArgparseNamespace or
-            AbstractValueKind.CsvReader or
-            AbstractValueKind.CsvDictReader or
-            AbstractValueKind.CsvWriter or
-            AbstractValueKind.CsvDictWriter or
-            AbstractValueKind.Decimal or
-            AbstractValueKind.DecimalContext or
-            AbstractValueKind.DecimalTuple or
-            AbstractValueKind.DateTimeTimedelta or
-            AbstractValueKind.DateTimeDate or
-            AbstractValueKind.DateTimeTime or
-            AbstractValueKind.DateTimeDateTime or
-            AbstractValueKind.DateTimeTimezone or
-            AbstractValueKind.StatisticsLinearRegression or
-            AbstractValueKind.StatisticsNormalDist or
-            AbstractValueKind.Random or
-            AbstractValueKind.DifflibDiffer or
-            AbstractValueKind.DifflibHtmlDiff or
-            AbstractValueKind.DifflibMatch or
-            AbstractValueKind.DifflibSequenceMatcher or
-            AbstractValueKind.PkgutilModuleInfo or
-            AbstractValueKind.PkgutilLoader or
-            AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.SubprocessPopen or
-            AbstractValueKind.DataclassField or
-            AbstractValueKind.OpenPyxlWorkbook or
-            AbstractValueKind.OpenPyxlWorksheet or
-            AbstractValueKind.OpenPyxlConditionalFormattingRule or
-            AbstractValueKind.OpenPyxlTableCollection or
-            AbstractValueKind.OpenPyxlDataValidationList or
-            AbstractValueKind.OpenPyxlMergedCellSet) ||
-            IsOpenPyxlMemberOnlyValue(value.Kind);
+            : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonCallable);
 
     public static bool IsKnownIntegerLiteral(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
@@ -127,44 +71,7 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyNonIterable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonIterable(value.RequirePayload<AbstractValue>())
-            : (value.Kind is AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
-            AbstractValueKind.None or
-            AbstractValueKind.Path or
-            AbstractValueKind.Module or
-            AbstractValueKind.KnownCallable or
-            AbstractValueKind.RegexPattern or
-            AbstractValueKind.MaybeRegexMatch or
-            AbstractValueKind.RegexMatch or
-            AbstractValueKind.ArgparseParser or
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup or
-            AbstractValueKind.ArgparseNamespace or
-            AbstractValueKind.CsvWriter or
-            AbstractValueKind.CsvDictWriter or
-            AbstractValueKind.Decimal or
-            AbstractValueKind.DecimalContext or
-            AbstractValueKind.DateTimeTimedelta or
-            AbstractValueKind.DateTimeDate or
-            AbstractValueKind.DateTimeTime or
-            AbstractValueKind.DateTimeDateTime or
-            AbstractValueKind.DateTimeTimezone or
-            AbstractValueKind.StatisticsNormalDist or
-            AbstractValueKind.Random or
-            AbstractValueKind.DifflibDiffer or
-            AbstractValueKind.DifflibHtmlDiff or
-            AbstractValueKind.DifflibSequenceMatcher or
-            AbstractValueKind.PkgutilLoader or
-            AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.SubprocessPopen or
-            AbstractValueKind.DataclassField or
-            AbstractValueKind.OpenPyxlWorksheet or
-            AbstractValueKind.OpenPyxlConditionalFormattingRule or
-            AbstractValueKind.Function) ||
-            IsOpenPyxlMemberOnlyValue(value.Kind);
+            : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonIterable);
 
     public static bool IsDefinitelyKnownNonSized(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) && IsDefinitelyNonSized(value);
@@ -172,141 +79,15 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyNonSized(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonSized(value.RequirePayload<AbstractValue>())
-            : (value.Kind is AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
-            AbstractValueKind.None or
-            AbstractValueKind.Path or
-            AbstractValueKind.TextFileHandle or
-            AbstractValueKind.Module or
-            AbstractValueKind.KnownCallable or
-            AbstractValueKind.RegexPattern or
-            AbstractValueKind.MaybeRegexMatch or
-            AbstractValueKind.RegexMatch or
-            AbstractValueKind.ArgparseParser or
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup or
-            AbstractValueKind.ArgparseNamespace or
-            AbstractValueKind.CsvWriter or
-            AbstractValueKind.CsvDictWriter or
-            AbstractValueKind.Decimal or
-            AbstractValueKind.DecimalContext or
-            AbstractValueKind.DateTimeTimedelta or
-            AbstractValueKind.DateTimeDate or
-            AbstractValueKind.DateTimeTime or
-            AbstractValueKind.DateTimeDateTime or
-            AbstractValueKind.DateTimeTimezone or
-            AbstractValueKind.StatisticsNormalDist or
-            AbstractValueKind.Random or
-            AbstractValueKind.DifflibDiffer or
-            AbstractValueKind.DifflibHtmlDiff or
-            AbstractValueKind.DifflibSequenceMatcher or
-            AbstractValueKind.PkgutilLoader or
-            AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.SubprocessPopen or
-            AbstractValueKind.DataclassField or
-            AbstractValueKind.OpenPyxlWorkbook or
-            AbstractValueKind.OpenPyxlWorksheet or
-            AbstractValueKind.OpenPyxlTableCollection or
-            AbstractValueKind.OpenPyxlDataValidationList or
-            AbstractValueKind.OpenPyxlConditionalFormattingCollection or
-            AbstractValueKind.OpenPyxlMergedCellSet or
-            AbstractValueKind.Function) ||
-            IsOpenPyxlMemberOnlyValue(value.Kind);
+            : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonSized);
 
     public static bool IsDefinitelySized(AbstractValue value)
-        => value.Kind is AbstractValueKind.String or
-            AbstractValueKind.StringType or
-            AbstractValueKind.Bytes or
-            AbstractValueKind.BytesType or
-            AbstractValueKind.List or
-            AbstractValueKind.ListType or
-            AbstractValueKind.Tuple or
-            AbstractValueKind.StatisticsLinearRegression or
-            AbstractValueKind.DifflibMatch or
-            AbstractValueKind.PkgutilModuleInfo or
-            AbstractValueKind.Dict or
-            AbstractValueKind.Set or
-            AbstractValueKind.SetType or
-            AbstractValueKind.CollectionsDefaultDict or
-            AbstractValueKind.CollectionsCounter or
-            AbstractValueKind.CollectionsDeque or
-            AbstractValueKind.CollectionsChainMap;
+        => AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelySized);
 
     public static bool IsDefinitelyNonSubscriptable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonSubscriptable(value.RequirePayload<AbstractValue>())
-            : (value.Kind is AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
-            AbstractValueKind.None or
-            AbstractValueKind.Set or
-            AbstractValueKind.SetType or
-            AbstractValueKind.Path or
-            AbstractValueKind.TextFileHandle or
-            AbstractValueKind.Module or
-            AbstractValueKind.KnownCallable or
-            AbstractValueKind.RegexPattern or
-            AbstractValueKind.MaybeRegexMatch or
-            AbstractValueKind.RegexMatch or
-            AbstractValueKind.ArgparseParser or
-            AbstractValueKind.ArgparseMutuallyExclusiveGroup or
-            AbstractValueKind.ArgparseNamespace or
-            AbstractValueKind.CsvWriter or
-            AbstractValueKind.CsvDictWriter or
-            AbstractValueKind.Decimal or
-            AbstractValueKind.DecimalContext or
-            AbstractValueKind.DateTimeTimedelta or
-            AbstractValueKind.DateTimeDate or
-            AbstractValueKind.DateTimeTime or
-            AbstractValueKind.DateTimeDateTime or
-            AbstractValueKind.DateTimeTimezone or
-            AbstractValueKind.StatisticsNormalDist or
-            AbstractValueKind.Random or
-            AbstractValueKind.DifflibDiffer or
-            AbstractValueKind.DifflibHtmlDiff or
-            AbstractValueKind.DifflibSequenceMatcher or
-            AbstractValueKind.PkgutilLoader or
-            AbstractValueKind.SubprocessCompletedProcess or
-            AbstractValueKind.SubprocessPopen or
-            AbstractValueKind.DataclassField or
-            AbstractValueKind.OpenPyxlConditionalFormattingRule or
-            AbstractValueKind.OpenPyxlMergedCellSet or
-            AbstractValueKind.Function) ||
-            IsOpenPyxlMemberOnlyValue(value.Kind);
-
-    private static bool IsOpenPyxlMemberOnlyValue(AbstractValueKind kind)
-        => kind is AbstractValueKind.OpenPyxlCell or
-            AbstractValueKind.OpenPyxlHyperlink or
-            AbstractValueKind.OpenPyxlComment or
-            AbstractValueKind.OpenPyxlFont or
-            AbstractValueKind.OpenPyxlPatternFill or
-            AbstractValueKind.OpenPyxlBorder or
-            AbstractValueKind.OpenPyxlSide or
-            AbstractValueKind.OpenPyxlAlignment or
-            AbstractValueKind.OpenPyxlProtection or
-            AbstractValueKind.OpenPyxlNamedStyle or
-            AbstractValueKind.OpenPyxlColor or
-            AbstractValueKind.OpenPyxlTable or
-            AbstractValueKind.OpenPyxlTableStyleInfo or
-            AbstractValueKind.OpenPyxlDataValidation or
-            AbstractValueKind.OpenPyxlAutoFilter or
-            AbstractValueKind.OpenPyxlSheetProtection or
-            AbstractValueKind.OpenPyxlWorkbookProtection or
-            AbstractValueKind.OpenPyxlDrawing or
-            AbstractValueKind.OpenPyxlChart or
-            AbstractValueKind.OpenPyxlImage or
-            AbstractValueKind.OpenPyxlSheetView or
-            AbstractValueKind.OpenPyxlSelection or
-            AbstractValueKind.OpenPyxlPageMargins or
-            AbstractValueKind.OpenPyxlPageSetup or
-            AbstractValueKind.OpenPyxlColumnDimension or
-            AbstractValueKind.OpenPyxlRowDimension;
+            : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonSubscriptable);
 
     public static bool IsDefinitelyNonSliceable(AbstractValue value)
         => IsDefinitelyNonSubscriptable(value) ||
