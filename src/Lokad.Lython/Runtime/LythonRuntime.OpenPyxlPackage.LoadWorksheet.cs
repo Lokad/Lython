@@ -26,6 +26,8 @@ internal sealed partial class LythonRuntime
         {
             var document = LoadXml(archive, path, span);
             var worksheetRelationships = LoadOptionalRelationships(archive, WorksheetRelationshipsPath(path), span);
+            // Values, formulas, and styles are independent in OOXML. Preserve each
+            // backing store even when a cell has no ordinary Python value.
             foreach (var cell in document.Descendants(XlsxMain + "c"))
             {
                 var reference = (string?)cell.Attribute("r");
@@ -53,6 +55,24 @@ internal sealed partial class LythonRuntime
                 worksheet.SetLoadedCellDataType(address.Row, address.Column, (string?)cell.Attribute("t"));
             }
 
+            LoadWorksheetStructure(document, worksheet, worksheetRelationships, span);
+
+            LoadWorksheetComments(archive, path, worksheet, span);
+            LoadWorksheetTables(archive, path, document, worksheet, worksheetRelationships, span);
+            LoadWorksheetDataValidations(document, worksheet, span);
+            LoadWorksheetConditionalFormatting(document, worksheet, span);
+            LoadWorksheetProtection(document, worksheet, span);
+            LoadWorksheetDrawings(archive, path, document, worksheet, worksheetRelationships, span);
+            worksheet.SetLoadedAutoFilter((string?)document.Descendants(XlsxMain + "autoFilter").FirstOrDefault()?.Attribute("ref"));
+            LoadWorksheetViewAndPageLayout(document, worksheet, span);
+        }
+
+        private static void LoadWorksheetStructure(
+            XDocument document,
+            OpenPyxlWorksheet worksheet,
+            IReadOnlyDictionary<string, string> worksheetRelationships,
+            LythonSourceSpan span)
+        {
             foreach (var column in document.Descendants(XlsxMain + "col"))
             {
                 var min = ReadPositiveIntAttribute(column, "min", span);
@@ -112,15 +132,13 @@ internal sealed partial class LythonRuntime
                     worksheet.SetLoadedHyperlink(ParseCellOrRange(reference, span), target);
                 }
             }
+        }
 
-            LoadWorksheetComments(archive, path, worksheet, span);
-            LoadWorksheetTables(archive, path, document, worksheet, worksheetRelationships, span);
-            LoadWorksheetDataValidations(document, worksheet, span);
-            LoadWorksheetConditionalFormatting(document, worksheet, span);
-            LoadWorksheetProtection(document, worksheet, span);
-            LoadWorksheetDrawings(archive, path, document, worksheet, worksheetRelationships, span);
-            worksheet.SetLoadedAutoFilter((string?)document.Descendants(XlsxMain + "autoFilter").FirstOrDefault()?.Attribute("ref"));
-
+        private static void LoadWorksheetViewAndPageLayout(
+            XDocument document,
+            OpenPyxlWorksheet worksheet,
+            LythonSourceSpan span)
+        {
             var sheetView = document.Descendants(XlsxMain + "sheetView").FirstOrDefault();
             if (sheetView is not null)
             {
