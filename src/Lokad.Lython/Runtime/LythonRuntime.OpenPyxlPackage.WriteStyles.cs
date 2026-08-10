@@ -356,7 +356,7 @@ internal sealed partial class LythonRuntime
 
             return style.QualifiedName + "(" + string.Join(
                 ",",
-                StyleMemberNames(style.QualifiedName).Select(name => name + "=" + StyleObjectKey(StyleValue(style, name)))) + ")";
+                GetOpenPyxlStyleMemberNames(style.QualifiedName).Select(name => name + "=" + StyleObjectKey(StyleValue(style, name)))) + ")";
         }
 
         private static string StyleObjectKey(object? value)
@@ -398,19 +398,6 @@ internal sealed partial class LythonRuntime
 
             return value.GetType().FullName + ":" + value;
         }
-
-        private static string[] StyleMemberNames(string qualifiedName)
-            => qualifiedName switch
-            {
-                "openpyxl.styles.Font" => ["name", "sz", "bold", "italic", "color", "underline", "strike"],
-                "openpyxl.styles.PatternFill" => ["fill_type", "fgColor", "bgColor"],
-                "openpyxl.styles.Border" => ["left", "right", "top", "bottom"],
-                "openpyxl.styles.Side" => ["style", "color"],
-                "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "text_rotation", "shrink_to_fit"],
-                "openpyxl.styles.Protection" => ["locked", "hidden"],
-                "openpyxl.styles.NamedStyle" => ["name", "number_format", "font", "fill", "border", "alignment", "protection"],
-                _ => [],
-            };
 
     }
 }

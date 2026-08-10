@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        foreach (var name in ComparableStyleMemberNames(left.QualifiedName))
+        foreach (var name in GetOpenPyxlStyleMemberNames(left.QualifiedName))
         {
             var leftValue = ComparableStyleValue(left, name);
             var rightValue = ComparableStyleValue(right, name);
@@ -258,7 +258,7 @@ internal sealed partial class LythonRuntime
     {
         var hash = new HashCode();
         hash.Add(style.QualifiedName, StringComparer.Ordinal);
-        foreach (var name in ComparableStyleMemberNames(style.QualifiedName))
+        foreach (var name in GetOpenPyxlStyleMemberNames(style.QualifiedName))
         {
             hash.Add(name, StringComparer.Ordinal);
             hash.Add(StyleObjectHashCode(ComparableStyleValue(style, name)));
@@ -293,19 +293,6 @@ internal sealed partial class LythonRuntime
             return value.RequireNotNull().GetHashCode();
         }
     }
-
-    private static string[] ComparableStyleMemberNames(string qualifiedName)
-        => qualifiedName switch
-        {
-            "openpyxl.styles.Font" => ["name", "sz", "bold", "italic", "color", "underline", "strike"],
-            "openpyxl.styles.PatternFill" => ["fill_type", "fgColor", "bgColor"],
-            "openpyxl.styles.Border" => ["left", "right", "top", "bottom"],
-            "openpyxl.styles.Side" => ["style", "color"],
-            "openpyxl.styles.Alignment" => ["horizontal", "vertical", "wrap_text", "text_rotation", "shrink_to_fit"],
-            "openpyxl.styles.Protection" => ["locked", "hidden"],
-            "openpyxl.styles.NamedStyle" => ["name", "number_format", "font", "fill", "border", "alignment", "protection"],
-            _ => [],
-        };
 
     private static object CreateColor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
