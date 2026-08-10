@@ -19,6 +19,20 @@ internal sealed partial class LythonRuntime
         public static SpecialMethodInvocation Invoked(object value) => new(SpecialMethodInvocationKind.Invoked, value);
     }
 
+    private readonly record struct BinarySpecialMethodPair(string Left, string Right);
+
+    private delegate ValueTask<SpecialMethodInvocation> BinarySpecialMethodInvoker(
+        object target,
+        string method,
+        object argument,
+        ExecutionContext context,
+        LythonSourceSpan span);
+
+    private delegate ValueTask<bool> TruthinessEvaluator(
+        object value,
+        ExecutionContext context,
+        LythonSourceSpan span);
+
     private static object EvaluateBinaryOperator(
         BinaryOperatorSyntax op,
         object left,
@@ -161,47 +175,86 @@ internal sealed partial class LythonRuntime
             _ => null,
         };
 
-    private static async ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolAsync(
+    private static bool TryEvaluateNumericProtocol(
+        BinaryOperatorSyntax op,
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        // The sync invoker always returns an already-completed ValueTask, so the
+        // shared policy core cannot suspend or block the synchronous runtime.
+        var invocation = EvaluateNumericProtocolCoreAsync(op, left, right, context, span, InvokeBinarySpecialMethod)
+            .GetAwaiter()
+            .GetResult();
+        result = invocation.Value;
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked;
+    }
+
+    private static ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolAsync(
         BinaryOperatorSyntax op,
         object left,
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
+        => EvaluateNumericProtocolCoreAsync(op, left, right, context, span, InvokeBinarySpecialMethodAsync);
+
+    private static async ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolCoreAsync(
+        BinaryOperatorSyntax op,
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke)
     {
         if (op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString)
         {
             return SpecialMethodInvocation.Missing;
         }
 
-        var methods = NumericSpecialMethods(op);
-        if (methods.Left is null)
+        var methods = op switch
+        {
+            BinaryOperatorSyntax.Add => new BinarySpecialMethodPair("__add__", "__radd__"),
+            BinaryOperatorSyntax.Subtract => new BinarySpecialMethodPair("__sub__", "__rsub__"),
+            BinaryOperatorSyntax.Multiply => new BinarySpecialMethodPair("__mul__", "__rmul__"),
+            BinaryOperatorSyntax.Divide => new BinarySpecialMethodPair("__truediv__", "__rtruediv__"),
+            BinaryOperatorSyntax.FloorDivide => new BinarySpecialMethodPair("__floordiv__", "__rfloordiv__"),
+            BinaryOperatorSyntax.Modulo => new BinarySpecialMethodPair("__mod__", "__rmod__"),
+            BinaryOperatorSyntax.Power => new BinarySpecialMethodPair("__pow__", "__rpow__"),
+            BinaryOperatorSyntax.BitwiseOr => new BinarySpecialMethodPair("__or__", "__ror__"),
+            BinaryOperatorSyntax.BitwiseXor => new BinarySpecialMethodPair("__xor__", "__rxor__"),
+            BinaryOperatorSyntax.BitwiseAnd => new BinarySpecialMethodPair("__and__", "__rand__"),
+            BinaryOperatorSyntax.LeftShift => new BinarySpecialMethodPair("__lshift__", "__rlshift__"),
+            BinaryOperatorSyntax.RightShift => new BinarySpecialMethodPair("__rshift__", "__rrshift__"),
+            _ => (BinarySpecialMethodPair?)null,
+        };
+        if (methods is not { } resolvedMethods)
         {
             return SpecialMethodInvocation.Missing;
         }
 
-        var leftInvocation = await InvokeBinarySpecialMethodAsync(left, methods.Left, right, context, span).ConfigureAwait(false);
+        var leftInvocation = await invoke(left, resolvedMethods.Left, right, context, span).ConfigureAwait(false);
         return leftInvocation.Kind == SpecialMethodInvocationKind.Invoked
             ? leftInvocation
-            : await InvokeBinarySpecialMethodAsync(right, methods.Right.RequireNotNull(), left, context, span).ConfigureAwait(false);
+            : await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
     }
 
-    private static (string? Left, string? Right) NumericSpecialMethods(BinaryOperatorSyntax op)
-        => op switch
+    private static ValueTask<SpecialMethodInvocation> InvokeBinarySpecialMethod(
+        object target,
+        string method,
+        object argument,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (!TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
         {
-            BinaryOperatorSyntax.Add => ("__add__", "__radd__"),
-            BinaryOperatorSyntax.Subtract => ("__sub__", "__rsub__"),
-            BinaryOperatorSyntax.Multiply => ("__mul__", "__rmul__"),
-            BinaryOperatorSyntax.Divide => ("__truediv__", "__rtruediv__"),
-            BinaryOperatorSyntax.FloorDivide => ("__floordiv__", "__rfloordiv__"),
-            BinaryOperatorSyntax.Modulo => ("__mod__", "__rmod__"),
-            BinaryOperatorSyntax.Power => ("__pow__", "__rpow__"),
-            BinaryOperatorSyntax.BitwiseOr => ("__or__", "__ror__"),
-            BinaryOperatorSyntax.BitwiseXor => ("__xor__", "__rxor__"),
-            BinaryOperatorSyntax.BitwiseAnd => ("__and__", "__rand__"),
-            BinaryOperatorSyntax.LeftShift => ("__lshift__", "__rlshift__"),
-            BinaryOperatorSyntax.RightShift => ("__rshift__", "__rrshift__"),
-            _ => (null, null),
-        };
+            return new ValueTask<SpecialMethodInvocation>(SpecialMethodInvocation.Missing);
+        }
+
+        return new ValueTask<SpecialMethodInvocation>(
+            SpecialMethodInvocation.Invoked(callable.Invoke([CallArgumentValue.Positional(argument)], span, context)));
+    }
 
     private static async ValueTask<SpecialMethodInvocation> InvokeBinarySpecialMethodAsync(
         object target,
@@ -210,9 +263,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (target is not PyInstance instance ||
-            !instance.TryGetAttribute(method, context, span, out var member) ||
-            member is not ICallable callable)
+        if (!TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
         {
             return SpecialMethodInvocation.Missing;
         }
@@ -227,9 +278,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (target is not PyInstance instance ||
-            !instance.TryGetAttribute(method, context, span, out var member) ||
-            member is not ICallable callable)
+        if (!TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
         {
             return SpecialMethodInvocation.Missing;
         }
@@ -238,29 +287,98 @@ internal sealed partial class LythonRuntime
         return SpecialMethodInvocation.Invoked(value);
     }
 
-    private static async ValueTask<bool> AreEqualWithProtocolsAsync(
+    private static bool TryResolveSpecialMethodCallable(
+        object target,
+        string method,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        [MaybeNullWhen(false)] out ICallable callable)
+    {
+        if (target is PyInstance instance &&
+            instance.TryGetAttribute(method, context, span, out var member) &&
+            member is ICallable resolved)
+        {
+            callable = resolved;
+            return true;
+        }
+
+        callable = null;
+        return false;
+    }
+
+    private static bool TryInvokeBinarySpecialMethod(
+        object target,
+        string method,
+        object argument,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        var invocation = InvokeBinarySpecialMethod(target, method, argument, context, span)
+            .GetAwaiter()
+            .GetResult();
+        result = invocation.Value;
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked;
+    }
+
+    private static bool TryInvokeUnarySpecialMethod(
+        object target,
+        string method,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        out object result)
+    {
+        if (TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
+        {
+            result = callable.Invoke([], span, context);
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
+    }
+
+    private static bool AreEqualWithProtocols(
         object left,
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
+        => AreEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
+            .GetAwaiter()
+            .GetResult();
+
+    private static ValueTask<bool> AreEqualWithProtocolsAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => AreEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<bool> AreEqualWithProtocolsCoreAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
             return leftKey.CompareTo(rightKey, span, context) == 0;
         }
 
-        var invocation = await InvokeBinarySpecialMethodAsync(left, "__eq__", right, context, span).ConfigureAwait(false);
+        var invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
         if (invocation.Kind == SpecialMethodInvocationKind.Missing)
         {
-            invocation = await InvokeBinarySpecialMethodAsync(right, "__eq__", left, context, span).ConfigureAwait(false);
+            invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
         }
 
         return invocation.Kind == SpecialMethodInvocationKind.Invoked
-            ? await IsTruthyAsync(invocation.Value, context, span).ConfigureAwait(false)
+            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : AreEqual(left, right);
     }
 
-    private static async ValueTask<bool> EvaluateRichComparisonAsync(
+    private static bool EvaluateRichComparison(
         object left,
         object right,
         string method,
@@ -268,6 +386,45 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span,
         Func<int, bool> fallback)
+        => EvaluateRichComparisonCoreAsync(
+                left,
+                right,
+                new BinarySpecialMethodPair(method, reflectedMethod),
+                context,
+                span,
+                fallback,
+                InvokeBinarySpecialMethod,
+                EvaluateTruthiness)
+            .GetAwaiter()
+            .GetResult();
+
+    private static ValueTask<bool> EvaluateRichComparisonAsync(
+        object left,
+        object right,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+        => EvaluateRichComparisonCoreAsync(
+            left,
+            right,
+            new BinarySpecialMethodPair(method, reflectedMethod),
+            context,
+            span,
+            fallback,
+            InvokeBinarySpecialMethodAsync,
+            IsTruthyAsync);
+
+    private static async ValueTask<bool> EvaluateRichComparisonCoreAsync(
+        object left,
+        object right,
+        BinarySpecialMethodPair methods,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
@@ -276,7 +433,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PySet leftSet && right is PySet rightSet)
         {
-            return method switch
+            return methods.Left switch
             {
                 "__lt__" => leftSet.IsProperSubsetOf(rightSet),
                 "__le__" => leftSet.IsSubsetOf(rightSet),
@@ -286,26 +443,43 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        var invocation = await InvokeBinarySpecialMethodAsync(left, method, right, context, span).ConfigureAwait(false);
+        var invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
         if (invocation.Kind == SpecialMethodInvocationKind.Missing)
         {
-            invocation = await InvokeBinarySpecialMethodAsync(right, reflectedMethod, left, context, span).ConfigureAwait(false);
+            invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
         }
 
         return invocation.Kind == SpecialMethodInvocationKind.Invoked
-            ? await IsTruthyAsync(invocation.Value, context, span).ConfigureAwait(false)
+            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : CompareRelational(left, right, span, fallback);
     }
 
-    private static async ValueTask<bool> ContainsAsync(
+    private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
+        => ContainsCoreAsync(container, candidate, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
+            .GetAwaiter()
+            .GetResult();
+
+    private static ValueTask<bool> ContainsAsync(
         object container,
         object candidate,
         ExecutionContext context,
         LythonSourceSpan span)
+        => ContainsCoreAsync(container, candidate, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<bool> ContainsCoreAsync(
+        object container,
+        object candidate,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
     {
-        var invocation = await InvokeBinarySpecialMethodAsync(container, "__contains__", candidate, context, span).ConfigureAwait(false);
+        var invocation = await invoke(container, "__contains__", candidate, context, span).ConfigureAwait(false);
         return invocation.Kind == SpecialMethodInvocationKind.Invoked
-            ? await IsTruthyAsync(invocation.Value, context, span).ConfigureAwait(false)
+            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : PyContainment.Contains(container, candidate, span);
     }
+
+    private static ValueTask<bool> EvaluateTruthiness(object value, ExecutionContext context, LythonSourceSpan span)
+        => new(IsTruthy(value, context, span));
 }
