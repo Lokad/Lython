@@ -5,9 +5,11 @@ using System.Globalization;
 
 namespace Lokad.Lython.Runtime.Text;
 
+internal readonly record struct NormalizedStringRange(int Start, int End);
+
 internal static partial class PyStringOps
 {
-    public static (int Start, int End) NormalizeRange(int length, object? start, object? end)
+    internal static NormalizedStringRange NormalizeRange(int length, object? start, object? end)
     {
         var normalizedStart = NormalizeBound(start, length, defaultValue: 0);
         var normalizedEnd = NormalizeBound(end, length, defaultValue: length);
@@ -16,7 +18,7 @@ internal static partial class PyStringOps
             normalizedEnd = normalizedStart;
         }
 
-        return (normalizedStart, normalizedEnd);
+        return new NormalizedStringRange(normalizedStart, normalizedEnd);
     }
 
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)

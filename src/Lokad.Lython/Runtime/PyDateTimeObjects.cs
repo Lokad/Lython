@@ -7,6 +7,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
+    private readonly record struct NormalizedTimedeltaParts(BigInteger Days, int Seconds, int Microseconds);
+
     public static readonly BigInteger MicrosecondsPerDay = new(86_400_000_000L);
     private static readonly BigInteger MinimumMicroseconds = -999_999_999 * MicrosecondsPerDay;
     private static readonly BigInteger MaximumMicroseconds = 999_999_999 * MicrosecondsPerDay + MicrosecondsPerDay - 1;
@@ -28,17 +30,30 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
         }
 
         TotalMicroseconds = totalMicroseconds;
+        var days = BigInteger.DivRem(totalMicroseconds, MicrosecondsPerDay, out var remainderMicroseconds);
+        if (remainderMicroseconds.Sign < 0)
+        {
+            remainderMicroseconds += MicrosecondsPerDay;
+            days -= 1;
+        }
+
+        _normalized = new NormalizedTimedeltaParts(
+            days,
+            (int)(remainderMicroseconds / 1_000_000),
+            (int)(remainderMicroseconds % 1_000_000));
     }
+
+    private readonly NormalizedTimedeltaParts _normalized;
 
     public BigInteger TotalMicroseconds { get; }
 
     public TimeSpan Value => new(checked((long)(TotalMicroseconds * 10)));
 
-    public BigInteger Days => GetNormalizedParts().Days;
+    public BigInteger Days => _normalized.Days;
 
-    public BigInteger Seconds => new(GetNormalizedParts().Seconds);
+    public BigInteger Seconds => new(_normalized.Seconds);
 
-    public BigInteger Microseconds => new(GetNormalizedParts().Microseconds);
+    public BigInteger Microseconds => new(_normalized.Microseconds);
 
     public bool IsTruthy() => !TotalMicroseconds.IsZero;
 
@@ -49,14 +64,14 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        var parts = GetNormalizedParts();
+        var parts = _normalized;
         return PyString.FromString($"datetime.timedelta(days={parts.Days}, seconds={parts.Seconds}, microseconds={parts.Microseconds})");
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
         _ = context;
-        var parts = GetNormalizedParts();
+        var parts = _normalized;
         var builder = new StringBuilder();
         if (!parts.Days.IsZero)
         {
@@ -87,19 +102,6 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
 
     public override string ToString() => RenderInterpolated(default).AsString();
 
-    private (BigInteger Days, int Seconds, int Microseconds) GetNormalizedParts()
-    {
-        var days = BigInteger.DivRem(TotalMicroseconds, MicrosecondsPerDay, out var remainderMicroseconds);
-        if (remainderMicroseconds.Sign < 0)
-        {
-            remainderMicroseconds += MicrosecondsPerDay;
-            days -= 1;
-        }
-
-        var seconds = (int)(remainderMicroseconds / 1_000_000);
-        var microseconds = (int)(remainderMicroseconds % 1_000_000);
-        return (days, seconds, microseconds);
-    }
 }
 
 internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderableValue

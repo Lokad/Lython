@@ -5,6 +5,8 @@ namespace Lokad.Lython.Runtime.Text;
 
 internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue
 {
+    private readonly record struct RuneByteRange(int Start, int Length);
+
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
     private static readonly PyString[] AsciiCharacters = CreateAsciiCharacters();
 
@@ -570,7 +572,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
         => haystack.IndexOf(needle);
 
-    private (int Start, int Length) GetRuneByteRange(int runeIndex)
+    private RuneByteRange GetRuneByteRange(int runeIndex)
     {
         if (runeIndex < 0)
         {
@@ -585,11 +587,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         if (length == _utf8.Length)
         {
-            return (runeIndex, 1);
+            return new RuneByteRange(runeIndex, 1);
         }
 
         var offsets = GetRuneByteOffsets();
-        return (offsets[runeIndex], offsets[runeIndex + 1] - offsets[runeIndex]);
+        return new RuneByteRange(offsets[runeIndex], offsets[runeIndex + 1] - offsets[runeIndex]);
     }
 
     private int[] GetRuneByteOffsets()

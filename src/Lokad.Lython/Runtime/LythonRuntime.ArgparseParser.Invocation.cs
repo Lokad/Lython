@@ -12,6 +12,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ArgumentParserObject
     {
+        private readonly record struct ParseInvocation(List<string> Argv, ArgparseNamespaceObject? Namespace);
+
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             RegisterArgument(CreateArgumentSpec(arguments, span, groupId: null, context));
@@ -143,7 +145,7 @@ internal sealed partial class LythonRuntime
             resultNamespace.ReplaceMembers(values);
             return new ParseResult(resultNamespace, unknown);
         }
-        private (List<string> Argv, ArgparseNamespaceObject? Namespace) ResolveParseInvocation(
+        private ParseInvocation ResolveParseInvocation(
             CallArgumentValue[] arguments,
             string methodName,
             LythonSourceSpan span,
@@ -212,7 +214,7 @@ internal sealed partial class LythonRuntime
                 ? null
                 : namespaceValue as ArgparseNamespaceObject ??
                   throw new LythonRuntimeException("TypeError", $"{methodName}(namespace) expects an argparse.Namespace instance.", span);
-            return (argv, namespaceObject);
+            return new ParseInvocation(argv, namespaceObject);
         }
     }
 }
