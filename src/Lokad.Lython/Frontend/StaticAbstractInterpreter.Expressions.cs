@@ -1,0 +1,442 @@
+namespace Lokad.Lython.Frontend;
+
+internal static partial class StaticAbstractInterpreter
+{
+    private static void AnalyzeExpression(ExpressionSyntax expression, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        switch (expression)
+        {
+            case FormattedStringExpressionSyntax formatted:
+                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
+                {
+                    AnalyzeExpression(nestedExpression, diagnostics, bindings);
+                }
+                break;
+
+            case ListLiteralExpressionSyntax list:
+                AnalyzeExpressions(list.Items, diagnostics, bindings);
+                break;
+
+            case ListComprehensionExpressionSyntax listComprehension:
+                {
+                    var comprehensionBindings = AnalyzeComprehensionClauses(listComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(listComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
+                }
+
+            case GeneratorExpressionSyntax generator:
+                {
+                    var comprehensionBindings = AnalyzeComprehensionClauses(generator.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(generator.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
+                }
+
+            case DictLiteralExpressionSyntax dict:
+                foreach (var item in dict.Items)
+                {
+                    AnalyzeExpression(item.Key, diagnostics, bindings);
+                    if (!item.IsUnpacking)
+                    {
+                        AnalyzeExpression(item.Value, diagnostics, bindings);
+                    }
+                }
+                break;
+
+            case SetLiteralExpressionSyntax set:
+                AnalyzeExpressions(set.Items, diagnostics, bindings);
+                break;
+
+            case SetComprehensionExpressionSyntax setComprehension:
+                {
+                    var comprehensionBindings = AnalyzeComprehensionClauses(setComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(setComprehension.ItemExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
+                }
+
+            case DictComprehensionExpressionSyntax dictComprehension:
+                {
+                    var comprehensionBindings = AnalyzeComprehensionClauses(dictComprehension.Clauses, diagnostics, bindings, out var reachable);
+                    if (reachable)
+                    {
+                        AnalyzeExpression(dictComprehension.KeyExpression, diagnostics, comprehensionBindings);
+                        AnalyzeExpression(dictComprehension.ValueExpression, diagnostics, comprehensionBindings);
+                    }
+                    break;
+                }
+
+            case TupleLiteralExpressionSyntax tuple:
+                AnalyzeExpressions(tuple.Items, diagnostics, bindings);
+                break;
+
+            case ParenthesizedExpressionSyntax parenthesized:
+                AnalyzeExpression(parenthesized.Inner, diagnostics, bindings);
+                break;
+
+            case MemberExpressionSyntax member:
+                AnalyzeExpression(member.Target, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeMemberAccess(member, diagnostics, bindings);
+                break;
+
+            case CallExpressionSyntax call:
+                AnalyzeExpression(call.Target, diagnostics, bindings);
+                AnalyzeCall(call, diagnostics, bindings);
+                foreach (var argument in call.Arguments)
+                {
+                    AnalyzeExpression(argument.Expression, diagnostics, bindings);
+                }
+                break;
+
+            case SubscriptExpressionSyntax subscript:
+                AnalyzeExpression(subscript.Target, diagnostics, bindings);
+                AnalyzeExpression(subscript.Index, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeSubscriptAccess(subscript, diagnostics, bindings);
+                break;
+
+            case SliceExpressionSyntax slice:
+                AnalyzeExpression(slice.Target, diagnostics, bindings);
+                if (slice.Start is not null) AnalyzeExpression(slice.Start, diagnostics, bindings);
+                if (slice.End is not null) AnalyzeExpression(slice.End, diagnostics, bindings);
+                if (slice.Step is not null) AnalyzeExpression(slice.Step, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeSliceAccess(slice, diagnostics, bindings);
+                break;
+
+            case BinaryExpressionSyntax binary:
+                AnalyzeExpression(binary.Left, diagnostics, bindings);
+                if (binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
+                {
+                    var continueTruth = binary.Operator == BinaryOperatorSyntax.And;
+                    if (!TryResolveConditionTruth(binary.Left, bindings, out var leftTruth) || leftTruth == continueTruth)
+                    {
+                        var rightBindings = bindings.Clone();
+                        StaticConditionRefinements.Apply(binary.Left, continueTruth, rightBindings);
+                        AnalyzeExpression(binary.Right, diagnostics, rightBindings);
+                    }
+                }
+                else
+                {
+                    AnalyzeExpression(binary.Right, diagnostics, bindings);
+                }
+                StaticStructuralDiagnostics.AnalyzeBinaryOperation(binary, diagnostics, bindings);
+                break;
+
+            case ChainedComparisonExpressionSyntax chained:
+                AnalyzeExpressions(chained.Operands, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeChainedComparisonOperations(chained, diagnostics, bindings);
+                break;
+
+            case UnaryExpressionSyntax unary:
+                AnalyzeExpression(unary.Operand, diagnostics, bindings);
+                StaticStructuralDiagnostics.AnalyzeUnaryOperation(unary, diagnostics, bindings);
+                break;
+
+            case ConditionalExpressionSyntax conditional:
+                AnalyzeExpression(conditional.Condition, diagnostics, bindings);
+                if (TryResolveConditionTruth(conditional.Condition, bindings, out var conditionalTruth))
+                {
+                    var selectedBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, conditionalTruth, selectedBindings);
+                    AnalyzeExpression(
+                        conditionalTruth ? conditional.Consequent : conditional.Alternative,
+                        diagnostics,
+                        selectedBindings);
+                }
+                else
+                {
+                    var consequentBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: true, consequentBindings);
+                    AnalyzeExpression(conditional.Consequent, diagnostics, consequentBindings);
+                    var alternativeBindings = bindings.Clone();
+                    StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: false, alternativeBindings);
+                    AnalyzeExpression(conditional.Alternative, diagnostics, alternativeBindings);
+                }
+                break;
+
+            case AssignmentExpressionSyntax assignment:
+                AnalyzeExpression(assignment.Expression, diagnostics, bindings);
+                break;
+
+            case LambdaExpressionSyntax lambda:
+                {
+                    var lambdaBindings = bindings.Clone();
+                    StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
+                    AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);
+                    break;
+                }
+        }
+
+        static void AnalyzeCall(CallExpressionSyntax call, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        {
+            if (StaticAbstractValueResolver.TryResolve(call.Target, bindings, out var targetValue) &&
+                StaticAbstractFacts.IsDefinitelyNonCallable(targetValue))
+            {
+                AddDiagnostic(diagnostics, "LA3107", "Object is not callable.", call.Target.Span);
+                return;
+            }
+
+            if (!StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments))
+            {
+                return;
+            }
+
+            if (AnalyzeUserDefinedCallShape(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            if (StaticContractEngine.AnalyzeKnownCallContract(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            if (StaticContractEngine.AnalyzeCallableContract(call, arguments, diagnostics, bindings))
+            {
+                return;
+            }
+
+            _ = StaticContractEngine.TryAnalyzeCall(call, arguments, diagnostics, bindings);
+
+            static bool AnalyzeUserDefinedCallShape(
+                CallExpressionSyntax call,
+                ConcreteCallArguments arguments,
+                List<LythonDiagnostic> diagnostics,
+                AbstractState bindings)
+            {
+                if (call.Target is IdentifierExpressionSyntax identifier &&
+                    bindings.TryGet(identifier.Name, out var targetValue))
+                {
+                    if (targetValue.Kind == AbstractValueKind.Function &&
+                        StaticBindingEngine.TryGetFunctionCallShapeFailure(
+                            (AbstractFunctionSummary)targetValue.Value,
+                            arguments,
+                            out var functionReason,
+                            out var functionOffendingExpression))
+                    {
+                        AddDiagnostic(
+                            diagnostics,
+                            "LA3148",
+                            $"Function '{identifier.Name}' call does not match its parameter list: {functionReason}.",
+                            functionOffendingExpression?.Span ?? call.Span);
+                        return true;
+                    }
+
+                    if (targetValue.Kind == AbstractValueKind.UserClass &&
+                        StaticBindingEngine.TryGetDataclassConstructorShapeFailure(
+                            (AbstractClassSummary)targetValue.Value,
+                            arguments,
+                            out var constructorReason,
+                            out var constructorOffendingExpression))
+                    {
+                        AddDiagnostic(
+                            diagnostics,
+                            "LA3149",
+                            $"Constructor for '{identifier.Name}' does not match its dataclass fields: {constructorReason}.",
+                            constructorOffendingExpression?.Span ?? call.Span);
+                        return true;
+                    }
+                }
+
+                if (call.Target is MemberExpressionSyntax { Target: var receiverExpression, MemberName: var methodName } &&
+                    StaticAbstractValueResolver.TryResolve(receiverExpression, bindings, out var receiver) &&
+                    receiver.Kind == AbstractValueKind.UserInstance &&
+                    StaticBindingEngine.TryGetUserInstanceMethodCallShapeFailure(
+                        receiver,
+                        methodName,
+                        arguments,
+                        out var methodReason,
+                        out var methodOffendingExpression))
+                {
+                    AddDiagnostic(
+                        diagnostics,
+                        "LA3150",
+                        $"Method '{methodName}' call does not match its parameter list: {methodReason}.",
+                        methodOffendingExpression?.Span ?? call.Span);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+    }
+
+    private static void AnalyzeExpressions(IReadOnlyList<ExpressionSyntax> expressions, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        foreach (var expression in expressions)
+        {
+            AnalyzeExpression(expression, diagnostics, bindings);
+        }
+    }
+
+    private static AbstractState AnalyzeComprehensionClauses(
+        IReadOnlyList<ComprehensionClauseSyntax> clauses,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings,
+        out bool reachable)
+    {
+        var comprehensionBindings = bindings.Clone();
+        reachable = true;
+        foreach (var clause in clauses)
+        {
+            AnalyzeExpression(clause.Iterable, diagnostics, comprehensionBindings);
+            StaticIterationDiagnostics.AnalyzeLoopTarget(clause.Target, clause.Iterable, clause.Span, diagnostics, comprehensionBindings);
+            StaticBindingEngine.BindLoopTargetFromIterable(clause.Target, clause.Iterable, comprehensionBindings);
+            if (clause.Condition is not null)
+            {
+                AnalyzeExpression(clause.Condition, diagnostics, comprehensionBindings);
+                if (TryResolveConditionTruth(clause.Condition, comprehensionBindings, out var conditionTruth) && !conditionTruth)
+                {
+                    reachable = false;
+                    return comprehensionBindings;
+                }
+
+                StaticConditionRefinements.Apply(clause.Condition, assumedTruth: true, comprehensionBindings);
+            }
+        }
+
+        return comprehensionBindings;
+    }
+
+    private static bool TryResolveConditionTruth(ExpressionSyntax condition, AbstractState bindings, out bool truth)
+    {
+        while (condition is ParenthesizedExpressionSyntax parenthesized)
+        {
+            condition = parenthesized.Inner;
+        }
+
+        if (condition is UnaryExpressionSyntax { Operator: UnaryOperatorSyntax.Not, Operand: var operand } &&
+            TryResolveConditionTruth(operand, bindings, out var operandTruth))
+        {
+            truth = !operandTruth;
+            return true;
+        }
+
+        if (condition is BinaryExpressionSyntax
+            {
+                Operator: BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And,
+                Left: var logicalLeft,
+                Right: var logicalRight
+            } logical)
+        {
+            var continueTruth = logical.Operator == BinaryOperatorSyntax.And;
+            if (TryResolveConditionTruth(logicalLeft, bindings, out var leftTruth))
+            {
+                if (leftTruth != continueTruth)
+                {
+                    truth = leftTruth;
+                    return true;
+                }
+
+                var rightBindings = bindings.Clone();
+                StaticConditionRefinements.Apply(logicalLeft, continueTruth, rightBindings);
+                return TryResolveConditionTruth(logicalRight, rightBindings, out truth);
+            }
+
+            var conditionalRightBindings = bindings.Clone();
+            StaticConditionRefinements.Apply(logicalLeft, continueTruth, conditionalRightBindings);
+            if (TryResolveConditionTruth(logicalRight, conditionalRightBindings, out var rightTruth) &&
+                rightTruth != continueTruth)
+            {
+                truth = rightTruth;
+                return true;
+            }
+
+            truth = false;
+            return false;
+        }
+
+        if (StaticAbstractValueResolver.TryResolve(condition, bindings, out var value))
+        {
+            if (StaticAbstractFacts.TryGetTruthiness(value, out truth))
+            {
+                return true;
+            }
+        }
+
+        if (condition is BinaryExpressionSyntax { Operator: var op, Left: var left, Right: var right } &&
+            op is BinaryOperatorSyntax.Is or BinaryOperatorSyntax.IsNot &&
+            TryResolveNoneComparison(left, right, bindings, out var isNone))
+        {
+            truth = op == BinaryOperatorSyntax.Is ? isNone : !isNone;
+            return true;
+        }
+
+        truth = false;
+        return false;
+    }
+
+    private static bool TryResolveNoneComparison(
+        ExpressionSyntax left,
+        ExpressionSyntax right,
+        AbstractState bindings,
+        out bool isNone)
+    {
+        if (right is NoneLiteralExpressionSyntax &&
+            StaticAbstractValueResolver.TryResolve(left, bindings, out var leftValue))
+        {
+            if (leftValue.Kind == AbstractValueKind.None)
+            {
+                isNone = true;
+                return true;
+            }
+
+            if (StaticAbstractFacts.IsDefinitelyNonNone(leftValue))
+            {
+                isNone = false;
+                return true;
+            }
+        }
+
+        if (left is NoneLiteralExpressionSyntax &&
+            StaticAbstractValueResolver.TryResolve(right, bindings, out var rightValue))
+        {
+            if (rightValue.Kind == AbstractValueKind.None)
+            {
+                isNone = true;
+                return true;
+            }
+
+            if (StaticAbstractFacts.IsDefinitelyNonNone(rightValue))
+            {
+                isNone = false;
+                return true;
+            }
+        }
+
+        isNone = false;
+        return false;
+    }
+
+    private static bool StatementsAlwaysExit(IReadOnlyList<StatementSyntax> statements)
+    {
+        foreach (var statement in statements)
+        {
+            switch (statement)
+            {
+                case ReturnStatementSyntax:
+                case RaiseStatementSyntax:
+                    return true;
+
+                case IfStatementSyntax { ElseStatements: not null } ifStatement
+                    when StatementsAlwaysExit(ifStatement.ThenStatements) &&
+                         StatementsAlwaysExit(ifStatement.ElseStatements):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
+    {
+        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
+    }
+
+}
