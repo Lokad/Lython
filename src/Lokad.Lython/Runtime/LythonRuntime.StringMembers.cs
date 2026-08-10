@@ -17,8 +17,10 @@ internal sealed partial class LythonRuntime
 
         private static readonly IStringMemberProvider[] Providers =
         [
-            BasicStringMemberProvider.Instance,
-            AdvancedStringMemberProvider.Instance,
+            TextSemanticsMemberProvider.Instance,
+            StringSegmentationMemberProvider.Instance,
+            StringLayoutSearchMemberProvider.Instance,
+            StringAffixFormatMemberProvider.Instance,
         ];
 
         private interface IStringMemberProvider
