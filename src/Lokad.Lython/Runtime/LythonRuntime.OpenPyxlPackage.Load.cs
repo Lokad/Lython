@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
             var italic = font.Element(XlsxMain + "i") is not null;
             var strike = font.Element(XlsxMain + "strike") is not null;
             var underline = ReadUnderlineValue(font.Element(XlsxMain + "u"));
-            return new OpenPyxlStyleValue("openpyxl.styles.Font", new Dictionary<string, object>
+            return new OpenPyxlStyleValue(OpenPyxlStyleKind.Font, new Dictionary<string, object>
             {
                 ["name"] = ReadStyleElementAttribute(font, "name", "val"),
                 ["sz"] = size,
@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
             var fillType = ReadStyleAttribute(pattern, "patternType");
             var fgColor = ReadColorValue(pattern?.Element(XlsxMain + "fgColor"));
             var bgColor = ReadColorValue(pattern?.Element(XlsxMain + "bgColor"));
-            return new OpenPyxlStyleValue("openpyxl.styles.PatternFill", new Dictionary<string, object>
+            return new OpenPyxlStyleValue(OpenPyxlStyleKind.PatternFill, new Dictionary<string, object>
             {
                 ["fill_type"] = fillType,
                 ["patternType"] = fillType,
@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static OpenPyxlStyleValue ReadBorderStyle(XElement border)
-            => new("openpyxl.styles.Border", new Dictionary<string, object>
+            => new(OpenPyxlStyleKind.Border, new Dictionary<string, object>
             {
                 ["left"] = ReadSideStyle(border.Element(XlsxMain + "left")),
                 ["right"] = ReadSideStyle(border.Element(XlsxMain + "right")),
@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         private static OpenPyxlStyleValue ReadSideStyle(XElement? side)
         {
             var style = ReadStyleAttribute(side, "style");
-            return new OpenPyxlStyleValue("openpyxl.styles.Side", new Dictionary<string, object>
+            return new OpenPyxlStyleValue(OpenPyxlStyleKind.Side, new Dictionary<string, object>
             {
                 ["style"] = style,
                 ["border_style"] = style,
@@ -261,7 +261,7 @@ internal sealed partial class LythonRuntime
         private static OpenPyxlStyleValue? ReadAlignmentStyle(XElement? alignment)
             => alignment is null
                 ? null
-                : new OpenPyxlStyleValue("openpyxl.styles.Alignment", new Dictionary<string, object>
+                : new OpenPyxlStyleValue(OpenPyxlStyleKind.Alignment, new Dictionary<string, object>
                 {
                     ["horizontal"] = ReadStyleAttribute(alignment, "horizontal"),
                     ["vertical"] = ReadStyleAttribute(alignment, "vertical"),
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
         private static OpenPyxlStyleValue? ReadProtectionStyle(XElement? protection)
             => protection is null
                 ? null
-                : new OpenPyxlStyleValue("openpyxl.styles.Protection", new Dictionary<string, object>
+                : new OpenPyxlStyleValue(OpenPyxlStyleKind.Protection, new Dictionary<string, object>
                 {
                     ["locked"] = ReadStyleBooleanAttribute(protection, "locked"),
                     ["hidden"] = ReadStyleBooleanAttribute(protection, "hidden"),

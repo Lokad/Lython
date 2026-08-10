@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
         private object AddNamedStyle(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length != 1 || arguments[0] is not OpenPyxlStyleValue style || style.QualifiedName != "openpyxl.styles.NamedStyle")
+            if (arguments.Length != 1 || arguments[0] is not OpenPyxlStyleValue style || style.Kind != OpenPyxlStyleKind.NamedStyle)
             {
                 throw new LythonRuntimeException("TypeError", "Workbook.add_named_style(style) expects an openpyxl.styles.NamedStyle.", span);
             }

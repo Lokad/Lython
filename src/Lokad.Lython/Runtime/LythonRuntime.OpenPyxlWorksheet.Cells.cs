@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             ValidateRowColumn(row, column, null);
             var address = new CellAddress(row, column);
             OpenPyxlStyleValue? namedStyle = null;
-            var name = value is OpenPyxlStyleValue style && style.QualifiedName == "openpyxl.styles.NamedStyle"
+            var name = value is OpenPyxlStyleValue style && style.Kind == OpenPyxlStyleKind.NamedStyle
                 ? NamedStyleName(namedStyle = style, null)
                 : ExpectString(value, "Cell.style", null);
             namedStyle ??= Workbook?.FindNamedStyle(name);
@@ -114,10 +114,10 @@ internal sealed partial class LythonRuntime
                 _cellStyles.Remove(key);
                 return;
             }
-            var expected = ExpectedStyleType(name);
-            if (value is not OpenPyxlStyleValue style || style.QualifiedName != expected)
+            var expected = ExpectedStyleKind(name);
+            if (value is not OpenPyxlStyleValue style || style.Kind != expected)
             {
-                throw new LythonRuntimeException("TypeError", "Cell." + name + " expects " + expected + ".", null);
+                throw new LythonRuntimeException("TypeError", "Cell." + name + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
             }
             _cellStyles[key] = value;
         }

@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
 
             return style.QualifiedName + "(" + string.Join(
                 ",",
-                GetOpenPyxlStyleMemberNames(style.QualifiedName).Select(name => name + "=" + StyleObjectKey(StyleValue(style, name)))) + ")";
+                GetOpenPyxlStyleMemberNames(style.Kind).Select(name => name + "=" + StyleObjectKey(StyleValue(style, name)))) + ")";
         }
 
         private static string StyleObjectKey(object? value)

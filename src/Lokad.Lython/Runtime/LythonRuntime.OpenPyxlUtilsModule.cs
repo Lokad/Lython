@@ -132,14 +132,14 @@ internal sealed partial class LythonRuntime
         private static object CoordinateFromString(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var reference = ExpectSingleStringArgument(arguments, "coordinate_from_string(coord_string)", span);
-            var part = ParseUtilityReferencePart(reference, allowCell: true, allowColumn: false, allowRow: false, span);
-            if (part.Row is null or 0)
+            if (ParseUtilityReferencePart(reference, allowCell: true, allowColumn: false, allowRow: false, span) is not UtilityCellReference part ||
+                part.Row == 0)
             {
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({reference})", span);
             }
 
-            return new PyTuple(
-                [PyString.FromString(ColumnName(part.Column.RequireNotNull())), new BigInteger(part.Row.Value)],
+            return PyTuple.FromOwnedArray(
+                [PyString.FromString(ColumnName(part.Column)), new BigInteger(part.Row)],
                 context.MemoryGovernor,
                 span);
         }
@@ -147,14 +147,14 @@ internal sealed partial class LythonRuntime
         private static object CoordinateToTuple(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var reference = ExpectSingleStringArgument(arguments, "coordinate_to_tuple(coordinate)", span);
-            var part = ParseUtilityReferencePart(reference, allowCell: true, allowColumn: false, allowRow: false, span);
-            if (part.Row is null or 0)
+            if (ParseUtilityReferencePart(reference, allowCell: true, allowColumn: false, allowRow: false, span) is not UtilityCellReference part ||
+                part.Row == 0)
             {
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({reference})", span);
             }
 
-            return new PyTuple(
-                [new BigInteger(part.Row.Value), new BigInteger(part.Column.RequireNotNull())],
+            return PyTuple.FromOwnedArray(
+                [new BigInteger(part.Row), new BigInteger(part.Column)],
                 context.MemoryGovernor,
                 span);
         }
@@ -255,14 +255,16 @@ internal sealed partial class LythonRuntime
 
         private const int MaxUtilityColumn = 18278;
 
-        private enum UtilityReferenceKind
+        private abstract record UtilityReferencePart
         {
-            Cell,
-            Column,
-            Row,
+            private protected UtilityReferencePart() { }
         }
 
-        private readonly record struct UtilityReferencePart(UtilityReferenceKind Kind, int? Column, int? Row);
+        private sealed record UtilityCellReference(int Column, int Row) : UtilityReferencePart;
+
+        private sealed record UtilityColumnReference(int Column) : UtilityReferencePart;
+
+        private sealed record UtilityRowReference(int Row) : UtilityReferencePart;
 
         private readonly record struct UtilityRangeBoundaries(int? MinColumn, int? MinRow, int? MaxColumn, int? MaxRow);
 
@@ -307,40 +309,35 @@ internal sealed partial class LythonRuntime
             var end = parts.Length == 1
                 ? start
                 : ParseUtilityReferencePart(parts[1], allowCell: true, allowColumn: true, allowRow: true, span);
-            if (start.Kind != end.Kind)
+            return (start, end) switch
             {
-                throw new LythonRuntimeException("ValueError", $"{reference} is not a valid coordinate or range", span);
-            }
-
-            return start.Kind switch
-            {
-                UtilityReferenceKind.Cell => new UtilityRangeBoundaries(
-                    Math.Min(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
-                    Math.Min(start.Row.RequireNotNull(), end.Row.RequireNotNull()),
-                    Math.Max(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
-                    Math.Max(start.Row.RequireNotNull(), end.Row.RequireNotNull())),
-                UtilityReferenceKind.Column => new UtilityRangeBoundaries(
-                    Math.Min(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
+                (UtilityCellReference startCell, UtilityCellReference endCell) => new UtilityRangeBoundaries(
+                    Math.Min(startCell.Column, endCell.Column),
+                    Math.Min(startCell.Row, endCell.Row),
+                    Math.Max(startCell.Column, endCell.Column),
+                    Math.Max(startCell.Row, endCell.Row)),
+                (UtilityColumnReference startColumn, UtilityColumnReference endColumn) => new UtilityRangeBoundaries(
+                    Math.Min(startColumn.Column, endColumn.Column),
                     null,
-                    Math.Max(start.Column.RequireNotNull(), end.Column.RequireNotNull()),
+                    Math.Max(startColumn.Column, endColumn.Column),
                     null),
-                UtilityReferenceKind.Row => new UtilityRangeBoundaries(
+                (UtilityRowReference startRow, UtilityRowReference endRow) => new UtilityRangeBoundaries(
                     null,
-                    Math.Min(start.Row.RequireNotNull(), end.Row.RequireNotNull()),
+                    Math.Min(startRow.Row, endRow.Row),
                     null,
-                    Math.Max(start.Row.RequireNotNull(), end.Row.RequireNotNull())),
-                _ => throw new InvalidOperationException("Unsupported reference kind."),
+                    Math.Max(startRow.Row, endRow.Row)),
+                _ => throw new LythonRuntimeException("ValueError", $"{reference} is not a valid coordinate or range", span),
             };
         }
 
         private static string AbsoluteUtilityReference(string part, string original, LythonSourceSpan span)
         {
             var reference = ParseUtilityReferencePart(part, allowCell: true, allowColumn: true, allowRow: true, span);
-            return reference.Kind switch
+            return reference switch
             {
-                UtilityReferenceKind.Cell => "$" + ColumnName(reference.Column.RequireNotNull()) + "$" + reference.Row.RequireNotNull().ToString(CultureInfo.InvariantCulture),
-                UtilityReferenceKind.Column => "$" + ColumnName(reference.Column.RequireNotNull()),
-                UtilityReferenceKind.Row => "$" + reference.Row.RequireNotNull().ToString(CultureInfo.InvariantCulture),
+                UtilityCellReference cell => "$" + ColumnName(cell.Column) + "$" + cell.Row.ToString(CultureInfo.InvariantCulture),
+                UtilityColumnReference column => "$" + ColumnName(column.Column),
+                UtilityRowReference row => "$" + row.Row.ToString(CultureInfo.InvariantCulture),
                 _ => throw new LythonRuntimeException("ValueError", $"{original} is not a valid coordinate range", span),
             };
         }
@@ -377,7 +374,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({raw})", span);
                 }
 
-                return new UtilityReferencePart(UtilityReferenceKind.Column, ParseUtilityColumnName(text, span), null);
+                return new UtilityColumnReference(ParseUtilityColumnName(text, span));
             }
 
             if (letters == 0)
@@ -387,7 +384,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", $"{raw} is not a valid coordinate or range", span);
                 }
 
-                return new UtilityReferencePart(UtilityReferenceKind.Row, null, row);
+                return new UtilityRowReference(row);
             }
 
             if (!allowCell || !int.TryParse(text[letters..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var cellRow))
@@ -395,7 +392,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({raw})", span);
             }
 
-            return new UtilityReferencePart(UtilityReferenceKind.Cell, ParseUtilityColumnName(text[..letters], span), cellRow);
+            return new UtilityCellReference(ParseUtilityColumnName(text[..letters], span), cellRow);
         }
 
         private static int ExpectUtilityColumnIndex(object value, string owner, LythonSourceSpan span)
