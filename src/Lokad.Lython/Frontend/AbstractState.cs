@@ -38,6 +38,29 @@ internal readonly record struct AbstractSequenceLengthBounds(
     }
 }
 
+internal readonly struct AbstractValueResolution
+{
+    private readonly AbstractValue _value;
+
+    private AbstractValueResolution(AbstractValue value)
+    {
+        _value = value;
+        IsResolved = true;
+    }
+
+    public static AbstractValueResolution Unresolved => default;
+
+    public static AbstractValueResolution Resolved(AbstractValue value) => new(value);
+
+    public bool IsResolved { get; }
+
+    public bool TryGetValue(out AbstractValue value)
+    {
+        value = _value;
+        return IsResolved;
+    }
+}
+
 internal sealed class AbstractState
 {
     private readonly Dictionary<ExpressionSyntax, CachedAbstractValue> _abstractValueCache;
@@ -180,23 +203,21 @@ internal sealed class AbstractState
         return merged;
     }
 
-    public bool TryGetCachedAbstractValue(ExpressionSyntax expression, out bool success, out AbstractValue value)
+    public bool TryGetCachedAbstractValue(ExpressionSyntax expression, out AbstractValueResolution resolution)
     {
         if (_abstractValueCache.TryGetValue(expression, out var cached) && cached.Version == _version)
         {
-            success = cached.Success;
-            value = cached.Value;
+            resolution = cached.Resolution;
             return true;
         }
 
-        success = false;
-        value = default;
+        resolution = default;
         return false;
     }
 
-    public void SetCachedAbstractValue(ExpressionSyntax expression, bool success, AbstractValue value)
+    public void SetCachedAbstractValue(ExpressionSyntax expression, AbstractValueResolution resolution)
     {
-        _abstractValueCache[expression] = new CachedAbstractValue(_version, success, value);
+        _abstractValueCache[expression] = new CachedAbstractValue(_version, resolution);
     }
 
     private void InvalidateCachedFacts()
@@ -205,5 +226,5 @@ internal sealed class AbstractState
         _abstractValueCache.Clear();
     }
 
-    private readonly record struct CachedAbstractValue(int Version, bool Success, AbstractValue Value);
+    private readonly record struct CachedAbstractValue(int Version, AbstractValueResolution Resolution);
 }

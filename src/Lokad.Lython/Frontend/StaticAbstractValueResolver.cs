@@ -4,15 +4,16 @@ internal static partial class StaticAbstractValueResolver
 {
     public static bool TryResolve(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)
     {
-        if (bindings.TryGetCachedAbstractValue(expression, out var cachedSuccess, out var cachedValue))
+        if (bindings.TryGetCachedAbstractValue(expression, out var cachedResolution))
         {
-            value = cachedValue;
-            return cachedSuccess;
+            return cachedResolution.TryGetValue(out value);
         }
 
         var success = TryResolveDirect(expression, bindings, out value) ||
             TryResolveComputed(expression, bindings, out value);
-        bindings.SetCachedAbstractValue(expression, success, value);
+        bindings.SetCachedAbstractValue(
+            expression,
+            success ? AbstractValueResolution.Resolved(value) : AbstractValueResolution.Unresolved);
         return success;
     }
 
