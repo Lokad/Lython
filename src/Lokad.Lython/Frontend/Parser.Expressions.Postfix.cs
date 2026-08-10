@@ -1,4 +1,3 @@
-using System.Text;
 using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
@@ -15,233 +14,265 @@ internal sealed partial class Parser
 
         while (true)
         {
-            if (CurrentToken == Token.Dot)
+            IPostfixParser? matchingParser = CurrentToken switch
             {
-                var dotToken = ReadToken();
-                if (!TryReadMemberName(out var memberToken))
-                {
-                    AddDiagnostic("LA1005", "Expected attribute name after '.'.", dotToken);
-                    return null;
-                }
+                Token.Dot => MemberPostfixParser.Instance,
+                Token.OpenParen => CallPostfixParser.Instance,
+                Token.OpenBracket => SubscriptPostfixParser.Instance,
+                _ => null,
+            };
 
-                expression = new MemberExpressionSyntax(
-                    expression,
-                    IdentifierText(memberToken),
-                    Merge(expression.Span, SpanOf(memberToken)));
-                continue;
+            if (matchingParser is null)
+            {
+                return expression;
             }
 
-            if (CurrentToken == Token.OpenParen)
+            expression = matchingParser.Parse(this, expression);
+            if (expression is null)
             {
-                var openParenToken = ReadToken();
-                var arguments = new List<CallArgumentSyntax>();
-                SkipGroupedExpressionTrivia();
+                return null;
+            }
+        }
+    }
 
-                if (CurrentToken != Token.CloseParen)
-                {
-                    var sawKeywordArgument = false;
-                    while (true)
-                    {
-                        var form = CallArgumentForm.Positional;
-                        if (CurrentToken == Token.StarStar)
-                        {
-                            ReadToken();
-                            form = CallArgumentForm.StarredDictionary;
-                            sawKeywordArgument = true;
-                        }
-                        else if (CurrentToken == Token.Star)
-                        {
-                            if (sawKeywordArgument)
-                            {
-                                AddDiagnostic("LA2000", "Unsupported Python construct 'positional argument after keyword argument'.", _position);
-                                return null;
-                            }
+    private interface IPostfixParser
+    {
+        /// <summary>Consumes one postfix form and combines it with its target expression.</summary>
+        ExpressionSyntax? Parse(Parser parser, ExpressionSyntax target);
+    }
 
-                            ReadToken();
-                            form = CallArgumentForm.StarredList;
-                        }
-                        else if (IsNameToken(CurrentToken) && PeekToken(1) == Token.Assign)
-                        {
-                            var nameToken = ReadToken();
-                            ReadToken();
-                            form = CallArgumentForm.Keyword(IdentifierText(nameToken));
-                            sawKeywordArgument = true;
-                        }
-                        else if (sawKeywordArgument)
-                        {
-                            AddDiagnostic("LA2000", "Unsupported Python construct 'positional argument after keyword argument'.", _position);
-                            return null;
-                        }
+    private sealed class MemberPostfixParser : IPostfixParser
+    {
+        public static readonly MemberPostfixParser Instance = new();
 
-                        var argument = ParseExpression();
-                        if (argument is null)
-                        {
-                            return null;
-                        }
-
-                        SkipGroupedExpressionTrivia();
-                        if (CurrentToken == Token.For && form.Kind == CallArgumentKind.Positional)
-                        {
-                            if (!TryParseComprehensionClauses(out var clauses, out _))
-                            {
-                                return null;
-                            }
-
-                            argument = new GeneratorExpressionSyntax(
-                                argument,
-                                clauses,
-                                Merge(argument.Span, clauses[^1].Span));
-                        }
-                        SkipGroupedExpressionTrivia();
-
-                        arguments.Add(new CallArgumentSyntax(form, argument));
-
-                        if (CurrentToken != Token.Comma)
-                        {
-                            break;
-                        }
-
-                        ReadToken();
-                        SkipGroupedExpressionTrivia();
-                        if (CurrentToken == Token.CloseParen)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                SkipGroupedExpressionTrivia();
-                if (!TryRead(Token.CloseParen, out var closeParenToken))
-                {
-                    AddDiagnostic("LA1006", "Expected ')' after call arguments.", openParenToken);
-                    return null;
-                }
-
-                expression = new CallExpressionSyntax(
-                    expression,
-                    arguments,
-                    Merge(expression.Span, SpanOf(closeParenToken)));
-                continue;
+        public ExpressionSyntax? Parse(Parser parser, ExpressionSyntax target)
+        {
+            var dotToken = parser.ReadToken();
+            if (!parser.TryReadMemberName(out var memberToken))
+            {
+                parser.AddDiagnostic("LA1005", "Expected attribute name after '.'.", dotToken);
+                return null;
             }
 
-            if (CurrentToken == Token.OpenBracket)
+            return new MemberExpressionSyntax(
+                target,
+                parser.IdentifierText(memberToken),
+                Merge(target.Span, parser.SpanOf(memberToken)));
+        }
+    }
+
+    private sealed class CallPostfixParser : IPostfixParser
+    {
+        public static readonly CallPostfixParser Instance = new();
+
+        public ExpressionSyntax? Parse(Parser parser, ExpressionSyntax target)
+        {
+            var openParenToken = parser.ReadToken();
+            var arguments = new List<CallArgumentSyntax>();
+            parser.SkipGroupedExpressionTrivia();
+
+            if (parser.CurrentToken != Token.CloseParen)
             {
-                var openBracketToken = ReadToken();
-                SkipGroupedExpressionTrivia();
-                ExpressionSyntax? start = null;
-                if (CurrentToken != Token.Colon)
+                var sawKeywordArgument = false;
+                while (true)
                 {
-                    start = ParseExpression();
-                    if (start is null)
+                    var form = CallArgumentForm.Positional;
+                    if (parser.CurrentToken == Token.StarStar)
                     {
-                        AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                        return null;
+                        parser.ReadToken();
+                        form = CallArgumentForm.StarredDictionary;
+                        sawKeywordArgument = true;
                     }
-                    SkipGroupedExpressionTrivia();
-                }
-
-                if (CurrentToken == Token.Colon)
-                {
-                    ReadToken();
-                    SkipGroupedExpressionTrivia();
-
-                    ExpressionSyntax? end = null;
-                    if (CurrentToken != Token.CloseBracket && CurrentToken != Token.Colon)
+                    else if (parser.CurrentToken == Token.Star)
                     {
-                        end = ParseExpression();
-                        if (end is null)
+                        if (sawKeywordArgument)
                         {
-                            AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                            parser.AddDiagnostic("LA2000", "Unsupported Python construct 'positional argument after keyword argument'.", parser._position);
                             return null;
                         }
-                        SkipGroupedExpressionTrivia();
-                    }
 
-                    ExpressionSyntax? step = null;
-                    if (CurrentToken == Token.Colon)
-                    {
-                        ReadToken();
-                        SkipGroupedExpressionTrivia();
-                        if (CurrentToken != Token.CloseBracket)
-                        {
-                            step = ParseExpression();
-                            if (step is null)
-                            {
-                                AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                                return null;
-                            }
-                            SkipGroupedExpressionTrivia();
-                        }
+                        parser.ReadToken();
+                        form = CallArgumentForm.StarredList;
                     }
-
-                    SkipGroupedExpressionTrivia();
-                    if (!TryRead(Token.CloseBracket, out var closeSliceToken))
+                    else if (IsNameToken(parser.CurrentToken) && parser.PeekToken(1) == Token.Assign)
                     {
-                        AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                        var nameToken = parser.ReadToken();
+                        parser.ReadToken();
+                        form = CallArgumentForm.Keyword(parser.IdentifierText(nameToken));
+                        sawKeywordArgument = true;
+                    }
+                    else if (sawKeywordArgument)
+                    {
+                        parser.AddDiagnostic("LA2000", "Unsupported Python construct 'positional argument after keyword argument'.", parser._position);
                         return null;
                     }
 
-                    expression = new SliceExpressionSyntax(
-                        expression,
-                        start,
-                        end,
-                        step,
-                        Merge(expression.Span, SpanOf(closeSliceToken)));
-                    continue;
-                }
+                    var argument = parser.ParseExpression();
+                    if (argument is null)
+                    {
+                        return null;
+                    }
 
+                    parser.SkipGroupedExpressionTrivia();
+                    if (parser.CurrentToken == Token.For && form.Kind == CallArgumentKind.Positional)
+                    {
+                        if (!parser.TryParseComprehensionClauses(out var clauses, out _))
+                        {
+                            return null;
+                        }
+
+                        argument = new GeneratorExpressionSyntax(
+                            argument,
+                            clauses,
+                            Merge(argument.Span, clauses[^1].Span));
+                    }
+                    parser.SkipGroupedExpressionTrivia();
+
+                    arguments.Add(new CallArgumentSyntax(form, argument));
+
+                    if (parser.CurrentToken != Token.Comma)
+                    {
+                        break;
+                    }
+
+                    parser.ReadToken();
+                    parser.SkipGroupedExpressionTrivia();
+                    if (parser.CurrentToken == Token.CloseParen)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            parser.SkipGroupedExpressionTrivia();
+            if (!parser.TryRead(Token.CloseParen, out var closeParenToken))
+            {
+                parser.AddDiagnostic("LA1006", "Expected ')' after call arguments.", openParenToken);
+                return null;
+            }
+
+            return new CallExpressionSyntax(
+                target,
+                arguments,
+                Merge(target.Span, parser.SpanOf(closeParenToken)));
+        }
+    }
+
+    private sealed class SubscriptPostfixParser : IPostfixParser
+    {
+        public static readonly SubscriptPostfixParser Instance = new();
+
+        public ExpressionSyntax? Parse(Parser parser, ExpressionSyntax target)
+        {
+            var openBracketToken = parser.ReadToken();
+            parser.SkipGroupedExpressionTrivia();
+            ExpressionSyntax? start = null;
+            if (parser.CurrentToken != Token.Colon)
+            {
+                start = parser.ParseExpression();
                 if (start is null)
                 {
-                    AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                    parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
                     return null;
                 }
-
-                if (CurrentToken == Token.Comma)
-                {
-                    var items = new List<ExpressionSyntax> { start };
-                    while (CurrentToken == Token.Comma)
-                    {
-                        ReadToken();
-                        SkipGroupedExpressionTrivia();
-                        if (CurrentToken == Token.CloseBracket)
-                        {
-                            break;
-                        }
-
-                        var next = ParseExpression();
-                        if (next is null)
-                        {
-                            AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                            return null;
-                        }
-                        SkipGroupedExpressionTrivia();
-
-                        items.Add(next);
-                    }
-
-                    start = new TupleLiteralExpressionSyntax(
-                        items,
-                        Enumerable.Repeat(false, items.Count).ToArray(),
-                        Merge(items[0].Span, items[^1].Span));
-                }
-
-                SkipGroupedExpressionTrivia();
-                if (!TryRead(Token.CloseBracket, out var closeBracketToken))
-                {
-                    AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
-                    return null;
-                }
-
-                expression = new SubscriptExpressionSyntax(
-                    expression,
-                    start,
-                    Merge(expression.Span, SpanOf(closeBracketToken)));
-                continue;
+                parser.SkipGroupedExpressionTrivia();
             }
 
-            break;
-        }
+            if (parser.CurrentToken == Token.Colon)
+            {
+                parser.ReadToken();
+                parser.SkipGroupedExpressionTrivia();
 
-        return expression;
+                ExpressionSyntax? end = null;
+                if (parser.CurrentToken != Token.CloseBracket && parser.CurrentToken != Token.Colon)
+                {
+                    end = parser.ParseExpression();
+                    if (end is null)
+                    {
+                        parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                        return null;
+                    }
+                    parser.SkipGroupedExpressionTrivia();
+                }
+
+                ExpressionSyntax? step = null;
+                if (parser.CurrentToken == Token.Colon)
+                {
+                    parser.ReadToken();
+                    parser.SkipGroupedExpressionTrivia();
+                    if (parser.CurrentToken != Token.CloseBracket)
+                    {
+                        step = parser.ParseExpression();
+                        if (step is null)
+                        {
+                            parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                            return null;
+                        }
+                        parser.SkipGroupedExpressionTrivia();
+                    }
+                }
+
+                parser.SkipGroupedExpressionTrivia();
+                if (!parser.TryRead(Token.CloseBracket, out var closeSliceToken))
+                {
+                    parser.AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                    return null;
+                }
+
+                return new SliceExpressionSyntax(
+                    target,
+                    start,
+                    end,
+                    step,
+                    Merge(target.Span, parser.SpanOf(closeSliceToken)));
+            }
+
+            if (start is null)
+            {
+                parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                return null;
+            }
+
+            if (parser.CurrentToken == Token.Comma)
+            {
+                var items = new List<ExpressionSyntax> { start };
+                while (parser.CurrentToken == Token.Comma)
+                {
+                    parser.ReadToken();
+                    parser.SkipGroupedExpressionTrivia();
+                    if (parser.CurrentToken == Token.CloseBracket)
+                    {
+                        break;
+                    }
+
+                    var next = parser.ParseExpression();
+                    if (next is null)
+                    {
+                        parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                        return null;
+                    }
+                    parser.SkipGroupedExpressionTrivia();
+
+                    items.Add(next);
+                }
+
+                start = new TupleLiteralExpressionSyntax(
+                    items,
+                    Enumerable.Repeat(false, items.Count).ToArray(),
+                    Merge(items[0].Span, items[^1].Span));
+            }
+
+            parser.SkipGroupedExpressionTrivia();
+            if (!parser.TryRead(Token.CloseBracket, out var closeBracketToken))
+            {
+                parser.AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                return null;
+            }
+
+            return new SubscriptExpressionSyntax(
+                target,
+                start,
+                Merge(target.Span, parser.SpanOf(closeBracketToken)));
+        }
     }
 }
