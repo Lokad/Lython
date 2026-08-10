@@ -324,7 +324,8 @@ internal static partial class StaticDataModuleContractFamily
             return;
         }
 
-        if (text.EnumerateRunes().Count() != 1)
+        var runes = text.EnumerateRunes();
+        if (!runes.MoveNext() || runes.MoveNext())
         {
             AddDiagnostic(diagnostics, "LA3068", $"csv {keyword} must be one character.", expression.Span);
         }

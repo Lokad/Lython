@@ -64,7 +64,7 @@ internal static class PyIndexing
         {
             IPySliceableValue value => value.GetSlice(start, end, step, span),
             IPyIndexableValue value => value.GetSlice(SliceIndices(value.Length, start, end, step, span)),
-            _ when PyStringOps.TryAsString(target, out var text) => text.Slice(SliceIndices(text.Length, start, end, step, span).ToArray()),
+            _ when PyStringOps.TryAsString(target, out var text) => text.Slice(NormalizeSliceBounds(text.Length, start, end, step, span)),
             _ => throw RuntimeErrors.NotSliceable(span)
         };
     }

@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
 
             if (specifier.Precision is { } precision && rendered.Length > precision)
             {
-                rendered = rendered.Slice(Enumerable.Range(0, precision).ToArray());
+                rendered = rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1));
             }
 
             AppendPadded(rendered, specifier.Width, specifier.LeftAdjust);
