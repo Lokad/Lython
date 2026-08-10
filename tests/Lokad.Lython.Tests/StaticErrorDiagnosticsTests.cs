@@ -115,6 +115,37 @@ sorted([1], key=1, reverse=1)
     }
 
     [Fact]
+    public void CatchableLiteralMisuse_DoesNotBecomeACompileError()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+try:
+    len(1)
+except TypeError:
+    pass
+""");
+
+        Assert.True(compiled.IsValid);
+    }
+
+    [Fact]
+    public void TryElse_UsesFactsFromTheSuccessfulProtectedBody()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+try:
+    value = 1
+except Exception:
+    pass
+else:
+    len(value)
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3032");
+    }
+
+    [Fact]
     public void PropertyDataclassesAndCommonPathLiteralMisuse_ReportAtCompileTime()
     {
         var compiled = new LythonEngine().Compile(

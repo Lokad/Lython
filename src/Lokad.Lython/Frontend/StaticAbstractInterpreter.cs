@@ -251,24 +251,39 @@ internal static partial class StaticAbstractInterpreter
 
             void AnalyzeTry(TryStatementSyntax tryStatement)
             {
+                var tryBindings = bindings.Clone();
+                AbstractState? exceptBindings = null;
                 if (tryStatement.ExceptBody is null)
                 {
-                    AnalyzeStatements(tryStatement.TryBody, diagnostics, bindings.Clone());
+                    AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings);
                 }
                 else
                 {
-                    AnalyzeStatements(tryStatement.ExceptBody, diagnostics, bindings.Clone());
+                    // A runtime contract failure in the protected body may be the exception
+                    // that the Python program intends to catch. Keep its successful-path facts,
+                    // but do not turn the catchable failure into a compilation failure.
+                    AnalyzeStatements(tryStatement.TryBody, [], tryBindings);
+
+                    exceptBindings = bindings.Clone();
+                    AnalyzeStatements(tryStatement.ExceptBody, diagnostics, exceptBindings);
                 }
 
                 if (tryStatement.ElseBody is not null)
                 {
-                    AnalyzeStatements(tryStatement.ElseBody, diagnostics, bindings.Clone());
+                    // Python enters else only when the protected body completed successfully.
+                    AnalyzeStatements(tryStatement.ElseBody, diagnostics, tryBindings);
                 }
+
+                var continuationBindings = exceptBindings is null
+                    ? tryBindings
+                    : AbstractState.Merge(tryBindings, exceptBindings);
 
                 if (tryStatement.FinallyBody is not null)
                 {
-                    AnalyzeStatements(tryStatement.FinallyBody, diagnostics, bindings.Clone());
+                    AnalyzeStatements(tryStatement.FinallyBody, diagnostics, continuationBindings);
                 }
+
+                bindings.ReplaceWith(continuationBindings);
             }
         }
 
