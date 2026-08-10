@@ -15,16 +15,16 @@ internal sealed partial class LythonRuntime
             int count,
             LythonSourceSpan span,
             ExecutionContext context,
-            bool includeCount)
+            RegexSubstitutionMode mode)
         {
             if (UsesDotStarLazyProgression(pattern))
             {
-                return ExecuteDotStarLazySubstitute(pattern, replacement, range, count, span, context, includeCount);
+                return ExecuteDotStarLazySubstitute(pattern, replacement, range, count, span, context, mode);
             }
 
             if (PyStringOps.TryAsString(replacement, out var replacementText))
             {
-                if (!includeCount)
+                if (mode == RegexSubstitutionMode.TextOnly)
                 {
                     var replacedText = CreateUtf8String(pattern.Regex.Replace(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count), context, span);
                     return SpliceRangeResult(range, replacedText);
@@ -37,13 +37,13 @@ internal sealed partial class LythonRuntime
 
             if (replacement is not ICallable)
             {
-                throw new LythonRuntimeException("TypeError", includeCount
+                throw new LythonRuntimeException("TypeError", mode == RegexSubstitutionMode.TextAndCount
                     ? "re.subn(...) replacement must be a string or callable."
                     : "re.sub(...) replacement must be a string or callable.", span);
             }
 
             var resultWithCount = ExecuteCallableSubstitute(pattern, replacement, range, count, span, context);
-            return includeCount
+            return mode == RegexSubstitutionMode.TextAndCount
                 ? new PyTuple([resultWithCount.Result, new BigInteger(resultWithCount.ReplacementCount)], context.MemoryGovernor, span)
                 : resultWithCount.Result;
         }
@@ -249,7 +249,7 @@ internal sealed partial class LythonRuntime
             int count,
             LythonSourceSpan span,
             ExecutionContext context,
-            bool includeCount)
+            RegexSubstitutionMode mode)
         {
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var sourceBytes = range.Segment.Utf8Bytes.Span;
@@ -291,7 +291,7 @@ internal sealed partial class LythonRuntime
 
             builder.Append(sourceBytes[lastByte..]);
             var result = SpliceRangeResult(range, builder.ToPyStringAndRelease());
-            return includeCount
+            return mode == RegexSubstitutionMode.TextAndCount
                 ? new PyTuple([result, new BigInteger(replaced)], context.MemoryGovernor, span)
                 : result;
         }
@@ -342,5 +342,11 @@ internal sealed partial class LythonRuntime
             object Replacement,
             LythonSourceSpan Span,
             ExecutionContext Context);
+    }
+
+    private enum RegexSubstitutionMode
+    {
+        TextOnly,
+        TextAndCount,
     }
 }

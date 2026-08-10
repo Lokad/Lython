@@ -145,10 +145,10 @@ internal sealed partial class LythonRuntime
         }
 
         private object Substitute(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ExecuteSubstitute(arguments, span, context, includeCount: false);
+            => ExecuteSubstitute(arguments, span, context, RegexSubstitutionMode.TextOnly);
 
         private object SubstituteCount(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ExecuteSubstitute(arguments, span, context, includeCount: true);
+            => ExecuteSubstitute(arguments, span, context, RegexSubstitutionMode.TextAndCount);
 
         private object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -218,10 +218,10 @@ internal sealed partial class LythonRuntime
             object[] arguments,
             LythonSourceSpan span,
             ExecutionContext context,
-            bool includeCount)
+            RegexSubstitutionMode mode)
         {
             context.CheckExecutionBudget(span);
-            var operationName = includeCount ? "subn" : "sub";
+            var operationName = mode == RegexSubstitutionMode.TextAndCount ? "subn" : "sub";
             var inputs = RegexCompiler.CreateSubstituteInputs(
                 arguments,
                 $"re.{operationName}(pattern, replacement, string[, count][, flags][, pos][, endpos])",
@@ -233,7 +233,7 @@ internal sealed partial class LythonRuntime
                 inputs.Count,
                 span,
                 context,
-                includeCount);
+                mode);
         }
 
         private enum RegexMatchMode
