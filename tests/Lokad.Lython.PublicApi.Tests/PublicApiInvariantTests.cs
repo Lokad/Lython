@@ -19,25 +19,30 @@ public sealed class PublicApiInvariantTests
     }
 
     [Fact]
-    public void ExecutionResultsRejectContradictoryOutcomeState()
+    public void ExecutionResultsExposeOnlyValidOutcomeStates()
     {
-        Assert.Throws<ArgumentException>(() => new LythonExecutionResult(
-            LythonExecutionOutcome.Succeeded,
+        var success = LythonExecutionResult.Succeeded(
             returnValue: null,
             standardOutput: string.Empty,
             standardError: string.Empty,
+            diagnostics: []);
+        var runtimeFailure = LythonExecutionResult.RuntimeFailed(
             exitCode: 1,
-            diagnostics: [],
-            failure: null));
-
-        Assert.Throws<ArgumentException>(() => new LythonExecutionResult(
-            LythonExecutionOutcome.RuntimeFailed,
-            returnValue: "unexpected",
+            failure: new LythonRuntimeFailure("ValueError", "bad value", null, [], null),
             standardOutput: string.Empty,
             standardError: string.Empty,
+            diagnostics: []);
+
+        Assert.IsType<LythonExecutionResult.SucceededState>(success.State);
+        Assert.IsType<LythonExecutionResult.RuntimeFailedState>(runtimeFailure.State);
+        Assert.Null(success.ExitCode);
+        Assert.Null(runtimeFailure.ReturnValue);
+        Assert.Empty(typeof(LythonExecutionResult).GetConstructors());
+        Assert.Throws<ArgumentException>(() => LythonExecutionResult.CompilationFailed(
             exitCode: 1,
-            diagnostics: [],
-            failure: null));
+            standardOutput: string.Empty,
+            standardError: string.Empty,
+            diagnostics: []));
     }
 
     [Fact]

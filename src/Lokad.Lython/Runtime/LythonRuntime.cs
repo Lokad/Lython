@@ -225,52 +225,60 @@ internal sealed partial class LythonRuntime
     }
 
     private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue)
-        => new(
-            outcome: LythonExecutionOutcome.Succeeded,
+        => LythonExecutionResult.Succeeded(
             returnValue: returnValue,
             standardOutput: CaptureStandardOutput(context),
             standardError: CaptureStandardError(context),
-            exitCode: null,
-            diagnostics: Array.Empty<LythonDiagnostic>(),
-            failure: null);
+            diagnostics: Array.Empty<LythonDiagnostic>());
 
     private static LythonExecutionResult CreateReturnedResult(ReturnSignal signal, ExecutionContext? context, LythonRunOptions? options)
     {
         try
         {
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.Succeeded,
+            return LythonExecutionResult.Succeeded(
                 returnValue: NormalizePublicValue(signal.Value, options),
                 standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                 standardError: context is null ? string.Empty : CaptureStandardError(context),
-                exitCode: null,
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: null);
+                diagnostics: Array.Empty<LythonDiagnostic>());
         }
         catch (ProjectionException ex)
         {
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.RuntimeFailed,
-                returnValue: null,
+            return LythonExecutionResult.RuntimeFailed(
+                exitCode: 1,
+                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath),
                 standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
                 standardError: context is null ? string.Empty : CaptureStandardError(context),
-                exitCode: 1,
-                diagnostics: Array.Empty<LythonDiagnostic>(),
-                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath));
+                diagnostics: Array.Empty<LythonDiagnostic>());
         }
     }
 
     private static LythonExecutionResult CreateRuntimeFailureResult(LythonRuntimeException exception, ExecutionContext? context)
     {
         exception.SetSourcePathIfMissing(context?.SourcePath);
-        return new LythonExecutionResult(
-            outcome: LythonExecutionOutcome.RuntimeFailed,
-            returnValue: null,
+        return LythonExecutionResult.RuntimeFailed(
+            exitCode: GetExitCode(exception),
+            failure: RuntimeFailureProjection.ToPublicFailure(exception),
             standardOutput: context is null ? string.Empty : CaptureStandardOutput(context),
             standardError: context is null ? string.Empty : CaptureStandardError(context),
-            exitCode: GetExitCode(exception),
-            diagnostics: Array.Empty<LythonDiagnostic>(),
-            failure: RuntimeFailureProjection.ToPublicFailure(exception));
+            diagnostics: Array.Empty<LythonDiagnostic>());
+
+        static int GetExitCode(LythonRuntimeException exception)
+        {
+            if (!string.Equals(exception.ExceptionType, "SystemExit", StringComparison.Ordinal))
+            {
+                return 1;
+            }
+
+            return exception.Payload switch
+            {
+                null => 0,
+                PyNone => 0,
+                BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
+                BigInteger => 1,
+                int integer => integer,
+                _ => 1
+            };
+        }
     }
 
     private static string CaptureStandardOutput(ExecutionContext context)
@@ -295,24 +303,6 @@ internal sealed partial class LythonRuntime
         {
             return string.Empty;
         }
-    }
-
-    private static int? GetExitCode(LythonRuntimeException exception)
-    {
-        if (!string.Equals(exception.ExceptionType, "SystemExit", StringComparison.Ordinal))
-        {
-            return 1;
-        }
-
-        return exception.Payload switch
-        {
-            null => 0,
-            PyNone => 0,
-            BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
-            BigInteger => 1,
-            int integer => integer,
-            _ => 1
-        };
     }
 
     internal static ControlSignal? ExecuteStatements(IReadOnlyList<StatementSyntax> statements, ExecutionContext context)

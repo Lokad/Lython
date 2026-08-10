@@ -33,14 +33,11 @@ public sealed class LythonEngine
         {
             if (!isValid)
             {
-                return new LythonExecutionResult(
-                    outcome: LythonExecutionOutcome.CompilationFailed,
-                    returnValue: null,
+                return LythonExecutionResult.CompilationFailed(
+                    exitCode: 1,
                     standardOutput: string.Empty,
                     standardError: string.Empty,
-                    exitCode: 1,
-                    diagnostics: diagnostics,
-                    failure: null);
+                    diagnostics: diagnostics);
             }
 
             if (script is null)
@@ -54,14 +51,11 @@ public sealed class LythonEngine
                 return null;
             }
 
-            return new LythonExecutionResult(
-                outcome: LythonExecutionOutcome.CompilationFailed,
-                returnValue: null,
+            return LythonExecutionResult.CompilationFailed(
+                exitCode: 1,
                 standardOutput: string.Empty,
                 standardError: string.Empty,
-                exitCode: 1,
-                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray(),
-                failure: null);
+                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray());
         }
 
         return new LythonCompiledScript(
