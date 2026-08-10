@@ -364,7 +364,7 @@ internal sealed partial class Parser
     }
 
     private static bool TryConvertSequenceExpressionToTargets(
-        IReadOnlyList<ExpressionSyntax> items,
+        IReadOnlyList<CollectionDisplayItemSyntax> items,
         out IReadOnlyList<UnpackingTargetSyntax> targets)
     {
         if (items.Count == 0)
@@ -376,13 +376,13 @@ internal sealed partial class Parser
         var converted = new UnpackingTargetSyntax[items.Count];
         for (var i = 0; i < items.Count; i++)
         {
-            if (items[i] is not IdentifierExpressionSyntax identifier)
+            if (items[i].Expression is not IdentifierExpressionSyntax identifier)
             {
                 targets = Array.Empty<UnpackingTargetSyntax>();
                 return false;
             }
 
-            converted[i] = new UnpackingTargetSyntax(identifier.Name, false);
+            converted[i] = new UnpackingTargetSyntax(identifier.Name, items[i].IsUnpacking);
         }
 
         targets = converted;

@@ -524,6 +524,18 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
+    private static void AnalyzeExpressions(
+        IReadOnlyList<CollectionDisplayItemSyntax> items,
+        StaticAnalysisContext context,
+        HashSet<string> localNames,
+        HashSet<string> maybeAssigned)
+    {
+        foreach (var item in items)
+        {
+            AnalyzeExpression(item.Expression, context, localNames, maybeAssigned);
+        }
+    }
+
     private static void AnalyzeComprehensionClauses(
         IReadOnlyList<ComprehensionClauseSyntax> clauses,
         StaticAnalysisContext context,

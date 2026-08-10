@@ -73,9 +73,10 @@ internal sealed partial class Parser
     private ExpressionSyntax? ParseExpressionList()
     {
         var firstIsUnpacking = CurrentToken == Token.Star;
+        var firstUnpackingSpan = default(LythonSourceSpan?);
         if (firstIsUnpacking)
         {
-            ReadToken();
+            firstUnpackingSpan = SpanOf(ReadToken());
         }
 
         var first = ParseExpression();
@@ -95,8 +96,12 @@ internal sealed partial class Parser
             return first;
         }
 
-        var items = new List<ExpressionSyntax> { first };
-        var unpackingFlags = new List<bool> { firstIsUnpacking };
+        var items = new List<CollectionDisplayItemSyntax>
+        {
+            firstIsUnpacking
+                ? new CollectionUnpackingItemSyntax(first, Merge(firstUnpackingSpan ?? first.Span, first.Span))
+                : new CollectionValueItemSyntax(first)
+        };
         var endSpan = first.Span;
         while (CurrentToken == Token.Comma)
         {
@@ -108,9 +113,10 @@ internal sealed partial class Parser
             }
 
             var isUnpacking = CurrentToken == Token.Star;
+            var unpackingSpan = default(LythonSourceSpan?);
             if (isUnpacking)
             {
-                ReadToken();
+                unpackingSpan = SpanOf(ReadToken());
             }
 
             var item = ParseExpression();
@@ -120,12 +126,13 @@ internal sealed partial class Parser
                 return null;
             }
 
-            items.Add(item);
-            unpackingFlags.Add(isUnpacking);
+            items.Add(isUnpacking
+                ? new CollectionUnpackingItemSyntax(item, Merge(unpackingSpan ?? item.Span, item.Span))
+                : new CollectionValueItemSyntax(item));
             endSpan = item.Span;
         }
 
-        return new TupleLiteralExpressionSyntax(items, unpackingFlags, Merge(first.Span, endSpan));
+        return new TupleLiteralExpressionSyntax(items, Merge(first.Span, endSpan));
     }
 
     private ExpressionSyntax? ParseOrExpression()

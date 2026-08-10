@@ -29,13 +29,13 @@ internal static class StaticIterationDiagnostics
 
         switch (iterableExpression)
         {
-            case ListLiteralExpressionSyntax { Items: var listItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
+            case ListLiteralExpressionSyntax { Items: var listItems, HasUnpacking: false }:
                 AnalyzeTupleLoopItems(tupleTarget, listItems, span, diagnostics, bindings);
                 break;
-            case TupleLiteralExpressionSyntax { Items: var tupleItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
+            case TupleLiteralExpressionSyntax { Items: var tupleItems, HasUnpacking: false }:
                 AnalyzeTupleLoopItems(tupleTarget, tupleItems, span, diagnostics, bindings);
                 break;
-            case SetLiteralExpressionSyntax { Items: var setItems, UnpackingFlags: var flags } when !flags.Any(flag => flag):
+            case SetLiteralExpressionSyntax { Items: var setItems, HasUnpacking: false }:
                 AnalyzeTupleLoopItems(tupleTarget, setItems, span, diagnostics, bindings);
                 break;
         }
@@ -43,16 +43,16 @@ internal static class StaticIterationDiagnostics
 
     private static void AnalyzeTupleLoopItems(
         LoopTupleTargetSyntax target,
-        IReadOnlyList<ExpressionSyntax> items,
+        IReadOnlyList<CollectionDisplayItemSyntax> items,
         LythonSourceSpan span,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
         foreach (var item in items)
         {
-            if (!StaticAbstractFacts.TryGetKnownSequenceArity(item, bindings, out var count))
+            if (!StaticAbstractFacts.TryGetKnownSequenceArity(item.Expression, bindings, out var count))
             {
-                if (StaticAbstractFacts.IsDefinitelyKnownNonIterable(item, bindings))
+                if (StaticAbstractFacts.IsDefinitelyKnownNonIterable(item.Expression, bindings))
                 {
                     AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", item.Span);
                     return;

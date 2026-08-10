@@ -140,13 +140,13 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.Path(call.Span);
                 return true;
             case ListLiteralExpressionSyntax list:
-                value = ResolveAbstractValueList(list.Items, list.UnpackingFlags, list.Span, AbstractValueKind.List, bindings);
+                value = ResolveAbstractValueList(list.Items, list.Span, AbstractValueKind.List, bindings);
                 return true;
             case TupleLiteralExpressionSyntax tuple:
-                value = ResolveAbstractValueList(tuple.Items, tuple.UnpackingFlags, tuple.Span, AbstractValueKind.Tuple, bindings);
+                value = ResolveAbstractValueList(tuple.Items, tuple.Span, AbstractValueKind.Tuple, bindings);
                 return true;
             case SetLiteralExpressionSyntax set:
-                value = ResolveAbstractValueList(set.Items, set.UnpackingFlags, set.Span, AbstractValueKind.Set, bindings);
+                value = ResolveAbstractValueList(set.Items, set.Span, AbstractValueKind.Set, bindings);
                 return true;
             case DictLiteralExpressionSyntax dict:
                 value = ResolveAbstractDictValue(dict, bindings);

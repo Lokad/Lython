@@ -15,7 +15,7 @@ internal static class ExpressionSyntaxTraversal
                 break;
 
             case ListLiteralExpressionSyntax list:
-                foreach (var child in list.Items) yield return child;
+                foreach (var child in list.Items) yield return child.Expression;
                 break;
 
             case ListComprehensionExpressionSyntax listComprehension:
@@ -45,7 +45,7 @@ internal static class ExpressionSyntaxTraversal
                 break;
 
             case SetLiteralExpressionSyntax set:
-                foreach (var child in set.Items) yield return child;
+                foreach (var child in set.Items) yield return child.Expression;
                 break;
 
             case SetComprehensionExpressionSyntax setComprehension:
@@ -68,7 +68,7 @@ internal static class ExpressionSyntaxTraversal
                 break;
 
             case TupleLiteralExpressionSyntax tuple:
-                foreach (var child in tuple.Items) yield return child;
+                foreach (var child in tuple.Items) yield return child.Expression;
                 break;
 
             case ParenthesizedExpressionSyntax parenthesized:

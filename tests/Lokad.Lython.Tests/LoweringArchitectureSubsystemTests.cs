@@ -205,8 +205,8 @@ helper.value = b"x"
 
         var returnStatement = Assert.IsType<LoweredReturnStatement>(inner.Body[0]);
         var tuple = Assert.IsType<LoweredTupleLiteralExpression>(returnStatement.Expression);
-        Assert.IsType<LoweredBytesLiteralExpression>(Assert.IsType<LoweredSubscriptExpression>(tuple.Items[0]).Target);
-        Assert.IsType<LoweredGeneratorExpression>(tuple.Items[1]);
+        Assert.IsType<LoweredBytesLiteralExpression>(Assert.IsType<LoweredSubscriptExpression>(tuple.Items[0].Expression).Target);
+        Assert.IsType<LoweredGeneratorExpression>(tuple.Items[1].Expression);
 
         var assignment = Assert.IsType<LoweredMemberAssignmentStatement>(lowered.Statements[1]);
         Assert.Equal("value", assignment.Assignment.MemberName);
@@ -1240,19 +1240,19 @@ return helper(payload["items"]) + "|" + text
                 }
                 break;
             case LoweredListLiteralExpression list:
-                foreach (var item in list.Items.SelectMany(FlattenExpressions))
+                foreach (var item in list.Items.SelectMany(static item => FlattenExpressions(item.Expression)))
                 {
                     yield return item;
                 }
                 break;
             case LoweredTupleLiteralExpression tuple:
-                foreach (var item in tuple.Items.SelectMany(FlattenExpressions))
+                foreach (var item in tuple.Items.SelectMany(static item => FlattenExpressions(item.Expression)))
                 {
                     yield return item;
                 }
                 break;
             case LoweredSetLiteralExpression set:
-                foreach (var item in set.Items.SelectMany(FlattenExpressions))
+                foreach (var item in set.Items.SelectMany(static item => FlattenExpressions(item.Expression)))
                 {
                     yield return item;
                 }

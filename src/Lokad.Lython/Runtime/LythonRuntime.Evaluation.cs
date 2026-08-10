@@ -72,13 +72,13 @@ internal sealed partial class LythonRuntime
 
         static PyList CreateListLiteral(ListLiteralExpressionSyntax list, ExecutionContext context)
         {
-            if (list.UnpackingFlags.Any(flag => flag))
+            if (list.HasUnpacking)
             {
                 var expanded = new PyList([], context.MemoryGovernor, list.Span);
                 for (var i = 0; i < list.Items.Count; i++)
                 {
-                    var value = RuntimeValue(EvaluateExpression(list.Items[i], context));
-                    if (!list.UnpackingFlags[i])
+                    var value = RuntimeValue(EvaluateExpression(list.Items[i].Expression, context));
+                    if (!list.Items[i].IsUnpacking)
                     {
                         expanded.Add(value);
                         context.ObserveCollectionCount(expanded.Count, list.Span);
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             var items = new object[list.Items.Count];
             for (var i = 0; i < list.Items.Count; i++)
             {
-                items[i] = RuntimeValue(EvaluateExpression(list.Items[i], context));
+                items[i] = RuntimeValue(EvaluateExpression(list.Items[i].Expression, context));
             }
 
             return new PyList(items, context.MemoryGovernor, list.Span);
@@ -107,11 +107,11 @@ internal sealed partial class LythonRuntime
 
         static PyTuple CreateTupleLiteral(TupleLiteralExpressionSyntax tuple, ExecutionContext context)
         {
-            if (!tuple.UnpackingFlags.Any(flag => flag))
+            if (!tuple.HasUnpacking)
             {
                 return CreateTuple(
                     tuple.Items.Count,
-                    i => RuntimeValue(EvaluateExpression(tuple.Items[i], context)),
+                    i => RuntimeValue(EvaluateExpression(tuple.Items[i].Expression, context)),
                     context,
                     tuple.Span);
             }
@@ -119,8 +119,8 @@ internal sealed partial class LythonRuntime
             var expanded = new List<object>();
             for (var i = 0; i < tuple.Items.Count; i++)
             {
-                var value = RuntimeValue(EvaluateExpression(tuple.Items[i], context));
-                if (!tuple.UnpackingFlags[i])
+                var value = RuntimeValue(EvaluateExpression(tuple.Items[i].Expression, context));
+                if (!tuple.Items[i].IsUnpacking)
                 {
                     EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
                     expanded.Add(value);

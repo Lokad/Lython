@@ -59,7 +59,7 @@ internal sealed partial class ExecutableScript
                     return;
 
                 case LoweredListLiteralExpression list:
-                    if (list.List.UnpackingFlags.Any(flag => flag))
+                    if (list.List.HasUnpacking)
                     {
                         AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(list), list.Span));
                         return;
@@ -67,13 +67,13 @@ internal sealed partial class ExecutableScript
 
                     foreach (var item in list.Items)
                     {
-                        CompileExpression(item, currentBlock);
+                        CompileExpression(item.Expression, currentBlock);
                     }
                     AddInstruction(currentBlock, ExecutableInstruction.MakeList(list.Items.Count, list.Span));
                     return;
 
                 case LoweredTupleLiteralExpression tuple:
-                    if (tuple.Tuple.UnpackingFlags.Any(flag => flag))
+                    if (tuple.Tuple.HasUnpacking)
                     {
                         AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(tuple), tuple.Span));
                         return;
@@ -81,13 +81,13 @@ internal sealed partial class ExecutableScript
 
                     foreach (var item in tuple.Items)
                     {
-                        CompileExpression(item, currentBlock);
+                        CompileExpression(item.Expression, currentBlock);
                     }
                     AddInstruction(currentBlock, ExecutableInstruction.MakeTuple(tuple.Items.Count, tuple.Span));
                     return;
 
                 case LoweredSetLiteralExpression set:
-                    if (set.Set.UnpackingFlags.Any(flag => flag))
+                    if (set.Set.HasUnpacking)
                     {
                         AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(set), set.Span));
                         return;
@@ -95,7 +95,7 @@ internal sealed partial class ExecutableScript
 
                     foreach (var item in set.Items)
                     {
-                        CompileExpression(item, currentBlock);
+                        CompileExpression(item.Expression, currentBlock);
                     }
                     AddInstruction(currentBlock, ExecutableInstruction.MakeSet(set.Items.Count, set.Span));
                     return;

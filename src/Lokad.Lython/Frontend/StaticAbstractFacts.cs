@@ -227,13 +227,13 @@ internal static class StaticAbstractFacts
             case BytesLiteralExpressionSyntax bytes:
                 count = bytes.Value.Length;
                 return true;
-            case ListLiteralExpressionSyntax list when !list.UnpackingFlags.Any(flag => flag):
+            case ListLiteralExpressionSyntax { HasUnpacking: false } list:
                 count = list.Items.Count;
                 return true;
-            case TupleLiteralExpressionSyntax tuple when !tuple.UnpackingFlags.Any(flag => flag):
+            case TupleLiteralExpressionSyntax { HasUnpacking: false } tuple:
                 count = tuple.Items.Count;
                 return true;
-            case SetLiteralExpressionSyntax set when !set.UnpackingFlags.Any(flag => flag):
+            case SetLiteralExpressionSyntax { HasUnpacking: false } set:
                 count = set.Items.Count;
                 return true;
             default:

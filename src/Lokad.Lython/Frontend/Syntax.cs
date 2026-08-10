@@ -355,10 +355,26 @@ internal static class FormattedStringSyntaxTraversal
     }
 }
 
+internal abstract record CollectionDisplayItemSyntax(
+    ExpressionSyntax Expression,
+    LythonSourceSpan Span)
+{
+    public bool IsUnpacking => this is CollectionUnpackingItemSyntax;
+}
+
+internal sealed record CollectionValueItemSyntax(
+    ExpressionSyntax Value) : CollectionDisplayItemSyntax(Value, Value.Span);
+
+internal sealed record CollectionUnpackingItemSyntax(
+    ExpressionSyntax Iterable,
+    LythonSourceSpan Span) : CollectionDisplayItemSyntax(Iterable, Span);
+
 internal sealed record ListLiteralExpressionSyntax(
-    IReadOnlyList<ExpressionSyntax> Items,
-    IReadOnlyList<bool> UnpackingFlags,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    IReadOnlyList<CollectionDisplayItemSyntax> Items,
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    public bool HasUnpacking => Items.Any(static item => item.IsUnpacking);
+}
 
 internal sealed record ListComprehensionExpressionSyntax(
     ExpressionSyntax ItemExpression,
@@ -398,9 +414,11 @@ internal sealed record DictLiteralExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record SetLiteralExpressionSyntax(
-    IReadOnlyList<ExpressionSyntax> Items,
-    IReadOnlyList<bool> UnpackingFlags,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    IReadOnlyList<CollectionDisplayItemSyntax> Items,
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    public bool HasUnpacking => Items.Any(static item => item.IsUnpacking);
+}
 
 internal sealed record SetComprehensionExpressionSyntax(
     ExpressionSyntax ItemExpression,
@@ -420,9 +438,11 @@ internal sealed record DictComprehensionExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal sealed record TupleLiteralExpressionSyntax(
-    IReadOnlyList<ExpressionSyntax> Items,
-    IReadOnlyList<bool> UnpackingFlags,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    IReadOnlyList<CollectionDisplayItemSyntax> Items,
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    public bool HasUnpacking => Items.Any(static item => item.IsUnpacking);
+}
 
 internal sealed record ParenthesizedExpressionSyntax(
     ExpressionSyntax Inner,

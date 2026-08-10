@@ -8,8 +8,7 @@ internal sealed partial class Parser
     private ExpressionSyntax? ParseListLiteral()
     {
         var openBracket = ReadToken();
-        var items = new List<ExpressionSyntax>();
-        var unpackingFlags = new List<bool>();
+        var items = new List<CollectionDisplayItemSyntax>();
         SkipGroupedExpressionTrivia();
 
         if (CurrentToken == Token.End)
@@ -29,9 +28,10 @@ internal sealed partial class Parser
                 }
 
                 var isUnpacking = CurrentToken == Token.Star;
+                var unpackingSpan = default(LythonSourceSpan?);
                 if (isUnpacking)
                 {
-                    ReadToken();
+                    unpackingSpan = SpanOf(ReadToken());
                 }
 
                 var item = ParseExpression();
@@ -40,8 +40,9 @@ internal sealed partial class Parser
                     return null;
                 }
 
-                items.Add(item);
-                unpackingFlags.Add(isUnpacking);
+                items.Add(isUnpacking
+                    ? new CollectionUnpackingItemSyntax(item, Merge(unpackingSpan ?? item.Span, item.Span))
+                    : new CollectionValueItemSyntax(item));
                 SkipGroupedExpressionTrivia();
 
                 if (CurrentToken == Token.For)
@@ -91,7 +92,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new ListLiteralExpressionSyntax(items, unpackingFlags, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
+        return new ListLiteralExpressionSyntax(items, Merge(SpanOf(openBracket), SpanOf(closeBracket)));
     }
 
     private ExpressionSyntax? ParseTupleOrParenthesized()
@@ -108,13 +109,14 @@ internal sealed partial class Parser
         if (CurrentToken == Token.CloseParen)
         {
             var closeEmpty = ReadToken();
-            return new TupleLiteralExpressionSyntax(Array.Empty<ExpressionSyntax>(), Array.Empty<bool>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
+            return new TupleLiteralExpressionSyntax(Array.Empty<CollectionDisplayItemSyntax>(), Merge(SpanOf(openParen), SpanOf(closeEmpty)));
         }
 
         var firstIsUnpacking = CurrentToken == Token.Star;
+        var firstUnpackingSpan = default(LythonSourceSpan?);
         if (firstIsUnpacking)
         {
-            ReadToken();
+            firstUnpackingSpan = SpanOf(ReadToken());
         }
 
         var first = ParseExpression();
@@ -162,8 +164,12 @@ internal sealed partial class Parser
             return new ParenthesizedExpressionSyntax(first, Merge(first.Span, SpanOf(closeParen)));
         }
 
-        var items = new List<ExpressionSyntax> { first };
-        var unpackingFlags = new List<bool> { firstIsUnpacking };
+        var items = new List<CollectionDisplayItemSyntax>
+        {
+            firstIsUnpacking
+                ? new CollectionUnpackingItemSyntax(first, Merge(firstUnpackingSpan ?? first.Span, first.Span))
+                : new CollectionValueItemSyntax(first)
+        };
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
@@ -180,9 +186,10 @@ internal sealed partial class Parser
             }
 
             var isUnpacking = CurrentToken == Token.Star;
+            var unpackingSpan = default(LythonSourceSpan?);
             if (isUnpacking)
             {
-                ReadToken();
+                unpackingSpan = SpanOf(ReadToken());
             }
 
             var item = ParseExpression();
@@ -191,8 +198,9 @@ internal sealed partial class Parser
                 return null;
             }
 
-            items.Add(item);
-            unpackingFlags.Add(isUnpacking);
+            items.Add(isUnpacking
+                ? new CollectionUnpackingItemSyntax(item, Merge(unpackingSpan ?? item.Span, item.Span))
+                : new CollectionValueItemSyntax(item));
             SkipGroupedExpressionTrivia();
         }
 
@@ -203,15 +211,14 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new TupleLiteralExpressionSyntax(items, unpackingFlags, Merge(SpanOf(openParen), SpanOf(closeTuple)));
+        return new TupleLiteralExpressionSyntax(items, Merge(SpanOf(openParen), SpanOf(closeTuple)));
     }
 
     private ExpressionSyntax? ParseDictLiteral()
     {
         var openBrace = ReadToken();
         var dictionaryItems = new List<DictionaryDisplayItemSyntax>();
-        var setItems = new List<ExpressionSyntax>();
-        var setUnpackingFlags = new List<bool>();
+        var setItems = new List<CollectionDisplayItemSyntax>();
         SkipGroupedExpressionTrivia();
 
         if (CurrentToken == Token.End)
@@ -255,6 +262,7 @@ internal sealed partial class Parser
                 else
                 {
                     var isSetUnpacking = CurrentToken == Token.Star;
+                    var setUnpackingSpan = default(LythonSourceSpan?);
                     if (isSetUnpacking)
                     {
                         if (dictionaryItems.Count != 0)
@@ -263,7 +271,7 @@ internal sealed partial class Parser
                             return null;
                         }
 
-                        ReadToken();
+                        setUnpackingSpan = SpanOf(ReadToken());
                     }
 
                     var key = ParseExpression();
@@ -356,8 +364,9 @@ internal sealed partial class Parser
                                 Merge(SpanOf(openBrace), SpanOf(closeComprehension)));
                         }
 
-                        setItems.Add(key);
-                        setUnpackingFlags.Add(isSetUnpacking);
+                        setItems.Add(isSetUnpacking
+                            ? new CollectionUnpackingItemSyntax(key, Merge(setUnpackingSpan ?? key.Span, key.Span))
+                            : new CollectionValueItemSyntax(key));
                     }
                 }
 
@@ -383,7 +392,7 @@ internal sealed partial class Parser
         }
 
         return setItems.Count != 0
-            ? new SetLiteralExpressionSyntax(setItems, setUnpackingFlags, Merge(SpanOf(openBrace), SpanOf(closeBrace)))
+            ? new SetLiteralExpressionSyntax(setItems, Merge(SpanOf(openBrace), SpanOf(closeBrace)))
             : new DictLiteralExpressionSyntax(dictionaryItems, Merge(SpanOf(openBrace), SpanOf(closeBrace)));
     }
 }

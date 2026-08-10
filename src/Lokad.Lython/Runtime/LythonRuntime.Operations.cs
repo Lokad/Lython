@@ -474,8 +474,8 @@ internal sealed partial class LythonRuntime
         var result = new PySet(context.MemoryGovernor, set.Span);
         for (var i = 0; i < set.Items.Count; i++)
         {
-            var value = RuntimeValue(EvaluateExpression(set.Items[i], context));
-            if (!set.UnpackingFlags[i])
+            var value = RuntimeValue(EvaluateExpression(set.Items[i].Expression, context));
+            if (!set.Items[i].IsUnpacking)
             {
                 result.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
                 context.ObserveCollectionCount(result.Count, set.Span);

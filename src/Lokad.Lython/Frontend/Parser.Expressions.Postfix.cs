@@ -257,8 +257,7 @@ internal sealed partial class Parser
                 }
 
                 start = new TupleLiteralExpressionSyntax(
-                    items,
-                    Enumerable.Repeat(false, items.Count).ToArray(),
+                    items.Select(static item => (CollectionDisplayItemSyntax)new CollectionValueItemSyntax(item)).ToArray(),
                     Merge(items[0].Span, items[^1].Span));
             }
 

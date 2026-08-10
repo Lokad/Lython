@@ -75,23 +75,32 @@ internal sealed record LoweredParenthesizedExpression(
     public override ExpressionSyntax Syntax => Parenthesized;
 }
 
+internal sealed record LoweredCollectionDisplayItem(
+    CollectionDisplayItemSyntax Syntax,
+    LoweredExpression Expression)
+{
+    public bool IsUnpacking => Syntax is CollectionUnpackingItemSyntax;
+
+    public LythonSourceSpan Span => Syntax.Span;
+}
+
 internal sealed record LoweredListLiteralExpression(
     ListLiteralExpressionSyntax List,
-    IReadOnlyList<LoweredExpression> Items) : LoweredExpression
+    IReadOnlyList<LoweredCollectionDisplayItem> Items) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => List;
 }
 
 internal sealed record LoweredTupleLiteralExpression(
     TupleLiteralExpressionSyntax Tuple,
-    IReadOnlyList<LoweredExpression> Items) : LoweredExpression
+    IReadOnlyList<LoweredCollectionDisplayItem> Items) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Tuple;
 }
 
 internal sealed record LoweredSetLiteralExpression(
     SetLiteralExpressionSyntax Set,
-    IReadOnlyList<LoweredExpression> Items) : LoweredExpression
+    IReadOnlyList<LoweredCollectionDisplayItem> Items) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Set;
 }

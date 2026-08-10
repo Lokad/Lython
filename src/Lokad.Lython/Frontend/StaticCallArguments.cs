@@ -168,7 +168,7 @@ internal static class StaticCallArguments
             case ListLiteralExpressionSyntax list:
                 foreach (var item in list.Items)
                 {
-                    positional.Add(item);
+                    positional.Add(item.Expression);
                     positionalValues.Add(null);
                 }
 
@@ -177,7 +177,7 @@ internal static class StaticCallArguments
             case TupleLiteralExpressionSyntax tuple:
                 foreach (var item in tuple.Items)
                 {
-                    positional.Add(item);
+                    positional.Add(item.Expression);
                     positionalValues.Add(null);
                 }
 

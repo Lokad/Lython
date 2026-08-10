@@ -17,7 +17,7 @@ public sealed class ExpressionSyntaxTraversalTests
         AssertChildren(
             new FormattedStringExpressionSyntax([new FormattedStringExpressionPartSyntax(first)], Span),
             first);
-        AssertChildren(new ListLiteralExpressionSyntax([first], [false], Span), first);
+        AssertChildren(new ListLiteralExpressionSyntax([new CollectionValueItemSyntax(first)], Span), first);
         AssertChildren(new ListComprehensionExpressionSyntax(first, [clause], Span), first, second, third);
         AssertChildren(new GeneratorExpressionSyntax(first, [clause], Span), first, second, third);
         AssertChildren(
@@ -27,10 +27,13 @@ public sealed class ExpressionSyntaxTraversalTests
             first,
             second,
             third);
-        AssertChildren(new SetLiteralExpressionSyntax([first], [false], Span), first);
+        AssertChildren(new SetLiteralExpressionSyntax([new CollectionValueItemSyntax(first)], Span), first);
         AssertChildren(new SetComprehensionExpressionSyntax(first, [clause], Span), first, second, third);
         AssertChildren(new DictComprehensionExpressionSyntax(first, second, [clause], Span), first, second, second, third);
-        AssertChildren(new TupleLiteralExpressionSyntax([first, second], [false, false], Span), first, second);
+        AssertChildren(
+            new TupleLiteralExpressionSyntax([new CollectionValueItemSyntax(first), new CollectionValueItemSyntax(second)], Span),
+            first,
+            second);
         AssertChildren(new ParenthesizedExpressionSyntax(first, Span), first);
         AssertChildren(new MemberExpressionSyntax(first, "value", Span), first);
         AssertChildren(

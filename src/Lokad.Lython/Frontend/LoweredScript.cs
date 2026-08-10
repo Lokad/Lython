@@ -206,7 +206,7 @@ internal sealed class LoweredScript
                 LowerExpression(parenthesized.Inner)),
             ListLiteralExpressionSyntax list => new LoweredListLiteralExpression(
                 list,
-                list.Items.Select(LowerExpression).ToArray()),
+                list.Items.Select(LowerCollectionDisplayItem).ToArray()),
             ListComprehensionExpressionSyntax comprehension => new LoweredListComprehensionExpression(
                 comprehension,
                 LowerExpression(comprehension.ItemExpression),
@@ -217,10 +217,10 @@ internal sealed class LoweredScript
                 generator.Clauses.Select(LowerComprehensionClause).ToArray()),
             TupleLiteralExpressionSyntax tuple => new LoweredTupleLiteralExpression(
                 tuple,
-                tuple.Items.Select(LowerExpression).ToArray()),
+                tuple.Items.Select(LowerCollectionDisplayItem).ToArray()),
             SetLiteralExpressionSyntax set => new LoweredSetLiteralExpression(
                 set,
-                set.Items.Select(LowerExpression).ToArray()),
+                set.Items.Select(LowerCollectionDisplayItem).ToArray()),
             SetComprehensionExpressionSyntax comprehension => new LoweredSetComprehensionExpression(
                 comprehension,
                 LowerExpression(comprehension.ItemExpression),
@@ -286,6 +286,9 @@ internal sealed class LoweredScript
             _ => new LoweredOtherExpression(expression)
         };
     }
+
+    private static LoweredCollectionDisplayItem LowerCollectionDisplayItem(CollectionDisplayItemSyntax item)
+        => new(item, LowerExpression(item.Expression));
 
     private static LoweredFormattedStringPart LowerFormattedStringPart(FormattedStringPartSyntax part)
     {

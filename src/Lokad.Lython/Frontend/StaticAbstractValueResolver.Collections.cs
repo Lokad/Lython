@@ -3,8 +3,7 @@ namespace Lokad.Lython.Frontend;
 internal static partial class StaticAbstractValueResolver
 {
     private static AbstractValue ResolveAbstractValueList(
-        IReadOnlyList<ExpressionSyntax> expressions,
-        IReadOnlyList<bool> unpackingFlags,
+        IReadOnlyList<CollectionDisplayItemSyntax> expressions,
         LythonSourceSpan span,
         AbstractValueKind kind,
         AbstractState bindings)
@@ -12,8 +11,8 @@ internal static partial class StaticAbstractValueResolver
         var items = new List<AbstractValue>(expressions.Count);
         for (var i = 0; i < expressions.Count; i++)
         {
-            var resolved = ResolveOrUnknown(expressions[i], bindings);
-            if (!unpackingFlags[i])
+            var resolved = ResolveOrUnknown(expressions[i].Expression, bindings);
+            if (!expressions[i].IsUnpacking)
             {
                 items.Add(resolved);
                 continue;

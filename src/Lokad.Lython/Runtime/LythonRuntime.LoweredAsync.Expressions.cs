@@ -33,13 +33,13 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<PyList> CreateLoweredListLiteralAsync(LoweredListLiteralExpression list, ExecutionContext context)
     {
-        if (list.List.UnpackingFlags.Any(flag => flag))
+        if (list.List.HasUnpacking)
         {
             var expanded = new PyList([], context.MemoryGovernor, list.Span);
             for (var i = 0; i < list.Items.Count; i++)
             {
-                var value = RuntimeValue(await EvaluateLoweredExpressionAsync(list.Items[i], context).ConfigureAwait(false));
-                if (!list.List.UnpackingFlags[i])
+                var value = RuntimeValue(await EvaluateLoweredExpressionAsync(list.Items[i].Expression, context).ConfigureAwait(false));
+                if (!list.Items[i].IsUnpacking)
                 {
                     expanded.Add(value);
                     context.ObserveCollectionCount(expanded.Count, list.Span);
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
         var items = new object[list.Items.Count];
         for (var i = 0; i < list.Items.Count; i++)
         {
-            items[i] = RuntimeValue(await EvaluateLoweredExpressionAsync(list.Items[i], context).ConfigureAwait(false));
+            items[i] = RuntimeValue(await EvaluateLoweredExpressionAsync(list.Items[i].Expression, context).ConfigureAwait(false));
         }
 
         return new PyList(items, context.MemoryGovernor, list.Span);
@@ -70,11 +70,11 @@ internal sealed partial class LythonRuntime
         LoweredTupleLiteralExpression tuple,
         ExecutionContext context)
     {
-        if (!tuple.Tuple.UnpackingFlags.Any(flag => flag))
+        if (!tuple.Tuple.HasUnpacking)
         {
             return await CreateTupleAsync(
                     tuple.Items.Count,
-                    async i => RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i], context).ConfigureAwait(false)),
+                    async i => RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i].Expression, context).ConfigureAwait(false)),
                     context,
                     tuple.Span)
                 .ConfigureAwait(false);
@@ -83,8 +83,8 @@ internal sealed partial class LythonRuntime
         var expanded = new List<object>();
         for (var i = 0; i < tuple.Items.Count; i++)
         {
-            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i], context).ConfigureAwait(false));
-            if (!tuple.Tuple.UnpackingFlags[i])
+            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i].Expression, context).ConfigureAwait(false));
+            if (!tuple.Items[i].IsUnpacking)
             {
                 EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
                 expanded.Add(value);
@@ -133,8 +133,8 @@ internal sealed partial class LythonRuntime
         var items = new PySet(context.MemoryGovernor, set.Span);
         for (var i = 0; i < set.Items.Count; i++)
         {
-            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i], context).ConfigureAwait(false));
-            if (!set.Set.UnpackingFlags[i])
+            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i].Expression, context).ConfigureAwait(false));
+            if (!set.Items[i].IsUnpacking)
             {
                 items.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
                 context.ObserveCollectionCount(items.Count, set.Span);

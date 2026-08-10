@@ -18,7 +18,7 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case ListLiteralExpressionSyntax list:
-                    AnalyzeExpressions(list.Items, diagnostics, bindings);
+                    AnalyzeCollectionDisplayItems(list.Items, diagnostics, bindings);
                     return true;
 
                 case ListComprehensionExpressionSyntax listComprehension:
@@ -45,7 +45,7 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case SetLiteralExpressionSyntax set:
-                    AnalyzeExpressions(set.Items, diagnostics, bindings);
+                    AnalyzeCollectionDisplayItems(set.Items, diagnostics, bindings);
                     return true;
 
                 case SetComprehensionExpressionSyntax setComprehension:
@@ -70,7 +70,7 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case TupleLiteralExpressionSyntax tuple:
-                    AnalyzeExpressions(tuple.Items, diagnostics, bindings);
+                    AnalyzeCollectionDisplayItems(tuple.Items, diagnostics, bindings);
                     return true;
 
                 case ParenthesizedExpressionSyntax parenthesized:
@@ -91,6 +91,17 @@ internal static partial class StaticAbstractInterpreter
                 if (reachable)
                 {
                     AnalyzeExpression(item, diagnostics, comprehensionBindings);
+                }
+            }
+
+            static void AnalyzeCollectionDisplayItems(
+                IReadOnlyList<CollectionDisplayItemSyntax> items,
+                List<LythonDiagnostic> diagnostics,
+                AbstractState bindings)
+            {
+                foreach (var item in items)
+                {
+                    AnalyzeExpression(item.Expression, diagnostics, bindings);
                 }
             }
         }

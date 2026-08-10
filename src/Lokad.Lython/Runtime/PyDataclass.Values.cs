@@ -158,7 +158,7 @@ internal sealed class PyDataclassAnnotationValue(ExpressionSyntax expression) : 
             IdentifierExpressionSyntax identifier => identifier.Name,
             MemberExpressionSyntax member => $"{Format(member.Target)}.{member.MemberName}",
             SubscriptExpressionSyntax subscript => $"{Format(subscript.Target)}[{Format(subscript.Index)}]",
-            TupleLiteralExpressionSyntax tuple => string.Join(", ", tuple.Items.Select(Format)),
+            TupleLiteralExpressionSyntax tuple => string.Join(", ", tuple.Items.Select(static item => Format(item.Expression))),
             StringLiteralExpressionSyntax text => $"'{text.Value}'",
             IntegerLiteralExpressionSyntax integer => integer.ValueText,
             FloatLiteralExpressionSyntax floating => floating.ValueText,

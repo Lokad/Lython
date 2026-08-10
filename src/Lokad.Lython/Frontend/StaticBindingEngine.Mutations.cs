@@ -291,6 +291,14 @@ internal static partial class StaticBindingEngine
         }
     }
 
+    private static void CollectMutatedReceiverNames(IReadOnlyList<CollectionDisplayItemSyntax> items, AbstractState bindings, HashSet<string> names)
+    {
+        foreach (var item in items)
+        {
+            CollectMutatedReceiverNames(item.Expression, bindings, names);
+        }
+    }
+
     private static void CollectMutatingCallReceiverName(CallExpressionSyntax call, AbstractState bindings, HashSet<string> names)
     {
         if (call.Target is MemberExpressionSyntax
