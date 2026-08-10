@@ -22,11 +22,11 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "import_module" => new BuiltinCallable(
+                "import_module" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.ImportlibImportModule,
                     ImportModule,
                     ImportModuleAsync),
-                "invalidate_caches" => new BuiltinCallable(
+                "invalidate_caches" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.ImportlibInvalidateCaches,
                     InvalidateCaches),
                 "util" => ImportlibUtilModule.Instance,
@@ -85,11 +85,11 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "find_spec" => new BuiltinCallable(
+                "find_spec" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.ImportlibUtilFindSpec,
                     FindSpec,
                     FindSpecAsync),
-                "resolve_name" => new BuiltinCallable(
+                "resolve_name" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.ImportlibUtilResolveName,
                     ResolveName),
                 "module_from_spec" => UnsupportedImportlibCallable(
@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
     private static BuiltinCallable UnsupportedImportlibCallable(
         LythonCallableSignature signature,
         string message)
-        => new(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
+        => BuiltinCallable.Create(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
 
     private static string ResolveImportlibName(object[] arguments, string owner, LythonSourceSpan span)
     {

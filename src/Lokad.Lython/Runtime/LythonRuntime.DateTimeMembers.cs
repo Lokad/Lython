@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
                 "days" => delta.Days,
                 "seconds" => delta.Seconds,
                 "microseconds" => delta.Microseconds,
-                "total_seconds" => new BoundCallable((arguments, span, _) =>
+                "total_seconds" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
                 "year" => date.Year,
                 "month" => date.Month,
                 "day" => date.Day,
-                "weekday" => new BoundCallable((arguments, span, _) =>
+                "weekday" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(date.Weekday());
                 }),
-                "isoweekday" => new BoundCallable((arguments, span, _) =>
+                "isoweekday" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(date.IsoWeekday());
                 }),
-                "isocalendar" => new BoundCallable((arguments, span, _) =>
+                "isocalendar" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.IsoCalendar(date.Value);
                 }),
-                "toordinal" => new BoundCallable((arguments, span, _) =>
+                "toordinal" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
 
                     return date.ToOrdinal();
                 }),
-                "timetuple" => new BoundCallable((arguments, span, _) =>
+                "timetuple" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.TimeTuple(date.Value);
                 }),
-                "ctime" => new BoundCallable((arguments, span, _) =>
+                "ctime" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.CTime(date.Value);
                 }),
-                "isoformat" => new BoundCallable((arguments, span, _) =>
+                "isoformat" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
 
                     return date.IsoFormat();
                 }),
-                "__format__" => new BoundCallable((arguments, span, _) =>
+                "__format__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.FormatValue(date, format, span);
                 }, "date.__format__", ["format_spec"]),
-                "strftime" => new BoundCallable((arguments, span, _) =>
+                "strftime" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(date.Value, format, span);
                 }, "date.strftime", ["format"]),
-                "replace" => new BoundCallable((arguments, span, _) =>
+                "replace" => BoundCallable.Create((arguments, span, _) =>
                 {
                     return new PyDate(new DateOnly(
                         ReplacementInt(arguments, 0, (int)date.Year, "date.replace", span),
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
                 "microsecond" => time.Microsecond,
                 "tzinfo" => time.TzInfo is null ? PyNone.Instance : time.TzInfo,
                 "fold" => new BigInteger(time.Fold),
-                "utcoffset" => new BoundCallable((arguments, span, _) =>
+                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
 
                     return time.TzInfo is null ? PyNone.Instance : new PyTimedelta(time.TzInfo.Offset);
                 }),
-                "tzname" => new BoundCallable((arguments, span, _) =>
+                "tzname" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -164,7 +164,7 @@ internal sealed partial class LythonRuntime
 
                     return time.TzInfo is null ? PyNone.Instance : PyString.FromString(time.TzInfo.Name);
                 }),
-                "dst" => new BoundCallable((arguments, span, _) =>
+                "dst" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }),
-                "isoformat" => new BoundCallable((arguments, span, _) =>
+                "isoformat" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -183,7 +183,7 @@ internal sealed partial class LythonRuntime
                     var timespec = GetTimespec(ArgAt(arguments, 0), "time.isoformat", span);
                     return time.IsoFormat(timespec);
                 }, "time.isoformat", ["timespec"], 0),
-                "__format__" => new BoundCallable((arguments, span, _) =>
+                "__format__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.FormatValue(time, format, span);
                 }, "time.__format__", ["format_spec"]),
-                "strftime" => new BoundCallable((arguments, span, _) =>
+                "strftime" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -201,7 +201,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span);
                 }, "time.strftime", ["format"]),
-                "replace" => new BoundCallable((arguments, span, context) =>
+                "replace" => BoundCallable.Create((arguments, span, context) =>
                 {
                     _ = context;
                     var microArg = ArgAt(arguments, 3);
@@ -240,7 +240,7 @@ internal sealed partial class LythonRuntime
                 "microsecond" => dateTime.Microsecond,
                 "tzinfo" => dateTime.TzInfo is null ? PyNone.Instance : dateTime.TzInfo,
                 "fold" => new BigInteger(dateTime.Fold),
-                "date" => new BoundCallable((arguments, span, _) =>
+                "date" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -249,7 +249,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.DatePart();
                 }),
-                "time" => new BoundCallable((arguments, span, _) =>
+                "time" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -258,7 +258,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.NaiveTimePart();
                 }),
-                "timetz" => new BoundCallable((arguments, span, _) =>
+                "timetz" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.TimePart();
                 }),
-                "weekday" => new BoundCallable((arguments, span, _) =>
+                "weekday" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(dateTime.DatePart().Weekday());
                 }),
-                "isoweekday" => new BoundCallable((arguments, span, _) =>
+                "isoweekday" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -285,7 +285,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(dateTime.DatePart().IsoWeekday());
                 }),
-                "isocalendar" => new BoundCallable((arguments, span, _) =>
+                "isocalendar" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.IsoCalendar(dateTime.DatePart().Value);
                 }),
-                "toordinal" => new BoundCallable((arguments, span, _) =>
+                "toordinal" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.ToOrdinal();
                 }),
-                "timetuple" => new BoundCallable((arguments, span, _) =>
+                "timetuple" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.TimeTuple(dateTime.Value, dateTime.TzInfo is null ? -1 : 0);
                 }),
-                "utctimetuple" => new BoundCallable((arguments, span, _) =>
+                "utctimetuple" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -324,7 +324,7 @@ internal sealed partial class LythonRuntime
                         : new DateTime(dateTime.ToUtcTicks(), DateTimeKind.Unspecified);
                     return PyDateTimeOps.TimeTuple(utcValue, 0);
                 }),
-                "ctime" => new BoundCallable((arguments, span, _) =>
+                "ctime" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -333,7 +333,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.CTime(dateTime.Value);
                 }),
-                "timestamp" => new BoundCallable((arguments, span, context) =>
+                "timestamp" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Timestamp(dateTime, localOffset, span);
                 }),
-                "utcoffset" => new BoundCallable((arguments, span, _) =>
+                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.TzInfo is null ? PyNone.Instance : new PyTimedelta(dateTime.TzInfo.Offset);
                 }),
-                "tzname" => new BoundCallable((arguments, span, _) =>
+                "tzname" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
 
                     return dateTime.TzInfo is null ? PyNone.Instance : PyString.FromString(dateTime.TzInfo.Name);
                 }),
-                "dst" => new BoundCallable((arguments, span, _) =>
+                "dst" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }),
-                "astimezone" => new BoundCallable((arguments, span, context) =>
+                "astimezone" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     return PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span);
                 }, "datetime.astimezone", ["tz"], 0),
-                "isoformat" => new BoundCallable((arguments, span, _) =>
+                "isoformat" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 2)
                     {
@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
                     var timespec = GetTimespec(ArgAt(arguments, 1), "datetime.isoformat", span);
                     return dateTime.IsoFormat(separator, timespec);
                 }, "datetime.isoformat", ["sep", "timespec"], 0),
-                "__format__" => new BoundCallable((arguments, span, _) =>
+                "__format__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -413,7 +413,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.FormatValue(dateTime, format, span);
                 }, "datetime.__format__", ["format_spec"]),
-                "strftime" => new BoundCallable((arguments, span, _) =>
+                "strftime" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
                     {
@@ -422,7 +422,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span);
                 }, "datetime.strftime", ["format"]),
-                "replace" => new BoundCallable((arguments, span, _) =>
+                "replace" => BoundCallable.Create((arguments, span, _) =>
                 {
                     var microArg = ArgAt(arguments, 6);
                     var microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, "datetime.replace", span);
@@ -455,7 +455,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "utcoffset" => new BoundCallable((arguments, span, _) =>
+                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -464,7 +464,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyTimedelta(timezone.Offset);
                 }, "timezone.utcoffset", ["dt"]),
-                "tzname" => new BoundCallable((arguments, span, _) =>
+                "tzname" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -473,7 +473,7 @@ internal sealed partial class LythonRuntime
 
                     return PyString.FromString(timezone.Name);
                 }, "timezone.tzname", ["dt"]),
-                "dst" => new BoundCallable((arguments, span, _) =>
+                "dst" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {

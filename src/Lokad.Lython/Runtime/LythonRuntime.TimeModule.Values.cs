@@ -176,8 +176,8 @@ internal sealed partial class LythonRuntime
                 "n_fields" => new BigInteger(11),
                 "n_sequence_fields" => new BigInteger(9),
                 "n_unnamed_fields" => BigInteger.Zero,
-                "count" => new BoundCallable((arguments, span, _) => CountValue(arguments, span), "struct_time.count", ["value"]),
-                "index" => new BoundCallable((arguments, span, _) => IndexValue(arguments, span), "struct_time.index", ["value", "start", "stop"], 1),
+                "count" => BoundCallable.Create((arguments, span, _) => CountValue(arguments, span), "struct_time.count", ["value"]),
+                "index" => BoundCallable.Create((arguments, span, _) => IndexValue(arguments, span), "struct_time.index", ["value", "start", "stop"], 1),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);

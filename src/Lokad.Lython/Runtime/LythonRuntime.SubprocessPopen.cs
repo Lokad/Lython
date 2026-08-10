@@ -253,19 +253,19 @@ internal sealed partial class LythonRuntime
                 "encoding" => PyString.FromString(EncodingName),
                 "errors" => PyString.FromString(ErrorsName),
                 "universal_newlines" => _request.ContentMode == LythonSubprocessContentMode.Text,
-                "communicate" => new BoundCallable(
+                "communicate" => BoundCallable.Create(
                     (arguments, span, _) => Communicate(arguments, span),
                     async (arguments, span, _) => await CommunicateAsync(arguments, span).ConfigureAwait(false),
                     "Popen.communicate",
                     ["input", "timeout"],
                     0),
-                "wait" => new BoundCallable(
+                "wait" => BoundCallable.Create(
                     (arguments, span, _) => Wait(arguments, span),
                     async (arguments, span, _) => await WaitAsync(arguments, span).ConfigureAwait(false),
                     "Popen.wait",
                     ["timeout"],
                     0),
-                "poll" => new BoundCallable((arguments, span, _) => Poll(arguments, span), "Popen.poll", []),
+                "poll" => BoundCallable.Create((arguments, span, _) => Poll(arguments, span), "Popen.poll", []),
                 "send_signal" => UnsupportedMethod("Popen.send_signal", "signals and live process ownership"),
                 "terminate" => UnsupportedMethod("Popen.terminate", "signals and live process ownership"),
                 "kill" => UnsupportedMethod("Popen.kill", "signals and live process ownership"),
@@ -273,8 +273,8 @@ internal sealed partial class LythonRuntime
                     "NotImplementedError",
                     "Popen.pid is unavailable because Lython's buffered facade does not represent a live process.",
                     null),
-                "__enter__" => new BoundCallable((arguments, span, _) => EnterBound(arguments, span), "Popen.__enter__", []),
-                "__exit__" => new BoundCallable(
+                "__enter__" => BoundCallable.Create((arguments, span, _) => EnterBound(arguments, span), "Popen.__enter__", []),
+                "__exit__" => BoundCallable.Create(
                     (arguments, span, _) => ExitBound(arguments, span),
                     async (arguments, span, _) => await ExitBoundAsync(arguments, span).ConfigureAwait(false),
                     "Popen.__exit__",

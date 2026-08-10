@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "decode" => new BoundCallable((arguments, span, context) =>
+                "decode" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 2)
                     {
@@ -41,46 +41,55 @@ internal sealed partial class LythonRuntime
 
     private sealed class BoundCallable : BoundArgumentsCallable
     {
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature) : this(implementation, signature, null) { }
-
-        public BoundCallable(
+        private BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, implementation, asyncImplementation, PythonCallableKind.Method, parameterIndices: null)
+            : base(signature, implementation, asyncImplementation, PythonCallableKind.Method)
         {
         }
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation) : this(implementation, new LythonCallableSignature("bound method")) { }
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature)
+            => new(implementation, signature, null);
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name) : this(implementation, name, null, null) { }
+        public static BoundCallable Create(
+            Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
+            LythonCallableSignature signature,
+            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
+            => new(implementation, signature, asyncImplementation);
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name, string[]? parameterNames) : this(implementation, name, parameterNames, null) { }
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
+            => Create(implementation, LythonCallableSignature.Create("bound method"));
 
-        public BoundCallable(
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name)
+            => Create(implementation, name, null, null);
+
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name, string[]? parameterNames)
+            => Create(implementation, name, parameterNames, null);
+
+        public static BoundCallable Create(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             string? name,
             string[]? parameterNames,
             int? requiredCount)
-            : this(implementation, new LythonCallableSignature(name ?? "bound method", parameterNames, requiredCount))
-        {
-        }
+            => Create(implementation, LythonCallableSignature.Create(name ?? "bound method", parameterNames, requiredCount));
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation) : this(implementation, asyncImplementation, null, null, null) { }
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
+            => Create(implementation, asyncImplementation, null, null, null);
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name) : this(implementation, asyncImplementation, name, null, null) { }
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name)
+            => Create(implementation, asyncImplementation, name, null, null);
 
-        public BoundCallable(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name, string[]? parameterNames) : this(implementation, asyncImplementation, name, parameterNames, null) { }
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name, string[]? parameterNames)
+            => Create(implementation, asyncImplementation, name, parameterNames, null);
 
-        public BoundCallable(
+        public static BoundCallable Create(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation,
             string? name,
             string[]? parameterNames,
             int? requiredCount)
-            : this(implementation, new LythonCallableSignature(name ?? "bound method", parameterNames, requiredCount), asyncImplementation)
-        {
-        }
+            => Create(implementation, LythonCallableSignature.Create(name ?? "bound method", parameterNames, requiredCount), asyncImplementation);
 
     }
 

@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                 "style" => _worksheet.GetCellNamedStyle(Row, Column),
                 "style_id" => new BigInteger(_worksheet.GetCellStyleId(Row, Column)),
                 "data_type" => PyString.FromString(_worksheet.GetCellDataType(Row, Column)),
-                "offset" => new BoundCallable(Offset, "Cell.offset", ["row", "column"], requiredCount: 0),
+                "offset" => BoundCallable.Create(Offset, "Cell.offset", ["row", "column"], requiredCount: 0),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -353,8 +353,8 @@ internal sealed partial class LythonRuntime
                 "hashValue" => OptionalStringValue(HashValue),
                 "saltValue" => OptionalStringValue(SaltValue),
                 "spinCount" => SpinCount is null ? PyNone.Instance : new BigInteger(SpinCount.Value),
-                "enable" => new BoundCallable(Enable, "SheetProtection.enable", []),
-                "disable" => new BoundCallable(Disable, "SheetProtection.disable", []),
+                "enable" => BoundCallable.Create(Enable, "SheetProtection.enable", []),
+                "disable" => BoundCallable.Create(Disable, "SheetProtection.disable", []),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -545,8 +545,8 @@ internal sealed partial class LythonRuntime
                 "revisionsHashValue" => OptionalStringValue(RevisionsHashValue),
                 "revisionsSaltValue" => OptionalStringValue(RevisionsSaltValue),
                 "revisionsSpinCount" => RevisionsSpinCount is null ? PyNone.Instance : new BigInteger(RevisionsSpinCount.Value),
-                "set_workbook_password" => new BoundCallable(SetWorkbookPassword, "WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1),
-                "set_revisions_password" => new BoundCallable(SetRevisionsPassword, "WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1),
+                "set_workbook_password" => BoundCallable.Create(SetWorkbookPassword, "WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1),
+                "set_revisions_password" => BoundCallable.Create(SetRevisionsPassword, "WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1),
                 _ => MissingMemberValue.Instance,
             };
 

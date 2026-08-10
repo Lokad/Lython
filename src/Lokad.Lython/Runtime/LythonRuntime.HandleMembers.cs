@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
                 "mode" => PyString.FromString(handle.Mode),
                 "encoding" => PyString.FromString(handle.EncodingName),
                 "errors" => PyString.FromString(handle.ErrorsName),
-                "__enter__" => new BoundCallable((arguments, span, _) =>
+                "__enter__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.Enter();
                 }),
-                "__exit__" => new BoundCallable((arguments, span, _) =>
+                "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
                     {
@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
 
                     return await handle.ExitAsync().ConfigureAwait(false);
                 }),
-                "close" => new BoundCallable((arguments, span, _) =>
+                "close" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                     await handle.ExitAsync().ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
-                "readable" => new BoundCallable((arguments, span, _) =>
+                "readable" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.IsReadable();
                 }, "file.readable", []),
-                "writable" => new BoundCallable((arguments, span, _) =>
+                "writable" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.IsWritable();
                 }, "file.writable", []),
-                "seekable" => new BoundCallable((arguments, span, _) =>
+                "seekable" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.IsSeekable();
                 }, "file.seekable", []),
-                "tell" => new BoundCallable((arguments, span, _) =>
+                "tell" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.Tell();
                 }, "file.tell", []),
-                "seek" => new BoundCallable((arguments, span, _) =>
+                "seek" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.Seek(span);
                 }, "file.seek", ["offset", "whence"], 1),
-                "read" => new BoundCallable((arguments, span, _) =>
+                "read" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.Read(ParseOptionalSize(arguments, "file.read([size])", span));
                 }, "file.read", ["size"], 0),
-                "readline" => new BoundCallable((arguments, span, _) =>
+                "readline" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.ReadLine(ParseOptionalSize(arguments, "file.readline([size])", span));
                 }, "file.readline", ["size"], 0),
-                "readlines" => new BoundCallable((arguments, span, _) =>
+                "readlines" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.ReadLines(ParseOptionalSize(arguments, "file.readlines([hint])", span));
                 }, "file.readlines", ["hint"], 0),
-                "write" => new BoundCallable((arguments, span, _) =>
+                "write" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
                     {
@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.Write(text);
                 }, "file.write", ["text"]),
-                "writelines" => new BoundCallable((arguments, span, _) =>
+                "writelines" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
 
                     return handle.WriteLines(arguments[0], span);
                 }, "file.writelines", ["lines"]),
-                "flush" => new BoundCallable((arguments, span, _) =>
+                "flush" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "read" => new BoundCallable((arguments, span, _) =>
+                "read" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
 
                     return await handle.ReadAllAsync(span).ConfigureAwait(false);
                 }),
-                "readline" => new BoundCallable((arguments, span, _) =>
+                "readline" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -234,7 +234,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "write" => new BoundCallable((arguments, span, _) =>
+                "write" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
                     {
@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
 
                     return await handle.WriteAsync(text, span).ConfigureAwait(false);
                 }, "stream.write", ["text"]),
-                "flush" => new BoundCallable((arguments, span, _) =>
+                "flush" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
                 "returncode" => process.ReturnCode,
                 "stdout" => process.Stdout,
                 "stderr" => process.Stderr,
-                "check_returncode" => new BoundCallable((arguments, span, context) =>
+                "check_returncode" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {

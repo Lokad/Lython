@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "cwd" when _isSupported => new BoundCallable((arguments, span, context) =>
+                    "cwd" when _isSupported => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         return new PyPath(PyString.FromString(PathOps.Normalize(context.Host.Cwd)));
                     }, $"{Name}.cwd", []),
-                    "home" when _isSupported => new BoundCallable((arguments, span, _) =>
+                    "home" when _isSupported => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {

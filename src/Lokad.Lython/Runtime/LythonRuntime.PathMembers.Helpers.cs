@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             TextNewlineMode Newline);
 
         private static BoundCallable UnsupportedPathMember(string name, string message)
-            => new((object[] arguments, LythonSourceSpan span, ExecutionContext context) =>
+            => BoundCallable.Create((object[] arguments, LythonSourceSpan span, ExecutionContext context) =>
             {
                 _ = arguments;
                 _ = context;
@@ -300,7 +300,7 @@ internal sealed partial class LythonRuntime
 
         private sealed class PathOpenCallable(string path) : ICallable
         {
-            private static readonly LythonCallableSignature CallSignature = new(
+            private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "Path.open",
                 ["mode", "buffering", "encoding", "errors", "newline"],
                 RequiredCount: 0);

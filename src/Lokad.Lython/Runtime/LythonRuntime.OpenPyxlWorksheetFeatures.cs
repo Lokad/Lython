@@ -76,8 +76,8 @@ internal sealed partial class LythonRuntime
         private OpenPyxlWorksheetTableModule()
             : base("openpyxl.worksheet.table", new Dictionary<string, object>
             {
-                ["Table"] = new BuiltinCallable("openpyxl.worksheet.table.Table", CreateTable, ["displayName", "ref"], requiredCount: 0),
-                ["TableStyleInfo"] = new BuiltinCallable("openpyxl.worksheet.table.TableStyleInfo", CreateTableStyleInfo, ["name", "showFirstColumn", "showLastColumn", "showRowStripes", "showColumnStripes"], requiredCount: 0),
+                ["Table"] = BuiltinCallable.Create("openpyxl.worksheet.table.Table", CreateTable, ["displayName", "ref"], requiredCount: 0),
+                ["TableStyleInfo"] = BuiltinCallable.Create("openpyxl.worksheet.table.TableStyleInfo", CreateTableStyleInfo, ["name", "showFirstColumn", "showLastColumn", "showRowStripes", "showColumnStripes"], requiredCount: 0),
             })
         {
         }
@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
         private OpenPyxlWorksheetDataValidationModule()
             : base("openpyxl.worksheet.datavalidation", new Dictionary<string, object>
             {
-                ["DataValidation"] = new BuiltinCallable(
+                ["DataValidation"] = BuiltinCallable.Create(
                     "openpyxl.worksheet.datavalidation.DataValidation",
                     CreateDataValidation,
                     ["type", "formula1", "formula2", "allow_blank", "showErrorMessage", "showInputMessage", "operator", "errorTitle", "error", "promptTitle", "prompt"],
@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
                 "prompt" => OptionalStringValue(Prompt),
                 "sqref" => PyString.FromString(Sqref),
                 "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray()),
-                "add" => new BoundCallable(Add, "DataValidation.add", ["cell_range"]),
+                "add" => BoundCallable.Create(Add, "DataValidation.add", ["cell_range"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -469,7 +469,7 @@ internal sealed partial class LythonRuntime
             {
                 "dataValidation" => new PyList(_worksheet.DataValidations.Select(validation => (object)validation).ToArray()),
                 "count" => new BigInteger(_worksheet.DataValidations.Count),
-                "append" => new BoundCallable(Append, "DataValidationList.append", ["data_validation"]),
+                "append" => BoundCallable.Create(Append, "DataValidationList.append", ["data_validation"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -596,8 +596,8 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "ranges" => new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref)).ToArray()),
-                "items" => new BoundCallable(Items, "ConditionalFormattingList.items", []),
-                "add" => new BoundCallable(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
+                "items" => BoundCallable.Create(Items, "ConditionalFormattingList.items", []),
+                "add" => BoundCallable.Create(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
                 _ => MissingMemberValue.Instance,
             };
 

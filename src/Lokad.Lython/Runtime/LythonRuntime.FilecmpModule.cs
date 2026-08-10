@@ -22,9 +22,9 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "cmp" => new BuiltinCallable(LythonKnownCallableSignatures.FilecmpCmp, CompareFiles, CompareFilesAsync),
-                "clear_cache" => new BuiltinCallable(LythonKnownCallableSignatures.FilecmpClearCache, ClearCache),
-                "dircmp" => new BuiltinCallable(
+                "cmp" => BuiltinCallable.Create(LythonKnownCallableSignatures.FilecmpCmp, CompareFiles, CompareFilesAsync),
+                "clear_cache" => BuiltinCallable.Create(LythonKnownCallableSignatures.FilecmpClearCache, ClearCache),
+                "dircmp" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.FilecmpDircmp,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",

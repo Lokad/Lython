@@ -17,13 +17,13 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "ModuleInfo" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilModuleInfo, ModuleInfo),
-                "iter_modules" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilIterModules, IterModules),
-                "walk_packages" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilWalkPackages, WalkPackages),
-                "find_loader" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilFindLoader, FindLoader),
-                "get_loader" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilGetLoader, GetLoader),
-                "extend_path" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilExtendPath, ExtendPath),
-                "resolve_name" => new BuiltinCallable(LythonKnownCallableSignatures.PkgutilResolveName, ResolveName),
+                "ModuleInfo" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilModuleInfo, ModuleInfo),
+                "iter_modules" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilIterModules, IterModules),
+                "walk_packages" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilWalkPackages, WalkPackages),
+                "find_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilFindLoader, FindLoader),
+                "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilGetLoader, GetLoader),
+                "extend_path" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilExtendPath, ExtendPath),
+                "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilResolveName, ResolveName),
                 "get_importer" => UnsupportedPkgutilCallable("pkgutil.get_importer"),
                 "iter_importers" => UnsupportedPkgutilCallable("pkgutil.iter_importers"),
                 "iter_importer_modules" => UnsupportedPkgutilCallable("pkgutil.iter_importer_modules"),
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable UnsupportedPkgutilCallable(string qualifiedName)
-            => new(
+            => BuiltinCallable.Create(
                 qualifiedName,
                 (arguments, span, context) =>
                 {

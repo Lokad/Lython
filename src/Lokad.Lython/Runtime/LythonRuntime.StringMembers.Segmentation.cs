@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "split" => new BoundCallable((arguments, span, context) =>
+                    "split" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)
                         {
@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
                     }, "str.split", ["separator", "maxsplit"], 0),
-                    "rsplit" => new BoundCallable((arguments, span, context) =>
+                    "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)
                         {
@@ -72,7 +72,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
                     }, "str.rsplit", ["separator", "maxsplit"], 0),
-                    "splitlines" => new BoundCallable((arguments, span, context) =>
+                    "splitlines" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
                         {
@@ -81,8 +81,8 @@ internal sealed partial class LythonRuntime
 
                         var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
                         return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                    }, new LythonCallableSignature("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1)),
-                    "expandtabs" => new BoundCallable((arguments, span, _) =>
+                    }, LythonCallableSignature.Create("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1)),
+                    "expandtabs" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length > 1)
                         {
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
                 static BoundCallable CreateStripMethod(PyString target, string methodName, Func<PyString, PyString> whitespaceOperation)
-                    => new((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length > 1)
                         {

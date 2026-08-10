@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable UnsupportedStatisticsCallable(string qualifiedName)
-            => new(
+            => BuiltinCallable.Create(
                 qualifiedName,
                 (arguments, span, context) =>
                 {

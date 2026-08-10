@@ -32,11 +32,11 @@ internal sealed partial class LythonRuntime
             {
                 "Error" => ShutilError,
                 "SameFileError" => ShutilSameFileError,
-                "copyfile" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopyFile, ShutilCopyFile, ShutilCopyFileAsync),
-                "copy" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopy, ShutilCopy, ShutilCopyAsync),
-                "copy2" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopy2, ShutilCopy2),
-                "move" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilMove, ShutilMove, ShutilMoveAsync),
-                "copyfileobj" => new BuiltinCallable(LythonKnownCallableSignatures.ShutilCopyFileObj, ShutilCopyFileObj, ShutilCopyFileObjAsync),
+                "copyfile" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShutilCopyFile, ShutilCopyFile, ShutilCopyFileAsync),
+                "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShutilCopy, ShutilCopy, ShutilCopyAsync),
+                "copy2" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShutilCopy2, ShutilCopy2),
+                "move" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShutilMove, ShutilMove, ShutilMoveAsync),
+                "copyfileobj" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShutilCopyFileObj, ShutilCopyFileObj, ShutilCopyFileObjAsync),
                 _ => MissingMemberValue.Instance,
             };
 

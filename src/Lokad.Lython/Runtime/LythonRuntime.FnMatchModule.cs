@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "fnmatch" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatch, Match),
-                "fnmatchcase" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchCase, MatchCase),
-                "filter" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchFilter, Filter),
-                "translate" => new BuiltinCallable(LythonKnownCallableSignatures.FnMatchTranslate, Translate),
+                "fnmatch" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatch, Match),
+                "fnmatchcase" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchCase, MatchCase),
+                "filter" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchFilter, Filter),
+                "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchTranslate, Translate),
                 _ => MissingMemberValue.Instance,
             };
 

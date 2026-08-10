@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
                 "b2j" => CreateB2JDictionary(),
                 "bjunk" => new PySet(_bjunk),
                 "bpopular" => new PySet(_bpopular),
-                "set_seqs" => new BoundCallable((arguments, span, context) =>
+                "set_seqs" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
                     {
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                     SetSeqs(arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seqs", ["a", "b"]),
-                "set_seq1" => new BoundCallable((arguments, span, _) =>
+                "set_seq1" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
                     SetSeq1(arguments[0], span);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seq1", ["a"]),
-                "set_seq2" => new BoundCallable((arguments, span, context) =>
+                "set_seq2" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
                     SetSeq2(arguments[0], span, context);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seq2", ["b"]),
-                "ratio" => new BoundCallable((arguments, span, _) =>
+                "ratio" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
 
                     return Ratio();
                 }),
-                "quick_ratio" => new BoundCallable((arguments, span, _) =>
+                "quick_ratio" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
 
                     return QuickRatio();
                 }),
-                "real_quick_ratio" => new BoundCallable((arguments, span, _) =>
+                "real_quick_ratio" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
 
                     return RealQuickRatio();
                 }),
-                "find_longest_match" => new BoundCallable((arguments, span, context) =>
+                "find_longest_match" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 4)
                     {
@@ -116,8 +116,8 @@ internal sealed partial class LythonRuntime
                     var bhi = arguments.Length >= 4 && arguments[3] is not PyNone ? DifflibModule.RequireInt32(arguments[3], "SequenceMatcher.find_longest_match(..., bhi=...) expects an integer or None.", span) : _b.Count;
                     var block = FindLongestMatch(new MatchRange(alo, ahi, blo, bhi));
                     return new DifflibMatchObject(block.A, block.B, block.Size);
-                }, new LythonCallableSignature("SequenceMatcher.find_longest_match", ["alo", "ahi", "blo", "bhi"], RequiredCount: 0)),
-                "get_matching_blocks" => new BoundCallable((arguments, span, context) =>
+                }, LythonCallableSignature.Create("SequenceMatcher.find_longest_match", ["alo", "ahi", "blo", "bhi"], RequiredCount: 0)),
+                "get_matching_blocks" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(GetMatchingBlocks().Select(block => (object)new DifflibMatchObject(block.A, block.B, block.Size)), context.MemoryGovernor, span);
                 }),
-                "get_opcodes" => new BoundCallable((arguments, span, context) =>
+                "get_opcodes" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(BuildOpcodes().Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span);
                 }),
-                "get_grouped_opcodes" => new BoundCallable((arguments, span, context) =>
+                "get_grouped_opcodes" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {

@@ -246,7 +246,7 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
         int? requiredCount)
     {
         _implementation = implementation;
-        _signature = new LythonCallableSignature(name, parameterNames, requiredCount);
+        _signature = LythonCallableSignature.Create(name, parameterNames, requiredCount);
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

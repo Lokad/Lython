@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "maxlen" => deque.MaxLength is int maxLength ? new BigInteger(maxLength) : PyNone.Instance,
-                "append" => new BoundCallable((arguments, span, context) =>
+                "append" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "appendleft" => new BoundCallable((arguments, span, context) =>
+                "appendleft" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "pop" => new BoundCallable((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("IndexError", "pop from an empty deque", span);
                     }
                 }),
-                "popleft" => new BoundCallable((arguments, span, _) =>
+                "popleft" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("IndexError", "pop from an empty deque", span);
                     }
                 }),
-                "extend" => new BoundCallable((arguments, span, context) =>
+                "extend" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "extendleft" => new BoundCallable((arguments, span, context) =>
+                "extendleft" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
                     deque.Clear();
                     return PyNone.Instance;
                 }),
-                "copy" => new BoundCallable((arguments, span, _) =>
+                "copy" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyDeque(deque, deque.MaxLength);
                 }),
-                "count" => new BoundCallable((arguments, span, _) =>
+                "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(deque.CountValue(arguments[0]));
                 }),
-                "index" => new BoundCallable((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(index);
                 }, "deque.index", ["value", "start", "stop"], 1),
-                "insert" => new BoundCallable((arguments, span, context) =>
+                "insert" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
                     {
@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }, "deque.insert", ["index", "value"]),
-                "remove" => new BoundCallable((arguments, span, _) =>
+                "remove" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "deque.remove", ["value"]),
-                "reverse" => new BoundCallable((arguments, span, _) =>
+                "reverse" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                     deque.Reverse();
                     return PyNone.Instance;
                 }),
-                "rotate" => new BoundCallable((arguments, span, _) =>
+                "rotate" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -255,19 +255,19 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "add" => new BoundCallable((arguments, span, context) =>
+                "add" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.Add(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
                 }, OnePositional("set.add", "value")),
-                "discard" => new BoundCallable((arguments, span, context) =>
+                "discard" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.Remove(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
                     return PyNone.Instance;
                 }, OnePositional("set.discard", "value")),
-                "remove" => new BoundCallable((arguments, span, context) =>
+                "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var candidate = ValidateSetItem(arguments[0], span, context.MemoryGovernor);
                     if (!set.Remove(candidate))
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, OnePositional("set.remove", "value")),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
 
                     return new PySet(set, context.MemoryGovernor, span);
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -296,7 +296,7 @@ internal sealed partial class LythonRuntime
                     set.Clear();
                     return PyNone.Instance;
                 }),
-                "pop" => new BoundCallable((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (!set.TryPop(out var item))
                     {
@@ -305,13 +305,13 @@ internal sealed partial class LythonRuntime
 
                     return item;
                 }, NoArguments("set.pop")),
-                "union" => new BoundCallable((arguments, span, context) =>
+                "union" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var result = new PySet(set, context.MemoryGovernor, span);
                     Update(result, arguments, span, context);
                     return result;
                 }, VariadicPositional("set.union")),
-                "intersection" => new BoundCallable((arguments, span, context) =>
+                "intersection" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var result = new PySet(set, context.MemoryGovernor, span);
                     foreach (var argument in arguments)
@@ -321,7 +321,7 @@ internal sealed partial class LythonRuntime
 
                     return result;
                 }, VariadicPositional("set.intersection")),
-                "difference" => new BoundCallable((arguments, span, context) =>
+                "difference" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var result = new PySet(set, context.MemoryGovernor, span);
                     foreach (var argument in arguments)
@@ -331,14 +331,14 @@ internal sealed partial class LythonRuntime
 
                     return result;
                 }, VariadicPositional("set.difference")),
-                "symmetric_difference" => new BoundCallable((arguments, span, context) =>
+                "symmetric_difference" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var result = new PySet(set, context.MemoryGovernor, span);
                     result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, OnePositional("set.symmetric_difference", "other")),
-                "isdisjoint" => new BoundCallable((arguments, span, context) =>
+                "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
@@ -350,10 +350,10 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("set.isdisjoint", "other")),
-                "issubset" => new BoundCallable((arguments, span, context) =>
+                "issubset" => BoundCallable.Create((arguments, span, context) =>
                     IsSubsetOfIterable(set, arguments[0], span, context),
                     OnePositional("set.issubset", "other")),
-                "issuperset" => new BoundCallable((arguments, span, context) =>
+                "issuperset" => BoundCallable.Create((arguments, span, context) =>
                 {
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
@@ -365,13 +365,13 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("set.issuperset", "other")),
-                "update" => new BoundCallable((arguments, span, context) =>
+                "update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     Update(set, arguments, span, context);
                     return PyNone.Instance;
                 }, VariadicPositional("set.update")),
-                "intersection_update" => new BoundCallable((arguments, span, context) =>
+                "intersection_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
@@ -381,7 +381,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, VariadicPositional("set.intersection_update")),
-                "difference_update" => new BoundCallable((arguments, span, context) =>
+                "difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, VariadicPositional("set.difference_update")),
-                "symmetric_difference_update" => new BoundCallable((arguments, span, context) =>
+                "symmetric_difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
@@ -404,13 +404,13 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static LythonCallableSignature NoArguments(string name) => new(name, []);
+        private static LythonCallableSignature NoArguments(string name) => LythonCallableSignature.Create(name, []);
 
         private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => new(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+            => LythonCallableSignature.Create(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
 
         private static LythonCallableSignature VariadicPositional(string name)
-            => new(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.Positional, PositionalOnlyCount: 0);
+            => LythonCallableSignature.Create(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.Positional, PositionalOnlyCount: 0);
 
         private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {

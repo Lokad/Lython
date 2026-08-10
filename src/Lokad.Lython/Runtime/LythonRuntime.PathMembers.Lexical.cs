@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
                     "drive" => PyString.Empty,
                     "root" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
                     "anchor" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
-                    "__fspath__" => new BoundCallable((arguments, span, _) =>
+                    "__fspath__" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
 
                         return path.Value;
                     }, "Path.__fspath__", []),
-                    "is_absolute" => new BoundCallable((arguments, span, _) =>
+                    "is_absolute" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
 
                         return PathOps.IsAbsolute(path.Value.AsString());
                     }),
-                    "is_mount" => new BoundCallable((arguments, span, _) =>
+                    "is_mount" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
 
                         return string.Equals(PathOps.Normalize(path.Value.AsString()), "/", StringComparison.Ordinal);
                     }, "Path.is_mount", []),
-                    "is_reserved" => new BoundCallable((arguments, span, _) =>
+                    "is_reserved" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
 
                         return false;
                     }, "Path.is_reserved", []),
-                    "joinpath" => new BoundCallable((arguments, span, _) =>
+                    "joinpath" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length == 0)
                         {
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                         return new PyPath(current);
                     }),
                     "expanduser" => UnsupportedPathMember("Path.expanduser", "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
-                    "match" => new BoundCallable((arguments, span, _) =>
+                    "match" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
                         {
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
 
                         return PathOps.Match(path.Value.AsString(), pattern.AsString());
                     }, "Path.match", ["pattern"]),
-                    "is_relative_to" => new BoundCallable((arguments, span, _) =>
+                    "is_relative_to" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
                             return false;
                         }
                     }, "Path.is_relative_to", ["other"]),
-                    "as_posix" => new BoundCallable((arguments, span, _) =>
+                    "as_posix" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
 
                         return path.Value;
                     }),
-                    "resolve" => new BoundCallable((arguments, span, context) =>
+                    "resolve" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
 
                         return new PyPath(PathOps.Normalize(path.Value, PyString.FromString(context.Host.Cwd)));
                     }),
-                    "absolute" => new BoundCallable((arguments, span, context) =>
+                    "absolute" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
 
                         return new PyPath(PathOps.MakeAbsoluteLexical(path.Value, PyString.FromString(context.Host.Cwd)));
                     }),
-                    "relative_to" => new BoundCallable((arguments, span, _) =>
+                    "relative_to" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
                     }, "Path.relative_to", ["other"]),
-                    "with_suffix" => new BoundCallable((arguments, span, _) =>
+                    "with_suffix" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
                         {
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
                     }, "Path.with_suffix", ["suffix"]),
-                    "with_name" => new BoundCallable((arguments, span, _) =>
+                    "with_name" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var name))
                         {
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
                     }, "Path.with_name", ["name"]),
-                    "with_stem" => new BoundCallable((arguments, span, _) =>
+                    "with_stem" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var stem))
                         {

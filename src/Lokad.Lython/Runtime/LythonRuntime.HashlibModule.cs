@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                 "new" => new HashlibCallable(),
                 "algorithms_available" => CreateAlgorithmSet(),
                 "algorithms_guaranteed" => CreateAlgorithmSet(),
-                "file_digest" => new BuiltinCallable(
+                "file_digest" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.HashlibFileDigest,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",
@@ -279,10 +279,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "update" => new BoundCallable(Update, $"{AlgorithmName}.update", ["data"]),
-                "digest" => new BoundCallable(Digest, $"{AlgorithmName}.digest", []),
-                "hexdigest" => new BoundCallable(HexDigest, $"{AlgorithmName}.hexdigest", []),
-                "copy" => new BoundCallable(Copy, $"{AlgorithmName}.copy", []),
+                "update" => BoundCallable.Create(Update, $"{AlgorithmName}.update", ["data"]),
+                "digest" => BoundCallable.Create(Digest, $"{AlgorithmName}.digest", []),
+                "hexdigest" => BoundCallable.Create(HexDigest, $"{AlgorithmName}.hexdigest", []),
+                "copy" => BoundCallable.Create(Copy, $"{AlgorithmName}.copy", []),
                 "name" => PyString.FromString(AlgorithmName),
                 "digest_size" => new BigInteger(DigestSize),
                 "block_size" => new BigInteger(BlockSize),

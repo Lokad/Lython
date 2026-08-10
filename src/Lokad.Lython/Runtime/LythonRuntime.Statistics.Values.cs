@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
                     "_fields" => new PyTuple([
                         PyString.FromString("slope"),
                         PyString.FromString("intercept")]),
-                    "_asdict" => new BoundCallable((arguments, span, context) =>
+                    "_asdict" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
                         dict.SetItem(PyString.FromString("intercept"), Intercept);
                         return dict;
                     }, "LinearRegression._asdict", []),
-                    "_replace" => new BoundCallable((arguments, span, _) =>
+                    "_replace" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length > 2)
                         {
@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
                             arguments.Length >= 1 && arguments[0] is not PyNone ? ExpectReal(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
                             arguments.Length >= 2 && arguments[1] is not PyNone ? ExpectReal(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept);
                     }, "LinearRegression._replace", ["slope", "intercept"], requiredCount: 0),
-                    "count" => new BoundCallable((arguments, span, _) =>
+                    "count" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
 
                         return new BigInteger(count);
                     }, "LinearRegression.count", ["value"]),
-                    "index" => new BoundCallable((arguments, span, _) =>
+                    "index" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length is < 1 or > 3)
                         {
@@ -245,7 +245,7 @@ internal sealed partial class LythonRuntime
                     "mode" => Mean,
                     "stdev" => Stdev,
                     "variance" => Variance,
-                    "zscore" => new BoundCallable((arguments, span, _) =>
+                    "zscore" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -256,7 +256,7 @@ internal sealed partial class LythonRuntime
                         var x = ExpectReal(arguments[0], "NormalDist.zscore(x)", span);
                         return (x - Mean) / Stdev;
                     }, "NormalDist.zscore", ["x"]),
-                    "pdf" => new BoundCallable((arguments, span, _) =>
+                    "pdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -268,7 +268,7 @@ internal sealed partial class LythonRuntime
                         var z = (x - Mean) / Stdev;
                         return Math.Exp(-0.5 * z * z) * InvSqrtTau / Stdev;
                     }, "NormalDist.pdf", ["x"]),
-                    "cdf" => new BoundCallable((arguments, span, _) =>
+                    "cdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
                         var x = ExpectReal(arguments[0], "NormalDist.cdf(x)", span);
                         return 0.5 * (1.0 + FloatingPointSpecialFunctions.Erf((x - Mean) / (Stdev * SqrtTwo)));
                     }, "NormalDist.cdf", ["x"]),
-                    "inv_cdf" => new BoundCallable((arguments, span, _) =>
+                    "inv_cdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -289,7 +289,7 @@ internal sealed partial class LythonRuntime
                         var p = ExpectReal(arguments[0], "NormalDist.inv_cdf(p)", span);
                         return InvCdf(p, span);
                     }, "NormalDist.inv_cdf", ["p"]),
-                    "overlap" => new BoundCallable((arguments, span, _) =>
+                    "overlap" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || arguments[0] is not PyNormalDist other)
                         {
@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
 
                         return Overlap(other, span);
                     }, "NormalDist.overlap", ["other"]),
-                    "quantiles" => new BoundCallable((arguments, span, context) =>
+                    "quantiles" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
                         {
@@ -316,7 +316,7 @@ internal sealed partial class LythonRuntime
 
                         return new PyList(results, context.MemoryGovernor, span);
                     }, "NormalDist.quantiles", ["n"], requiredCount: 0),
-                    "samples" => new BoundCallable((arguments, span, context) =>
+                    "samples" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 2)
                         {

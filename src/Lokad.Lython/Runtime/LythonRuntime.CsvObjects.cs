@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "writerow" => new BoundCallable((arguments, span, _) =>
+                "writerow" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
 
                     return WriteRow(writer, ToCsvRow(arguments[0], span), span);
                 }, "csv.writerow", ["row"]),
-                "writerows" => new BoundCallable((arguments, span, _) =>
+                "writerows" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, "csv.writerows", ["rows"]),
-                "getvalue" => new BoundCallable((arguments, span, _) =>
+                "getvalue" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "writeheader" => new BoundCallable((arguments, span, _) =>
+                "writeheader" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -456,7 +456,7 @@ internal sealed partial class LythonRuntime
 
                     return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span), span);
                 }),
-                "writerow" => new BoundCallable((arguments, span, _) =>
+                "writerow" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
 
                     return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span), span);
                 }, "csv.DictWriter.writerow", ["rowdict"]),
-                "writerows" => new BoundCallable((arguments, span, _) =>
+                "writerows" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {

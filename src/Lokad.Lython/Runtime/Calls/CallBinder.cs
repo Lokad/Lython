@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Lokad.Lython.Runtime;
 
 internal readonly record struct BoundCallArguments(object[] Values, ArgumentPresence Assigned);
@@ -36,8 +34,6 @@ internal sealed class ArgumentPresence
 
 internal static class CallBinder
 {
-    private static readonly ConditionalWeakTable<string[], Dictionary<string, int>> ParameterIndexCache = new();
-
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
@@ -52,7 +48,7 @@ internal static class CallBinder
             callableName,
             callableKind,
             parameterNames,
-            parameterNames is null ? null : GetParameterIndices(parameterNames),
+            parameterNames is null ? null : CreateParameterIndices(parameterNames),
             requiredCount,
             parameterNames?.Length,
             parameterNames?.Length,
@@ -61,15 +57,11 @@ internal static class CallBinder
             positionalOnlyCount: 0).Values;
     }
 
-    public static object[] BindNamedArguments(CallArgumentValue[] arguments, LythonSourceSpan span, LythonCallableSignature signature, PythonCallableKind callableKind)
-        => BindNamedArguments(arguments, span, signature, callableKind, null);
-
     public static object[] BindNamedArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
-        PythonCallableKind callableKind,
-        IReadOnlyDictionary<string, int>? parameterIndices)
+        PythonCallableKind callableKind)
     {
         return BindNamedArgumentsCore(
             arguments,
@@ -77,7 +69,7 @@ internal static class CallBinder
             signature.Name,
             callableKind,
             signature.ParameterNames,
-            parameterIndices ?? (signature.ParameterNames is null ? null : GetParameterIndices(signature.ParameterNames)),
+            signature.ParameterIndices,
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
@@ -98,7 +90,7 @@ internal static class CallBinder
             signature.Name,
             callableKind,
             signature.ParameterNames,
-            signature.ParameterNames is null ? null : GetParameterIndices(signature.ParameterNames),
+            signature.ParameterIndices,
             signature.MinimumArgumentCount,
             signature.MaximumArgumentCount,
             signature.MaxPositionalCount,
@@ -258,15 +250,14 @@ internal static class CallBinder
         return new BoundCallArguments(result, resultAssigned);
     }
 
-    internal static IReadOnlyDictionary<string, int> GetParameterIndices(string[] parameterNames)
-        => ParameterIndexCache.GetValue(parameterNames, static names =>
+    private static IReadOnlyDictionary<string, int> CreateParameterIndices(string[] parameterNames)
+    {
+        var indices = new Dictionary<string, int>(parameterNames.Length, StringComparer.Ordinal);
+        for (var index = 0; index < parameterNames.Length; index++)
         {
-            var indices = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
-            for (var i = 0; i < names.Length; i++)
-            {
-                indices[names[i]] = i;
-            }
+            indices[parameterNames[index]] = index;
+        }
 
-            return indices;
-        });
+        return indices;
+    }
 }

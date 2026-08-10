@@ -84,17 +84,17 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "compile" => new BuiltinCallable(LythonKnownCallableSignatures.ReCompile, Compile),
-                "search" => new BuiltinCallable(LythonKnownCallableSignatures.ReSearch, Search),
-                "match" => new BuiltinCallable(LythonKnownCallableSignatures.ReMatch, Match),
-                "fullmatch" => new BuiltinCallable(LythonKnownCallableSignatures.ReFullMatch, FullMatch),
-                "findall" => new BuiltinCallable(LythonKnownCallableSignatures.ReFindAll, FindAll),
-                "finditer" => new BuiltinCallable(LythonKnownCallableSignatures.ReFindIter, FindIter),
-                "sub" => new BuiltinCallable(LythonKnownCallableSignatures.ReSub, Substitute),
-                "subn" => new BuiltinCallable(LythonKnownCallableSignatures.ReSubn, SubstituteCount),
-                "split" => new BuiltinCallable(LythonKnownCallableSignatures.ReSplit, Split),
-                "escape" => new BuiltinCallable(LythonKnownCallableSignatures.ReEscape, Escape),
-                "purge" => new BuiltinCallable(LythonKnownCallableSignatures.RePurge, Purge),
+                "compile" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReCompile, Compile),
+                "search" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSearch, Search),
+                "match" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReMatch, Match),
+                "fullmatch" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFullMatch, FullMatch),
+                "findall" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFindAll, FindAll),
+                "finditer" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReFindIter, FindIter),
+                "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSub, Substitute),
+                "subn" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSubn, SubstituteCount),
+                "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSplit, Split),
+                "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReEscape, Escape),
+                "purge" => BuiltinCallable.Create(LythonKnownCallableSignatures.RePurge, Purge),
                 "error" => new ExceptionTypeValue("error"),
                 "PatternError" => new ExceptionTypeValue("PatternError"),
                 "RegexFlag" => new RegexFlagFactory(),
@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var signature = new LythonCallableSignature("re.RegexFlag", ["value"], RequiredCount: 0);
+                var signature = LythonCallableSignature.Create("re.RegexFlag", ["value"], RequiredCount: 0);
                 var bound = CallBinder.BindNamedArguments(arguments, span, signature, PythonCallableKind.Builtin);
                 if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
                 {

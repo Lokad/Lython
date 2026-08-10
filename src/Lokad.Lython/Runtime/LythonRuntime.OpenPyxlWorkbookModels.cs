@@ -364,9 +364,9 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "keys" => new BoundCallable(Keys, "TableList.keys", []),
-                "values" => new BoundCallable(Values, "TableList.values", []),
-                "items" => new BoundCallable(Items, "TableList.items", []),
+                "keys" => BoundCallable.Create(Keys, "TableList.keys", []),
+                "values" => BoundCallable.Create(Values, "TableList.values", []),
+                "items" => BoundCallable.Create(Items, "TableList.items", []),
                 _ => MissingMemberValue.Instance,
             };
 

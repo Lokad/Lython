@@ -59,14 +59,14 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "time" => new BuiltinCallable(LythonKnownCallableSignatures.TimeTime, CurrentTime),
-                "time_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimeTimeNs, CurrentTimeNanoseconds),
-                "monotonic" => new BuiltinCallable(LythonKnownCallableSignatures.TimeMonotonic, Monotonic),
-                "monotonic_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimeMonotonicNs, MonotonicNanoseconds),
-                "perf_counter" => new BuiltinCallable(LythonKnownCallableSignatures.TimePerfCounter, Monotonic),
-                "perf_counter_ns" => new BuiltinCallable(LythonKnownCallableSignatures.TimePerfCounterNs, MonotonicNanoseconds),
-                "sleep" => new BuiltinCallable(LythonKnownCallableSignatures.TimeSleep, Sleep, SleepAsync),
-                "get_clock_info" => new BuiltinCallable(LythonKnownCallableSignatures.TimeGetClockInfo, GetClockInfo),
+                "time" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeTime, CurrentTime),
+                "time_ns" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeTimeNs, CurrentTimeNanoseconds),
+                "monotonic" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeMonotonic, Monotonic),
+                "monotonic_ns" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeMonotonicNs, MonotonicNanoseconds),
+                "perf_counter" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimePerfCounter, Monotonic),
+                "perf_counter_ns" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimePerfCounterNs, MonotonicNanoseconds),
+                "sleep" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeSleep, Sleep, SleepAsync),
+                "get_clock_info" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeGetClockInfo, GetClockInfo),
                 "process_time" => Unsupported(LythonKnownCallableSignatures.TimeProcessTime, "process CPU clocks"),
                 "process_time_ns" => Unsupported(LythonKnownCallableSignatures.TimeProcessTimeNs, "process CPU clocks"),
                 "thread_time" => Unsupported(LythonKnownCallableSignatures.TimeThreadTime, "thread CPU clocks"),
@@ -77,15 +77,15 @@ internal sealed partial class LythonRuntime
                 "clock_settime" => Unsupported(LythonKnownCallableSignatures.TimeClockSetTime, "clock mutation"),
                 "clock_settime_ns" => Unsupported(LythonKnownCallableSignatures.TimeClockSetTimeNs, "clock mutation"),
                 "pthread_getcpuclockid" => Unsupported(LythonKnownCallableSignatures.TimePthreadGetCpuClockId, "platform thread clocks"),
-                "gmtime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeGmtime, Gmtime),
-                "localtime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeLocaltime, Localtime),
-                "ctime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeCtime, Ctime),
-                "mktime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeMktime, Mktime),
-                "asctime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeAsctime, Asctime),
-                "strftime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeStrftime, Strftime),
-                "strptime" => new BuiltinCallable(LythonKnownCallableSignatures.TimeStrptime, Strptime),
+                "gmtime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeGmtime, Gmtime),
+                "localtime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeLocaltime, Localtime),
+                "ctime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeCtime, Ctime),
+                "mktime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeMktime, Mktime),
+                "asctime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeAsctime, Asctime),
+                "strftime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeStrftime, Strftime),
+                "strptime" => BuiltinCallable.Create(LythonKnownCallableSignatures.TimeStrptime, Strptime),
                 "struct_time" => TimeStructTimeType.Instance,
-                "tzset" => new BuiltinCallable(
+                "tzset" => BuiltinCallable.Create(
                     LythonKnownCallableSignatures.TimeTzset,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",
@@ -219,7 +219,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable Unsupported(LythonCallableSignature signature, string capability)
-            => new(
+            => BuiltinCallable.Create(
                 signature,
                 (_, span, _) => throw new LythonRuntimeException(
                     "NotImplementedError",

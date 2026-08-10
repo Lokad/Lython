@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
 
             public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string[] parameterNames)
             {
-                _signature = new LythonCallableSignature(name, parameterNames);
+                _signature = LythonCallableSignature.Create(name, parameterNames);
                 _implementation = implementation;
             }
 

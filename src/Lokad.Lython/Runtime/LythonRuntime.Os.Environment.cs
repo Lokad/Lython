@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "get" => new BoundCallable((arguments, span, _) =>
+                "get" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
                         ? PyString.FromString(found)
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "os.environ.get", ["key", "default"], 1),
-                "keys" => new BoundCallable((arguments, span, context) =>
+                "keys" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.keys", []),
-                "values" => new BoundCallable((arguments, span, context) =>
+                "values" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.values", []),
-                "items" => new BoundCallable((arguments, span, context) =>
+                "items" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.items", []),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.copy", []),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
                     _items.Clear();
                     return PyNone.Instance;
                 }, "os.environ.clear", []),
-                "update" => new BoundCallable((arguments, span, _) =>
+                "update" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || arguments[0] is not PyDict source)
                     {

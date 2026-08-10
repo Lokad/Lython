@@ -62,10 +62,10 @@ internal sealed partial class LythonRuntime
                 "modules" => GetModules(),
                 "builtin_module_names" => CreateBuiltinModuleNames(_context),
                 "stdlib_module_names" => new PySet(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString), _context.MemoryGovernor),
-                "exit" => new BuiltinCallable(LythonKnownCallableSignatures.SysExit, Exit),
-                "getdefaultencoding" => new BuiltinCallable(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
-                "exc_info" => new BuiltinCallable(LythonKnownCallableSignatures.SysExcInfo, ExcInfo),
-                "getsizeof" => new BuiltinCallable(LythonKnownCallableSignatures.SysGetSizeOf, GetSizeOf),
+                "exit" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExit, Exit),
+                "getdefaultencoding" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
+                "exc_info" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExcInfo, ExcInfo),
+                "getsizeof" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetSizeOf, GetSizeOf),
                 "settrace" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetTrace, "sys.settrace(...) is not supported by Lython."),
                 "setprofile" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetProfile, "sys.setprofile(...) is not supported by Lython."),
                 "setrecursionlimit" => UnsupportedSysCallable(LythonKnownCallableSignatures.SysSetRecursionLimit, "sys.setrecursionlimit(...) is not supported by Lython; use LythonRunOptions.MaxRecursionDepth."),
@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable UnsupportedSysCallable(LythonCallableSignature signature, string message)
-            => new(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
+            => BuiltinCallable.Create(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
 
         private static string ContainedImportBaseDirectory(ExecutionContext context)
             => context.SourcePath is null ? context.Host.Cwd : PathOps.Parent(context.SourcePath);
@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
 
             if (name == "is_dataclass")
             {
-                value = new BuiltinCallable(
+                value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesIsDataclass,
                     PyDataclass.IsDataclass);
                 return true;
@@ -306,7 +306,7 @@ internal sealed partial class LythonRuntime
 
             if (name == "fields")
             {
-                value = new BuiltinCallable(
+                value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesFields,
                     PyDataclass.Fields);
                 return true;
@@ -314,7 +314,7 @@ internal sealed partial class LythonRuntime
 
             if (name == "asdict")
             {
-                value = new BuiltinCallable(
+                value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesAsDict,
                     PyDataclass.AsDict);
                 return true;
@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
 
             if (name == "astuple")
             {
-                value = new BuiltinCallable(
+                value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesAsTuple,
                     PyDataclass.AsTuple);
                 return true;

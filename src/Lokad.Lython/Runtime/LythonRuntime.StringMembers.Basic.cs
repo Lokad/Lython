@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "encode" => new BoundCallable((arguments, span, context) =>
+                    "encode" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 2)
                         {
@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                             context,
                             span);
                     }, "str.encode", ["encoding", "errors"], 0),
-                    "replace" => new BoundCallable((arguments, span, _) =>
+                    "replace" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length is < 2 or > 3 ||
                             !PyStringOps.TryAsString(arguments[0], out var oldValue) ||
@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span) : -1;
                         return PyStringOps.Replace(text, oldValue, newValue, count);
                     }, "str.replace", ["old", "new", "count"], 2),
-                    "startswith" => new BoundCallable((arguments, span, _) =>
+                    "startswith" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length is < 1 or > 3)
                         {
@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
                         var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.startswith(prefix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: true, span);
                     }, "str.startswith", ["prefix", "start", "end"], 1),
-                    "endswith" => new BoundCallable((arguments, span, _) =>
+                    "endswith" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length is < 1 or > 3)
                         {
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
                 static BoundCallable NoArgumentMethod(string methodName, Func<object> operation)
-                    => new((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {

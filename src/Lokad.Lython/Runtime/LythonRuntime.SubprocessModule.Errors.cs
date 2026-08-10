@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArguments(
                 arguments,
                 span,
-                new LythonCallableSignature("subprocess.CalledProcessError", ["returncode", "cmd", "output", "stderr"], RequiredCount: 2),
+                LythonCallableSignature.Create("subprocess.CalledProcessError", ["returncode", "cmd", "output", "stderr"], RequiredCount: 2),
                 PythonCallableKind.Builtin);
             var returnCode = bound[0] switch
             {

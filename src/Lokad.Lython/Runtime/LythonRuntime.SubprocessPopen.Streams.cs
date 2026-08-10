@@ -35,14 +35,14 @@ internal sealed partial class LythonRuntime
                 "closed" => IsClosed,
                 "encoding" => PyString.FromString(_owner.EncodingName),
                 "errors" => PyString.FromString(_owner.ErrorsName),
-                "write" => new BoundCallable((arguments, span, _) => WriteBound(arguments, span), "Popen.stdin.write", ["s"]),
-                "writelines" => new BoundCallable((arguments, span, _) => WriteLines(arguments, span), "Popen.stdin.writelines", ["lines"]),
-                "flush" => new BoundCallable((arguments, span, _) => Flush(arguments, span), "Popen.stdin.flush", []),
-                "close" => new BoundCallable((arguments, span, _) => CloseBound(arguments, span), "Popen.stdin.close", []),
-                "writable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: true), "Popen.stdin.writable", []),
-                "readable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.readable", []),
-                "seekable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.seekable", []),
-                "isatty" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.isatty", []),
+                "write" => BoundCallable.Create((arguments, span, _) => WriteBound(arguments, span), "Popen.stdin.write", ["s"]),
+                "writelines" => BoundCallable.Create((arguments, span, _) => WriteLines(arguments, span), "Popen.stdin.writelines", ["lines"]),
+                "flush" => BoundCallable.Create((arguments, span, _) => Flush(arguments, span), "Popen.stdin.flush", []),
+                "close" => BoundCallable.Create((arguments, span, _) => CloseBound(arguments, span), "Popen.stdin.close", []),
+                "writable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: true), "Popen.stdin.writable", []),
+                "readable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.readable", []),
+                "seekable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.seekable", []),
+                "isatty" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: false), "Popen.stdin.isatty", []),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
@@ -252,29 +252,29 @@ internal sealed partial class LythonRuntime
                 "closed" => IsClosed,
                 "encoding" => PyString.FromString(_owner.EncodingName),
                 "errors" => PyString.FromString(_owner.ErrorsName),
-                "read" => new BoundCallable(
+                "read" => BoundCallable.Create(
                     (arguments, span, _) => Read(arguments, span),
                     async (arguments, span, _) => await ReadAsync(arguments, span).ConfigureAwait(false),
                     "Popen pipe.read",
                     ["size"],
                     0),
-                "readline" => new BoundCallable(
+                "readline" => BoundCallable.Create(
                     (arguments, span, _) => ReadLine(arguments, span),
                     async (arguments, span, _) => await ReadLineAsync(arguments, span).ConfigureAwait(false),
                     "Popen pipe.readline",
                     ["size"],
                     0),
-                "readlines" => new BoundCallable(
+                "readlines" => BoundCallable.Create(
                     (arguments, span, _) => ReadLines(arguments, span),
                     async (arguments, span, _) => await ReadLinesAsync(arguments, span).ConfigureAwait(false),
                     "Popen pipe.readlines",
                     ["hint"],
                     0),
-                "close" => new BoundCallable((arguments, span, _) => CloseBound(arguments, span), "Popen pipe.close", []),
-                "readable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: true), "Popen pipe.readable", []),
-                "writable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.writable", []),
-                "seekable" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.seekable", []),
-                "isatty" => new BoundCallable((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.isatty", []),
+                "close" => BoundCallable.Create((arguments, span, _) => CloseBound(arguments, span), "Popen pipe.close", []),
+                "readable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, readable: true), "Popen pipe.readable", []),
+                "writable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.writable", []),
+                "seekable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.seekable", []),
+                "isatty" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, readable: false), "Popen pipe.isatty", []),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);

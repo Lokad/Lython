@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
                     PyString.FromString("module_finder"),
                     PyString.FromString("name"),
                     PyString.FromString("ispkg")]),
-                "_asdict" => new BoundCallable((arguments, span, context) =>
+                "_asdict" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                     dict.SetItem(PyString.FromString("ispkg"), IsPackage);
                     return dict;
                 }, "ModuleInfo._asdict", []),
-                "_replace" => new BoundCallable((arguments, span, _) =>
+                "_replace" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 3)
                     {
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
 
                     return new PkgutilModuleInfoObject(moduleFinder, replacementName, IsTruthy(isPackageValue));
                 }, "ModuleInfo._replace", ["module_finder", "name", "ispkg"], requiredCount: 0),
-                "count" => new BoundCallable((arguments, span, _) =>
+                "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(count);
                 }, "ModuleInfo.count", ["value"]),
-                "index" => new BoundCallable((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
@@ -225,7 +225,7 @@ internal sealed partial class LythonRuntime
                 "name" => Name,
                 "fullname" => Name,
                 "ispkg" => IsPackage,
-                "is_package" => new BoundCallable((arguments, span, context) =>
+                "is_package" => BoundCallable.Create((arguments, span, context) =>
                 {
                     _ = context;
                     if (arguments.Length is > 1)
@@ -242,7 +242,7 @@ internal sealed partial class LythonRuntime
 
                     return IsPackage;
                 }, "loader.is_package", ["fullname"], requiredCount: 0),
-                "get_source" => new BoundCallable((arguments, span, context) =>
+                "get_source" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is > 1)
                     {

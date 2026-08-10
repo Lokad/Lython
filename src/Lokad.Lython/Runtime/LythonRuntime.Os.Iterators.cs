@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "close" => new BoundCallable((arguments, span, _) =>
+                "close" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                     _closed = true;
                     return PyNone.Instance;
                 }, "ScandirIterator.close", []),
-                "__enter__" => new BoundCallable((arguments, span, _) =>
+                "__enter__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
 
                     return this;
                 }, "ScandirIterator.__enter__", []),
-                "__exit__" => new BoundCallable((arguments, span, _) =>
+                "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
                     {
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
             {
                 "name" => PyString.FromString(_name),
                 "path" => PyString.FromString(_path),
-                "__fspath__" => new BoundCallable((arguments, span, _) =>
+                "__fspath__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
 
                     return PyString.FromString(_path);
                 }, "DirEntry.__fspath__", []),
-                "is_file" => new BoundCallable((arguments, span, context) =>
+                "is_file" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
                 },
                 "DirEntry.is_file",
                 []),
-                "is_dir" => new BoundCallable((arguments, span, context) =>
+                "is_dir" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                 },
                 "DirEntry.is_dir",
                 []),
-                "stat" => new BoundCallable((arguments, span, context) =>
+                "stat" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
                 },
                 "DirEntry.stat",
                 []),
-                "inode" => new BoundCallable((arguments, span, _) =>
+                "inode" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("NotImplementedError", "DirEntry.inode() is not supported because Lython's host path model does not expose inode metadata.", span);
                 }, "DirEntry.inode", []),
-                "is_symlink" => new BoundCallable((arguments, span, _) =>
+                "is_symlink" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {

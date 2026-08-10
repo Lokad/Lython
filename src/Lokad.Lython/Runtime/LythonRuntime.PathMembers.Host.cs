@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "stat" => new BoundCallable((arguments, span, context) =>
+                    "stat" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
                 }),
-                    "lstat" => new BoundCallable((arguments, span, context) =>
+                    "lstat" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     }, "Path.lstat", []),
-                    "exists" => new BoundCallable((arguments, span, context) =>
+                    "exists" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         return await context.HostExistsAsync(path.Value.AsString(), span).ConfigureAwait(false);
                     }),
-                    "is_file" => new BoundCallable((arguments, span, context) =>
+                    "is_file" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsFile;
                     }),
-                    "is_dir" => new BoundCallable((arguments, span, context) =>
+                    "is_dir" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsDir;
                     }),
-                    "is_symlink" => new BoundCallable((arguments, span, _) =>
+                    "is_symlink" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "unlink" => new BoundCallable((arguments, span, context) =>
+                    "unlink" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
                         {
@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
                         await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }, "Path.unlink", ["missing_ok"], 0),
-                    "rmdir" => new BoundCallable((arguments, span, context) =>
+                    "rmdir" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
                         await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
-                    "rename" => new BoundCallable((arguments, span, context) =>
+                    "rename" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }, "Path.rename", ["target"]),
-                    "replace" => new BoundCallable((arguments, span, context) =>
+                    "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }, "Path.replace", ["target"]),
-                    "mkdir" => new BoundCallable((arguments, span, context) =>
+                    "mkdir" => BoundCallable.Create((arguments, span, context) =>
                     {
                         PathMkDir(path.Value.AsString(), arguments, span, context);
                         return PyNone.Instance;
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
                         await PathMkDirAsync(path.Value.AsString(), arguments, span, context).ConfigureAwait(false);
                         return PyNone.Instance;
                     }, "Path.mkdir", ["mode", "parents", "exist_ok"], 0),
-                    "touch" => new BoundCallable((arguments, span, context) =>
+                    "touch" => BoundCallable.Create((arguments, span, context) =>
                     {
                         PathTouch(path.Value.AsString(), arguments, span, context);
                         return PyNone.Instance;
@@ -326,7 +326,7 @@ internal sealed partial class LythonRuntime
                 value = name switch
                 {
                     "open" => new PathOpenCallable(path.Value.AsString()),
-                    "glob" => new BoundCallable((arguments, span, context) =>
+                    "glob" => BoundCallable.Create((arguments, span, context) =>
                     {
                         var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
 
@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
 
                         return results;
                     }, "Path.glob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
-                    "iterdir" => new BoundCallable((arguments, span, context) =>
+                    "iterdir" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
                         var entries = names.Select<string, object>(name => new PyPath(PathOps.Join(path.Value, PyString.FromString(name))));
                         return new PyList(entries, context.MemoryGovernor, span);
                     }),
-                    "read_text" => new BoundCallable((arguments, span, context) =>
+                    "read_text" => BoundCallable.Create((arguments, span, context) =>
                     {
                         var (encodingMode, errors, newline) = ParsePathReadTextArguments(arguments, span);
                         return ReadPathText(path.Value.AsString(), encodingMode, errors, newline, context, span);
@@ -403,7 +403,7 @@ internal sealed partial class LythonRuntime
                         var (encodingMode, errors, newline) = ParsePathReadTextArguments(arguments, span);
                         return await ReadPathTextAsync(path.Value.AsString(), encodingMode, errors, newline, context, span).ConfigureAwait(false);
                     }, "Path.read_text", ["encoding", "errors", "newline"], 0),
-                    "write_text" => new BoundCallable((arguments, span, context) =>
+                    "write_text" => BoundCallable.Create((arguments, span, context) =>
                     {
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                         context.ObserveString(text, span);
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
                         await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
                         return new BigInteger(text.Length);
                     }, "Path.write_text", ["text", "encoding", "errors", "newline"], 1),
-                    "rglob" => new BoundCallable((arguments, span, context) =>
+                    "rglob" => BoundCallable.Create((arguments, span, context) =>
                     {
                         var pattern = ParsePathGlobArguments(arguments, "Path.rglob", span);
 
@@ -442,7 +442,7 @@ internal sealed partial class LythonRuntime
                         await EnumerateRecursiveAsync(path.Value, pattern, context, span, results).ConfigureAwait(false);
                         return results;
                     }, "Path.rglob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
-                    "samefile" => new BoundCallable((arguments, span, context) =>
+                    "samefile" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {

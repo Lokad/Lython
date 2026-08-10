@@ -101,13 +101,13 @@ internal sealed partial class LythonRuntime
                 "mode" => PyString.FromString(_options.Mode),
                 "encoding" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(EncodingName),
                 "errors" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(ErrorsName),
-                "__enter__" => new BoundCallable((arguments, span, _) =>
+                "__enter__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     RequireNoArguments(arguments, "gzip file __enter__()", span);
                     EnsureOpen(span);
                     return this;
                 }, "gzip file.__enter__", []),
-                "__exit__" => new BoundCallable((arguments, span, _) =>
+                "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
                     {
@@ -141,7 +141,7 @@ internal sealed partial class LythonRuntime
                     }
                     return false;
                 }),
-                "close" => new BoundCallable((arguments, span, _) =>
+                "close" => BoundCallable.Create((arguments, span, _) =>
                 {
                     RequireNoArguments(arguments, "gzip file.close()", span);
                     Close(span);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
                     await CloseAsync(span).ConfigureAwait(false);
                     return PyNone.Instance;
                 }),
-                "flush" => new BoundCallable((arguments, span, _) =>
+                "flush" => BoundCallable.Create((arguments, span, _) =>
                 {
                     RequireNoArguments(arguments, "gzip file.flush()", span);
                     Flush(span);
@@ -169,12 +169,12 @@ internal sealed partial class LythonRuntime
                 "writable" => NoArgumentMethod("gzip file.writable", (_, span) => { EnsureOpen(span); return _options.Operation is GzipOperation.Write or GzipOperation.Append; }),
                 "seekable" => NoArgumentMethod("gzip file.seekable", (_, span) => { EnsureOpen(span); return false; }),
                 "tell" => NoArgumentMethod("gzip file.tell", (_, span) => { EnsureOpen(span); return new BigInteger(_options.Operation == GzipOperation.Read ? _readCursor : _writeBuffer.Length); }),
-                "seek" => new BoundCallable((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),
-                "read" => new BoundCallable((arguments, span, _) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span), span), "gzip file.read", ["size"], 0),
-                "readline" => new BoundCallable((arguments, span, _) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span), span), "gzip file.readline", ["size"], 0),
-                "readlines" => new BoundCallable((arguments, span, _) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span), span), "gzip file.readlines", ["hint"], 0),
-                "write" => new BoundCallable((arguments, span, _) => Write(arguments, span), "gzip file.write", ["data"]),
-                "writelines" => new BoundCallable((arguments, span, _) => WriteLines(arguments, span), "gzip file.writelines", ["lines"]),
+                "seek" => BoundCallable.Create((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),
+                "read" => BoundCallable.Create((arguments, span, _) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span), span), "gzip file.read", ["size"], 0),
+                "readline" => BoundCallable.Create((arguments, span, _) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span), span), "gzip file.readline", ["size"], 0),
+                "readlines" => BoundCallable.Create((arguments, span, _) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span), span), "gzip file.readlines", ["hint"], 0),
+                "write" => BoundCallable.Create((arguments, span, _) => Write(arguments, span), "gzip file.write", ["data"]),
+                "writelines" => BoundCallable.Create((arguments, span, _) => WriteLines(arguments, span), "gzip file.writelines", ["lines"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
         }
 
         private BoundCallable NoArgumentMethod(string name, Func<object[], LythonSourceSpan, object> implementation)
-            => new((arguments, span, _) =>
+            => BoundCallable.Create((arguments, span, _) =>
             {
                 RequireNoArguments(arguments, name + "()", span);
                 return implementation(arguments, span);

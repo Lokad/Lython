@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
             {
                 "linejunk" => _linejunk ?? PyNone.Instance,
                 "charjunk" => _charjunk ?? PyNone.Instance,
-                "compare" => new BoundCallable((arguments, span, context) =>
+                "compare" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
                     {

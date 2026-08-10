@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "load" => new BuiltinCallable(LythonKnownCallableSignatures.JsonLoad, Load),
-                "loads" => new BuiltinCallable(LythonKnownCallableSignatures.JsonLoads, Loads),
-                "dump" => new BuiltinCallable(LythonKnownCallableSignatures.JsonDump, Dump),
-                "dumps" => new BuiltinCallable(LythonKnownCallableSignatures.JsonDumps, Dumps),
+                "load" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonLoad, Load),
+                "loads" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonLoads, Loads),
+                "dump" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDump, Dump),
+                "dumps" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDumps, Dumps),
                 "JSONDecodeError" => new ExceptionTypeValue("JSONDecodeError"),
                 "JSONEncoder" => new UnsupportedJsonClassFactory("json.JSONEncoder"),
                 "JSONDecoder" => new UnsupportedJsonClassFactory("json.JSONDecoder"),

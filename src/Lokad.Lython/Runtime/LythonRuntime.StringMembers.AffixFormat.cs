@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "removeprefix" => new BoundCallable((arguments, span, _) =>
+                    "removeprefix" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var prefix))
                         {
@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
                             ? SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length)
                             : text;
                     }, "str.removeprefix", ["prefix"]),
-                    "removesuffix" => new BoundCallable((arguments, span, _) =>
+                    "removesuffix" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
                         {
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("KeyError", ex.Message, span);
                         }
                     }),
-                    "format_map" => new BoundCallable((arguments, span, context) =>
+                    "format_map" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || arguments[0] is not PyDict mapping)
                         {
@@ -124,7 +124,7 @@ internal sealed partial class LythonRuntime
                 BoundCallable CreatePartitionMethod(
                     string methodName,
                     Func<PyString, PyString, MemoryGovernor, LythonSourceSpan?, PyTuple> operation)
-                    => new((arguments, span, context) =>
+                    => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var separator))
                         {

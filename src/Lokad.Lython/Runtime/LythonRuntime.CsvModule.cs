@@ -44,10 +44,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "reader" => new BuiltinCallable(LythonKnownCallableSignatures.CsvReader, Reader),
-                "writer" => new BuiltinCallable(LythonKnownCallableSignatures.CsvWriter, Writer),
-                "DictReader" => new BuiltinCallable(LythonKnownCallableSignatures.CsvDictReader, DictReader),
-                "DictWriter" => new BuiltinCallable(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
+                "reader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvReader, Reader),
+                "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer),
+                "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader),
+                "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
                 "Error" => new ExceptionTypeValue("Error"),
                 "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
                 "QUOTE_ALL" => new BigInteger((int)CsvQuotingMode.All),

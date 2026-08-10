@@ -20,17 +20,17 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "IS_LINE_JUNK" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibIsLineJunk, IsLineJunk),
-                "IS_CHARACTER_JUNK" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk),
-                "unified_diff" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibUnifiedDiff, UnifiedDiff),
-                "context_diff" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibContextDiff, ContextDiff),
-                "ndiff" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibNdiff, Ndiff),
-                "restore" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibRestore, Restore),
-                "get_close_matches" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibGetCloseMatches, GetCloseMatches),
-                "diff_bytes" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibDiffBytes, DiffBytes),
-                "Differ" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibDiffer, Differ),
-                "HtmlDiff" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibHtmlDiff, HtmlDiff),
-                "SequenceMatcher" => new BuiltinCallable(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher),
+                "IS_LINE_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsLineJunk, IsLineJunk),
+                "IS_CHARACTER_JUNK" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk),
+                "unified_diff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibUnifiedDiff, UnifiedDiff),
+                "context_diff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibContextDiff, ContextDiff),
+                "ndiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibNdiff, Ndiff),
+                "restore" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibRestore, Restore),
+                "get_close_matches" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibGetCloseMatches, GetCloseMatches),
+                "diff_bytes" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibDiffBytes, DiffBytes),
+                "Differ" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibDiffer, Differ),
+                "HtmlDiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibHtmlDiff, HtmlDiff),
+                "SequenceMatcher" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static BuiltinCallable DefaultCharacterJunkCallable()
-            => new(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk);
+            => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk);
 
         internal static bool CallJunkPredicate(object? predicate, object argument, LythonSourceSpan span, ExecutionContext context)
         {

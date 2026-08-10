@@ -19,14 +19,14 @@ internal sealed partial class LythonRuntime
         private OpenPyxlStylesModule()
             : base("openpyxl.styles", new Dictionary<string, object>
             {
-                ["Font"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlFont, CreateFont),
-                ["PatternFill"] = new BuiltinCallable("openpyxl.styles.PatternFill", CreatePatternFill, ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], requiredCount: 0),
+                ["Font"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlFont, CreateFont),
+                ["PatternFill"] = BuiltinCallable.Create("openpyxl.styles.PatternFill", CreatePatternFill, ["fill_type", "start_color", "end_color", "fgColor", "bgColor", "patternType"], requiredCount: 0),
                 ["GradientFill"] = UnsupportedOpenPyxlCallable("openpyxl.styles.GradientFill"),
-                ["Border"] = new BuiltinCallable("openpyxl.styles.Border", CreateBorder, ["left", "right", "top", "bottom"], requiredCount: 0),
-                ["Side"] = new BuiltinCallable("openpyxl.styles.Side", CreateSide, ["style", "color", "border_style"], requiredCount: 0),
-                ["Alignment"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlAlignment, CreateAlignment),
-                ["Protection"] = new BuiltinCallable("openpyxl.styles.Protection", CreateProtection, ["locked", "hidden"], requiredCount: 0),
-                ["NamedStyle"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlNamedStyle, CreateNamedStyle),
+                ["Border"] = BuiltinCallable.Create("openpyxl.styles.Border", CreateBorder, ["left", "right", "top", "bottom"], requiredCount: 0),
+                ["Side"] = BuiltinCallable.Create("openpyxl.styles.Side", CreateSide, ["style", "color", "border_style"], requiredCount: 0),
+                ["Alignment"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlAlignment, CreateAlignment),
+                ["Protection"] = BuiltinCallable.Create("openpyxl.styles.Protection", CreateProtection, ["locked", "hidden"], requiredCount: 0),
+                ["NamedStyle"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlNamedStyle, CreateNamedStyle),
                 ["colors"] = OpenPyxlStylesColorsModule.Instance,
             })
         {
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
         private OpenPyxlStylesColorsModule()
             : base("openpyxl.styles.colors", new Dictionary<string, object>
             {
-                ["Color"] = new BuiltinCallable(LythonKnownCallableSignatures.OpenPyxlColor, CreateColor),
+                ["Color"] = BuiltinCallable.Create(LythonKnownCallableSignatures.OpenPyxlColor, CreateColor),
                 ["BLACK"] = PyString.FromString("00000000"),
                 ["WHITE"] = PyString.FromString("00FFFFFF"),
                 ["BLUE"] = PyString.FromString("000000FF"),

@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
             {
                 "open" => GzipOpenCallable.Instance,
                 "compress" => GzipCompressCallable.Instance,
-                "decompress" => new BuiltinCallable(LythonKnownCallableSignatures.GzipDecompress, Decompress),
+                "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.GzipDecompress, Decompress),
                 "BadGzipFile" => new ExceptionTypeValue("BadGzipFile"),
                 _ => MissingMemberValue.Instance,
             };

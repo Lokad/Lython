@@ -76,17 +76,17 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "get_token" => new BoundCallable((arguments, span, _) =>
+                    "get_token" => BoundCallable.Create((arguments, span, _) =>
                     {
                         RequireNoArguments(arguments, "shlex.get_token()", span);
                         return GetToken(span);
                     }, "shlex.get_token", []),
-                    "read_token" => new BoundCallable((arguments, span, _) =>
+                    "read_token" => BoundCallable.Create((arguments, span, _) =>
                     {
                         RequireNoArguments(arguments, "shlex.read_token()", span);
                         return ReadToken(span);
                     }, "shlex.read_token", []),
-                    "push_token" => new BoundCallable((arguments, span, _) =>
+                    "push_token" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -96,20 +96,20 @@ internal sealed partial class LythonRuntime
                         _pushback.AddFirst(arguments[0]);
                         return PyNone.Instance;
                     }, "shlex.push_token", ["tok"]),
-                    "sourcehook" => new BoundCallable((_, span, _) => throw SourceInclusionUnsupported(span), "shlex.sourcehook", ["newfile"]),
-                    "push_source" => new BoundCallable(
+                    "sourcehook" => BoundCallable.Create((_, span, _) => throw SourceInclusionUnsupported(span), "shlex.sourcehook", ["newfile"]),
+                    "push_source" => BoundCallable.Create(
                         (arguments, span, context) => PushSource(arguments, context, span),
                         async (arguments, span, context) => await PushSourceAsync(arguments, context, span).ConfigureAwait(false),
                         "shlex.push_source",
                         ["newstream", "newfile"],
                         1),
-                    "pop_source" => new BoundCallable((arguments, span, _) =>
+                    "pop_source" => BoundCallable.Create((arguments, span, _) =>
                     {
                         RequireNoArguments(arguments, "shlex.pop_source()", span);
                         PopSource(span);
                         return PyNone.Instance;
                     }, "shlex.pop_source", []),
-                    "__next__" => new BoundCallable((arguments, span, _) =>
+                    "__next__" => BoundCallable.Create((arguments, span, _) =>
                     {
                         RequireNoArguments(arguments, "shlex.__next__()", span);
                         var token = GetToken(span);

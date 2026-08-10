@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "join" => new BoundCallable((arguments, span, _) =>
+                    "join" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                     "center" => CreatePaddingMethod("center", PyStringOps.Center),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust),
                     "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust),
-                    "zfill" => new BoundCallable((arguments, span, _) =>
+                    "zfill" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
                 BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, PyString> operation)
-                    => new((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, _) =>
                     {
                         var signature = $"str.{methodName}(width[, fillchar])";
                         if (arguments.Length is < 1 or > 2)
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
                     string methodName,
                     Func<PyString, PyString, int, int, BigInteger> operation,
                     bool throwWhenMissing)
-                    => new((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, _) =>
                     {
                         var signature = $"str.{methodName}(sub[, start[, end]])";
                         if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var needle))

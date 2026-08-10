@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
                 "endpos" => match.EndPos,
                 "lastindex" => LastIndex(match),
                 "lastgroup" => LastGroup(match),
-                "group" => new BoundCallable((arguments, span, context) =>
+                "group" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
                     {
@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyTuple(groups, context.MemoryGovernor, span);
                 }),
-                "groups" => new BoundCallable((arguments, span, context) =>
+                "groups" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyTuple(groups, context.MemoryGovernor, span);
                 }, "match.groups", ["default"], 0),
-                "groupdict" => new BoundCallable((arguments, span, context) =>
+                "groupdict" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
 
                     return dict;
                 }, "match.groupdict", ["default"], 0),
-                "expand" => new BoundCallable((arguments, span, context) =>
+                "expand" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var template))
                     {
@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
 
                     return ExpandReplacementTemplate(match, template, context, span);
                 }, "match.expand", ["template"]),
-                "start" => new BoundCallable((arguments, span, _) =>
+                "start" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
 
                     return ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span).Start;
                 }, "match.start", ["group"], 0),
-                "end" => new BoundCallable((arguments, span, _) =>
+                "end" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
 
                     return ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span).End;
                 }, "match.end", ["group"], 0),
-                "span" => new BoundCallable((arguments, span, context) =>
+                "span" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -366,14 +366,14 @@ internal sealed partial class LythonRuntime
                 "flags" => new BigInteger(pattern.Flags),
                 "groups" => new BigInteger(Math.Max(0, pattern.CaptureSlotCount - 1)),
                 "groupindex" => CreateGroupIndex(pattern),
-                "search" => new BoundCallable((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.SearchDetailedData(input)), "pattern.search", ["string", "pos", "endpos"], 1),
-                "match" => new BoundCallable((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.MatchDetailedData(input)), "pattern.match", ["string", "pos", "endpos"], 1),
-                "fullmatch" => new BoundCallable((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.FullMatchDetailedData(input)), "pattern.fullmatch", ["string", "pos", "endpos"], 1),
-                "findall" => new BoundCallable((arguments, span, context) => ExecuteFindAll(pattern, arguments, span, context), "pattern.findall", ["string", "pos", "endpos"], 1),
-                "finditer" => new BoundCallable((arguments, span, context) => ExecuteFindIter(pattern, arguments, span, context), "pattern.finditer", ["string", "pos", "endpos"], 1),
-                "sub" => new BoundCallable((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextOnly), "pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2),
-                "subn" => new BoundCallable((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextAndCount), "pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2),
-                "split" => new BoundCallable((arguments, span, context) => ExecuteSplit(pattern, arguments, span, context), "pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
+                "search" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.SearchDetailedData(input)), "pattern.search", ["string", "pos", "endpos"], 1),
+                "match" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.MatchDetailedData(input)), "pattern.match", ["string", "pos", "endpos"], 1),
+                "fullmatch" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.FullMatchDetailedData(input)), "pattern.fullmatch", ["string", "pos", "endpos"], 1),
+                "findall" => BoundCallable.Create((arguments, span, context) => ExecuteFindAll(pattern, arguments, span, context), "pattern.findall", ["string", "pos", "endpos"], 1),
+                "finditer" => BoundCallable.Create((arguments, span, context) => ExecuteFindIter(pattern, arguments, span, context), "pattern.finditer", ["string", "pos", "endpos"], 1),
+                "sub" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextOnly), "pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2),
+                "subn" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextAndCount), "pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2),
+                "split" => BoundCallable.Create((arguments, span, context) => ExecuteSplit(pattern, arguments, span, context), "pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
                 _ => MissingMemberValue.Instance,
             };
 

@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "append" => new BoundCallable((arguments, span, context) =>
+                "append" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.append", ["value"]),
-                "extend" => new BoundCallable((arguments, span, context) =>
+                "extend" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.extend", ["iterable"]),
-                "index" => new BoundCallable((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("ValueError", "list.index(value): value is not in list", span);
                 }, "list.index", ["value", "start", "stop"], 1),
-                "count" => new BoundCallable((arguments, span, _) =>
+                "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(count);
                 }, "list.count", ["value"]),
-                "insert" => new BoundCallable((arguments, span, context) =>
+                "insert" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
                     {
@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.insert", ["index", "value"]),
-                "remove" => new BoundCallable((arguments, span, _) =>
+                "remove" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("ValueError", "list.remove(value): value is not in list", span);
                 }, "list.remove", ["value"]),
-                "pop" => new BoundCallable((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
                     list.RemoveAt(index);
                     return item;
                 }, "list.pop", ["index"], 0),
-                "reverse" => new BoundCallable((arguments, span, _) =>
+                "reverse" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -133,11 +133,11 @@ internal sealed partial class LythonRuntime
                     list.Reverse();
                     return PyNone.Instance;
                 }),
-                "sort" => new BoundCallable(
+                "sort" => BoundCallable.Create(
                     (arguments, span, context) => SortList(list, arguments, span, context),
-                    new LythonCallableSignature("list.sort", ["key", "reverse"], RequiredCount: 0, MaxPositionalCount: 0),
+                    LythonCallableSignature.Create("list.sort", ["key", "reverse"], RequiredCount: 0, MaxPositionalCount: 0),
                     (arguments, span, context) => SortListAsync(list, arguments, span, context)),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(list.ToArray(), context.MemoryGovernor, span);
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "get" => new BoundCallable((arguments, span, context) =>
+                "get" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "dict.get", ["key", "default"], 1),
-                "keys" => new BoundCallable((arguments, span, _) =>
+                "keys" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -275,7 +275,7 @@ internal sealed partial class LythonRuntime
 
                     return new DictKeysView(dict);
                 }),
-                "values" => new BoundCallable((arguments, span, _) =>
+                "values" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
 
                     return new DictValuesView(dict);
                 }),
-                "items" => new BoundCallable((arguments, span, _) =>
+                "items" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
                     return new DictItemsView(dict);
                 }),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)),
-                "pop" => new BoundCallable((arguments, span, context) =>
+                "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
                     dict.Remove(key);
                     return found;
                 }, "dict.pop", ["key", "default"], 1),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyDict(dict, context.MemoryGovernor, span);
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
                     dict.Clear();
                     return PyNone.Instance;
                 }),
-                "setdefault" => new BoundCallable((arguments, span, context) =>
+                "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "default_factory" => dict.DefaultFactory ?? PyNone.Instance,
-                "get" => new BoundCallable((arguments, span, context) =>
+                "get" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "defaultdict.get", ["key", "default"], 1),
-                "keys" => new BoundCallable((arguments, span, context) =>
+                "keys" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(dict.Keys, context.MemoryGovernor, span);
                 }),
-                "values" => new BoundCallable((arguments, span, context) =>
+                "values" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(dict.Values, context.MemoryGovernor, span);
                 }),
-                "items" => new BoundCallable((arguments, span, context) =>
+                "items" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -413,7 +413,7 @@ internal sealed partial class LythonRuntime
 
                     return BuildItemsList(dict, context, span);
                 }),
-                "setdefault" => new BoundCallable((arguments, span, context) =>
+                "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -431,7 +431,7 @@ internal sealed partial class LythonRuntime
                     dict.SetItem(key, defaultValue);
                     return defaultValue;
                 }, "defaultdict.setdefault", ["key", "default"], 1),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -446,7 +446,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyDefaultDict(dict.DefaultFactory, copy);
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -469,7 +469,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "get" => new BoundCallable((arguments, span, context) =>
+                "get" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -483,7 +483,7 @@ internal sealed partial class LythonRuntime
                 }, "Counter.get", ["key", "default"], 1),
                 "update" => new CounterUpdateCallable(counter, subtract: false),
                 "subtract" => new CounterUpdateCallable(counter, subtract: true),
-                "total" => new BoundCallable((arguments, span, _) =>
+                "total" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -498,7 +498,7 @@ internal sealed partial class LythonRuntime
 
                     return total;
                 }, "Counter.total", []),
-                "most_common" => new BoundCallable((arguments, span, context) =>
+                "most_common" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -537,7 +537,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(items, context.MemoryGovernor, span);
                 }, "Counter.most_common", ["n"], 0),
-                "elements" => new BoundCallable((arguments, span, context) =>
+                "elements" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -564,7 +564,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(items, context.MemoryGovernor, span);
                 }),
-                "copy" => new BoundCallable((arguments, span, context) =>
+                "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -573,7 +573,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyCounter(counter, context.MemoryGovernor, span);
                 }),
-                "clear" => new BoundCallable((arguments, span, _) =>
+                "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -583,7 +583,7 @@ internal sealed partial class LythonRuntime
                     counter.Clear();
                     return PyNone.Instance;
                 }),
-                "keys" => new BoundCallable((arguments, span, context) =>
+                "keys" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -592,7 +592,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(counter.Keys, context.MemoryGovernor, span);
                 }),
-                "values" => new BoundCallable((arguments, span, context) =>
+                "values" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -601,7 +601,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyList(counter.Values, context.MemoryGovernor, span);
                 }),
-                "items" => new BoundCallable((arguments, span, context) =>
+                "items" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
