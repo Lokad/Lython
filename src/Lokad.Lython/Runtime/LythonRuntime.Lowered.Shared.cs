@@ -82,6 +82,77 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static async ValueTask<object> DispatchLoweredExpressionAsync(
+        LoweredExpression expression,
+        ExecutionContext context,
+        ILoweredExpressionExecution execution)
+    {
+        switch (expression)
+        {
+            case LoweredIdentifierExpression identifier:
+                return ResolveIdentifier(identifier.Identifier, context);
+            case LoweredStringLiteralExpression text:
+                return ValidateLoweredString(CreateString(text.Literal.Value, context, text.Span), context, text.Span);
+            case LoweredBytesLiteralExpression bytes:
+                return CreateBytes(bytes.Literal.Value.ToArray(), context, bytes.Span);
+            case LoweredIntegerLiteralExpression integer:
+                return ParseInteger(integer.Literal);
+            case LoweredFloatLiteralExpression floating:
+                return ParseFloat(floating.Literal);
+            case LoweredBooleanLiteralExpression boolean:
+                return boolean.Literal.Value;
+            case LoweredNoneLiteralExpression:
+                return PyNone.Instance;
+            case LoweredFormattedStringExpression formatted:
+                return await execution.EvaluateFormattedAsync(formatted, context).ConfigureAwait(false);
+            case LoweredParenthesizedExpression parenthesized:
+                return await execution.EvaluateExpressionAsync(parenthesized.Inner, context).ConfigureAwait(false);
+            case LoweredListLiteralExpression list:
+                return await execution.EvaluateListLiteralAsync(list, context).ConfigureAwait(false);
+            case LoweredListComprehensionExpression comprehension:
+                return await execution.EvaluateListComprehensionAsync(comprehension, context).ConfigureAwait(false);
+            case LoweredGeneratorExpression generator:
+                return new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span);
+            case LoweredTupleLiteralExpression tuple:
+                return await execution.EvaluateTupleLiteralAsync(tuple, context).ConfigureAwait(false);
+            case LoweredSetLiteralExpression set:
+                return await execution.EvaluateSetLiteralAsync(set, context).ConfigureAwait(false);
+            case LoweredSetComprehensionExpression comprehension:
+                return await execution.EvaluateSetComprehensionAsync(comprehension, context).ConfigureAwait(false);
+            case LoweredDictLiteralExpression dictionary:
+                return await execution.EvaluateDictionaryLiteralAsync(dictionary, context).ConfigureAwait(false);
+            case LoweredDictComprehensionExpression comprehension:
+                return await execution.EvaluateDictionaryComprehensionAsync(comprehension, context).ConfigureAwait(false);
+            case LoweredMemberExpression member:
+                return await execution.ResolveMemberAsync(member, context).ConfigureAwait(false);
+            case LoweredCallExpression call:
+                return await execution.InvokeCallAsync(call, context).ConfigureAwait(false);
+            case LoweredSubscriptExpression subscript:
+                return await execution.EvaluateSubscriptAsync(subscript, context).ConfigureAwait(false);
+            case LoweredSliceExpression slice:
+                return await execution.EvaluateSliceAsync(slice, context).ConfigureAwait(false);
+            case LoweredBinaryExpression binary:
+                return await execution.EvaluateBinaryAsync(binary, context).ConfigureAwait(false);
+            case LoweredChainedComparisonExpression chained:
+                return await execution.EvaluateChainedComparisonAsync(chained, context).ConfigureAwait(false);
+            case LoweredUnaryExpression unary:
+                return await execution.EvaluateUnaryAsync(unary, context).ConfigureAwait(false);
+            case LoweredConditionalExpression conditional:
+                var condition = await execution.EvaluateExpressionAsync(conditional.Condition, context).ConfigureAwait(false);
+                return await execution.IsTruthyAsync(condition, context, conditional.Condition.Span).ConfigureAwait(false)
+                    ? await execution.EvaluateExpressionAsync(conditional.Consequent, context).ConfigureAwait(false)
+                    : await execution.EvaluateExpressionAsync(conditional.Alternative, context).ConfigureAwait(false);
+            case LoweredAssignmentExpression assignment:
+                return await execution.EvaluateAssignmentAsync(assignment, context).ConfigureAwait(false);
+            case LoweredLambdaExpression lambda:
+                return await execution.CreateLambdaAsync(lambda, context).ConfigureAwait(false);
+            case LoweredOtherExpression other:
+                throw new InvalidOperationException($"Generic lowered expression fallback reached for supported execution: {other.Expression.GetType().Name}");
+            default:
+                throw new InvalidOperationException($"Unknown lowered expression type: {expression.GetType().Name}");
+        }
+    }
+
     private static async ValueTask ExecuteTryStatementCoreAsync(
         LoweredTryStatement statement,
         ExecutionContext context,

@@ -399,43 +399,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(expression.Span);
         try
         {
-            return expression switch
-            {
-                LoweredIdentifierExpression identifier => ResolveIdentifier(identifier.Identifier, context),
-                LoweredStringLiteralExpression text => ValidateLoweredString(CreateString(text.Literal.Value, context, text.Span), context, text.Span),
-                LoweredBytesLiteralExpression bytes => CreateBytes(bytes.Literal.Value.ToArray(), context, bytes.Span),
-                LoweredIntegerLiteralExpression integer => ParseInteger(integer.Literal),
-                LoweredFloatLiteralExpression floating => ParseFloat(floating.Literal),
-                LoweredBooleanLiteralExpression boolean => boolean.Literal.Value,
-                LoweredNoneLiteralExpression => PyNone.Instance,
-                LoweredFormattedStringExpression formatted => EvaluateLoweredFormattedString(formatted, context),
-                LoweredParenthesizedExpression parenthesized => EvaluateLoweredExpression(parenthesized.Inner, context),
-                LoweredListLiteralExpression list => ValidateLoweredCollection(CreateLoweredListLiteral(list, context), context, list.Span),
-                LoweredListComprehensionExpression comprehension => EvaluateLoweredListComprehension(comprehension, context),
-                LoweredGeneratorExpression generator => new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span),
-                LoweredTupleLiteralExpression tuple => ValidateLoweredCollection(
-                    CreateLoweredTupleLiteral(tuple, context),
-                    context,
-                    tuple.Span),
-                LoweredSetLiteralExpression set => EvaluateLoweredSetLiteral(set, context),
-                LoweredSetComprehensionExpression comprehension => EvaluateLoweredSetComprehension(comprehension, context),
-                LoweredDictLiteralExpression dict => EvaluateLoweredDictLiteral(dict, context),
-                LoweredDictComprehensionExpression comprehension => EvaluateLoweredDictComprehension(comprehension, context),
-                LoweredMemberExpression member => ResolveLoweredMember(member, context),
-                LoweredCallExpression call => InvokeLoweredCall(call, context),
-                LoweredSubscriptExpression subscript => EvaluateLoweredSubscript(subscript, context),
-                LoweredSliceExpression slice => EvaluateLoweredSlice(slice, context),
-                LoweredBinaryExpression binary => EvaluateLoweredBinary(binary, context),
-                LoweredChainedComparisonExpression chained => EvaluateLoweredChainedComparison(chained, context),
-                LoweredUnaryExpression unary => EvaluateLoweredUnary(unary, context),
-                LoweredConditionalExpression conditional => IsTruthy(EvaluateLoweredExpression(conditional.Condition, context), context, conditional.Condition.Span)
-                    ? EvaluateLoweredExpression(conditional.Consequent, context)
-                    : EvaluateLoweredExpression(conditional.Alternative, context),
-                LoweredAssignmentExpression assignment => EvaluateLoweredAssignmentExpression(assignment, context),
-                LoweredLambdaExpression lambda => CreateLoweredLambda(lambda, context),
-                LoweredOtherExpression other => throw new InvalidOperationException($"Generic lowered expression fallback reached for supported execution: {other.Expression.GetType().Name}"),
-                _ => throw new InvalidOperationException($"Unknown lowered expression type: {expression.GetType().Name}")
-            };
+            return DispatchLoweredExpressionAsync(expression, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
         }
         catch (LythonRuntimeException ex)
         {

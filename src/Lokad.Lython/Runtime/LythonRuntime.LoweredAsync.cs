@@ -418,47 +418,11 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(expression.Span);
         try
         {
-            var value = expression switch
-            {
-                LoweredIdentifierExpression identifier => ResolveIdentifier(identifier.Identifier, context),
-                LoweredStringLiteralExpression text => ValidateLoweredString(CreateString(text.Literal.Value, context, text.Span), context, text.Span),
-                LoweredBytesLiteralExpression bytes => CreateBytes(bytes.Literal.Value.ToArray(), context, bytes.Span),
-                LoweredIntegerLiteralExpression integer => ParseInteger(integer.Literal),
-                LoweredFloatLiteralExpression floating => ParseFloat(floating.Literal),
-                LoweredBooleanLiteralExpression boolean => boolean.Literal.Value,
-                LoweredNoneLiteralExpression => PyNone.Instance,
-                LoweredFormattedStringExpression formatted => await EvaluateLoweredFormattedStringAsync(formatted, context).ConfigureAwait(false),
-                LoweredParenthesizedExpression parenthesized => await EvaluateLoweredExpressionAsync(parenthesized.Inner, context).ConfigureAwait(false),
-                LoweredListLiteralExpression list => ValidateLoweredCollection(await CreateLoweredListLiteralAsync(list, context).ConfigureAwait(false), context, list.Span),
-                LoweredListComprehensionExpression comprehension => await EvaluateLoweredListComprehensionAsync(comprehension, context).ConfigureAwait(false),
-                LoweredGeneratorExpression generator => new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span),
-                LoweredTupleLiteralExpression tuple => ValidateLoweredCollection(
-                    await CreateLoweredTupleLiteralAsync(tuple, context).ConfigureAwait(false),
+            var value = await DispatchLoweredExpressionAsync(
+                    expression,
                     context,
-                    tuple.Span),
-                LoweredSetLiteralExpression set => await EvaluateLoweredSetLiteralAsync(set, context).ConfigureAwait(false),
-                LoweredSetComprehensionExpression comprehension => await EvaluateLoweredSetComprehensionAsync(comprehension, context).ConfigureAwait(false),
-                LoweredDictLiteralExpression dict => await EvaluateLoweredDictLiteralAsync(dict, context).ConfigureAwait(false),
-                LoweredDictComprehensionExpression comprehension => await EvaluateLoweredDictComprehensionAsync(comprehension, context).ConfigureAwait(false),
-                LoweredMemberExpression member => await ResolveLoweredMemberAsync(member, context).ConfigureAwait(false),
-                LoweredCallExpression call => await InvokeLoweredCallAsync(call, context).ConfigureAwait(false),
-                LoweredSubscriptExpression subscript => await EvaluateLoweredSubscriptAsync(subscript, context).ConfigureAwait(false),
-                LoweredSliceExpression slice => await EvaluateLoweredSliceAsync(slice, context).ConfigureAwait(false),
-                LoweredBinaryExpression binary => await EvaluateLoweredBinaryAsync(binary, context).ConfigureAwait(false),
-                LoweredChainedComparisonExpression chained => await EvaluateLoweredChainedComparisonAsync(chained, context).ConfigureAwait(false),
-                LoweredUnaryExpression unary => await EvaluateLoweredUnaryAsync(unary, context).ConfigureAwait(false),
-                LoweredConditionalExpression conditional => await IsTruthyAsync(
-                        await EvaluateLoweredExpressionAsync(conditional.Condition, context).ConfigureAwait(false),
-                        context,
-                        conditional.Condition.Span)
-                    .ConfigureAwait(false)
-                    ? await EvaluateLoweredExpressionAsync(conditional.Consequent, context).ConfigureAwait(false)
-                    : await EvaluateLoweredExpressionAsync(conditional.Alternative, context).ConfigureAwait(false),
-                LoweredAssignmentExpression assignment => await EvaluateLoweredAssignmentExpressionAsync(assignment, context).ConfigureAwait(false),
-                LoweredLambdaExpression lambda => await CreateLoweredLambdaAsync(lambda, context).ConfigureAwait(false),
-                LoweredOtherExpression other => throw new InvalidOperationException($"Generic lowered expression fallback reached for supported execution: {other.Expression.GetType().Name}"),
-                _ => throw new InvalidOperationException($"Unknown lowered expression type: {expression.GetType().Name}")
-            };
+                    AsynchronousLoweredStatementExecution.Instance)
+                .ConfigureAwait(false);
 
             context.ObserveValue(value, expression.Span);
             return value;
