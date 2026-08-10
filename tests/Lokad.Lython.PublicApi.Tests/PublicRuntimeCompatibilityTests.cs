@@ -169,9 +169,10 @@ outer()
     {
         ILythonHost host = new PublicTestHost();
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(
+        var exception = await Assert.ThrowsAsync<LythonHostCapabilityUnavailableException>(
             () => host.ReadBytesAsync("/payload.bin", CancellationToken.None).AsTask());
 
+        Assert.Equal("binary file I/O", exception.Capability);
         Assert.Contains("binary file I/O is not available", exception.Message, StringComparison.Ordinal);
     }
 
