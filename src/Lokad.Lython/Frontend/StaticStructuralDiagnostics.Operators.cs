@@ -1,0 +1,326 @@
+namespace Lokad.Lython.Frontend;
+
+internal static partial class StaticStructuralDiagnostics
+{
+    public static void AnalyzeBinaryOperation(BinaryExpressionSyntax binary, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+        => AnalyzeBinaryOperation(binary.Operator, binary.Left, binary.Right, binary.Span, diagnostics, bindings);
+
+    public static void AnalyzeChainedComparisonOperations(ChainedComparisonExpressionSyntax chained, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        for (var i = 0; i < chained.Operators.Count; i++)
+        {
+            AnalyzeBinaryOperation(chained.Operators[i], chained.Operands[i], chained.Operands[i + 1], chained.Span, diagnostics, bindings);
+        }
+    }
+
+    public static void AnalyzeUnaryOperation(UnaryExpressionSyntax unary, List<LythonDiagnostic> diagnostics, AbstractState bindings)
+    {
+        if (unary.Operator == UnaryOperatorSyntax.Not ||
+            !StaticAbstractValueResolver.TryResolve(unary.Operand, bindings, out var operand) ||
+            !IsKnownOperatorOperand(operand))
+        {
+            return;
+        }
+
+        if (unary.Operator is UnaryOperatorSyntax.Plus or UnaryOperatorSyntax.Minus)
+        {
+            if (!StaticAbstractFacts.IsNumericLike(operand) &&
+                operand.Kind != AbstractValueKind.DateTimeTimedelta &&
+                operand.Kind != AbstractValueKind.StatisticsNormalDist &&
+                operand.Kind != AbstractValueKind.CollectionsCounter)
+            {
+                AddDiagnostic(diagnostics, "LA3144", "Operand is not numeric.", unary.Span);
+            }
+
+            return;
+        }
+
+        if (unary.Operator == UnaryOperatorSyntax.BitwiseNot && !StaticAbstractFacts.IsIntegerLike(operand))
+        {
+            AddDiagnostic(diagnostics, "LA3145", "Operand is not an integer.", unary.Span);
+        }
+    }
+
+    private static void AnalyzeBinaryOperation(
+        BinaryOperatorSyntax op,
+        ExpressionSyntax leftExpression,
+        ExpressionSyntax rightExpression,
+        LythonSourceSpan span,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (op is BinaryOperatorSyntax.Or or
+            BinaryOperatorSyntax.And or
+            BinaryOperatorSyntax.Equal or
+            BinaryOperatorSyntax.NotEqual or
+            BinaryOperatorSyntax.Is or
+            BinaryOperatorSyntax.IsNot)
+        {
+            return;
+        }
+
+        if (!StaticAbstractValueResolver.TryResolve(leftExpression, bindings, out var left) ||
+            !StaticAbstractValueResolver.TryResolve(rightExpression, bindings, out var right) ||
+            !IsKnownOperatorOperand(left) ||
+            !IsKnownOperatorOperand(right))
+        {
+            return;
+        }
+
+        if (op is BinaryOperatorSyntax.In or BinaryOperatorSyntax.NotIn)
+        {
+            if (!CanApplyMembership(left, right))
+            {
+                AddDiagnostic(diagnostics, "LA3142", "Right operand does not support membership testing.", span);
+            }
+
+            return;
+        }
+
+        if (op is BinaryOperatorSyntax.Less or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual)
+        {
+            if (!CanApplyOrderedComparison(left, right))
+            {
+                AddDiagnostic(diagnostics, "LA3143", "Values are not comparable.", span);
+            }
+
+            return;
+        }
+
+        if (!CanApplyBinaryOperator(op, left, right))
+        {
+            AddDiagnostic(diagnostics, "LA3141", $"Operands are not compatible with '{DescribeBinaryOperator(op)}'.", span);
+        }
+    }
+
+    private static bool IsKnownOperatorOperand(AbstractValue value)
+        => value.Kind is not AbstractValueKind.Unknown and
+            not AbstractValueKind.Never and
+            not AbstractValueKind.UserClass and
+            not AbstractValueKind.UserInstance;
+
+    private static bool CanApplyBinaryOperator(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)
+    {
+        return op switch
+        {
+            BinaryOperatorSyntax.Add => CanApplyAdd(left, right),
+            BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
+                StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
+                StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
+            BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
+                StaticAbstractFacts.IsNormalDistNumericPair(left, right) ||
+                left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
+                StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsListLike(right),
+            BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
+                left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
+                left.Kind == AbstractValueKind.Path && (right.Kind == AbstractValueKind.Path || right.IsStringLike),
+            BinaryOperatorSyntax.FloorDivide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
+            BinaryOperatorSyntax.Modulo => CanApplyStringModulo(left, right) ||
+                StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+                StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
+            BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
+            BinaryOperatorSyntax.BitwiseOr or
+            BinaryOperatorSyntax.BitwiseXor or
+            BinaryOperatorSyntax.BitwiseAnd => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
+            BinaryOperatorSyntax.LeftShift or
+            BinaryOperatorSyntax.RightShift => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right),
+            _ => true
+        };
+    }
+
+    private static bool CanApplyStringModulo(AbstractValue left, AbstractValue right)
+    {
+        if (!left.IsStringLike)
+        {
+            return false;
+        }
+
+        if (left.Kind != AbstractValueKind.String)
+        {
+            return true;
+        }
+
+        if (!TryInspectPercentFormat(left.RequirePayload<string>(), out var positionalCount, out var hasMapping))
+        {
+            return false;
+        }
+
+        if (right.Kind == AbstractValueKind.Tuple)
+        {
+            return !hasMapping && (right.RequirePayload<IReadOnlyList<AbstractValue>>()).Count == positionalCount;
+        }
+
+        if (hasMapping && positionalCount == 0)
+        {
+            return right.Kind is AbstractValueKind.Dict or
+                AbstractValueKind.CollectionsDefaultDict or
+                AbstractValueKind.CollectionsCounter or
+                AbstractValueKind.CollectionsChainMap;
+        }
+
+        return positionalCount == 1 || hasMapping;
+    }
+
+    private static bool TryInspectPercentFormat(string format, out int positionalCount, out bool hasMapping)
+    {
+        positionalCount = 0;
+        hasMapping = false;
+        for (var index = 0; index < format.Length; index++)
+        {
+            if (format[index] != '%')
+            {
+                continue;
+            }
+
+            index++;
+            if (index >= format.Length)
+            {
+                return false;
+            }
+
+            if (format[index] == '%')
+            {
+                continue;
+            }
+
+            var mapping = false;
+            if (format[index] == '(')
+            {
+                mapping = true;
+                hasMapping = true;
+                var depth = 1;
+                while (++index < format.Length)
+                {
+                    if (format[index] == '(')
+                    {
+                        depth++;
+                    }
+                    else if (format[index] == ')' && --depth == 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (index >= format.Length)
+                {
+                    return false;
+                }
+
+                index++;
+            }
+
+            while (index < format.Length && format[index] is '#' or '0' or '-' or '+' or ' ')
+            {
+                index++;
+            }
+
+            if (index < format.Length && format[index] == '*')
+            {
+                positionalCount++;
+                index++;
+            }
+            else
+            {
+                while (index < format.Length && char.IsAsciiDigit(format[index]))
+                {
+                    index++;
+                }
+            }
+
+            if (index < format.Length && format[index] == '.')
+            {
+                index++;
+                if (index < format.Length && format[index] == '*')
+                {
+                    positionalCount++;
+                    index++;
+                }
+                else
+                {
+                    while (index < format.Length && char.IsAsciiDigit(format[index]))
+                    {
+                        index++;
+                    }
+                }
+            }
+
+            while (index < format.Length && format[index] is 'h' or 'l' or 'L')
+            {
+                index++;
+            }
+
+            if (index >= format.Length || format[index] is not ('s' or 'r' or 'a' or 'd' or 'i' or 'u' or 'o' or 'x' or 'X' or 'e' or 'E' or 'f' or 'F' or 'g' or 'G' or 'c'))
+            {
+                return false;
+            }
+
+            if (!mapping)
+            {
+                positionalCount++;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool CanApplyAdd(AbstractValue left, AbstractValue right)
+        => left.IsStringLike && right.IsStringLike ||
+           StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+           StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
+           StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
+           StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
+
+    private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)
+        => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
+           left.IsStringLike && right.IsStringLike ||
+           left.Kind == AbstractValueKind.DateTimeTimedelta && right.Kind == AbstractValueKind.DateTimeTimedelta ||
+           left.Kind == AbstractValueKind.DateTimeDate && right.Kind == AbstractValueKind.DateTimeDate ||
+           left.Kind == AbstractValueKind.DateTimeDateTime && right.Kind == AbstractValueKind.DateTimeDateTime ||
+           left.Kind == AbstractValueKind.DateTimeTime && right.Kind == AbstractValueKind.DateTimeTime ||
+           left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
+           StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right);
+
+    private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)
+    {
+        if (container.IsStringLike)
+        {
+            return candidate.IsStringLike;
+        }
+
+        return container.Kind is AbstractValueKind.List or
+            AbstractValueKind.ListType or
+            AbstractValueKind.Tuple or
+            AbstractValueKind.StatisticsLinearRegression or
+            AbstractValueKind.OpenPyxlWorkbook or
+            AbstractValueKind.Dict or
+            AbstractValueKind.Set or
+            AbstractValueKind.SetType;
+    }
+
+    private static string DescribeBinaryOperator(BinaryOperatorSyntax op)
+        => op switch
+        {
+            BinaryOperatorSyntax.Add => "+",
+            BinaryOperatorSyntax.Subtract => "-",
+            BinaryOperatorSyntax.Multiply => "*",
+            BinaryOperatorSyntax.Divide => "/",
+            BinaryOperatorSyntax.FloorDivide => "//",
+            BinaryOperatorSyntax.Modulo => "%",
+            BinaryOperatorSyntax.Power => "**",
+            BinaryOperatorSyntax.BitwiseOr => "|",
+            BinaryOperatorSyntax.BitwiseXor => "^",
+            BinaryOperatorSyntax.BitwiseAnd => "&",
+            BinaryOperatorSyntax.LeftShift => "<<",
+            BinaryOperatorSyntax.RightShift => ">>",
+            _ => op.ToString()
+        };
+}

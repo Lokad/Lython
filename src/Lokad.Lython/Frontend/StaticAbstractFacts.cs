@@ -128,6 +128,12 @@ internal static class StaticAbstractFacts
     public static bool IsNumericLike(AbstractValue value)
         => IsIntegerLike(value) || IsFloatLike(value) || value.Kind == AbstractValueKind.Decimal;
 
+    public static bool IsListLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.List or AbstractValueKind.ListType;
+
+    public static bool IsSetLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Set or AbstractValueKind.SetType;
+
     public static bool IsDefinitelyNonNone(AbstractValue value)
         => value.Kind is not AbstractValueKind.Unknown and
             not AbstractValueKind.Never and
