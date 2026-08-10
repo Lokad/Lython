@@ -218,13 +218,13 @@ internal sealed partial class LythonRuntime
             var reference = ExpectSingleStringArgument(arguments, "rows_from_range(range_string)", span);
             var bounds = ParseBoundedUtilityRange(reference, "rows_from_range(range_string)", span);
             var rows = new List<object>();
-            for (var row = bounds.MinRow.RequireNotNull(); row <= bounds.MaxRow.RequireNotNull(); row++)
+            for (var row = bounds.MinRow; row <= bounds.MaxRow; row++)
             {
                 context.CheckExecutionBudget(span);
-                var cells = new object[bounds.MaxColumn.RequireNotNull() - bounds.MinColumn.RequireNotNull() + 1];
-                for (var column = bounds.MinColumn.RequireNotNull(); column <= bounds.MaxColumn.RequireNotNull(); column++)
+                var cells = new object[bounds.MaxColumn - bounds.MinColumn + 1];
+                for (var column = bounds.MinColumn; column <= bounds.MaxColumn; column++)
                 {
-                    cells[column - bounds.MinColumn.RequireNotNull()] = PyString.FromString(CellReference(row, column));
+                    cells[column - bounds.MinColumn] = PyString.FromString(CellReference(row, column));
                 }
 
                 rows.Add(new PyTuple(cells, context.MemoryGovernor, span));
@@ -238,13 +238,13 @@ internal sealed partial class LythonRuntime
             var reference = ExpectSingleStringArgument(arguments, "cols_from_range(range_string)", span);
             var bounds = ParseBoundedUtilityRange(reference, "cols_from_range(range_string)", span);
             var columns = new List<object>();
-            for (var column = bounds.MinColumn.RequireNotNull(); column <= bounds.MaxColumn.RequireNotNull(); column++)
+            for (var column = bounds.MinColumn; column <= bounds.MaxColumn; column++)
             {
                 context.CheckExecutionBudget(span);
-                var cells = new object[bounds.MaxRow.RequireNotNull() - bounds.MinRow.RequireNotNull() + 1];
-                for (var row = bounds.MinRow.RequireNotNull(); row <= bounds.MaxRow.RequireNotNull(); row++)
+                var cells = new object[bounds.MaxRow - bounds.MinRow + 1];
+                for (var row = bounds.MinRow; row <= bounds.MaxRow; row++)
                 {
-                    cells[row - bounds.MinRow.RequireNotNull()] = PyString.FromString(CellReference(row, column));
+                    cells[row - bounds.MinRow] = PyString.FromString(CellReference(row, column));
                 }
 
                 columns.Add(new PyTuple(cells, context.MemoryGovernor, span));
@@ -266,6 +266,8 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct UtilityRangeBoundaries(int? MinColumn, int? MinRow, int? MaxColumn, int? MaxRow);
 
+        private readonly record struct BoundedUtilityRange(int MinColumn, int MinRow, int MaxColumn, int MaxRow);
+
         private static string ExpectSingleStringArgument(object[] arguments, string owner, LythonSourceSpan span)
         {
             if (arguments.Length != 1)
@@ -276,15 +278,21 @@ internal sealed partial class LythonRuntime
             return ExpectString(arguments[0], owner, span);
         }
 
-        private static UtilityRangeBoundaries ParseBoundedUtilityRange(string reference, string owner, LythonSourceSpan span)
+        private static BoundedUtilityRange ParseBoundedUtilityRange(string reference, string owner, LythonSourceSpan span)
         {
             var bounds = ParseUtilityRangeBoundaries(reference, span);
-            if (bounds.MinColumn is null || bounds.MinRow is null || bounds.MaxColumn is null || bounds.MaxRow is null)
+            if (bounds is not
+                {
+                    MinColumn: { } minColumn,
+                    MinRow: { } minRow,
+                    MaxColumn: { } maxColumn,
+                    MaxRow: { } maxRow,
+                })
             {
                 throw new LythonRuntimeException("TypeError", owner + " expects a bounded cell range.", span);
             }
 
-            return bounds;
+            return new BoundedUtilityRange(minColumn, minRow, maxColumn, maxRow);
         }
 
         private static UtilityRangeBoundaries ParseUtilityRangeBoundaries(string reference, LythonSourceSpan span)

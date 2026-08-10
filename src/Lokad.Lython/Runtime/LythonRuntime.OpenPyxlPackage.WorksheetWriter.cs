@@ -21,71 +21,20 @@ internal sealed partial class LythonRuntime
             OpenPyxlWorksheetRelationshipPlan relationshipPlan)
         {
             var sheetData = new XElement(XlsxMain + "sheetData");
-            var cellsByRow = worksheet.Cells
-                .OrderBy(pair => pair.Key.Row)
-                .ThenBy(pair => pair.Key.Column)
-                .GroupBy(pair => pair.Key.Row)
-                .ToDictionary(group => group.Key, group => group.ToArray());
-            var numberFormatsByRow = worksheet.NumberFormats
-                .OrderBy(pair => pair.Key.Row)
-                .ThenBy(pair => pair.Key.Column)
-                .GroupBy(pair => pair.Key.Row)
-                .ToDictionary(group => group.Key, group => group.ToArray());
-            var loadedStyleIdsByRow = worksheet.LoadedStyleIds
-                .OrderBy(pair => pair.Key.Row)
-                .ThenBy(pair => pair.Key.Column)
-                .GroupBy(pair => pair.Key.Row)
-                .ToDictionary(group => group.Key, group => group.ToArray());
-            var styledAddressesByRow = worksheet.CellStyles.Keys
-                .Select(key => key.Address)
-                .OrderBy(address => address.Row)
-                .ThenBy(address => address.Column)
-                .GroupBy(address => address.Row)
-                .ToDictionary(group => group.Key, group => group.ToArray());
-            var rowIndexes = cellsByRow.Keys
-                .Concat(numberFormatsByRow.Keys)
-                .Concat(loadedStyleIdsByRow.Keys)
-                .Concat(styledAddressesByRow.Keys)
-                .Concat(worksheet.RowDimensions.Keys)
-                .Distinct()
-                .OrderBy(row => row);
-            foreach (var rowIndex in rowIndexes)
+            var rowPlan = new SortedDictionary<int, SortedSet<int>>();
+            AddAddresses(worksheet.Cells.Keys);
+            AddAddresses(worksheet.NumberFormats.Keys);
+            AddAddresses(worksheet.LoadedStyleIds.Keys);
+            AddAddresses(worksheet.CellStyles.Keys.Select(key => key.Address));
+            foreach (var rowIndex in worksheet.RowDimensions.Keys)
+            {
+                rowPlan.TryAdd(rowIndex, []);
+            }
+
+            foreach (var (rowIndex, rowAddresses) in rowPlan)
             {
                 worksheet.RowDimensions.TryGetValue(rowIndex, out var rowDimension);
                 var row = CreateRowXml(rowIndex, rowDimension);
-                var rowAddresses = new SortedSet<int>();
-                if (cellsByRow.TryGetValue(rowIndex, out var rowCells))
-                {
-                    foreach (var pair in rowCells)
-                    {
-                        rowAddresses.Add(pair.Key.Column);
-                    }
-                }
-
-                if (numberFormatsByRow.TryGetValue(rowIndex, out var rowFormats))
-                {
-                    foreach (var pair in rowFormats)
-                    {
-                        rowAddresses.Add(pair.Key.Column);
-                    }
-                }
-
-                if (loadedStyleIdsByRow.TryGetValue(rowIndex, out var rowStyleIds))
-                {
-                    foreach (var pair in rowStyleIds)
-                    {
-                        rowAddresses.Add(pair.Key.Column);
-                    }
-                }
-
-                if (styledAddressesByRow.TryGetValue(rowIndex, out var rowStyles))
-                {
-                    foreach (var address in rowStyles)
-                    {
-                        rowAddresses.Add(address.Column);
-                    }
-                }
-
                 foreach (var column in rowAddresses)
                 {
                     var address = new CellAddress(rowIndex, column);
@@ -107,6 +56,22 @@ internal sealed partial class LythonRuntime
                 }
 
                 sheetData.Add(row);
+            }
+
+            // A style or number format must materialize its cell even when no value
+            // has been assigned, so all address-bearing stores contribute to one plan.
+            void AddAddresses(IEnumerable<CellAddress> addresses)
+            {
+                foreach (var address in addresses)
+                {
+                    if (!rowPlan.TryGetValue(address.Row, out var columns))
+                    {
+                        columns = [];
+                        rowPlan[address.Row] = columns;
+                    }
+
+                    columns.Add(address.Column);
+                }
             }
 
             var root = CreateSeededWorksheetRoot(worksheet);
