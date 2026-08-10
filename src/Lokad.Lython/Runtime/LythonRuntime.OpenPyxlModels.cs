@@ -21,17 +21,24 @@ internal sealed partial class LythonRuntime
         IDeletablePySubscriptableValue,
         IPyRenderableValue
     {
+        private enum WorkbookAccessMode
+        {
+            Editable,
+            ReadOnly,
+            WriteOnly,
+        }
+
         private readonly List<OpenPyxlWorksheet> _worksheets;
         private readonly List<OpenPyxlStyleValue> _namedStyles = new();
         private readonly OpenPyxlWorkbookSecurity _security;
+        private readonly WorkbookAccessMode _accessMode;
         private int _activeIndex;
         private bool _template;
         private bool _saved;
 
         private OpenPyxlWorkbook(
             List<OpenPyxlWorksheet> worksheets,
-            bool readOnly,
-            bool writeOnly,
+            WorkbookAccessMode accessMode,
             bool isoDates,
             bool date1904,
             int activeIndex,
@@ -47,8 +54,7 @@ internal sealed partial class LythonRuntime
 
             _activeIndex = _worksheets.Count == 0 ? 0 : Math.Clamp(activeIndex, 0, _worksheets.Count - 1);
             _namedStyles.Add(CreateNamedStyleValue(PyString.FromString("Normal")));
-            ReadOnly = readOnly;
-            WriteOnly = writeOnly;
+            _accessMode = accessMode;
             IsoDates = isoDates;
             Date1904 = date1904;
             SaveGuard = saveGuard;
@@ -57,9 +63,9 @@ internal sealed partial class LythonRuntime
             _security = new OpenPyxlWorkbookSecurity(this);
         }
 
-        public bool ReadOnly { get; }
+        public bool ReadOnly => _accessMode == WorkbookAccessMode.ReadOnly;
 
-        public bool WriteOnly { get; }
+        public bool WriteOnly => _accessMode == WorkbookAccessMode.WriteOnly;
 
         public bool IsoDates { get; }
 
@@ -82,10 +88,26 @@ internal sealed partial class LythonRuntime
         public bool HasFormulaCells => _worksheets.Any(worksheet => worksheet.Cells.Values.Any(IsFormulaValue));
 
         public static OpenPyxlWorkbook CreateNew(bool writeOnly, bool isoDates)
-            => new([new OpenPyxlWorksheet("Sheet")], readOnly: false, writeOnly, isoDates, date1904: false, activeIndex: 0, OpenPyxlSaveGuard.Safe, packageSnapshot: null, hasVbaProject: false);
+            => new(
+                [new OpenPyxlWorksheet("Sheet")],
+                writeOnly ? WorkbookAccessMode.WriteOnly : WorkbookAccessMode.Editable,
+                isoDates,
+                date1904: false,
+                activeIndex: 0,
+                OpenPyxlSaveGuard.Safe,
+                packageSnapshot: null,
+                hasVbaProject: false);
 
         public static OpenPyxlWorkbook FromWorksheets(List<OpenPyxlWorksheet> worksheets, bool readOnly, bool date1904, int activeIndex, OpenPyxlSaveGuard saveGuard, OpenPyxlPackageSnapshot? packageSnapshot, bool hasVbaProject)
-            => new(worksheets.Count == 0 ? [new OpenPyxlWorksheet("Sheet")] : worksheets, readOnly, writeOnly: false, isoDates: false, date1904, activeIndex, saveGuard, packageSnapshot, hasVbaProject);
+            => new(
+                worksheets.Count == 0 ? [new OpenPyxlWorksheet("Sheet")] : worksheets,
+                readOnly ? WorkbookAccessMode.ReadOnly : WorkbookAccessMode.Editable,
+                isoDates: false,
+                date1904,
+                activeIndex,
+                saveGuard,
+                packageSnapshot,
+                hasVbaProject);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
