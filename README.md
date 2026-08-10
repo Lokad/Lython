@@ -59,9 +59,9 @@ On the host side, the plumbing is deliberately small:
 var engine = new LythonEngine();
 var result = engine.Run(script, host);
 
-if (!result.Success)
+if (!result.Success && result.Failure is { } failure)
 {
-    Console.WriteLine($"{result.Failure!.ExceptionType}: {result.Failure.Message}");
+    Console.WriteLine($"{failure.ExceptionType}: {failure.Message}");
 }
 ```
 

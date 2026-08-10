@@ -463,6 +463,8 @@ internal sealed partial class LythonRuntime
 
         private void RejectArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
         {
+            // Validate the raw call here to preserve each method's Python-shaped
+            // error text and avoid materializing a bound empty argument array.
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", $"{Name}() expects no arguments.", span);
