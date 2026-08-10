@@ -2728,6 +2728,22 @@ __lython_file.close()
         Assert.Contains("allowBlank=\"1\"", worksheetXml, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("DataValidation(type='unsupported')", "DataValidation.type")]
+    [InlineData("DataValidation(operator='unsupported')", "DataValidation.operator")]
+    [InlineData("validation = DataValidation(); validation.type = 'unsupported'", "DataValidation.type")]
+    [InlineData("validation = DataValidation(); validation.operator = 'unsupported'", "DataValidation.operator")]
+    public void OpenPyxlDataValidation_RejectsUnsupportedClosedValues(string expression, string messageFragment)
+    {
+        var result = new LythonEngine().Run(
+            $"from openpyxl.worksheet.datavalidation import DataValidation\n{expression}\n",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("ValueError", result.Failure?.ExceptionType);
+        Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void OpenPyxlDataValidation_RangesFollowStructuralEditsAfterLoad()
     {

@@ -12,6 +12,29 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal enum OpenPyxlDataValidationType
+    {
+        Whole,
+        Decimal,
+        List,
+        Date,
+        Time,
+        TextLength,
+        Custom,
+    }
+
+    internal enum OpenPyxlDataValidationOperator
+    {
+        Between,
+        NotBetween,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+    }
+
     private static void RewriteDistinctCellRanges(
         List<CellRangeAddress> ranges,
         Func<CellRangeAddress, CellRangeAddress?> rewrite)
@@ -277,13 +300,13 @@ internal sealed partial class LythonRuntime
         private readonly List<CellRangeAddress> _ranges = new();
 
         public OpenPyxlDataValidation(
-            string? type,
+            OpenPyxlDataValidationType? type,
             string? formula1,
             string? formula2,
             bool allowBlank,
             bool showErrorMessage,
             bool showInputMessage,
-            string? operatorValue,
+            OpenPyxlDataValidationOperator? operatorValue,
             string? errorTitle,
             string? error,
             string? promptTitle,
@@ -302,7 +325,7 @@ internal sealed partial class LythonRuntime
             Prompt = prompt;
         }
 
-        public string? Type { get; private set; }
+        public OpenPyxlDataValidationType? Type { get; private set; }
 
         public string? Formula1 { get; private set; }
 
@@ -314,7 +337,7 @@ internal sealed partial class LythonRuntime
 
         public bool ShowInputMessage { get; private set; }
 
-        public string? Operator { get; private set; }
+        public OpenPyxlDataValidationOperator? Operator { get; private set; }
 
         public string? ErrorTitle { get; private set; }
 
@@ -360,14 +383,14 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "type" => OptionalStringValue(Type),
+                "type" => OptionalStringValue(FormatDataValidationType(Type)),
                 "formula1" => OptionalStringValue(Formula1),
                 "formula2" => OptionalStringValue(Formula2),
                 "allow_blank" => AllowBlank,
                 "allowBlank" => AllowBlank,
                 "showErrorMessage" => ShowErrorMessage,
                 "showInputMessage" => ShowInputMessage,
-                "operator" => OptionalStringValue(Operator),
+                "operator" => OptionalStringValue(FormatDataValidationOperator(Operator)),
                 "errorTitle" => OptionalStringValue(ErrorTitle),
                 "error" => OptionalStringValue(Error),
                 "promptTitle" => OptionalStringValue(PromptTitle),
@@ -386,7 +409,7 @@ internal sealed partial class LythonRuntime
             switch (name)
             {
                 case "type":
-                    Type = NullableStringValue(value, "DataValidation.type");
+                    Type = ParseDataValidationType(NullableStringValue(value, "DataValidation.type"), "DataValidation.type", null);
                     return true;
                 case "formula1":
                     Formula1 = NullableStringValue(value, "DataValidation.formula1");
@@ -405,7 +428,7 @@ internal sealed partial class LythonRuntime
                     ShowInputMessage = ExpectBool(value, "DataValidation.showInputMessage", null);
                     return true;
                 case "operator":
-                    Operator = NullableStringValue(value, "DataValidation.operator");
+                    Operator = ParseDataValidationOperator(NullableStringValue(value, "DataValidation.operator"), "DataValidation.operator", null);
                     return true;
                 case "errorTitle":
                     ErrorTitle = NullableStringValue(value, "DataValidation.errorTitle");
@@ -449,6 +472,72 @@ internal sealed partial class LythonRuntime
 
         private static string? NullableStringValue(object value, string owner)
             => value is PyNone ? null : ExpectString(value, owner, null);
+    }
+
+    private static OpenPyxlDataValidationType? ParseDataValidationType(string? value, string owner, LythonSourceSpan? span)
+    {
+        return value switch
+        {
+            null => null,
+            "whole" => OpenPyxlDataValidationType.Whole,
+            "decimal" => OpenPyxlDataValidationType.Decimal,
+            "list" => OpenPyxlDataValidationType.List,
+            "date" => OpenPyxlDataValidationType.Date,
+            "time" => OpenPyxlDataValidationType.Time,
+            "textLength" => OpenPyxlDataValidationType.TextLength,
+            "custom" => OpenPyxlDataValidationType.Custom,
+            _ => throw new LythonRuntimeException("ValueError", $"{owner} does not support value '{value}'.", span),
+        };
+    }
+
+    private static string? FormatDataValidationType(OpenPyxlDataValidationType? value)
+    {
+        return value switch
+        {
+            null => null,
+            OpenPyxlDataValidationType.Whole => "whole",
+            OpenPyxlDataValidationType.Decimal => "decimal",
+            OpenPyxlDataValidationType.List => "list",
+            OpenPyxlDataValidationType.Date => "date",
+            OpenPyxlDataValidationType.Time => "time",
+            OpenPyxlDataValidationType.TextLength => "textLength",
+            OpenPyxlDataValidationType.Custom => "custom",
+            _ => throw new InvalidOperationException($"Unknown data-validation type '{value}'."),
+        };
+    }
+
+    private static OpenPyxlDataValidationOperator? ParseDataValidationOperator(string? value, string owner, LythonSourceSpan? span)
+    {
+        return value switch
+        {
+            null => null,
+            "between" => OpenPyxlDataValidationOperator.Between,
+            "notBetween" => OpenPyxlDataValidationOperator.NotBetween,
+            "equal" => OpenPyxlDataValidationOperator.Equal,
+            "notEqual" => OpenPyxlDataValidationOperator.NotEqual,
+            "lessThan" => OpenPyxlDataValidationOperator.LessThan,
+            "lessThanOrEqual" => OpenPyxlDataValidationOperator.LessThanOrEqual,
+            "greaterThan" => OpenPyxlDataValidationOperator.GreaterThan,
+            "greaterThanOrEqual" => OpenPyxlDataValidationOperator.GreaterThanOrEqual,
+            _ => throw new LythonRuntimeException("ValueError", $"{owner} does not support value '{value}'.", span),
+        };
+    }
+
+    private static string? FormatDataValidationOperator(OpenPyxlDataValidationOperator? value)
+    {
+        return value switch
+        {
+            null => null,
+            OpenPyxlDataValidationOperator.Between => "between",
+            OpenPyxlDataValidationOperator.NotBetween => "notBetween",
+            OpenPyxlDataValidationOperator.Equal => "equal",
+            OpenPyxlDataValidationOperator.NotEqual => "notEqual",
+            OpenPyxlDataValidationOperator.LessThan => "lessThan",
+            OpenPyxlDataValidationOperator.LessThanOrEqual => "lessThanOrEqual",
+            OpenPyxlDataValidationOperator.GreaterThan => "greaterThan",
+            OpenPyxlDataValidationOperator.GreaterThanOrEqual => "greaterThanOrEqual",
+            _ => throw new InvalidOperationException($"Unknown data-validation operator '{value}'."),
+        };
     }
 
     private sealed class OpenPyxlDataValidationList :

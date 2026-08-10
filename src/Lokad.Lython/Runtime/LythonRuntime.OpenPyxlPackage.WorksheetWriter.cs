@@ -323,8 +323,8 @@ internal sealed partial class LythonRuntime
             {
                 new XAttribute("sqref", validation.Sqref),
             };
-            AddOptionalAttribute(attributes, "type", validation.Type);
-            AddOptionalAttribute(attributes, "operator", validation.Operator);
+            AddOptionalAttribute(attributes, "type", FormatDataValidationType(validation.Type));
+            AddOptionalAttribute(attributes, "operator", FormatDataValidationOperator(validation.Operator));
             AddOptionalAttribute(attributes, "errorTitle", validation.ErrorTitle);
             AddOptionalAttribute(attributes, "error", validation.Error);
             AddOptionalAttribute(attributes, "promptTitle", validation.PromptTitle);

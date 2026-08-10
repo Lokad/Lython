@@ -257,13 +257,13 @@ internal sealed partial class LythonRuntime
             foreach (var element in worksheetDocument.Root?.Element(XlsxMain + "dataValidations")?.Elements(XlsxMain + "dataValidation") ?? [])
             {
                 var validation = new OpenPyxlDataValidation(
-                    (string?)element.Attribute("type"),
+                    ParseDataValidationType((string?)element.Attribute("type"), "worksheet data-validation type", span),
                     element.Element(XlsxMain + "formula1")?.Value,
                     element.Element(XlsxMain + "formula2")?.Value,
                     ReadBooleanAttribute(element, "allowBlank", defaultValue: false, span),
                     ReadBooleanAttribute(element, "showErrorMessage", defaultValue: true, span),
                     ReadBooleanAttribute(element, "showInputMessage", defaultValue: true, span),
-                    (string?)element.Attribute("operator"),
+                    ParseDataValidationOperator((string?)element.Attribute("operator"), "worksheet data-validation operator", span),
                     (string?)element.Attribute("errorTitle"),
                     (string?)element.Attribute("error"),
                     (string?)element.Attribute("promptTitle"),
