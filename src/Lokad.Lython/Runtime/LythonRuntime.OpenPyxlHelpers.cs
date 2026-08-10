@@ -12,11 +12,24 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal readonly record struct OpenPyxlSaveGuard(bool CanSave, string? Reason)
+    internal readonly struct OpenPyxlSaveGuard
     {
-        public static readonly OpenPyxlSaveGuard Safe = new(true, null);
+        private readonly string? _unsafeReason;
 
-        public static OpenPyxlSaveGuard Unsafe(string reason) => new(false, reason);
+        private OpenPyxlSaveGuard(string unsafeReason)
+        {
+            _unsafeReason = unsafeReason;
+        }
+
+        public static OpenPyxlSaveGuard Safe => default;
+
+        public static OpenPyxlSaveGuard Unsafe(string reason) => new(reason);
+
+        public bool TryGetUnsafeReason([MaybeNullWhen(false)] out string reason)
+        {
+            reason = _unsafeReason;
+            return reason is not null;
+        }
     }
 
     internal readonly record struct OpenPyxlPackageSnapshot(IReadOnlyDictionary<string, byte[]> Parts);

@@ -410,11 +410,11 @@ internal sealed partial class LythonRuntime
         private void EnsureCanSave(LythonSourceSpan span)
         {
             EnsureCanMutate(span);
-            if (!SaveGuard.CanSave)
+            if (SaveGuard.TryGetUnsafeReason(out var unsafeReason))
             {
                 throw new LythonRuntimeException(
                     "NotImplementedError",
-                    "Workbook.save() would discard unsupported openpyxl workbook content: " + SaveGuard.Reason,
+                    "Workbook.save() would discard unsupported openpyxl workbook content: " + unsafeReason,
                     span);
             }
 

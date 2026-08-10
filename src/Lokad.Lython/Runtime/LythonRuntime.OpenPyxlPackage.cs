@@ -153,9 +153,9 @@ internal sealed partial class LythonRuntime
         private static OpenPyxlSaveGuard AddDataOnlySaveGuard(OpenPyxlSaveGuard saveGuard)
         {
             const string reason = "workbook was loaded with data_only=True";
-            return saveGuard.CanSave
-                ? OpenPyxlSaveGuard.Unsafe(reason)
-                : OpenPyxlSaveGuard.Unsafe(saveGuard.Reason + ", " + reason);
+            return saveGuard.TryGetUnsafeReason(out var existingReason)
+                ? OpenPyxlSaveGuard.Unsafe(existingReason + ", " + reason)
+                : OpenPyxlSaveGuard.Unsafe(reason);
         }
 
         private static void AddUnsupportedPackageParts(
