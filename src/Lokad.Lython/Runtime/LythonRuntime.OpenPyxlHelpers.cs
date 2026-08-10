@@ -12,6 +12,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private const int MaxWorksheetColumn = 16384;
+
     internal enum ExcelDateSystem
     {
         Windows1900,
@@ -365,7 +367,7 @@ internal sealed partial class LythonRuntime
 
     private static void ValidateRowColumn(int row, int column, LythonSourceSpan? span)
     {
-        if (row is < 1 or > 1048576 || column is < 1 or > 16384)
+        if (row is < 1 or > 1048576 || column is < 1 or > MaxWorksheetColumn)
         {
             throw new LythonRuntimeException("ValueError", "Row or column is outside Excel worksheet bounds.", span);
         }
@@ -399,7 +401,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"Invalid cell coordinate: {reference}", span);
         }
 
-        var column = ParseColumnName(text[..index], span);
+        var column = ParseColumnName(text[..index], MaxWorksheetColumn, span);
         if (!int.TryParse(text[index..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var row))
         {
             throw new LythonRuntimeException("ValueError", $"Invalid cell coordinate: {reference}", span);
@@ -527,8 +529,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"{owner} expects a column range such as 'A:C'.", span);
         }
 
-        var start = ParseColumnName(parts[0], span);
-        var end = ParseColumnName(parts[1], span);
+        var start = ParseColumnName(parts[0], MaxWorksheetColumn, span);
+        var end = ParseColumnName(parts[1], MaxWorksheetColumn, span);
         return ColumnName(Math.Min(start, end)) + ":" + ColumnName(Math.Max(start, end));
     }
 
@@ -661,7 +663,7 @@ internal sealed partial class LythonRuntime
             new CellAddress(Math.Max(startRow, endRow), Math.Max(startColumn, endColumn)));
     }
 
-    private static int ParseColumnName(string text, LythonSourceSpan? span)
+    private static int ParseColumnName(string text, int maxColumn, LythonSourceSpan? span)
     {
         if (text.Length == 0 || text.Length > 3)
         {
@@ -680,7 +682,7 @@ internal sealed partial class LythonRuntime
             value = checked((value * 26) + (c - 'A' + 1));
         }
 
-        if (value is < 1 or > 16384)
+        if (value < 1 || value > maxColumn)
         {
             throw new LythonRuntimeException("ValueError", "Invalid column name.", span);
         }

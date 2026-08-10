@@ -309,7 +309,7 @@ internal sealed partial class LythonRuntime
 
         public object GetSubscript(object index, LythonSourceSpan span)
         {
-            var column = ParseColumnName(ExpectString(index, "Worksheet.column_dimensions[...] key", span), span);
+            var column = ParseColumnName(ExpectString(index, "Worksheet.column_dimensions[...] key", span), MaxWorksheetColumn, span);
             return _worksheet.GetColumnDimension(column);
         }
 

@@ -19,27 +19,7 @@ internal static class StaticDestructuringDiagnostics
             return;
         }
 
-        var starredIndex = -1;
-        for (var i = 0; i < targets.Count; i++)
-        {
-            if (targets[i].IsStarred)
-            {
-                starredIndex = i;
-                break;
-            }
-        }
-
-        if (starredIndex < 0)
-        {
-            if (count != targets.Count)
-            {
-                AddDiagnostic(diagnostics, "LA3030", "unpacking assignment has the wrong number of values", span);
-            }
-
-            return;
-        }
-
-        if (count < targets.Count - 1)
+        if (!UnpackingLayout.FromTargets(targets).AcceptsValueCount(count))
         {
             AddDiagnostic(diagnostics, "LA3030", "unpacking assignment has the wrong number of values", span);
         }

@@ -493,23 +493,14 @@ internal sealed partial class LythonRuntime
         }
 
         var values = MaterializeSequenceForUnpacking(value, span);
-        var starredIndex = -1;
-        for (var i = 0; i < targets.Count; i++)
+        var layout = UnpackingLayout.FromTargets(targets);
+        if (!layout.AcceptsValueCount(values.Length))
         {
-            if (targets[i].IsStarred)
-            {
-                starredIndex = i;
-                break;
-            }
+            throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
         }
 
-        if (starredIndex < 0)
+        if (!layout.HasStarredTarget)
         {
-            if (values.Length != targets.Count)
-            {
-                throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
-            }
-
             for (var i = 0; i < targets.Count; i++)
             {
                 StoreName(targets[i].Name, values[i], context, span);
@@ -518,25 +509,19 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var required = targets.Count - 1;
-        if (values.Length < required)
-        {
-            throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
-        }
-
-        for (var i = 0; i < starredIndex; i++)
+        for (var i = 0; i < layout.StarredTargetIndex; i++)
         {
             StoreName(targets[i].Name, values[i], context, span);
         }
 
-        var starredCount = values.Length - required;
+        var starredCount = layout.StarredValueCount(values.Length);
         var starredItems = new object[starredCount];
-        Array.Copy(values, starredIndex, starredItems, 0, starredCount);
-        StoreName(targets[starredIndex].Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
+        Array.Copy(values, layout.StarredTargetIndex, starredItems, 0, starredCount);
+        StoreName(targets[layout.StarredTargetIndex].Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
 
-        for (var i = starredIndex + 1; i < targets.Count; i++)
+        for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
-            var offset = values.Length - (targets.Count - i);
+            var offset = layout.SourceIndexForTrailingTarget(i, values.Length);
             StoreName(targets[i].Name, values[offset], context, span);
         }
     }

@@ -122,6 +122,61 @@ internal sealed record UnpackingTargetSyntax(
     string Name,
     bool IsStarred);
 
+internal readonly struct UnpackingLayout
+{
+    private UnpackingLayout(int targetCount, int starredTargetIndex)
+    {
+        TargetCount = targetCount;
+        StarredTargetIndex = starredTargetIndex;
+    }
+
+    public int TargetCount { get; }
+
+    public int StarredTargetIndex { get; }
+
+    public bool HasStarredTarget => StarredTargetIndex >= 0;
+
+    public int RequiredValueCount => TargetCount - (HasStarredTarget ? 1 : 0);
+
+    public static UnpackingLayout FromTargets(IReadOnlyList<UnpackingTargetSyntax> targets)
+    {
+        for (var index = 0; index < targets.Count; index++)
+        {
+            if (targets[index].IsStarred)
+            {
+                return new UnpackingLayout(targets.Count, index);
+            }
+        }
+
+        return new UnpackingLayout(targets.Count, starredTargetIndex: -1);
+    }
+
+    public bool AcceptsValueCount(int valueCount)
+        => HasStarredTarget
+            ? valueCount >= RequiredValueCount
+            : valueCount == TargetCount;
+
+    public int StarredValueCount(int valueCount)
+    {
+        if (!HasStarredTarget)
+        {
+            throw new InvalidOperationException("An exact unpacking layout has no starred target.");
+        }
+
+        return valueCount - RequiredValueCount;
+    }
+
+    public int SourceIndexForTrailingTarget(int targetIndex, int valueCount)
+    {
+        if (!HasStarredTarget || targetIndex <= StarredTargetIndex || targetIndex >= TargetCount)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetIndex), targetIndex, "Target is not trailing a starred unpacking target.");
+        }
+
+        return valueCount - (TargetCount - targetIndex);
+    }
+}
+
 internal sealed record UnpackingAssignmentStatementSyntax(
     IReadOnlyList<UnpackingTargetSyntax> Targets,
     ExpressionSyntax Expression,

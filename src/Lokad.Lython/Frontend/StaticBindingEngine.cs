@@ -599,23 +599,14 @@ internal static partial class StaticBindingEngine
             return false;
         }
 
-        var starredIndex = -1;
-        for (var i = 0; i < targets.Count; i++)
+        var layout = UnpackingLayout.FromTargets(targets);
+        if (!layout.AcceptsValueCount(items.Count))
         {
-            if (targets[i].IsStarred)
-            {
-                starredIndex = i;
-                break;
-            }
+            return false;
         }
 
-        if (starredIndex < 0)
+        if (!layout.HasStarredTarget)
         {
-            if (items.Count != targets.Count)
-            {
-                return false;
-            }
-
             for (var i = 0; i < targets.Count; i++)
             {
                 bindings.Set(targets[i].Name, items[i].WithSpan(expression.Span));
@@ -624,28 +615,23 @@ internal static partial class StaticBindingEngine
             return true;
         }
 
-        var required = targets.Count - 1;
-        if (items.Count < required)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < starredIndex; i++)
+        for (var i = 0; i < layout.StarredTargetIndex; i++)
         {
             bindings.Set(targets[i].Name, items[i].WithSpan(expression.Span));
         }
 
-        var rest = new List<AbstractValue>(items.Count - required);
-        for (var i = starredIndex; i <= items.Count - (targets.Count - starredIndex); i++)
+        var starredValueCount = layout.StarredValueCount(items.Count);
+        var rest = new List<AbstractValue>(starredValueCount);
+        for (var i = 0; i < starredValueCount; i++)
         {
-            rest.Add(items[i].WithSpan(expression.Span));
+            rest.Add(items[layout.StarredTargetIndex + i].WithSpan(expression.Span));
         }
 
-        bindings.Set(targets[starredIndex].Name, AbstractValue.List(rest, expression.Span));
+        bindings.Set(targets[layout.StarredTargetIndex].Name, AbstractValue.List(rest, expression.Span));
 
-        for (var i = starredIndex + 1; i < targets.Count; i++)
+        for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
-            var offset = items.Count - (targets.Count - i);
+            var offset = layout.SourceIndexForTrailingTarget(i, items.Count);
             bindings.Set(targets[i].Name, items[offset].WithSpan(expression.Span));
         }
 

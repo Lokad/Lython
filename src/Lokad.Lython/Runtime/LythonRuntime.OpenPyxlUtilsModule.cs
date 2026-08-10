@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "column_index_from_string(col) expects one string argument.", span);
             }
 
-            return new BigInteger(ParseUtilityColumnName(text.AsString(), span));
+            return new BigInteger(ParseColumnName(text.AsString(), MaxUtilityColumn, span));
         }
 
         private static object CoordinateFromString(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({raw})", span);
                 }
 
-                return new UtilityColumnReference(ParseUtilityColumnName(text, span));
+                return new UtilityColumnReference(ParseColumnName(text, MaxUtilityColumn, span));
             }
 
             if (letters == 0)
@@ -392,14 +392,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({raw})", span);
             }
 
-            return new UtilityCellReference(ParseUtilityColumnName(text[..letters], span), cellRow);
+            return new UtilityCellReference(ParseColumnName(text[..letters], MaxUtilityColumn, span), cellRow);
         }
 
         private static int ExpectUtilityColumnIndex(object value, string owner, LythonSourceSpan span)
         {
             if (PyStringOps.TryAsString(value, out var text))
             {
-                return ParseUtilityColumnName(text.AsString(), span);
+                return ParseColumnName(text.AsString(), MaxUtilityColumn, span);
             }
 
             if (!PyNumberOps.TryAsInteger(value, out var integer) ||
@@ -412,32 +412,6 @@ internal sealed partial class LythonRuntime
             return (int)integer;
         }
 
-        private static int ParseUtilityColumnName(string text, LythonSourceSpan span)
-        {
-            if (text.Length == 0 || text.Length > 3)
-            {
-                throw new LythonRuntimeException("ValueError", "Invalid column name.", span);
-            }
-
-            var value = 0;
-            foreach (var raw in text)
-            {
-                var c = char.ToUpperInvariant(raw);
-                if (c is < 'A' or > 'Z')
-                {
-                    throw new LythonRuntimeException("ValueError", "Invalid column name.", span);
-                }
-
-                value = checked((value * 26) + (c - 'A' + 1));
-            }
-
-            if (value is < 1 or > MaxUtilityColumn)
-            {
-                throw new LythonRuntimeException("ValueError", "Invalid column name.", span);
-            }
-
-            return value;
-        }
     }
 
     private sealed class OpenPyxlUtilsCellModule : PyModule

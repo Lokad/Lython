@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
 
             if (PyStringOps.TryAsString(key, out var columnText))
             {
-                return ParseColumnName(columnText.AsString(), span);
+                return ParseColumnName(columnText.AsString(), MaxWorksheetColumn, span);
             }
 
             throw new LythonRuntimeException("TypeError", "Worksheet.append(...) dictionary keys must be column letters or one-based column indices.", span);

@@ -435,7 +435,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            column = ParseColumnName(normalized, span);
+            column = ParseColumnName(normalized, MaxWorksheetColumn, span);
             return true;
         }
 
