@@ -2040,6 +2040,38 @@ __lython_file.close()
     }
 
     [Fact]
+    public void HostRequirementChecks_DistinguishEagerAndDeferredComprehensions()
+    {
+        var eagerHost = new MockLythonHost("/repo");
+
+        var eager = new LythonEngine().Run(
+            """
+values = [input() for item in [1]]
+__lython_file = open("/repo/eager.txt", "w")
+__lython_file.write("unexpected")
+__lython_file.close()
+""",
+            eagerHost);
+
+        Assert.False(eager.Success);
+        Assert.Contains(eager.Diagnostics, d => d.Code == "LA3040");
+        Assert.False(eagerHost.Stat("/repo/eager.txt").Exists);
+
+        var deferredHost = new MockLythonHost("/repo");
+        var deferred = new LythonEngine().Run(
+            """
+values = (input() for item in [1])
+__lython_file = open("/repo/deferred.txt", "w")
+__lython_file.write("ok")
+__lython_file.close()
+""",
+            deferredHost);
+
+        Assert.True(deferred.Success, deferred.Failure?.Message);
+        Assert.Equal("ok", deferredHost.ReadText("/repo/deferred.txt"));
+    }
+
+    [Fact]
     public void SimpleDataclassFieldFlow_ReportStaticErrorsAtCompileTime()
     {
         var compiled = new LythonEngine().Compile(

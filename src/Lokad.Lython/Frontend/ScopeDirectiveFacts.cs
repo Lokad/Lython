@@ -21,72 +21,14 @@ internal static class ScopeDirectiveFactsCollector
     {
         foreach (var statement in statements)
         {
-            switch (statement)
+            if (statement is ScopeDirectiveStatementSyntax)
             {
-                case ScopeDirectiveStatementSyntax:
-                    return true;
+                return true;
+            }
 
-                case FunctionDefinitionStatementSyntax functionDefinition:
-                    if (ContainsScopeDirective(functionDefinition.Body))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case ClassDefinitionStatementSyntax classDefinition:
-                    if (ContainsScopeDirective(classDefinition.Body))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case IfStatementSyntax ifStatement:
-                    if (ContainsScopeDirective(ifStatement.ThenStatements) ||
-                        ifStatement.ElseStatements is not null && ContainsScopeDirective(ifStatement.ElseStatements))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case ForStatementSyntax forStatement:
-                    if (ContainsScopeDirective(forStatement.Body) ||
-                        forStatement.ElseStatements is not null && ContainsScopeDirective(forStatement.ElseStatements))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case WhileStatementSyntax whileStatement:
-                    if (ContainsScopeDirective(whileStatement.Body) ||
-                        whileStatement.ElseStatements is not null && ContainsScopeDirective(whileStatement.ElseStatements))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case WithStatementSyntax withStatement:
-                    if (ContainsScopeDirective(withStatement.Body))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case TryStatementSyntax tryStatement:
-                    if (ContainsScopeDirective(tryStatement.TryBody) ||
-                        tryStatement.ExceptBody is not null && ContainsScopeDirective(tryStatement.ExceptBody) ||
-                        tryStatement.ElseBody is not null && ContainsScopeDirective(tryStatement.ElseBody) ||
-                        tryStatement.FinallyBody is not null && ContainsScopeDirective(tryStatement.FinallyBody))
-                    {
-                        return true;
-                    }
-                    break;
-
-                case MatchStatementSyntax matchStatement:
-                    if (matchStatement.Cases.Any(matchCase => ContainsScopeDirective(matchCase.Body)))
-                    {
-                        return true;
-                    }
-                    break;
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+            {
+                if (ContainsScopeDirective(body)) return true;
             }
         }
 
@@ -161,54 +103,29 @@ internal static class ScopeDirectiveFactsCollector
     {
         foreach (var statement in statements)
         {
-            switch (statement)
+            if (statement is ScopeDirectiveStatementSyntax directive)
             {
-                case ScopeDirectiveStatementSyntax directive:
-                    foreach (var name in directive.Names)
+                foreach (var name in directive.Names)
+                {
+                    if (directive.Kind == ScopeDirectiveKind.Global)
                     {
-                        if (directive.Kind == ScopeDirectiveKind.Global)
-                        {
-                            globalNames.Add(name);
-                        }
-                        else
-                        {
-                            nonlocalNames.Add(name);
-                        }
+                        globalNames.Add(name);
                     }
-                    break;
-
-                case IfStatementSyntax ifStatement:
-                    CollectDirectives(ifStatement.ThenStatements, globalNames, nonlocalNames);
-                    if (ifStatement.ElseStatements is not null) CollectDirectives(ifStatement.ElseStatements, globalNames, nonlocalNames);
-                    break;
-
-                case ForStatementSyntax forStatement:
-                    CollectDirectives(forStatement.Body, globalNames, nonlocalNames);
-                    if (forStatement.ElseStatements is not null) CollectDirectives(forStatement.ElseStatements, globalNames, nonlocalNames);
-                    break;
-
-                case WhileStatementSyntax whileStatement:
-                    CollectDirectives(whileStatement.Body, globalNames, nonlocalNames);
-                    if (whileStatement.ElseStatements is not null) CollectDirectives(whileStatement.ElseStatements, globalNames, nonlocalNames);
-                    break;
-
-                case WithStatementSyntax withStatement:
-                    CollectDirectives(withStatement.Body, globalNames, nonlocalNames);
-                    break;
-
-                case TryStatementSyntax tryStatement:
-                    CollectDirectives(tryStatement.TryBody, globalNames, nonlocalNames);
-                    if (tryStatement.ExceptBody is not null) CollectDirectives(tryStatement.ExceptBody, globalNames, nonlocalNames);
-                    if (tryStatement.ElseBody is not null) CollectDirectives(tryStatement.ElseBody, globalNames, nonlocalNames);
-                    if (tryStatement.FinallyBody is not null) CollectDirectives(tryStatement.FinallyBody, globalNames, nonlocalNames);
-                    break;
-
-                case MatchStatementSyntax matchStatement:
-                    foreach (var matchCase in matchStatement.Cases)
+                    else
                     {
-                        CollectDirectives(matchCase.Body, globalNames, nonlocalNames);
+                        nonlocalNames.Add(name);
                     }
-                    break;
+                }
+            }
+
+            if (statement is FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax)
+            {
+                continue;
+            }
+
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+            {
+                CollectDirectives(body, globalNames, nonlocalNames);
             }
         }
     }
@@ -252,52 +169,39 @@ internal static class ScopeDirectiveFactsCollector
 
                 case ForStatementSyntax forStatement:
                     CollectLoopTargetBindings(forStatement.Target, names);
-                    CollectLocalBindings(forStatement.Body, names);
-                    if (forStatement.ElseStatements is not null) CollectLocalBindings(forStatement.ElseStatements, names);
                     break;
 
                 case WithStatementSyntax withStatement:
                     if (withStatement.VariableName is not null) names.Add(withStatement.VariableName);
-                    CollectLocalBindings(withStatement.Body, names);
                     break;
 
                 case TryStatementSyntax tryStatement:
                     if (tryStatement.ExceptionVariableName is not null) names.Add(tryStatement.ExceptionVariableName);
-                    CollectLocalBindings(tryStatement.TryBody, names);
-                    if (tryStatement.ExceptBody is not null) CollectLocalBindings(tryStatement.ExceptBody, names);
-                    if (tryStatement.ElseBody is not null) CollectLocalBindings(tryStatement.ElseBody, names);
-                    if (tryStatement.FinallyBody is not null) CollectLocalBindings(tryStatement.FinallyBody, names);
-                    break;
-
-                case IfStatementSyntax ifStatement:
-                    CollectLocalBindings(ifStatement.ThenStatements, names);
-                    if (ifStatement.ElseStatements is not null) CollectLocalBindings(ifStatement.ElseStatements, names);
-                    break;
-
-                case WhileStatementSyntax whileStatement:
-                    CollectLocalBindings(whileStatement.Body, names);
-                    if (whileStatement.ElseStatements is not null) CollectLocalBindings(whileStatement.ElseStatements, names);
                     break;
 
                 case MatchStatementSyntax matchStatement:
                     foreach (var matchCase in matchStatement.Cases)
                     {
                         CollectPatternBindings(matchCase.Pattern, names);
-                        CollectLocalBindings(matchCase.Body, names);
                     }
                     break;
 
                 case FunctionDefinitionStatementSyntax functionDefinition:
                     names.Add(functionDefinition.Name);
-                    break;
+                    continue;
 
                 case ClassDefinitionStatementSyntax classDefinition:
                     names.Add(classDefinition.Name);
-                    break;
+                    continue;
 
                 case ExpressionStatementSyntax expressionStatement:
                     CollectExpressionBindings(expressionStatement.Expression, names);
                     break;
+            }
+
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+            {
+                CollectLocalBindings(body, names);
             }
         }
     }
@@ -361,74 +265,19 @@ internal static class ScopeDirectiveFactsCollector
 
     private static void CollectExpressionBindings(ExpressionSyntax expression, HashSet<string> names)
     {
-        switch (expression)
+        if (expression is LambdaExpressionSyntax)
         {
-            case AssignmentExpressionSyntax assignment:
-                names.Add(assignment.Name);
-                CollectExpressionBindings(assignment.Expression, names);
-                break;
-            case ParenthesizedExpressionSyntax parenthesized:
-                CollectExpressionBindings(parenthesized.Inner, names);
-                break;
-            case ConditionalExpressionSyntax conditional:
-                CollectExpressionBindings(conditional.Condition, names);
-                CollectExpressionBindings(conditional.Consequent, names);
-                CollectExpressionBindings(conditional.Alternative, names);
-                break;
-            case BinaryExpressionSyntax binary:
-                CollectExpressionBindings(binary.Left, names);
-                CollectExpressionBindings(binary.Right, names);
-                break;
-            case ChainedComparisonExpressionSyntax chained:
-                foreach (var operand in chained.Operands) CollectExpressionBindings(operand, names);
-                break;
-            case UnaryExpressionSyntax unary:
-                CollectExpressionBindings(unary.Operand, names);
-                break;
-            case CallExpressionSyntax call:
-                CollectExpressionBindings(call.Target, names);
-                foreach (var argument in call.Arguments) CollectExpressionBindings(argument.Expression, names);
-                break;
-            case MemberExpressionSyntax member:
-                CollectExpressionBindings(member.Target, names);
-                break;
-            case SubscriptExpressionSyntax subscript:
-                CollectExpressionBindings(subscript.Target, names);
-                CollectExpressionBindings(subscript.Index, names);
-                break;
-            case SliceExpressionSyntax slice:
-                CollectExpressionBindings(slice.Target, names);
-                if (slice.Start is not null) CollectExpressionBindings(slice.Start, names);
-                if (slice.End is not null) CollectExpressionBindings(slice.End, names);
-                if (slice.Step is not null) CollectExpressionBindings(slice.Step, names);
-                break;
-            case ListLiteralExpressionSyntax list:
-                foreach (var item in list.Items) CollectExpressionBindings(item, names);
-                break;
-            case TupleLiteralExpressionSyntax tuple:
-                foreach (var item in tuple.Items) CollectExpressionBindings(item, names);
-                break;
-            case SetLiteralExpressionSyntax set:
-                foreach (var item in set.Items) CollectExpressionBindings(item, names);
-                break;
-            case SetComprehensionExpressionSyntax setComprehension:
-                CollectExpressionBindings(setComprehension.ItemExpression, names);
-                foreach (var clause in setComprehension.Clauses)
-                {
-                    CollectExpressionBindings(clause.Iterable, names);
-                    if (clause.Condition is not null) CollectExpressionBindings(clause.Condition, names);
-                }
-                break;
-            case DictLiteralExpressionSyntax dict:
-                foreach (var item in dict.Items)
-                {
-                    CollectExpressionBindings(item.Key, names);
-                    if (!item.IsUnpacking)
-                    {
-                        CollectExpressionBindings(item.Value, names);
-                    }
-                }
-                break;
+            return;
+        }
+
+        if (expression is AssignmentExpressionSyntax assignment)
+        {
+            names.Add(assignment.Name);
+        }
+
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+        {
+            CollectExpressionBindings(child, names);
         }
     }
 }

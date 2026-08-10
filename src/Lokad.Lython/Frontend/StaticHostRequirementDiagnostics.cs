@@ -158,106 +158,26 @@ internal static class StaticHostRequirementDiagnostics
     {
         switch (expression)
         {
-            case ParenthesizedExpressionSyntax parenthesized:
-                AnalyzeHostExecutableExpression(parenthesized.Inner, context, host);
-                break;
-
-            case FormattedStringExpressionSyntax formatted:
-                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
-                {
-                    AnalyzeHostExecutableExpression(nestedExpression, context, host);
-                }
-                break;
-
-            case ListLiteralExpressionSyntax list:
-                foreach (var item in list.Items)
-                {
-                    AnalyzeHostExecutableExpression(item, context, host);
-                }
-                break;
-
-            case TupleLiteralExpressionSyntax tuple:
-                foreach (var item in tuple.Items)
-                {
-                    AnalyzeHostExecutableExpression(item, context, host);
-                }
-                break;
-
-            case DictLiteralExpressionSyntax dict:
-                foreach (var item in dict.Items)
-                {
-                    AnalyzeHostExecutableExpression(item.Key, context, host);
-                    if (!item.IsUnpacking)
-                    {
-                        AnalyzeHostExecutableExpression(item.Value, context, host);
-                    }
-                }
-                break;
-
-            case SetLiteralExpressionSyntax set:
-                foreach (var item in set.Items)
-                {
-                    AnalyzeHostExecutableExpression(item, context, host);
-                }
-                break;
-
-            case SetComprehensionExpressionSyntax setComprehension:
-                AnalyzeHostExecutableExpression(setComprehension.ItemExpression, context, host);
-                foreach (var clause in setComprehension.Clauses)
-                {
-                    AnalyzeHostExecutableExpression(clause.Iterable, context, host);
-                    if (clause.Condition is not null)
-                    {
-                        AnalyzeHostExecutableExpression(clause.Condition, context, host);
-                    }
-                }
-                break;
-
-            case MemberExpressionSyntax member:
-                AnalyzeHostExecutableExpression(member.Target, context, host);
-                break;
-
-            case SubscriptExpressionSyntax subscript:
-                AnalyzeHostExecutableExpression(subscript.Target, context, host);
-                AnalyzeHostExecutableExpression(subscript.Index, context, host);
-                break;
-
-            case SliceExpressionSyntax slice:
-                AnalyzeHostExecutableExpression(slice.Target, context, host);
-                if (slice.Start is not null) AnalyzeHostExecutableExpression(slice.Start, context, host);
-                if (slice.End is not null) AnalyzeHostExecutableExpression(slice.End, context, host);
-                if (slice.Step is not null) AnalyzeHostExecutableExpression(slice.Step, context, host);
-                break;
-
-            case BinaryExpressionSyntax binary:
-                AnalyzeHostExecutableExpression(binary.Left, context, host);
-                AnalyzeHostExecutableExpression(binary.Right, context, host);
-                break;
-
-            case UnaryExpressionSyntax unary:
-                AnalyzeHostExecutableExpression(unary.Operand, context, host);
-                break;
-
             case ConditionalExpressionSyntax conditional:
                 AnalyzeHostExecutableExpression(conditional.Condition, context, host);
                 if (TryGetBooleanLiteral(conditional.Condition, out var condition))
                 {
                     AnalyzeHostExecutableExpression(condition ? conditional.Consequent : conditional.Alternative, context, host);
                 }
-                break;
-
-            case AssignmentExpressionSyntax assignment:
-                AnalyzeHostExecutableExpression(assignment.Expression, context, host);
-                break;
+                return;
 
             case CallExpressionSyntax call:
                 AnalyzeHostExecutableCall(call, context, host);
-                AnalyzeHostExecutableExpression(call.Target, context, host);
-                foreach (var argument in call.Arguments)
-                {
-                    AnalyzeHostExecutableExpression(argument.Expression, context, host);
-                }
                 break;
+
+            // Creating either expression is deferred; its body is not host-executable yet.
+            case GeneratorExpressionSyntax or LambdaExpressionSyntax:
+                return;
+        }
+
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+        {
+            AnalyzeHostExecutableExpression(child, context, host);
         }
     }
 

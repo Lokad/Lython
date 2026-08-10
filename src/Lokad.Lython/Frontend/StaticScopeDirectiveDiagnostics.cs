@@ -315,6 +315,11 @@ internal static class StaticScopeDirectiveDiagnostics
 
     private static void CollectSeenNames(ExpressionSyntax expression, HashSet<string> names)
     {
+        if (expression is LambdaExpressionSyntax)
+        {
+            return;
+        }
+
         switch (expression)
         {
             case IdentifierExpressionSyntax identifier:
@@ -322,95 +327,32 @@ internal static class StaticScopeDirectiveDiagnostics
                 break;
             case AssignmentExpressionSyntax assignment:
                 names.Add(assignment.Name);
-                CollectSeenNames(assignment.Expression, names);
-                break;
-            case FormattedStringExpressionSyntax formatted:
-                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
-                {
-                    CollectSeenNames(nestedExpression, names);
-                }
-                break;
-            case ListLiteralExpressionSyntax list:
-                foreach (var item in list.Items) CollectSeenNames(item, names);
-                break;
-            case TupleLiteralExpressionSyntax tuple:
-                foreach (var item in tuple.Items) CollectSeenNames(item, names);
-                break;
-            case SetLiteralExpressionSyntax set:
-                foreach (var item in set.Items) CollectSeenNames(item, names);
-                break;
-            case DictLiteralExpressionSyntax dict:
-                foreach (var item in dict.Items)
-                {
-                    CollectSeenNames(item.Key, names);
-                    if (!item.IsUnpacking)
-                    {
-                        CollectSeenNames(item.Value, names);
-                    }
-                }
-                break;
-            case ParenthesizedExpressionSyntax parenthesized:
-                CollectSeenNames(parenthesized.Inner, names);
-                break;
-            case BinaryExpressionSyntax binary:
-                CollectSeenNames(binary.Left, names);
-                CollectSeenNames(binary.Right, names);
-                break;
-            case UnaryExpressionSyntax unary:
-                CollectSeenNames(unary.Operand, names);
-                break;
-            case CallExpressionSyntax call:
-                CollectSeenNames(call.Target, names);
-                foreach (var argument in call.Arguments) CollectSeenNames(argument.Expression, names);
-                break;
-            case MemberExpressionSyntax member:
-                CollectSeenNames(member.Target, names);
-                break;
-            case SubscriptExpressionSyntax subscript:
-                CollectSeenNames(subscript.Target, names);
-                CollectSeenNames(subscript.Index, names);
-                break;
-            case SliceExpressionSyntax slice:
-                CollectSeenNames(slice.Target, names);
-                if (slice.Start is not null) CollectSeenNames(slice.Start, names);
-                if (slice.End is not null) CollectSeenNames(slice.End, names);
-                if (slice.Step is not null) CollectSeenNames(slice.Step, names);
-                break;
-            case ChainedComparisonExpressionSyntax chained:
-                foreach (var operand in chained.Operands) CollectSeenNames(operand, names);
-                break;
-            case ConditionalExpressionSyntax conditional:
-                CollectSeenNames(conditional.Condition, names);
-                CollectSeenNames(conditional.Consequent, names);
-                CollectSeenNames(conditional.Alternative, names);
                 break;
             case ListComprehensionExpressionSyntax listComprehension:
-                CollectSeenNames(listComprehension.ItemExpression, names);
-                CollectComprehensionNames(listComprehension.Clauses, names);
+                CollectComprehensionTargetNames(listComprehension.Clauses, names);
                 break;
             case GeneratorExpressionSyntax generator:
-                CollectSeenNames(generator.ItemExpression, names);
-                CollectComprehensionNames(generator.Clauses, names);
+                CollectComprehensionTargetNames(generator.Clauses, names);
                 break;
             case SetComprehensionExpressionSyntax setComprehension:
-                CollectSeenNames(setComprehension.ItemExpression, names);
-                CollectComprehensionNames(setComprehension.Clauses, names);
+                CollectComprehensionTargetNames(setComprehension.Clauses, names);
                 break;
             case DictComprehensionExpressionSyntax dictComprehension:
-                CollectSeenNames(dictComprehension.KeyExpression, names);
-                CollectSeenNames(dictComprehension.ValueExpression, names);
-                CollectComprehensionNames(dictComprehension.Clauses, names);
+                CollectComprehensionTargetNames(dictComprehension.Clauses, names);
                 break;
+        }
+
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+        {
+            CollectSeenNames(child, names);
         }
     }
 
-    private static void CollectComprehensionNames(IReadOnlyList<ComprehensionClauseSyntax> clauses, HashSet<string> names)
+    private static void CollectComprehensionTargetNames(IReadOnlyList<ComprehensionClauseSyntax> clauses, HashSet<string> names)
     {
         foreach (var clause in clauses)
         {
             CollectSeenNames(clause.Target, names);
-            CollectSeenNames(clause.Iterable, names);
-            if (clause.Condition is not null) CollectSeenNames(clause.Condition, names);
         }
     }
 
