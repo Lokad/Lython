@@ -51,14 +51,14 @@ internal sealed partial class LythonRuntime
     {
         var path = GetSinglePath(arguments, "os.path.split", span);
         var (head, tail) = SplitPath(path);
-        return new PyTuple([PyString.FromString(head), PyString.FromString(tail)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.FromString(head), PyString.FromString(tail)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitExt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.splitext", span);
         var (root, extension) = SplitExt(path);
-        return new PyTuple([PyString.FromString(root), PyString.FromString(extension)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.FromString(root), PyString.FromString(extension)], context.MemoryGovernor, span);
     }
 
     private static object OsPathBaseName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
     private static object OsPathSplitDrive(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.splitdrive", span);
-        return new PyTuple([PyString.Empty, PyString.FromString(path)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.Empty, PyString.FromString(path)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitRoot(object[] arguments, LythonSourceSpan span, ExecutionContext context)

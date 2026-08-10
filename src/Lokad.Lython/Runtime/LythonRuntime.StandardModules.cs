@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
                     ],
                     context.MemoryGovernor,
                     span)
-                : new PyTuple([PyNone.Instance, PyNone.Instance, PyNone.Instance], context.MemoryGovernor, span);
+                : PyTuple.FromOwnedArray([PyNone.Instance, PyNone.Instance, PyNone.Instance], context.MemoryGovernor, span);
         }
 
         private static object GetSizeOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)

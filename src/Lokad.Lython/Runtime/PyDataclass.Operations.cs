@@ -251,7 +251,7 @@ internal static partial class PyDataclass
         var items = new PyList([], context.MemoryGovernor, span);
         foreach (var pair in pairs)
         {
-            items.Add(new PyTuple([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
+            items.Add(PyTuple.FromOwnedArray([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
         }
 
         return dictFactory.Invoke([CallArgumentValue.Positional(items)], span, context);

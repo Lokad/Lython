@@ -416,7 +416,7 @@ internal static class PyRendering
         builder.AppendAscii("(");
         var args = exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
             ? PyTuple.Empty
-            : new PyTuple([exception.Value]));
+            : PyTuple.FromOwnedArray([exception.Value]));
         for (var i = 0; i < args.Count; i++)
         {
             if (i > 0)

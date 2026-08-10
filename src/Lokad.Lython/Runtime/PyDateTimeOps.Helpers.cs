@@ -11,7 +11,7 @@ internal static partial class PyDateTimeOps
 {
     private static PyTuple CreateTimeTuple(DateOnly date, TimeOnly time, int isDst)
     {
-        return new PyTuple([
+        return PyTuple.FromOwnedArray([
             new BigInteger(date.Year),
             new BigInteger(date.Month),
             new BigInteger(date.Day),

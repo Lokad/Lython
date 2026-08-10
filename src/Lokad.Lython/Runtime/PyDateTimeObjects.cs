@@ -390,7 +390,7 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
         Year = new BigInteger(year);
         Week = new BigInteger(week);
         Weekday = new BigInteger(weekday);
-        _items = new PyTuple([Year, Week, Weekday]);
+        _items = PyTuple.FromOwnedArray([Year, Week, Weekday]);
     }
 
     public BigInteger Year { get; }

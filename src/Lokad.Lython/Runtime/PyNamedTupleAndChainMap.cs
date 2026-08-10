@@ -559,7 +559,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             }
 
             return new PyList(
-                _owner.BuildMergedItems().Select(pair => new PyTuple([pair.Key, pair.Value], context.MemoryGovernor, span)),
+                _owner.BuildMergedItems().Select(pair => PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span)),
                 context.MemoryGovernor,
                 span);
         }

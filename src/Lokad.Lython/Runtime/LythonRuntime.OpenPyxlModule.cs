@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
                 "height" => Height ?? PyNone.Instance,
                 "x_axis" => XAxis,
                 "y_axis" => YAxis,
-                "series" => new PyList(_series.ToArray()),
+                "series" => new PyList(_series),
                 "categories" => _categories ?? PyNone.Instance,
                 "add_data" => BoundCallable.Create(AddData, "Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1),
                 "set_categories" => BoundCallable.Create(SetCategories, "Chart.set_categories", ["labels"]),

@@ -57,6 +57,22 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void PyTuple_GovernedUnknownEnumerationStopsBeforeFullMaterialization()
+    {
+        var yielded = 0;
+        var values = Enumerable.Range(0, 1_000).Select(index =>
+        {
+            yielded++;
+            return (object)new BigInteger(index);
+        });
+
+        var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(256), null));
+
+        Assert.Equal("MemoryError", ex.ExceptionType);
+        Assert.True(yielded < 1_000);
+    }
+
+    [Fact]
     public void PyDict_GovernedGrowthFailsBeforePromotionAllocationCanRunAway()
     {
         var dict = new PyDict();

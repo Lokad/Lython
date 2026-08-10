@@ -114,8 +114,8 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "active" => _worksheets.Count == 0 ? PyNone.Instance : _worksheets[ActiveIndex],
-                "worksheets" => new PyList(_worksheets.Cast<object>().ToArray()),
-                "sheetnames" => new PyList(_worksheets.Select(sheet => (object)PyString.FromString(sheet.Title)).ToArray()),
+                "worksheets" => new PyList(_worksheets.Cast<object>()),
+                "sheetnames" => new PyList(_worksheets.Select(sheet => (object)PyString.FromString(sheet.Title))),
                 "read_only" => ReadOnly,
                 "write_only" => WriteOnly,
                 "iso_dates" => IsoDates,
@@ -123,9 +123,9 @@ internal sealed partial class LythonRuntime
                 "mime_type" => PyString.FromString(WorkbookContentType(this)),
                 "epoch" => PyString.FromString(WorkbookBaseDateText(DateSystem)),
                 "excel_base_date" => PyString.FromString(WorkbookBaseDateText(DateSystem)),
-                "named_styles" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null))).ToArray()),
-                "_named_styles" => new PyList(_namedStyles.Cast<object>().ToArray()),
-                "style_names" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null))).ToArray()),
+                "named_styles" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null)))),
+                "_named_styles" => new PyList(_namedStyles.Cast<object>()),
+                "style_names" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null)))),
                 "security" => _security,
                 "add_named_style" => BoundCallable.Create(AddNamedStyle, "Workbook.add_named_style", ["style"]),
                 "create_sheet" => BoundCallable.Create(CreateSheet, "Workbook.create_sheet", ["title", "index"], requiredCount: 0),
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Workbook.get_sheet_names() expects no arguments.", span);
             }
 
-            return new PyList(_worksheets.Select(sheet => (object)PyString.FromString(sheet.Title)).ToArray());
+            return new PyList(_worksheets.Select(sheet => (object)PyString.FromString(sheet.Title)));
         }
 
         private object Save(object[] arguments, LythonSourceSpan span, ExecutionContext context)

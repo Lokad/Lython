@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
                 foreach (var property in element.EnumerateObject())
                 {
                     context.CheckExecutionBudget(span);
-                    pairs.Add(new PyTuple([
+                    pairs.Add(PyTuple.FromOwnedArray([
                         CreateString(property.Name, context, span),
                         ConvertJson(property.Value, options, context, span)
                     ], context.MemoryGovernor, span));

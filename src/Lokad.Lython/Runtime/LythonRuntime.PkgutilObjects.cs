@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
                 "module_finder" => ModuleFinder,
                 "name" => Name,
                 "ispkg" => IsPackage,
-                "_fields" => new PyTuple([
+                "_fields" => PyTuple.FromOwnedArray([
                     PyString.FromString("module_finder"),
                     PyString.FromString("name"),
                     PyString.FromString("ispkg")]),

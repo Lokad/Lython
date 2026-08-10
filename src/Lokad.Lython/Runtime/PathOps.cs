@@ -307,7 +307,7 @@ internal static class PathOps
         var normalized = NormalizeLexical(path.AsString());
         if (normalized == ".")
         {
-            return governor is null ? new PyTuple([]) : new PyTuple([], governor, span);
+            return governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span);
         }
 
         var values = new List<object>();

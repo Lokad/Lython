@@ -396,7 +396,7 @@ internal sealed partial class LythonRuntime
                 "promptTitle" => OptionalStringValue(PromptTitle),
                 "prompt" => OptionalStringValue(Prompt),
                 "sqref" => PyString.FromString(Sqref),
-                "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray()),
+                "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference))),
                 "add" => BoundCallable.Create(Add, "DataValidation.add", ["cell_range"]),
                 _ => MissingMemberValue.Instance,
             };
@@ -556,7 +556,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "dataValidation" => new PyList(_worksheet.DataValidations.Select(validation => (object)validation).ToArray()),
+                "dataValidation" => new PyList(_worksheet.DataValidations.Select(validation => (object)validation)),
                 "count" => new BigInteger(_worksheet.DataValidations.Count),
                 "append" => BoundCallable.Create(Append, "DataValidationList.append", ["data_validation"]),
                 _ => MissingMemberValue.Instance,
@@ -619,7 +619,7 @@ internal sealed partial class LythonRuntime
                 "type" => Type is null ? PyNone.Instance : PyString.FromString(Type),
                 "operator" => Operator is null ? PyNone.Instance : PyString.FromString(Operator),
                 "priority" => Priority is null ? PyNone.Instance : new BigInteger(Priority.Value),
-                "formula" => new PyList(Formulas.Select(formula => (object)PyString.FromString(formula)).ToArray()),
+                "formula" => new PyList(Formulas.Select(formula => (object)PyString.FromString(formula))),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -684,7 +684,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "ranges" => new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref)).ToArray()),
+                "ranges" => new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref))),
                 "items" => BoundCallable.Create(Items, "ConditionalFormattingList.items", []),
                 "add" => BoundCallable.Create(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
                 _ => MissingMemberValue.Instance,
@@ -698,7 +698,7 @@ internal sealed partial class LythonRuntime
             var formatting = _worksheet.ConditionalFormattings.FirstOrDefault(item => string.Equals(item.Sqref, reference, StringComparison.Ordinal));
             return formatting is null
                 ? new PyList(Array.Empty<object>())
-                : new PyList(formatting.Rules.Cast<object>().ToArray());
+                : new PyList(formatting.Rules.Cast<object>());
         }
 
         public IEnumerable<object> Iterate()
@@ -726,7 +726,7 @@ internal sealed partial class LythonRuntime
                 .Select(formatting => (object)new PyTuple(new object[]
                 {
                     PyString.FromString(formatting.Sqref),
-                    new PyList(formatting.Rules.Cast<object>().ToArray()),
+                    new PyList(formatting.Rules.Cast<object>()),
                 }))
                 .ToArray());
         }
@@ -772,10 +772,10 @@ internal sealed partial class LythonRuntime
                 "_path" => PyString.FromString(ContentPath(PackagePath)),
                 "package_path" => PyString.FromString(PackagePath),
                 "relationship_id" => PyString.FromString(RelationshipId),
-                "charts" => new PyList(_charts.Cast<object>().ToArray()),
-                "_charts" => new PyList(_charts.Cast<object>().ToArray()),
-                "images" => new PyList(_images.Cast<object>().ToArray()),
-                "_images" => new PyList(_images.Cast<object>().ToArray()),
+                "charts" => new PyList(_charts.Cast<object>()),
+                "_charts" => new PyList(_charts.Cast<object>()),
+                "images" => new PyList(_images.Cast<object>()),
+                "_images" => new PyList(_images.Cast<object>()),
                 _ => MissingMemberValue.Instance,
             };
 

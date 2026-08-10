@@ -29,10 +29,14 @@ internal static class PyListStorage
 
     public static IPyListStorage Create(IEnumerable<object> items)
     {
-        var materialized = items as object[] ?? items.ToArray();
-        return materialized.Length <= SmallCapacity
-            ? new SmallPyListStorage(materialized)
-            : new ArrayPyListStorage(materialized);
+        if (items is IReadOnlyCollection<object> collection)
+        {
+            return collection.Count <= SmallCapacity
+                ? new SmallPyListStorage(items)
+                : new ArrayPyListStorage(items, collection.Count, null, null);
+        }
+
+        return CreateIncrementally(items, null, null);
     }
 
     public static IPyListStorage Create(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? span)
@@ -44,10 +48,7 @@ internal static class PyListStorage
                 : new ArrayPyListStorage(items, collection.Count, governor, span);
         }
 
-        var materialized = items as object[] ?? items.ToArray();
-        return materialized.Length <= SmallCapacity
-            ? new SmallPyListStorage(materialized)
-            : new ArrayPyListStorage(materialized, governor, span);
+        return CreateIncrementally(items, governor, span);
     }
 
     public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount)
@@ -76,6 +77,21 @@ internal static class PyListStorage
         if (storage is ArrayPyListStorage array)
         {
             array.EnsureCapacity(targetCount, governor, span);
+        }
+
+        return storage;
+    }
+
+    private static IPyListStorage CreateIncrementally(
+        IEnumerable<object> items,
+        MemoryGovernor? governor,
+        LythonSourceSpan? span)
+    {
+        IPyListStorage storage = new SmallPyListStorage();
+        foreach (var item in items)
+        {
+            storage = EnsureCapacity(storage, checked(storage.Count + 1), governor, span);
+            storage.Add(item);
         }
 
         return storage;

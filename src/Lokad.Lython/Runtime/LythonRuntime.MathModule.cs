@@ -138,7 +138,7 @@ internal sealed partial class LythonRuntime
             var value = ExpectUnaryReal(arguments, "math.frexp", span, context);
             if (value == 0.0 || double.IsNaN(value) || double.IsInfinity(value))
             {
-                return new PyTuple([value, BigInteger.Zero], context.MemoryGovernor, span);
+                return PyTuple.FromOwnedArray([value, BigInteger.Zero], context.MemoryGovernor, span);
             }
 
             var exponent = 0;
@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
                 abs *= 0.5;
             }
 
-            return new PyTuple([mantissa, new BigInteger(exponent)], context.MemoryGovernor, span);
+            return PyTuple.FromOwnedArray([mantissa, new BigInteger(exponent)], context.MemoryGovernor, span);
         }
 
         private static object Ldexp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -208,7 +208,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return new PyTuple([fractional, integral], context.MemoryGovernor, span);
+            return PyTuple.FromOwnedArray([fractional, integral], context.MemoryGovernor, span);
         }
 
         private static object Remainder(object[] arguments, LythonSourceSpan span, ExecutionContext context)

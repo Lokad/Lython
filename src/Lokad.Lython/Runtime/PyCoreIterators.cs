@@ -111,7 +111,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
             return false;
         }
 
-        value = new PyTuple([_index, item]);
+        value = PyTuple.FromOwnedArray([_index, item]);
         _index++;
         return true;
     }

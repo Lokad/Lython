@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "TableList.keys() expects no arguments.", span);
             }
 
-            return new PyList(_worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => (object)PyString.FromString(name)).ToArray());
+            return new PyList(_worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => (object)PyString.FromString(name)));
         }
 
         private object Values(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -417,7 +417,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "TableList.values() expects no arguments.", span);
             }
 
-            return new PyList(_worksheet.Tables.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => (object)pair.Value).ToArray());
+            return new PyList(_worksheet.Tables.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => (object)pair.Value));
         }
 
         private object Items(object[] arguments, LythonSourceSpan span, ExecutionContext context)

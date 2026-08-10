@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             var allocationSpan = leftList.AllocationSpan ?? rightList.AllocationSpan;
             var result = governor is null
                 ? new PyList(leftList)
-                : new PyList(leftList.ToArray(), governor, allocationSpan);
+                : new PyList(leftList, governor, allocationSpan);
             result.AddRange(rightList);
             return result;
         }

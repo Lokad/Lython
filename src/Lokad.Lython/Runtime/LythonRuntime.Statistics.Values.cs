@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
                 {
                     "slope" => Slope,
                     "intercept" => Intercept,
-                    "_fields" => new PyTuple([
+                    "_fields" => PyTuple.FromOwnedArray([
                         PyString.FromString("slope"),
                         PyString.FromString("intercept")]),
                     "_asdict" => BoundCallable.Create((arguments, span, context) =>

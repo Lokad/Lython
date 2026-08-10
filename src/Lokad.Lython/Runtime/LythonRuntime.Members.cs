@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
                 "copy" => BoundCallable.CreateNoArguments(
                     list,
                     "list.copy",
-                    static (receiver, span, context) => new PyList(receiver.ToArray(), context.MemoryGovernor, span)),
+                    static (receiver, span, context) => new PyList(receiver, context.MemoryGovernor, span)),
                 "clear" => BoundCallable.CreateNoArguments(list, "list.clear", static (receiver, _, _) =>
                 {
                     receiver.Clear();
@@ -453,7 +453,7 @@ internal sealed partial class LythonRuntime
                     for (var i = 0; i < count; i++)
                     {
                         var pair = sortedItems[i];
-                        items[i] = new PyTuple([pair.Key, pair.Value], context.MemoryGovernor, span);
+                        items[i] = PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span);
                     }
 
                     return new PyList(items, context.MemoryGovernor, span);
@@ -592,7 +592,7 @@ internal sealed partial class LythonRuntime
             var index = 0;
             foreach (var pair in pairs)
             {
-                items[index++] = new PyTuple([pair.Key, pair.Value], context.MemoryGovernor, span);
+                items[index++] = PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span);
             }
 
             return new PyList(items, context.MemoryGovernor, span);
@@ -601,7 +601,7 @@ internal sealed partial class LythonRuntime
         var list = new List<object>();
         foreach (var pair in pairs)
         {
-            list.Add(new PyTuple([pair.Key, pair.Value], context.MemoryGovernor, span));
+            list.Add(PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span));
         }
 
         return new PyList(list, context.MemoryGovernor, span);

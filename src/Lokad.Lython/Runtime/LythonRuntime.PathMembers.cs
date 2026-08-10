@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
             {
                 return ReferenceEquals(exception.Value, PyNone.Instance)
                     ? PyTuple.Empty
-                    : new PyTuple([exception.Value]);
+                    : PyTuple.FromOwnedArray([exception.Value]);
             }
 
             if (string.Equals(exception.TypeName, "JSONDecodeError", StringComparison.Ordinal) &&
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 payload.TryGetValue(PyString.FromString("doc"), out var doc) &&
                 payload.TryGetValue(PyString.FromString("pos"), out var pos))
             {
-                return new PyTuple([msg, doc, pos]);
+                return PyTuple.FromOwnedArray([msg, doc, pos]);
             }
 
             if (string.Equals(exception.TypeName, "CalledProcessError", StringComparison.Ordinal) &&
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 subprocessPayload.TryGetValue(PyString.FromString("returncode"), out var returnCode) &&
                 subprocessPayload.TryGetValue(PyString.FromString("cmd"), out var command))
             {
-                return new PyTuple([returnCode, command]);
+                return PyTuple.FromOwnedArray([returnCode, command]);
             }
 
             if (string.Equals(exception.TypeName, "TimeoutExpired", StringComparison.Ordinal) &&
@@ -89,13 +89,13 @@ internal sealed partial class LythonRuntime
                 timeoutPayload.TryGetValue(PyString.FromString("cmd"), out var timeoutCommand) &&
                 timeoutPayload.TryGetValue(PyString.FromString("timeout"), out var timeout))
             {
-                return new PyTuple([timeoutCommand, timeout]);
+                return PyTuple.FromOwnedArray([timeoutCommand, timeout]);
             }
 
             return exception.Value switch
             {
                 PyNone => PyTuple.Empty,
-                _ => new PyTuple([exception.Value])
+                _ => PyTuple.FromOwnedArray([exception.Value])
             };
         }
     }

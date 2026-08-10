@@ -64,6 +64,8 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static PyTuple FromOwnedArray(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
+        // Ownership transfer lets collection-expression callers avoid a second
+        // backing-array copy. The caller must not retain or mutate the array.
         var approximateBytes = EstimateApproximateBytes(items.Length);
         governor.Reserve(approximateBytes, allocationSpan);
         governor.Commit(approximateBytes);
@@ -110,8 +112,41 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
             return result;
         }
 
-        var materialized = items.ToArray();
-        var bytes = EstimateApproximateBytes(materialized.Length);
+        object[] materialized;
+        long bytes;
+        using (var temporary = governor.ReserveTemporary(0, allocationSpan))
+        {
+            var count = 0;
+            var buffer = Array.Empty<object>();
+            foreach (var item in items)
+            {
+                if (count == buffer.Length)
+                {
+                    var nextCapacity = buffer.Length == 0 ? 4 : checked(buffer.Length * 2);
+                    temporary.Grow(
+                        EstimateApproximateBytes(nextCapacity) - EstimateApproximateBytes(buffer.Length),
+                        allocationSpan);
+                    Array.Resize(ref buffer, nextCapacity);
+                }
+
+                buffer[count++] = item;
+            }
+
+            bytes = EstimateApproximateBytes(count);
+            if (count == buffer.Length)
+            {
+                materialized = buffer;
+            }
+            else
+            {
+                // The exact array coexists briefly with the growth buffer, so
+                // reserve both before making the final allocation.
+                temporary.Grow(bytes, allocationSpan);
+                materialized = new object[count];
+                Array.Copy(buffer, materialized, count);
+            }
+        }
+
         governor.Reserve(bytes, allocationSpan);
         governor.Commit(bytes);
         return materialized;

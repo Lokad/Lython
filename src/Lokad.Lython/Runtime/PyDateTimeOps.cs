@@ -625,7 +625,7 @@ internal static partial class PyDateTimeOps
     {
         var quotient = FloorDivide(left, right, span);
         var remainder = TimedeltaModulo(left, right, span);
-        return new PyTuple([quotient, remainder], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([quotient, remainder], context.MemoryGovernor, span);
     }
 
     public static int Compare(object left, object right, LythonSourceSpan span)

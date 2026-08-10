@@ -214,8 +214,8 @@ internal sealed partial class LythonRuntime
             foreach (var pair in _dict.Items)
             {
                 yield return _dict.OwnerMemoryGovernor is null
-                    ? new PyTuple([pair.Key, pair.Value])
-                    : new PyTuple([pair.Key, pair.Value], _dict.OwnerMemoryGovernor, _dict.AllocationSpan);
+                    ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
+                    : PyTuple.FromOwnedArray([pair.Key, pair.Value], _dict.OwnerMemoryGovernor, _dict.AllocationSpan);
             }
         }
 
