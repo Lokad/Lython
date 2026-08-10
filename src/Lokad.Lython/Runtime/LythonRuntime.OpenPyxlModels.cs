@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
             List<OpenPyxlWorksheet> worksheets,
             WorkbookAccessMode accessMode,
             bool isoDates,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             int activeIndex,
             OpenPyxlSaveGuard saveGuard,
             OpenPyxlPackageSnapshot? packageSnapshot,
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
             _namedStyles.Add(CreateNamedStyleValue(PyString.FromString("Normal")));
             _accessMode = accessMode;
             IsoDates = isoDates;
-            Date1904 = date1904;
+            DateSystem = dateSystem;
             SaveGuard = saveGuard;
             PackageSnapshot = packageSnapshot;
             HasVbaProject = hasVbaProject;
@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
 
         public bool IsoDates { get; }
 
-        public bool Date1904 { get; }
+        public ExcelDateSystem DateSystem { get; }
 
         public bool Template => _template;
 
@@ -92,18 +92,18 @@ internal sealed partial class LythonRuntime
                 [new OpenPyxlWorksheet("Sheet")],
                 writeOnly ? WorkbookAccessMode.WriteOnly : WorkbookAccessMode.Editable,
                 isoDates,
-                date1904: false,
+                ExcelDateSystem.Windows1900,
                 activeIndex: 0,
                 OpenPyxlSaveGuard.Safe,
                 packageSnapshot: null,
                 hasVbaProject: false);
 
-        public static OpenPyxlWorkbook FromWorksheets(List<OpenPyxlWorksheet> worksheets, bool readOnly, bool date1904, int activeIndex, OpenPyxlSaveGuard saveGuard, OpenPyxlPackageSnapshot? packageSnapshot, bool hasVbaProject)
+        public static OpenPyxlWorkbook FromWorksheets(List<OpenPyxlWorksheet> worksheets, bool readOnly, ExcelDateSystem dateSystem, int activeIndex, OpenPyxlSaveGuard saveGuard, OpenPyxlPackageSnapshot? packageSnapshot, bool hasVbaProject)
             => new(
                 worksheets.Count == 0 ? [new OpenPyxlWorksheet("Sheet")] : worksheets,
                 readOnly ? WorkbookAccessMode.ReadOnly : WorkbookAccessMode.Editable,
                 isoDates: false,
-                date1904,
+                dateSystem,
                 activeIndex,
                 saveGuard,
                 packageSnapshot,
@@ -121,8 +121,8 @@ internal sealed partial class LythonRuntime
                 "iso_dates" => IsoDates,
                 "template" => _template,
                 "mime_type" => PyString.FromString(WorkbookContentType(this)),
-                "epoch" => PyString.FromString(WorkbookBaseDateText(Date1904)),
-                "excel_base_date" => PyString.FromString(WorkbookBaseDateText(Date1904)),
+                "epoch" => PyString.FromString(WorkbookBaseDateText(DateSystem)),
+                "excel_base_date" => PyString.FromString(WorkbookBaseDateText(DateSystem)),
                 "named_styles" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null))).ToArray()),
                 "_named_styles" => new PyList(_namedStyles.Cast<object>().ToArray()),
                 "style_names" => new PyList(_namedStyles.Select(style => (object)PyString.FromString(NamedStyleName(style, null))).ToArray()),

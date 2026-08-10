@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
             OpenPyxlWorksheet worksheet,
             IReadOnlyList<string> sharedStrings,
             IReadOnlyList<OpenPyxlCellStyleSnapshot> cellStyles,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             bool dataOnly,
             LythonSourceSpan span)
         {
@@ -38,9 +38,9 @@ internal sealed partial class LythonRuntime
                 var styleId = ReadNonNegativeIntAttribute(cell, "s", span);
                 var cellStyle = ReadCellStyle(cell, cellStyles, span);
                 var format = cellStyle.NumberFormat;
-                var value = ReadCellValue(cell, sharedStrings, format, date1904, dataOnly, span);
+                var value = ReadCellValue(cell, sharedStrings, format, dateSystem, dataOnly, span);
                 worksheet.SetLoadedCellValue(address.Row, address.Column, value);
-                worksheet.SetLoadedFormulaCachedValue(address.Row, address.Column, ReadFormulaCachedCellValue(cell, sharedStrings, format, date1904, span));
+                worksheet.SetLoadedFormulaCachedValue(address.Row, address.Column, ReadFormulaCachedCellValue(cell, sharedStrings, format, dateSystem, span));
                 worksheet.SetLoadedFormulaXml(address.Row, address.Column, cell.Element(XlsxMain + "f"));
                 worksheet.SetLoadedCellNumberFormat(address.Row, address.Column, format);
                 worksheet.SetLoadedCellStyleId(address.Row, address.Column, styleId);
@@ -385,7 +385,7 @@ internal sealed partial class LythonRuntime
             XElement cell,
             IReadOnlyList<string> sharedStrings,
             string numberFormat,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             bool dataOnly,
             LythonSourceSpan span)
         {
@@ -395,24 +395,24 @@ internal sealed partial class LythonRuntime
                 return PyString.FromString("=" + formula.Value);
             }
 
-            return ReadStoredCellValue(cell, sharedStrings, numberFormat, date1904, span);
+            return ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, span);
         }
 
         private static object ReadFormulaCachedCellValue(
             XElement cell,
             IReadOnlyList<string> sharedStrings,
             string numberFormat,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             LythonSourceSpan span)
             => cell.Element(XlsxMain + "f") is null
                 ? PyNone.Instance
-                : ReadStoredCellValue(cell, sharedStrings, numberFormat, date1904, span);
+                : ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, span);
 
         private static object ReadStoredCellValue(
             XElement cell,
             IReadOnlyList<string> sharedStrings,
             string numberFormat,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             LythonSourceSpan span)
         {
             var type = (string?)cell.Attribute("t");
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                 "b" => rawValue == "1",
                 "str" => PyString.FromString(rawValue),
                 "e" => PyString.FromString(rawValue),
-                _ => ParseNumericCell(rawValue, numberFormat, date1904),
+                _ => ParseNumericCell(rawValue, numberFormat, dateSystem),
             };
         }
 
@@ -449,12 +449,12 @@ internal sealed partial class LythonRuntime
             return PyString.FromString(sharedStrings[index]);
         }
 
-        private static object ParseNumericCell(string rawValue, string numberFormat, bool date1904)
+        private static object ParseNumericCell(string rawValue, string numberFormat, ExcelDateSystem dateSystem)
         {
             if (double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) &&
                 IsDateNumberFormat(numberFormat))
             {
-                return DateValueFromExcelSerial(serial, numberFormat, date1904);
+                return DateValueFromExcelSerial(serial, numberFormat, dateSystem);
             }
 
             if (rawValue.IndexOfAny(['.', 'e', 'E']) < 0 &&

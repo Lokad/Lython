@@ -30,11 +30,13 @@ internal sealed partial class LythonRuntime
                 var cellStyles = LoadCellStyles(archive, span);
                 var namedStyles = LoadNamedStyles(archive, span);
                 var workbook = LoadXml(archive, "xl/workbook.xml", span);
-                var date1904 = ReadBooleanAttribute(
+                var dateSystem = ReadBooleanAttribute(
                     workbook.Root?.Element(XlsxMain + "workbookPr") ?? new XElement(XlsxMain + "workbookPr"),
                     "date1904",
                     defaultValue: false,
-                    span);
+                    span)
+                    ? ExcelDateSystem.Mac1904
+                    : ExcelDateSystem.Windows1900;
                 var workbookRels = LoadRelationships(archive, "xl/_rels/workbook.xml.rels", span);
                 var sheets = workbook.Root?
                     .Element(XlsxMain + "sheets")?
@@ -61,7 +63,7 @@ internal sealed partial class LythonRuntime
                         worksheet,
                         sharedStrings,
                         cellStyles,
-                        date1904,
+                        dateSystem,
                         options.HasFlag(OpenPyxlLoadOptions.DataOnly),
                         span);
                     worksheets.Add(worksheet);
@@ -88,7 +90,7 @@ internal sealed partial class LythonRuntime
                 var result = OpenPyxlWorkbook.FromWorksheets(
                     worksheets,
                     options.HasFlag(OpenPyxlLoadOptions.ReadOnly),
-                    date1904,
+                    dateSystem,
                     activeIndex,
                     saveGuard,
                     snapshot,

@@ -338,13 +338,13 @@ internal sealed partial class LythonRuntime
         private static XElement? CreateWorkbookPropertiesXml(OpenPyxlWorkbook workbook, XElement? originalRoot)
         {
             var element = CloneWorkbookChild(originalRoot, XlsxMain + "workbookPr");
-            if (element is null && !workbook.Date1904)
+            if (element is null && workbook.DateSystem == ExcelDateSystem.Windows1900)
             {
                 return null;
             }
 
             element ??= new XElement(XlsxMain + "workbookPr");
-            if (workbook.Date1904)
+            if (workbook.DateSystem == ExcelDateSystem.Mac1904)
             {
                 element.SetAttributeValue("date1904", "1");
             }

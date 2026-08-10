@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
                 "parent" => _worksheet,
                 "internal_value" => Value,
                 "is_date" => _worksheet.IsDateCell(Row, Column),
-                "base_date" => PyString.FromString(WorkbookBaseDateText(_worksheet.Workbook?.Date1904 ?? false)),
+                "base_date" => PyString.FromString(WorkbookBaseDateText(_worksheet.Workbook?.DateSystem ?? ExcelDateSystem.Windows1900)),
                 "number_format" => PyString.FromString(_worksheet.GetCellNumberFormat(Row, Column)),
                 "hyperlink" => _worksheet.GetCellHyperlink(Row, Column),
                 "comment" => _worksheet.GetCellComment(Row, Column),

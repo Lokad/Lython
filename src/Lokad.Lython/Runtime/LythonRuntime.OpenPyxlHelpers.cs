@@ -12,6 +12,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal enum ExcelDateSystem
+    {
+        Windows1900,
+        Mac1904,
+    }
+
     internal readonly struct OpenPyxlSaveGuard
     {
         private readonly string? _unsafeReason;
@@ -59,8 +65,13 @@ internal sealed partial class LythonRuntime
             : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
     }
 
-    private static string WorkbookBaseDateText(bool date1904)
-        => date1904 ? "1904-01-01 00:00:00" : "1899-12-30 00:00:00";
+    private static string WorkbookBaseDateText(ExcelDateSystem dateSystem)
+        => dateSystem switch
+        {
+            ExcelDateSystem.Windows1900 => "1899-12-30 00:00:00",
+            ExcelDateSystem.Mac1904 => "1904-01-01 00:00:00",
+            _ => throw new ArgumentOutOfRangeException(nameof(dateSystem), dateSystem, "Unknown Excel date system."),
+        };
 
     private static bool IsFormulaValue(object value)
         => PyStringOps.TryAsString(value, out var text) && IsFormulaText(text.AsString());
@@ -84,16 +95,19 @@ internal sealed partial class LythonRuntime
             _ => "General",
         };
 
-    private static double ExcelSerialFromDate(PyDate date, bool date1904)
-        => ExcelSerialFromDateTime(date.Value.ToDateTime(TimeOnly.MinValue), date1904);
+    private static double ExcelSerialFromDate(PyDate date, ExcelDateSystem dateSystem)
+        => ExcelSerialFromDateTime(date.Value.ToDateTime(TimeOnly.MinValue), dateSystem);
 
-    private static double ExcelSerialFromDateTime(PyDateTime dateTime, bool date1904)
-        => ExcelSerialFromDateTime(dateTime.Value, date1904);
+    private static double ExcelSerialFromDateTime(PyDateTime dateTime, ExcelDateSystem dateSystem)
+        => ExcelSerialFromDateTime(dateTime.Value, dateSystem);
 
-    private static double ExcelSerialFromDateTime(DateTime dateTime, bool date1904)
-        => date1904
-            ? (dateTime - new DateTime(1904, 1, 1)).TotalDays
-            : dateTime.ToOADate();
+    private static double ExcelSerialFromDateTime(DateTime dateTime, ExcelDateSystem dateSystem)
+        => dateSystem switch
+        {
+            ExcelDateSystem.Windows1900 => dateTime.ToOADate(),
+            ExcelDateSystem.Mac1904 => (dateTime - new DateTime(1904, 1, 1)).TotalDays,
+            _ => throw new ArgumentOutOfRangeException(nameof(dateSystem), dateSystem, "Unknown Excel date system."),
+        };
 
     private static double ExcelSerialFromTime(PyTime time)
         => time.Value.ToTimeSpan().TotalDays;
@@ -101,7 +115,7 @@ internal sealed partial class LythonRuntime
     private static double ExcelSerialFromTimedelta(PyTimedelta delta)
         => delta.TotalSeconds() / 86_400.0;
 
-    private static object DateValueFromExcelSerial(double serial, string numberFormat, bool date1904)
+    private static object DateValueFromExcelSerial(double serial, string numberFormat, ExcelDateSystem dateSystem)
     {
         var normalizedFormat = NormalizeNumberFormatForDetection(numberFormat);
         if (ContainsElapsedTimeToken(normalizedFormat))
@@ -111,9 +125,12 @@ internal sealed partial class LythonRuntime
 
         var hasDate = normalizedFormat.Contains('y') || normalizedFormat.Contains('d');
         var hasTime = normalizedFormat.Contains('h') || normalizedFormat.Contains('s');
-        var dateTime = date1904
-            ? new DateTime(1904, 1, 1).AddDays(serial)
-            : DateTime.FromOADate(serial);
+        var dateTime = dateSystem switch
+        {
+            ExcelDateSystem.Windows1900 => DateTime.FromOADate(serial),
+            ExcelDateSystem.Mac1904 => new DateTime(1904, 1, 1).AddDays(serial),
+            _ => throw new ArgumentOutOfRangeException(nameof(dateSystem), dateSystem, "Unknown Excel date system."),
+        };
         if (hasDate && hasTime)
         {
             return new PyDateTime(dateTime);

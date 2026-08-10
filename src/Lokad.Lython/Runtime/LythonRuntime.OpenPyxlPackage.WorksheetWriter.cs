@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
                         worksheet.GetCellDataType(rowIndex, column),
                         worksheet.GetFormulaCachedValue(rowIndex, column),
                         worksheet.GetFormulaXml(rowIndex, column),
-                        worksheet.Workbook?.Date1904 ?? false,
+                        worksheet.Workbook?.DateSystem ?? ExcelDateSystem.Windows1900,
                         styleRegistry,
                         preserveLoadedStyleIds,
                         loadedStyleId));
@@ -505,7 +505,7 @@ internal sealed partial class LythonRuntime
             string dataType,
             object formulaCachedValue,
             XElement? formulaXml,
-            bool date1904,
+            ExcelDateSystem dateSystem,
             OpenPyxlStyleRegistry styleRegistry,
             bool preserveLoadedStyleIds,
             int loadedStyleId)
@@ -545,7 +545,7 @@ internal sealed partial class LythonRuntime
                         XlsxMain + "c",
                         attributes,
                         CreateFormulaXml(formulaText, formulaXml),
-                        CreateFormulaCachedValueXml(formulaCachedValue, date1904));
+                        CreateFormulaCachedValueXml(formulaCachedValue, dateSystem));
                 }
 
                 var textElement = new XElement(XlsxMain + "t", rawText);
@@ -564,7 +564,7 @@ internal sealed partial class LythonRuntime
             return new XElement(
                 XlsxMain + "c",
                 attributes,
-                new XElement(XlsxMain + "v", CellNumberText(value, date1904)));
+                new XElement(XlsxMain + "v", CellNumberText(value, dateSystem)));
         }
 
         private static XElement CreateFormulaXml(string formulaText, XElement? loadedFormulaXml)
@@ -603,7 +603,7 @@ internal sealed partial class LythonRuntime
             return attributes;
         }
 
-        private static XElement? CreateFormulaCachedValueXml(object value, bool date1904)
+        private static XElement? CreateFormulaCachedValueXml(object value, ExcelDateSystem dateSystem)
         {
             if (value is PyNone)
             {
@@ -620,18 +620,18 @@ internal sealed partial class LythonRuntime
                 return new XElement(XlsxMain + "v", text.AsString());
             }
 
-            return new XElement(XlsxMain + "v", CellNumberText(value, date1904));
+            return new XElement(XlsxMain + "v", CellNumberText(value, dateSystem));
         }
 
-        private static string CellNumberText(object value, bool date1904)
+        private static string CellNumberText(object value, ExcelDateSystem dateSystem)
         {
             return value switch
             {
                 BigInteger integer => integer.ToString(CultureInfo.InvariantCulture),
                 double floating => floating.ToString("R", CultureInfo.InvariantCulture),
                 PyDecimal decimalValue => decimalValue.Value.ToString(CultureInfo.InvariantCulture),
-                PyDate date => ExcelSerialFromDate(date, date1904).ToString("R", CultureInfo.InvariantCulture),
-                PyDateTime dateTime => ExcelSerialFromDateTime(dateTime, date1904).ToString("R", CultureInfo.InvariantCulture),
+                PyDate date => ExcelSerialFromDate(date, dateSystem).ToString("R", CultureInfo.InvariantCulture),
+                PyDateTime dateTime => ExcelSerialFromDateTime(dateTime, dateSystem).ToString("R", CultureInfo.InvariantCulture),
                 PyTime time => ExcelSerialFromTime(time).ToString("R", CultureInfo.InvariantCulture),
                 PyTimedelta delta => ExcelSerialFromTimedelta(delta).ToString("R", CultureInfo.InvariantCulture),
                 _ => throw new InvalidOperationException("Unsupported cell value.")
