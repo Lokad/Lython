@@ -4,6 +4,9 @@ internal readonly record struct BoundCallArguments(object[] Values, ArgumentPres
 
 internal struct ArgumentPresence
 {
+    // Almost every Python-shaped signature fits in the inline word. The overflow
+    // array exists only for unusually wide generated signatures, so ordinary calls
+    // do not allocate a parallel bool[] merely to distinguish omitted arguments.
     private ulong _firstAssignments;
     private readonly bool[] _remainingAssignments;
 
@@ -53,10 +56,16 @@ internal struct ArgumentPresence
         resized._firstAssignments = length >= 64
             ? _firstAssignments
             : _firstAssignments & ((1UL << length) - 1);
-        Array.Copy(
-            _remainingAssignments,
-            resized._remainingAssignments,
-            Math.Min(_remainingAssignments.Length, resized._remainingAssignments.Length));
+        // A default ArgumentPresence has Length == 0 and no initialized overflow
+        // storage. Length is therefore the invariant that guards every array access.
+        if (Length > 64)
+        {
+            Array.Copy(
+                _remainingAssignments,
+                resized._remainingAssignments,
+                Math.Min(_remainingAssignments.Length, resized._remainingAssignments.Length));
+        }
+
         return resized;
     }
 
@@ -116,6 +125,8 @@ internal static class CallBinder
             return bound;
         }
 
+        // Presence-aware consumers must distinguish an omitted optional argument
+        // from an explicit Python None, so retain the complete signature shape.
         var values = new object[signature.ParameterNames.Length];
         Array.Fill(values, PyNone.Instance);
         Array.Copy(bound.Values, values, bound.Values.Length);
@@ -227,6 +238,8 @@ internal static class CallBinder
         }
 
         var count = parameterNames.Length;
+        // Plain bound callables model defaults by omitting only the unassigned suffix.
+        // An explicitly supplied None remains present and prevents this trimming.
         while (count > requiredCount && !assigned[count - 1])
         {
             count--;

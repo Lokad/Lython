@@ -1126,11 +1126,11 @@ The canonical storage and interchange encoding for Lython text is UTF-8.
 
 The runtime may choose any internal execution strategy, but the preferred implementation direction is UTF-8-native execution over the canonical `PyString` / UTF-8 text model rather than pervasive decode-to-`.NET string` bridging.
 
-The full Python-compatible regex profile must be provided by a separate `Utf8Regex.Python` extension.
+The full Python-compatible regex profile must be provided by the separate `Lokad.Utf8Regex.PythonRe` extension.
 
-Lython accepts `Utf8Regex` and `Utf8Regex.Python` as implementation dependencies for `import re`.
+Lython accepts `Lokad.Utf8Regex` and `Lokad.Utf8Regex.PythonRe` as implementation dependencies for `import re`.
 
-`Utf8Regex.Python` is responsible for the Python regex syntax, Python regex replacement rules, and Python-visible regex errors of the supported subset.
+`Lokad.Utf8Regex.PythonRe` is responsible for the Python regex syntax, Python regex replacement rules, and Python-visible regex errors of the supported subset.
 
 Because `Utf8Regex` already supports UTF-8-oriented inputs and byte-aligned capture access, Lython should treat `re` as a UTF-8-native downstream subsystem, not as a justification for reintroducing `.NET string` as an internal semantic representation.
 
@@ -1751,7 +1751,7 @@ If separate grammar tooling exists, it must remain separate enough that:
 - package dependencies stay small
 - consumers are not forced into source-generator workflows
 
-The accepted dependency set for the scripting runtime includes `Utf8Regex` and `Utf8Regex.Python` for the `re` module surface.
+The accepted dependency set for the scripting runtime includes `Lokad.Utf8Regex` and `Lokad.Utf8Regex.PythonRe` for the `re` module surface.
 
 ---
 

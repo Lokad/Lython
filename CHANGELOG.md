@@ -41,11 +41,13 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Shared lowered expression dispatch and formatted-string assembly, then partitioned the remaining module, member, collection, static-analysis, and OpenPyXL outlier files by responsibility.
 - Preserved successful-path abstract facts through caught `try` bodies, centralized structural syntax traversal, and documented eager versus deferred expression boundaries.
 - Replaced ambiguous iteration, abstract-value, cached-resolution, and workbook-save states with closed domain contracts; separated readable from mutable dynamic attributes.
+- Closed execution outcomes and abstract-value payloads over explicit state types, compacted named-call presence tracking, and documented the omitted-versus-explicit-`None` binding invariant.
 - Centralized host-exception translation, localized incidental single-caller helpers, and split path-host dispatch and executable-frame interpretation into cohesive components.
 - Added a maintainer architecture guide covering compilation, execution paths, containment invariants, runtime protocols, and verification boundaries.
 - Centralized protocol-aware operator dispatch across execution paths and made Python sorting stable and subquadratic with governed scratch storage and one key evaluation per item.
 - Replaced weak lowered-assignment, text-flush, codec-option, and missing-capability states with closed variants or typed failures; normalized host text at the boundary and rejected raw CLR strings from runtime switches so `PyString` remains the sole runtime text representation.
 - Consolidated tuple-like recognition, OpenPyXL style inventories, abstract-value capabilities, lattice joins, and function-local binding facts; removed the superseded internal APIs those sources of truth replaced.
+- Removed redundant collection materialization, shared print binding, sequence-unpacking and spreadsheet-column rules, indexed workbook names and styles, and partitioned worksheet validation, formatting, and media models.
 
 ## 0.7.0 - 2026-07-02
 
