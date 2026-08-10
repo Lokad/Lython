@@ -465,58 +465,54 @@ internal sealed partial class LythonRuntime
             => originalRoot?.Element(name) is { } child ? new XElement(child) : null;
 
         private static string CreatePrintAreaDefinedNameText(OpenPyxlWorksheet worksheet)
-            => string.Join(
+        {
+            return string.Join(
                 ",",
                 worksheet.PrintArea.RequireNotNull().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .Select(range => SheetQualifiedReference(worksheet.Title, AbsoluteCellOrRangeReference(range))));
+
+            static string AbsoluteCellOrRangeReference(string reference)
+            {
+                if (!reference.Contains(':', StringComparison.Ordinal))
+                {
+                    return AbsoluteCellReference(reference);
+                }
+
+                var parts = reference.Split(':', 2, StringSplitOptions.TrimEntries);
+                return AbsoluteCellReference(parts[0]) + ":" + AbsoluteCellReference(parts[1]);
+            }
+
+            static string AbsoluteCellReference(string reference)
+            {
+                var address = ParseCellAddress(reference, null);
+                return "$" + ColumnName(address.Column) + "$" + address.Row.ToString(CultureInfo.InvariantCulture);
+            }
+        }
 
         private static string CreatePrintTitlesDefinedNameText(OpenPyxlWorksheet worksheet)
         {
             var references = new List<string>();
             if (worksheet.PrintTitleRows is not null)
             {
-                references.Add(SheetQualifiedReference(worksheet.Title, AbsoluteRowRangeReference(worksheet.PrintTitleRows)));
+                references.Add(SheetQualifiedReference(worksheet.Title, AbsoluteAxisRangeReference(worksheet.PrintTitleRows)));
             }
 
             if (worksheet.PrintTitleCols is not null)
             {
-                references.Add(SheetQualifiedReference(worksheet.Title, AbsoluteColumnRangeReference(worksheet.PrintTitleCols)));
+                references.Add(SheetQualifiedReference(worksheet.Title, AbsoluteAxisRangeReference(worksheet.PrintTitleCols)));
             }
 
             return string.Join(",", references);
+
+            static string AbsoluteAxisRangeReference(string reference)
+            {
+                var parts = reference.Split(':', 2, StringSplitOptions.TrimEntries);
+                return "$" + parts[0] + ":$" + parts[1];
+            }
         }
 
         private static string SheetQualifiedReference(string sheetTitle, string reference)
             => "'" + sheetTitle.Replace("'", "''", StringComparison.Ordinal) + "'!" + reference;
-
-        private static string AbsoluteCellOrRangeReference(string reference)
-        {
-            if (!reference.Contains(':', StringComparison.Ordinal))
-            {
-                return AbsoluteCellReference(reference);
-            }
-
-            var parts = reference.Split(':', 2, StringSplitOptions.TrimEntries);
-            return AbsoluteCellReference(parts[0]) + ":" + AbsoluteCellReference(parts[1]);
-        }
-
-        private static string AbsoluteCellReference(string reference)
-        {
-            var address = ParseCellAddress(reference, null);
-            return "$" + ColumnName(address.Column) + "$" + address.Row.ToString(CultureInfo.InvariantCulture);
-        }
-
-        private static string AbsoluteRowRangeReference(string reference)
-        {
-            var parts = reference.Split(':', 2, StringSplitOptions.TrimEntries);
-            return "$" + parts[0] + ":$" + parts[1];
-        }
-
-        private static string AbsoluteColumnRangeReference(string reference)
-        {
-            var parts = reference.Split(':', 2, StringSplitOptions.TrimEntries);
-            return "$" + parts[0] + ":$" + parts[1];
-        }
 
         public static Dictionary<string, int> CreateNumberFormatStyleMap(OpenPyxlWorkbook workbook)
         {
