@@ -239,13 +239,7 @@ internal sealed partial class LythonRuntime
             ? "utf-8-sig"
             : "utf-8";
 
-        public string ErrorsName => _request.TextErrorMode switch
-        {
-            LythonSubprocessTextErrorMode.Ignore => "ignore",
-            LythonSubprocessTextErrorMode.Replace => "replace",
-            LythonSubprocessTextErrorMode.BackslashReplace => "backslashreplace",
-            _ => "strict",
-        };
+        public string ErrorsName => TextErrorName(_request.TextErrorMode);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {

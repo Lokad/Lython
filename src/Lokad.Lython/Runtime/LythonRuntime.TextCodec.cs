@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyStringOps.TryAsString(value, out var errors))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner} only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span);
+            throw UnsupportedTextErrors(owner, span);
         }
 
         return errors.AsString().ToLowerInvariant() switch
@@ -73,9 +73,24 @@ internal sealed partial class LythonRuntime
             "replace" => TextErrorMode.Replace,
             "backslashreplace" => TextErrorMode.BackslashReplace,
             "surrogateescape" or "surrogatepass" => throw new LythonRuntimeException("NotImplementedError", $"{owner} does not support surrogate error handlers because Lython strings are UTF-8 scalar values.", span),
-            _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", span)
+            _ => throw UnsupportedTextErrors(owner, span)
         };
     }
+
+    private static LythonRuntimeException UnsupportedTextErrors(string owner, LythonSourceSpan span)
+        => new(
+            "ValueError",
+            $"{owner} only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.",
+            span);
+
+    private static string TextErrorName(TextErrorMode mode)
+        => mode switch
+        {
+            TextErrorMode.Ignore => "ignore",
+            TextErrorMode.Replace => "replace",
+            TextErrorMode.BackslashReplace => "backslashreplace",
+            _ => "strict",
+        };
 
     private static TextNewlineMode ParseTextNewline(object value, string owner, LythonSourceSpan span)
     {

@@ -699,6 +699,15 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    private static string TextErrorName(LythonSubprocessTextErrorMode mode)
+        => mode switch
+        {
+            LythonSubprocessTextErrorMode.Ignore => "ignore",
+            LythonSubprocessTextErrorMode.Replace => "replace",
+            LythonSubprocessTextErrorMode.BackslashReplace => "backslashreplace",
+            _ => "strict",
+        };
+
     private static IReadOnlyDictionary<string, string>? ParseSubprocessEnvironment(object value, string owner, LythonSourceSpan span)
     {
         if (value is PyNone or null)

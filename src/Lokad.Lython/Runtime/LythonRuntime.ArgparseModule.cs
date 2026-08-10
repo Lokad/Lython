@@ -199,13 +199,7 @@ internal sealed partial class LythonRuntime
                 }
                 : null;
             var errors = arguments.Length >= 4
-                ? errorsMode switch
-                {
-                    TextErrorMode.Ignore => "ignore",
-                    TextErrorMode.Replace => "replace",
-                    TextErrorMode.BackslashReplace => "backslashreplace",
-                    _ => "strict"
-                }
+                ? TextErrorName(errorsMode)
                 : null;
             return new ArgparseFileTypeObject(mode, encoding, errors);
         }

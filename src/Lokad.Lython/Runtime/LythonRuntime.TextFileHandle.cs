@@ -59,13 +59,7 @@ internal sealed partial class LythonRuntime
                 _ => "utf-8"
             };
 
-            public string ErrorsName => _errors switch
-            {
-                TextErrorMode.Ignore => "ignore",
-                TextErrorMode.Replace => "replace",
-                TextErrorMode.BackslashReplace => "backslashreplace",
-                _ => "strict"
-            };
+            public string ErrorsName => TextErrorName(_errors);
 
             public bool IsClosed { get; private set; }
 

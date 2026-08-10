@@ -630,13 +630,7 @@ internal sealed partial class LythonRuntime
             _ => "utf-8",
         };
 
-        private string ErrorsName => _options.Errors switch
-        {
-            TextErrorMode.Ignore => "ignore",
-            TextErrorMode.Replace => "replace",
-            TextErrorMode.BackslashReplace => "backslashreplace",
-            _ => "strict",
-        };
+        private string ErrorsName => TextErrorName(_options.Errors);
     }
 
 }
