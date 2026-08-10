@@ -29,11 +29,8 @@ internal sealed partial class LythonRuntime
         }
 
         private readonly List<OpenPyxlWorksheet> _worksheets;
-        private readonly Dictionary<string, OpenPyxlWorksheet> _worksheetsByTitle = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, OpenPyxlWorksheet> _worksheetsByTitleIgnoreCase = new(StringComparer.OrdinalIgnoreCase);
-        private readonly HashSet<OpenPyxlWorksheet> _worksheetSet = [];
+        private readonly OpenPyxlWorkbookIndex _index = new();
         private readonly List<OpenPyxlStyleValue> _namedStyles = new();
-        private readonly Dictionary<string, OpenPyxlStyleValue> _namedStylesByName = new(StringComparer.Ordinal);
         private readonly OpenPyxlWorkbookSecurity _security;
         private readonly WorkbookAccessMode _accessMode;
         private int _activeIndex;
@@ -59,7 +56,7 @@ internal sealed partial class LythonRuntime
             _activeIndex = _worksheets.Count == 0 ? 0 : Math.Clamp(activeIndex, 0, _worksheets.Count - 1);
             var normalStyle = CreateNamedStyleValue(PyString.FromString("Normal"));
             _namedStyles.Add(normalStyle);
-            _namedStylesByName.Add("Normal", normalStyle);
+            _index.AddNamedStyle("Normal", normalStyle);
             _accessMode = accessMode;
             IsoDates = isoDates;
             DateSystem = dateSystem;
@@ -170,7 +167,7 @@ internal sealed partial class LythonRuntime
         public object GetSubscript(object index, LythonSourceSpan span)
         {
             var name = ExpectString(index, "Workbook sheet lookup", span);
-            if (!_worksheetsByTitle.TryGetValue(name, out var worksheet))
+            if (!_index.TryGetWorksheet(name, out var worksheet))
             {
                 throw new LythonRuntimeException("KeyError", $"Worksheet {name} does not exist.", span);
             }
@@ -189,7 +186,7 @@ internal sealed partial class LythonRuntime
         {
             EnsureCanMutate(span);
             var name = ExpectString(index, "Workbook sheet deletion", span);
-            if (!_worksheetsByTitle.TryGetValue(name, out var worksheet))
+            if (!_index.TryGetWorksheet(name, out var worksheet))
             {
                 throw new LythonRuntimeException("KeyError", $"Worksheet {name} does not exist.", span);
             }
@@ -203,7 +200,7 @@ internal sealed partial class LythonRuntime
         {
             _ = span;
             return PyStringOps.TryAsString(candidate, out var name) &&
-                   _worksheetsByTitle.ContainsKey(name.AsString());
+                   _index.ContainsWorksheetTitle(name.AsString());
         }
 
         public IEnumerator<object> GetEnumerator() => _worksheets.Cast<object>().GetEnumerator();
@@ -234,15 +231,11 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            _namedStylesByName.Clear();
-            foreach (var style in _namedStyles)
-            {
-                _namedStylesByName.TryAdd(NamedStyleName(style, null), style);
-            }
+            _index.ResetNamedStyles(_namedStyles);
         }
 
         internal OpenPyxlStyleValue? FindNamedStyle(string name)
-            => _namedStylesByName.GetValueOrDefault(name);
+            => _index.FindNamedStyle(name);
 
         private object CreateSheet(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -320,9 +313,7 @@ internal sealed partial class LythonRuntime
 
             var removedIndex = _worksheets.IndexOf(worksheet);
             _worksheets.Remove(worksheet);
-            _worksheetsByTitle.Remove(worksheet.Title);
-            _worksheetsByTitleIgnoreCase.Remove(worksheet.Title);
-            _worksheetSet.Remove(worksheet);
+            _index.RemoveWorksheet(worksheet);
             worksheet.Workbook = null;
             if (_activeIndex == removedIndex)
             {
@@ -393,13 +384,13 @@ internal sealed partial class LythonRuntime
             }
 
             var name = NamedStyleName(style, span);
-            if (_namedStylesByName.ContainsKey(name))
+            if (_index.ContainsNamedStyle(name))
             {
                 throw new LythonRuntimeException("ValueError", "Style " + name + " exists already.", span);
             }
 
             _namedStyles.Add(style);
-            _namedStylesByName.Add(name, style);
+            _index.AddNamedStyle(name, style);
             return PyNone.Instance;
         }
 
@@ -511,7 +502,7 @@ internal sealed partial class LythonRuntime
             while (true)
             {
                 var candidate = "Sheet" + index.ToString(CultureInfo.InvariantCulture);
-                if (!_worksheetsByTitle.ContainsKey(candidate))
+                if (!_index.ContainsWorksheetTitle(candidate))
                 {
                     return candidate;
                 }
@@ -544,8 +535,7 @@ internal sealed partial class LythonRuntime
         }
 
         private bool ContainsSheetTitle(string title, OpenPyxlWorksheet? current)
-            => _worksheetsByTitleIgnoreCase.TryGetValue(title, out var worksheet) &&
-               !ReferenceEquals(worksheet, current);
+            => _index.ContainsWorksheetTitle(title, current);
 
         internal string RenameWorksheet(OpenPyxlWorksheet worksheet, string title, LythonSourceSpan? span)
         {
@@ -555,10 +545,7 @@ internal sealed partial class LythonRuntime
                 return uniqueTitle;
             }
 
-            _worksheetsByTitle.Remove(worksheet.Title);
-            _worksheetsByTitleIgnoreCase.Remove(worksheet.Title);
-            _worksheetsByTitle.Add(uniqueTitle, worksheet);
-            _worksheetsByTitleIgnoreCase.Add(uniqueTitle, worksheet);
+            _index.RenameWorksheet(worksheet, uniqueTitle);
             return uniqueTitle;
         }
 
@@ -593,7 +580,7 @@ internal sealed partial class LythonRuntime
         {
             if (PyStringOps.TryAsString(value, out var title))
             {
-                if (!_worksheetsByTitle.TryGetValue(title.AsString(), out var worksheet))
+                if (!_index.TryGetWorksheet(title.AsString(), out var worksheet))
                 {
                     throw new LythonRuntimeException("KeyError", $"Worksheet {title.AsString()} does not exist.", span);
                 }
@@ -608,7 +595,7 @@ internal sealed partial class LythonRuntime
         {
             if (value is OpenPyxlWorksheet worksheet &&
                 ReferenceEquals(worksheet.Workbook, this) &&
-                _worksheetSet.Contains(worksheet))
+                _index.ContainsWorksheet(worksheet))
             {
                 return worksheet;
             }
@@ -618,9 +605,7 @@ internal sealed partial class LythonRuntime
 
         private void RegisterWorksheet(OpenPyxlWorksheet worksheet)
         {
-            _worksheetsByTitle.Add(worksheet.Title, worksheet);
-            _worksheetsByTitleIgnoreCase.Add(worksheet.Title, worksheet);
-            _worksheetSet.Add(worksheet);
+            _index.AddWorksheet(worksheet);
             worksheet.Workbook = this;
         }
     }
