@@ -96,6 +96,62 @@ return evaluate()
     }
 
     [Fact]
+    public async Task LoweredExpressionsPreservePythonOperatorProtocolsInBothExecutionModes()
+    {
+        const string source = """
+class Box:
+    def __add__(self, other):
+        return 42
+    def __radd__(self, other):
+        return 43
+    def __lt__(self, other):
+        return True
+    def __gt__(self, other):
+        return True
+    def __eq__(self, other):
+        return True
+    def __contains__(self, item):
+        return item == 1
+    def __neg__(self):
+        return 44
+
+evaluate = lambda: [Box() + Box(), 1 + Box(), Box() < Box(), 1 < Box(), Box() == Box(), 1 in Box(), -Box()]
+return str(evaluate())
+""";
+
+        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+
+        AssertEquivalent(sync, asyncResult);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("[42, 43, True, True, True, True, 44]", sync.ReturnValue);
+    }
+
+    [Fact]
+    public async Task AsyncLoweredOperatorsAwaitUserProtocolBodies()
+    {
+        const string source = """
+class Box:
+    def __add__(self, other):
+        with open("/value.txt") as source:
+            return source.read()
+
+return (lambda: Box() + Box())()
+""";
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/value.txt", "payload");
+        var asyncHost = new DelayedLythonHost();
+        asyncHost.SeedFile("/value.txt", "payload");
+
+        var sync = new LythonEngine().Run(source, syncHost);
+        var asyncResult = await new LythonEngine().RunAsync(source, asyncHost);
+
+        AssertEquivalent(sync, asyncResult);
+        Assert.Equal("payload", asyncResult.ReturnValue);
+        Assert.True(asyncHost.CompletedAsynchronously > 0);
+    }
+
+    [Fact]
     public async Task SyncAndAsyncRuntimesAgreeForRuntimeFailures()
     {
         const string source = "def fail():\n    raise ValueError('bad')\nfail()\n";

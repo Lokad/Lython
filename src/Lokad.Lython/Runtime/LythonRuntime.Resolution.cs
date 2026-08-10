@@ -358,25 +358,10 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        var methods = op switch
-        {
-            BinaryOperatorSyntax.Add => ("__add__", "__radd__"),
-            BinaryOperatorSyntax.Subtract => ("__sub__", "__rsub__"),
-            BinaryOperatorSyntax.Multiply => ("__mul__", "__rmul__"),
-            BinaryOperatorSyntax.Divide => ("__truediv__", "__rtruediv__"),
-            BinaryOperatorSyntax.FloorDivide => ("__floordiv__", "__rfloordiv__"),
-            BinaryOperatorSyntax.Modulo => ("__mod__", "__rmod__"),
-            BinaryOperatorSyntax.Power => ("__pow__", "__rpow__"),
-            BinaryOperatorSyntax.BitwiseOr => ("__or__", "__ror__"),
-            BinaryOperatorSyntax.BitwiseXor => ("__xor__", "__rxor__"),
-            BinaryOperatorSyntax.BitwiseAnd => ("__and__", "__rand__"),
-            BinaryOperatorSyntax.LeftShift => ("__lshift__", "__rlshift__"),
-            BinaryOperatorSyntax.RightShift => ("__rshift__", "__rrshift__"),
-            _ => (null, null),
-        };
-        if (methods.Item1 is not null &&
-            (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
-             TryInvokeBinarySpecialMethod(right, methods.Item2.RequireNotNull(), left, context, span, out result)))
+        var methods = NumericSpecialMethods(op);
+        if (methods.Left is not null &&
+            (TryInvokeBinarySpecialMethod(left, methods.Left, right, context, span, out result) ||
+             TryInvokeBinarySpecialMethod(right, methods.Right.RequireNotNull(), left, context, span, out result)))
         {
             return true;
         }

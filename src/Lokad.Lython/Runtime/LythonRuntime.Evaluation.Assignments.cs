@@ -128,21 +128,16 @@ internal sealed partial class LythonRuntime
 
     private static bool EvaluateComparisonOperator(object left, object right, BinaryOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
     {
-        return op switch
-        {
-            BinaryOperatorSyntax.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0),
-            BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, span, static value => value <= 0),
-            BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, span, static value => value > 0),
-            BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, span, static value => value >= 0),
-            BinaryOperatorSyntax.Is => AreIdentical(left, right),
-            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, span),
-            BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, span),
-            BinaryOperatorSyntax.NotEqual => !AreEqualWithProtocols(left, right, context, span),
-            _ => throw new InvalidOperationException($"Unsupported chained comparison operator: {op}")
-        };
+        return (bool)EvaluateBinaryOperator(op, left, right, context, span);
     }
+
+    private static async ValueTask<bool> EvaluateComparisonOperatorAsync(
+        object left,
+        object right,
+        BinaryOperatorSyntax op,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => (bool)await EvaluateBinaryOperatorAsync(op, left, right, context, span).ConfigureAwait(false);
 
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
     {

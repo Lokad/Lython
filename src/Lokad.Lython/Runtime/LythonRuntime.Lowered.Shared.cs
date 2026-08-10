@@ -389,49 +389,13 @@ internal sealed partial class LythonRuntime
         object left,
         object right,
         ExecutionContext context)
-    {
-        return binary.Binary.Operator switch
-        {
-            BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, binary.Span),
-            BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
-            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
-            BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
-            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => Compare(left, right, binary.Span) < 0,
-            BinaryOperatorSyntax.LessEqual => Compare(left, right, binary.Span) <= 0,
-            BinaryOperatorSyntax.Greater => Compare(left, right, binary.Span) > 0,
-            BinaryOperatorSyntax.GreaterEqual => Compare(left, right, binary.Span) >= 0,
-            BinaryOperatorSyntax.Is => AreIdentical(left, right),
-            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, binary.Span),
-            BinaryOperatorSyntax.Equal => AreEqual(left, right),
-            BinaryOperatorSyntax.NotEqual => !AreEqual(left, right),
-            _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Binary.Operator}")
-        };
-    }
+        => EvaluateBinaryOperator(binary.Binary.Operator, left, right, context, binary.Span);
 
     private static object EvaluateLoweredUnaryOperator(
         LoweredUnaryExpression unary,
         object operand,
         ExecutionContext context)
-    {
-        return unary.Unary.Operator switch
-        {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
-            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
-            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
-            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
-            _ => throw new InvalidOperationException($"Unknown unary operator: {unary.Unary.Operator}")
-        };
-    }
+        => EvaluateUnaryOperator(unary.Unary.Operator, operand, context, unary.Span);
 
     private static void ThrowLoweredRaisedValue(object raised, LythonSourceSpan span)
     {

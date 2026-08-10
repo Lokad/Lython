@@ -24,26 +24,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateUnary(UnaryExpressionSyntax unary, ExecutionContext context)
     {
         var operand = EvaluateExpression(unary.Operand, context);
-        var method = unary.Operator switch
-        {
-            UnaryOperatorSyntax.Plus => "__pos__",
-            UnaryOperatorSyntax.Minus => "__neg__",
-            UnaryOperatorSyntax.BitwiseNot => "__invert__",
-            _ => null,
-        };
-        if (method is not null && TryInvokeUnarySpecialMethod(operand, method, context, unary.Span, out var protocolResult))
-        {
-            return protocolResult;
-        }
-
-        return unary.Operator switch
-        {
-            UnaryOperatorSyntax.Not => !IsTruthy(operand, context, unary.Span),
-            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, unary.Span),
-            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, unary.Span),
-            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, unary.Span),
-            _ => throw new InvalidOperationException($"Unknown unary operator: {unary.Operator}")
-        };
+        return EvaluateUnaryOperator(unary.Operator, operand, context, unary.Span);
     }
 
     private static BigInteger ParseInteger(IntegerLiteralExpressionSyntax integer)

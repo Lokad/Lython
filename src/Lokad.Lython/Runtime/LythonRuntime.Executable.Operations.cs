@@ -214,102 +214,48 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)
     {
-        if (TryEvaluateExecutableNumericProtocol(op, left, right, context, span, out var protocolResult))
+        var syntaxOperator = op switch
         {
-            return protocolResult;
-        }
-
-        return op switch
-        {
-            ExecutableBinaryOperator.Add => EvaluateAdd(left, right, context, span),
-            ExecutableBinaryOperator.Subtract => EvaluateSubtract(left, right, span),
-            ExecutableBinaryOperator.Multiply => EvaluateMultiply(left, right, context, span),
-            ExecutableBinaryOperator.Divide => EvaluateDivide(left, right, span),
-            ExecutableBinaryOperator.FloorDivide => EvaluateFloorDivide(left, right, span),
-            ExecutableBinaryOperator.Modulo => EvaluateModulo(left, right, context, span),
-            ExecutableBinaryOperator.Power => EvaluatePower(left, right, context, span),
-            ExecutableBinaryOperator.BitwiseOr => EvaluateBitwiseOr(left, right, span),
-            ExecutableBinaryOperator.BitwiseXor => EvaluateBitwiseXor(left, right, span),
-            ExecutableBinaryOperator.BitwiseAnd => EvaluateBitwiseAnd(left, right, span),
-            ExecutableBinaryOperator.LeftShift => EvaluateLeftShift(left, right, context, span),
-            ExecutableBinaryOperator.RightShift => EvaluateRightShift(left, right, span),
-            ExecutableBinaryOperator.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0),
-            ExecutableBinaryOperator.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, span, static value => value <= 0),
-            ExecutableBinaryOperator.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, span, static value => value > 0),
-            ExecutableBinaryOperator.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, span, static value => value >= 0),
-            ExecutableBinaryOperator.Is => AreIdentical(left, right),
-            ExecutableBinaryOperator.IsNot => !AreIdentical(left, right),
-            ExecutableBinaryOperator.In => Contains(right, left, context, span),
-            ExecutableBinaryOperator.NotIn => !Contains(right, left, context, span),
-            ExecutableBinaryOperator.Equal => AreEqualWithProtocols(left, right, context, span),
-            ExecutableBinaryOperator.NotEqual => !AreEqualWithProtocols(left, right, context, span),
+            ExecutableBinaryOperator.Add => BinaryOperatorSyntax.Add,
+            ExecutableBinaryOperator.Subtract => BinaryOperatorSyntax.Subtract,
+            ExecutableBinaryOperator.Multiply => BinaryOperatorSyntax.Multiply,
+            ExecutableBinaryOperator.Divide => BinaryOperatorSyntax.Divide,
+            ExecutableBinaryOperator.FloorDivide => BinaryOperatorSyntax.FloorDivide,
+            ExecutableBinaryOperator.Modulo => BinaryOperatorSyntax.Modulo,
+            ExecutableBinaryOperator.Power => BinaryOperatorSyntax.Power,
+            ExecutableBinaryOperator.BitwiseOr => BinaryOperatorSyntax.BitwiseOr,
+            ExecutableBinaryOperator.BitwiseXor => BinaryOperatorSyntax.BitwiseXor,
+            ExecutableBinaryOperator.BitwiseAnd => BinaryOperatorSyntax.BitwiseAnd,
+            ExecutableBinaryOperator.LeftShift => BinaryOperatorSyntax.LeftShift,
+            ExecutableBinaryOperator.RightShift => BinaryOperatorSyntax.RightShift,
+            ExecutableBinaryOperator.Less => BinaryOperatorSyntax.Less,
+            ExecutableBinaryOperator.LessEqual => BinaryOperatorSyntax.LessEqual,
+            ExecutableBinaryOperator.Greater => BinaryOperatorSyntax.Greater,
+            ExecutableBinaryOperator.GreaterEqual => BinaryOperatorSyntax.GreaterEqual,
+            ExecutableBinaryOperator.Is => BinaryOperatorSyntax.Is,
+            ExecutableBinaryOperator.IsNot => BinaryOperatorSyntax.IsNot,
+            ExecutableBinaryOperator.In => BinaryOperatorSyntax.In,
+            ExecutableBinaryOperator.NotIn => BinaryOperatorSyntax.NotIn,
+            ExecutableBinaryOperator.Equal => BinaryOperatorSyntax.Equal,
+            ExecutableBinaryOperator.NotEqual => BinaryOperatorSyntax.NotEqual,
             _ => throw new InvalidOperationException($"Executable IR contains unknown binary operator {op}."),
         };
+
+        return EvaluateBinaryOperator(syntaxOperator, left, right, context, span);
     }
 
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
     {
-        var method = op switch
+        var syntaxOperator = op switch
         {
-            ExecutableUnaryOperator.Plus => "__pos__",
-            ExecutableUnaryOperator.Minus => "__neg__",
-            ExecutableUnaryOperator.BitwiseNot => "__invert__",
-            _ => null,
-        };
-        if (method is not null && TryInvokeUnarySpecialMethod(operand, method, context, span, out var protocolResult))
-        {
-            return protocolResult;
-        }
-
-        return op switch
-        {
-            ExecutableUnaryOperator.Not => !IsTruthy(operand, context, span),
-            ExecutableUnaryOperator.Plus => EvaluateUnaryPlus(operand, span),
-            ExecutableUnaryOperator.Minus => EvaluateUnaryMinus(operand, span),
-            ExecutableUnaryOperator.BitwiseNot => EvaluateBitwiseNot(operand, span),
+            ExecutableUnaryOperator.Not => UnaryOperatorSyntax.Not,
+            ExecutableUnaryOperator.Plus => UnaryOperatorSyntax.Plus,
+            ExecutableUnaryOperator.Minus => UnaryOperatorSyntax.Minus,
+            ExecutableUnaryOperator.BitwiseNot => UnaryOperatorSyntax.BitwiseNot,
             _ => throw new InvalidOperationException($"Executable IR contains unknown unary operator {op}."),
         };
-    }
 
-    private static bool TryEvaluateExecutableNumericProtocol(
-        ExecutableBinaryOperator op,
-        object left,
-        object right,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        out object result)
-    {
-        if (op == ExecutableBinaryOperator.Modulo && left is PyString)
-        {
-            result = PyNone.Instance;
-            return false;
-        }
-
-        var methods = op switch
-        {
-            ExecutableBinaryOperator.Add => ("__add__", "__radd__"),
-            ExecutableBinaryOperator.Subtract => ("__sub__", "__rsub__"),
-            ExecutableBinaryOperator.Multiply => ("__mul__", "__rmul__"),
-            ExecutableBinaryOperator.Divide => ("__truediv__", "__rtruediv__"),
-            ExecutableBinaryOperator.FloorDivide => ("__floordiv__", "__rfloordiv__"),
-            ExecutableBinaryOperator.Modulo => ("__mod__", "__rmod__"),
-            ExecutableBinaryOperator.Power => ("__pow__", "__rpow__"),
-            ExecutableBinaryOperator.BitwiseOr => ("__or__", "__ror__"),
-            ExecutableBinaryOperator.BitwiseXor => ("__xor__", "__rxor__"),
-            ExecutableBinaryOperator.BitwiseAnd => ("__and__", "__rand__"),
-            ExecutableBinaryOperator.LeftShift => ("__lshift__", "__rlshift__"),
-            ExecutableBinaryOperator.RightShift => ("__rshift__", "__rrshift__"),
-            _ => (null, null),
-        };
-        if (methods.Item1 is not null &&
-            (TryInvokeBinarySpecialMethod(left, methods.Item1, right, context, span, out result) ||
-             TryInvokeBinarySpecialMethod(right, methods.Item2.RequireNotNull(), left, context, span, out result)))
-        {
-            return true;
-        }
-
-        result = PyNone.Instance;
-        return false;
+        return EvaluateUnaryOperator(syntaxOperator, operand, context, span);
     }
 
     private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)

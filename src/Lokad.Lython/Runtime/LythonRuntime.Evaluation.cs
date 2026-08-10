@@ -165,36 +165,6 @@ internal sealed partial class LythonRuntime
 
         var left = EvaluateExpression(binary.Left, context);
         var right = EvaluateExpression(binary.Right, context);
-        if (TryEvaluateNumericProtocol(binary.Operator, left, right, context, binary.Span, out var protocolResult))
-        {
-            return protocolResult;
-        }
-
-        return binary.Operator switch
-        {
-            BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, binary.Span),
-            BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, binary.Span),
-            BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, binary.Span),
-            BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, binary.Span),
-            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, binary.Span),
-            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, binary.Span),
-            BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, binary.Span),
-            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, binary.Span),
-            BinaryOperatorSyntax.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, binary.Span, static value => value < 0),
-            BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, binary.Span, static value => value <= 0),
-            BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, binary.Span, static value => value > 0),
-            BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, binary.Span, static value => value >= 0),
-            BinaryOperatorSyntax.Is => AreIdentical(left, right),
-            BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
-            BinaryOperatorSyntax.In => Contains(right, left, context, binary.Span),
-            BinaryOperatorSyntax.NotIn => !Contains(right, left, context, binary.Span),
-            BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, binary.Span),
-            BinaryOperatorSyntax.NotEqual => !AreEqualWithProtocols(left, right, context, binary.Span),
-            _ => throw new InvalidOperationException($"Unknown binary operator: {binary.Operator}")
-        };
+        return EvaluateBinaryOperator(binary.Operator, left, right, context, binary.Span);
     }
 }

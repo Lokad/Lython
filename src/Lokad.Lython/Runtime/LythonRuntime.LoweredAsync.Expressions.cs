@@ -325,7 +325,7 @@ internal sealed partial class LythonRuntime
 
         var left = await EvaluateLoweredExpressionAsync(binary.Left, context).ConfigureAwait(false);
         var right = await EvaluateLoweredExpressionAsync(binary.Right, context).ConfigureAwait(false);
-        return EvaluateLoweredBinaryOperator(binary, left, right, context);
+        return await EvaluateBinaryOperatorAsync(binary.Binary.Operator, left, right, context, binary.Span).ConfigureAwait(false);
     }
 
     private static async ValueTask<bool> EvaluateLoweredChainedComparisonAsync(LoweredChainedComparisonExpression chained, ExecutionContext context)
@@ -334,7 +334,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
         {
             var right = await EvaluateLoweredExpressionAsync(chained.Operands[i + 1], context).ConfigureAwait(false);
-            if (!EvaluateComparisonOperator(left, right, chained.ChainedComparison.Operators[i], context, chained.Span))
+            if (!await EvaluateComparisonOperatorAsync(left, right, chained.ChainedComparison.Operators[i], context, chained.Span).ConfigureAwait(false))
             {
                 return false;
             }
@@ -348,9 +348,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredUnaryAsync(LoweredUnaryExpression unary, ExecutionContext context)
     {
         var operand = await EvaluateLoweredExpressionAsync(unary.Operand, context).ConfigureAwait(false);
-        return unary.Unary.Operator == UnaryOperatorSyntax.Not
-            ? !await IsTruthyAsync(operand, context, unary.Span).ConfigureAwait(false)
-            : EvaluateLoweredUnaryOperator(unary, operand, context);
+        return await EvaluateUnaryOperatorAsync(unary.Unary.Operator, operand, context, unary.Span).ConfigureAwait(false);
     }
 
     private static async ValueTask ExecuteLoweredAssertStatementAsync(LoweredAssertStatement statement, ExecutionContext context)
