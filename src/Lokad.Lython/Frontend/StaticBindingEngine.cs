@@ -242,21 +242,21 @@ internal static partial class StaticBindingEngine
 
             case AbstractValueKind.ListType:
             case AbstractValueKind.SetType:
-                itemValue = (iterableValue.RequirePayload<AbstractValue>()).WithSpan(expression.Span);
+                itemValue = (iterableValue.RequireNestedValue()).WithSpan(expression.Span);
                 return true;
 
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
-                itemValue = JoinSequenceItems(iterableValue.RequirePayload<IReadOnlyList<AbstractValue>>(), expression.Span);
+                itemValue = JoinSequenceItems(iterableValue.RequireSequenceItems(), expression.Span);
                 return true;
 
             case AbstractValueKind.Dict:
-                itemValue = JoinDictKeys(iterableValue.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>(), expression.Span);
+                itemValue = JoinDictKeys(iterableValue.RequireDictionaryItems(), expression.Span);
                 return true;
 
             case AbstractValueKind.TextFileHandle:
-                if (iterableValue.RequirePayload<AbstractTextFileMode>() == AbstractTextFileMode.Read)
+                if (iterableValue.RequireTextFileMode() == AbstractTextFileMode.Read)
                 {
                     itemValue = AbstractValue.StringType(expression.Span);
                     return true;
@@ -294,12 +294,12 @@ internal static partial class StaticBindingEngine
         {
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
-                items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+                items = value.RequireSequenceItems();
                 return true;
 
             case AbstractValueKind.String:
                 {
-                    var text = value.RequirePayload<string>();
+                    var text = value.RequireText();
                     var chars = new List<AbstractValue>(text.Length);
                     for (var i = 0; i < text.Length; i++)
                     {
@@ -312,7 +312,7 @@ internal static partial class StaticBindingEngine
 
             case AbstractValueKind.Bytes:
                 {
-                    var bytes = value.RequirePayload<byte[]>();
+                    var bytes = value.RequireBytes();
                     var integers = new List<AbstractValue>(bytes.Length);
                     foreach (var item in bytes)
                     {
@@ -344,7 +344,7 @@ internal static partial class StaticBindingEngine
     {
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple)
         {
-            items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+            items = value.RequireSequenceItems();
             return true;
         }
 
@@ -444,7 +444,7 @@ internal static partial class StaticBindingEngine
 
     public static bool TryGetUserInstanceMemberValue(AbstractValue instanceValue, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        var instance = instanceValue.RequirePayload<AbstractInstanceSummary>();
+        var instance = instanceValue.RequireInstanceSummary();
         if (instance.Fields.TryGetValue(memberName, out value))
         {
             value = value.WithSpan(span);
@@ -463,7 +463,7 @@ internal static partial class StaticBindingEngine
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        var instance = instanceValue.RequirePayload<AbstractInstanceSummary>();
+        var instance = instanceValue.RequireInstanceSummary();
         if (!instance.Class.Methods.TryGetValue(methodName, out var methodSummary) ||
             !TryBindInstanceMethodArguments(methodSummary, instanceValue, arguments, callBindings, out var methodBindings) ||
             !TryInferStraightLineReturn(methodSummary.Body, methodBindings, out value))
@@ -495,7 +495,7 @@ internal static partial class StaticBindingEngine
         out string reason,
         out ExpressionSyntax? offendingExpression)
     {
-        var instance = instanceValue.RequirePayload<AbstractInstanceSummary>();
+        var instance = instanceValue.RequireInstanceSummary();
         if (!instance.Class.Methods.TryGetValue(methodName, out var methodSummary))
         {
             reason = string.Empty;

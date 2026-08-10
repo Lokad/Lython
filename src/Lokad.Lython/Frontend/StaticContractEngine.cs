@@ -220,7 +220,7 @@ internal static class StaticContractEngine
     {
         if (receiverValue.Kind == AbstractValueKind.Module)
         {
-            return StaticContracts.TryGetModuleMemberValue(receiverValue.RequirePayload<string>(), memberName, span, out value);
+            return StaticContracts.TryGetModuleMemberValue(receiverValue.RequireText(), memberName, span, out value);
         }
 
         value = default;
@@ -261,7 +261,7 @@ internal static class StaticContractEngine
         if (StaticAbstractValueResolver.TryResolve(target, bindings, out var value) &&
             value.Kind == AbstractValueKind.KnownCallable)
         {
-            targetName = value.RequirePayload<string>();
+            targetName = value.RequireText();
             return true;
         }
 
@@ -330,7 +330,7 @@ internal static class StaticContractEngine
             return false;
         }
 
-        var pairs = receiver.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+        var pairs = receiver.RequireDictionaryItems();
         var fallback = TryGetDictionaryFallbackValue(memberName, arguments, bindings, call.Span, out var fallbackValue)
             ? fallbackValue
             : AbstractValue.Unknown(call.Span);

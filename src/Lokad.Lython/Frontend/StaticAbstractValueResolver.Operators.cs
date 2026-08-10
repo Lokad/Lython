@@ -85,7 +85,7 @@ internal static partial class StaticAbstractValueResolver
         if (left.IsStringLike && right.IsStringLike)
         {
             value = left.Kind == AbstractValueKind.String && right.Kind == AbstractValueKind.String
-                ? AbstractValue.String(left.RequirePayload<string>() + right.RequirePayload<string>(), binary.Span)
+                ? AbstractValue.String(left.RequireText() + right.RequireText(), binary.Span)
                 : AbstractValue.StringType(binary.Span);
             return true;
         }
@@ -93,7 +93,7 @@ internal static partial class StaticAbstractValueResolver
         if (left.Kind == AbstractValueKind.List && right.Kind == AbstractValueKind.List)
         {
             value = AbstractValue.List(
-                (left.RequirePayload<IReadOnlyList<AbstractValue>>()).Concat(right.RequirePayload<IReadOnlyList<AbstractValue>>()).ToArray(),
+                (left.RequireSequenceItems()).Concat(right.RequireSequenceItems()).ToArray(),
                 binary.Span);
             return true;
         }
@@ -108,7 +108,7 @@ internal static partial class StaticAbstractValueResolver
         if (left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple)
         {
             value = AbstractValue.Tuple(
-                (left.RequirePayload<IReadOnlyList<AbstractValue>>()).Concat(right.RequirePayload<IReadOnlyList<AbstractValue>>()).ToArray(),
+                (left.RequireSequenceItems()).Concat(right.RequireSequenceItems()).ToArray(),
                 binary.Span);
             return true;
         }

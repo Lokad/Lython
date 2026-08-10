@@ -120,8 +120,8 @@ internal static partial class StaticContracts
     {
         return receiver.Kind switch
         {
-            AbstractValueKind.ListType => (receiver.RequirePayload<AbstractValue>()).WithSpan(span),
-            AbstractValueKind.List => StaticBindingEngine.JoinSequenceItems(receiver.RequirePayload<IReadOnlyList<AbstractValue>>(), span),
+            AbstractValueKind.ListType => (receiver.RequireNestedValue()).WithSpan(span),
+            AbstractValueKind.List => StaticBindingEngine.JoinSequenceItems(receiver.RequireSequenceItems(), span),
             _ => AbstractValue.Unknown(span)
         };
     }

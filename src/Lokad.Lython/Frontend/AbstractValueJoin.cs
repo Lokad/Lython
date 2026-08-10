@@ -45,8 +45,8 @@ internal static class AbstractValueJoin
 
         if (left.Kind == AbstractValueKind.MaybeNone || right.Kind == AbstractValueKind.MaybeNone)
         {
-            var leftValue = left.Kind == AbstractValueKind.MaybeNone ? left.RequirePayload<AbstractValue>() : left;
-            var rightValue = right.Kind == AbstractValueKind.MaybeNone ? right.RequirePayload<AbstractValue>() : right;
+            var leftValue = left.Kind == AbstractValueKind.MaybeNone ? left.RequireNestedValue() : left;
+            var rightValue = right.Kind == AbstractValueKind.MaybeNone ? right.RequireNestedValue() : right;
             return MaybeNone(Join(leftValue, rightValue, span), span);
         }
 
@@ -59,19 +59,19 @@ internal static class AbstractValueJoin
                 AbstractValueKind.Integer => left.HasSamePayload(right) ? left.WithSpan(span) : IntegerType(span),
                 AbstractValueKind.Float => left.HasSamePayload(right) ? left.WithSpan(span) : FloatType(span),
                 AbstractValueKind.Boolean => left.HasSamePayload(right) ? left.WithSpan(span) : BooleanType(span),
-                AbstractValueKind.MaybeNone => MaybeNone(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
+                AbstractValueKind.MaybeNone => MaybeNone(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
                 AbstractValueKind.List => JoinLiteralLists(left, right, span),
-                AbstractValueKind.ListType => ListOf(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
-                AbstractValueKind.SetType => SetOf(Join(left.RequirePayload<AbstractValue>(), right.RequirePayload<AbstractValue>(), span), span),
+                AbstractValueKind.ListType => ListOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
+                AbstractValueKind.SetType => SetOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
                 AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
-                AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes(left.RequirePayload<AbstractTextFileMode>(), right.RequirePayload<AbstractTextFileMode>()), span),
+                AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes(left.RequireTextFileMode(), right.RequireTextFileMode()), span),
                 AbstractValueKind.Module => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.KnownCallable => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
                 AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
                 AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
-                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries(left.RequirePayload<AbstractArgparseParserSummary>(), right.RequirePayload<AbstractArgparseParserSummary>(), span), span),
-                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries(left.RequirePayload<AbstractArgparseNamespaceSummary>(), right.RequirePayload<AbstractArgparseNamespaceSummary>(), span), span),
+                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries(left.RequireArgparseParserSummary(), right.RequireArgparseParserSummary(), span), span),
+                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries(left.RequireArgparseNamespaceSummary(), right.RequireArgparseNamespaceSummary(), span), span),
                 AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
                 AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
                 AbstractValueKind.Function => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
@@ -121,8 +121,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftPairs = left.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
-        var rightPairs = right.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+        var leftPairs = left.RequireDictionaryItems();
+        var rightPairs = right.RequireDictionaryItems();
         if (leftPairs.Count != rightPairs.Count)
         {
             return Unknown(span);
@@ -208,8 +208,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinDataclassFields(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftField = left.RequirePayload<AbstractDataclassFieldSummary>();
-        var rightField = right.RequirePayload<AbstractDataclassFieldSummary>();
+        var leftField = left.RequireDataclassFieldSummary();
+        var rightField = right.RequireDataclassFieldSummary();
         return string.Equals(leftField.Name, rightField.Name, StringComparison.Ordinal)
             ? DataclassField(leftField.Name, span)
             : Unknown(span);
@@ -217,8 +217,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinArgparseGroups(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftGroup = left.RequirePayload<AbstractArgparseGroupSummary>();
-        var rightGroup = right.RequirePayload<AbstractArgparseGroupSummary>();
+        var leftGroup = left.RequireArgparseGroupSummary();
+        var rightGroup = right.RequireArgparseGroupSummary();
         return string.Equals(leftGroup.ParserName, rightGroup.ParserName, StringComparison.Ordinal)
             ? ArgparseMutuallyExclusiveGroup(leftGroup.ParserName, span)
             : ArgparseMutuallyExclusiveGroup(span);
@@ -226,8 +226,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftInstance = left.RequirePayload<AbstractInstanceSummary>();
-        var rightInstance = right.RequirePayload<AbstractInstanceSummary>();
+        var leftInstance = left.RequireInstanceSummary();
+        var rightInstance = right.RequireInstanceSummary();
         if (!Equals(leftInstance.Class, rightInstance.Class))
         {
             return Unknown(span);
@@ -250,8 +250,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinLiteralLists(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftItems = left.RequirePayload<IReadOnlyList<AbstractValue>>();
-        var rightItems = right.RequirePayload<IReadOnlyList<AbstractValue>>();
+        var leftItems = left.RequireSequenceItems();
+        var rightItems = right.RequireSequenceItems();
         if (leftItems.Count == rightItems.Count)
         {
             var allSame = true;
@@ -275,8 +275,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinRegexPatterns(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
-        var leftSummary = left.RequirePayload<AbstractRegexPatternSummary>();
-        var rightSummary = right.RequirePayload<AbstractRegexPatternSummary>();
+        var leftSummary = left.RequireRegexPatternSummary();
+        var rightSummary = right.RequireRegexPatternSummary();
         return RegexPatternSummariesEqual(leftSummary, rightSummary)
             ? RegexPattern(leftSummary, span)
             : RegexPattern(span);
@@ -284,8 +284,8 @@ internal static class AbstractValueJoin
 
     private static AbstractValue JoinRegexMatches(AbstractValue left, AbstractValue right, LythonSourceSpan span, bool maybe)
     {
-        var leftSummary = left.RequirePayload<AbstractRegexMatchSummary>();
-        var rightSummary = right.RequirePayload<AbstractRegexMatchSummary>();
+        var leftSummary = left.RequireRegexMatchSummary();
+        var rightSummary = right.RequireRegexMatchSummary();
         if (!RegexMatchSummariesEqual(leftSummary, rightSummary))
         {
             return maybe ? MaybeRegexMatch(span) : RegexMatch(span);
@@ -314,13 +314,13 @@ internal static class AbstractValueJoin
     {
         if (value.Kind == AbstractValueKind.ListType)
         {
-            item = value.RequirePayload<AbstractValue>();
+            item = value.RequireNestedValue();
             return true;
         }
 
         if (value.Kind == AbstractValueKind.List)
         {
-            item = JoinListItems(value.RequirePayload<IReadOnlyList<AbstractValue>>(), Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span);
             return true;
         }
 
@@ -332,13 +332,13 @@ internal static class AbstractValueJoin
     {
         if (value.Kind == AbstractValueKind.SetType)
         {
-            item = value.RequirePayload<AbstractValue>();
+            item = value.RequireNestedValue();
             return true;
         }
 
         if (value.Kind == AbstractValueKind.Set)
         {
-            item = JoinListItems(value.RequirePayload<IReadOnlyList<AbstractValue>>(), Array.Empty<AbstractValue>(), value.Span);
+            item = JoinListItems(value.RequireSequenceItems(), Array.Empty<AbstractValue>(), value.Span);
             return true;
         }
 
@@ -409,15 +409,15 @@ internal static class AbstractValueJoin
             switch (value.Kind)
             {
                 case AbstractValueKind.Bytes:
-                    hash.AddBytes(value.RequirePayload<byte[]>());
+                    hash.AddBytes(value.RequireBytes());
                     break;
                 case AbstractValueKind.String:
                 case AbstractValueKind.Integer:
                 case AbstractValueKind.Float:
-                    hash.Add(value.RequirePayload<string>());
+                    hash.Add(value.RequireText());
                     break;
                 case AbstractValueKind.Boolean:
-                    hash.Add(value.RequirePayload<bool>());
+                    hash.Add(value.RequireBoolean());
                     break;
             }
 

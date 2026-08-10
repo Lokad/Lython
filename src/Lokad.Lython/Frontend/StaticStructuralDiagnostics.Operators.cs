@@ -146,14 +146,14 @@ internal static partial class StaticStructuralDiagnostics
             return true;
         }
 
-        if (!TryInspectPercentFormat(left.RequirePayload<string>(), out var positionalCount, out var hasMapping))
+        if (!TryInspectPercentFormat(left.RequireText(), out var positionalCount, out var hasMapping))
         {
             return false;
         }
 
         if (right.Kind == AbstractValueKind.Tuple)
         {
-            return !hasMapping && (right.RequirePayload<IReadOnlyList<AbstractValue>>()).Count == positionalCount;
+            return !hasMapping && (right.RequireSequenceItems()).Count == positionalCount;
         }
 
         if (hasMapping && positionalCount == 0)

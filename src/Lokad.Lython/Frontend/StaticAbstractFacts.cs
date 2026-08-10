@@ -47,7 +47,7 @@ internal static class StaticAbstractFacts
 
     public static bool IsDefinitelyNonCallable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
-            ? IsDefinitelyNonCallable(value.RequirePayload<AbstractValue>())
+            ? IsDefinitelyNonCallable(value.RequireNestedValue())
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonCallable);
 
     public static bool IsKnownIntegerLiteral(ExpressionSyntax expression, AbstractState bindings)
@@ -70,7 +70,7 @@ internal static class StaticAbstractFacts
 
     public static bool IsDefinitelyNonIterable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
-            ? IsDefinitelyNonIterable(value.RequirePayload<AbstractValue>())
+            ? IsDefinitelyNonIterable(value.RequireNestedValue())
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonIterable);
 
     public static bool IsDefinitelyKnownNonSized(ExpressionSyntax expression, AbstractState bindings)
@@ -78,7 +78,7 @@ internal static class StaticAbstractFacts
 
     public static bool IsDefinitelyNonSized(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
-            ? IsDefinitelyNonSized(value.RequirePayload<AbstractValue>())
+            ? IsDefinitelyNonSized(value.RequireNestedValue())
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonSized);
 
     public static bool IsDefinitelySized(AbstractValue value)
@@ -86,7 +86,7 @@ internal static class StaticAbstractFacts
 
     public static bool IsDefinitelyNonSubscriptable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
-            ? IsDefinitelyNonSubscriptable(value.RequirePayload<AbstractValue>())
+            ? IsDefinitelyNonSubscriptable(value.RequireNestedValue())
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonSubscriptable);
 
     public static bool IsDefinitelyNonSliceable(AbstractValue value)
@@ -149,23 +149,23 @@ internal static class StaticAbstractFacts
                 truth = false;
                 return true;
             case AbstractValueKind.Boolean:
-                truth = value.RequirePayload<bool>();
+                truth = value.RequireBoolean();
                 return true;
             case AbstractValueKind.String:
-                truth = (value.RequirePayload<string>()).Length != 0;
+                truth = (value.RequireText()).Length != 0;
                 return true;
             case AbstractValueKind.Bytes:
-                truth = (value.RequirePayload<byte[]>()).Length != 0;
+                truth = (value.RequireBytes()).Length != 0;
                 return true;
             case AbstractValueKind.Integer when System.Numerics.BigInteger.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
                 out var integer):
                 truth = !integer.IsZero;
                 return true;
             case AbstractValueKind.Float when double.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Float,
                 CultureInfo.InvariantCulture,
                 out var floating):
@@ -174,15 +174,15 @@ internal static class StaticAbstractFacts
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
-                truth = (value.RequirePayload<IReadOnlyList<AbstractValue>>()).Count != 0;
+                truth = (value.RequireSequenceItems()).Count != 0;
                 return true;
             case AbstractValueKind.Dict:
-                truth = (value.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>()).Count != 0;
+                truth = (value.RequireDictionaryItems()).Count != 0;
                 return true;
             case AbstractValueKind.RegexMatch:
                 truth = true;
                 return true;
-            case AbstractValueKind.MaybeNone when TryGetTruthiness(value.RequirePayload<AbstractValue>(), out var innerTruth) && !innerTruth:
+            case AbstractValueKind.MaybeNone when TryGetTruthiness(value.RequireNestedValue(), out var innerTruth) && !innerTruth:
                 truth = false;
                 return true;
             default:
@@ -206,7 +206,7 @@ internal static class StaticAbstractFacts
     {
         if (value.Kind == AbstractValueKind.Integer &&
             int.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
                 out integer))
@@ -253,15 +253,15 @@ internal static class StaticAbstractFacts
         switch (value.Kind)
         {
             case AbstractValueKind.String:
-                count = (value.RequirePayload<string>()).Length;
+                count = (value.RequireText()).Length;
                 return true;
             case AbstractValueKind.Bytes:
-                count = (value.RequirePayload<byte[]>()).Length;
+                count = (value.RequireBytes()).Length;
                 return true;
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
             case AbstractValueKind.Set:
-                count = (value.RequirePayload<IReadOnlyList<AbstractValue>>()).Count;
+                count = (value.RequireSequenceItems()).Count;
                 return true;
             case AbstractValueKind.DecimalTuple:
                 count = 3;
@@ -330,10 +330,10 @@ internal static class StaticAbstractFacts
             AbstractValueKind.SetType => "set",
             AbstractValueKind.Path => "pathlib.Path",
             AbstractValueKind.TextFileHandle => "file",
-            AbstractValueKind.Module => $"module '{value.RequirePayload<string>()}'",
-            AbstractValueKind.KnownCallable => $"callable '{value.RequirePayload<string>()}'",
+            AbstractValueKind.Module => $"module '{value.RequireText()}'",
+            AbstractValueKind.KnownCallable => $"callable '{value.RequireText()}'",
             AbstractValueKind.RegexPattern => "re.Pattern",
-            AbstractValueKind.MaybeNone => DescribeValue(value.RequirePayload<AbstractValue>()) + " | None",
+            AbstractValueKind.MaybeNone => DescribeValue(value.RequireNestedValue()) + " | None",
             AbstractValueKind.MaybeRegexMatch => "re.Match | None",
             AbstractValueKind.RegexMatch => "re.Match",
             AbstractValueKind.ArgparseParser => "argparse.ArgumentParser",
@@ -401,8 +401,8 @@ internal static class StaticAbstractFacts
             AbstractValueKind.OpenPyxlRowDimension => "openpyxl.worksheet.dimensions.RowDimension",
             AbstractValueKind.OpenPyxlMergedCellSet => "openpyxl.worksheet.cell_range.MultiCellRange",
             AbstractValueKind.Function => "function",
-            AbstractValueKind.UserClass => (value.RequirePayload<AbstractClassSummary>()).Name,
-            AbstractValueKind.UserInstance => (value.RequirePayload<AbstractInstanceSummary>()).Class.Name,
+            AbstractValueKind.UserClass => (value.RequireClassSummary()).Name,
+            AbstractValueKind.UserInstance => (value.RequireInstanceSummary()).Class.Name,
             _ => "object"
         };
     }

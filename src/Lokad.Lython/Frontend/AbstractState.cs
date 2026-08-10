@@ -132,7 +132,7 @@ internal sealed class AbstractState
             var value = _values[name];
             if (value.Kind == AbstractValueKind.List)
             {
-                var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+                var items = value.RequireSequenceItems();
                 var item = items.Count == 0
                     ? AbstractValue.Unknown(value.Span)
                     : items.Skip(1).Aggregate(items[0], (joined, next) => AbstractValue.Join(joined, next, value.Span));

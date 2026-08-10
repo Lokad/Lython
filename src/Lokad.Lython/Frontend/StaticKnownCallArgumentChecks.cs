@@ -146,7 +146,7 @@ internal static class StaticKnownCallArgumentChecks
 
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+            var items = value.RequireSequenceItems();
             if (requireNonEmpty && items.Count == 0)
             {
                 AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
@@ -167,7 +167,7 @@ internal static class StaticKnownCallArgumentChecks
 
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
-            var item = value.RequirePayload<AbstractValue>();
+            var item = value.RequireNestedValue();
             if (!item.IsStringLike && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
@@ -219,7 +219,7 @@ internal static class StaticKnownCallArgumentChecks
 
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+            var items = value.RequireSequenceItems();
             if (policy.HasFlag(PathLikeArgumentPolicy.RequireNonEmpty) && items.Count == 0)
             {
                 AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
@@ -240,7 +240,7 @@ internal static class StaticKnownCallArgumentChecks
 
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
-            var item = value.RequirePayload<AbstractValue>();
+            var item = value.RequireNestedValue();
             if (!IsPathLike(item) && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, DiagnosticSpan(expression, item));
@@ -332,7 +332,7 @@ internal static class StaticKnownCallArgumentChecks
         if (value.Kind == AbstractValueKind.Integer)
         {
             return int.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
                 out integer);

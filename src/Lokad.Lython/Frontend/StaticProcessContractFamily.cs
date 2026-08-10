@@ -326,7 +326,7 @@ internal static class StaticProcessContractFamily
 
         return StaticAbstractValueResolver.TryResolve(shellExpression, bindings, out var value) &&
             value.Kind == AbstractValueKind.Boolean &&
-            value.RequirePayload<bool>();
+            value.RequireBoolean();
     }
 
     private static bool AnalyzePopenArguments(

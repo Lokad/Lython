@@ -173,10 +173,9 @@ internal sealed record AbstractDataclassFieldSummary(
 internal readonly record struct AbstractValue
 {
     private static readonly LythonSourceSpan SyntheticSpan = new(0, 0, 0, 0);
-    private static readonly object NonePayload = new();
-    private readonly object? _payload;
+    private readonly AbstractPayload _payload;
 
-    private AbstractValue(AbstractValueKind kind, object? payload, LythonSourceSpan span)
+    private AbstractValue(AbstractValueKind kind, AbstractPayload payload, LythonSourceSpan span)
     {
         Kind = kind;
         _payload = payload;
@@ -187,121 +186,133 @@ internal readonly record struct AbstractValue
 
     public LythonSourceSpan Span { get; }
 
-    public T RequirePayload<T>() where T : notnull
-        => _payload is T payload
-            ? payload
-            : throw new InvalidOperationException($"Abstract value {Kind} does not carry a {typeof(T).Name} payload.");
+    public string RequireText() => _payload is TextPayload payload ? payload.Value : ThrowPayloadMismatch<string>();
+    public byte[] RequireBytes() => _payload is BytesPayload payload ? payload.Value : ThrowPayloadMismatch<byte[]>();
+    public bool RequireBoolean() => _payload is BooleanPayload payload ? payload.Value : ThrowPayloadMismatch<bool>();
+    public AbstractValue RequireNestedValue() => _payload is NestedValuePayload payload ? payload.Value : ThrowPayloadMismatch<AbstractValue>();
+    public IReadOnlyList<AbstractValue> RequireSequenceItems() => _payload is SequencePayload payload ? payload.Items : ThrowPayloadMismatch<IReadOnlyList<AbstractValue>>();
+    public IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> RequireDictionaryItems() => _payload is DictionaryPayload payload ? payload.Items : ThrowPayloadMismatch<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+    public AbstractTextFileMode RequireTextFileMode() => _payload is TextFileModePayload payload ? payload.Mode : ThrowPayloadMismatch<AbstractTextFileMode>();
+    public AbstractRegexPatternSummary RequireRegexPatternSummary() => _payload is RegexPatternPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractRegexPatternSummary>();
+    public AbstractRegexMatchSummary RequireRegexMatchSummary() => _payload is RegexMatchPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractRegexMatchSummary>();
+    public AbstractArgparseParserSummary RequireArgparseParserSummary() => _payload is ArgparseParserPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseParserSummary>();
+    public AbstractArgparseNamespaceSummary RequireArgparseNamespaceSummary() => _payload is ArgparseNamespacePayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseNamespaceSummary>();
+    public AbstractArgparseGroupSummary RequireArgparseGroupSummary() => _payload is ArgparseGroupPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseGroupSummary>();
+    public AbstractDataclassFieldSummary RequireDataclassFieldSummary() => _payload is DataclassFieldPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractDataclassFieldSummary>();
+    public AbstractFunctionSummary RequireFunctionSummary() => _payload is FunctionPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractFunctionSummary>();
+    public AbstractClassSummary RequireClassSummary() => _payload is ClassPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractClassSummary>();
+    public AbstractInstanceSummary RequireInstanceSummary() => _payload is InstancePayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractInstanceSummary>();
 
     public bool HasSamePayload(AbstractValue other) => Equals(_payload, other._payload);
 
     public static AbstractValue Unknown() => Unknown(SyntheticSpan);
-    public static AbstractValue Unknown(LythonSourceSpan span) => new(AbstractValueKind.Unknown, null, span);
+    public static AbstractValue Unknown(LythonSourceSpan span) => Marker(AbstractValueKind.Unknown, span);
     public static AbstractValue Never() => Never(SyntheticSpan);
-    public static AbstractValue Never(LythonSourceSpan span) => new(AbstractValueKind.Never, "never", span);
-    public static AbstractValue String(string value, LythonSourceSpan span) => new(AbstractValueKind.String, value, span);
-    public static AbstractValue StringType(LythonSourceSpan span) => new(AbstractValueKind.StringType, "str", span);
-    public static AbstractValue Bytes(byte[] value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, value, span);
-    public static AbstractValue BytesType(LythonSourceSpan span) => new(AbstractValueKind.BytesType, "bytes", span);
-    public static AbstractValue Integer(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Integer, valueText, span);
-    public static AbstractValue IntegerType(LythonSourceSpan span) => new(AbstractValueKind.IntegerType, "int", span);
-    public static AbstractValue Float(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Float, valueText, span);
-    public static AbstractValue FloatType(LythonSourceSpan span) => new(AbstractValueKind.FloatType, "float", span);
-    public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, value, span);
-    public static AbstractValue BooleanType(LythonSourceSpan span) => new(AbstractValueKind.BooleanType, "bool", span);
-    public static AbstractValue None(LythonSourceSpan span) => new(AbstractValueKind.None, NonePayload, span);
+    public static AbstractValue Never(LythonSourceSpan span) => Marker(AbstractValueKind.Never, span);
+    public static AbstractValue String(string value, LythonSourceSpan span) => new(AbstractValueKind.String, new TextPayload(value), span);
+    public static AbstractValue StringType(LythonSourceSpan span) => Marker(AbstractValueKind.StringType, span);
+    public static AbstractValue Bytes(byte[] value, LythonSourceSpan span) => new(AbstractValueKind.Bytes, new BytesPayload(value), span);
+    public static AbstractValue BytesType(LythonSourceSpan span) => Marker(AbstractValueKind.BytesType, span);
+    public static AbstractValue Integer(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Integer, new TextPayload(valueText), span);
+    public static AbstractValue IntegerType(LythonSourceSpan span) => Marker(AbstractValueKind.IntegerType, span);
+    public static AbstractValue Float(string valueText, LythonSourceSpan span) => new(AbstractValueKind.Float, new TextPayload(valueText), span);
+    public static AbstractValue FloatType(LythonSourceSpan span) => Marker(AbstractValueKind.FloatType, span);
+    public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, new BooleanPayload(value), span);
+    public static AbstractValue BooleanType(LythonSourceSpan span) => Marker(AbstractValueKind.BooleanType, span);
+    public static AbstractValue None(LythonSourceSpan span) => Marker(AbstractValueKind.None, span);
     public static AbstractValue MaybeNone(AbstractValue nonNoneValue, LythonSourceSpan span)
         => nonNoneValue.Kind switch
         {
             AbstractValueKind.None => None(span),
             AbstractValueKind.MaybeNone => nonNoneValue.WithSpan(span),
-            _ => new(AbstractValueKind.MaybeNone, nonNoneValue.WithSpan(span), span)
+            _ => new(AbstractValueKind.MaybeNone, new NestedValuePayload(nonNoneValue.WithSpan(span)), span)
         };
-    public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, item, span);
-    public static AbstractValue List(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.List, items, span);
-    public static AbstractValue Tuple(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Tuple, items, span);
-    public static AbstractValue Set(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Set, items, span);
-    public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, item, span);
-    public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, pairs, span);
-    public static AbstractValue Path(LythonSourceSpan span) => new(AbstractValueKind.Path, "pathlib.Path", span);
-    public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, mode, span);
-    public static AbstractValue Module(string name, LythonSourceSpan span) => new(AbstractValueKind.Module, name, span);
-    public static AbstractValue KnownCallable(string targetName, LythonSourceSpan span) => new(AbstractValueKind.KnownCallable, targetName, span);
+    public static AbstractValue ListOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.ListType, new NestedValuePayload(item), span);
+    public static AbstractValue List(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.List, new SequencePayload(items), span);
+    public static AbstractValue Tuple(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Tuple, new SequencePayload(items), span);
+    public static AbstractValue Set(IReadOnlyList<AbstractValue> items, LythonSourceSpan span) => new(AbstractValueKind.Set, new SequencePayload(items), span);
+    public static AbstractValue SetOf(AbstractValue item, LythonSourceSpan span) => new(AbstractValueKind.SetType, new NestedValuePayload(item), span);
+    public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, new DictionaryPayload(pairs), span);
+    public static AbstractValue Path(LythonSourceSpan span) => Marker(AbstractValueKind.Path, span);
+    public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, new TextFileModePayload(mode), span);
+    public static AbstractValue Module(string name, LythonSourceSpan span) => new(AbstractValueKind.Module, new TextPayload(name), span);
+    public static AbstractValue KnownCallable(string targetName, LythonSourceSpan span) => new(AbstractValueKind.KnownCallable, new TextPayload(targetName), span);
     public static AbstractValue RegexPattern(LythonSourceSpan span) => RegexPattern(CreateUnknownRegexPatternSummary(), span);
-    public static AbstractValue RegexPattern(AbstractRegexPatternSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexPattern, summary, span);
+    public static AbstractValue RegexPattern(AbstractRegexPatternSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexPattern, new RegexPatternPayload(summary), span);
     public static AbstractValue MaybeRegexMatch(LythonSourceSpan span) => MaybeRegexMatch(CreateUnknownRegexMatchSummary(), span);
-    public static AbstractValue MaybeRegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.MaybeRegexMatch, summary, span);
+    public static AbstractValue MaybeRegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.MaybeRegexMatch, new RegexMatchPayload(summary), span);
     public static AbstractValue RegexMatch(LythonSourceSpan span) => RegexMatch(CreateUnknownRegexMatchSummary(), span);
-    public static AbstractValue RegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexMatch, summary, span);
+    public static AbstractValue RegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexMatch, new RegexMatchPayload(summary), span);
     public static AbstractValue ArgparseParser(LythonSourceSpan span) => ArgparseParser(new AbstractArgparseParserSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: true), span);
-    public static AbstractValue ArgparseParser(AbstractArgparseParserSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseParser, summary, span);
+    public static AbstractValue ArgparseParser(AbstractArgparseParserSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseParser, new ArgparseParserPayload(summary), span);
     public static AbstractValue ArgparseMutuallyExclusiveGroup(LythonSourceSpan span) => ArgparseMutuallyExclusiveGroup(string.Empty, span);
-    public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new AbstractArgparseGroupSummary(parserName), span);
+    public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new ArgparseGroupPayload(new AbstractArgparseGroupSummary(parserName)), span);
     public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => ArgparseNamespace(new AbstractArgparseNamespaceSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: false), span);
-    public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, summary, span);
-    public static AbstractValue CsvReader(LythonSourceSpan span) => new(AbstractValueKind.CsvReader, "csv.reader", span);
-    public static AbstractValue CsvDictReader(LythonSourceSpan span) => new(AbstractValueKind.CsvDictReader, "csv.DictReader", span);
-    public static AbstractValue CsvWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvWriter, "csv.writer", span);
-    public static AbstractValue CsvDictWriter(LythonSourceSpan span) => new(AbstractValueKind.CsvDictWriter, "csv.DictWriter", span);
-    public static AbstractValue CollectionsDefaultDict(LythonSourceSpan span) => new(AbstractValueKind.CollectionsDefaultDict, "collections.defaultdict", span);
-    public static AbstractValue CollectionsCounter(LythonSourceSpan span) => new(AbstractValueKind.CollectionsCounter, "collections.Counter", span);
-    public static AbstractValue CollectionsDeque(LythonSourceSpan span) => new(AbstractValueKind.CollectionsDeque, "collections.deque", span);
-    public static AbstractValue CollectionsChainMap(LythonSourceSpan span) => new(AbstractValueKind.CollectionsChainMap, "collections.ChainMap", span);
-    public static AbstractValue Decimal(LythonSourceSpan span) => new(AbstractValueKind.Decimal, "decimal.Decimal", span);
-    public static AbstractValue DecimalContext(LythonSourceSpan span) => new(AbstractValueKind.DecimalContext, "decimal.Context", span);
-    public static AbstractValue DecimalTuple(LythonSourceSpan span) => new(AbstractValueKind.DecimalTuple, "decimal.DecimalTuple", span);
-    public static AbstractValue DateTimeTimedelta(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTimedelta, "datetime.timedelta", span);
-    public static AbstractValue DateTimeDate(LythonSourceSpan span) => new(AbstractValueKind.DateTimeDate, "datetime.date", span);
-    public static AbstractValue DateTimeTime(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTime, "datetime.time", span);
-    public static AbstractValue DateTimeDateTime(LythonSourceSpan span) => new(AbstractValueKind.DateTimeDateTime, "datetime.datetime", span);
-    public static AbstractValue DateTimeTimezone(LythonSourceSpan span) => new(AbstractValueKind.DateTimeTimezone, "datetime.timezone", span);
-    public static AbstractValue StatisticsLinearRegression(LythonSourceSpan span) => new(AbstractValueKind.StatisticsLinearRegression, "statistics.LinearRegression", span);
-    public static AbstractValue StatisticsNormalDist(LythonSourceSpan span) => new(AbstractValueKind.StatisticsNormalDist, "statistics.NormalDist", span);
-    public static AbstractValue Random(LythonSourceSpan span) => new(AbstractValueKind.Random, "random.Random", span);
-    public static AbstractValue DifflibDiffer(LythonSourceSpan span) => new(AbstractValueKind.DifflibDiffer, "difflib.Differ", span);
-    public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => new(AbstractValueKind.DifflibHtmlDiff, "difflib.HtmlDiff", span);
-    public static AbstractValue DifflibMatch(LythonSourceSpan span) => new(AbstractValueKind.DifflibMatch, "difflib.Match", span);
-    public static AbstractValue DifflibSequenceMatcher(LythonSourceSpan span) => new(AbstractValueKind.DifflibSequenceMatcher, "difflib.SequenceMatcher", span);
-    public static AbstractValue PkgutilModuleInfo(LythonSourceSpan span) => new(AbstractValueKind.PkgutilModuleInfo, "pkgutil.ModuleInfo", span);
-    public static AbstractValue PkgutilLoader(LythonSourceSpan span) => new(AbstractValueKind.PkgutilLoader, "pkgutil.Loader", span);
-    public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => new(AbstractValueKind.SubprocessCompletedProcess, "subprocess.CompletedProcess", span);
-    public static AbstractValue SubprocessPopen(LythonSourceSpan span) => new(AbstractValueKind.SubprocessPopen, "subprocess.Popen", span);
-    public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new AbstractDataclassFieldSummary(name, span), span);
-    public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbook, "openpyxl.Workbook", span);
-    public static AbstractValue OpenPyxlWorksheet(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorksheet, "openpyxl.worksheet.worksheet.Worksheet", span);
-    public static AbstractValue OpenPyxlCell(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlCell, "openpyxl.cell.cell.Cell", span);
-    public static AbstractValue OpenPyxlHyperlink(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlHyperlink, "openpyxl.worksheet.hyperlink.Hyperlink", span);
-    public static AbstractValue OpenPyxlComment(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlComment, "openpyxl.comments.Comment", span);
-    public static AbstractValue OpenPyxlFont(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlFont, "openpyxl.styles.Font", span);
-    public static AbstractValue OpenPyxlPatternFill(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPatternFill, "openpyxl.styles.PatternFill", span);
-    public static AbstractValue OpenPyxlBorder(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlBorder, "openpyxl.styles.Border", span);
-    public static AbstractValue OpenPyxlSide(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSide, "openpyxl.styles.Side", span);
-    public static AbstractValue OpenPyxlAlignment(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlAlignment, "openpyxl.styles.Alignment", span);
-    public static AbstractValue OpenPyxlProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlProtection, "openpyxl.styles.Protection", span);
-    public static AbstractValue OpenPyxlNamedStyle(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlNamedStyle, "openpyxl.styles.NamedStyle", span);
-    public static AbstractValue OpenPyxlColor(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlColor, "openpyxl.styles.colors.Color", span);
-    public static AbstractValue OpenPyxlTable(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTable, "openpyxl.worksheet.table.Table", span);
-    public static AbstractValue OpenPyxlTableStyleInfo(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTableStyleInfo, "openpyxl.worksheet.table.TableStyleInfo", span);
-    public static AbstractValue OpenPyxlDataValidation(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDataValidation, "openpyxl.worksheet.datavalidation.DataValidation", span);
-    public static AbstractValue OpenPyxlConditionalFormattingRule(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlConditionalFormattingRule, "openpyxl.formatting.rule.Rule", span);
-    public static AbstractValue OpenPyxlAutoFilter(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlAutoFilter, "openpyxl.worksheet.filters.AutoFilter", span);
-    public static AbstractValue OpenPyxlSheetProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSheetProtection, "openpyxl.worksheet.protection.SheetProtection", span);
-    public static AbstractValue OpenPyxlWorkbookProtection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlWorkbookProtection, "openpyxl.workbook.protection.WorkbookProtection", span);
-    public static AbstractValue OpenPyxlDrawing(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDrawing, "openpyxl.drawing.spreadsheet_drawing.SpreadsheetDrawing", span);
-    public static AbstractValue OpenPyxlChart(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlChart, "openpyxl.chart._chart.ChartBase", span);
-    public static AbstractValue OpenPyxlImage(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlImage, "openpyxl.drawing.image.Image", span);
-    public static AbstractValue OpenPyxlSheetView(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSheetView, "openpyxl.worksheet.views.SheetView", span);
-    public static AbstractValue OpenPyxlSelection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlSelection, "openpyxl.worksheet.views.Selection", span);
-    public static AbstractValue OpenPyxlPageMargins(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPageMargins, "openpyxl.worksheet.page.PageMargins", span);
-    public static AbstractValue OpenPyxlPageSetup(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlPageSetup, "openpyxl.worksheet.page.PrintPageSetup", span);
-    public static AbstractValue OpenPyxlTableCollection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlTableCollection, "openpyxl.worksheet.table.TableList", span);
-    public static AbstractValue OpenPyxlDataValidationList(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlDataValidationList, "openpyxl.worksheet.datavalidation.DataValidationList", span);
-    public static AbstractValue OpenPyxlConditionalFormattingCollection(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlConditionalFormattingCollection, "openpyxl.formatting.formatting.ConditionalFormattingList", span);
-    public static AbstractValue OpenPyxlColumnDimension(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlColumnDimension, "openpyxl.worksheet.dimensions.ColumnDimension", span);
-    public static AbstractValue OpenPyxlRowDimension(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlRowDimension, "openpyxl.worksheet.dimensions.RowDimension", span);
-    public static AbstractValue OpenPyxlMergedCellSet(LythonSourceSpan span) => new(AbstractValueKind.OpenPyxlMergedCellSet, "openpyxl.worksheet.cell_range.MultiCellRange", span);
-    public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span) => new(AbstractValueKind.Function, summary, span);
-    public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserClass, summary, span);
-    public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserInstance, summary, span);
+    public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, new ArgparseNamespacePayload(summary), span);
+    public static AbstractValue CsvReader(LythonSourceSpan span) => Marker(AbstractValueKind.CsvReader, span);
+    public static AbstractValue CsvDictReader(LythonSourceSpan span) => Marker(AbstractValueKind.CsvDictReader, span);
+    public static AbstractValue CsvWriter(LythonSourceSpan span) => Marker(AbstractValueKind.CsvWriter, span);
+    public static AbstractValue CsvDictWriter(LythonSourceSpan span) => Marker(AbstractValueKind.CsvDictWriter, span);
+    public static AbstractValue CollectionsDefaultDict(LythonSourceSpan span) => Marker(AbstractValueKind.CollectionsDefaultDict, span);
+    public static AbstractValue CollectionsCounter(LythonSourceSpan span) => Marker(AbstractValueKind.CollectionsCounter, span);
+    public static AbstractValue CollectionsDeque(LythonSourceSpan span) => Marker(AbstractValueKind.CollectionsDeque, span);
+    public static AbstractValue CollectionsChainMap(LythonSourceSpan span) => Marker(AbstractValueKind.CollectionsChainMap, span);
+    public static AbstractValue Decimal(LythonSourceSpan span) => Marker(AbstractValueKind.Decimal, span);
+    public static AbstractValue DecimalContext(LythonSourceSpan span) => Marker(AbstractValueKind.DecimalContext, span);
+    public static AbstractValue DecimalTuple(LythonSourceSpan span) => Marker(AbstractValueKind.DecimalTuple, span);
+    public static AbstractValue DateTimeTimedelta(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeTimedelta, span);
+    public static AbstractValue DateTimeDate(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeDate, span);
+    public static AbstractValue DateTimeTime(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeTime, span);
+    public static AbstractValue DateTimeDateTime(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeDateTime, span);
+    public static AbstractValue DateTimeTimezone(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeTimezone, span);
+    public static AbstractValue StatisticsLinearRegression(LythonSourceSpan span) => Marker(AbstractValueKind.StatisticsLinearRegression, span);
+    public static AbstractValue StatisticsNormalDist(LythonSourceSpan span) => Marker(AbstractValueKind.StatisticsNormalDist, span);
+    public static AbstractValue Random(LythonSourceSpan span) => Marker(AbstractValueKind.Random, span);
+    public static AbstractValue DifflibDiffer(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibDiffer, span);
+    public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibHtmlDiff, span);
+    public static AbstractValue DifflibMatch(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibMatch, span);
+    public static AbstractValue DifflibSequenceMatcher(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibSequenceMatcher, span);
+    public static AbstractValue PkgutilModuleInfo(LythonSourceSpan span) => Marker(AbstractValueKind.PkgutilModuleInfo, span);
+    public static AbstractValue PkgutilLoader(LythonSourceSpan span) => Marker(AbstractValueKind.PkgutilLoader, span);
+    public static AbstractValue SubprocessCompletedProcess(LythonSourceSpan span) => Marker(AbstractValueKind.SubprocessCompletedProcess, span);
+    public static AbstractValue SubprocessPopen(LythonSourceSpan span) => Marker(AbstractValueKind.SubprocessPopen, span);
+    public static AbstractValue DataclassField(string name, LythonSourceSpan span) => new(AbstractValueKind.DataclassField, new DataclassFieldPayload(new AbstractDataclassFieldSummary(name, span)), span);
+    public static AbstractValue OpenPyxlWorkbook(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlWorkbook, span);
+    public static AbstractValue OpenPyxlWorksheet(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlWorksheet, span);
+    public static AbstractValue OpenPyxlCell(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlCell, span);
+    public static AbstractValue OpenPyxlHyperlink(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlHyperlink, span);
+    public static AbstractValue OpenPyxlComment(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlComment, span);
+    public static AbstractValue OpenPyxlFont(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlFont, span);
+    public static AbstractValue OpenPyxlPatternFill(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlPatternFill, span);
+    public static AbstractValue OpenPyxlBorder(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlBorder, span);
+    public static AbstractValue OpenPyxlSide(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlSide, span);
+    public static AbstractValue OpenPyxlAlignment(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlAlignment, span);
+    public static AbstractValue OpenPyxlProtection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlProtection, span);
+    public static AbstractValue OpenPyxlNamedStyle(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlNamedStyle, span);
+    public static AbstractValue OpenPyxlColor(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlColor, span);
+    public static AbstractValue OpenPyxlTable(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlTable, span);
+    public static AbstractValue OpenPyxlTableStyleInfo(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlTableStyleInfo, span);
+    public static AbstractValue OpenPyxlDataValidation(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlDataValidation, span);
+    public static AbstractValue OpenPyxlConditionalFormattingRule(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlConditionalFormattingRule, span);
+    public static AbstractValue OpenPyxlAutoFilter(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlAutoFilter, span);
+    public static AbstractValue OpenPyxlSheetProtection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlSheetProtection, span);
+    public static AbstractValue OpenPyxlWorkbookProtection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlWorkbookProtection, span);
+    public static AbstractValue OpenPyxlDrawing(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlDrawing, span);
+    public static AbstractValue OpenPyxlChart(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlChart, span);
+    public static AbstractValue OpenPyxlImage(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlImage, span);
+    public static AbstractValue OpenPyxlSheetView(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlSheetView, span);
+    public static AbstractValue OpenPyxlSelection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlSelection, span);
+    public static AbstractValue OpenPyxlPageMargins(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlPageMargins, span);
+    public static AbstractValue OpenPyxlPageSetup(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlPageSetup, span);
+    public static AbstractValue OpenPyxlTableCollection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlTableCollection, span);
+    public static AbstractValue OpenPyxlDataValidationList(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlDataValidationList, span);
+    public static AbstractValue OpenPyxlConditionalFormattingCollection(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlConditionalFormattingCollection, span);
+    public static AbstractValue OpenPyxlColumnDimension(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlColumnDimension, span);
+    public static AbstractValue OpenPyxlRowDimension(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlRowDimension, span);
+    public static AbstractValue OpenPyxlMergedCellSet(LythonSourceSpan span) => Marker(AbstractValueKind.OpenPyxlMergedCellSet, span);
+    public static AbstractValue Function(AbstractFunctionSummary summary, LythonSourceSpan span) => new(AbstractValueKind.Function, new FunctionPayload(summary), span);
+    public static AbstractValue UserClass(AbstractClassSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserClass, new ClassPayload(summary), span);
+    public static AbstractValue UserInstance(AbstractInstanceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.UserInstance, new InstancePayload(summary), span);
 
     public bool IsLiteralLike =>
         Kind is AbstractValueKind.String or
@@ -351,7 +362,7 @@ internal readonly record struct AbstractValue
             AbstractValueKind.Integer or
             AbstractValueKind.Float or
             AbstractValueKind.Boolean => left.HasSamePayload(right),
-            AbstractValueKind.Bytes => (left.RequirePayload<byte[]>()).AsSpan().SequenceEqual(right.RequirePayload<byte[]>()),
+            AbstractValueKind.Bytes => left.RequireBytes().AsSpan().SequenceEqual(right.RequireBytes()),
             AbstractValueKind.None => true,
             _ => false
         };
@@ -362,19 +373,49 @@ internal readonly record struct AbstractValue
         switch (value.Kind)
         {
             case AbstractValueKind.String:
-                length = (value.RequirePayload<string>()).Length;
+                length = value.RequireText().Length;
                 return true;
             case AbstractValueKind.Bytes:
-                length = (value.RequirePayload<byte[]>()).Length;
+                length = value.RequireBytes().Length;
                 return true;
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
-                length = (value.RequirePayload<IReadOnlyList<AbstractValue>>()).Count;
+                length = value.RequireSequenceItems().Count;
                 return true;
             default:
                 length = 0;
                 return false;
         }
     }
+
+    private static AbstractValue Marker(AbstractValueKind kind, LythonSourceSpan span)
+        => new(kind, MarkerPayload.Instance, span);
+
+    private T ThrowPayloadMismatch<T>()
+        => throw new InvalidOperationException($"Abstract value {Kind} does not carry a {typeof(T).Name} payload.");
+
+    private abstract record AbstractPayload;
+
+    private sealed record MarkerPayload : AbstractPayload
+    {
+        public static MarkerPayload Instance { get; } = new();
+    }
+
+    private sealed record TextPayload(string Value) : AbstractPayload;
+    private sealed record BytesPayload(byte[] Value) : AbstractPayload;
+    private sealed record BooleanPayload(bool Value) : AbstractPayload;
+    private sealed record NestedValuePayload(AbstractValue Value) : AbstractPayload;
+    private sealed record SequencePayload(IReadOnlyList<AbstractValue> Items) : AbstractPayload;
+    private sealed record DictionaryPayload(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> Items) : AbstractPayload;
+    private sealed record TextFileModePayload(AbstractTextFileMode Mode) : AbstractPayload;
+    private sealed record RegexPatternPayload(AbstractRegexPatternSummary Summary) : AbstractPayload;
+    private sealed record RegexMatchPayload(AbstractRegexMatchSummary Summary) : AbstractPayload;
+    private sealed record ArgparseParserPayload(AbstractArgparseParserSummary Summary) : AbstractPayload;
+    private sealed record ArgparseNamespacePayload(AbstractArgparseNamespaceSummary Summary) : AbstractPayload;
+    private sealed record ArgparseGroupPayload(AbstractArgparseGroupSummary Summary) : AbstractPayload;
+    private sealed record DataclassFieldPayload(AbstractDataclassFieldSummary Summary) : AbstractPayload;
+    private sealed record FunctionPayload(AbstractFunctionSummary Summary) : AbstractPayload;
+    private sealed record ClassPayload(AbstractClassSummary Summary) : AbstractPayload;
+    private sealed record InstancePayload(AbstractInstanceSummary Summary) : AbstractPayload;
 
 }

@@ -40,7 +40,7 @@ internal static partial class StaticAbstractValueResolver
     {
         if (TryResolveKnownValue(expression, bindings, out var value) && value.Kind == AbstractValueKind.String)
         {
-            text = value.RequirePayload<string>();
+            text = value.RequireText();
             return true;
         }
 
@@ -59,7 +59,7 @@ internal static partial class StaticAbstractValueResolver
         if (TryResolve(expression, bindings, out var value) &&
             value.Kind == AbstractValueKind.TextFileHandle)
         {
-            mode = value.RequirePayload<AbstractTextFileMode>();
+            mode = value.RequireTextFileMode();
             return true;
         }
 
@@ -72,7 +72,7 @@ internal static partial class StaticAbstractValueResolver
         if (TryResolveKnownValue(expression, bindings, out var value) &&
             value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            var sequenceItems = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+            var sequenceItems = value.RequireSequenceItems();
             if (sequenceItems.All(static item => item.IsLiteralLike))
             {
                 items = sequenceItems;

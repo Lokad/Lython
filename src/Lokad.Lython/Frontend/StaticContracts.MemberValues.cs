@@ -340,7 +340,7 @@ internal static partial class StaticContracts
     {
         if (receiver.Kind == AbstractValueKind.ArgparseNamespace)
         {
-            var summary = receiver.RequirePayload<AbstractArgparseNamespaceSummary>();
+            var summary = receiver.RequireArgparseNamespaceSummary();
             if (summary.Members.TryGetValue(memberName, out value))
             {
                 value = value.WithSpan(span);
@@ -351,13 +351,13 @@ internal static partial class StaticContracts
         if (receiver.Kind == AbstractValueKind.DataclassField &&
             string.Equals(memberName, "name", StringComparison.Ordinal))
         {
-            var field = receiver.RequirePayload<AbstractDataclassFieldSummary>();
+            var field = receiver.RequireDataclassFieldSummary();
             value = AbstractValue.String(field.Name, span);
             return true;
         }
 
         if (receiver.Kind == AbstractValueKind.KnownCallable &&
-            TryGetKnownCallableMemberValue(receiver.RequirePayload<string>(), memberName, span, out value))
+            TryGetKnownCallableMemberValue(receiver.RequireText(), memberName, span, out value))
         {
             return true;
         }

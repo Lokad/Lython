@@ -51,7 +51,7 @@ internal static partial class StaticContracts
         if (receiver.Kind == AbstractValueKind.ArgparseParser &&
             string.Equals(memberName, "parse_args", StringComparison.Ordinal))
         {
-            var parser = receiver.RequirePayload<AbstractArgparseParserSummary>();
+            var parser = receiver.RequireArgparseParserSummary();
             value = AbstractValue.ArgparseNamespace(new AbstractArgparseNamespaceSummary(parser.Members, parser.IsSealed), span);
             return true;
         }

@@ -119,7 +119,7 @@ internal static partial class StaticAbstractValueResolver
         if (target.Kind == AbstractValueKind.Dict &&
             TryResolve(subscript.Index, bindings, out var key))
         {
-            var pairs = target.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+            var pairs = target.RequireDictionaryItems();
             foreach (var pair in pairs)
             {
                 if (AbstractValue.LiteralValuesEqual(pair.Key, key))
@@ -195,10 +195,10 @@ internal static partial class StaticAbstractValueResolver
                 value = AbstractValue.BytesType(slice.Span);
                 return true;
             case AbstractValueKind.List:
-                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems(target.RequirePayload<IReadOnlyList<AbstractValue>>(), slice.Span), slice.Span);
+                value = AbstractValue.ListOf(StaticBindingEngine.JoinSequenceItems(target.RequireSequenceItems(), slice.Span), slice.Span);
                 return true;
             case AbstractValueKind.ListType:
-                value = AbstractValue.ListOf((target.RequirePayload<AbstractValue>()).WithSpan(slice.Span), slice.Span);
+                value = AbstractValue.ListOf((target.RequireNestedValue()).WithSpan(slice.Span), slice.Span);
                 return true;
             default:
                 value = default;
@@ -221,13 +221,13 @@ internal static partial class StaticAbstractValueResolver
                 return true;
 
             case AbstractValueKind.ListType:
-                value = (target.RequirePayload<AbstractValue>()).WithSpan(span);
+                value = (target.RequireNestedValue()).WithSpan(span);
                 return true;
 
             case AbstractValueKind.List:
             case AbstractValueKind.Tuple:
                 {
-                    var items = target.RequirePayload<IReadOnlyList<AbstractValue>>();
+                    var items = target.RequireSequenceItems();
                     if (index.HasValue && index.Value >= 0 && index.Value < items.Count)
                     {
                         value = items[index.Value].WithSpan(span);

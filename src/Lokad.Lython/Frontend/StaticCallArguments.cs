@@ -236,14 +236,14 @@ internal static class StaticCallArguments
             return false;
         }
 
-        foreach (var pair in value.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>())
+        foreach (var pair in value.RequireDictionaryItems())
         {
             if (pair.Key.Kind != AbstractValueKind.String)
             {
                 return false;
             }
 
-            var key = pair.Key.RequirePayload<string>();
+            var key = pair.Key.RequireText();
             keywords[key] = expression;
             keywordValues[key] = pair.Value;
         }

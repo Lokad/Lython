@@ -92,7 +92,7 @@ internal static partial class StaticStructuralDiagnostics
             return;
         }
 
-        var pairs = target.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+        var pairs = target.RequireDictionaryItems();
         foreach (var pair in pairs)
         {
             if (!pair.Key.IsLiteralLike)
@@ -279,11 +279,11 @@ internal static partial class StaticStructuralDiagnostics
                 value = null;
                 return true;
             case AbstractValueKind.Boolean:
-                value = resolved.RequirePayload<bool>() ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
+                value = resolved.RequireBoolean() ? System.Numerics.BigInteger.One : System.Numerics.BigInteger.Zero;
                 return true;
             case AbstractValueKind.Integer:
                 if (System.Numerics.BigInteger.TryParse(
-                    (resolved.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                    (resolved.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                     out var integer))
                 {
                     value = integer;
@@ -373,7 +373,7 @@ internal static partial class StaticStructuralDiagnostics
                 return true;
 
             case AbstractValueKind.Bytes:
-                equal = (left.RequirePayload<byte[]>()).AsSpan().SequenceEqual(right.RequirePayload<byte[]>());
+                equal = (left.RequireBytes()).AsSpan().SequenceEqual(right.RequireBytes());
                 return true;
 
             case AbstractValueKind.None:
@@ -382,8 +382,8 @@ internal static partial class StaticStructuralDiagnostics
 
             case AbstractValueKind.Tuple:
                 return TrySequenceValuesEqual(
-                    left.RequirePayload<IReadOnlyList<AbstractValue>>(),
-                    right.RequirePayload<IReadOnlyList<AbstractValue>>(),
+                    left.RequireSequenceItems(),
+                    right.RequireSequenceItems(),
                     out equal);
 
             default:
@@ -424,7 +424,7 @@ internal static partial class StaticStructuralDiagnostics
 
     private static string DescribeDictionaryKey(AbstractValue key)
         => key.Kind == AbstractValueKind.String
-            ? $"'{key.RequirePayload<string>()}'"
+            ? $"'{key.RequireText()}'"
             : StaticAbstractFacts.DescribeValue(key);
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)

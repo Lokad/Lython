@@ -248,7 +248,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set)
         {
-            foreach (var item in value.RequirePayload<IReadOnlyList<AbstractValue>>())
+            foreach (var item in value.RequireSequenceItems())
             {
                 if (!IsBytesLike(item) && !IsUnknown(item))
                 {
@@ -262,7 +262,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
-            var item = value.RequirePayload<AbstractValue>();
+            var item = value.RequireNestedValue();
             if (!IsBytesLike(item) && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, item.Span);
@@ -432,7 +432,7 @@ internal static partial class StaticDataModuleContractFamily
     {
         if (value.Kind == AbstractValueKind.Integer &&
             int.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
                 out var integer))
@@ -443,7 +443,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.Float &&
             double.TryParse(
-                (value.RequirePayload<string>()).Replace("_", string.Empty, StringComparison.Ordinal),
+                (value.RequireText()).Replace("_", string.Empty, StringComparison.Ordinal),
                 NumberStyles.Float,
                 CultureInfo.InvariantCulture,
                 out var floating))
@@ -454,7 +454,7 @@ internal static partial class StaticDataModuleContractFamily
 
         if (value.Kind == AbstractValueKind.Boolean)
         {
-            number = value.RequirePayload<bool>() ? 1.0 : 0.0;
+            number = value.RequireBoolean() ? 1.0 : 0.0;
             return true;
         }
 

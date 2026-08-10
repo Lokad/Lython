@@ -186,7 +186,7 @@ internal static partial class StaticAbstractInterpreter
                 {
                     if (targetValue.Kind == AbstractValueKind.Function &&
                         StaticBindingEngine.TryGetFunctionCallShapeFailure(
-                            targetValue.RequirePayload<AbstractFunctionSummary>(),
+                            targetValue.RequireFunctionSummary(),
                             arguments,
                             out var functionReason,
                             out var functionOffendingExpression))
@@ -201,7 +201,7 @@ internal static partial class StaticAbstractInterpreter
 
                     if (targetValue.Kind == AbstractValueKind.UserClass &&
                         StaticBindingEngine.TryGetDataclassConstructorShapeFailure(
-                            targetValue.RequirePayload<AbstractClassSummary>(),
+                            targetValue.RequireClassSummary(),
                             arguments,
                             out var constructorReason,
                             out var constructorOffendingExpression))

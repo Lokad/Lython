@@ -23,18 +23,18 @@ internal static partial class StaticAbstractValueResolver
                 case AbstractValueKind.List:
                 case AbstractValueKind.Tuple:
                 case AbstractValueKind.Set:
-                    items.AddRange(resolved.RequirePayload<IReadOnlyList<AbstractValue>>());
+                    items.AddRange(resolved.RequireSequenceItems());
                     break;
                 case AbstractValueKind.String:
-                    items.AddRange((resolved.RequirePayload<string>()).Select(character =>
+                    items.AddRange((resolved.RequireText()).Select(character =>
                         AbstractValue.String(character.ToString(), expressions[i].Span)));
                     break;
                 case AbstractValueKind.Bytes:
-                    items.AddRange((resolved.RequirePayload<byte[]>()).Select(value =>
+                    items.AddRange((resolved.RequireBytes()).Select(value =>
                         AbstractValue.Integer(value.ToString(System.Globalization.CultureInfo.InvariantCulture), expressions[i].Span)));
                     break;
                 case AbstractValueKind.Dict:
-                    items.AddRange((resolved.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>()).Select(pair => pair.Key));
+                    items.AddRange((resolved.RequireDictionaryItems()).Select(pair => pair.Key));
                     break;
                 default:
                     return AbstractValue.Unknown(span);
@@ -63,7 +63,7 @@ internal static partial class StaticAbstractValueResolver
                     return AbstractValue.Unknown(dict.Span);
                 }
 
-                pairs.AddRange(mapping.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>());
+                pairs.AddRange(mapping.RequireDictionaryItems());
                 continue;
             }
 

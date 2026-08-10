@@ -23,7 +23,7 @@ public sealed class AbstractValueTests
         var joined = AbstractValue.Join(left, right, Span);
 
         Assert.Equal(AbstractValueKind.Dict, joined.Kind);
-        var pairs = joined.RequirePayload<IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>>>();
+        var pairs = joined.RequireDictionaryItems();
         Assert.Equal(AbstractValueKind.StringType, pairs[1].Value.Kind);
     }
 
@@ -45,7 +45,7 @@ public sealed class AbstractValueTests
         AbstractValue value = default;
 
         Assert.Equal(AbstractValueKind.Unknown, value.Kind);
-        Assert.Throws<InvalidOperationException>(() => value.RequirePayload<string>());
+        Assert.Throws<InvalidOperationException>(() => value.RequireText());
     }
 
     [Fact]
@@ -53,10 +53,10 @@ public sealed class AbstractValueTests
     {
         var value = AbstractValue.List([AbstractValue.Integer("1", Span)], Span);
 
-        var items = value.RequirePayload<IReadOnlyList<AbstractValue>>();
+        var items = value.RequireSequenceItems();
         Assert.Single(items);
-        Assert.Equal("1", items[0].RequirePayload<string>());
-        Assert.Throws<InvalidOperationException>(() => value.RequirePayload<string>());
+        Assert.Equal("1", items[0].RequireText());
+        Assert.Throws<InvalidOperationException>(() => value.RequireText());
     }
 
     [Fact]
