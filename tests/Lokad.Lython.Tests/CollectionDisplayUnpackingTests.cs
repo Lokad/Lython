@@ -78,6 +78,19 @@ return [str(listed), str(tupled), str(setted), str(mapped), str(returned), str(e
             diagnostic.Code == "LA2000" && diagnostic.Message.Contains("bare starred expression", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("return {1, 'key': 2}\n", "Cannot mix set items with dictionary entries")]
+    [InlineData("return {'key': 1, *[2]}\n", "set unpacking in dictionary display")]
+    [InlineData("return {1, **{'key': 2}}\n", "dictionary unpacking in set display")]
+    public void Compile_RejectsMixedBraceDisplayKinds(string source, string messageFragment)
+    {
+        var result = new LythonEngine().Compile(source);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Message.Contains(messageFragment, StringComparison.Ordinal));
+    }
+
     [Fact]
     public void Run_ExpandedDisplaysRespectCollectionLimits()
     {
