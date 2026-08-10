@@ -268,4 +268,9 @@ internal sealed partial class Parser
         moduleName = string.Join(".", parts);
         return true;
     }
+    private static bool IsSupportedImport(string moduleName)
+    {
+        return !string.IsNullOrWhiteSpace(moduleName);
+    }
+
 }

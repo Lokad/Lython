@@ -433,4 +433,67 @@ internal sealed partial class Parser
             expression,
             Merge(targetExpression.Span, expression.Span));
     }
+    private static bool IsAugmentedAssignmentToken(Token token)
+    {
+        return token is
+            Token.PlusEqual or
+            Token.MinusEqual or
+            Token.StarEqual or
+            Token.SlashEqual or
+            Token.PercentEqual or
+            Token.SlashSlashEqual or
+            Token.StarStarEqual or
+            Token.AmpersandEqual or
+            Token.PipeEqual or
+            Token.CaretEqual or
+            Token.LessLessEqual or
+            Token.GreaterGreaterEqual;
+    }
+
+    private static bool TryMapAugmentedAssignmentOperator(Token token, out AugmentedAssignmentOperatorSyntax op)
+    {
+        switch (token)
+        {
+            case Token.PlusEqual:
+                op = AugmentedAssignmentOperatorSyntax.Add;
+                return true;
+            case Token.MinusEqual:
+                op = AugmentedAssignmentOperatorSyntax.Subtract;
+                return true;
+            case Token.StarEqual:
+                op = AugmentedAssignmentOperatorSyntax.Multiply;
+                return true;
+            case Token.SlashEqual:
+                op = AugmentedAssignmentOperatorSyntax.Divide;
+                return true;
+            case Token.SlashSlashEqual:
+                op = AugmentedAssignmentOperatorSyntax.FloorDivide;
+                return true;
+            case Token.PercentEqual:
+                op = AugmentedAssignmentOperatorSyntax.Modulo;
+                return true;
+            case Token.StarStarEqual:
+                op = AugmentedAssignmentOperatorSyntax.Power;
+                return true;
+            case Token.PipeEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseOr;
+                return true;
+            case Token.CaretEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseXor;
+                return true;
+            case Token.AmpersandEqual:
+                op = AugmentedAssignmentOperatorSyntax.BitwiseAnd;
+                return true;
+            case Token.LessLessEqual:
+                op = AugmentedAssignmentOperatorSyntax.LeftShift;
+                return true;
+            case Token.GreaterGreaterEqual:
+                op = AugmentedAssignmentOperatorSyntax.RightShift;
+                return true;
+            default:
+                op = default;
+                return false;
+        }
+    }
+
 }
