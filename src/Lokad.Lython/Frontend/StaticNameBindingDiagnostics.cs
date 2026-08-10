@@ -185,6 +185,8 @@ internal static class StaticNameBindingDiagnostics
 
             case IfStatementSyntax ifStatement:
                 {
+                    // This is deliberately a may-assignment analysis: unioning branch
+                    // results avoids claiming a name is certainly unbound after a branch.
                     AnalyzeExpression(ifStatement.Condition, context, localNames, maybeAssigned);
                     var thenAssigned = Clone(maybeAssigned);
                     AnalyzeStatements(ifStatement.ThenStatements, context, localNames, thenAssigned);

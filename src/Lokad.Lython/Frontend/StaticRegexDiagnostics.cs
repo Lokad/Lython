@@ -83,61 +83,33 @@ internal static class StaticRegexDiagnostics
 
             case WithStatementSyntax withStatement:
                 AnalyzeRegexStaticExpression(withStatement.ContextExpression, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticStatements(
-                    withStatement.Body,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(withStatement.Body, diagnostics, stringBindings, localeFlagBindings);
                 break;
 
             case IfStatementSyntax ifStatement:
                 AnalyzeRegexStaticExpression(ifStatement.Condition, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticStatements(
-                    ifStatement.ThenStatements,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(ifStatement.ThenStatements, diagnostics, stringBindings, localeFlagBindings);
                 if (ifStatement.ElseStatements is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        ifStatement.ElseStatements,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(ifStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
 
             case ForStatementSyntax forStatement:
                 AnalyzeRegexStaticExpression(forStatement.Iterable, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticStatements(
-                    forStatement.Body,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(forStatement.Body, diagnostics, stringBindings, localeFlagBindings);
                 if (forStatement.ElseStatements is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        forStatement.ElseStatements,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(forStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
 
             case WhileStatementSyntax whileStatement:
                 AnalyzeRegexStaticExpression(whileStatement.Condition, diagnostics, stringBindings, localeFlagBindings);
-                AnalyzeRegexStaticStatements(
-                    whileStatement.Body,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(whileStatement.Body, diagnostics, stringBindings, localeFlagBindings);
                 if (whileStatement.ElseStatements is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        whileStatement.ElseStatements,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(whileStatement.ElseStatements, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
 
@@ -150,11 +122,7 @@ internal static class StaticRegexDiagnostics
                         AnalyzeRegexStaticExpression(matchCase.Guard, diagnostics, stringBindings, localeFlagBindings);
                     }
 
-                    AnalyzeRegexStaticStatements(
-                        matchCase.Body,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(matchCase.Body, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
 
@@ -218,11 +186,7 @@ internal static class StaticRegexDiagnostics
                     AnalyzeRegexStaticExpression(keywordArgument.Value, diagnostics, stringBindings, localeFlagBindings);
                 }
 
-                AnalyzeRegexStaticStatements(
-                    classDefinition.Body,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(classDefinition.Body, diagnostics, stringBindings, localeFlagBindings);
                 break;
 
             case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
@@ -234,34 +198,18 @@ internal static class StaticRegexDiagnostics
                 break;
 
             case TryStatementSyntax tryStatement:
-                AnalyzeRegexStaticStatements(
-                    tryStatement.TryBody,
-                    diagnostics,
-                    new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                    new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                AnalyzeRegexNestedStatements(tryStatement.TryBody, diagnostics, stringBindings, localeFlagBindings);
                 if (tryStatement.ExceptBody is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        tryStatement.ExceptBody,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(tryStatement.ExceptBody, diagnostics, stringBindings, localeFlagBindings);
                 }
                 if (tryStatement.ElseBody is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        tryStatement.ElseBody,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(tryStatement.ElseBody, diagnostics, stringBindings, localeFlagBindings);
                 }
                 if (tryStatement.FinallyBody is not null)
                 {
-                    AnalyzeRegexStaticStatements(
-                        tryStatement.FinallyBody,
-                        diagnostics,
-                        new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
-                        new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
+                    AnalyzeRegexNestedStatements(tryStatement.FinallyBody, diagnostics, stringBindings, localeFlagBindings);
                 }
                 break;
         }
@@ -320,6 +268,21 @@ internal static class StaticRegexDiagnostics
         {
             AnalyzeRegexStaticExpression(child, diagnostics, stringBindings, localeFlagBindings);
         }
+    }
+
+    private static void AnalyzeRegexNestedStatements(
+        IReadOnlyList<StatementSyntax> statements,
+        List<LythonDiagnostic> diagnostics,
+        Dictionary<string, string> stringBindings,
+        HashSet<string> localeFlagBindings)
+    {
+        // A constant learned inside one control-flow branch cannot safely leak
+        // into its siblings or the enclosing flow.
+        AnalyzeRegexStaticStatements(
+            statements,
+            diagnostics,
+            new Dictionary<string, string>(stringBindings, StringComparer.Ordinal),
+            new HashSet<string>(localeFlagBindings, StringComparer.Ordinal));
     }
 
     private static void AnalyzeRegexStaticCall(
