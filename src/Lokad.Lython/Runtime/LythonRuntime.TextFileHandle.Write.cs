@@ -17,10 +17,10 @@ internal sealed partial class LythonRuntime
             private readonly TextNewlineMode _newline;
             private readonly BigInteger _appendBasePosition;
             private readonly GovernedByteBuilder _buffer;
-                private BigInteger _publishedByteLength;
-                private long _bufferedRuneLength;
-                private long _bufferedLineFeedCount;
-                private bool _hasPublishedWrite;
+            private BigInteger _publishedByteLength;
+            private long _bufferedRuneLength;
+            private long _bufferedLineFeedCount;
+            private bool _hasPublishedWrite;
 
             public TextFileWriteState(
                 string path,
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                 TextNewlineMode newline,
                 BigInteger appendBasePosition)
                     : base(mode == TextFileWriteMode.Write ? TextFileMode.Write : TextFileMode.Append)
-                {
+            {
                 _path = path;
                 _context = context;
                 _encoding = encoding;
@@ -48,9 +48,9 @@ internal sealed partial class LythonRuntime
                     var length = _encoding == TextEncodingMode.Latin1
                         ? _bufferedRuneLength
                         : _buffer.Length;
-                        if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
-                        {
-                            length += _bufferedLineFeedCount;
+                    if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+                    {
+                        length += _bufferedLineFeedCount;
                     }
 
                     if (Mode == TextFileMode.Write && !_hasPublishedWrite && _encoding == TextEncodingMode.Utf8Bom)
@@ -63,36 +63,36 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-                public BigInteger Write(PyString text)
+            public BigInteger Write(PyString text)
+            {
+                var inputLength = text.Length;
+                var appendedLineFeedCount = 0;
+                if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
                 {
-                    var inputLength = text.Length;
-                    var appendedLineFeedCount = 0;
-                    if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+                    foreach (var value in text.Utf8Bytes.Span)
                     {
-                        foreach (var value in text.Utf8Bytes.Span)
+                        if (value == (byte)'\n')
                         {
-                            if (value == (byte)'\n')
-                            {
-                                appendedLineFeedCount++;
-                            }
+                            appendedLineFeedCount++;
                         }
                     }
+                }
 
                 if (_encoding == TextEncodingMode.Latin1)
                 {
                     var normalizedLength = GetLatin1NormalizedLength();
                     EnsureBufferedLength(normalizedLength);
-                        AppendLatin1Normalized();
-                        _bufferedRuneLength += normalizedLength;
-                        _bufferedLineFeedCount += appendedLineFeedCount;
-                        return new BigInteger(inputLength);
+                    AppendLatin1Normalized();
+                    _bufferedRuneLength += normalizedLength;
+                    _bufferedLineFeedCount += appendedLineFeedCount;
+                    return new BigInteger(inputLength);
                 }
 
                 EnsureBufferedLength(text.Length);
-                    _buffer.Append(text);
-                    _bufferedRuneLength += text.Length;
-                    _bufferedLineFeedCount += appendedLineFeedCount;
-                    return new BigInteger(inputLength);
+                _buffer.Append(text);
+                _bufferedRuneLength += text.Length;
+                _bufferedLineFeedCount += appendedLineFeedCount;
+                return new BigInteger(inputLength);
 
                 long GetLatin1NormalizedLength()
                 {
@@ -265,10 +265,10 @@ internal sealed partial class LythonRuntime
             {
                 _publishedByteLength += byteLength;
                 _hasPublishedWrite = true;
-                    _buffer.Release();
-                    _bufferedRuneLength = 0;
-                    _bufferedLineFeedCount = 0;
-                }
+                _buffer.Release();
+                _bufferedRuneLength = 0;
+                _bufferedLineFeedCount = 0;
+            }
 
             private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation);
 
