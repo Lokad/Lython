@@ -22,7 +22,7 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Made every unsuccessful execution carry a non-zero process-compatible exit status and aligned synchronous/asynchronous execution behavior with differential coverage.
 - Reject asynchronous host effects before synchronous execution can perform preceding side effects.
 - Hardened captured subprocess output, gzip buffers, incremental hash state, governed byte accumulation, pipe lifecycle, and exception-handler stack restoration.
-- Made executable context managers invoke `__exit__` exactly once when an exception is not suppressed.
+- Made executable context managers invoke `__exit__` exactly once when an exception is not suppressed, and made every execution path pass Python-shaped exception classes and instances to `__exit__`.
 - Made zero-valued execution limits enforce real zero budgets, reject negative limits explicitly, and retain omitted limits as the only default/unlimited case.
 - Removed avoidable buffered-output copies and quadratic work from text handles, sized Unicode reads, `functools` caches, gzip CRC processing, traceback collection, and large-integer base formatting.
 
