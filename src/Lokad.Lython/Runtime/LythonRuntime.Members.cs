@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            var sorted = SortItems(list, keyCallable as ICallable, reverse, span, context);
+            using var sorted = SortItems(list, keyCallable as ICallable, reverse, span, context);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            var sorted = await SortItemsAsync(list, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
+            using var sorted = await SortItemsAsync(list, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }

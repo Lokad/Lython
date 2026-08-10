@@ -3,87 +3,141 @@ namespace Lokad.Lython.Runtime;
 /// <summary>Provides stable sorting without relying on CLR comparer callbacks for Python effects.</summary>
 internal static class PyStableSort
 {
+    private const long BaseTemporaryBytes = 128;
+    private const long TemporaryBytesPerEntry = 56;
+
     internal readonly record struct Entry(object Value, object Key);
 
-    public static void Sort(
-        Entry[] entries,
+    internal sealed class Buffer : IReadOnlyCollection<object>, IDisposable
+    {
+        private readonly List<Entry> _entries;
+        private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
+
+        public Buffer(MemoryGovernor governor, LythonSourceSpan? span)
+        {
+            _reservation = governor.ReserveTemporary(BaseTemporaryBytes, span);
+            _entries = [];
+        }
+
+        public int Count => _entries.Count;
+
+        public void Add(Entry entry, LythonSourceSpan? span)
+        {
+            // Reserve enough for List<T>'s geometric over-allocation as well as
+            // the stable merge scratch array before retaining another entry.
+            _reservation.Grow(TemporaryBytesPerEntry, span);
+            _entries.Add(entry);
+        }
+
+        public void Sort(bool reverse, Func<object, object, bool> isLessThan)
+        {
+            if (_entries.Count < 2)
+            {
+                return;
+            }
+
+            var scratch = new Entry[_entries.Count];
+            MergePasses(_entries, scratch, reverse, isLessThan);
+        }
+
+        public async ValueTask SortAsync(bool reverse, Func<object, object, ValueTask<bool>> isLessThan)
+        {
+            if (_entries.Count < 2)
+            {
+                return;
+            }
+
+            var scratch = new Entry[_entries.Count];
+            await MergePassesAsync(_entries, scratch, reverse, isLessThan).ConfigureAwait(false);
+        }
+
+        public IEnumerator<object> GetEnumerator()
+        {
+            foreach (var entry in _entries)
+            {
+                yield return entry.Value;
+            }
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose() => _reservation.Dispose();
+    }
+
+    private static void MergePasses(
+        List<Entry> entries,
+        Entry[] scratch,
         bool reverse,
         Func<object, object, bool> isLessThan)
     {
-        if (entries.Length < 2)
+        var sourceIsEntries = true;
+        for (long width = 1; width < entries.Count; width *= 2)
         {
-            return;
-        }
-
-        var scratch = new Entry[entries.Length];
-        var source = entries;
-        var destination = scratch;
-        for (long width = 1; width < entries.Length; width *= 2)
-        {
-            for (long offset = 0; offset < entries.Length; offset += 2 * width)
+            IReadOnlyList<Entry> source = sourceIsEntries ? entries : scratch;
+            IList<Entry> destination = sourceIsEntries ? scratch : entries;
+            for (long offset = 0; offset < entries.Count; offset += 2 * width)
             {
                 Merge(
                     source,
                     destination,
                     (int)offset,
-                    (int)Math.Min(offset + width, entries.Length),
-                    (int)Math.Min(offset + (2 * width), entries.Length),
+                    (int)Math.Min(offset + width, entries.Count),
+                    (int)Math.Min(offset + (2 * width), entries.Count),
                     reverse,
                     isLessThan);
             }
 
-            (source, destination) = (destination, source);
+            sourceIsEntries = !sourceIsEntries;
         }
 
-        if (!ReferenceEquals(source, entries))
+        if (!sourceIsEntries)
         {
-            Array.Copy(source, entries, entries.Length);
+            for (var i = 0; i < entries.Count; i++)
+            {
+                entries[i] = scratch[i];
+            }
         }
     }
 
-    public static async ValueTask SortAsync(
-        Entry[] entries,
+    private static async ValueTask MergePassesAsync(
+        List<Entry> entries,
+        Entry[] scratch,
         bool reverse,
         Func<object, object, ValueTask<bool>> isLessThan)
     {
-        if (entries.Length < 2)
+        var sourceIsEntries = true;
+        for (long width = 1; width < entries.Count; width *= 2)
         {
-            return;
-        }
-
-        var scratch = new Entry[entries.Length];
-        var source = entries;
-        var destination = scratch;
-        for (long width = 1; width < entries.Length; width *= 2)
-        {
-            for (long offset = 0; offset < entries.Length; offset += 2 * width)
+            IReadOnlyList<Entry> source = sourceIsEntries ? entries : scratch;
+            IList<Entry> destination = sourceIsEntries ? scratch : entries;
+            for (long offset = 0; offset < entries.Count; offset += 2 * width)
             {
                 await MergeAsync(
                         source,
                         destination,
                         (int)offset,
-                        (int)Math.Min(offset + width, entries.Length),
-                        (int)Math.Min(offset + (2 * width), entries.Length),
+                        (int)Math.Min(offset + width, entries.Count),
+                        (int)Math.Min(offset + (2 * width), entries.Count),
                         reverse,
                         isLessThan)
                     .ConfigureAwait(false);
             }
 
-            (source, destination) = (destination, source);
+            sourceIsEntries = !sourceIsEntries;
         }
 
-        if (!ReferenceEquals(source, entries))
+        if (!sourceIsEntries)
         {
-            Array.Copy(source, entries, entries.Length);
+            for (var i = 0; i < entries.Count; i++)
+            {
+                entries[i] = scratch[i];
+            }
         }
     }
 
-    public static long EstimateTemporaryBytes(int count)
-        => 128L + (56L * count);
-
     private static void Merge(
-        Entry[] source,
-        Entry[] destination,
+        IReadOnlyList<Entry> source,
+        IList<Entry> destination,
         int start,
         int middle,
         int end,
@@ -112,8 +166,8 @@ internal static class PyStableSort
     }
 
     private static async ValueTask MergeAsync(
-        Entry[] source,
-        Entry[] destination,
+        IReadOnlyList<Entry> source,
+        IList<Entry> destination,
         int start,
         int middle,
         int end,

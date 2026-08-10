@@ -89,7 +89,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void ReplaceAll(IEnumerable<object> values)
     {
-        ReplaceStorage(values as object[] ?? values.ToArray());
+        ReplaceStorage(values);
     }
 
     public void RepeatInPlace(int count, LythonSourceSpan span)
@@ -290,17 +290,20 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         return [.. values];
     }
 
-    private void ReplaceStorage(object[] values)
+    private void ReplaceStorage(IEnumerable<object> values)
     {
         if (_memoryGovernor is not null)
         {
+            // Keep the old storage charged until its replacement succeeds so a
+            // failed allocation leaves both the list and its accounting intact.
+            var replacement = PyListStorage.Create(values, _memoryGovernor, _allocationSpan);
             var released = _items.ReleaseCommittedBytes();
             if (released > 0)
             {
                 _memoryGovernor.Release(released);
             }
 
-            _items = PyListStorage.Create(values, _memoryGovernor, _allocationSpan);
+            _items = replacement;
             return;
         }
 

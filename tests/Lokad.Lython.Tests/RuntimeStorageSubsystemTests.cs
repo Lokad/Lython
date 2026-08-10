@@ -195,6 +195,71 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
+    public void TemporaryMemoryReservation_GrowsAndReleasesWithoutCommitting()
+    {
+        var governor = new MemoryGovernor(256);
+
+        using (var reservation = governor.ReserveTemporary(64, null))
+        {
+            reservation.Grow(32, null);
+
+            Assert.Equal(96, governor.CurrentReservedBytes);
+            Assert.Equal(0, governor.CurrentCommittedBytes);
+            Assert.Equal(96, governor.CurrentAccountedBytes);
+        }
+
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(0, governor.CurrentAccountedBytes);
+        Assert.Equal(96, governor.PeakAccountedBytes);
+    }
+
+    [Fact]
+    public void StableSortBuffer_RemainsReservedUntilGovernedResultOwnsItsStorage()
+    {
+        var governor = new MemoryGovernor(4096);
+        PyList result;
+
+        using (var buffer = new PyStableSort.Buffer(governor, null))
+        {
+            for (var i = 11; i >= 0; i--)
+            {
+                var value = new BigInteger(i);
+                buffer.Add(new PyStableSort.Entry(value, value), null);
+            }
+
+            buffer.Sort(reverse: false, static (left, right) => (BigInteger)left < (BigInteger)right);
+
+            Assert.True(governor.CurrentReservedBytes > 0);
+            result = new PyList(buffer, governor, null);
+            Assert.True(governor.CurrentReservedBytes > 0);
+            Assert.True(governor.CurrentCommittedBytes > 0);
+        }
+
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(
+            Enumerable.Range(0, 12).Select(static value => (object)new BigInteger(value)).ToArray(),
+            result.ToArray());
+    }
+
+    [Fact]
+    public void StableSortBuffer_ReleasesReservationAfterBudgetFailure()
+    {
+        var governor = new MemoryGovernor(220);
+
+        using (var buffer = new PyStableSort.Buffer(governor, null))
+        {
+            buffer.Add(new PyStableSort.Entry(new BigInteger(1), new BigInteger(1)), null);
+            var exception = Assert.Throws<LythonRuntimeException>(
+                () => buffer.Add(new PyStableSort.Entry(new BigInteger(2), new BigInteger(2)), null));
+
+            Assert.Equal("MemoryError", exception.ExceptionType);
+        }
+
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(0, governor.CurrentAccountedBytes);
+    }
+
+    [Fact]
     public void GovernedHostBytes_ChargesItsLifetimeAndReleasesOnDispose()
     {
         var governor = new MemoryGovernor(128);

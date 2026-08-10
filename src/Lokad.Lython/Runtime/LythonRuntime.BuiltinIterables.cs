@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        var items = SortItems(
+        using var items = SortItems(
             ToSequence(arguments[0], span, context),
             keyCallable as ICallable,
             reverse,
@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        var items = await SortItemsAsync(values, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
+        using var items = await SortItemsAsync(values, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -490,57 +490,71 @@ internal sealed partial class LythonRuntime
         return await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false);
     }
 
-    private static object[] SortItems(
+    private static PyStableSort.Buffer SortItems(
         IEnumerable<object> values,
         ICallable? keyCallable,
         bool reverse,
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var entries = new List<PyStableSort.Entry>();
-        foreach (var item in values)
+        var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
+        try
         {
-            entries.Add(new PyStableSort.Entry(
-                item,
-                keyCallable is null
-                    ? item
-                    : keyCallable.Invoke([CallArgumentValue.Positional(item)], span, context)));
-        }
+            foreach (var item in values)
+            {
+                entries.Add(
+                    new PyStableSort.Entry(
+                        item,
+                        keyCallable is null
+                            ? item
+                            : keyCallable.Invoke([CallArgumentValue.Positional(item)], span, context)),
+                    span);
+            }
 
-        context.MemoryGovernor.EnsureCanReserve(PyStableSort.EstimateTemporaryBytes(entries.Count), span);
-        var sorted = entries.ToArray();
-        PyStableSort.Sort(
-            sorted,
-            reverse,
-            (left, right) => IsSortKeyLessThan(left, right, span, context));
-        return sorted.Select(static entry => entry.Value).ToArray();
+            entries.Sort(
+                reverse,
+                (left, right) => IsSortKeyLessThan(left, right, span, context));
+            return entries;
+        }
+        catch
+        {
+            entries.Dispose();
+            throw;
+        }
     }
 
-    private static async ValueTask<object[]> SortItemsAsync(
+    private static async ValueTask<PyStableSort.Buffer> SortItemsAsync(
         IEnumerable<object> values,
         ICallable? keyCallable,
         bool reverse,
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var entries = new List<PyStableSort.Entry>();
-        foreach (var item in values)
+        var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
+        try
         {
-            entries.Add(new PyStableSort.Entry(
-                item,
-                keyCallable is null
-                    ? item
-                    : await keyCallable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)));
-        }
+            foreach (var item in values)
+            {
+                entries.Add(
+                    new PyStableSort.Entry(
+                        item,
+                        keyCallable is null
+                            ? item
+                            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)),
+                    span);
+            }
 
-        context.MemoryGovernor.EnsureCanReserve(PyStableSort.EstimateTemporaryBytes(entries.Count), span);
-        var sorted = entries.ToArray();
-        await PyStableSort.SortAsync(
-                sorted,
-                reverse,
-                (left, right) => IsSortKeyLessThanAsync(left, right, span, context))
-            .ConfigureAwait(false);
-        return sorted.Select(static entry => entry.Value).ToArray();
+            await entries.SortAsync(
+                    reverse,
+                    (left, right) => IsSortKeyLessThanAsync(left, right, span, context))
+                .ConfigureAwait(false);
+            return entries;
+        }
+        catch
+        {
+            entries.Dispose();
+            throw;
+        }
     }
 
     private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span)

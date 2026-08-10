@@ -37,6 +37,13 @@ internal static class PyListStorage
 
     public static IPyListStorage Create(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        if (items is IReadOnlyCollection<object> collection)
+        {
+            return collection.Count <= SmallCapacity
+                ? new SmallPyListStorage(items)
+                : new ArrayPyListStorage(items, collection.Count, governor, span);
+        }
+
         var materialized = items as object[] ?? items.ToArray();
         return materialized.Length <= SmallCapacity
             ? new SmallPyListStorage(materialized)
@@ -176,6 +183,13 @@ internal sealed class ArrayPyListStorage : IPyListStorage
         _items = [];
         EnsureCapacity(materialized.Length, governor, span);
         _items.AddRange(materialized);
+    }
+
+    public ArrayPyListStorage(IEnumerable<object> items, int count, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        _items = [];
+        EnsureCapacity(count, governor, span);
+        _items.AddRange(items);
     }
 
     public int Count => _items.Count;

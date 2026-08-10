@@ -62,6 +62,9 @@ internal sealed class MemoryGovernor
         }
     }
 
+    public TemporaryMemoryReservation ReserveTemporary(long bytes, LythonSourceSpan? span)
+        => new(this, bytes, span);
+
     public void Commit(long bytes)
     {
         if (bytes <= 0)
@@ -89,6 +92,16 @@ internal sealed class MemoryGovernor
         CurrentCommittedBytes = Math.Max(0, CurrentCommittedBytes - bytes);
     }
 
+    private void ReleaseReserved(long bytes)
+    {
+        if (bytes <= 0)
+        {
+            return;
+        }
+
+        CurrentReservedBytes = Math.Max(0, CurrentReservedBytes - bytes);
+    }
+
     private static long AddChecked(long left, long right, LythonSourceSpan? span)
     {
         if (right > 0 && left > long.MaxValue - right)
@@ -97,5 +110,41 @@ internal sealed class MemoryGovernor
         }
 
         return left + right;
+    }
+
+    internal sealed class TemporaryMemoryReservation : IDisposable
+    {
+        private MemoryGovernor? _governor;
+        private long _reservedBytes;
+
+        internal TemporaryMemoryReservation(MemoryGovernor governor, long bytes, LythonSourceSpan? span)
+        {
+            _governor = governor;
+            Grow(bytes, span);
+        }
+
+        public void Grow(long bytes, LythonSourceSpan? span)
+        {
+            if (bytes <= 0)
+            {
+                return;
+            }
+
+            var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
+            governor.Reserve(bytes, span);
+            _reservedBytes = AddChecked(_reservedBytes, bytes, span);
+        }
+
+        public void Dispose()
+        {
+            var governor = Interlocked.Exchange(ref _governor, null);
+            if (governor is null)
+            {
+                return;
+            }
+
+            governor.ReleaseReserved(_reservedBytes);
+            _reservedBytes = 0;
+        }
     }
 }
