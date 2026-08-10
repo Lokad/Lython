@@ -13,11 +13,13 @@ public sealed class SemanticOpsSubsystemTests
         Assert.True(PyTruthiness.IsTruthy(new PyList([BigInteger.One])));
 
         Assert.True(PyEquality.AreEqual(BigInteger.One, true));
-        Assert.True(PyEquality.AreEqual(PyString.FromString("x"), "x"));
-        Assert.False(PyEquality.AreEqual(PyString.FromString("x"), "y"));
+        Assert.True(PyEquality.AreEqual(PyString.FromString("x"), PyString.FromString("x")));
+        Assert.False(PyEquality.AreEqual(PyString.FromString("x"), PyString.FromString("y")));
+        Assert.False(PyStringOps.TryAsString("x", out _));
 
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        Assert.Equal(0, PyComparison.Compare(PyString.FromString("a"), "a", span));
+        Assert.Equal(0, PyComparison.Compare(PyString.FromString("a"), PyString.FromString("a"), span));
+        Assert.Throws<LythonRuntimeException>(() => PyComparison.Compare(PyString.FromString("a"), "a", span));
         Assert.True(PyContainment.Contains(new PyTuple([PyString.FromString("a"), BigInteger.One]), true, span));
     }
 

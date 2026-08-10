@@ -98,11 +98,6 @@ internal static class PyMemberAccess
 
     private static bool TryResolveNonContextual(object target, string memberName, [MaybeNullWhen(false)] out object value)
     {
-        if (target is string legacy)
-        {
-            return LythonRuntime.StringMembers.TryGetMember(PyString.FromString(legacy), memberName, out value);
-        }
-
         var targetType = target.GetType();
         if (ExactResolvers.TryGetValue(targetType, out var exactResolver) && exactResolver(target, memberName, out value))
         {

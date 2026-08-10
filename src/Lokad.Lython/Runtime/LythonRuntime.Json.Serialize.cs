@@ -110,9 +110,6 @@ internal sealed partial class LythonRuntime
                 case PyString text:
                     AppendJsonString(builder, text.AsString(), options.EnsureAscii);
                     return;
-                case string text:
-                    AppendJsonString(builder, text, options.EnsureAscii);
-                    return;
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
                     return;
@@ -204,9 +201,6 @@ internal sealed partial class LythonRuntime
             {
                 case PyString text:
                     key = text.AsString();
-                    return true;
-                case string text:
-                    key = text;
                     return true;
                 case BigInteger integer:
                     key = integer.ToString(CultureInfo.InvariantCulture);

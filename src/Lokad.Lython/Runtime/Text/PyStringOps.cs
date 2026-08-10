@@ -16,12 +16,6 @@ internal static partial class PyStringOps
     public static readonly PyString SlashLiteral = PyString.FromOwnedUtf8([(byte)'/']);
     public static readonly PyString DotLiteral = PyString.FromOwnedUtf8([(byte)'.']);
     public static readonly PyString CommaLiteral = PyString.FromOwnedUtf8([(byte)',']);
-    private static readonly PyString NewlineLiteral = PyString.FromOwnedUtf8([(byte)'\n']);
-    private static readonly PyString CarriageReturnLiteral = PyString.FromOwnedUtf8([(byte)'\r']);
-    private static readonly PyString VerticalTabLiteral = PyString.FromOwnedUtf8([(byte)'\v']);
-    private static readonly PyString FormFeedLiteral = PyString.FromOwnedUtf8([(byte)'\f']);
-    private static readonly PyString LineSeparatorLiteral = PyString.FromString("\u2028");
-    private static readonly PyString ParagraphSeparatorLiteral = PyString.FromString("\u2029");
 
     public static bool TryAsString(object value, out PyString text)
     {
@@ -29,9 +23,6 @@ internal static partial class PyStringOps
         {
             case PyString pyString:
                 text = pyString;
-                return true;
-            case string legacy:
-                text = PyString.FromString(legacy);
                 return true;
             case IPyStringCoercibleValue stringLike:
                 text = stringLike.ToPyString();
@@ -41,20 +32,6 @@ internal static partial class PyStringOps
                 return false;
         }
     }
-
-    public static string AsDotNetString(object value)
-    {
-        return value switch
-        {
-            PyString text => text.AsString(),
-            string legacy => legacy,
-            _ => throw new InvalidOperationException("Value is not a Python string.")
-        };
-    }
-
-    public static PyString DecodeUtf8(ReadOnlyMemory<byte> utf8) => PyString.FromUtf8(utf8);
-
-    public static byte[] EncodeUtf8(PyString value) => value.Utf8Bytes.ToArray();
 
     public static PyString NormalizeNewlines(PyString value)
     {

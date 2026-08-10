@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
                     case PyTuple:
                         throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", statement.Span);
 
-                    case string:
+                    case PyString:
                         throw new LythonRuntimeException("TypeError", "String does not support item deletion.", statement.Span);
 
                     default:

@@ -341,11 +341,6 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        if (value is string text)
-        {
-            return PyString.FromString(text);
-        }
-
         throw new LythonRuntimeException("TypeError", "openpyxl cell values must be None, str, int, float, Decimal, bool, date, time, datetime, or timedelta.", span);
     }
 
