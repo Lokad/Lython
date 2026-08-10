@@ -556,7 +556,24 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var factor = BigInteger.Pow(10, checked(-digits.Value));
+        if (value.IsZero)
+        {
+            return BigInteger.Zero;
+        }
+
+        var places = -(long)digits.Value;
+        var decimalDigitUpperBound = (long)Math.Ceiling(BigInteger.Abs(value).GetBitLength() * Math.Log10(2.0));
+        if (places > decimalDigitUpperBound)
+        {
+            return BigInteger.Zero;
+        }
+
+        if (places > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "round() ndigits is too large.", span);
+        }
+
+        var factor = BigInteger.Pow(10, (int)places);
         var sign = value < BigInteger.Zero ? -1 : 1;
         var quotient = BigInteger.DivRem(BigInteger.Abs(value), factor, out var remainder);
         var comparison = (remainder * 2).CompareTo(factor);
@@ -575,18 +592,14 @@ internal sealed partial class LythonRuntime
             return FloatToInteger(value, "round", span, static number => Math.Round(number, MidpointRounding.ToEven));
         }
 
-        if (digits is >= 0 and <= 15)
+        try
         {
-            return Math.Round(value, digits.Value, MidpointRounding.ToEven);
+            return PyNumberOps.RoundFloat(value, digits.Value);
         }
-
-        if (digits > 15)
+        catch (OverflowException ex)
         {
-            return value;
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
-
-        var factor = Math.Pow(10.0, -digits.Value);
-        return Math.Round(value / factor, MidpointRounding.ToEven) * factor;
     }
 
     private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span)
@@ -722,26 +735,30 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var factor = DecimalPowerOfTen(checked(-digits.Value), span);
-        return new PyDecimal(PyDecimalOps.Round(value.Value / factor, 0, PyNone.Instance, context, span) * factor);
-    }
-
-    private static decimal DecimalPowerOfTen(int exponent, LythonSourceSpan span)
-    {
-        try
+        var exponent = -(long)digits.Value;
+        if (exponent > 29)
         {
-            var result = 1m;
-            for (var i = 0; i < exponent; i++)
+            return new PyDecimal(decimal.Zero);
+        }
+
+        if (exponent == 29)
+        {
+            const decimal half = 50_000_000_000_000_000_000_000_000_000m;
+            if (decimal.Abs(value.Value) <= half)
             {
-                result *= 10m;
+                return new PyDecimal(decimal.Zero);
             }
 
-            return result;
+            throw new LythonRuntimeException("OverflowError", "rounded decimal value is outside Lython's decimal range.", span);
         }
-        catch (OverflowException ex)
+
+        var factor = 1m;
+        for (var i = 0; i < exponent; i++)
         {
-            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+            factor *= 10m;
         }
+
+        return new PyDecimal(PyDecimalOps.Round(value.Value / factor, 0, PyNone.Instance, context, span) * factor);
     }
 
     private static string EscapeNonAscii(string text)

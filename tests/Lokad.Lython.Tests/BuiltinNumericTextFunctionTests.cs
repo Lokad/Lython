@@ -213,6 +213,42 @@ __lython_file.close()
         Assert.Equal("5|2.5|3.25|1024|4|-2|2|3.14|120|1.2|-0b101|0o10|0xff|😀|128512|'caf\\xe9'|0xf|  xy|2.5|True|True|False|True", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void RoundUsesPythonBinaryFloatSemanticsAndBoundsExtremeScaling()
+    {
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal
+
+return "|".join([
+    str(round(2.675, 2)),
+    str(round(-2.675, 2)),
+    str(round(1.25, 1)),
+    str(round(1.35, 1)),
+    str(round(5e-324, 323)),
+    str(round(5e-324, 324)),
+    str(round(-2.675, -2147483648)),
+    str(round(123, -2147483648)),
+    f"{round(Decimal('1'), -2147483648)}",
+])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("2.67|-2.67|1.2|1.4|0.0|5e-324|-0.0|0|0", result.ReturnValue);
+    }
+
+    [Fact]
+    public void RoundReportsFloatResultsOutsideBinary64Range()
+    {
+        var result = new LythonEngine().Run("round(1.7976931348623157e308, -308)\n", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("OverflowError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("too large", result.Failure.Message, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("abs('x')\n", "TypeError", "numeric")]
     [InlineData("pow(2, 3, 0)\n", "ValueError", "cannot be 0")]
