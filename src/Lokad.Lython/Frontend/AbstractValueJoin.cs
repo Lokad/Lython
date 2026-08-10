@@ -117,44 +117,44 @@ internal static class AbstractValueJoin
         }
 
         return Unknown(span);
-    }
 
-    private static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
-    {
-        var leftPairs = left.RequireDictionaryItems();
-        var rightPairs = right.RequireDictionaryItems();
-        if (leftPairs.Count != rightPairs.Count)
+        static AbstractValue JoinLiteralDictionaries(AbstractValue left, AbstractValue right, LythonSourceSpan span)
         {
-            return Unknown(span);
-        }
-
-        // A literal dictionary remains useful only when both paths have the same
-        // comparable keys. Different shapes widen to Unknown because the analyzer
-        // does not model optional dictionary entries.
-        var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
-        foreach (var rightPair in rightPairs)
-        {
-            if (IsComparableLiteralKey(rightPair.Key))
-            {
-                rightValues.TryAdd(rightPair.Key, rightPair.Value);
-            }
-        }
-
-        var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
-        foreach (var leftPair in leftPairs)
-        {
-            if (!IsComparableLiteralKey(leftPair.Key) ||
-                !rightValues.TryGetValue(leftPair.Key, out var rightValue))
+            var leftPairs = left.RequireDictionaryItems();
+            var rightPairs = right.RequireDictionaryItems();
+            if (leftPairs.Count != rightPairs.Count)
             {
                 return Unknown(span);
             }
 
-            joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
-                leftPair.Key.WithSpan(span),
-                Join(leftPair.Value, rightValue, span)));
-        }
+            // A literal dictionary remains useful only when both paths have the same
+            // comparable keys. Different shapes widen to Unknown because the analyzer
+            // does not model optional dictionary entries.
+            var rightValues = new Dictionary<AbstractValue, AbstractValue>(rightPairs.Count, LiteralKeyComparer);
+            foreach (var rightPair in rightPairs)
+            {
+                if (IsComparableLiteralKey(rightPair.Key))
+                {
+                    rightValues.TryAdd(rightPair.Key, rightPair.Value);
+                }
+            }
 
-        return Dict(joinedPairs, span);
+            var joinedPairs = new List<KeyValuePair<AbstractValue, AbstractValue>>(leftPairs.Count);
+            foreach (var leftPair in leftPairs)
+            {
+                if (!IsComparableLiteralKey(leftPair.Key) ||
+                    !rightValues.TryGetValue(leftPair.Key, out var rightValue))
+                {
+                    return Unknown(span);
+                }
+
+                joinedPairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
+                    leftPair.Key.WithSpan(span),
+                    Join(leftPair.Value, rightValue, span)));
+            }
+
+            return Dict(joinedPairs, span);
+        }
     }
 
     private static AbstractArgparseParserSummary JoinArgparseParserSummaries(

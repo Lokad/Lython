@@ -632,49 +632,49 @@ internal sealed partial class ExecutableScript
                 _statementFallbacks.ToArray(),
                 _expressionFallbacks.ToArray(),
                 requiresLocalVariableMirroring);
-        }
 
-        private int[] CollectCapturedLocalSlots()
-        {
-            if (_functions.Count == 0 || _localIndexes.Count == 0)
+            int[] CollectCapturedLocalSlots()
             {
-                return [];
-            }
-
-            var captured = new HashSet<int>();
-            foreach (var function in _functions)
-            {
-                if (function.CodeObject is null)
+                if (_functions.Count == 0 || _localIndexes.Count == 0)
                 {
-                    continue;
+                    return [];
                 }
 
-                foreach (var closureName in function.CodeObject.ClosureNames)
+                var captured = new HashSet<int>();
+                foreach (var function in _functions)
                 {
-                    if (_localIndexes.TryGetValue(closureName, out var slot))
+                    if (function.CodeObject is null)
                     {
-                        captured.Add(slot);
+                        continue;
                     }
-                    else if (_parentClosureCandidates.Contains(closureName))
+
+                    foreach (var closureName in function.CodeObject.ClosureNames)
                     {
-                        InternClosure(closureName);
+                        if (_localIndexes.TryGetValue(closureName, out var slot))
+                        {
+                            captured.Add(slot);
+                        }
+                        else if (_parentClosureCandidates.Contains(closureName))
+                        {
+                            InternClosure(closureName);
+                        }
                     }
                 }
-            }
 
-            if (captured.Count == 0)
-            {
-                return [];
-            }
+                if (captured.Count == 0)
+                {
+                    return [];
+                }
 
-            var result = new int[captured.Count];
-            var index = 0;
-            foreach (var slot in captured.Order())
-            {
-                result[index++] = slot;
-            }
+                var result = new int[captured.Count];
+                var index = 0;
+                foreach (var slot in captured.Order())
+                {
+                    result[index++] = slot;
+                }
 
-            return result;
+                return result;
+            }
         }
 
         private void CollectLocals(IReadOnlyList<LoweredStatement> statements)
