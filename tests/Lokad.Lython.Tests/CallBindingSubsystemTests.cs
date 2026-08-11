@@ -14,7 +14,7 @@ public sealed class CallBindingSubsystemTests
     private static readonly LythonCallableSignature OptionalDemoSignature = LythonCallableSignature.Create(
         "demo",
         ["first", "second", "third"],
-        RequiredCount: 1);
+        requiredCount: 1);
     private static readonly LythonCallableSignature RequiredDemoSignature = LythonCallableSignature.Create("demo", ["first"]);
     private static readonly LythonCallableSignature NoParameterNamesDemoSignature = LythonCallableSignature.Create("demo");
 
@@ -79,7 +79,7 @@ public sealed class CallBindingSubsystemTests
     public void BindNamedArguments_TracksParametersBeyondInlinePresenceCapacity()
     {
         var parameterNames = Enumerable.Range(0, 65).Select(index => $"arg{index}").ToArray();
-        var signature = LythonCallableSignature.Create("wide", parameterNames, RequiredCount: 0);
+        var signature = LythonCallableSignature.Create("wide", parameterNames, requiredCount: 0);
 
         var result = CallBinder.BindNamedArgumentsWithPresence(
             [CallArgumentValue.Keyword("arg64", 64)],

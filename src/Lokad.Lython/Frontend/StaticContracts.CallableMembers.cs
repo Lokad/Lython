@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
@@ -69,21 +71,27 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "join", 1, 1, "str.join(iterable) expects one argument.", "iterable");
             AddStringCallableContract(contracts, "format_map", 1, 1, "str.format_map(mapping) expects one argument.", "mapping");
             AddStringCallableContract(contracts, "encode", 0, 2, "str.encode([encoding][, errors]) expects zero to two arguments.", "encoding", "errors");
-            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", ParameterNames: ["encoding", "errors"]));
-            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", ParameterNames: ["encoding", "errors"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
         }
 
         static void AddStringCallableContract(
         List<StaticCallableContract> contracts,
         string memberName,
         int minimumArgumentCount,
-        int? maximumArgumentCount,
+        ArgumentCountLimit maximumArgumentCount,
         string message,
         params string[] parameterNames)
         {
-            var parameters = parameterNames.Length == 0 ? null : parameterNames;
-            contracts.Add(new StaticCallableContract(AbstractValueKind.String, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, ParameterNames: parameters));
-            contracts.Add(new StaticCallableContract(AbstractValueKind.StringType, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, ParameterNames: parameters));
+            if (parameterNames.Length == 0)
+            {
+                contracts.Add(new StaticCallableContract(AbstractValueKind.String, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message));
+                contracts.Add(new StaticCallableContract(AbstractValueKind.StringType, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message));
+                return;
+            }
+
+            contracts.Add(new StaticCallableContract(AbstractValueKind.String, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, parameterNames: parameterNames));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.StringType, memberName, minimumArgumentCount, maximumArgumentCount, "LA3147", message, parameterNames: parameterNames));
         }
 
         static void AddListCallableContracts(List<StaticCallableContract> contracts)
@@ -101,22 +109,28 @@ internal static partial class StaticContracts
             AddListCallableContract(contracts, "clear", 0, 0, "LA3125", "list.clear() expects no arguments.", StaticMutationKind.MutatesReceiver);
         }
 
-        static void AddNonMutatingListCallableContract(List<StaticCallableContract> contracts, string memberName, int minimumArgumentCount, int? maximumArgumentCount, string diagnosticCode, string message, params string[] parameterNames)
+        static void AddNonMutatingListCallableContract(List<StaticCallableContract> contracts, string memberName, int minimumArgumentCount, ArgumentCountLimit maximumArgumentCount, string diagnosticCode, string message, params string[] parameterNames)
             => AddListCallableContract(contracts, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, StaticMutationKind.None, parameterNames);
 
         static void AddListCallableContract(
         List<StaticCallableContract> contracts,
         string memberName,
         int minimumArgumentCount,
-        int? maximumArgumentCount,
+        ArgumentCountLimit maximumArgumentCount,
         string diagnosticCode,
         string message,
         StaticMutationKind mutation,
         params string[] parameterNames)
         {
-            var parameters = parameterNames.Length == 0 ? null : parameterNames;
-            contracts.Add(new StaticCallableContract(AbstractValueKind.List, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation, parameters));
-            contracts.Add(new StaticCallableContract(AbstractValueKind.ListType, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation, parameters));
+            if (parameterNames.Length == 0)
+            {
+                contracts.Add(new StaticCallableContract(AbstractValueKind.List, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation));
+                contracts.Add(new StaticCallableContract(AbstractValueKind.ListType, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation));
+                return;
+            }
+
+            contracts.Add(new StaticCallableContract(AbstractValueKind.List, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation, parameterNames));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.ListType, memberName, minimumArgumentCount, maximumArgumentCount, diagnosticCode, message, mutation, parameterNames));
         }
 
     }

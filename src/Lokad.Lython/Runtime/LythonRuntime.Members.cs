@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
                 }),
                 "sort" => BoundCallable.Create(
                     (arguments, span, context) => SortList(list, arguments, span, context),
-                    LythonCallableSignature.Create("list.sort", ["key", "reverse"], RequiredCount: 0, MaxPositionalCount: 0),
+                    LythonCallableSignature.Create("list.sort", ["key", "reverse"], requiredCount: 0, maximumPositionalArgumentCount: 0),
                     (arguments, span, context) => SortListAsync(list, arguments, span, context)),
                 "copy" => BoundCallable.CreateNoArguments(
                     list,

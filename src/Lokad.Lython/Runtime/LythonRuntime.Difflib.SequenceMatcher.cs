@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
                     var bhi = arguments.Length >= 4 && arguments[3] is not PyNone ? DifflibModule.RequireInt32(arguments[3], "SequenceMatcher.find_longest_match(..., bhi=...) expects an integer or None.", span) : _b.Count;
                     var block = FindLongestMatch(new MatchRange(alo, ahi, blo, bhi));
                     return new DifflibMatchObject(block.A, block.B, block.Size);
-                }, LythonCallableSignature.Create("SequenceMatcher.find_longest_match", ["alo", "ahi", "blo", "bhi"], RequiredCount: 0)),
+                }, LythonCallableSignature.Create("SequenceMatcher.find_longest_match", ["alo", "ahi", "blo", "bhi"], requiredCount: 0)),
                 "get_matching_blocks" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)

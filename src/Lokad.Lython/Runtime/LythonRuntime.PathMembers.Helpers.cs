@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "Path.open",
                 ["mode", "buffering", "encoding", "errors", "newline"],
-                RequiredCount: 0);
+                requiredCount: 0);
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {

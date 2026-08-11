@@ -272,28 +272,28 @@ internal sealed partial class LythonRuntime
         public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
             => Create(LythonCallableSignature.Create(name), implementation);
 
-        public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string[]? parameterNames)
-            => Create(name, implementation, parameterNames, null);
+        public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string[] parameterNames)
+            => Create(LythonCallableSignature.Create(name, parameterNames), implementation);
 
         public static BuiltinCallable Create(
             string name,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            string[]? parameterNames,
-            int? requiredCount)
+            string[] parameterNames,
+            int requiredCount)
             => Create(LythonCallableSignature.Create(name, parameterNames, requiredCount), implementation);
 
         public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
-            => Create(name, implementation, asyncImplementation, null, null);
+            => Create(LythonCallableSignature.Create(name), implementation, asyncImplementation);
 
-        public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string[]? parameterNames)
-            => Create(name, implementation, asyncImplementation, parameterNames, null);
+        public static BuiltinCallable Create(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string[] parameterNames)
+            => Create(LythonCallableSignature.Create(name, parameterNames), implementation, asyncImplementation);
 
         public static BuiltinCallable Create(
             string name,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation,
-            string[]? parameterNames,
-            int? requiredCount)
+            string[] parameterNames,
+            int requiredCount)
             => Create(LythonCallableSignature.Create(name, parameterNames, requiredCount), implementation, asyncImplementation);
 
         public string Name => Signature.Name;
@@ -364,35 +364,35 @@ internal sealed partial class LythonRuntime
         public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
             => Create(implementation, LythonCallableSignature.Create("bound method"));
 
-        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name)
-            => Create(implementation, name, null, null);
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string name)
+            => Create(implementation, LythonCallableSignature.Create(name));
 
-        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string? name, string[]? parameterNames)
-            => Create(implementation, name, parameterNames, null);
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string name, string[] parameterNames)
+            => Create(implementation, LythonCallableSignature.Create(name, parameterNames));
 
         public static BoundCallable Create(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
-            string? name,
-            string[]? parameterNames,
-            int? requiredCount)
-            => Create(implementation, LythonCallableSignature.Create(name ?? "bound method", parameterNames, requiredCount));
+            string name,
+            string[] parameterNames,
+            int requiredCount)
+            => Create(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount));
 
         public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
-            => Create(implementation, asyncImplementation, null, null, null);
+            => Create(implementation, LythonCallableSignature.Create("bound method"), asyncImplementation);
 
-        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name)
-            => Create(implementation, asyncImplementation, name, null, null);
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string name)
+            => Create(implementation, LythonCallableSignature.Create(name), asyncImplementation);
 
-        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string? name, string[]? parameterNames)
-            => Create(implementation, asyncImplementation, name, parameterNames, null);
+        public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation, string name, string[] parameterNames)
+            => Create(implementation, LythonCallableSignature.Create(name, parameterNames), asyncImplementation);
 
         public static BoundCallable Create(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation,
-            string? name,
-            string[]? parameterNames,
-            int? requiredCount)
-            => Create(implementation, LythonCallableSignature.Create(name ?? "bound method", parameterNames, requiredCount), asyncImplementation);
+            string name,
+            string[] parameterNames,
+            int requiredCount)
+            => Create(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount), asyncImplementation);
 
         public static ICallable CreateNoArguments<TReceiver>(
             TReceiver receiver,
@@ -531,7 +531,7 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
             "open",
             ["file", "mode", "buffering", "encoding", "errors", "newline", "closefd", "opener"],
-            RequiredCount: 1);
+            requiredCount: 1);
 
         public string Name => "open";
 

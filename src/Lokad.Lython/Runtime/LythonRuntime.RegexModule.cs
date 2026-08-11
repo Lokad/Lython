@@ -248,7 +248,7 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "re.RegexFlag",
                 ["value"],
-                RequiredCount: 0);
+                requiredCount: 0);
 
             public string Name => "re.RegexFlag";
 

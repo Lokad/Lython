@@ -27,8 +27,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "make_table" => BoundCallable.Create(MakeTable, LythonCallableSignature.Create("HtmlDiff.make_table", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines"], RequiredCount: 2)),
-                "make_file" => BoundCallable.Create(MakeFile, LythonCallableSignature.Create("HtmlDiff.make_file", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines", "charset"], RequiredCount: 2)),
+                "make_table" => BoundCallable.Create(MakeTable, LythonCallableSignature.Create("HtmlDiff.make_table", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines"], requiredCount: 2)),
+                "make_file" => BoundCallable.Create(MakeFile, LythonCallableSignature.Create("HtmlDiff.make_file", ["fromlines", "tolines", "fromdesc", "todesc", "context", "numlines", "charset"], requiredCount: 2)),
                 _ => MissingMemberValue.Instance,
             };
 

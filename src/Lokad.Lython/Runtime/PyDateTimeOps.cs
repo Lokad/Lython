@@ -14,20 +14,20 @@ internal static partial class PyDateTimeOps
     private static readonly LythonCallableSignature TimedeltaCallSignature = LythonCallableSignature.Create(
         "datetime.timedelta",
         ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"],
-        RequiredCount: 0);
+        requiredCount: 0);
     private static readonly LythonCallableSignature DateCallSignature = LythonCallableSignature.Create("datetime.date", ["year", "month", "day"]);
     private static readonly LythonCallableSignature TimeCallSignature = LythonCallableSignature.Create(
         "datetime.time",
         ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-        RequiredCount: 0);
+        requiredCount: 0);
     private static readonly LythonCallableSignature DateTimeCallSignature = LythonCallableSignature.Create(
         "datetime.datetime",
         ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-        RequiredCount: 3);
+        requiredCount: 3);
     private static readonly LythonCallableSignature TimezoneCallSignature = LythonCallableSignature.Create(
         "datetime.timezone",
         ["offset", "name"],
-        RequiredCount: 1);
+        requiredCount: 1);
 
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Regex OffsetTextRegex = new(
@@ -48,14 +48,27 @@ internal static partial class PyDateTimeOps
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
         private readonly LythonCallableSignature _signature;
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation) : this(name, implementation, null, null) { }
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation)
+            : this(implementation, LythonCallableSignature.Create(name))
+        {
+        }
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames) : this(name, implementation, parameterNames, null) { }
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames)
+            : this(implementation, LythonCallableSignature.Create(name, parameterNames))
+        {
+        }
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[]? parameterNames, int? requiredCount)
+        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames, int requiredCount)
+            : this(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount))
+        {
+        }
+
+        private TypeMemberCallable(
+            Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation,
+            LythonCallableSignature signature)
         {
             _implementation = implementation;
-            _signature = LythonCallableSignature.Create(name, parameterNames, requiredCount);
+            _signature = signature;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -91,14 +91,7 @@ internal static class CallBinder
             span,
             signature.Name,
             callableKind,
-            signature.ParameterNames,
-            signature.ParameterIndices,
-            signature.MinimumArgumentCount,
-            signature.MaximumArgumentCount,
-            signature.MaxPositionalCount,
-            signature.AllowsExtraKeywords,
-            signature.AllowsExtraPositional,
-            signature.PositionalOnlyCount).Values;
+            signature.Parameters).Values;
     }
 
     public static BoundCallArguments BindNamedArgumentsWithPresence(
@@ -112,25 +105,19 @@ internal static class CallBinder
             span,
             signature.Name,
             callableKind,
-            signature.ParameterNames,
-            signature.ParameterIndices,
-            signature.MinimumArgumentCount,
-            signature.MaximumArgumentCount,
-            signature.MaxPositionalCount,
-            signature.AllowsExtraKeywords,
-            signature.AllowsExtraPositional,
-            signature.PositionalOnlyCount);
-        if (signature.ParameterNames is null || bound.Values.Length >= signature.ParameterNames.Length)
+            signature.Parameters);
+        if (signature.Parameters is not NamedCallableParameterLayout named ||
+            bound.Values.Length >= named.ParameterNames.Length)
         {
             return bound;
         }
 
         // Presence-aware consumers must distinguish an omitted optional argument
         // from an explicit Python None, so retain the complete signature shape.
-        var values = new object[signature.ParameterNames.Length];
+        var values = new object[named.ParameterNames.Length];
         Array.Fill(values, PyNone.Instance);
         Array.Copy(bound.Values, values, bound.Values.Length);
-        return new BoundCallArguments(values, bound.Assigned.WithLength(signature.ParameterNames.Length));
+        return new BoundCallArguments(values, bound.Assigned.WithLength(named.ParameterNames.Length));
     }
 
     private static BoundCallArguments BindNamedArgumentsCore(
@@ -138,16 +125,9 @@ internal static class CallBinder
         LythonSourceSpan span,
         string callableName,
         PythonCallableKind callableKind,
-        string[]? parameterNames,
-        IReadOnlyDictionary<string, int>? parameterIndices,
-        int requiredCount,
-        int? maxArgumentCount,
-        int? maxPositionalCount,
-        bool allowsExtraKeywords,
-        bool allowsExtraPositional,
-        int positionalOnlyCount)
+        CallableParameterLayout parameters)
     {
-        if (parameterNames is null)
+        if (parameters is PositionalCallableParameterLayout)
         {
             for (var i = 0; i < arguments.Length; i++)
             {
@@ -166,6 +146,8 @@ internal static class CallBinder
             return new BoundCallArguments(positionalOnly, ArgumentPresence.Empty);
         }
 
+        var named = (NamedCallableParameterLayout)parameters;
+        var parameterNames = named.ParameterNames;
         var bound = new object[parameterNames.Length];
         Array.Fill(bound, PyNone.Instance);
         var assigned = new ArgumentPresence(parameterNames.Length);
@@ -176,7 +158,7 @@ internal static class CallBinder
         {
             if (argument.IsPositional)
             {
-                if (maxPositionalCount.HasValue && positionalIndex >= maxPositionalCount.Value)
+                if (!named.MaximumPositionalArgumentCount.Accepts(positionalIndex + 1))
                 {
                     throw CallErrors.TooManyPositional(callableKind, callableName, span);
                 }
@@ -188,7 +170,7 @@ internal static class CallBinder
 
                 if (positionalIndex >= bound.Length)
                 {
-                    if (!allowsExtraPositional)
+                    if (!named.AllowsExtraPositional)
                     {
                         throw CallErrors.TooManyPositional(callableKind, callableName, span);
                     }
@@ -205,9 +187,9 @@ internal static class CallBinder
             }
 
             var keywordName = argument.KeywordName;
-            if (parameterIndices is null || !parameterIndices.TryGetValue(keywordName, out var index))
+            if (!named.ParameterIndices.TryGetValue(keywordName, out var index))
             {
-                if (allowsExtraKeywords)
+                if (named.AllowsExtraKeywords)
                 {
                     continue;
                 }
@@ -215,7 +197,7 @@ internal static class CallBinder
                 throw CallErrors.UnexpectedKeyword(callableKind, callableName, keywordName, span);
             }
 
-            if (index < positionalOnlyCount)
+            if (index < named.PositionalOnlyCount)
             {
                 throw CallErrors.UnexpectedKeyword(callableKind, callableName, keywordName, span);
             }
@@ -229,7 +211,7 @@ internal static class CallBinder
             assigned[index] = true;
         }
 
-        for (var i = 0; i < requiredCount; i++)
+        for (var i = 0; i < named.RequiredCount; i++)
         {
             if (!assigned[i])
             {
@@ -240,12 +222,12 @@ internal static class CallBinder
         var count = parameterNames.Length;
         // Plain bound callables model defaults by omitting only the unassigned suffix.
         // An explicitly supplied None remains present and prevents this trimming.
-        while (count > requiredCount && !assigned[count - 1])
+        while (count > named.RequiredCount && !assigned[count - 1])
         {
             count--;
         }
 
-        if (maxArgumentCount.HasValue && count > maxArgumentCount.Value)
+        if (!named.MaximumArgumentCount.Accepts(count))
         {
             throw CallErrors.TooManyPositional(callableKind, callableName, span);
         }

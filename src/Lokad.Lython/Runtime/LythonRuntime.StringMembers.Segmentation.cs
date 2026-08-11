@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
 
                         var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
                         return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                    }, LythonCallableSignature.Create("str.splitlines", ["keepends"], RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1)),
+                    }, LythonCallableSignature.Create("str.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1)),
                     "expandtabs" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length > 1)

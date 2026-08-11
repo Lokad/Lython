@@ -370,10 +370,10 @@ internal sealed partial class LythonRuntime
         }
 
         private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => LythonCallableSignature.Create(name, [parameterName], RequiredCount: null, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.None, PositionalOnlyCount: 1);
+            => LythonCallableSignature.Create(name, [parameterName], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
 
         private static LythonCallableSignature VariadicPositional(string name)
-            => LythonCallableSignature.Create(name, ParameterNames: null, RequiredCount: 0, MaxPositionalCount: null, VariadicParameters: LythonVariadicParameters.Positional, PositionalOnlyCount: 0);
+            => LythonCallableSignature.Create(name, requiredCount: 0);
 
         private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {

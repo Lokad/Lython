@@ -339,7 +339,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     private static readonly LythonCallableSignature GetCallSignature = LythonCallableSignature.Create(
         "ChainMap.get",
         ["key", "default"],
-        RequiredCount: 1);
+        requiredCount: 1);
 
     private readonly List<PyDict> _maps;
 

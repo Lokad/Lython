@@ -235,18 +235,31 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
     private readonly Func<object[], LythonSourceSpan, object> _implementation;
     private readonly LythonCallableSignature _signature;
 
-    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name) : this(implementation, name, null, null) { }
+    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name)
+        : this(implementation, LythonCallableSignature.Create(name))
+    {
+    }
 
-    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name, string[]? parameterNames) : this(implementation, name, parameterNames, null) { }
+    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name, string[] parameterNames)
+        : this(implementation, LythonCallableSignature.Create(name, parameterNames))
+    {
+    }
 
     public PyDecimalBoundCallable(
         Func<object[], LythonSourceSpan, object> implementation,
         string name,
-        string[]? parameterNames,
-        int? requiredCount)
+        string[] parameterNames,
+        int requiredCount)
+        : this(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount))
+    {
+    }
+
+    private PyDecimalBoundCallable(
+        Func<object[], LythonSourceSpan, object> implementation,
+        LythonCallableSignature signature)
     {
         _implementation = implementation;
-        _signature = LythonCallableSignature.Create(name, parameterNames, requiredCount);
+        _signature = signature;
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

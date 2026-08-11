@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
             "subprocess.CalledProcessError",
             ["returncode", "cmd", "output", "stderr"],
-            RequiredCount: 2);
+            requiredCount: 2);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
