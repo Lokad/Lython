@@ -119,12 +119,12 @@ internal static class StaticContractEngine
             return true;
         }
 
-        if (StaticRegexContractFamily.TryResolvePatternMemberCallReturn(call, bindings, out value))
+        if (StaticRegexReturnResolver.TryResolvePatternMemberCallReturn(call, bindings, out value))
         {
             return true;
         }
 
-        if (StaticRegexContractFamily.TryResolveMatchMemberCallReturn(call, bindings, out value))
+        if (StaticRegexReturnResolver.TryResolveMatchMemberCallReturn(call, bindings, out value))
         {
             return true;
         }
@@ -195,7 +195,12 @@ internal static class StaticContractEngine
 
         if (!contract.TryGetArgumentShapeFailure(arguments, out var reason, out var offendingExpression))
         {
-            return AnalyzeCallableSemanticContract(arguments, diagnostics, bindings, receiver, member.MemberName);
+            return StaticRegexArgumentContracts.AnalyzeCallableSemanticContract(
+                arguments,
+                diagnostics,
+                bindings,
+                receiver,
+                member.MemberName);
         }
 
         StaticDiagnosticSink.AddError(
@@ -206,14 +211,6 @@ internal static class StaticContractEngine
             new StaticDiagnosticProof("contract", member.MemberName, reason, receiver));
         return true;
     }
-
-    private static bool AnalyzeCallableSemanticContract(
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings,
-        AbstractValue receiver,
-        string memberName)
-        => StaticRegexContractFamily.AnalyzeCallableSemanticContract(arguments, diagnostics, bindings, receiver, memberName);
 
     private static bool TryResolveModuleMemberValue(AbstractValue receiverValue, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
@@ -242,7 +239,7 @@ internal static class StaticContractEngine
             return true;
         }
 
-        if (StaticRegexContractFamily.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
+        if (StaticRegexReturnResolver.TryResolveKnownCallReturn(targetName, arguments, bindings, call.Span, out value))
         {
             return true;
         }
@@ -289,7 +286,7 @@ internal static class StaticContractEngine
     {
         var emitted = false;
         emitted |= StaticDataModuleContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
-        emitted |= StaticRegexContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
+        emitted |= StaticRegexArgumentContracts.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= StaticArgparseContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= StaticProcessContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
         emitted |= StaticFilesystemContractFamily.AnalyzeKnownCallArgumentTypes(targetName, arguments, diagnostics, bindings);
