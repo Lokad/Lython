@@ -5,6 +5,11 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
+    private sealed record ParsedExceptClause(
+        IReadOnlyList<string>? ExceptionTypes,
+        string? ExceptionVariable,
+        IReadOnlyList<StatementSyntax> Body);
+
     private StatementSyntax? ParseReturnStatement()
     {
         var returnToken = ReadToken();
@@ -89,6 +94,48 @@ internal sealed partial class Parser
 
     private StatementSyntax? ParseTryStatement()
     {
+        bool TryReadExceptionTypeName(string diagnosticMessage, out string typeName)
+        {
+            typeName = string.Empty;
+            if (!TryReadNameToken(out var typeToken))
+            {
+                AddDiagnostic("LA1045", diagnosticMessage, _position);
+                return false;
+            }
+
+            typeName = IdentifierText(typeToken);
+            while (CurrentToken == Token.Dot)
+            {
+                ReadToken();
+                if (!TryReadNameToken(out var partToken))
+                {
+                    AddDiagnostic("LA1045", "Expected exception type name after '.'.", _position);
+                    return false;
+                }
+
+                // Runtime exception identities are class names; qualifiers only participate in parsing.
+                typeName = IdentifierText(partToken);
+            }
+
+            return true;
+        }
+
+        IReadOnlyList<StatementSyntax>? ParseTrailingSuite(
+            string colonDiagnosticCode,
+            string colonDiagnostic,
+            string suiteDiagnosticCode,
+            string suiteDiagnostic)
+        {
+            ReadToken();
+            if (!TryRead(Token.Colon, out _))
+            {
+                AddDiagnostic(colonDiagnosticCode, colonDiagnostic, _position);
+                return null;
+            }
+
+            return ParseSuite(suiteDiagnosticCode, suiteDiagnostic);
+        }
+
         var tryToken = ReadToken();
         if (!TryRead(Token.Colon, out _))
         {
@@ -102,9 +149,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        IReadOnlyList<string>? exceptionTypes = null;
-        string? exceptionVariable = null;
-        IReadOnlyList<StatementSyntax>? exceptBody = null;
+        ParsedExceptClause? exceptClause = null;
         IReadOnlyList<StatementSyntax>? elseBody = null;
         IReadOnlyList<StatementSyntax>? finallyBody = null;
         var span = Merge(SpanOf(tryToken), tryBody[^1].Span);
@@ -112,6 +157,8 @@ internal sealed partial class Parser
         if (CurrentToken == Token.Except)
         {
             ReadToken();
+            IReadOnlyList<string>? exceptionTypes = null;
+            string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)
             {
                 var parsedTypes = new List<string>();
@@ -120,7 +167,7 @@ internal sealed partial class Parser
                     ReadToken();
                     while (true)
                     {
-                        if (!TryReadExceptionTypeName("LA1045", "Expected exception type in except tuple.", out var typeName))
+                        if (!TryReadExceptionTypeName("Expected exception type in except tuple.", out var typeName))
                         {
                             return null;
                         }
@@ -142,7 +189,7 @@ internal sealed partial class Parser
                 }
                 else if (IsNameToken(CurrentToken))
                 {
-                    if (!TryReadExceptionTypeName("LA1045", "Expected exception type after 'except'.", out var typeName))
+                    if (!TryReadExceptionTypeName("Expected exception type after 'except'.", out var typeName))
                     {
                         return null;
                     }
@@ -176,25 +223,23 @@ internal sealed partial class Parser
                 return null;
             }
 
-            exceptBody = ParseSuite("LA1047", "Expected indented block after 'except'.");
-            if (exceptBody is null)
+            var body = ParseSuite("LA1047", "Expected indented block after 'except'.");
+            if (body is null)
             {
                 return null;
             }
 
-            span = Merge(span, exceptBody[^1].Span);
+            exceptClause = new ParsedExceptClause(exceptionTypes, exceptionVariable, body);
+            span = Merge(span, body[^1].Span);
         }
 
         if (CurrentToken == Token.Else)
         {
-            ReadToken();
-            if (!TryRead(Token.Colon, out _))
-            {
-                AddDiagnostic("LA1048", "Expected ':' after 'else'.", _position);
-                return null;
-            }
-
-            elseBody = ParseSuite("LA1048", "Expected indented block after 'else'.");
+            elseBody = ParseTrailingSuite(
+                "LA1048",
+                "Expected ':' after 'else'.",
+                "LA1048",
+                "Expected indented block after 'else'.");
             if (elseBody is null)
             {
                 return null;
@@ -205,14 +250,11 @@ internal sealed partial class Parser
 
         if (CurrentToken == Token.Finally)
         {
-            ReadToken();
-            if (!TryRead(Token.Colon, out _))
-            {
-                AddDiagnostic("LA1048", "Expected ':' after 'finally'.", _position);
-                return null;
-            }
-
-            finallyBody = ParseSuite("LA1049", "Expected indented block after 'finally'.");
+            finallyBody = ParseTrailingSuite(
+                "LA1048",
+                "Expected ':' after 'finally'.",
+                "LA1049",
+                "Expected indented block after 'finally'.");
             if (finallyBody is null)
             {
                 return null;
@@ -221,37 +263,19 @@ internal sealed partial class Parser
             span = Merge(span, finallyBody[^1].Span);
         }
 
-        if (exceptBody is null && finallyBody is null)
+        if (exceptClause is null && finallyBody is null)
         {
             AddDiagnostic("LA1050", "Expected 'except' or 'finally' after 'try'.", tryToken);
             return null;
         }
 
-        return new TryStatementSyntax(tryBody, exceptionTypes, exceptionVariable, exceptBody, elseBody, finallyBody, span);
-    }
-
-    private bool TryReadExceptionTypeName(string diagnosticCode, string diagnosticMessage, out string typeName)
-    {
-        typeName = string.Empty;
-        if (!TryReadNameToken(out var typeToken))
-        {
-            AddDiagnostic(diagnosticCode, diagnosticMessage, _position);
-            return false;
-        }
-
-        typeName = IdentifierText(typeToken);
-        while (CurrentToken == Token.Dot)
-        {
-            ReadToken();
-            if (!TryReadNameToken(out var partToken))
-            {
-                AddDiagnostic(diagnosticCode, "Expected exception type name after '.'.", _position);
-                return false;
-            }
-
-            typeName = IdentifierText(partToken);
-        }
-
-        return true;
+        return new TryStatementSyntax(
+            tryBody,
+            exceptClause?.ExceptionTypes,
+            exceptClause?.ExceptionVariable,
+            exceptClause?.Body,
+            elseBody,
+            finallyBody,
+            span);
     }
 }
