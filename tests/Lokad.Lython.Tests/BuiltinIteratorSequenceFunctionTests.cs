@@ -24,6 +24,26 @@ return "|".join(values)
     }
 
     [Fact]
+    public async Task RunAsync_GeneratorExpressionsAdvanceOneItemAtATime()
+    {
+        var result = await new LythonEngine().RunAsync(
+            """
+observed = []
+def observe(value):
+    observed.append(value)
+    return value
+
+values = (observe(value) for value in [1, 2, 3])
+first = next(values)
+return str(first) + "|" + str(observed)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1|[1]", result.ReturnValue);
+    }
+
+    [Fact]
     public void RangeEnumerateAndZipUseLazyIteratorSemantics()
     {
         var result = new LythonEngine().Run(

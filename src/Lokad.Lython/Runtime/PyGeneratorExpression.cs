@@ -9,8 +9,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly LythonSourceSpan _span;
     private IEnumerator<object>? _iterator;
-    private List<object>? _asyncItems;
-    private int _asyncIndex;
+    private IAsyncEnumerator<object>? _asyncIterator;
+    private bool _asyncCompleted;
 
     public PyGeneratorExpression(
         IReadOnlyList<LoweredComprehensionClause> clauses,
@@ -87,17 +87,20 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
                 : PyIterationResult.End;
         }
 
-        if (_asyncItems is null)
+        if (_asyncCompleted)
         {
-            _asyncItems = [];
-            await IterateClausesAsync(_clauses, 0, _closure, _asyncItems).ConfigureAwait(false);
+            return PyIterationResult.End;
         }
 
-        if (_asyncIndex < _asyncItems.Count)
+        _asyncIterator ??= IterateClausesAsync(_clauses, 0, _closure).GetAsyncEnumerator();
+        if (await _asyncIterator.MoveNextAsync().ConfigureAwait(false))
         {
-            return PyIterationResult.Yield(_asyncItems[_asyncIndex++]);
+            return PyIterationResult.Yield(_asyncIterator.Current);
         }
 
+        await _asyncIterator.DisposeAsync().ConfigureAwait(false);
+        _asyncIterator = null;
+        _asyncCompleted = true;
         return PyIterationResult.End;
     }
 
@@ -132,11 +135,10 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         }
     }
 
-    private async ValueTask IterateClausesAsync(
+    private async IAsyncEnumerable<object> IterateClausesAsync(
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
-        LythonRuntime.ExecutionContext context,
-        List<object> result)
+        LythonRuntime.ExecutionContext context)
     {
         var clause = clauses[index];
         var iterable = await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
@@ -153,11 +155,15 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
             if (index == clauses.Count - 1)
             {
-                result.Add(LythonRuntime.RuntimeValue(await LythonRuntime.EvaluateLoweredExpressionAsync(_itemExpression, scope).ConfigureAwait(false)));
+                yield return LythonRuntime.RuntimeValue(
+                    await LythonRuntime.EvaluateLoweredExpressionAsync(_itemExpression, scope).ConfigureAwait(false));
             }
             else
             {
-                await IterateClausesAsync(clauses, index + 1, scope, result).ConfigureAwait(false);
+                await foreach (var nested in IterateClausesAsync(clauses, index + 1, scope).ConfigureAwait(false))
+                {
+                    yield return nested;
+                }
             }
         }
     }
