@@ -33,18 +33,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < list.Items.Count; i++)
             {
                 var value = RuntimeValue(EvaluateLoweredExpression(list.Items[i].Expression, context));
-                if (!list.Items[i].IsUnpacking)
-                {
-                    expanded.Add(value);
-                    context.ObserveCollectionCount(expanded.Count, list.Span);
-                    continue;
-                }
-
-                foreach (var item in ToSequence(value, list.Items[i].Span, context))
-                {
-                    expanded.Add(RuntimeValue(item));
-                    context.ObserveCollectionCount(expanded.Count, list.Span);
-                }
+                AppendListDisplayItem(expanded, value, list.Items[i].IsUnpacking, list.Items[i].Span, list.Span, context);
             }
 
             return expanded;
@@ -75,20 +64,10 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < tuple.Items.Count; i++)
         {
             var value = RuntimeValue(EvaluateLoweredExpression(tuple.Items[i].Expression, context));
-            if (!tuple.Items[i].IsUnpacking)
-            {
-                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
-                expanded.Add(value);
-                continue;
-            }
-
-            foreach (var item in ToSequence(value, tuple.Items[i].Span, context))
-            {
-                EnsureTupleExpansionCapacity(expanded.Count + 1, context, tuple.Span);
-                expanded.Add(RuntimeValue(item));
-            }
+            AppendTupleDisplayItem(expanded, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
         }
 
+        context.ObserveCollectionCount(expanded.Count, tuple.Span);
         return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
     }
 
