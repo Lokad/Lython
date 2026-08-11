@@ -4,6 +4,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // Python types are mutable. Every root execution context therefore needs
+        // its own connected object/type graph instead of sharing a cached table.
         private Dictionary<string, object> CreateBuiltinVariables()
         {
             var objectMembers = new Dictionary<string, object>(StringComparer.Ordinal)
