@@ -30,7 +30,7 @@ internal static class RuntimeErrors
         => new("MemoryError", message, span);
 
     public static LythonRuntimeException Host(string operation, Exception exception, LythonSourceSpan? span)
-        => new("RuntimeError", $"Host {operation} failed: {exception.Message}", span, exception);
+        => new("RuntimeError", $"Host {operation} failed.", span, exception);
 
     public static LythonRuntimeException Key(string message, LythonSourceSpan? span)
         => new("KeyError", message, span);

@@ -414,7 +414,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "/repo/docs|['a', 'b']|[]\n/repo/docs/b|[]|['beta.txt']\n---\nRuntimeError:Host listdir failed: blocked a",
+            "/repo/docs|['a', 'b']|[]\n/repo/docs/b|[]|['beta.txt']\n---\nRuntimeError:Host listdir failed.",
             host.ReadText("/out.txt"));
     }
 

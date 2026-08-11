@@ -104,7 +104,8 @@ os.mkdir("/missing/child")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("Parent directory does not exist", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal("Host mkdir failed.", result.Failure.Message);
+        Assert.DoesNotContain("Parent directory does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -121,8 +122,8 @@ __lython_file.close()
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("Host write_text failed", result.Failure.Message, StringComparison.Ordinal);
-        Assert.Contains("disk quota exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal("Host write_text failed.", result.Failure.Message);
+        Assert.DoesNotContain("disk quota exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -159,7 +160,8 @@ os.listdir("/missing")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("Directory does not exist", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal("Host listdir failed.", result.Failure.Message);
+        Assert.DoesNotContain("Directory does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -178,7 +180,8 @@ os.remove("/dir")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("Directory is not empty", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal("Host remove failed.", result.Failure.Message);
+        Assert.DoesNotContain("Directory is not empty", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -213,7 +216,8 @@ shutil.move("/src.txt", "/dst.txt")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("File does not exist", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal("Host move failed.", result.Failure.Message);
+        Assert.DoesNotContain("File does not exist", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]

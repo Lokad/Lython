@@ -51,26 +51,24 @@ __lython_file.close()
 
         AssertHostFailure(
             Assert.Throws<LythonRuntimeException>(() => input.ReadAll(span: null)),
-            "stdin.read",
-            "input failed");
+            "stdin.read");
         AssertHostFailure(
             await Assert.ThrowsAsync<LythonRuntimeException>(async () => await input.ReadAllAsync(span: null)),
-            "stdin.read",
-            "input failed");
+            "stdin.read");
         AssertHostFailure(
             Assert.Throws<LythonRuntimeException>(() => output.Flush(span: null)),
-            "<stdout>.flush",
-            "output failed");
+            "<stdout>.flush");
         AssertHostFailure(
             await Assert.ThrowsAsync<LythonRuntimeException>(async () => await output.FlushAsync(span: null)),
-            "<stdout>.flush",
-            "output failed");
+            "<stdout>.flush");
 
-        static void AssertHostFailure(LythonRuntimeException exception, string operation, string detail)
+        static void AssertHostFailure(LythonRuntimeException exception, string operation)
         {
             Assert.Equal("RuntimeError", exception.ExceptionType);
-            Assert.Equal($"Host {operation} failed: {detail}", exception.Message);
+            Assert.Equal($"Host {operation} failed.", exception.Message);
             Assert.IsType<InvalidOperationException>(exception.InnerException);
+            Assert.DoesNotContain("input failed", exception.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("output failed", exception.Message, StringComparison.Ordinal);
         }
     }
 
