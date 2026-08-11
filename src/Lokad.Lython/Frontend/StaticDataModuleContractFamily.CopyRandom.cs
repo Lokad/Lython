@@ -248,21 +248,9 @@ internal static partial class StaticDataModuleContractFamily
                 AbstractValueKind.Bytes or
                 AbstractValueKind.BytesType);
 
-    private static bool AnalyzeIterableArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => !StaticAbstractFacts.IsDefinitelyNonIterable(value));
-
-    private static bool AnalyzeIterableOrNoneArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || !StaticAbstractFacts.IsDefinitelyNonIterable(value));
-
     private static bool AnalyzeMutableSequenceArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value =>
             value.Kind is AbstractValueKind.List or AbstractValueKind.ListType || StaticKnownCallArgumentChecks.IsUnknown(value));
-
-    private static bool AnalyzeRealArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsNumericLike);
-
-    private static bool AnalyzeRealOrNoneArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsNumericLike(value));
 
     private static string FirstRandomDistributionParameter(string targetName)
         => targetName switch

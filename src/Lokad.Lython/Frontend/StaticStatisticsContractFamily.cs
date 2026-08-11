@@ -87,42 +87,6 @@ internal static class StaticStatisticsContractFamily
         return false;
     }
 
-    private static bool AnalyzeIterableArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => !StaticAbstractFacts.IsDefinitelyNonIterable(value));
-
-    private static bool AnalyzeIterableOrNoneArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || !StaticAbstractFacts.IsDefinitelyNonIterable(value));
-
-    private static bool AnalyzeRealArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsNumericLike);
-
-    private static bool AnalyzeRealOrNoneArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsNumericLike(value));
-
     private static bool IsSingleDataCall(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.StatisticsMean.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.StatisticsGeometricMean.Name, StringComparison.Ordinal) ||
