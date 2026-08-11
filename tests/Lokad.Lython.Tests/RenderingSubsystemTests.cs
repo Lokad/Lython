@@ -35,4 +35,42 @@ return (str(value), f"{value}")
 
         Assert.Equal("{'items': [1, None]}", rendered.AsString());
     }
+
+    [Fact]
+    public void RuntimeRendering_DoesNotExposeClrTypeNamesForInternalObjects()
+    {
+        var engine = new LythonEngine();
+        var script = engine.Compile("""
+import os
+import re
+import sys
+
+pattern = re.compile("a+")
+match = pattern.search("caaab")
+return "|".join([
+    str(sys),
+    repr(os),
+    repr(sys.modules),
+    str(pattern),
+    repr(match),
+    type(sys).__name__,
+    type(pattern).__name__,
+    type(match).__name__,
+])
+""");
+
+        var result = script.Run(new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        var rendered = Assert.IsType<string>(result.ReturnValue);
+        Assert.Contains("<module 'sys'>", rendered, StringComparison.Ordinal);
+        Assert.Contains("<module 'os'>", rendered, StringComparison.Ordinal);
+        Assert.Contains("re.compile('a+')", rendered, StringComparison.Ordinal);
+        Assert.Contains("<re.Match object; span=(1, 4), match='aaa'>", rendered, StringComparison.Ordinal);
+        Assert.Contains("|module|Pattern|Match", rendered, StringComparison.Ordinal);
+        Assert.DoesNotContain("Lokad.", rendered, StringComparison.Ordinal);
+        Assert.DoesNotContain("System.", rendered, StringComparison.Ordinal);
+        Assert.DoesNotContain("Microsoft.", rendered, StringComparison.Ordinal);
+        Assert.DoesNotContain("Utf8Regex", rendered, StringComparison.Ordinal);
+    }
 }

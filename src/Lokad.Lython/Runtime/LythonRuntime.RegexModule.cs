@@ -57,7 +57,19 @@ internal sealed partial class LythonRuntime
         int Flags,
         Utf8PythonRegex Regex,
         int CaptureSlotCount,
-        IReadOnlyDictionary<string, int> NamedGroups);
+        IReadOnlyDictionary<string, int> NamedGroups) : IPyRenderableValue
+    {
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            var renderedPattern = PyRendering.ToReprPyString(Pattern, context).AsString();
+            var rendered = Flags == RegexCompiler.PythonUnicodeFlag
+                ? $"re.compile({renderedPattern})"
+                : $"re.compile({renderedPattern}, {Flags})";
+            return PyString.FromString(rendered);
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
 
     internal readonly record struct RegexSubjectRange(
         PyString Original,

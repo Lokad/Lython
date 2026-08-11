@@ -9,7 +9,7 @@ internal static class MissingMemberValue
     public static object Instance { get; } = new();
 }
 
-internal abstract class PyModule
+internal abstract class PyModule : IPyRenderableValue
 {
     private readonly ConcurrentDictionary<string, object> _memberCache = new(StringComparer.Ordinal);
     private readonly PyString _nameValue;
@@ -66,6 +66,16 @@ internal abstract class PyModule
         _ = value;
         return false;
     }
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        _ = context;
+        return PyString.FromString($"<module '{Name}'>");
+    }
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public override string ToString() => $"<module '{Name}'>";
 }
 
 internal sealed class ScriptPyModule : PyModule

@@ -34,7 +34,7 @@ internal static class PyRendering
                 PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
-                _ => PyString.FromString(value.ToString() ?? string.Empty)
+                _ => RenderOpaqueObject()
             };
         }
         finally
@@ -65,7 +65,7 @@ internal static class PyRendering
                 PyException exception => PyString.FromString(exception.Message),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
-                _ => PyString.FromString(value.ToString() ?? string.Empty)
+                _ => RenderOpaqueObject()
             };
         }
         finally
@@ -219,9 +219,28 @@ internal static class PyRendering
             LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
             LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
             PyException exception => RenderExceptionRepr(exception, context),
+            LythonRuntime.ReMatchObject match => RenderMatchRepr(match, context, activeContainers),
             IPyRenderableValue renderable => renderable.RenderPython(context),
-            _ => PyString.FromString(value.ToString() ?? string.Empty)
+            _ => RenderOpaqueObject()
         };
+    }
+
+    private static PyString RenderOpaqueObject() => PyString.FromString("<object>");
+
+    private static PyString RenderMatchRepr(
+        LythonRuntime.ReMatchObject match,
+        PyRenderingContext context,
+        HashSet<object> activeContainers)
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        builder.AppendAscii("<re.Match object; span=(");
+        builder.AppendString(match.Start.ToString());
+        builder.AppendAscii(", ");
+        builder.AppendString(match.End.ToString());
+        builder.AppendAscii("), match=");
+        builder.Append(ToReprPyStringCore(match.Value, context, activeContainers));
+        builder.AppendAscii(">");
+        return builder.ToPyStringAndRelease();
     }
 
     private static PyString RenderStringLiteral(string text, PyRenderingContext context)

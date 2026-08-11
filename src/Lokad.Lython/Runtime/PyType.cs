@@ -6,6 +6,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
+    private static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
+    private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
+    private static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
+    private static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
+
     private readonly Dictionary<string, object> _members;
 
     public PyType(string name, IReadOnlyList<PyType> bases, Dictionary<string, object> members)
@@ -307,7 +312,10 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PySet => GetBuiltinTypeObject(context, "set", span),
             PyString => GetBuiltinTypeObject(context, "str", span),
             PyBytes => GetBuiltinTypeObject(context, "bytes", span),
-            PyPath => GetBuiltinTypeObject(context, "pathlib.Path", span),
+            PyPath => PathType,
+            PyModule => ModuleType,
+            LythonRuntime.RePatternObject => RegexPatternType,
+            LythonRuntime.ReMatchObject => RegexMatchType,
             PyTimedelta => PyDateTimeOps.TimedeltaType,
             PyDate => PyDateTimeOps.DateType,
             PyTime => PyDateTimeOps.TimeType,
@@ -315,9 +323,15 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PyTimezone => PyDateTimeOps.TimezoneType,
             LythonRuntime.StatisticsModule.PyNormalDist => LythonRuntime.StatisticsModule.NormalDistType,
             LythonRuntime.RandomModule.PyRandom => LythonRuntime.RandomModule.RandomType,
-            _ => throw new LythonRuntimeException("TypeError", $"type(value) does not support values of type '{value.GetType().Name}' in Lython.", span)
+            _ => throw new LythonRuntimeException("TypeError", "type(value) does not support this value in Lython.", span)
         };
     }
+
+    private static PyBuiltinRuntimeType CreateOpaqueRuntimeType(string name)
+        => new(name, static (_, span, _) => throw new LythonRuntimeException(
+            "TypeError",
+            "Runtime type objects cannot be constructed directly in Lython.",
+            span));
 
     private static object GetBuiltinTypeObject(LythonRuntime.ExecutionContext context, string name, LythonSourceSpan span)
     {
