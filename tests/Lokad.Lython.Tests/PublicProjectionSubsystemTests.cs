@@ -90,6 +90,33 @@ return value
     }
 
     [Fact]
+    public void PublicProjection_RejectsUnsupportedObjectsWithoutClrTypeNames()
+    {
+        var ex = Assert.Throws<ProjectionException>(() => PublicProjection.NormalizeValue(new object()));
+
+        Assert.Contains("unsupported runtime value", ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Object", ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("System.", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_ReturningInternalRuntimeObjectFailsProjectionWithoutClrLeakage()
+    {
+        var result = new LythonEngine().Run(
+            "import sys\nreturn sys\n",
+            new Harness.MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("ProjectionError", result.Failure?.ExceptionType);
+        var message = result.Failure.RequireNotNull().Message;
+        Assert.Contains("unsupported runtime value", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Lokad.", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("System.", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("SysModule", message, StringComparison.Ordinal);
+        Assert.Null(result.ReturnValue);
+    }
+
+    [Fact]
     public void PublicProjection_ProjectsFindAllResultExplicitly()
     {
         var matches = new LythonRuntime.ReFindAllResult(new PyList([

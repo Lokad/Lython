@@ -15,7 +15,7 @@ internal static class PublicProjectionContract
             PyDict => "Dictionary<object, object?>",
             PySet => "HashSet<object?>",
             LythonRuntime.ReFindAllResult => "ReFindAllResult",
-            _ => value.GetType().Name
+            _ => "unsupported value"
         };
     }
 }

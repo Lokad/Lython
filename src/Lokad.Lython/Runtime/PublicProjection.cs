@@ -1,17 +1,34 @@
+using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
 internal static class PublicProjection
 {
-    public static object? NormalizeValue(object value)
+    public static object? NormalizeValue(object? value)
         => NormalizeValue(value, null);
 
-    public static object? NormalizeValue(object value, ProjectionBudget? budget)
+    public static object? NormalizeValue(object? value, ProjectionBudget? budget)
     {
         return value switch
         {
+            null => null,
             PyNone => ProjectNone(),
+            bool => value,
+            sbyte => value,
+            byte => value,
+            short => value,
+            ushort => value,
+            int => value,
+            uint => value,
+            long => value,
+            ulong => value,
+            BigInteger => value,
+            float => value,
+            double => value,
+            decimal => value,
+            string text => ProjectClrString(text, budget),
+            byte[] bytes => ProjectByteArray(bytes, budget),
             PyString text => ProjectString(text, budget),
             PyBytes bytes => ProjectBytes(bytes, budget),
             PyPath path => ProjectPath(path, budget),
@@ -27,7 +44,7 @@ internal static class PublicProjection
             PyDict dict => ProjectDictionary(dict, budget),
             PySet set => ProjectSet(set, budget),
             LythonRuntime.ReFindAllResult matches => ProjectFindAllResult(matches, budget),
-            _ => value
+            _ => throw new ProjectionException("unsupported runtime value cannot be projected to a public CLR value.")
         };
 
         static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget)
@@ -48,10 +65,22 @@ internal static class PublicProjection
         return text.AsString();
     }
 
+    public static string ProjectClrString(string text, ProjectionBudget? budget)
+    {
+        budget?.Reserve(32L + (2L * text.Length));
+        return text;
+    }
+
     public static byte[] ProjectBytes(PyBytes bytes)
         => ProjectBytes(bytes, null);
 
     public static byte[] ProjectBytes(PyBytes bytes, ProjectionBudget? budget)
+    {
+        budget?.Reserve(32L + bytes.Length);
+        return bytes.ToArray();
+    }
+
+    public static byte[] ProjectByteArray(byte[] bytes, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + bytes.Length);
         return bytes.ToArray();
