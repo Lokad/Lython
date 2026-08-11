@@ -138,7 +138,7 @@ internal static class StaticRegexArgumentContracts
             return true;
         }
 
-        return AnalyzeKnownArgumentValue(flagsExpression, flagsValue, message, diagnostics, static value => value.Kind == AbstractValueKind.None || IsRuntimeIntegerLike(value));
+        return AnalyzeKnownArgumentValue(flagsExpression, flagsValue, message, diagnostics, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsStrictIntegerLike(value));
     }
 
     public static bool ContainsRegexDebugFlag(ExpressionSyntax expression)

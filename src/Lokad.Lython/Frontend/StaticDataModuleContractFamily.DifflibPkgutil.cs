@@ -250,7 +250,7 @@ internal static partial class StaticDataModuleContractFamily
         {
             foreach (var item in value.RequireSequenceItems())
             {
-                if (!IsBytesLike(item) && !IsUnknown(item))
+                if (!StaticAbstractFacts.IsBytesLike(item) && !IsUnknown(item))
                 {
                     AddDiagnostic(diagnostics, "LA3158", message, item.Span);
                     return true;
@@ -263,7 +263,7 @@ internal static partial class StaticDataModuleContractFamily
         if (value.Kind is AbstractValueKind.ListType or AbstractValueKind.SetType)
         {
             var item = value.RequireNestedValue();
-            if (!IsBytesLike(item) && !IsUnknown(item))
+            if (!StaticAbstractFacts.IsBytesLike(item) && !IsUnknown(item))
             {
                 AddDiagnostic(diagnostics, "LA3158", message, item.Span);
                 return true;
@@ -288,7 +288,7 @@ internal static partial class StaticDataModuleContractFamily
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || IsBytesLike(value));
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsBytesLike(value));
 
     private static bool AnalyzeRestoreWhich(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
@@ -424,9 +424,6 @@ internal static partial class StaticDataModuleContractFamily
                 break;
         }
     }
-
-    private static bool IsBytesLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Bytes or AbstractValueKind.BytesType;
 
     private static bool TryGetDouble(AbstractValue value, out double number)
     {

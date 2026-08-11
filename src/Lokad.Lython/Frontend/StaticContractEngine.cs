@@ -535,7 +535,7 @@ internal static class StaticContractEngine
 
         if (TryGetArgument(arguments, 3, "recursive", bindings, out var recursiveExpression, out var recursiveValue) &&
             !IsUnknown(recursiveValue) &&
-            !IsBooleanLike(recursiveValue))
+            !StaticAbstractFacts.IsBooleanLike(recursiveValue))
         {
             AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(..., recursive=...) expects recursive to be a bool.", recursiveExpression.Span);
         }

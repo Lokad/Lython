@@ -86,22 +86,22 @@ internal static class AbstractValueJoin
             return StringType(span);
         }
 
-        if (IsIntegerLike(left) && IsIntegerLike(right))
+        if (StaticAbstractFacts.IsStrictIntegerLike(left) && StaticAbstractFacts.IsStrictIntegerLike(right))
         {
             return IntegerType(span);
         }
 
-        if (IsFloatLike(left) && IsFloatLike(right))
+        if (StaticAbstractFacts.IsFloatLike(left) && StaticAbstractFacts.IsFloatLike(right))
         {
             return FloatType(span);
         }
 
-        if (IsBooleanLike(left) && IsBooleanLike(right))
+        if (StaticAbstractFacts.IsBooleanLike(left) && StaticAbstractFacts.IsBooleanLike(right))
         {
             return BooleanType(span);
         }
 
-        if (IsBytesLike(left) && IsBytesLike(right))
+        if (StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right))
         {
             return BytesType(span);
         }
@@ -348,18 +348,6 @@ internal static class AbstractValueJoin
 
     private static AbstractTextFileMode JoinTextFileModes(AbstractTextFileMode left, AbstractTextFileMode right)
         => left == right ? left : AbstractTextFileMode.Unknown;
-
-    private static bool IsIntegerLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or AbstractValueKind.IntegerType;
-
-    private static bool IsFloatLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Float or AbstractValueKind.FloatType;
-
-    private static bool IsBooleanLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Boolean or AbstractValueKind.BooleanType;
-
-    private static bool IsBytesLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Bytes or AbstractValueKind.BytesType;
 
     private static bool RegexPatternSummariesEqual(AbstractRegexPatternSummary left, AbstractRegexPatternSummary right)
         => string.Equals(left.PatternText, right.PatternText, StringComparison.Ordinal) &&

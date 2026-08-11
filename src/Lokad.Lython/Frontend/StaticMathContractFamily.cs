@@ -141,7 +141,7 @@ internal static class StaticMathContractFamily
                 message,
                 diagnostics,
                 bindings,
-                integerOnly ? IsIntegerLike : IsMathRealLike);
+                integerOnly ? StaticAbstractFacts.IsIntegerLike : IsMathRealLike);
         }
 
         return emitted;
@@ -163,7 +163,7 @@ internal static class StaticMathContractFamily
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsIntegerLike);
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsIntegerLike);
 
     private static bool AnalyzeMathRealOrNoneArgument(
         ConcreteCallArguments arguments,
@@ -181,7 +181,7 @@ internal static class StaticMathContractFamily
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || IsIntegerLike(value));
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsIntegerLike(value));
 
     private static bool AnalyzeIterableArgument(
         ConcreteCallArguments arguments,
@@ -258,9 +258,4 @@ internal static class StaticMathContractFamily
             AbstractValueKind.Float or
             AbstractValueKind.FloatType;
 
-    private static bool IsIntegerLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or
-            AbstractValueKind.IntegerType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType;
 }

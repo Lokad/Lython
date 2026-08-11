@@ -56,7 +56,7 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsRuntimeIntegerLike);
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsStrictIntegerLike);
 
     internal static bool AnalyzeIntegerOrNoneArgument(
         ConcreteCallArguments arguments,
@@ -65,7 +65,7 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || IsRuntimeIntegerLike(value));
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsStrictIntegerLike(value));
 
     internal static bool AnalyzeBooleanArgument(
         ConcreteCallArguments arguments,
@@ -74,7 +74,7 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsBooleanLike);
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsBooleanLike);
 
     internal static bool AnalyzeBooleanOrNoneArgument(
         ConcreteCallArguments arguments,
@@ -83,7 +83,7 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || IsBooleanLike(value));
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsBooleanLike(value));
 
     internal static bool AnalyzeCallableOrNoneArgument(
         ConcreteCallArguments arguments,
@@ -314,12 +314,6 @@ internal static class StaticKnownCallArgumentChecks
 
     internal static bool IsUnknown(AbstractValue value)
         => value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never;
-
-    internal static bool IsRuntimeIntegerLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Integer or AbstractValueKind.IntegerType;
-
-    internal static bool IsBooleanLike(AbstractValue value)
-        => value.Kind is AbstractValueKind.Boolean or AbstractValueKind.BooleanType;
 
     internal static bool IsPathLike(AbstractValue value)
         => value.IsStringLike || value.Kind == AbstractValueKind.Path;

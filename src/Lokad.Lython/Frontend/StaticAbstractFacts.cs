@@ -122,8 +122,17 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Boolean or
             AbstractValueKind.BooleanType;
 
+    public static bool IsStrictIntegerLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Integer or AbstractValueKind.IntegerType;
+
     public static bool IsFloatLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Float or AbstractValueKind.FloatType;
+
+    public static bool IsBooleanLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Boolean or AbstractValueKind.BooleanType;
+
+    public static bool IsBytesLike(AbstractValue value)
+        => value.Kind is AbstractValueKind.Bytes or AbstractValueKind.BytesType;
 
     public static bool IsNumericLike(AbstractValue value)
         => IsIntegerLike(value) || IsFloatLike(value) || value.Kind == AbstractValueKind.Decimal;
