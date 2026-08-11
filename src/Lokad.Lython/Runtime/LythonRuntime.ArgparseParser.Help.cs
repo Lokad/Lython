@@ -274,7 +274,7 @@ internal sealed partial class LythonRuntime
         }
         private static PyString RequireSingleStringArgument(CallArgumentValue[] arguments, string methodName, string parameterName, LythonSourceSpan span)
         {
-            object? value = ArgparseUnspecifiedValue.Instance;
+            object value = ArgparseUnspecifiedValue.Instance;
             var assigned = false;
             foreach (var argument in arguments)
             {
@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError", $"{methodName}({parameterName}) expects one argument.", span);
             }
-            return RequireArgparseStringValue(value.RequireNotNull(), parameterName, methodName, span);
+            return RequireArgparseStringValue(value, parameterName, methodName, span);
         }
         private static void RequireNoArguments(CallArgumentValue[] arguments, string methodName, LythonSourceSpan span)
         {

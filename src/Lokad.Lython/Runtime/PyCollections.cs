@@ -9,29 +9,27 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 {
     private readonly PyDict _items;
 
-    public PyDefaultDict() : this(null) { }
-
-    public PyDefaultDict(object? defaultFactory)
+    public PyDefaultDict(object defaultFactory)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict();
     }
 
-    public PyDefaultDict(object? defaultFactory, MemoryGovernor governor) : this(defaultFactory, governor, null) { }
+    public PyDefaultDict(object defaultFactory, MemoryGovernor governor) : this(defaultFactory, governor, null) { }
 
-    public PyDefaultDict(object? defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    public PyDefaultDict(object defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict(governor, allocationSpan);
     }
 
-    public PyDefaultDict(object? defaultFactory, PyDict items)
+    public PyDefaultDict(object defaultFactory, PyDict items)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict(items);
     }
 
-    public object? DefaultFactory { get; private set; }
+    public object DefaultFactory { get; private set; }
 
     public int Count => _items.Count;
 
@@ -59,7 +57,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
         var created = DefaultFactory switch
         {
-            null or PyNone => throw new LythonRuntimeException("KeyError", "Key was not found.", span),
+            PyNone => throw new LythonRuntimeException("KeyError", "Key was not found.", span),
             LythonRuntime.ICallable callable => LythonRuntime.RuntimeValue(callable.Invoke([], span, context)),
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", span)
         };
@@ -85,7 +83,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
     {
         if (name == "default_factory")
         {
-            value = DefaultFactory ?? PyNone.Instance;
+            value = DefaultFactory;
             return true;
         }
 
@@ -112,7 +110,6 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
     {
         var factory = DefaultFactory switch
         {
-            null => PyStringOps.NoneLiteral,
             PyNone => PyStringOps.NoneLiteral,
             _ => PyRendering.ToPythonPyString(DefaultFactory, context)
         };
@@ -128,10 +125,10 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private static object? ValidateDefaultFactory(object? value)
+    private static object ValidateDefaultFactory(object value)
         => value switch
         {
-            null or PyNone => value,
+            PyNone => value,
             LythonRuntime.ICallable => value,
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", null)
         };

@@ -88,39 +88,42 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
 internal sealed class HostTextOutputHandle : IPyRenderableValue
 {
-    private readonly ILythonTextOutput? _output;
-    private readonly GovernedByteBuilder? _capture;
+    private readonly OutputDestination _destination;
     private readonly string _name;
     private readonly ExecutionState _state;
 
-    public HostTextOutputHandle(ILythonTextOutput? output, GovernedByteBuilder? capture, string name, ExecutionState state)
+    public HostTextOutputHandle(ILythonTextOutput output, string name, ExecutionState state)
+        : this(new HostOnlyOutputDestination(output), name, state)
     {
-        _output = output;
-        _capture = capture;
+    }
+
+    public HostTextOutputHandle(ILythonTextOutput? output, GovernedByteBuilder capture, string name, ExecutionState state)
+        : this(new CapturedOutputDestination(capture, output), name, state)
+    {
+    }
+
+    private HostTextOutputHandle(OutputDestination destination, string name, ExecutionState state)
+    {
+        _destination = destination;
         _name = name;
         _state = state;
     }
 
     public BigInteger Write(PyString text, LythonSourceSpan? span)
     {
-        if (_output is null && _capture is null)
+        if (_destination.Output is { } output)
         {
-            throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
+            HostOperation.RequireSynchronousCapability(output, _name + ".write", span);
         }
 
-        if (_output is not null)
+        if (_destination.Capture is { } capture)
         {
-            HostOperation.RequireSynchronousCapability(_output, _name + ".write", span);
+            capture.Append(text);
         }
 
-        if (_capture is not null)
+        if (_destination.Output is { } hostOutput)
         {
-            _capture.Append(text);
-        }
-
-        if (_output is not null)
-        {
-            HostOperation.Await(_output, () => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span);
+            HostOperation.Await(hostOutput, () => hostOutput.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span);
         }
 
         return new BigInteger(text.Length);
@@ -128,19 +131,14 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
     public async ValueTask<BigInteger> WriteAsync(PyString text, LythonSourceSpan? span)
     {
-        if (_output is null && _capture is null)
+        if (_destination.Capture is { } capture)
         {
-            throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
+            capture.Append(text);
         }
 
-        if (_capture is not null)
+        if (_destination.Output is { } output)
         {
-            _capture.Append(text);
-        }
-
-        if (_output is not null)
-        {
-            await HostOperation.AwaitAsync(() => _output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
+            await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
         }
 
         return new BigInteger(text.Length);
@@ -148,39 +146,52 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
     public object Flush(LythonSourceSpan? span)
     {
-        if (_output is null)
+        if (_destination.Output is not { } output)
         {
-            if (_capture is not null)
-            {
-                return PyNone.Instance;
-            }
-
-            throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
+            return PyNone.Instance;
         }
 
-        HostOperation.Await(_output, () => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
+        HostOperation.Await(output, () => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
         return PyNone.Instance;
     }
 
     public async ValueTask<object> FlushAsync(LythonSourceSpan? span)
     {
-        if (_output is null)
+        if (_destination.Output is not { } output)
         {
-            if (_capture is not null)
-            {
-                return PyNone.Instance;
-            }
-
-            throw new LythonRuntimeException("RuntimeError", $"{_name} is not available.", span);
+            return PyNone.Instance;
         }
 
-        await HostOperation.AwaitAsync(() => _output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
+        await HostOperation.AwaitAsync(() => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString(_name);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    private abstract record OutputDestination
+    {
+        public abstract GovernedByteBuilder? Capture { get; }
+
+        public abstract ILythonTextOutput? Output { get; }
+    }
+
+    private sealed record CapturedOutputDestination(
+        GovernedByteBuilder CapturedBytes,
+        ILythonTextOutput? HostOutput) : OutputDestination
+    {
+        public override GovernedByteBuilder Capture => CapturedBytes;
+
+        public override ILythonTextOutput? Output => HostOutput;
+    }
+
+    private sealed record HostOnlyOutputDestination(ILythonTextOutput HostOutput) : OutputDestination
+    {
+        public override GovernedByteBuilder? Capture => null;
+
+        public override ILythonTextOutput Output => HostOutput;
+    }
 
 }
 

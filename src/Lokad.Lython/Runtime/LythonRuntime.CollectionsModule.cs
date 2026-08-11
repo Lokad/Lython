@@ -139,8 +139,8 @@ internal sealed partial class LythonRuntime
     private static object DefaultDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var positional = new List<object>();
-        object? defaultFactory = PyNone.Instance;
-        object? source = null;
+        object defaultFactory = PyNone.Instance;
+        object source = PyNone.Instance;
         var hasDefaultFactory = false;
         var hasSource = false;
         var keywordItems = new List<KeyValuePair<string, object>>();
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
         var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateDefaultDict(result, source.RequireNotNull(), span, context);
+            PopulateDefaultDict(result, source, span, context);
         }
 
         foreach (var pair in keywordItems)
@@ -231,7 +231,7 @@ internal sealed partial class LythonRuntime
 
     private static object Counter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        object? source = null;
+        object source = PyNone.Instance;
         var hasSource = false;
         var keywordItems = new List<KeyValuePair<string, object>>();
         var positionalCount = 0;
@@ -269,7 +269,7 @@ internal sealed partial class LythonRuntime
         var result = new PyCounter(context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateCounter(result, source.RequireNotNull(), span, context, subtract: false);
+            PopulateCounter(result, source, span, context, subtract: false);
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
 
     private static object Deque(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        object? iterable = null;
+        object iterable = PyNone.Instance;
         var hasIterable = false;
         int? maxLength = null;
         var hasMaxLength = false;
@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = hasIterable
-            ? new PyDeque(ToSequence(iterable.RequireNotNull(), span), maxLength)
+            ? new PyDeque(ToSequence(iterable, span), maxLength)
             : new PyDeque(maxLength);
         context.ObserveCollectionCount(result.Count, span);
         return result;
@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
 
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        object? source = null;
+        object source = PyNone.Instance;
         var hasSource = false;
         var positionalCount = 0;
         var keywordItems = new List<KeyValuePair<string, object>>();
@@ -458,7 +458,7 @@ internal sealed partial class LythonRuntime
         var dict = new PyDict(context.MemoryGovernor, span);
         if (hasSource)
         {
-            PopulateDict(dict, source.RequireNotNull(), "collections.OrderedDict([mapping], **kwargs)", span, context);
+            PopulateDict(dict, source, "collections.OrderedDict([mapping], **kwargs)", span, context);
         }
 
         foreach (var pair in keywordItems)

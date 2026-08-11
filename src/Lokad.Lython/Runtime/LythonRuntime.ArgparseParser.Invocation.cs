@@ -151,8 +151,8 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            object? argsValue = ArgparseUnspecifiedValue.Instance;
-            object? namespaceValue = ArgparseUnspecifiedValue.Instance;
+            object argsValue = ArgparseUnspecifiedValue.Instance;
+            object namespaceValue = ArgparseUnspecifiedValue.Instance;
             var positionalIndex = 0;
             var assignedArgs = false;
             var assignedNamespace = false;
@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
             }
             var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)
                 ? context.State.Args.Select(static item => item.AsString()).ToList()
-                : ToStringList(argsValue.RequireNotNull(), $"{methodName}(args) expects an iterable of strings.", span);
+                : ToStringList(argsValue, $"{methodName}(args) expects an iterable of strings.", span);
             var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)
                 ? null
                 : namespaceValue as ArgparseNamespaceObject ??

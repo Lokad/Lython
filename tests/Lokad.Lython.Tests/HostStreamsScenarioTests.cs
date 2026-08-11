@@ -47,7 +47,7 @@ __lython_file.close()
     {
         var state = new ExecutionState(new MockLythonHost(), options: null);
         var input = new HostTextInputHandle(new ThrowingTextInput(), state);
-        var output = new HostTextOutputHandle(new ThrowingTextOutput(), capture: null, "<stdout>", state);
+        var output = new HostTextOutputHandle(new ThrowingTextOutput(), "<stdout>", state);
 
         AssertHostFailure(
             Assert.Throws<LythonRuntimeException>(() => input.ReadAll(span: null)),
