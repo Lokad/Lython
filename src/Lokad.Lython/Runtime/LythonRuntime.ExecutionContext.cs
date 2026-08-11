@@ -306,6 +306,16 @@ internal sealed partial class LythonRuntime
                     $"subprocess standard error exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardErrorUtf8.Length} bytes.",
                     span);
             }
+
+            var combinedCapturedBytes =
+                (request.StandardOutput == LythonSubprocessStreamMode.Pipe ? (long)result.StandardOutputUtf8.Length : 0L) +
+                (request.StandardError == LythonSubprocessStreamMode.Pipe ? result.StandardErrorUtf8.Length : 0L);
+            if (combinedCapturedBytes > outputLimit.Bytes)
+            {
+                throw RuntimeErrors.Runtime(
+                    $"subprocess combined captured output exceeded maximum bytes ({outputLimit.Bytes}); received {combinedCapturedBytes} bytes.",
+                    span);
+            }
         }
 
         private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)

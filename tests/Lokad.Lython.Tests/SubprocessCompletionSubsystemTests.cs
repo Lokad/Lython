@@ -5,6 +5,27 @@ namespace Lokad.Lython.Tests;
 public sealed class SubprocessCompletionSubsystemTests
 {
     [Fact]
+    public async Task SeparatePipesShareTheCombinedOutputLimit()
+    {
+        var request = Request(
+            standardOutput: LythonSubprocessStreamMode.Pipe,
+            standardError: LythonSubprocessStreamMode.Pipe,
+            maxOutputBytes: 5);
+
+        var exception = await Assert.ThrowsAsync<LythonSubprocessOutputLimitException>(async () =>
+            await LythonSubprocessCompletion.CompleteBufferedAsync(
+                request,
+                returnCode: 0,
+                Bytes("abc"),
+                Bytes("def"),
+                static (_, _) => ValueTask.CompletedTask,
+                static (_, _) => ValueTask.CompletedTask,
+                CancellationToken.None));
+
+        Assert.Contains("combined captured output", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void OutputLimitRejectsNegativeByteCounts()
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new LythonSubprocessOutputLimit(-1));

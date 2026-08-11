@@ -82,6 +82,10 @@ public static class LythonSubprocessCompletion
                 inheritStandardErrorAsync,
                 cancellationToken)
             .ConfigureAwait(false);
+        EnsureWithinOutputLimit(
+            "combined captured output",
+            checked((long)capturedStdout.Length + capturedStderr.Length),
+            request.OutputLimit);
         return new LythonSubprocessResult(returnCode, capturedStdout, capturedStderr);
     }
 
