@@ -405,27 +405,27 @@ internal sealed partial class LythonRuntime
                     context.ObserveValue(integer, null);
                     return integer;
                 case sbyte integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case byte integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case short integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case ushort integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case int integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case uint integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case long integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case ulong integer:
-                    return new BigInteger(integer);
+                    return integer;
                 case float floating:
-                    return (double)floating;
+                    return floating;
                 case double floating:
                     return floating;
                 case decimal number:
-                    return new PyDecimal(number);
+                    return number;
                 case string text:
                     return CreateString(text, context, null);
                 case PyString text:
