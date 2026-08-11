@@ -75,6 +75,7 @@ internal sealed partial class LythonRuntime
     private sealed class ReModule : PyModule
     {
         public static readonly ReModule Instance = new();
+        private readonly ExceptionTypeValue _patternError = new(ModuleException("re", "PatternError"));
 
         private ReModule() : base("re")
         {
@@ -95,7 +96,7 @@ internal sealed partial class LythonRuntime
                 "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReSplit, Split),
                 "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.ReEscape, Escape),
                 "purge" => BuiltinCallable.Create(LythonKnownCallableSignatures.RePurge, Purge),
-                "error" or "PatternError" => new ExceptionTypeValue(ModuleException("re", "PatternError")),
+                "error" or "PatternError" => _patternError,
                 "RegexFlag" => new RegexFlagFactory(),
                 "NOFLAG" => BigInteger.Zero,
                 "IGNORECASE" or "I" => new BigInteger(RegexCompiler.PythonIgnoreCaseFlag),

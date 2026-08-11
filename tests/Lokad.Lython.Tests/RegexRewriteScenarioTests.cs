@@ -46,6 +46,20 @@ public sealed class RegexRewriteScenarioTests
     }
 
     [Fact]
+    public void PatternError_PreservesLegacyErrorAliasIdentity()
+    {
+        var result = new LythonEngine().Run(
+            """
+import re
+return re.error is re.PatternError
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(true, result.ReturnValue);
+    }
+
+    [Fact]
     public void SearchSplitAndEscapeFixture_RunsSuccessfully()
     {
         var fixture = FixtureLoader.Load(Path.Combine("Workflows", "RegexRewrite", "SearchSplitAndEscape"));
