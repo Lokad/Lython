@@ -718,5 +718,5 @@ internal sealed partial class LythonRuntime
         => BadGzip(message, span, null);
 
     private static LythonRuntimeException BadGzip(string message, LythonSourceSpan span, Exception? inner)
-        => new(ModuleException("gzip", "BadGzipFile"), message, span, inner);
+        => new(ModuleException("gzip", "BadGzipFile"), message, span, inner, null);
 }

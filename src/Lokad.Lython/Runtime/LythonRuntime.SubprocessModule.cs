@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var payload = CreateCalledProcessErrorPayload(returnCode, command, output, stderr, context, span);
-        return new LythonRuntimeException(ModuleException("subprocess", "CalledProcessError"), message, span, payload: payload);
+        return new LythonRuntimeException(ModuleException("subprocess", "CalledProcessError"), message, span, null, payload);
     }
 
     private static PyDict CreateCalledProcessErrorPayload(

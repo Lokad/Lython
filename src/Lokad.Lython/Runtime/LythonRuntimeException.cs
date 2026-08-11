@@ -21,9 +21,17 @@ internal sealed class LythonRuntimeException : Exception
     public LythonRuntimeException(
         PythonExceptionIdentity identity,
         string message,
+        LythonSourceSpan? span)
+        : this(identity, message, span, null, null)
+    {
+    }
+
+    public LythonRuntimeException(
+        PythonExceptionIdentity identity,
+        string message,
         LythonSourceSpan? span,
-        Exception? innerException = null,
-        object? payload = null)
+        Exception? innerException,
+        object? payload)
         : base(message, innerException)
     {
         Identity = identity;

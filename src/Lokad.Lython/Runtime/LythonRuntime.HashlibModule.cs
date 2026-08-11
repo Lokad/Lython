@@ -94,6 +94,7 @@ internal sealed partial class LythonRuntime
             return InvokeCore(arguments, span, context);
         }
 
+        /// <summary>Invokes the concrete hashlib constructor or helper after applying its Python call contract.</summary>
         protected abstract object InvokeCore(
             CallArgumentValue[] arguments,
             LythonSourceSpan span,

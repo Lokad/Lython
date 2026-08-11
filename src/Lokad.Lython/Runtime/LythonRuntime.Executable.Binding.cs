@@ -110,14 +110,7 @@ internal sealed partial class LythonRuntime
     {
         var previousWidth = -1;
         var previousIndex = -1;
-        while (TryFindExecutableExceptionRegion(
-                   codeObject,
-                   currentBlockIndex,
-                   previousWidth,
-                   previousIndex,
-                   out var region,
-                   out var regionWidth,
-                   out var regionIndex))
+        while (FindNextExceptionRegion(previousWidth, previousIndex, out var regionWidth, out var regionIndex) is { } region)
         {
             if (abrupt is PendingException { Exception: var exception } &&
                 region.ExceptBlockIndex is int exceptBlock &&
@@ -151,6 +144,43 @@ internal sealed partial class LythonRuntime
         }
 
         return false;
+
+        ExecutableExceptionRegion? FindNextExceptionRegion(
+            int excludedWidth,
+            int excludedIndex,
+            out int regionWidth,
+            out int regionIndex)
+        {
+            ExecutableExceptionRegion? best = null;
+            var bestWidth = int.MaxValue;
+            var bestIndex = int.MaxValue;
+            for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
+            {
+                var candidate = codeObject.ExceptionRegions[i];
+                if (currentBlockIndex < candidate.ProtectedStartBlockIndex ||
+                    currentBlockIndex > candidate.ProtectedEndBlockIndex)
+                {
+                    continue;
+                }
+
+                var width = candidate.ProtectedEndBlockIndex - candidate.ProtectedStartBlockIndex;
+                if (width < excludedWidth || width == excludedWidth && i <= excludedIndex)
+                {
+                    continue;
+                }
+
+                if (width < bestWidth || width == bestWidth && i < bestIndex)
+                {
+                    best = candidate;
+                    bestWidth = width;
+                    bestIndex = i;
+                }
+            }
+
+            regionWidth = bestWidth;
+            regionIndex = bestIndex;
+            return best;
+        }
     }
 
     private static void RestoreExecutableStackForHandler(
@@ -167,46 +197,6 @@ internal sealed partial class LythonRuntime
         }
 
         stack.RemoveTail(stack.Count - targetDepth);
-    }
-
-    private static bool TryFindExecutableExceptionRegion(
-        ExecutableCodeObject codeObject,
-        int blockIndex,
-        int previousWidth,
-        int previousIndex,
-        out ExecutableExceptionRegion region,
-        out int regionWidth,
-        out int regionIndex)
-    {
-        ExecutableExceptionRegion? best = null;
-        var bestWidth = int.MaxValue;
-        var bestIndex = int.MaxValue;
-        for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
-        {
-            var candidate = codeObject.ExceptionRegions[i];
-            if (blockIndex < candidate.ProtectedStartBlockIndex || blockIndex > candidate.ProtectedEndBlockIndex)
-            {
-                continue;
-            }
-
-            var width = candidate.ProtectedEndBlockIndex - candidate.ProtectedStartBlockIndex;
-            if (width < previousWidth || width == previousWidth && i <= previousIndex)
-            {
-                continue;
-            }
-
-            if (width < bestWidth || width == bestWidth && i < bestIndex)
-            {
-                best = candidate;
-                bestWidth = width;
-                bestIndex = i;
-            }
-        }
-
-        region = best!;
-        regionWidth = bestWidth;
-        regionIndex = bestIndex;
-        return best is not null;
     }
 
     private static bool TryExecuteExecutableMatchCase(

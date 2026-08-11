@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.RaiseExpectsException(span);
         }
 
-        throw new LythonRuntimeException(instance.Identity, instance.Message, span, payload: instance.Value);
+        throw new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
     }
 
     private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)
