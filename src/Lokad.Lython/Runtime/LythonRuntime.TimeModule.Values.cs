@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
 
         public object GetIndex(int index) => _values[index];
 
-        public object GetSlice(IEnumerable<int> indices) => new PyTuple(indices.Select(index => _values[index]));
+        public object GetSlice(IEnumerable<int> indices) => PyTupleLike.CreateSlice(_values, indices);
 
         public IEnumerable<object> Iterate() => _values;
 

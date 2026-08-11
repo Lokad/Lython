@@ -467,11 +467,6 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static object OptionalStringValue(string? value)
-            => value is null ? PyNone.Instance : PyString.FromString(value);
-
-        private static string? NullableStringValue(object value, string owner)
-            => value is PyNone ? null : ExpectString(value, owner, null);
     }
 
     private static OpenPyxlDataValidationType? ParseDataValidationType(string? value, string owner, LythonSourceSpan? span)

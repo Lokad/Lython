@@ -13,6 +13,9 @@ internal static class PyTupleLike
         return hash.ToHashCode();
     }
 
+    public static PyTuple CreateSlice(IReadOnlyList<object> items, IEnumerable<int> indices)
+        => new(indices.Select(index => items[index]));
+
     public static bool TryGetItems(object value, out IReadOnlyList<object> items)
     {
         switch (value)

@@ -158,9 +158,6 @@ internal sealed partial class LythonRuntime
                 _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, "Unknown openpyxl color kind."),
             };
 
-        private static object OptionalStringValue(string? value)
-            => value is null ? PyNone.Instance : PyString.FromString(value);
-
         private static object OptionalIntegerValue(BigInteger? value)
             => value is null ? PyNone.Instance : value.Value;
 

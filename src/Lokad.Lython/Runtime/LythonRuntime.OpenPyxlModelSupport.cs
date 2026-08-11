@@ -429,11 +429,6 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static object OptionalStringValue(string? value)
-            => value is null ? PyNone.Instance : PyString.FromString(value);
-
-        private static string? NullableStringValue(object value, string owner)
-            => value is PyNone ? null : ExpectString(value, owner, null);
     }
 
     internal sealed class OpenPyxlWorkbookSecurity : IPyMutableDynamicAttributes, IPyRenderableValue
@@ -649,14 +644,8 @@ internal sealed partial class LythonRuntime
         private static object OptionalBoolValue(bool? value)
             => value is null ? PyNone.Instance : value.Value;
 
-        private static object OptionalStringValue(string? value)
-            => value is null ? PyNone.Instance : PyString.FromString(value);
-
         private static bool? NormalizeOptionalBool(object value, string owner)
             => value is PyNone ? null : ExpectBool(value, owner, null);
-
-        private static string? NullableStringValue(object value, string owner)
-            => value is PyNone ? null : ExpectString(value, owner, null);
 
         private static string HashOpenXmlPassword(string password)
         {

@@ -198,7 +198,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     public object GetIndex(int index) => _values[index];
 
-    public object GetSlice(IEnumerable<int> indices) => new PyTuple(indices.Select(index => _values[index]));
+    public object GetSlice(IEnumerable<int> indices) => PyTupleLike.CreateSlice(_values, indices);
 
     public bool IsTruthy() => _values.Length != 0;
 
