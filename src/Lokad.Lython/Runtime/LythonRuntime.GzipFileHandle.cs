@@ -9,10 +9,22 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class GzipFileHandle : IPyDynamicAttributes, IPyAsyncContextManager, IPyIteratorValue, IPyRenderableValue
     {
+        private interface IGzipContent { }
+
+        private sealed record BinaryReadContent(PyBytes Value) : IGzipContent;
+
+        private sealed record TextReadContent(PyString Value) : IGzipContent;
+
+        private sealed class WritableContent : IGzipContent
+        {
+            public static readonly WritableContent Instance = new();
+
+            private WritableContent() { }
+        }
+
         private readonly GzipOpenOptions _options;
         private readonly ExecutionContext _context;
-        private readonly PyBytes? _binaryRead;
-        private readonly PyString? _textRead;
+        private readonly IGzipContent _content;
         private byte[] _compressedPrefix;
         private readonly GovernedByteBuilder _writeBuffer;
         private long _compressedPrefixCharge;
@@ -24,15 +36,13 @@ internal sealed partial class LythonRuntime
         private GzipFileHandle(
             GzipOpenOptions options,
             ExecutionContext context,
-            PyBytes? binaryRead,
-            PyString? textRead,
+            IGzipContent content,
             byte[] compressedPrefix,
             bool dirty)
         {
             _options = options;
             _context = context;
-            _binaryRead = binaryRead;
-            _textRead = textRead;
+            _content = content;
             _compressedPrefix = compressedPrefix;
             _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor);
             _dirty = dirty;
@@ -61,7 +71,7 @@ internal sealed partial class LythonRuntime
         {
             if (options.ContentKind != GzipContentKind.Text)
             {
-                return new GzipFileHandle(options, context, decompressed, null, [], dirty: false);
+                return new GzipFileHandle(options, context, new BinaryReadContent(decompressed), [], dirty: false);
             }
 
             var text = DecodeText(
@@ -72,7 +82,7 @@ internal sealed partial class LythonRuntime
                 options.Errors,
                 options.Newline);
             context.ObserveString(text, span);
-            return new GzipFileHandle(options, context, null, text, [], dirty: false);
+            return new GzipFileHandle(options, context, new TextReadContent(text), [], dirty: false);
         }
 
         public static GzipFileHandle ForWrite(GzipOpenOptions options, byte[] prefix, ExecutionContext context)
@@ -85,7 +95,7 @@ internal sealed partial class LythonRuntime
                 context.MemoryGovernor.Commit(PyBytes.EstimateApproximateBytes(prefix.Length));
             }
 
-            var handle = new GzipFileHandle(options, context, null, null, prefix, dirty: true)
+            var handle = new GzipFileHandle(options, context, WritableContent.Instance, prefix, dirty: true)
             {
                 _compressedPrefixCharge = prefix.Length > 0 ? PyBytes.EstimateApproximateBytes(prefix.Length) : 0,
             };
@@ -95,9 +105,9 @@ internal sealed partial class LythonRuntime
         private object Read(int size, LythonSourceSpan? span)
         {
             EnsureReadable(span);
-            if (_options.ContentKind == GzipContentKind.Text)
+            if (_content is TextReadContent textContent)
             {
-                var text = _textRead.RequireNotNull();
+                var text = textContent.Value;
                 if (_readCursor >= text.Utf8Bytes.Length)
                 {
                     return PyString.Empty;
@@ -111,7 +121,7 @@ internal sealed partial class LythonRuntime
                 return result;
             }
 
-            var bytes = _binaryRead.RequireNotNull();
+            var bytes = ((BinaryReadContent)_content).Value;
             if (_readCursor >= bytes.Length)
             {
                 return CreateBytes([], _context, span);
@@ -126,9 +136,9 @@ internal sealed partial class LythonRuntime
         private object ReadLine(int size, LythonSourceSpan? span)
         {
             EnsureReadable(span);
-            if (_options.ContentKind == GzipContentKind.Text)
+            if (_content is TextReadContent textContent)
             {
-                var text = _textRead.RequireNotNull();
+                var text = textContent.Value;
                 var source = text.Utf8Bytes.Span;
                 if (_readCursor >= source.Length)
                 {
@@ -146,7 +156,7 @@ internal sealed partial class LythonRuntime
                 return line;
             }
 
-            var bytes = _binaryRead.RequireNotNull();
+            var bytes = ((BinaryReadContent)_content).Value;
             if (_readCursor >= bytes.Length)
             {
                 return CreateBytes([], _context, span);
