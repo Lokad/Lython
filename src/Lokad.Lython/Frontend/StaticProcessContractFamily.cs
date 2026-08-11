@@ -160,15 +160,18 @@ internal static class StaticProcessContractFamily
             }
             else if (StaticAbstractValueResolver.TryResolveKnownSequenceItems(argsExpression, bindings, out var sequenceItems))
             {
-                StaticContractChecks.AnalyzeIterableOfPathLikeLiteral(
-                    sequenceItems,
-                    "LA3021",
-                    $"{owner}(args) expects an iterable of strings or Paths.",
-                    diagnostics,
-                    requireNonEmpty: true,
-                    emptyCode: "LA3027",
-                    emptyMessage: $"{owner}(args) expects at least one command part.",
-                    emptySpan: argsExpression.Span);
+                if (sequenceItems.Count == 0)
+                {
+                    AddDiagnostic(diagnostics, "LA3027", $"{owner}(args) expects at least one command part.", argsExpression.Span);
+                }
+                else
+                {
+                    StaticContractChecks.AnalyzeIterableOfPathLikeLiteral(
+                        sequenceItems,
+                        "LA3021",
+                        $"{owner}(args) expects an iterable of strings or Paths.",
+                        diagnostics);
+                }
             }
             else if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(argsExpression, bindings))
             {
