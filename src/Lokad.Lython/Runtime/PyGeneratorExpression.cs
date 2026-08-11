@@ -26,13 +26,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public bool IsTruthy() => true;
 
-    public IEnumerable<object> Iterate()
-    {
-        while (TryMoveNext(out var value))
-        {
-            yield return value;
-        }
-    }
+    public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
     public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
@@ -64,19 +58,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         return result;
     }
 
-    public async IAsyncEnumerable<object> IterateAsync()
-    {
-        while (true)
-        {
-            var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                yield break;
-            }
-
-            yield return value;
-        }
-    }
+    public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {

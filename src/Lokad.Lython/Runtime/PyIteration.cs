@@ -21,10 +21,24 @@ internal static class PyIteration
         return result;
     }
 
-    private static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
+    public static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
     {
         while (iterator.TryMoveNext(out var value))
         {
+            yield return value;
+        }
+    }
+
+    public static async IAsyncEnumerable<object> EnumerateAsyncIterator(IPyAsyncIteratorValue iterator)
+    {
+        while (true)
+        {
+            var (hasValue, value) = await iterator.TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasValue)
+            {
+                yield break;
+            }
+
             yield return value;
         }
     }

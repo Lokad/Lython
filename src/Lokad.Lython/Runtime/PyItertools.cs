@@ -5,27 +5,9 @@ namespace Lokad.Lython.Runtime;
 
 internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableValue, IPyTruthyValue
 {
-    public IEnumerable<object> Iterate()
-    {
-        while (TryMoveNext(out var value))
-        {
-            yield return value;
-        }
-    }
+    public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
-    public async IAsyncEnumerable<object> IterateAsync()
-    {
-        while (true)
-        {
-            var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                yield break;
-            }
-
-            yield return value;
-        }
-    }
+    public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
     /// <summary>Advances once and supplies the current Python value when successful.</summary>
     public abstract bool TryMoveNext([MaybeNullWhen(false)] out object value);

@@ -295,13 +295,7 @@ internal sealed partial class LythonRuntime
                 return new PyList(items, _context.MemoryGovernor, null);
             }
 
-            public IEnumerable<object> Iterate()
-            {
-                while (TryMoveNext(out var value))
-                {
-                    yield return value;
-                }
-            }
+            public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
             public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {

@@ -47,11 +47,5 @@ internal sealed class PyUserIterator : IPyIteratorValue
         }
     }
 
-    public IEnumerable<object> Iterate()
-    {
-        while (TryMoveNext(out var value))
-        {
-            yield return value;
-        }
-    }
+    public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 }
