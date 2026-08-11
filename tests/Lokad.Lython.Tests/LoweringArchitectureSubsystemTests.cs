@@ -757,6 +757,30 @@ return value
     }
 
     [Fact]
+    public void ExecutableSubset_UnmatchedInnerHandlerContinuesToOuterHandler()
+    {
+        var frontend = LythonFrontend.Compile("""
+value = "unhandled"
+try:
+    try:
+        raise ValueError("boom")
+    except TypeError:
+        value = "inner"
+except Exception:
+    value = "outer"
+
+return value
+""");
+
+        var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+        var executable = ExecutableScript.Compile(lowered);
+        var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("outer", result.ReturnValue);
+    }
+
+    [Fact]
     public void ExecutableSubset_ExceptionHandlersRestoreEnclosingLoopStackDepth()
     {
         var frontend = LythonFrontend.Compile("""

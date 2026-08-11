@@ -108,38 +108,49 @@ internal sealed partial class LythonRuntime
         ref PendingAbruptSignal? pendingAbrupt,
         ref int nextBlockIndex)
     {
-        var region = FindExecutableExceptionRegion(codeObject, currentBlockIndex);
-        if (region is null)
+        var previousWidth = -1;
+        var previousIndex = -1;
+        while (TryFindExecutableExceptionRegion(
+                   codeObject,
+                   currentBlockIndex,
+                   previousWidth,
+                   previousIndex,
+                   out var region,
+                   out var regionWidth,
+                   out var regionIndex))
         {
-            return false;
-        }
-
-        RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
-
-        if (abrupt is PendingException { Exception: var exception } &&
-            region.ExceptBlockIndex is int exceptBlock &&
-            MatchesCaughtException(region.ExceptionTypeNames, exception, context, span))
-        {
-            pendingAbrupt = null;
-            var pyException = CreatePythonExceptionInstance(exception);
-            if (region.ExceptionVariableName is not null)
+            if (abrupt is PendingException { Exception: var exception } &&
+                region.ExceptBlockIndex is int exceptBlock &&
+                MatchesCaughtException(region.ExceptionTypeNames, exception, context, span))
             {
-                StoreName(region.ExceptionVariableName, pyException, context, span);
+                RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
+                pendingAbrupt = null;
+                var pyException = CreatePythonExceptionInstance(exception);
+                if (region.ExceptionVariableName is not null)
+                {
+                    StoreName(region.ExceptionVariableName, pyException, context, span);
+                }
+
+                context.Services.SetCurrentException(pyException);
+                nextBlockIndex = exceptBlock;
+                return true;
             }
 
-            context.Services.SetCurrentException(pyException);
-            nextBlockIndex = exceptBlock;
-            return true;
+            if (region.FinallyBlockIndex is int finallyBlock)
+            {
+                RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
+                pendingAbrupt = abrupt;
+                nextBlockIndex = finallyBlock;
+                return true;
+            }
+
+            // A non-matching inner handler does not intercept the exception. Continue with
+            // the next enclosing protected range, just as CPython unwinds nested try suites.
+            previousWidth = regionWidth;
+            previousIndex = regionIndex;
         }
 
-        if (region.FinallyBlockIndex is not int finallyBlock)
-        {
-            return false;
-        }
-
-        pendingAbrupt = abrupt;
-        nextBlockIndex = finallyBlock;
-        return true;
+        return false;
     }
 
     private static void RestoreExecutableStackForHandler(
@@ -158,26 +169,44 @@ internal sealed partial class LythonRuntime
         stack.RemoveTail(stack.Count - targetDepth);
     }
 
-    private static ExecutableExceptionRegion? FindExecutableExceptionRegion(ExecutableCodeObject codeObject, int blockIndex)
+    private static bool TryFindExecutableExceptionRegion(
+        ExecutableCodeObject codeObject,
+        int blockIndex,
+        int previousWidth,
+        int previousIndex,
+        out ExecutableExceptionRegion region,
+        out int regionWidth,
+        out int regionIndex)
     {
         ExecutableExceptionRegion? best = null;
         var bestWidth = int.MaxValue;
-        foreach (var region in codeObject.ExceptionRegions)
+        var bestIndex = int.MaxValue;
+        for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
         {
-            if (blockIndex < region.ProtectedStartBlockIndex || blockIndex > region.ProtectedEndBlockIndex)
+            var candidate = codeObject.ExceptionRegions[i];
+            if (blockIndex < candidate.ProtectedStartBlockIndex || blockIndex > candidate.ProtectedEndBlockIndex)
             {
                 continue;
             }
 
-            var width = region.ProtectedEndBlockIndex - region.ProtectedStartBlockIndex;
-            if (width < bestWidth)
+            var width = candidate.ProtectedEndBlockIndex - candidate.ProtectedStartBlockIndex;
+            if (width < previousWidth || width == previousWidth && i <= previousIndex)
             {
-                best = region;
+                continue;
+            }
+
+            if (width < bestWidth || width == bestWidth && i < bestIndex)
+            {
+                best = candidate;
                 bestWidth = width;
+                bestIndex = i;
             }
         }
 
-        return best;
+        region = best!;
+        regionWidth = bestWidth;
+        regionIndex = bestIndex;
+        return best is not null;
     }
 
     private static bool TryExecuteExecutableMatchCase(
