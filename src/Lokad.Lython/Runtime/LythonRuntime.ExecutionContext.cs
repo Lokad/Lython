@@ -18,11 +18,10 @@ internal sealed partial class LythonRuntime
     {
         public ExecutionContext(ILythonHost host, LythonRunOptions? options)
         {
-            Services = new ExecutionServices(new ExecutionState(host, options));
+            var builtinVariables = CreateBuiltinVariables();
+            Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
-            var builtinVariables = CreateBuiltinVariables();
-            State.InitializeBuiltinVariables(builtinVariables);
             Frame = new ExecutionFrame(parent: null, CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;

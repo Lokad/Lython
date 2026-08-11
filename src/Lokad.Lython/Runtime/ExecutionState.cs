@@ -2,7 +2,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class ExecutionState
 {
-    private Dictionary<string, object>? _builtinVariables;
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
 
     public static readonly HashSet<string> BuiltinNames =
@@ -25,6 +24,14 @@ internal sealed class ExecutionState
     ];
 
     public ExecutionState(ILythonHost host, LythonRunOptions? options)
+        : this(host, options, new Dictionary<string, object>(StringComparer.Ordinal))
+    {
+    }
+
+    public ExecutionState(
+        ILythonHost host,
+        LythonRunOptions? options,
+        Dictionary<string, object> builtinVariables)
     {
         Host = host;
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
@@ -56,6 +63,7 @@ internal sealed class ExecutionState
         Stdin = new HostTextInputHandle(host.StandardInput, this);
         Stdout = new HostTextOutputHandle(host.StandardOutput, StandardOutput, "<stdout>", this);
         Stderr = new HostTextOutputHandle(host.StandardError, StandardError, "<stderr>", this);
+        BuiltinVariables = builtinVariables;
     }
 
     public ILythonHost Host { get; }
@@ -78,8 +86,7 @@ internal sealed class ExecutionState
 
     public Dictionary<string, PyModule> ImportedModules { get; }
 
-    public Dictionary<string, object> BuiltinVariables
-        => _builtinVariables ?? throw new InvalidOperationException("Builtin variables are not initialized.");
+    public Dictionary<string, object> BuiltinVariables { get; }
 
     public HashSet<string> LoadingModules { get; }
 
@@ -92,16 +99,6 @@ internal sealed class ExecutionState
     public HostTextOutputHandle Stdout { get; }
 
     public HostTextOutputHandle Stderr { get; }
-
-    public void InitializeBuiltinVariables(Dictionary<string, object> builtinVariables)
-    {
-        if (_builtinVariables is not null)
-        {
-            throw new InvalidOperationException("Builtin variables are already initialized.");
-        }
-
-        _builtinVariables = builtinVariables;
-    }
 
     public bool TryReadRuntimeMemberCache(
         object cacheSite,
