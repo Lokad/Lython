@@ -16,6 +16,7 @@ public sealed class PublicApiInvariantTests
         Assert.False(file.IsDir);
         Assert.Equal(timestamp, file.ModifiedAtTimestamp);
         Assert.Throws<ArgumentException>(() => new LythonPathStat(LythonPathKind.Missing, BigInteger.One, null));
+        Assert.Single(typeof(LythonPathStat).GetConstructors());
     }
 
     [Fact]

@@ -35,16 +35,6 @@ public sealed record LythonPathStat
         ModifiedAtTimestamp = modifiedAt;
     }
 
-    /// <summary>Creates path metadata from the legacy boolean and timestamp representation.</summary>
-    [Obsolete("Use the LythonPathKind and DateTimeOffset constructor.")]
-    public LythonPathStat(bool exists, bool isFile, bool isDir, BigInteger size, string modifiedAt)
-        : this(
-            ResolveKind(exists, isFile, isDir),
-            size,
-            exists ? ParseModifiedAt(modifiedAt) : null)
-    {
-    }
-
     /// <summary>Gets the precise path kind.</summary>
     public LythonPathKind Kind { get; }
 
@@ -66,32 +56,4 @@ public sealed record LythonPathStat
     /// <summary>Gets the legacy ISO-8601 last-modified representation.</summary>
     public string ModifiedAt => ModifiedAtTimestamp?.ToString("O", CultureInfo.InvariantCulture) ?? string.Empty;
 
-    private static LythonPathKind ResolveKind(bool exists, bool isFile, bool isDir)
-    {
-        if (!exists && !isFile && !isDir)
-        {
-            return LythonPathKind.Missing;
-        }
-
-        if (exists && isFile != isDir)
-        {
-            return isFile ? LythonPathKind.File : LythonPathKind.Directory;
-        }
-
-        throw new ArgumentException("Path metadata must describe exactly one of missing, file, or directory.");
-    }
-
-    private static DateTimeOffset ParseModifiedAt(string modifiedAt)
-    {
-        if (DateTimeOffset.TryParse(
-                modifiedAt,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal,
-                out var timestamp))
-        {
-            return timestamp;
-        }
-
-        throw new ArgumentException("Path modification time must be an ISO-8601 timestamp.", nameof(modifiedAt));
-    }
 }
