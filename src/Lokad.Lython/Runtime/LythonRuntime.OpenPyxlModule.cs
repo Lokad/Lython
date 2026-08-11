@@ -604,7 +604,7 @@ internal sealed partial class LythonRuntime
 
         public object? Height { get; private set; }
 
-        public string Format => Path.GetExtension(Source).TrimStart('.').ToLowerInvariant();
+        public string Format => PathOps.Suffix(Source).TrimStart('.').ToLowerInvariant();
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {

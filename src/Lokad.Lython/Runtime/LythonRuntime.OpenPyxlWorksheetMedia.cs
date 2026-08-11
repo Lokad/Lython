@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
 
         public string DrawingPath { get; }
 
-        public string Format => Path.GetExtension(PackagePath).TrimStart('.').ToLowerInvariant();
+        public string Format => PathOps.Suffix(PackagePath).TrimStart('.').ToLowerInvariant();
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
