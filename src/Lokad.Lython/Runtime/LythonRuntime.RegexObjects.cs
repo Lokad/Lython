@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
         private readonly RegexSubjectRange _range;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private readonly System.Collections.IEnumerator? _matches;
+        private readonly System.Collections.IEnumerator _matches;
 
         public PyRegexFindIterator(RePatternObject pattern, RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
 
         public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
-            if (_matches is null || !_matches.MoveNext())
+            if (!_matches.MoveNext())
             {
                 value = PyNone.Instance;
                 return false;
