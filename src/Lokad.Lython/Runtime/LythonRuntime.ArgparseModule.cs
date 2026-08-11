@@ -165,23 +165,18 @@ internal sealed partial class LythonRuntime
         private static object CreateFileType(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            var mode = arguments.Length >= 1 && !ReferenceEquals(arguments[0], PyNone.Instance)
+            var modeText = arguments.Length >= 1 && !ReferenceEquals(arguments[0], PyNone.Instance)
                 ? RequireArgparseStringValue(arguments[0], "mode", "argparse.FileType", span).AsString()
                 : "r";
-            if (mode.Contains('b'))
+            if (modeText.Contains('b'))
             {
                 throw new LythonRuntimeException("ValueError", "argparse.FileType only supports host-mediated text modes.", span);
             }
 
-            mode = ParseTextOpenMode(PyString.FromString(mode), "argparse.FileType", span);
+            var operation = ParseTextOpenMode(PyString.FromString(modeText), "argparse.FileType", span);
             if (arguments.Length >= 2)
             {
                 ValidateTextBuffering(arguments[1], "argparse.FileType", span);
-            }
-
-            if (mode is not ("r" or "w" or "a"))
-            {
-                throw new LythonRuntimeException("ValueError", "argparse.FileType only supports modes 'r', 'w', and 'a'.", span);
             }
 
             var encodingMode = arguments.Length >= 3
@@ -190,18 +185,7 @@ internal sealed partial class LythonRuntime
             var errorsMode = arguments.Length >= 4
                 ? ParseTextErrors(arguments[3], "argparse.FileType", span)
                 : TextErrorMode.Strict;
-            var encoding = arguments.Length >= 3
-                ? encodingMode switch
-                {
-                    TextEncodingMode.Utf8Bom => "utf-8-sig",
-                    TextEncodingMode.Latin1 => "latin-1",
-                    _ => "utf-8"
-                }
-                : null;
-            var errors = arguments.Length >= 4
-                ? TextErrorName(errorsMode)
-                : null;
-            return new ArgparseFileTypeObject(mode, encoding, errors);
+            return new ArgparseFileTypeObject(operation, encodingMode, errorsMode);
         }
 
         private static string DefaultProgramName(ExecutionContext context)
@@ -508,7 +492,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ArgparseFileTypeObject(string mode, string? encoding, string? errors) : ICallable, IPyRenderableValue
+    private sealed class ArgparseFileTypeObject(
+        TextFileOperation operation,
+        TextEncodingMode encoding,
+        TextErrorMode errors) : ICallable, IPyRenderableValue
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -518,22 +505,19 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "argparse.FileType callable expects one filename argument.", span);
             }
 
-            var values = new List<object> { filename, PyString.FromString(mode) };
-            if (encoding is not null || errors is not null)
+            return operation switch
             {
-                values.Add(PyNone.Instance);
-                values.Add(encoding is null ? PyNone.Instance : PyString.FromString(encoding));
-                values.Add(errors is null ? PyNone.Instance : PyString.FromString(errors));
-                values.Add(PyString.Empty);
-            }
-
-            return Open(values.ToArray(), span, context);
+                TextFileOperation.Read => ExecutionContext.TextFileHandle.ForRead(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                TextFileOperation.Write => ExecutionContext.TextFileHandle.ForWrite(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                TextFileOperation.Append => ExecutionContext.TextFileHandle.ForAppend(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
+            };
         }
 
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("FileType('" + mode + "')");
+            return PyString.FromString("FileType('" + TextOpenModeName(operation) + "')");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

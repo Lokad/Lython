@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static string ParseTextOpenMode(PyString mode, string owner, LythonSourceSpan span)
+    private static TextFileOperation ParseTextOpenMode(PyString mode, string owner, LythonSourceSpan span)
     {
         var text = mode.AsString();
         if (text.Contains('b', StringComparison.Ordinal))
@@ -129,12 +129,21 @@ internal sealed partial class LythonRuntime
 
         return text switch
         {
-            "r" or "rt" => "r",
-            "w" or "wt" => "w",
-            "a" or "at" => "a",
+            "r" or "rt" => TextFileOperation.Read,
+            "w" or "wt" => TextFileOperation.Write,
+            "a" or "at" => TextFileOperation.Append,
             _ => throw new LythonRuntimeException("ValueError", $"{owner} only supports modes 'r', 'w', and 'a' with optional text marker 't'.", span)
         };
     }
+
+    private static string TextOpenModeName(TextFileOperation operation)
+        => operation switch
+        {
+            TextFileOperation.Read => "r",
+            TextFileOperation.Write => "w",
+            TextFileOperation.Append => "a",
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
+        };
 
     private static void ValidateTextBuffering(object value, string owner, LythonSourceSpan span)
     {

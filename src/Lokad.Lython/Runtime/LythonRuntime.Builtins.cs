@@ -30,9 +30,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal enum TextFileOperation
+    {
+        Read,
+        Write,
+        Append,
+    }
+
     private readonly record struct TextOpenArguments(
         PyString Path,
-        string Mode,
+        TextFileOperation Operation,
         TextEncodingMode EncodingMode,
         TextErrorMode Errors,
         TextNewlineMode Newline);
@@ -42,25 +49,25 @@ internal sealed partial class LythonRuntime
 
     private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
-        return mode switch
+        var (path, operation, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
+        return operation switch
         {
-            "r" => ExecutionContext.TextFileHandle.ForRead(path.AsString(), context, encodingMode, errors, newline),
-            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
-            "a" => ExecutionContext.TextFileHandle.ForAppend(path.AsString(), context, encodingMode, errors, newline),
-            _ => throw new LythonRuntimeException("ValueError", "open() only supports modes 'r', 'w', and 'a'.", span)
+            TextFileOperation.Read => ExecutionContext.TextFileHandle.ForRead(path.AsString(), context, encodingMode, errors, newline),
+            TextFileOperation.Write => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
+            TextFileOperation.Append => ExecutionContext.TextFileHandle.ForAppend(path.AsString(), context, encodingMode, errors, newline),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
         };
     }
 
     private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, mode, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
-        return mode switch
+        var (path, operation, encodingMode, errors, newline) = ParseOpenArguments(arguments, span, context);
+        return operation switch
         {
-            "r" => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
-            "w" => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
-            "a" => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
-            _ => throw new LythonRuntimeException("ValueError", "open() only supports modes 'r', 'w', and 'a'.", span)
+            TextFileOperation.Read => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
+            TextFileOperation.Write => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
+            TextFileOperation.Append => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
         };
     }
 
