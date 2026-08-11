@@ -107,7 +107,7 @@ internal sealed partial class Parser
 
         if (CurrentToken == Token.OpenBrace)
         {
-            return ParseDictLiteral();
+            return new BraceDisplayParser(this).Parse();
         }
 
         if (CurrentToken == Token.OpenParen)
