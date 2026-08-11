@@ -412,6 +412,44 @@ open("/repo/input.txt", "r" "b")
         Assert.True(diagnostic.Span.Column > 0);
     }
 
+    [Fact]
+    public void Compile_RejectsSourceBeyondTheContainedFrontendLimit()
+    {
+        var source = "value = 1\n#" + new string('x', LythonEngine.MaxSourceLength);
+
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.False(compiled.IsValid);
+        var diagnostic = Assert.Single(compiled.Diagnostics);
+        Assert.Equal("LA0002", diagnostic.Code);
+        Assert.Contains(LythonEngine.MaxSourceLength.ToString(), diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Compile_RejectsExcessiveNestingBeforeParsing()
+    {
+        var nesting = LythonEngine.MaxSyntaxNesting + 1;
+        var source = "value = " + new string('(', nesting) + "0" + new string(')', nesting);
+
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.False(compiled.IsValid);
+        var diagnostic = Assert.Single(compiled.Diagnostics);
+        Assert.Equal("LA0003", diagnostic.Code);
+        Assert.Contains(LythonEngine.MaxSyntaxNesting.ToString(), diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Compile_NestingLimitIgnoresStringAndCommentText()
+    {
+        var delimiters = new string('(', LythonEngine.MaxSyntaxNesting + 1);
+        var source = $"text = '{delimiters}'\n# {delimiters}\n";
+
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+    }
+
     private static string FormatDiagnostic(LythonDiagnostic diagnostic)
         => diagnostic.Span is null
             ? $"{diagnostic.Code}: {diagnostic.Message}"

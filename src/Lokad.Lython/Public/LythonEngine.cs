@@ -8,6 +8,12 @@ namespace Lokad.Lython;
 /// <summary>Compiles and executes Python source using Lython's host-mediated runtime.</summary>
 public sealed class LythonEngine
 {
+    /// <summary>The maximum source length accepted by the contained frontend.</summary>
+    public const int MaxSourceLength = 1_000_000;
+
+    /// <summary>The maximum delimiter nesting accepted by the contained frontend.</summary>
+    public const int MaxSyntaxNesting = 512;
+
     /// <summary>Compiles source and returns both the reusable script and all frontend diagnostics.</summary>
     public LythonCompiledScript Compile(string source)
     {
