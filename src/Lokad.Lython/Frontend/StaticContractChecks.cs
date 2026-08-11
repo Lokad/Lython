@@ -235,8 +235,7 @@ internal static class StaticContractChecks
                 diagnostics,
                 code,
                 message,
-                expression.Span,
-                new StaticDiagnosticProof("contract", keyword, "bytes cannot cross a text-only host boundary"));
+                expression.Span);
         }
     }
 

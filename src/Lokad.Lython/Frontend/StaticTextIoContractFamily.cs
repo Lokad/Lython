@@ -69,8 +69,7 @@ internal static class StaticTextIoContractFamily
                 diagnostics,
                 "LA3047",
                 $"Path.{member.MemberName}(...) is not supported by Lython. The host boundary is UTF-8 text-shaped only.",
-                member.Span,
-                new StaticDiagnosticProof("contract", $"Path.{member.MemberName}", "binary path API is outside the Lython text boundary"));
+                member.Span);
             return true;
         }
 
@@ -319,8 +318,7 @@ internal static class StaticTextIoContractFamily
                 diagnostics,
                 "LA3109",
                 "file is not open for reading.",
-                span,
-                new StaticDiagnosticProof("state", "text file mode", "read operation on a write/append-mode handle", AbstractValue.TextFileHandle(mode, span)));
+                span);
         }
     }
 
@@ -338,8 +336,7 @@ internal static class StaticTextIoContractFamily
                 diagnostics,
                 "LA3110",
                 "file is not open for writing.",
-                span,
-                new StaticDiagnosticProof("state", "text file mode", "write operation on a read-mode handle", AbstractValue.TextFileHandle(mode, span)));
+                span);
             return;
         }
 
@@ -556,13 +553,5 @@ internal static class StaticTextIoContractFamily
     }
 
     private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-        => AddDiagnostic(diagnostics, code, message, span, null);
-
-    private static void AddDiagnostic(
-        List<LythonDiagnostic> diagnostics,
-        string code,
-        string message,
-        LythonSourceSpan span,
-        StaticDiagnosticProof? proof)
-        => StaticDiagnosticSink.AddError(diagnostics, code, message, span, proof);
+        => StaticDiagnosticSink.AddError(diagnostics, code, message, span);
 }

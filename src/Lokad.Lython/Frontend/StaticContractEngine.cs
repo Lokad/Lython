@@ -165,7 +165,7 @@ internal static class StaticContractEngine
             return false;
         }
 
-        if (!contract.TryGetArgumentShapeFailure(arguments, out var reason, out var offendingExpression))
+        if (!contract.TryGetArgumentShapeFailure(arguments, out _, out var offendingExpression))
         {
             _ = AnalyzeKnownCallSemanticContract(targetName, call, arguments, diagnostics, bindings);
             return false;
@@ -175,8 +175,7 @@ internal static class StaticContractEngine
             diagnostics,
             contract.DiagnosticCode,
             contract.Message,
-            offendingExpression?.Span ?? call.Span,
-            new StaticDiagnosticProof("contract", targetName, reason));
+            offendingExpression?.Span ?? call.Span);
         return true;
     }
 
@@ -193,7 +192,7 @@ internal static class StaticContractEngine
             return false;
         }
 
-        if (!contract.TryGetArgumentShapeFailure(arguments, out var reason, out var offendingExpression))
+        if (!contract.TryGetArgumentShapeFailure(arguments, out _, out var offendingExpression))
         {
             return StaticRegexArgumentContracts.AnalyzeCallableSemanticContract(
                 arguments,
@@ -207,8 +206,7 @@ internal static class StaticContractEngine
             diagnostics,
             contract.DiagnosticCode,
             contract.Message,
-            offendingExpression?.Span ?? call.Span,
-            new StaticDiagnosticProof("contract", member.MemberName, reason, receiver));
+            offendingExpression?.Span ?? call.Span);
         return true;
     }
 
@@ -306,8 +304,7 @@ internal static class StaticContractEngine
             context,
             requirement.DiagnosticCode,
             requirement.Message,
-            requirement.Span,
-            new StaticDiagnosticProof("host", requirement.Capability.ToString(), "host capability is not available"));
+            requirement.Span);
         return true;
     }
 

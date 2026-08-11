@@ -333,8 +333,7 @@ internal static class StaticNameBindingDiagnostics
                 context,
                 "LA3146",
                 $"Local variable '{name}' is read before it is assigned.",
-                span,
-                new StaticDiagnosticProof("binding", name, "function-local name is read before any assignment path"));
+                span);
         }
     }
 
