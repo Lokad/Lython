@@ -45,12 +45,12 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "md5" => new HashlibCallable("hashlib.md5", HashlibAlgorithm.Md5),
-                "sha1" => new HashlibCallable("hashlib.sha1", HashlibAlgorithm.Sha1),
-                "sha256" => new HashlibCallable("hashlib.sha256", HashlibAlgorithm.Sha256),
-                "sha384" => new HashlibCallable("hashlib.sha384", HashlibAlgorithm.Sha384),
-                "sha512" => new HashlibCallable("hashlib.sha512", HashlibAlgorithm.Sha512),
-                "new" => new HashlibCallable(),
+                "md5" => new HashlibAlgorithmCallable("hashlib.md5", HashlibAlgorithm.Md5),
+                "sha1" => new HashlibAlgorithmCallable("hashlib.sha1", HashlibAlgorithm.Sha1),
+                "sha256" => new HashlibAlgorithmCallable("hashlib.sha256", HashlibAlgorithm.Sha256),
+                "sha384" => new HashlibAlgorithmCallable("hashlib.sha384", HashlibAlgorithm.Sha384),
+                "sha512" => new HashlibAlgorithmCallable("hashlib.sha512", HashlibAlgorithm.Sha512),
+                "new" => new HashlibNewCallable(),
                 "algorithms_available" => CreateAlgorithmSet(),
                 "algorithms_guaranteed" => CreateAlgorithmSet(),
                 "file_digest" => BuiltinCallable.Create(
@@ -79,19 +79,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class HashlibCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private abstract class HashlibCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        private readonly HashlibAlgorithm? _algorithm;
-
-        public HashlibCallable(string name, HashlibAlgorithm algorithm)
+        protected HashlibCallable(string name)
         {
             Name = name;
-            _algorithm = algorithm;
-        }
-
-        public HashlibCallable()
-        {
-            Name = "hashlib.new";
         }
 
         public string Name { get; }
@@ -99,10 +91,13 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return _algorithm is { } algorithm
-                ? InvokeConstructor(arguments, algorithm, span, context)
-                : InvokeNew(arguments, span, context);
+            return InvokeCore(arguments, span, context);
         }
+
+        protected abstract object InvokeCore(
+            CallArgumentValue[] arguments,
+            LythonSourceSpan span,
+            ExecutionContext context);
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -113,10 +108,20 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
+    }
 
-        private object InvokeConstructor(
+    private sealed class HashlibAlgorithmCallable : HashlibCallable
+    {
+        private readonly HashlibAlgorithm _algorithm;
+
+        public HashlibAlgorithmCallable(string name, HashlibAlgorithm algorithm)
+            : base(name)
+        {
+            _algorithm = algorithm;
+        }
+
+        protected override object InvokeCore(
             CallArgumentValue[] arguments,
-            HashlibAlgorithm algorithm,
             LythonSourceSpan span,
             ExecutionContext context)
         {
@@ -158,13 +163,21 @@ internal sealed partial class LythonRuntime
             if (dataAssigned)
             {
                 var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), Name, span);
-                return new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span);
+                return new HashlibHashObject(_algorithm, initial.Bytes, context.MemoryGovernor, span);
             }
 
-            return new HashlibHashObject(algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span);
+            return new HashlibHashObject(_algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span);
+        }
+    }
+
+    private sealed class HashlibNewCallable : HashlibCallable
+    {
+        public HashlibNewCallable()
+            : base("hashlib.new")
+        {
         }
 
-        private static object InvokeNew(
+        protected override object InvokeCore(
             CallArgumentValue[] arguments,
             LythonSourceSpan span,
             ExecutionContext context)
