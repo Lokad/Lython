@@ -27,7 +27,10 @@ internal sealed partial class Parser
             }
 
             statements.Add(statement);
-            DrainPendingStatements(statements);
+            while (_pendingStatements.Count != 0)
+            {
+                statements.Add(_pendingStatements.Dequeue());
+            }
 
             if (CurrentToken != Token.Semicolon)
             {
@@ -55,14 +58,6 @@ internal sealed partial class Parser
 
         AddDiagnostic(code, "Expected end-of-line after one-line suite.", _position);
         return null;
-    }
-
-    private void DrainPendingStatements(List<StatementSyntax> statements)
-    {
-        while (_pendingStatements.Count != 0)
-        {
-            statements.Add(_pendingStatements.Dequeue());
-        }
     }
 
     private IReadOnlyList<StatementSyntax>? ParseIndentedSuite(LythonDiagnosticCode code, string message)

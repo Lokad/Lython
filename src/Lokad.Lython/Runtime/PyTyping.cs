@@ -480,6 +480,17 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         };
 
         return value is not PyNone;
+
+        PyDict BuildAnnotations()
+        {
+            var dict = new PyDict();
+            foreach (var fieldName in _fieldNames)
+            {
+                dict.SetItem(PyString.FromString(fieldName), new PyTypingAlias("Any"));
+            }
+
+            return dict;
+        }
     }
     public PyString RenderPython(PyRenderingContext context)
             => PyString.FromString($"<class '{Name}'>");
@@ -531,7 +542,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
                 continue;
             }
 
-            var fieldIndex = IndexOfField(_fieldNames, argument.KeywordName);
+            var fieldIndex = IndexOfField(argument.KeywordName);
             if (fieldIndex < 0)
             {
                 throw new LythonRuntimeException("TypeError", $"{Name}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
@@ -541,30 +552,19 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         }
 
         return new PyTypingNamedTupleObject(Name, _fieldNames, values);
-    }
 
-    private static int IndexOfField(IReadOnlyList<string> fields, string name)
-    {
-        for (var i = 0; i < fields.Count; i++)
+        int IndexOfField(string name)
         {
-            if (string.Equals(fields[i], name, StringComparison.Ordinal))
+            for (var i = 0; i < _fieldNames.Count; i++)
             {
-                return i;
+                if (string.Equals(_fieldNames[i], name, StringComparison.Ordinal))
+                {
+                    return i;
+                }
             }
+
+            return -1;
         }
-
-        return -1;
-    }
-
-    private PyDict BuildAnnotations()
-    {
-        var dict = new PyDict();
-        foreach (var fieldName in _fieldNames)
-        {
-            dict.SetItem(PyString.FromString(fieldName), new PyTypingAlias("Any"));
-        }
-
-        return dict;
     }
 }
 

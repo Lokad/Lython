@@ -166,11 +166,15 @@ internal static class StaticProcessContractFamily
                 }
                 else
                 {
-                    StaticContractChecks.AnalyzeIterableOfPathLikeLiteral(
-                        sequenceItems,
-                        "LA3021",
-                        $"{owner}(args) expects an iterable of strings or Paths.",
-                        diagnostics);
+                    foreach (var item in sequenceItems)
+                    {
+                        if (!StaticKnownCallArgumentChecks.IsPathLike(item) &&
+                            !StaticKnownCallArgumentChecks.IsUnknown(item))
+                        {
+                            AddDiagnostic(diagnostics, "LA3021", $"{owner}(args) expects an iterable of strings or Paths.", item.Span);
+                            break;
+                        }
+                    }
                 }
             }
             else if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(argsExpression, bindings))

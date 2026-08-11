@@ -268,17 +268,4 @@ internal static class StaticContractChecks
         }
     }
 
-    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics)
-    {
-        foreach (var item in items)
-        {
-            if (!StaticKnownCallArgumentChecks.IsPathLike(item) &&
-                !StaticKnownCallArgumentChecks.IsUnknown(item))
-            {
-                AddDiagnostic(diagnostics, code, message, item.Span);
-                return;
-            }
-        }
-    }
-
 }

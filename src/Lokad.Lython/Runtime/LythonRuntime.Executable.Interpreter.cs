@@ -85,13 +85,22 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.LoadMember:
                     var target = Pop(_stack, instruction.Span);
                     var memberName = codeObject.Names[instruction.NameIndex];
-                    if (!TryReadExecutableMemberCache(target, _memberCaches[instruction.MemberCacheIndex], out var memberValue))
+                    var cachedMember = _memberCaches[instruction.MemberCacheIndex];
+                    object memberValue;
+                    if (cachedMember is not null && ReferenceEquals(cachedMember.Target, target))
                     {
-                        if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out memberValue))
+                        // Identity is required: equal mutable Python values can expose different
+                        // instance members, while cacheable builtin targets have stable lookup rules.
+                        memberValue = cachedMember.Value;
+                    }
+                    else
+                    {
+                        if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out var resolvedMember))
                         {
                             throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
                         }
 
+                        memberValue = resolvedMember;
                         _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberTarget(target)
                             ? new ExecutableMemberCache(target, memberValue)
                             : null;

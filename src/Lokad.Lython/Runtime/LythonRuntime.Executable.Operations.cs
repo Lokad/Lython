@@ -83,23 +83,6 @@ internal sealed partial class LythonRuntime
         return PyIndexing.ReadSlice(target, start, end, step, span);
     }
 
-    private static bool TryReadExecutableMemberCache(
-        object target,
-        ExecutableMemberCache? cache,
-        [MaybeNullWhen(false)] out object value)
-    {
-        // Identity is required: equal mutable Python values can expose different
-        // instance members, while cacheable builtin targets have stable lookup rules.
-        if (cache is not null && ReferenceEquals(cache.Target, target))
-        {
-            value = cache.Value;
-            return true;
-        }
-
-        value = null;
-        return false;
-    }
-
     private static bool CanCacheRuntimeMemberTarget(object target)
         => target is not IPyContextualDynamicAttributes &&
            target is (PyString
