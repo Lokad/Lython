@@ -11,6 +11,7 @@ internal sealed partial class Parser
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private int _position;
     private int _functionDepth;
+    private int _unaryOperatorDepth;
 
     public Parser(LexerResult<Token> tokens)
     {

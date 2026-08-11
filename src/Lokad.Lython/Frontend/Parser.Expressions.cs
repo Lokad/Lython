@@ -376,10 +376,14 @@ internal sealed partial class Parser
         if (CurrentToken == Token.Not)
         {
             var notToken = ReadToken();
-            var operand = ParseUnaryExpression();
+            var diagnosticCount = _diagnostics.Count;
+            var operand = ParseNestedUnaryOperand(notToken);
             if (operand is null)
             {
-                AddDiagnostic("LA1043", "Expected expression after 'not'.", notToken);
+                if (_diagnostics.Count == diagnosticCount)
+                {
+                    AddDiagnostic("LA1043", "Expected expression after 'not'.", notToken);
+                }
                 return null;
             }
 
@@ -389,10 +393,14 @@ internal sealed partial class Parser
         if (CurrentToken is Token.Plus or Token.Minus)
         {
             var operatorToken = ReadToken();
-            var operand = ParseUnaryExpression();
+            var diagnosticCount = _diagnostics.Count;
+            var operand = ParseNestedUnaryOperand(operatorToken);
             if (operand is null)
             {
-                AddDiagnostic("LA1044", "Expected expression after unary operator.", operatorToken);
+                if (_diagnostics.Count == diagnosticCount)
+                {
+                    AddDiagnostic("LA1044", "Expected expression after unary operator.", operatorToken);
+                }
                 return null;
             }
 
@@ -405,10 +413,14 @@ internal sealed partial class Parser
         if (CurrentToken == Token.Tilde)
         {
             var operatorToken = ReadToken();
-            var operand = ParseUnaryExpression();
+            var diagnosticCount = _diagnostics.Count;
+            var operand = ParseNestedUnaryOperand(operatorToken);
             if (operand is null)
             {
-                AddDiagnostic("LA1065", "Expected expression after '~'.", operatorToken);
+                if (_diagnostics.Count == diagnosticCount)
+                {
+                    AddDiagnostic("LA1065", "Expected expression after '~'.", operatorToken);
+                }
                 return null;
             }
 
@@ -416,6 +428,28 @@ internal sealed partial class Parser
         }
 
         return ParsePowerExpression();
+
+        ExpressionSyntax? ParseNestedUnaryOperand(int operatorToken)
+        {
+            if (_unaryOperatorDepth >= LythonEngine.MaxUnaryOperatorNesting)
+            {
+                AddDiagnostic(
+                    "LA0004",
+                    $"Unary operator nesting exceeds the maximum of {LythonEngine.MaxUnaryOperatorNesting} levels.",
+                    operatorToken);
+                return null;
+            }
+
+            _unaryOperatorDepth++;
+            try
+            {
+                return ParseUnaryExpression();
+            }
+            finally
+            {
+                _unaryOperatorDepth--;
+            }
+        }
 
         ExpressionSyntax? ParsePowerExpression()
         {

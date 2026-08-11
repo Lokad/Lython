@@ -450,6 +450,29 @@ open("/repo/input.txt", "r" "b")
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
     }
 
+    [Fact]
+    public void Compile_RejectsExcessiveUnaryOperatorNestingBeforeRecursiveLowering()
+    {
+        var source = "value = " + string.Concat(Enumerable.Repeat("not ", LythonEngine.MaxUnaryOperatorNesting + 1)) + "False\n";
+
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.False(compiled.IsValid);
+        var diagnostic = Assert.Single(compiled.Diagnostics);
+        Assert.Equal("LA0004", diagnostic.Code);
+        Assert.Contains(LythonEngine.MaxUnaryOperatorNesting.ToString(), diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Compile_AcceptsUnaryOperatorNestingAtTheContainedFrontendLimit()
+    {
+        var source = "value = " + string.Concat(Enumerable.Repeat("not ", LythonEngine.MaxUnaryOperatorNesting)) + "False\n";
+
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+    }
+
     private static string FormatDiagnostic(LythonDiagnostic diagnostic)
         => diagnostic.Span is null
             ? $"{diagnostic.Code}: {diagnostic.Message}"

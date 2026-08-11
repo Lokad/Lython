@@ -14,6 +14,9 @@ public sealed class LythonEngine
     /// <summary>The maximum delimiter nesting accepted by the contained frontend.</summary>
     public const int MaxSyntaxNesting = 512;
 
+    /// <summary>The maximum number of recursively nested unary operators accepted by the contained frontend.</summary>
+    public const int MaxUnaryOperatorNesting = 256;
+
     /// <summary>Compiles source and returns both the reusable script and all frontend diagnostics.</summary>
     public LythonCompiledScript Compile(string source)
     {
