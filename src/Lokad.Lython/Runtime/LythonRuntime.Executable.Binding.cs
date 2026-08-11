@@ -286,7 +286,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object ExecuteExecutableCall(ExecutableCallSite callSite, ExecutableValueStack stack, ExecutionContext context, ExecutableCallCache cache)
+    private static object ExecuteExecutableCall(
+        ExecutableCallSite callSite,
+        ExecutableValueStack stack,
+        ExecutionContext context,
+        ref ExecutableCallCache? cache)
     {
         var valueCount = callSite.ArgumentCount + 1;
         if (valueCount < 0 || stack.Count < valueCount)
@@ -312,20 +316,18 @@ internal sealed partial class LythonRuntime
 
         stack.RemoveTail(valueCount);
 
-        if (cache.Callable is not null && ReferenceEquals(cache.Target, target))
+        if (cache is not null && ReferenceEquals(cache.Target, target))
         {
             return InvokeExecutableCachedCallable(cache.Callable, callSite.CallSpan, context, arguments);
         }
 
         if (target is ICallable callable)
         {
-            cache.Target = target;
-            cache.Callable = callable;
+            cache = new ExecutableCallCache(target, callable);
             return InvokeExecutableCachedCallable(callable, callSite.CallSpan, context, arguments);
         }
 
-        cache.Target = null;
-        cache.Callable = null;
+        cache = null;
         return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
     }
 

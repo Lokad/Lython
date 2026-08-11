@@ -167,19 +167,9 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
-    private sealed class ExecutableMemberCache
-    {
-        public object? Target { get; set; }
+    private sealed record ExecutableMemberCache(object Target, object Value);
 
-        public object? Value { get; set; }
-    }
-
-    private sealed class ExecutableCallCache
-    {
-        public object? Target { get; set; }
-
-        public ICallable? Callable { get; set; }
-    }
+    private sealed record ExecutableCallCache(object Target, ICallable Callable);
 
     private sealed class ExecutableValueStack
     {

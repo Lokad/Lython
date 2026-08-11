@@ -85,20 +85,16 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.LoadMember:
                     var target = Pop(_stack, instruction.Span);
                     var memberName = codeObject.Names[instruction.NameIndex];
-                    var memberCache = _memberCaches[instruction.MemberCacheIndex] ??= new ExecutableMemberCache();
-                    if (!TryReadExecutableMemberCache(target, memberCache, out var memberValue))
+                    if (!TryReadExecutableMemberCache(target, _memberCaches[instruction.MemberCacheIndex], out var memberValue))
                     {
                         if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out memberValue))
                         {
                             throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
                         }
 
-                        TryWriteExecutableMemberCache(target, memberValue, memberCache);
-                    }
-
-                    if (memberValue is null)
-                    {
-                        throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span);
+                        _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberTarget(target)
+                            ? new ExecutableMemberCache(target, memberValue)
+                            : null;
                     }
 
                     context.ObserveValue(memberValue, instruction.Span);
@@ -257,11 +253,12 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.Call:
-                    PushObserved(ExecuteExecutableCall(
+                    var callResult = ExecuteExecutableCall(
                         codeObject.CallSites[instruction.CallSiteIndex],
                         _stack,
                         context,
-                        _callCaches[instruction.CallCacheIndex] ??= new ExecutableCallCache()), instruction.Span);
+                        ref _callCaches[instruction.CallCacheIndex]);
+                    PushObserved(callResult, instruction.Span);
                     break;
 
                 case ExecutableOpCode.Subscript:
