@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsPathExistsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.exists", span);
-        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Exists;
+        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Exists;
     }
 
     private static object OsPathIsFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsPathIsFileAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.isfile", span);
-        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsFile;
+        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsFile;
     }
 
     private static object OsPathIsDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsPathIsDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.isdir", span);
-        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsDir;
+        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsDir;
     }
 
     private static object OsPathGetSize(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsPathGetSizeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.getsize", span);
-        return (await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Size;
+        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Size;
     }
 
     private static object OsPathGetMTime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -235,7 +235,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsPathGetMTimeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.getmtime", span);
-        var stat = await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
+        var stat = await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
         return PathModifiedAtSeconds(stat.ModifiedAtTimestamp, span);
     }
 
@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
         return context.HostStat(path, span);
     }
 
-    private static async ValueTask<LythonPathStat> OsHostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<LythonPathStat> HostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
     {
         context.RegisterHostCall(span);
         return await context.HostStatAsync(path, span).ConfigureAwait(false);

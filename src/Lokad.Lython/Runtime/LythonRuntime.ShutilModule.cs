@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
         var resolved = await ResolveMoveDestinationAsync(source, destination, context, span).ConfigureAwait(false);
         EnsureDistinctFiles(source, resolved, "shutil.move", span);
 
-        var destinationStat = await OsHostStatAsync(resolved, context, span).ConfigureAwait(false);
+        var destinationStat = await HostStatAsync(resolved, context, span).ConfigureAwait(false);
         if (destinationStat.Exists)
         {
             throw new LythonRuntimeException("RuntimeError", $"shutil.move() destination already exists: {resolved}", span);
@@ -202,7 +202,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var sourceStat = await OsHostStatAsync(source, context, span).ConfigureAwait(false);
+        var sourceStat = await HostStatAsync(source, context, span).ConfigureAwait(false);
         if (!sourceStat.Exists || !sourceStat.IsFile)
         {
             throw new LythonRuntimeException("RuntimeError", $"{owner}() source is not a file: {source}", span);
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var destinationStat = await OsHostStatAsync(destination, context, span).ConfigureAwait(false);
+        var destinationStat = await HostStatAsync(destination, context, span).ConfigureAwait(false);
         if (!destinationStat.IsDir)
         {
             return destination;
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<string> ResolveMoveDestinationAsync(string source, string destination, ExecutionContext context, LythonSourceSpan span)
     {
-        var destinationStat = await OsHostStatAsync(destination, context, span).ConfigureAwait(false);
+        var destinationStat = await HostStatAsync(destination, context, span).ConfigureAwait(false);
         return destinationStat.IsDir
             ? PathOps.Normalize(PathOps.Join(destination, PathOps.BaseName(source)), context.Host.Cwd)
             : destination;
@@ -296,7 +296,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask RemoveExistingFileDestinationAsync(string destination, string owner, ExecutionContext context, LythonSourceSpan span)
     {
-        var destinationStat = await OsHostStatAsync(destination, context, span).ConfigureAwait(false);
+        var destinationStat = await HostStatAsync(destination, context, span).ConfigureAwait(false);
         if (!destinationStat.Exists)
         {
             return;

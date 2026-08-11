@@ -401,7 +401,7 @@ internal sealed partial class LythonRuntime
         if (!HasGlobMeta(segment))
         {
             var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
-            var stat = await GlobHostStatAsync(next, context, span).ConfigureAwait(false);
+            var stat = await HostStatAsync(next, context, span).ConfigureAwait(false);
             if (!stat.Exists)
             {
                 return;
@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!(await GlobHostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
+            if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
             {
                 continue;
             }
@@ -480,7 +480,7 @@ internal sealed partial class LythonRuntime
             }
 
             var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-            if (!(await GlobHostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
+            if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
             {
                 continue;
             }
@@ -505,7 +505,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<IReadOnlyList<string>> ListDirectoryNamesAsync(string path, ExecutionContext context, LythonSourceSpan span)
     {
-        var stat = await GlobHostStatAsync(path, context, span).ConfigureAwait(false);
+        var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
         if (!stat.IsDir)
         {
             return Array.Empty<string>();
@@ -513,12 +513,6 @@ internal sealed partial class LythonRuntime
 
         context.RegisterHostCall(span);
         return await context.HostListDirAsync(path, span).ConfigureAwait(false);
-    }
-
-    private static async ValueTask<LythonPathStat> GlobHostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.RegisterHostCall(span);
-        return await context.HostStatAsync(path, span).ConfigureAwait(false);
     }
 
     private static IReadOnlyList<string> SplitAbsoluteGlobPattern(string absolutePattern)

@@ -89,7 +89,7 @@ internal static partial class StaticBindingEngine
             return TryGetDataclassDefaultFactoryValue(defaultFactoryExpression, expression.Span, out value);
         }
 
-        if (IsDataclassFieldCall(expression))
+        if (StaticDataclassFacts.IsFieldCall(expression))
         {
             value = default;
             return false;
@@ -124,7 +124,7 @@ internal static partial class StaticBindingEngine
     private static bool TryGetDataclassFieldArgument(ExpressionSyntax? expression, int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax argument)
     {
         if (expression is CallExpressionSyntax call &&
-            IsDataclassFieldCall(call) &&
+            StaticDataclassFacts.IsFieldCall(call) &&
             StaticCallArguments.TryGetConcreteArguments(call, out var arguments) &&
             arguments.TryGetValue(position, keyword, out argument))
         {
@@ -134,13 +134,6 @@ internal static partial class StaticBindingEngine
         argument = default;
         return false;
     }
-
-    private static bool IsDataclassFieldCall(ExpressionSyntax expression)
-        => expression is CallExpressionSyntax call && IsDataclassFieldCall(call);
-
-    private static bool IsDataclassFieldCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "field" } or
-            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "dataclasses" }, MemberName: "field" };
 
     private static bool TryGetDataclassDefaultFactoryValue(ExpressionSyntax expression, LythonSourceSpan span, out AbstractValue value)
     {

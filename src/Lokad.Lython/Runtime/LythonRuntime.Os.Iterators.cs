@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
             => _stat ??= HostStat(_path, context, span);
 
         private async ValueTask<LythonPathStat> GetCachedStatAsync(ExecutionContext context, LythonSourceSpan span)
-            => _stat ??= await OsHostStatAsync(_path, context, span).ConfigureAwait(false);
+            => _stat ??= await HostStatAsync(_path, context, span).ConfigureAwait(false);
     }
 
     private sealed class PyWalkIterator : PyIteratorBase

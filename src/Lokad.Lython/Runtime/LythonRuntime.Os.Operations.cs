@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsStatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.stat", span);
-        return await OsHostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
+        return await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
     }
 
     private static object OsScandir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
             : false;
 
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
-        var stat = await OsHostStatAsync(normalized, context, span).ConfigureAwait(false);
+        var stat = await HostStatAsync(normalized, context, span).ConfigureAwait(false);
         if (stat.Exists)
         {
             if (stat.IsDir && existOk)
@@ -316,7 +316,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var current in EnumerateMissingDirectories(normalized))
         {
-            var currentStat = await OsHostStatAsync(current, context, span).ConfigureAwait(false);
+            var currentStat = await HostStatAsync(current, context, span).ConfigureAwait(false);
             if (currentStat.Exists)
             {
                 if (!currentStat.IsDir)
@@ -408,7 +408,7 @@ internal sealed partial class LythonRuntime
 
         var source = PathOps.Normalize(GetPath(arguments[0], "os.replace", span), context.Host.Cwd);
         var destination = PathOps.Normalize(GetPath(arguments[1], "os.replace", span), context.Host.Cwd);
-        var destinationStat = await OsHostStatAsync(destination, context, span).ConfigureAwait(false);
+        var destinationStat = await HostStatAsync(destination, context, span).ConfigureAwait(false);
         if (destinationStat.Exists)
         {
             context.RegisterHostCall(span);
@@ -482,7 +482,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsRmDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span), context.Host.Cwd);
-        var stat = await OsHostStatAsync(path, context, span).ConfigureAwait(false);
+        var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
         if (!stat.Exists || !stat.IsDir)
         {
             context.RegisterHostCall(span);
@@ -496,7 +496,7 @@ internal sealed partial class LythonRuntime
         var current = ParentDirectory(path);
         while (current is not "/" and not ".")
         {
-            var currentStat = await OsHostStatAsync(current, context, span).ConfigureAwait(false);
+            var currentStat = await HostStatAsync(current, context, span).ConfigureAwait(false);
             if (!currentStat.Exists || !currentStat.IsDir)
             {
                 break;

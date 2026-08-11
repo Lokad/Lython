@@ -10,7 +10,7 @@ internal static class StaticDataclassContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (IsDataclassesFieldCall(call))
+        if (StaticDataclassFacts.IsFieldCall(call))
         {
             AnalyzeDataclassesFieldCall(arguments, diagnostics, bindings);
             return true;
@@ -230,10 +230,6 @@ internal static class StaticDataclassContractFamily
 
     private static IEnumerable<AbstractClassFieldSummary> GetVisibleDataclassFields(AbstractClassSummary summary)
         => summary.StoredFields;
-
-    private static bool IsDataclassesFieldCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "field" } or
-            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "dataclasses" }, MemberName: "field" };
 
     private static bool IsDataclassesAsDictCall(CallExpressionSyntax call)
         => call.Target is IdentifierExpressionSyntax { Name: "asdict" } or
