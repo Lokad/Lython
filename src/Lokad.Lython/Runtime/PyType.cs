@@ -348,6 +348,14 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
         sequences[^1] = bases;
         var offsets = new int[sequences.Length];
+        var tailOccurrences = new Dictionary<PyType, int>(ReferenceEqualityComparer.Instance);
+        foreach (var sequence in sequences)
+        {
+            for (var i = 1; i < sequence.Count; i++)
+            {
+                tailOccurrences[sequence[i]] = tailOccurrences.GetValueOrDefault(sequence[i]) + 1;
+            }
+        }
 
         while (true)
         {
@@ -364,31 +372,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
                 hasRemainingSequence = true;
                 var head = sequence[offset];
-                var isValid = true;
-                for (var otherIndex = 0; otherIndex < sequences.Length; otherIndex++)
-                {
-                    if (sequenceIndex == otherIndex)
-                    {
-                        continue;
-                    }
-
-                    var other = sequences[otherIndex];
-                    for (var i = offsets[otherIndex] + 1; i < other.Count; i++)
-                    {
-                        if (ReferenceEquals(other[i], head))
-                        {
-                            isValid = false;
-                            break;
-                        }
-                    }
-
-                    if (!isValid)
-                    {
-                        break;
-                    }
-                }
-
-                if (isValid)
+                if (!tailOccurrences.ContainsKey(head))
                 {
                     candidate = head;
                     break;
@@ -413,6 +397,21 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
                 var offset = offsets[sequenceIndex];
                 if (offset < sequence.Count && ReferenceEquals(sequence[offset], candidate))
                 {
+                    var nextHeadIndex = offset + 1;
+                    if (nextHeadIndex < sequence.Count)
+                    {
+                        var nextHead = sequence[nextHeadIndex];
+                        var remainingOccurrences = tailOccurrences[nextHead] - 1;
+                        if (remainingOccurrences == 0)
+                        {
+                            tailOccurrences.Remove(nextHead);
+                        }
+                        else
+                        {
+                            tailOccurrences[nextHead] = remainingOccurrences;
+                        }
+                    }
+
                     offsets[sequenceIndex]++;
                 }
             }
