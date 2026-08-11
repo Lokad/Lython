@@ -616,6 +616,47 @@ return_value = payload
     }
 
     [Fact]
+    public void HostGlobals_RejectArbitraryClrObjectsWithoutInvokingCallbacks()
+    {
+        var value = new CallbackGlobalValue();
+
+        var result = new LythonEngine().Run(
+            "text = str(value)",
+            new MockLythonHost(),
+            new LythonRunOptions
+            {
+                Globals = new Dictionary<string, object?> { ["value"] = value }
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("initial global values", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Equal(0, value.ToStringCallCount);
+        Assert.Equal(0, value.GetEnumeratorCallCount);
+    }
+
+    [Fact]
+    public void HostGlobals_RejectReferenceCycles()
+    {
+        var cycle = new List<object?>();
+        cycle.Add(cycle);
+
+        var result = new LythonEngine().Run(
+            "value = payload",
+            new MockLythonHost(),
+            new LythonRunOptions
+            {
+                Globals = new Dictionary<string, object?> { ["payload"] = cycle }
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("reference cycles", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ExecutionMemoryBudget_IsEnforcedForRegexFindAllMaterialization()
     {
         var result = new LythonEngine().Run(
@@ -1253,6 +1294,27 @@ text = str(data)
         }
 
         return (List<object?>)current;
+    }
+
+    private sealed class CallbackGlobalValue : IEnumerable<object>
+    {
+        public int ToStringCallCount { get; private set; }
+
+        public int GetEnumeratorCallCount { get; private set; }
+
+        public override string ToString()
+        {
+            ToStringCallCount++;
+            return Environment.MachineName;
+        }
+
+        public IEnumerator<object> GetEnumerator()
+        {
+            GetEnumeratorCallCount++;
+            return Array.Empty<object>().AsEnumerable().GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private sealed class BlockingReadHost : ILythonHost

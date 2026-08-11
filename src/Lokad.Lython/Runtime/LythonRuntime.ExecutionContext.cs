@@ -361,121 +361,249 @@ internal sealed partial class LythonRuntime
             return variables;
         }
 
-        private static object NormalizeRuntimeValue(object? value, ExecutionContext context)
-        {
-            return value switch
-            {
-                null => PyNone.Instance,
-                PyNone none => none,
-                string text => CreateString(text, context, null),
-                byte[] bytes => CreateBytes(bytes.ToArray(), context, null),
-                PyBytes bytes => CreateBytes(bytes.ToArray(), context, null),
-                PyList list => NormalizePyList(list, context),
-                PyTuple tuple => NormalizePyTuple(tuple, context),
-                List<object?> list => NormalizeObjectList(list, context),
-                object?[] tuple => NormalizeObjectArray(tuple, context),
-                PySet set => NormalizePySet(set, context),
-                HashSet<object?> set => NormalizeObjectSet(set, context),
-                Dictionary<string, object?> dict => NormalizeStringKeyDictionary(dict, context),
-                Dictionary<object, object?> dict => NormalizeObjectKeyDictionary(dict, context),
-                PyDict dict => NormalizePyDict(dict, context),
-                _ => value
-            };
+        private const int MaxGlobalNormalizationDepth = 1_000;
 
-            static PyList NormalizePyList(PyList list, ExecutionContext context)
+        private static object NormalizeRuntimeValue(object? value, ExecutionContext context)
+            => NormalizeRuntimeValue(
+                value,
+                context,
+                new HashSet<object>(ReferenceEqualityComparer.Instance),
+                depth: 0);
+
+        private static object NormalizeRuntimeValue(
+            object? value,
+            ExecutionContext context,
+            HashSet<object> activeContainers,
+            int depth)
+        {
+            if (depth > MaxGlobalNormalizationDepth)
             {
+                throw RuntimeErrors.Type($"initial global values cannot be nested more than {MaxGlobalNormalizationDepth} levels", null);
+            }
+
+            switch (value)
+            {
+                case null:
+                case PyNone:
+                    return PyNone.Instance;
+                case bool boolean:
+                    return boolean;
+                case BigInteger integer:
+                    context.ObserveValue(integer, null);
+                    return integer;
+                case sbyte integer:
+                    return new BigInteger(integer);
+                case byte integer:
+                    return new BigInteger(integer);
+                case short integer:
+                    return new BigInteger(integer);
+                case ushort integer:
+                    return new BigInteger(integer);
+                case int integer:
+                    return new BigInteger(integer);
+                case uint integer:
+                    return new BigInteger(integer);
+                case long integer:
+                    return new BigInteger(integer);
+                case ulong integer:
+                    return new BigInteger(integer);
+                case float floating:
+                    return (double)floating;
+                case double floating:
+                    return floating;
+                case decimal number:
+                    return new PyDecimal(number);
+                case string text:
+                    return CreateString(text, context, null);
+                case PyString text:
+                    return CreateString(text.AsString(), context, null);
+                case byte[] bytes:
+                    return CreateBytes(bytes.ToArray(), context, null);
+                case PyBytes bytes:
+                    return CreateBytes(bytes.ToArray(), context, null);
+            }
+
+            var valueType = value.GetType();
+            return valueType == typeof(PyList)
+                ? NormalizeContainer(value, activeContainers, () => NormalizePyList((PyList)value, context, activeContainers, depth + 1))
+                : valueType == typeof(PyTuple)
+                    ? NormalizeContainer(value, activeContainers, () => NormalizePyTuple((PyTuple)value, context, activeContainers, depth + 1))
+                    : valueType == typeof(List<object?>)
+                        ? NormalizeContainer(value, activeContainers, () => NormalizeObjectList((List<object?>)value, context, activeContainers, depth + 1))
+                        : valueType == typeof(object?[])
+                            ? NormalizeContainer(value, activeContainers, () => NormalizeObjectArray((object?[])value, context, activeContainers, depth + 1))
+                            : valueType == typeof(PySet)
+                                ? NormalizeContainer(value, activeContainers, () => NormalizePySet((PySet)value, context, activeContainers, depth + 1))
+                                : valueType == typeof(HashSet<object?>)
+                                    ? NormalizeContainer(value, activeContainers, () => NormalizeObjectSet((HashSet<object?>)value, context, activeContainers, depth + 1))
+                                    : valueType == typeof(Dictionary<string, object?>)
+                                        ? NormalizeContainer(value, activeContainers, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, depth + 1))
+                                        : valueType == typeof(Dictionary<object, object?>)
+                                            ? NormalizeContainer(value, activeContainers, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, depth + 1))
+                                            : valueType == typeof(PyDict)
+                                                ? NormalizeContainer(value, activeContainers, () => NormalizePyDict((PyDict)value, context, activeContainers, depth + 1))
+                                                : throw RuntimeErrors.Type("initial global values may contain only supported scalar and collection values", null);
+
+            static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Func<T> normalize)
+            {
+                if (!activeContainers.Add(container))
+                {
+                    throw RuntimeErrors.Type("initial global values cannot contain reference cycles", null);
+                }
+
+                try
+                {
+                    return normalize();
+                }
+                finally
+                {
+                    activeContainers.Remove(container);
+                }
+            }
+
+            static PyList NormalizePyList(
+                PyList list,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
+            {
+                context.ObserveCollectionCount(list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
             }
 
-            static PyTuple NormalizePyTuple(PyTuple tuple, ExecutionContext context)
+            static PyTuple NormalizePyTuple(
+                PyTuple tuple,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(tuple.Count, null);
                 var items = new object[tuple.Count];
                 for (var i = 0; i < tuple.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
             }
 
-            static PyList NormalizeObjectList(List<object?> list, ExecutionContext context)
+            static PyList NormalizeObjectList(
+                List<object?> list,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
             }
 
-            static PyTuple NormalizeObjectArray(object?[] tuple, ExecutionContext context)
+            static PyTuple NormalizeObjectArray(
+                object?[] tuple,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(tuple.Length, null);
                 var items = new object[tuple.Length];
                 for (var i = 0; i < tuple.Length; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
             }
 
-            static PySet NormalizePySet(PySet set, ExecutionContext context)
+            static PySet NormalizePySet(
+                PySet set,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, depth)));
                 }
 
                 return normalized;
             }
 
-            static PySet NormalizeObjectSet(HashSet<object?> set, ExecutionContext context)
+            static PySet NormalizeObjectSet(
+                HashSet<object?> set,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, depth)));
                 }
 
                 return normalized;
             }
 
-            static PyDict NormalizeStringKeyDictionary(Dictionary<string, object?> dict, ExecutionContext context)
+            static PyDict NormalizeStringKeyDictionary(
+                Dictionary<string, object?> dict,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(dict.Count, null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
-                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context));
+                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
                 }
 
                 return normalized;
             }
 
-            static PyDict NormalizeObjectKeyDictionary(Dictionary<object, object?> dict, ExecutionContext context)
+            static PyDict NormalizeObjectKeyDictionary(
+                Dictionary<object, object?> dict,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(dict.Count, null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
-                    normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
+                    normalized.SetItem(
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
                 }
 
                 return normalized;
             }
 
-            static PyDict NormalizePyDict(PyDict dict, ExecutionContext context)
+            static PyDict NormalizePyDict(
+                PyDict dict,
+                ExecutionContext context,
+                HashSet<object> activeContainers,
+                int depth)
             {
+                context.ObserveCollectionCount(dict.Count, null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
-                    normalized.SetItem(ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context), null, context.MemoryGovernor), NormalizeRuntimeValue(pair.Value, context));
+                    normalized.SetItem(
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
                 }
 
                 return normalized;

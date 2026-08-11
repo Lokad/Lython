@@ -35,7 +35,11 @@ public sealed class LythonRunOptions
     /// <summary>The default memory budget for projecting a return value to CLR objects.</summary>
     public const long DefaultMaxProjectionMemoryBytes = 1024L * 1024L * 1024L;
 
-    /// <summary>Gets initial global values exposed to the script.</summary>
+    /// <summary>
+    /// Gets initial global values exposed to the script. Values are copied into
+    /// Lython-owned scalars and collections; unsupported CLR objects and cyclic
+    /// object graphs are rejected before execution.
+    /// </summary>
     public IReadOnlyDictionary<string, object?>? Globals { get; init; }
 
     /// <summary>Gets values exposed through <c>sys.argv</c>, excluding the source path.</summary>
