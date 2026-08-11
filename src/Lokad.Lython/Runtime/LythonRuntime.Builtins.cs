@@ -339,9 +339,9 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 3 && arguments[2] is not PyNone)
         {
-            var integerBase = ExpectBuiltinInteger(arguments[0], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
-            var exponent = ExpectBuiltinInteger(arguments[1], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
-            var modulus = ExpectBuiltinInteger(arguments[2], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            var integerBase = RuntimeArgumentValidation.ExpectInteger(arguments[0], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            var exponent = RuntimeArgumentValidation.ExpectInteger(arguments[1], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            var modulus = RuntimeArgumentValidation.ExpectInteger(arguments[2], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
             if (modulus == BigInteger.Zero)
             {
                 throw new LythonRuntimeException("ValueError", "pow() 3rd argument cannot be 0.", span);
@@ -414,7 +414,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "chr(i) expects one integer argument.", span);
         }
 
-        var codePoint = ExpectBuiltinInteger(arguments[0], "chr(i) expects one integer argument.", span);
+        var codePoint = RuntimeArgumentValidation.ExpectInteger(arguments[0], "chr(i) expects one integer argument.", span);
         if (codePoint < BigInteger.Zero || codePoint > new BigInteger(0x10FFFF))
         {
             throw new LythonRuntimeException("ValueError", "chr() arg not in range(0x110000).", span);
@@ -495,16 +495,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static BigInteger ExpectBuiltinInteger(object value, string message, LythonSourceSpan span)
-    {
-        if (!PyNumberOps.TryAsInteger(value, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        return integer;
-    }
-
     private static int ToInt32(BigInteger value, string owner, LythonSourceSpan span)
     {
         if (value < int.MinValue || value > int.MaxValue)
@@ -522,7 +512,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", message, span);
         }
 
-        var integer = ExpectBuiltinInteger(arguments[0], message, span);
+        var integer = RuntimeArgumentValidation.ExpectInteger(arguments[0], message, span);
         var sign = integer < BigInteger.Zero ? "-" : string.Empty;
         var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);
         return PyString.FromString(sign + prefix + digits);

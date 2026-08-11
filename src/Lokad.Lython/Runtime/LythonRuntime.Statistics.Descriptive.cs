@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
             var values = GetNumericValuesFromData(arguments, "statistics.median_grouped", span, context);
             values.Sort();
             var interval = arguments.Length >= 2 && arguments[1] is not PyNone
-                ? ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
+                ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
                 : 1.0;
             if (interval <= 0)
             {
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
                 ? ExpectPositivePartitionCount(arguments[1], "statistics.quantiles(..., n=...)", span)
                 : 4;
             var method = arguments.Length >= 3 && arguments[2] is not PyNone
-                ? ExpectText(arguments[2], "statistics.quantiles(..., method=...)", span)
+                ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
                 : "exclusive";
             if (method != "exclusive" && method != "inclusive")
             {
@@ -362,8 +362,8 @@ internal sealed partial class LythonRuntime
             }
 
             return new StatisticsLinearRegressionResult(
-                ExpectReal(arguments[0], "statistics.LinearRegression(..., slope=...)", span),
-                ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
+                RuntimeArgumentValidation.ExpectReal(arguments[0], "statistics.LinearRegression(..., slope=...)", span),
+                RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
         }
 
         private static BuiltinCallable UnsupportedStatisticsCallable(string qualifiedName)

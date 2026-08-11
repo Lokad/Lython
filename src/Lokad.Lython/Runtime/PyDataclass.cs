@@ -328,7 +328,7 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(cls_name, fields, ...) expects cls_name and fields.", span);
             }
 
-            var name = ExpectIdentifierString(clsName, "dataclasses.make_dataclass(cls_name=...)", span);
+            var name = RuntimeArgumentValidation.ExpectString(clsName, "dataclasses.make_dataclass(cls_name=...)", span);
             var bases = ParseBases(basesArgument, span);
             var members = new Dictionary<string, object>(StringComparer.Ordinal);
             if (namespaceArgument is not null && !ReferenceEquals(namespaceArgument, PyNone.Instance))
@@ -340,7 +340,7 @@ internal static partial class PyDataclass
 
                 foreach (var pair in namespaceDict)
                 {
-                    var memberName = ExpectIdentifierString(pair.Key, "dataclasses.make_dataclass(namespace=...) key", span);
+                    var memberName = RuntimeArgumentValidation.ExpectString(pair.Key, "dataclasses.make_dataclass(namespace=...) key", span);
                     members[memberName] = pair.Value;
                 }
             }
@@ -404,7 +404,7 @@ internal static partial class PyDataclass
                     throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass() field tuples must have 2 or 3 items.", span);
                 }
 
-                name = ExpectIdentifierString(tuple[0], "dataclasses.make_dataclass() field name", span);
+                name = RuntimeArgumentValidation.ExpectString(tuple[0], "dataclasses.make_dataclass() field name", span);
                 annotation = tuple[1];
                 if (tuple.Count == 3)
                 {
@@ -450,16 +450,6 @@ internal static partial class PyDataclass
         }
 
         return bases;
-    }
-
-    private static string ExpectIdentifierString(object value, string owner, LythonSourceSpan span)
-    {
-        if (!PyStringOps.TryAsString(value, out var text))
-        {
-            throw new LythonRuntimeException("TypeError", $"{owner} expects a string.", span);
-        }
-
-        return text.AsString();
     }
 
     private static void SetSingle(ref object? target, object value, HashSet<string> seen, string name, string owner, LythonSourceSpan span)

@@ -19,8 +19,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.uniform(a, b) expects two real arguments.", span);
             }
 
-            var a = ExpectReal(arguments[0], "random.uniform(a, b)", span);
-            var b = ExpectReal(arguments[1], "random.uniform(a, b)", span);
+            var a = RuntimeArgumentValidation.ExpectReal(arguments[0], "random.uniform(a, b)", span);
+            var b = RuntimeArgumentValidation.ExpectReal(arguments[1], "random.uniform(a, b)", span);
             return a + (b - a) * state.NextDouble();
         }
 
@@ -32,15 +32,15 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.triangular(low=0.0, high=1.0, mode=None) expects zero to three arguments.", span);
             }
 
-            var low = arguments.Length >= 1 && arguments[0] is not PyNone ? ExpectReal(arguments[0], "random.triangular(..., low=...)", span) : 0.0;
-            var high = arguments.Length >= 2 && arguments[1] is not PyNone ? ExpectReal(arguments[1], "random.triangular(..., high=...)", span) : 1.0;
+            var low = arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], "random.triangular(..., low=...)", span) : 0.0;
+            var high = arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], "random.triangular(..., high=...)", span) : 1.0;
             if (low == high)
             {
                 return low;
             }
 
             var mode = arguments.Length >= 3 && arguments[2] is not PyNone
-                ? ExpectReal(arguments[2], "random.triangular(..., mode=...)", span)
+                ? RuntimeArgumentValidation.ExpectReal(arguments[2], "random.triangular(..., mode=...)", span)
                 : (low + high) / 2.0;
             var min = Math.Min(low, high);
             var max = Math.Max(low, high);
@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.expovariate(lambd=1.0) expects zero or one real argument.", span);
             }
 
-            var lambd = arguments.Length == 1 && arguments[0] is not PyNone ? ExpectReal(arguments[0], "random.expovariate(..., lambd=...)", span) : 1.0;
+            var lambd = arguments.Length == 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], "random.expovariate(..., lambd=...)", span) : 1.0;
             if (lambd == 0.0)
             {
                 throw new LythonRuntimeException("ValueError", "random.expovariate(..., lambd=...) must be non-zero.", span);
@@ -115,8 +115,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(mu=0.0, sigma=1.0) expects zero to two real arguments.", span);
             }
 
-            var mu = arguments.Length >= 1 && arguments[0] is not PyNone ? ExpectReal(arguments[0], owner + "(..., mu=...)", span) : 0.0;
-            var sigma = arguments.Length >= 2 && arguments[1] is not PyNone ? ExpectReal(arguments[1], owner + "(..., sigma=...)", span) : 1.0;
+            var mu = arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], owner + "(..., mu=...)", span) : 0.0;
+            var sigma = arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], owner + "(..., sigma=...)", span) : 1.0;
             return mu + sigma * StandardNormal(state);
         }
 
@@ -128,8 +128,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.lognormvariate(mu, sigma) expects two real arguments.", span);
             }
 
-            return Math.Exp(ExpectReal(arguments[0], "random.lognormvariate(..., mu=...)", span) +
-                            ExpectReal(arguments[1], "random.lognormvariate(..., sigma=...)", span) * StandardNormal(state));
+            return Math.Exp(RuntimeArgumentValidation.ExpectReal(arguments[0], "random.lognormvariate(..., mu=...)", span) +
+                            RuntimeArgumentValidation.ExpectReal(arguments[1], "random.lognormvariate(..., sigma=...)", span) * StandardNormal(state));
         }
 
         private static object ParetoVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -152,8 +152,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.vonmisesvariate(mu, kappa) expects two real arguments.", span);
             }
 
-            var mu = ExpectReal(arguments[0], "random.vonmisesvariate(..., mu=...)", span);
-            var kappa = ExpectReal(arguments[1], "random.vonmisesvariate(..., kappa=...)", span);
+            var mu = RuntimeArgumentValidation.ExpectReal(arguments[0], "random.vonmisesvariate(..., mu=...)", span);
+            var kappa = RuntimeArgumentValidation.ExpectReal(arguments[1], "random.vonmisesvariate(..., kappa=...)", span);
             if (kappa < 0.0)
             {
                 throw new LythonRuntimeException("ValueError", "random.vonmisesvariate(..., kappa=...) expects kappa >= 0.", span);

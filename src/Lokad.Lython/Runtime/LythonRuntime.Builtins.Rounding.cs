@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         }
 
         var digits = arguments.Length == 2 && arguments[1] is not PyNone
-            ? ToInt32(ExpectBuiltinInteger(arguments[1], "round(number[, ndigits]) expects ndigits to be an integer.", span), "round(number[, ndigits])", span)
+            ? ToInt32(RuntimeArgumentValidation.ExpectInteger(arguments[1], "round(number[, ndigits]) expects ndigits to be an integer.", span), "round(number[, ndigits])", span)
             : (int?)null;
 
         return arguments[0] switch

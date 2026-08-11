@@ -17,10 +17,10 @@ internal sealed partial class LythonRuntime
                 LythonKnownCallableSignatures.StatisticsNormalDist,
                 PythonCallableKind.Builtin);
             var mean = bound.Length >= 1 && bound[0] is not PyNone
-                ? ExpectReal(bound[0], "statistics.NormalDist(..., mu=...)", span)
+                ? RuntimeArgumentValidation.ExpectReal(bound[0], "statistics.NormalDist(..., mu=...)", span)
                 : 0.0;
             var stdev = bound.Length >= 2 && bound[1] is not PyNone
-                ? ExpectReal(bound[1], "statistics.NormalDist(..., sigma=...)", span)
+                ? RuntimeArgumentValidation.ExpectReal(bound[1], "statistics.NormalDist(..., sigma=...)", span)
                 : 1.0;
             if (stdev < 0.0)
             {
@@ -111,26 +111,6 @@ internal sealed partial class LythonRuntime
 
             value = negative ? new PyNormalDist(-dist.Mean, dist.Stdev) : new PyNormalDist(dist.Mean, dist.Stdev);
             return true;
-        }
-
-        private static double ExpectReal(object value, string owner, LythonSourceSpan span)
-        {
-            if (!PyRealNumber.TryAsDouble(value, out var real))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);
-            }
-
-            return real;
-        }
-
-        private static string ExpectText(object value, string owner, LythonSourceSpan span)
-        {
-            if (!PyStringOps.TryAsString(value, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a string.", span);
-            }
-
-            return text.AsString();
         }
 
         private static object BoxStatisticalFloat(double value)

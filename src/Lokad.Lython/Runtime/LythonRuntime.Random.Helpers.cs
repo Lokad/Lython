@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
 
         private static int ExpectNonNegativeInt(object value, string message, LythonSourceSpan span)
         {
-            var integer = ExpectInteger(value, message, span);
+            var integer = RuntimeArgumentValidation.ExpectInteger(value, message, span);
             if (integer < 0 || integer > int.MaxValue)
             {
                 throw new LythonRuntimeException("TypeError", message, span);
@@ -56,29 +56,9 @@ internal sealed partial class LythonRuntime
             return (int)integer;
         }
 
-        private static BigInteger ExpectInteger(object value, string message, LythonSourceSpan span)
-        {
-            if (!PyNumberOps.TryAsInteger(value, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", message, span);
-            }
-
-            return integer;
-        }
-
-        private static double ExpectReal(object value, string owner, LythonSourceSpan span)
-        {
-            if (!PyRealNumber.TryAsDouble(value, out var real))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);
-            }
-
-            return real;
-        }
-
         private static double ExpectPositiveReal(object value, string owner, LythonSourceSpan span)
         {
-            var real = ExpectReal(value, owner, span);
+            var real = RuntimeArgumentValidation.ExpectReal(value, owner, span);
             if (real <= 0.0 || double.IsNaN(real) || double.IsInfinity(real))
             {
                 throw new LythonRuntimeException("ValueError", $"{owner} expects a positive finite number.", span);
@@ -98,7 +78,7 @@ internal sealed partial class LythonRuntime
             var result = new double[values.Count];
             for (var i = 0; i < values.Count; i++)
             {
-                var weight = ExpectReal(values[i], owner, span);
+                var weight = RuntimeArgumentValidation.ExpectReal(values[i], owner, span);
                 if (double.IsNaN(weight) || double.IsInfinity(weight) || weight < 0)
                 {
                     throw new LythonRuntimeException("ValueError", $"{owner} expects finite non-negative weights.", span);
@@ -136,7 +116,7 @@ internal sealed partial class LythonRuntime
             var parsed = new int[counts.Count];
             for (var i = 0; i < counts.Count; i++)
             {
-                var count = ExpectInteger(counts[i], "random.sample(..., counts=...) expects integer counts.", span);
+                var count = RuntimeArgumentValidation.ExpectInteger(counts[i], "random.sample(..., counts=...) expects integer counts.", span);
                 if (count < BigInteger.Zero || count > int.MaxValue)
                 {
                     throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects non-negative counts.", span);

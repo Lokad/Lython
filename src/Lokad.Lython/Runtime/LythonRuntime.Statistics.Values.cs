@@ -88,8 +88,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         return new StatisticsLinearRegressionResult(
-                            arguments.Length >= 1 && arguments[0] is not PyNone ? ExpectReal(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
-                            arguments.Length >= 2 && arguments[1] is not PyNone ? ExpectReal(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept);
+                            arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
+                            arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept);
                     }, "LinearRegression._replace", ["slope", "intercept"], requiredCount: 0),
                     "count" => BoundCallable.Create((arguments, span, _) =>
                     {
@@ -253,7 +253,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         RequirePositiveStdev("zscore()", span);
-                        var x = ExpectReal(arguments[0], "NormalDist.zscore(x)", span);
+                        var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.zscore(x)", span);
                         return (x - Mean) / Stdev;
                     }, "NormalDist.zscore", ["x"]),
                     "pdf" => BoundCallable.Create((arguments, span, _) =>
@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         RequirePositiveStdev("pdf()", span);
-                        var x = ExpectReal(arguments[0], "NormalDist.pdf(x)", span);
+                        var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.pdf(x)", span);
                         var z = (x - Mean) / Stdev;
                         return Math.Exp(-0.5 * z * z) * InvSqrtTau / Stdev;
                     }, "NormalDist.pdf", ["x"]),
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         RequirePositiveStdev("cdf()", span);
-                        var x = ExpectReal(arguments[0], "NormalDist.cdf(x)", span);
+                        var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.cdf(x)", span);
                         return 0.5 * (1.0 + FloatingPointSpecialFunctions.Erf((x - Mean) / (Stdev * SqrtTwo)));
                     }, "NormalDist.cdf", ["x"]),
                     "inv_cdf" => BoundCallable.Create((arguments, span, _) =>
@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "NormalDist.inv_cdf(p) expects one argument.", span);
                         }
 
-                        var p = ExpectReal(arguments[0], "NormalDist.inv_cdf(p)", span);
+                        var p = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.inv_cdf(p)", span);
                         return InvCdf(p, span);
                     }, "NormalDist.inv_cdf", ["p"]),
                     "overlap" => BoundCallable.Create((arguments, span, _) =>
