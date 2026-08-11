@@ -56,11 +56,11 @@ internal sealed partial class LythonRuntime
                 "number_format" => PyString.FromString(_worksheet.GetCellNumberFormat(Row, Column)),
                 "hyperlink" => _worksheet.GetCellHyperlink(Row, Column),
                 "comment" => _worksheet.GetCellComment(Row, Column),
-                "font" => _worksheet.GetCellStyle(Row, Column, "font"),
-                "fill" => _worksheet.GetCellStyle(Row, Column, "fill"),
-                "border" => _worksheet.GetCellStyle(Row, Column, "border"),
-                "alignment" => _worksheet.GetCellStyle(Row, Column, "alignment"),
-                "protection" => _worksheet.GetCellStyle(Row, Column, "protection"),
+                "font" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Font),
+                "fill" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Fill),
+                "border" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Border),
+                "alignment" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Alignment),
+                "protection" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Protection),
                 "style" => _worksheet.GetCellNamedStyle(Row, Column),
                 "style_id" => new BigInteger(_worksheet.GetCellStyleId(Row, Column)),
                 "data_type" => PyString.FromString(_worksheet.GetCellDataType(Row, Column)),
@@ -91,9 +91,9 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (name is "font" or "fill" or "border" or "alignment" or "protection")
+            if (TryParseCellStyleComponent(name, out var component))
             {
-                _worksheet.SetCellStyle(Row, Column, name, value);
+                _worksheet.SetCellStyle(Row, Column, component, value);
                 return true;
             }
 

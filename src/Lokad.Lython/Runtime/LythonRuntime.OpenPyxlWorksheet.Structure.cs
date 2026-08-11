@@ -233,20 +233,20 @@ internal sealed partial class LythonRuntime
             }
         }
         private static void RewriteCellStyleMap(
-            Dictionary<(CellAddress Address, string Name), object> map,
+            Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> map,
             Func<CellAddress, CellAddress?> rewrite)
         {
             if (map.Count == 0)
             {
                 return;
             }
-            var rewritten = new Dictionary<(CellAddress Address, string Name), object>();
+            var rewritten = new Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object>();
             foreach (var pair in map)
             {
                 var target = rewrite(pair.Key.Address);
                 if (target is not null)
                 {
-                    rewritten[(target.Value, pair.Key.Name)] = pair.Value;
+                    rewritten[(target.Value, pair.Key.Component)] = pair.Value;
                 }
             }
             map.Clear();
@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
             }
         }
         private static void MoveRangeStyleEntries(
-            Dictionary<(CellAddress Address, string Name), object> map,
+            Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> map,
             CellRangeAddress range,
             int rowOffset,
             int columnOffset)
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
                 var target = new CellAddress(
                     pair.Key.Address.Row + rowOffset,
                     pair.Key.Address.Column + columnOffset);
-                map[(target, pair.Key.Name)] = pair.Value;
+                map[(target, pair.Key.Component)] = pair.Value;
             }
         }
         private static bool Contains(CellRangeAddress range, CellAddress address)

@@ -677,11 +677,11 @@ internal sealed partial class LythonRuntime
             private static OpenPyxlCellStyleDefinition CreateCellStyleDefinition(OpenPyxlWorksheet worksheet, CellAddress address)
             {
                 var numberFormat = worksheet.GetCellNumberFormat(address.Row, address.Column);
-                var font = worksheet.GetAssignedCellStyle(address.Row, address.Column, "font");
-                var fill = worksheet.GetAssignedCellStyle(address.Row, address.Column, "fill");
-                var border = worksheet.GetAssignedCellStyle(address.Row, address.Column, "border");
-                var alignment = worksheet.GetAssignedCellStyle(address.Row, address.Column, "alignment");
-                var protection = worksheet.GetAssignedCellStyle(address.Row, address.Column, "protection");
+                var font = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Font);
+                var fill = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Fill);
+                var border = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Border);
+                var alignment = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Alignment);
+                var protection = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Protection);
                 return new OpenPyxlCellStyleDefinition(
                     CellStyleKey(numberFormat, font, fill, border, alignment, protection),
                     numberFormat,

@@ -13,6 +13,40 @@ internal sealed partial class LythonRuntime
         NamedStyle,
     }
 
+    internal enum OpenPyxlCellStyleComponent
+    {
+        Font,
+        Fill,
+        Border,
+        Alignment,
+        Protection,
+    }
+
+    private static bool TryParseCellStyleComponent(string name, out OpenPyxlCellStyleComponent component)
+    {
+        component = name switch
+        {
+            "font" => OpenPyxlCellStyleComponent.Font,
+            "fill" => OpenPyxlCellStyleComponent.Fill,
+            "border" => OpenPyxlCellStyleComponent.Border,
+            "alignment" => OpenPyxlCellStyleComponent.Alignment,
+            "protection" => OpenPyxlCellStyleComponent.Protection,
+            _ => default,
+        };
+        return name is "font" or "fill" or "border" or "alignment" or "protection";
+    }
+
+    private static string CellStyleComponentName(OpenPyxlCellStyleComponent component)
+        => component switch
+        {
+            OpenPyxlCellStyleComponent.Font => "font",
+            OpenPyxlCellStyleComponent.Fill => "fill",
+            OpenPyxlCellStyleComponent.Border => "border",
+            OpenPyxlCellStyleComponent.Alignment => "alignment",
+            OpenPyxlCellStyleComponent.Protection => "protection",
+            _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unknown cell style component."),
+        };
+
     internal abstract record OpenPyxlStylePayload(OpenPyxlStyleKind Kind)
     {
         /// <summary>

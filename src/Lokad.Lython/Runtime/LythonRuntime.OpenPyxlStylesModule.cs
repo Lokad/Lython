@@ -440,11 +440,11 @@ internal sealed partial class LythonRuntime
         return CreateNamedStyleValue(
             name,
             OptionalStyleValue(arguments, 5),
-            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 1), "font"),
-            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 2), "fill"),
-            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 3), "border"),
-            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 4), "alignment"),
-            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 6), "protection"));
+            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 1), OpenPyxlCellStyleComponent.Font),
+            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 2), OpenPyxlCellStyleComponent.Fill),
+            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 3), OpenPyxlCellStyleComponent.Border),
+            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 4), OpenPyxlCellStyleComponent.Alignment),
+            NormalizeNamedStyleComponent(OptionalStyleValue(arguments, 6), OpenPyxlCellStyleComponent.Protection));
     }
 
     private static OpenPyxlStyleValue CreateNamedStyleValue(object name)
@@ -460,17 +460,17 @@ internal sealed partial class LythonRuntime
         OpenPyxlStyleValue? protection)
         => new(new OpenPyxlNamedStylePayload(name, numberFormat, font, fill, border, alignment, protection));
 
-    private static OpenPyxlStyleValue? NormalizeNamedStyleComponent(object value, string name)
+    private static OpenPyxlStyleValue? NormalizeNamedStyleComponent(object value, OpenPyxlCellStyleComponent component)
     {
         if (value is PyNone)
         {
             return null;
         }
 
-        var expected = ExpectedStyleKind(name);
+        var expected = ExpectedStyleKind(component);
         return value is OpenPyxlStyleValue style && style.Kind == expected
             ? style
-            : throw new LythonRuntimeException("TypeError", "NamedStyle." + name + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
+            : throw new LythonRuntimeException("TypeError", "NamedStyle." + CellStyleComponentName(component) + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
     }
 
     private static string NamedStyleName(OpenPyxlStyleValue style, LythonSourceSpan? span)
@@ -483,16 +483,16 @@ internal sealed partial class LythonRuntime
         return ExpectString(named.Name, "NamedStyle.name", span);
     }
 
-    private static OpenPyxlStyleValue? NamedStyleComponent(OpenPyxlStyleValue style, string name)
+    private static OpenPyxlStyleValue? NamedStyleComponent(OpenPyxlStyleValue style, OpenPyxlCellStyleComponent component)
         => style.Payload is OpenPyxlNamedStylePayload named
-            ? name switch
+            ? component switch
             {
-                "font" => named.Font,
-                "fill" => named.Fill,
-                "border" => named.Border,
-                "alignment" => named.Alignment,
-                "protection" => named.Protection,
-                _ => null,
+                OpenPyxlCellStyleComponent.Font => named.Font,
+                OpenPyxlCellStyleComponent.Fill => named.Fill,
+                OpenPyxlCellStyleComponent.Border => named.Border,
+                OpenPyxlCellStyleComponent.Alignment => named.Alignment,
+                OpenPyxlCellStyleComponent.Protection => named.Protection,
+                _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unknown cell style component."),
             }
             : null;
 
@@ -675,26 +675,26 @@ internal sealed partial class LythonRuntime
                 ? value
                 : throw new LythonRuntimeException("TypeError", owner + " expects a bool.", span);
 
-    private static object DefaultCellStyle(string name)
-        => name switch
+    private static object DefaultCellStyle(OpenPyxlCellStyleComponent component)
+        => component switch
         {
-            "font" => CreateFont([], null, null),
-            "fill" => CreatePatternFill([], null, null),
-            "border" => CreateBorder([], null, null),
-            "alignment" => CreateAlignment([], null, null),
-            "protection" => CreateProtection([], null, null),
-            _ => PyNone.Instance,
+            OpenPyxlCellStyleComponent.Font => CreateFont([], null, null),
+            OpenPyxlCellStyleComponent.Fill => CreatePatternFill([], null, null),
+            OpenPyxlCellStyleComponent.Border => CreateBorder([], null, null),
+            OpenPyxlCellStyleComponent.Alignment => CreateAlignment([], null, null),
+            OpenPyxlCellStyleComponent.Protection => CreateProtection([], null, null),
+            _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unknown cell style component."),
         };
 
-    private static OpenPyxlStyleKind ExpectedStyleKind(string name)
-        => name switch
+    private static OpenPyxlStyleKind ExpectedStyleKind(OpenPyxlCellStyleComponent component)
+        => component switch
         {
-            "font" => OpenPyxlStyleKind.Font,
-            "fill" => OpenPyxlStyleKind.PatternFill,
-            "border" => OpenPyxlStyleKind.Border,
-            "alignment" => OpenPyxlStyleKind.Alignment,
-            "protection" => OpenPyxlStyleKind.Protection,
-            _ => throw new ArgumentOutOfRangeException(nameof(name), name, "Unknown cell style component."),
+            OpenPyxlCellStyleComponent.Font => OpenPyxlStyleKind.Font,
+            OpenPyxlCellStyleComponent.Fill => OpenPyxlStyleKind.PatternFill,
+            OpenPyxlCellStyleComponent.Border => OpenPyxlStyleKind.Border,
+            OpenPyxlCellStyleComponent.Alignment => OpenPyxlStyleKind.Alignment,
+            OpenPyxlCellStyleComponent.Protection => OpenPyxlStyleKind.Protection,
+            _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unknown cell style component."),
         };
 
 }

@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
         private readonly Dictionary<CellAddress, OpenPyxlComment> _comments = new();
         private readonly Dictionary<CellAddress, object> _formulaCachedValues = new();
         private readonly Dictionary<CellAddress, XElement> _formulaXml = new();
-        private readonly Dictionary<(CellAddress Address, string Name), object> _cellStyles = new();
+        private readonly Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> _cellStyles = new();
         private readonly Dictionary<CellAddress, string> _cellNamedStyles = new();
         private readonly Dictionary<string, OpenPyxlTable> _tables = new(StringComparer.Ordinal);
         private readonly List<OpenPyxlDataValidation> _dataValidations = new();
@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
 
         public IReadOnlyDictionary<CellAddress, int> LoadedStyleIds => _loadedStyleIds;
 
-        public IReadOnlyDictionary<(CellAddress Address, string Name), object> CellStyles => _cellStyles;
+        public IReadOnlyDictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> CellStyles => _cellStyles;
 
         public IReadOnlyDictionary<CellAddress, string> Hyperlinks => _hyperlinks;
 

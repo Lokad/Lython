@@ -37,12 +37,12 @@ internal sealed partial class LythonRuntime
             => _comments.TryGetValue(new CellAddress(row, column), out var comment)
                 ? comment
                 : PyNone.Instance;
-        internal object GetCellStyle(int row, int column, string name)
-            => _cellStyles.TryGetValue((new CellAddress(row, column), name), out var style)
+        internal object GetCellStyle(int row, int column, OpenPyxlCellStyleComponent component)
+            => _cellStyles.TryGetValue((new CellAddress(row, column), component), out var style)
                 ? style
-                : DefaultCellStyle(name);
-        internal OpenPyxlStyleValue? GetAssignedCellStyle(int row, int column, string name)
-            => _cellStyles.TryGetValue((new CellAddress(row, column), name), out var style) &&
+                : DefaultCellStyle(component);
+        internal OpenPyxlStyleValue? GetAssignedCellStyle(int row, int column, OpenPyxlCellStyleComponent component)
+            => _cellStyles.TryGetValue((new CellAddress(row, column), component), out var style) &&
                 style is OpenPyxlStyleValue styleValue
                 ? styleValue
                 : null;
@@ -91,33 +91,33 @@ internal sealed partial class LythonRuntime
                     _numberFormats[address] = numberFormat;
                 }
             }
-            ApplyNamedStyleComponent(address, style, "font");
-            ApplyNamedStyleComponent(address, style, "fill");
-            ApplyNamedStyleComponent(address, style, "border");
-            ApplyNamedStyleComponent(address, style, "alignment");
-            ApplyNamedStyleComponent(address, style, "protection");
+            ApplyNamedStyleComponent(address, style, OpenPyxlCellStyleComponent.Font);
+            ApplyNamedStyleComponent(address, style, OpenPyxlCellStyleComponent.Fill);
+            ApplyNamedStyleComponent(address, style, OpenPyxlCellStyleComponent.Border);
+            ApplyNamedStyleComponent(address, style, OpenPyxlCellStyleComponent.Alignment);
+            ApplyNamedStyleComponent(address, style, OpenPyxlCellStyleComponent.Protection);
         }
-        private void ApplyNamedStyleComponent(CellAddress address, OpenPyxlStyleValue style, string name)
+        private void ApplyNamedStyleComponent(CellAddress address, OpenPyxlStyleValue style, OpenPyxlCellStyleComponent component)
         {
-            if (NamedStyleComponent(style, name) is { } component)
+            if (NamedStyleComponent(style, component) is { } value)
             {
-                _cellStyles[(address, name)] = component;
+                _cellStyles[(address, component)] = value;
             }
         }
-        internal void SetCellStyle(int row, int column, string name, object value)
+        internal void SetCellStyle(int row, int column, OpenPyxlCellStyleComponent component, object value)
         {
             EnsureCanMutate(null);
             ValidateRowColumn(row, column, null);
-            var key = (new CellAddress(row, column), name);
+            var key = (new CellAddress(row, column), component);
             if (value is PyNone)
             {
                 _cellStyles.Remove(key);
                 return;
             }
-            var expected = ExpectedStyleKind(name);
+            var expected = ExpectedStyleKind(component);
             if (value is not OpenPyxlStyleValue style || style.Kind != expected)
             {
-                throw new LythonRuntimeException("TypeError", "Cell." + name + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
+                throw new LythonRuntimeException("TypeError", "Cell." + CellStyleComponentName(component) + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
             }
             _cellStyles[key] = value;
         }
@@ -266,11 +266,11 @@ internal sealed partial class LythonRuntime
                 _loadedStyleIds[new CellAddress(row, column)] = styleId.Value;
             }
         }
-        internal void SetLoadedCellStyle(int row, int column, string name, OpenPyxlStyleValue? style)
+        internal void SetLoadedCellStyle(int row, int column, OpenPyxlCellStyleComponent component, OpenPyxlStyleValue? style)
         {
             if (style is not null)
             {
-                _cellStyles[(new CellAddress(row, column), name)] = style;
+                _cellStyles[(new CellAddress(row, column), component)] = style;
             }
         }
         internal void SetLoadedCellDataType(int row, int column, string? dataType)

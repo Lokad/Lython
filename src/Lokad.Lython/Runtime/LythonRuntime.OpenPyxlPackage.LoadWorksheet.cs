@@ -46,11 +46,11 @@ internal sealed partial class LythonRuntime
                 worksheet.SetLoadedFormulaXml(address.Row, address.Column, cell.Element(XlsxMain + "f"));
                 worksheet.SetLoadedCellNumberFormat(address.Row, address.Column, format);
                 worksheet.SetLoadedCellStyleId(address.Row, address.Column, styleId);
-                worksheet.SetLoadedCellStyle(address.Row, address.Column, "font", cellStyle.Font);
-                worksheet.SetLoadedCellStyle(address.Row, address.Column, "fill", cellStyle.Fill);
-                worksheet.SetLoadedCellStyle(address.Row, address.Column, "border", cellStyle.Border);
-                worksheet.SetLoadedCellStyle(address.Row, address.Column, "alignment", cellStyle.Alignment);
-                worksheet.SetLoadedCellStyle(address.Row, address.Column, "protection", cellStyle.Protection);
+                worksheet.SetLoadedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Font, cellStyle.Font);
+                worksheet.SetLoadedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Fill, cellStyle.Fill);
+                worksheet.SetLoadedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Border, cellStyle.Border);
+                worksheet.SetLoadedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Alignment, cellStyle.Alignment);
+                worksheet.SetLoadedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Protection, cellStyle.Protection);
                 worksheet.SetLoadedCellNamedStyle(address.Row, address.Column, cellStyle.NamedStyleName);
                 worksheet.SetLoadedCellDataType(address.Row, address.Column, (string?)cell.Attribute("t"));
             }
