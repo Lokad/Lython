@@ -2,15 +2,51 @@ namespace Lokad.Lython.Frontend;
 
 internal static class StaticScopeDirectiveDiagnostics
 {
+    private sealed class EnclosingFunctionBindings
+    {
+        private readonly Dictionary<string, int> _bindingDepths = new(StringComparer.Ordinal);
+
+        public int Depth { get; private set; }
+
+        public bool Contains(string name) => _bindingDepths.ContainsKey(name);
+
+        public void Enter(ScopeDirectiveFacts facts)
+        {
+            Depth++;
+            foreach (var name in facts.LocalNames)
+            {
+                _bindingDepths[name] = _bindingDepths.GetValueOrDefault(name) + 1;
+            }
+        }
+
+        public void Leave(ScopeDirectiveFacts facts)
+        {
+            foreach (var name in facts.LocalNames)
+            {
+                var remainingDepth = _bindingDepths[name] - 1;
+                if (remainingDepth == 0)
+                {
+                    _bindingDepths.Remove(name);
+                }
+                else
+                {
+                    _bindingDepths[name] = remainingDepth;
+                }
+            }
+
+            Depth--;
+        }
+    }
+
     public static void Analyze(StaticAnalysisContext context)
     {
-        AnalyzeStatements(context.Script.Statements, context, [], inClassBody: false);
+        AnalyzeStatements(context.Script.Statements, context, new EnclosingFunctionBindings(), inClassBody: false);
     }
 
     private static void AnalyzeStatements(
         IReadOnlyList<StatementSyntax> statements,
         StaticAnalysisContext context,
-        IReadOnlyList<ScopeDirectiveFacts> enclosingFunctions,
+        EnclosingFunctionBindings enclosingFunctions,
         bool inClassBody)
     {
         foreach (var statement in statements)
@@ -18,7 +54,7 @@ internal static class StaticScopeDirectiveDiagnostics
             switch (statement)
             {
                 case ScopeDirectiveStatementSyntax directive:
-                    if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Count == 0)
+                    if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Depth == 0)
                     {
                         context.AddError("LA3201", "`nonlocal` is only valid inside a nested function.", directive.Span);
                     }
@@ -76,7 +112,7 @@ internal static class StaticScopeDirectiveDiagnostics
     private static void AnalyzeFunction(
         FunctionDefinitionStatementSyntax functionDefinition,
         StaticAnalysisContext context,
-        IReadOnlyList<ScopeDirectiveFacts> enclosingFunctions)
+        EnclosingFunctionBindings enclosingFunctions)
     {
         var facts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
         foreach (var name in facts.GlobalNames.Intersect(facts.NonlocalNames, StringComparer.Ordinal))
@@ -97,7 +133,7 @@ internal static class StaticScopeDirectiveDiagnostics
 
         foreach (var name in facts.NonlocalNames)
         {
-            if (!enclosingFunctions.Any(scope => scope.LocalNames.Contains(name)))
+            if (!enclosingFunctions.Contains(name))
             {
                 context.AddError("LA3205", $"No enclosing function binding exists for nonlocal name '{name}'.", functionDefinition.Span);
             }
@@ -105,8 +141,15 @@ internal static class StaticScopeDirectiveDiagnostics
 
         AnalyzeUseBeforeDirective(functionDefinition, facts, context);
 
-        var nested = enclosingFunctions.Concat([facts]).ToArray();
-        AnalyzeStatements(functionDefinition.Body, context, nested, inClassBody: false);
+        enclosingFunctions.Enter(facts);
+        try
+        {
+            AnalyzeStatements(functionDefinition.Body, context, enclosingFunctions, inClassBody: false);
+        }
+        finally
+        {
+            enclosingFunctions.Leave(facts);
+        }
     }
 
     private static void AnalyzeUseBeforeDirective(
