@@ -5,7 +5,7 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
-    private IReadOnlyList<StatementSyntax>? ParseSuite(string code, string message)
+    private IReadOnlyList<StatementSyntax>? ParseSuite(LythonDiagnosticCode code, string message)
     {
         if (TryRead(Token.Eol, out _))
         {
@@ -15,7 +15,7 @@ internal sealed partial class Parser
         return ParseSimpleStatementSuite(code);
     }
 
-    private IReadOnlyList<StatementSyntax>? ParseSimpleStatementSuite(string code)
+    private IReadOnlyList<StatementSyntax>? ParseSimpleStatementSuite(LythonDiagnosticCode code)
     {
         var statements = new List<StatementSyntax>();
         while (true)
@@ -65,7 +65,7 @@ internal sealed partial class Parser
         }
     }
 
-    private IReadOnlyList<StatementSyntax>? ParseIndentedSuite(string code, string message)
+    private IReadOnlyList<StatementSyntax>? ParseIndentedSuite(LythonDiagnosticCode code, string message)
     {
         if (CurrentToken == Token.Eol)
         {
@@ -285,7 +285,7 @@ internal sealed partial class Parser
         return hidden;
     }
 
-    private void ReadExpected(Token token, string code, string message)
+    private void ReadExpected(Token token, LythonDiagnosticCode code, string message)
     {
         if (TryRead(token, out _))
         {

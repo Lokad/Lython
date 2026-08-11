@@ -6,7 +6,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -27,7 +27,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -48,7 +48,7 @@ internal static class StaticContractChecks
     public static void AnalyzeKnownStringKeywordArgument(
         ConcreteCallArguments arguments,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -68,7 +68,7 @@ internal static class StaticContractChecks
     public static void AnalyzeKnownStringOrNoneKeywordArgument(
         ConcreteCallArguments arguments,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -90,7 +90,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -110,7 +110,7 @@ internal static class StaticContractChecks
     public static void AnalyzeCallableOrNoneKeywordArgument(
         ConcreteCallArguments arguments,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -131,7 +131,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -151,7 +151,7 @@ internal static class StaticContractChecks
     public static void AnalyzeKnownBooleanKeywordArgument(
         ConcreteCallArguments arguments,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -172,7 +172,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -193,7 +193,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -219,7 +219,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -243,7 +243,7 @@ internal static class StaticContractChecks
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -260,25 +260,25 @@ internal static class StaticContractChecks
         return true;
     }
 
-    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics)
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics)
         => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, false, null, null, null);
 
-    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
         => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, null, null, null);
 
-    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode)
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, LythonDiagnosticCode? emptyCode)
         => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, null, null);
 
-    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode, string? emptyMessage)
+    public static void AnalyzeIterableOfStringsLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, LythonDiagnosticCode? emptyCode, string? emptyMessage)
         => AnalyzeIterableOfStringsLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, emptyMessage, null);
 
     public static void AnalyzeIterableOfStringsLiteral(
         IReadOnlyList<AbstractValue> items,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         bool requireNonEmpty,
-        string? emptyCode,
+        LythonDiagnosticCode? emptyCode,
         string? emptyMessage,
         LythonSourceSpan? emptySpan)
     {
@@ -294,25 +294,25 @@ internal static class StaticContractChecks
         }
     }
 
-    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics)
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics)
         => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, false, null, null, null);
 
-    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty)
         => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, null, null, null);
 
-    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode)
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, LythonDiagnosticCode? emptyCode)
         => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, null, null);
 
-    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, string code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, string? emptyCode, string? emptyMessage)
+    public static void AnalyzeIterableOfPathLikeLiteral(IReadOnlyList<AbstractValue> items, LythonDiagnosticCode code, string message, List<LythonDiagnostic> diagnostics, bool requireNonEmpty, LythonDiagnosticCode? emptyCode, string? emptyMessage)
         => AnalyzeIterableOfPathLikeLiteral(items, code, message, diagnostics, requireNonEmpty, emptyCode, emptyMessage, null);
 
     public static void AnalyzeIterableOfPathLikeLiteral(
         IReadOnlyList<AbstractValue> items,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         bool requireNonEmpty,
-        string? emptyCode,
+        LythonDiagnosticCode? emptyCode,
         string? emptyMessage,
         LythonSourceSpan? emptySpan)
     {
@@ -333,8 +333,4 @@ internal static class StaticContractChecks
         }
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
 }

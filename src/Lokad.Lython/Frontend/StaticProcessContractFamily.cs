@@ -362,7 +362,7 @@ internal static class StaticProcessContractFamily
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
@@ -387,8 +387,4 @@ internal static class StaticProcessContractFamily
         }
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
 }

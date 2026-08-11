@@ -265,8 +265,4 @@ internal static class StaticDataclassContractFamily
         StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 1, "tuple_factory", "LA3042", "astuple(..., tuple_factory=...) expects a callable or None.", diagnostics, bindings);
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
 }

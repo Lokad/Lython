@@ -317,12 +317,4 @@ internal static class StaticRegexArgumentContracts
         return true;
     }
 
-    private static void AddDiagnostic(
-        List<LythonDiagnostic> diagnostics,
-        string code,
-        string message,
-        LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
 }

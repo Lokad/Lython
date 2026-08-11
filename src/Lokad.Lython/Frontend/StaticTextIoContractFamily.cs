@@ -416,7 +416,7 @@ internal static class StaticTextIoContractFamily
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string knownLiteralMessage,
         string unsupportedEncodingMessage,
         List<LythonDiagnostic> diagnostics,
@@ -454,7 +454,7 @@ internal static class StaticTextIoContractFamily
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string knownLiteralMessage,
         string unsupportedNewlineMessage,
         List<LythonDiagnostic> diagnostics,
@@ -485,7 +485,7 @@ internal static class StaticTextIoContractFamily
         ConcreteCallArguments arguments,
         int position,
         string keyword,
-        string code,
+        LythonDiagnosticCode code,
         string knownLiteralMessage,
         string unsupportedErrorsMessage,
         List<LythonDiagnostic> diagnostics,
@@ -552,6 +552,4 @@ internal static class StaticTextIoContractFamily
         AddDiagnostic(diagnostics, "LA3006", "open(..., closefd=False) is not supported for host-mediated paths.", closeFdExpression.Span);
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-        => StaticDiagnosticSink.AddError(diagnostics, code, message, span);
 }

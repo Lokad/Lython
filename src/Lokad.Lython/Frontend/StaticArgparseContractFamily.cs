@@ -207,11 +207,6 @@ internal static class StaticArgparseContractFamily
             bindings);
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
-
     private static bool IsSupportedNargsText(string text)
         => text is "?" or "*" or "+" ||
            (int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var count) && count > 0);

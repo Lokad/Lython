@@ -193,11 +193,6 @@ internal static partial class StaticAbstractInterpreter
         return false;
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
-
     private interface IExpressionAnalyzer
     {
         /// <summary>Analyzes the expression when it belongs to this analyzer's syntax family.</summary>

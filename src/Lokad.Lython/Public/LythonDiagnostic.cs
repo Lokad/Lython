@@ -26,6 +26,7 @@ public sealed record LythonDiagnostic
         get => _code;
         init
         {
+            ArgumentNullException.ThrowIfNull(value);
             _ = Frontend.LythonDiagnosticCode.Parse(value);
             _code = value;
         }

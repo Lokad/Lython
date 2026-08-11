@@ -226,7 +226,7 @@ internal static class AnnotationDiagnostics
 
     private static void AddMismatchDiagnostic(
         List<LythonDiagnostic> diagnostics,
-        string code,
+        LythonDiagnosticCode code,
         string label,
         ExpressionSyntax annotation,
         ExpressionSyntax? value,
@@ -241,7 +241,7 @@ internal static class AnnotationDiagnostics
         }
 
         diagnostics.Add(new LythonDiagnostic(
-            code,
+            code.Value,
             $"Annotated {label} expects {DescribeType(expected)}, but the provided value is {DescribeType(actual)}.",
             LythonDiagnosticSeverity.Error,
             span));

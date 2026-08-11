@@ -560,8 +560,4 @@ internal static class StaticContractEngine
         StaticContractChecks.AnalyzeTextBoundaryStringArgument(arguments, 0, "text", "LA3046", "Text-only host APIs do not accept bytes; Lython host boundaries are UTF-8 text-shaped only.", diagnostics, bindings);
     }
 
-    private static void AddDiagnostic(List<LythonDiagnostic> diagnostics, string code, string message, LythonSourceSpan span)
-    {
-        StaticDiagnosticSink.AddError(diagnostics, code, message, span);
-    }
 }

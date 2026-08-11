@@ -1,7 +1,12 @@
+global using static Lokad.Lython.Frontend.StaticDiagnosticSink;
+
 namespace Lokad.Lython.Frontend;
 
 internal static class StaticDiagnosticSink
 {
+    public static void AddDiagnostic(List<LythonDiagnostic> diagnostics, LythonDiagnosticCode code, string message, LythonSourceSpan span)
+        => AddError(diagnostics, code, message, span);
+
     public static void AddError(List<LythonDiagnostic> diagnostics, LythonDiagnosticCode code, string message, LythonSourceSpan span)
         => diagnostics.Add(new LythonDiagnostic(code.Value, message, LythonDiagnosticSeverity.Error, span));
 

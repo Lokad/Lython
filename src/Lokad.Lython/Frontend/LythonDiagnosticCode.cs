@@ -12,7 +12,6 @@ internal readonly record struct LythonDiagnosticCode
 
     public static LythonDiagnosticCode Parse(string value)
     {
-        ArgumentNullException.ThrowIfNull(value);
         if (value.Length != 6 ||
             value[0] != 'L' ||
             value[1] != 'A' ||
