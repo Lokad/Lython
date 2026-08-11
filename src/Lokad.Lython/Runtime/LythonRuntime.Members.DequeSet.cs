@@ -104,8 +104,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = NormalizeDequeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, span);
-                    var stop = NormalizeDequeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, span);
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
                     var index = deque.IndexOf(arguments[0], start, stop);
                     if (index < 0)
                     {
@@ -168,33 +168,6 @@ internal sealed partial class LythonRuntime
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
-        }
-
-        private static int NormalizeDequeSearchBound(object? value, int length, int defaultValue, LythonSourceSpan span)
-        {
-            if (value is null)
-            {
-                return defaultValue;
-            }
-
-            var integer = ExpectInteger(value, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
-            if (integer < int.MinValue)
-            {
-                return 0;
-            }
-
-            if (integer > int.MaxValue)
-            {
-                return length;
-            }
-
-            var index = (int)integer;
-            if (index < 0)
-            {
-                index += length;
-            }
-
-            return Math.Clamp(index, 0, length);
         }
 
         private static int ExpectDequeInsertIndex(object value, LythonSourceSpan span)

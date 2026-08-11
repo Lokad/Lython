@@ -47,4 +47,36 @@ internal static class RuntimeArgumentValidation
             _ => throw new LythonRuntimeException("TypeError", $"{signature} expects {name} to be an integer.", span)
         };
     }
+
+    public static int NormalizeSearchBound(
+        object? value,
+        int length,
+        int defaultValue,
+        string typeErrorMessage,
+        LythonSourceSpan span)
+    {
+        if (value is null)
+        {
+            return defaultValue;
+        }
+
+        var integer = ExpectInteger(value, typeErrorMessage, span);
+        if (integer < int.MinValue)
+        {
+            return 0;
+        }
+
+        if (integer > int.MaxValue)
+        {
+            return length;
+        }
+
+        var index = (int)integer;
+        if (index < 0)
+        {
+            index += length;
+        }
+
+        return Math.Clamp(index, 0, length);
+    }
 }

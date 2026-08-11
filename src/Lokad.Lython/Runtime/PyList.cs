@@ -233,8 +233,8 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     public object GetIndex(int index) => _items[index];
 
     public object GetSlice(IEnumerable<int> indices) => _memoryGovernor is null
-        ? new PyList(MaterializeSlice(indices))
-        : new PyList(MaterializeSlice(indices), _memoryGovernor, _allocationSpan);
+        ? new PyList(PySequenceMaterialization.MaterializeSlice(_items, indices, null, _allocationSpan))
+        : new PyList(PySequenceMaterialization.MaterializeSlice(_items, indices, _memoryGovernor, _allocationSpan), _memoryGovernor, _allocationSpan);
 
     public void SetIndex(int index, object value) => _items[index] = value;
 
@@ -261,34 +261,6 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-    private object[] MaterializeSlice(IEnumerable<int> indices)
-    {
-        if (indices is ICollection<int> collection)
-        {
-            if (_memoryGovernor is not null)
-            {
-                _memoryGovernor.EnsureCanReserve(EstimateArrayBytes(collection.Count), _allocationSpan);
-            }
-
-            var result = new object[collection.Count];
-            var index = 0;
-            foreach (var item in indices)
-            {
-                result[index++] = _items[item];
-            }
-
-            return result;
-        }
-
-        var values = new List<object>();
-        foreach (var item in indices)
-        {
-            values.Add(_items[item]);
-        }
-
-        return [.. values];
-    }
 
     private void ReplaceStorage(IEnumerable<object> values)
     {

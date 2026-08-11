@@ -140,12 +140,17 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        var starIndex = pattern.Items
-            .Select((item, index) => (item, index))
-            .FirstOrDefault(pair => pair.item is MatchStarPatternSyntax).index;
-        var hasStar = pattern.Items.Any(item => item is MatchStarPatternSyntax);
+        var starIndex = -1;
+        for (var i = 0; i < pattern.Items.Count; i++)
+        {
+            if (pattern.Items[i] is MatchStarPatternSyntax)
+            {
+                starIndex = i;
+                break;
+            }
+        }
 
-        if (!hasStar)
+        if (starIndex < 0)
         {
             if (items.Count != pattern.Items.Count)
             {
@@ -179,7 +184,11 @@ internal sealed partial class LythonRuntime
         }
 
         var starPattern = (MatchStarPatternSyntax)pattern.Items[starIndex];
-        var starItems = items.Skip(beforeCount).Take(items.Count - beforeCount - afterCount).ToArray();
+        var starItems = new object[items.Count - beforeCount - afterCount];
+        for (var i = 0; i < starItems.Length; i++)
+        {
+            starItems[i] = items[beforeCount + i];
+        }
         if (starPattern.Name is not null &&
             !TryBindPatternName(
                 starPattern.Name,

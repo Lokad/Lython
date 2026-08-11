@@ -168,7 +168,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public object GetSlice(IEnumerable<int> indices)
     {
-        var items = MaterializeSlice(indices);
+        var items = PySequenceMaterialization.MaterializeSlice(_items, indices, _memoryGovernor, _allocationSpan);
         return _memoryGovernor is null
             ? PyTuple.FromOwnedArray(items)
             : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
@@ -197,33 +197,5 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public PyString RenderInterpolated(PyRenderingContext context)
         => PyRendering.ToReprPyString(this, context);
-
-    private object[] MaterializeSlice(IEnumerable<int> indices)
-    {
-        if (indices is ICollection<int> collection)
-        {
-            if (_memoryGovernor is not null)
-            {
-                _memoryGovernor.EnsureCanReserve(EstimateApproximateBytes(collection.Count), _allocationSpan);
-            }
-
-            var result = new object[collection.Count];
-            var index = 0;
-            foreach (var item in indices)
-            {
-                result[index++] = _items[item];
-            }
-
-            return result;
-        }
-
-        var values = new List<object>();
-        foreach (var item in indices)
-        {
-            values.Add(_items[item]);
-        }
-
-        return [.. values];
-    }
 
 }

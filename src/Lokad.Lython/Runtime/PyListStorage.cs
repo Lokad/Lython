@@ -1,10 +1,8 @@
 namespace Lokad.Lython.Runtime;
 
-internal interface IPyListStorage : IEnumerable<object>
+internal interface IPyListStorage : IReadOnlyList<object>
 {
-    int Count { get; }
-
-    object this[int index] { get; set; }
+    new object this[int index] { get; set; }
 
     void Add(object value);
 
