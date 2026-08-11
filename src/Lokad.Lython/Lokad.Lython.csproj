@@ -6,13 +6,13 @@
     <Description>Embeddable, contained-by-design Python runtime for .NET, implemented in managed C# with host-mediated file and process capabilities.</Description>
     <Authors>Lokad</Authors>
     <Company>Lokad</Company>
-    <Version>0.7.0</Version>
-    <AssemblyVersion>0.7.0</AssemblyVersion>
-    <FileVersion>0.7.0</FileVersion>
+    <Version>0.8.0</Version>
+    <AssemblyVersion>0.8.0</AssemblyVersion>
+    <FileVersion>0.8.0</FileVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>0.7.0 improves coding-agent compatibility with scoped bytes support, set comprehensions, parser layout and diagnostic fixes, Python-shaped builtin and stdlib call binding, normalized text-open options, and linear text-handle cursor and flush semantics while preserving host-mediated containment.</PackageReleaseNotes>
+    <PackageReleaseNotes>0.8.0 closes the Studio compatibility findings with broader Python syntax and standard-library coverage; closes CLR global-value callbacks, rendering, and projection leaks; canonicalizes contained host paths; redacts host failures; tightens subprocess cwd/env/shell boundaries; completes host-call accounting; bounds frontend source and nesting; and enforces combined subprocess output limits.</PackageReleaseNotes>
     <PackageTags>python;runtime;interpreter;scripting;embedding;sandbox</PackageTags>
     <PackageProjectUrl>https://github.com/Lokad/Lython</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Lokad/Lython.git</RepositoryUrl>

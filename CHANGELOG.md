@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 - 2026-08-11
 
-This pending release closes the Studio compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.
+This release closes the Studio compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.
 
 ### Python Language Compatibility
 
@@ -16,6 +16,16 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Added context-correct `builtins`, contained `importlib` discovery, host-mediated `filecmp.cmp`, managed incremental `hashlib`, bounded in-memory and host-backed `gzip`, functional and iterable `shlex`, and host-clock-backed `time` support.
 - Added Latin-1 codecs across the supported text APIs while continuing to route non-UTF-8 file bytes through the host's bounded binary capability.
 - Added a lazy, bounded `subprocess.Popen` facade and in-memory pipeline composition without exposing live processes, PIDs, unmanaged pipes, signals, or ambient shell authority.
+
+### Security And Containment
+
+- Closed the initial-globals boundary over copied Lython values, rejecting arbitrary CLR objects, callbacks, reference cycles, and excessively nested object graphs before execution.
+- Redacted CLR runtime object names from guest-visible rendering and made public return projection fail closed on unsupported internal objects.
+- Canonicalized every filesystem path at the host gateway, rejected Windows-ambiguous contained paths, and normalized subprocess working directories inside the host namespace.
+- Redacted host exception messages from guest-visible failures, supplied contained cwd/environment defaults for subprocess requests, and made shell invocation an explicit runner opt-in.
+- Charged standard streams, local-import discovery, package discovery, append preflight, and clock reads against the host-call budget.
+- Bounded source length and syntax nesting before frontend allocation, and enforced subprocess output limits across combined captured stdout and stderr.
+- Replaced OS-native extension parsing on OpenPyXL media paths with contained lexical suffix handling.
 
 ### Reliability And Embedding
 
