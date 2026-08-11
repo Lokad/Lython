@@ -230,7 +230,7 @@ internal static partial class StaticStructuralDiagnostics
         }
 
         var bounds = Lokad.Lython.Runtime.PyIndexing.NormalizeSliceBounds(targetLength, startValue, endValue, stepValue, slice.Span);
-        var selectedLength = bounds.Indices().Count();
+        var selectedLength = bounds.Count;
         if (selectedLength != replacementLength)
         {
             AddDiagnostic(
