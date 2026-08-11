@@ -259,144 +259,46 @@ internal static class StaticNameBindingDiagnostics
         {
             case IdentifierExpressionSyntax identifier:
                 AnalyzeLocalRead(identifier.Name, identifier.Span, context, localNames, maybeAssigned);
-                break;
-
-            case FormattedStringExpressionSyntax formatted:
-                foreach (var nestedExpression in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
-                {
-                    AnalyzeExpression(nestedExpression, context, localNames, maybeAssigned);
-                }
-                break;
-
-            case ListLiteralExpressionSyntax list:
-                AnalyzeExpressions(list.Items, context, localNames, maybeAssigned);
-                break;
+                return;
 
             case ListComprehensionExpressionSyntax listComprehension:
                 AnalyzeExpression(listComprehension.ItemExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeComprehensionClauses(listComprehension.Clauses, context, localNames, maybeAssigned);
-                break;
+                return;
 
             case GeneratorExpressionSyntax generator:
                 AnalyzeExpression(generator.ItemExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeComprehensionClauses(generator.Clauses, context, localNames, maybeAssigned);
-                break;
-
-            case DictLiteralExpressionSyntax dict:
-                foreach (var item in dict.Items)
-                {
-                    AnalyzeExpression(item.Key, context, localNames, maybeAssigned);
-                    if (!item.IsUnpacking)
-                    {
-                        AnalyzeExpression(item.Value, context, localNames, maybeAssigned);
-                    }
-                }
-                break;
-
-            case SetLiteralExpressionSyntax set:
-                AnalyzeExpressions(set.Items, context, localNames, maybeAssigned);
-                break;
+                return;
 
             case SetComprehensionExpressionSyntax setComprehension:
                 AnalyzeExpression(setComprehension.ItemExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
-                break;
+                return;
 
             case DictComprehensionExpressionSyntax dictComprehension:
                 AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, Clone(maybeAssigned));
                 AnalyzeComprehensionClauses(dictComprehension.Clauses, context, localNames, maybeAssigned);
-                break;
-
-            case TupleLiteralExpressionSyntax tuple:
-                AnalyzeExpressions(tuple.Items, context, localNames, maybeAssigned);
-                break;
-
-            case ParenthesizedExpressionSyntax parenthesized:
-                AnalyzeExpression(parenthesized.Inner, context, localNames, maybeAssigned);
-                break;
-
-            case MemberExpressionSyntax member:
-                AnalyzeExpression(member.Target, context, localNames, maybeAssigned);
-                break;
-
-            case CallExpressionSyntax call:
-                AnalyzeExpression(call.Target, context, localNames, maybeAssigned);
-                foreach (var argument in call.Arguments)
-                {
-                    AnalyzeExpression(argument.Expression, context, localNames, maybeAssigned);
-                }
-                break;
-
-            case SubscriptExpressionSyntax subscript:
-                AnalyzeExpression(subscript.Target, context, localNames, maybeAssigned);
-                AnalyzeExpression(subscript.Index, context, localNames, maybeAssigned);
-                break;
-
-            case SliceExpressionSyntax slice:
-                AnalyzeExpression(slice.Target, context, localNames, maybeAssigned);
-                if (slice.Start is not null) AnalyzeExpression(slice.Start, context, localNames, maybeAssigned);
-                if (slice.End is not null) AnalyzeExpression(slice.End, context, localNames, maybeAssigned);
-                if (slice.Step is not null) AnalyzeExpression(slice.Step, context, localNames, maybeAssigned);
-                break;
-
-            case BinaryExpressionSyntax binary:
-                AnalyzeExpression(binary.Left, context, localNames, maybeAssigned);
-                AnalyzeExpression(binary.Right, context, localNames, maybeAssigned);
-                break;
-
-            case ChainedComparisonExpressionSyntax chained:
-                AnalyzeExpressions(chained.Operands, context, localNames, maybeAssigned);
-                break;
-
-            case UnaryExpressionSyntax unary:
-                AnalyzeExpression(unary.Operand, context, localNames, maybeAssigned);
-                break;
-
-            case ConditionalExpressionSyntax conditional:
-                AnalyzeExpression(conditional.Condition, context, localNames, maybeAssigned);
-                AnalyzeExpression(conditional.Consequent, context, localNames, maybeAssigned);
-                AnalyzeExpression(conditional.Alternative, context, localNames, maybeAssigned);
-                break;
+                return;
 
             case AssignmentExpressionSyntax assignment:
                 AnalyzeExpression(assignment.Expression, context, localNames, maybeAssigned);
                 maybeAssigned.Add(assignment.Name);
-                break;
+                return;
 
             case LambdaExpressionSyntax lambda:
-                {
-                    var lambdaLocalNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
-                    var lambdaAssigned = new HashSet<string>(
-                        lambda.Parameters.Select(static parameter => parameter.Name),
-                        StringComparer.Ordinal);
-                    AnalyzeExpression(lambda.Body, context, lambdaLocalNames, lambdaAssigned);
-                    break;
-                }
+                var lambdaLocalNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
+                var lambdaAssigned = new HashSet<string>(
+                    lambda.Parameters.Select(static parameter => parameter.Name),
+                    StringComparer.Ordinal);
+                AnalyzeExpression(lambda.Body, context, lambdaLocalNames, lambdaAssigned);
+                return;
         }
-    }
 
-    private static void AnalyzeExpressions(
-        IReadOnlyList<ExpressionSyntax> expressions,
-        StaticAnalysisContext context,
-        HashSet<string> localNames,
-        HashSet<string> maybeAssigned)
-    {
-        foreach (var expression in expressions)
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
         {
-            AnalyzeExpression(expression, context, localNames, maybeAssigned);
-        }
-    }
-
-    private static void AnalyzeExpressions(
-        IReadOnlyList<CollectionDisplayItemSyntax> items,
-        StaticAnalysisContext context,
-        HashSet<string> localNames,
-        HashSet<string> maybeAssigned)
-    {
-        foreach (var item in items)
-        {
-            AnalyzeExpression(item.Expression, context, localNames, maybeAssigned);
+            AnalyzeExpression(child, context, localNames, maybeAssigned);
         }
     }
 
