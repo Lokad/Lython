@@ -366,16 +366,6 @@ internal sealed partial class LythonRuntime
                 RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
         }
 
-        private static BuiltinCallable UnsupportedStatisticsCallable(string qualifiedName)
-            => BuiltinCallable.Create(
-                qualifiedName,
-                (arguments, span, context) =>
-                {
-                    _ = arguments;
-                    _ = context;
-                    throw new LythonRuntimeException("NotImplementedError", qualifiedName + " is unsupported by Lython.", span);
-                });
-
         private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, LythonSourceSpan span)
         {
             var counts = new Dictionary<object, int>(PyValueComparer.Instance);

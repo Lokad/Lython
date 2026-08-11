@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             CreateNormalDist,
             memberName => memberName switch
             {
-                "from_samples" => new TypeMemberCallable("statistics.NormalDist.from_samples", NormalDistFromSamples, ["data"]),
+                "from_samples" => BuiltinCallable.Create("statistics.NormalDist.from_samples", NormalDistFromSamples, ["data"]),
                 _ => null
             });
 
@@ -49,8 +49,8 @@ internal sealed partial class LythonRuntime
                 "linear_regression" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsLinearRegression, LinearRegression),
                 "LinearRegression" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsLinearRegressionResult, LinearRegressionResult),
                 "NormalDist" => NormalDistType,
-                "kde" => UnsupportedStatisticsCallable("statistics.kde"),
-                "kde_random" => UnsupportedStatisticsCallable("statistics.kde_random"),
+                "kde" => BuiltinCallable.CreateUnsupported("statistics.kde"),
+                "kde_random" => BuiltinCallable.CreateUnsupported("statistics.kde_random"),
                 _ => MissingMemberValue.Instance,
             };
 

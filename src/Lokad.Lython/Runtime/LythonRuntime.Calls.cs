@@ -317,6 +317,14 @@ internal sealed partial class LythonRuntime
             int requiredCount)
             => Create(LythonCallableSignature.Create(name, parameterNames, requiredCount), implementation, asyncImplementation);
 
+        public static BuiltinCallable CreateUnsupported(string qualifiedName)
+            => Create(
+                qualifiedName,
+                (_, span, _) => throw new LythonRuntimeException(
+                    "NotImplementedError",
+                    qualifiedName + " is unsupported by Lython.",
+                    span));
+
         public string Name => Signature.Name;
 
         public PyString RenderPython(PyRenderingContext context)

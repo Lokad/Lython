@@ -36,12 +36,12 @@ internal sealed partial class LythonRuntime
                 "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilGetLoader, GetLoader),
                 "extend_path" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilExtendPath, ExtendPath),
                 "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilResolveName, ResolveName),
-                "get_importer" => UnsupportedPkgutilCallable("pkgutil.get_importer"),
-                "iter_importers" => UnsupportedPkgutilCallable("pkgutil.iter_importers"),
-                "iter_importer_modules" => UnsupportedPkgutilCallable("pkgutil.iter_importer_modules"),
-                "iter_zipimport_modules" => UnsupportedPkgutilCallable("pkgutil.iter_zipimport_modules"),
-                "get_data" => UnsupportedPkgutilCallable("pkgutil.get_data"),
-                "read_code" => UnsupportedPkgutilCallable("pkgutil.read_code"),
+                "get_importer" => BuiltinCallable.CreateUnsupported("pkgutil.get_importer"),
+                "iter_importers" => BuiltinCallable.CreateUnsupported("pkgutil.iter_importers"),
+                "iter_importer_modules" => BuiltinCallable.CreateUnsupported("pkgutil.iter_importer_modules"),
+                "iter_zipimport_modules" => BuiltinCallable.CreateUnsupported("pkgutil.iter_zipimport_modules"),
+                "get_data" => BuiltinCallable.CreateUnsupported("pkgutil.get_data"),
+                "read_code" => BuiltinCallable.CreateUnsupported("pkgutil.read_code"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -195,16 +195,6 @@ internal sealed partial class LythonRuntime
 
             throw RuntimeErrors.NoModuleNamed(segments[0], span);
         }
-
-        private static BuiltinCallable UnsupportedPkgutilCallable(string qualifiedName)
-            => BuiltinCallable.Create(
-                qualifiedName,
-                (arguments, span, context) =>
-                {
-                    _ = arguments;
-                    _ = context;
-                    throw new LythonRuntimeException("NotImplementedError", qualifiedName + " is unsupported by Lython.", span);
-                });
 
         private static DiscoveryOptions ParseDiscoveryArguments(
             object[] arguments,

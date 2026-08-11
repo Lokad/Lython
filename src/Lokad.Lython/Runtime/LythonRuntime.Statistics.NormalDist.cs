@@ -129,22 +129,5 @@ internal sealed partial class LythonRuntime
             return real;
         }
 
-        private sealed class TypeMemberCallable : ICallable
-        {
-            private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
-            private readonly LythonCallableSignature _signature;
-
-            public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, string[] parameterNames)
-            {
-                _signature = LythonCallableSignature.Create(name, parameterNames);
-                _implementation = implementation;
-            }
-
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
-                return _implementation(positional, span, context);
-            }
-        }
     }
 }
