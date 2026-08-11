@@ -108,10 +108,14 @@ internal sealed partial class LythonRuntime
         ref PendingAbruptSignal? pendingAbrupt,
         ref int nextBlockIndex)
     {
-        var previousWidth = -1;
-        var previousIndex = -1;
-        while (FindNextExceptionRegion(previousWidth, previousIndex, out var regionWidth, out var regionIndex) is { } region)
+        foreach (var region in codeObject.ExceptionRegions)
         {
+            if (currentBlockIndex < region.ProtectedStartBlockIndex ||
+                currentBlockIndex > region.ProtectedEndBlockIndex)
+            {
+                continue;
+            }
+
             if (abrupt is PendingException { Exception: var exception } &&
                 region.ExceptBlockIndex is int exceptBlock &&
                 MatchesCaughtException(region.ExceptionTypeNames, exception, context, span))
@@ -139,48 +143,9 @@ internal sealed partial class LythonRuntime
 
             // A non-matching inner handler does not intercept the exception. Continue with
             // the next enclosing protected range, just as CPython unwinds nested try suites.
-            previousWidth = regionWidth;
-            previousIndex = regionIndex;
         }
 
         return false;
-
-        ExecutableExceptionRegion? FindNextExceptionRegion(
-            int excludedWidth,
-            int excludedIndex,
-            out int regionWidth,
-            out int regionIndex)
-        {
-            ExecutableExceptionRegion? best = null;
-            var bestWidth = int.MaxValue;
-            var bestIndex = int.MaxValue;
-            for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
-            {
-                var candidate = codeObject.ExceptionRegions[i];
-                if (currentBlockIndex < candidate.ProtectedStartBlockIndex ||
-                    currentBlockIndex > candidate.ProtectedEndBlockIndex)
-                {
-                    continue;
-                }
-
-                var width = candidate.ProtectedEndBlockIndex - candidate.ProtectedStartBlockIndex;
-                if (width < excludedWidth || width == excludedWidth && i <= excludedIndex)
-                {
-                    continue;
-                }
-
-                if (width < bestWidth || width == bestWidth && i < bestIndex)
-                {
-                    best = candidate;
-                    bestWidth = width;
-                    bestIndex = i;
-                }
-            }
-
-            regionWidth = bestWidth;
-            regionIndex = bestIndex;
-            return best;
-        }
     }
 
     private static void RestoreExecutableStackForHandler(

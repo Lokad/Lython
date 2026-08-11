@@ -69,6 +69,9 @@ internal sealed partial class ExecutableScript
                 })
                 .Where(region => region is not null)
                 .Select(region => region.RequireNotNull())
+                // Runtime unwinding consumes applicable regions from the narrowest
+                // protected range outward, without rescanning the region table.
+                .OrderBy(region => region.ProtectedEndBlockIndex - region.ProtectedStartBlockIndex)
                 .ToArray();
         }
 
