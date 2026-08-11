@@ -115,12 +115,12 @@ internal sealed class PyGroupByIterator : PyIteratorBase
     private object ComputeKey(object item)
         => _keyFunction is null
             ? item
-            : LythonRuntime.RuntimeValue(_keyFunction.Invoke([CallArgumentValue.Positional(item)], _span, _context));
+            : LythonRuntime.RuntimeValue(CallableInvocation.InvokeUnary(_keyFunction, item, _span, _context));
 
     private async ValueTask<object> ComputeKeyAsync(object item)
         => _keyFunction is null
             ? item
-            : LythonRuntime.RuntimeValue(await _keyFunction.InvokeAsync([CallArgumentValue.Positional(item)], _span, _context).ConfigureAwait(false));
+            : LythonRuntime.RuntimeValue(await CallableInvocation.InvokeUnaryAsync(_keyFunction, item, _span, _context).ConfigureAwait(false));
 
     private void StoreLookahead(object item, object key)
     {

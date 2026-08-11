@@ -384,7 +384,7 @@ internal sealed partial class LythonRuntime
         }
 
         value = depth == CopyDepth.Deep
-            ? callable.Invoke([CallArgumentValue.Positional(memo.ExternalView)], span, context)
+            ? CallableInvocation.InvokeUnary(callable, memo.ExternalView, span, context)
             : callable.Invoke([], span, context);
         return true;
     }

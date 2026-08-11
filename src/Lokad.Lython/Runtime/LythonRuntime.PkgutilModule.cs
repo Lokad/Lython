@@ -621,7 +621,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            callable.Invoke([CallArgumentValue.Positional(name)], span, context);
+            CallableInvocation.InvokeUnary(callable, name, span, context);
         }
 
         private readonly record struct DiscoveryOptions(object? Path, PyString Prefix, object? OnError);

@@ -101,13 +101,13 @@ internal sealed partial class LythonRuntime
         var best = enumerator.Current;
         var bestKey = keyCallable is null
             ? best
-            : keyCallable.Invoke([CallArgumentValue.Positional(best)], span, context);
+            : CallableInvocation.InvokeUnary(keyCallable, best, span, context);
         while (enumerator.MoveNext())
         {
             var candidate = enumerator.Current;
             var candidateKey = keyCallable is null
                 ? candidate
-                : keyCallable.Invoke([CallArgumentValue.Positional(candidate)], span, context);
+                : CallableInvocation.InvokeUnary(keyCallable, candidate, span, context);
             var comparison = Compare(candidateKey, bestKey, span);
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
 
         var bestKey = keyCallable is null
             ? best
-            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(best)], span, context).ConfigureAwait(false);
+            : await CallableInvocation.InvokeUnaryAsync(keyCallable, best, span, context).ConfigureAwait(false);
         while (true)
         {
             var (hasCandidate, candidate) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
 
             var candidateKey = keyCallable is null
                 ? candidate
-                : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
+                : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
@@ -175,13 +175,13 @@ internal sealed partial class LythonRuntime
         var best = values[0];
         var bestKey = keyCallable is null
             ? best
-            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(best)], span, context).ConfigureAwait(false);
+            : await CallableInvocation.InvokeUnaryAsync(keyCallable, best, span, context).ConfigureAwait(false);
         for (var i = 1; i < values.Count; i++)
         {
             var candidate = values[i];
             var candidateKey = keyCallable is null
                 ? candidate
-                : await keyCallable.InvokeAsync([CallArgumentValue.Positional(candidate)], span, context).ConfigureAwait(false);
+                : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
             var comparison = Compare(candidateKey, bestKey, span);
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
@@ -274,8 +274,10 @@ internal sealed partial class LythonRuntime
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
         {
-            var result = await leftKey.Comparer.InvokeAsync(
-                    [CallArgumentValue.Positional(leftKey.Value), CallArgumentValue.Positional(rightKey.Value)],
+            var result = await CallableInvocation.InvokeBinaryAsync(
+                    leftKey.Comparer,
+                    leftKey.Value,
+                    rightKey.Value,
                     span,
                     context)
                 .ConfigureAwait(false);
@@ -307,7 +309,7 @@ internal sealed partial class LythonRuntime
                         item,
                         keyCallable is null
                             ? item
-                            : keyCallable.Invoke([CallArgumentValue.Positional(item)], span, context)),
+                            : CallableInvocation.InvokeUnary(keyCallable, item, span, context)),
                     span);
             }
 
@@ -340,7 +342,7 @@ internal sealed partial class LythonRuntime
                         item,
                         keyCallable is null
                             ? item
-                            : await keyCallable.InvokeAsync([CallArgumentValue.Positional(item)], span, context).ConfigureAwait(false)),
+                            : await CallableInvocation.InvokeUnaryAsync(keyCallable, item, span, context).ConfigureAwait(false)),
                     span);
             }
 

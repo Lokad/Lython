@@ -121,11 +121,10 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         {
             if (TryGetSetNameCallable(pair.Value, context, span, out var callable))
             {
-                _ = callable.Invoke(
-                    [
-                        CallArgumentValue.Positional(this),
-                        CallArgumentValue.Positional(PyString.FromString(pair.Key))
-                    ],
+                _ = CallableInvocation.InvokeBinary(
+                    callable,
+                    this,
+                    PyString.FromString(pair.Key),
                     span,
                     context);
             }

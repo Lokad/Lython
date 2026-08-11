@@ -50,7 +50,7 @@ internal static class PyAttributeLookup
 
             try
             {
-                value = getAttributeCallable.Invoke([CallArgumentValue.Positional(PyString.FromString(memberName))], span, context);
+                value = CallableInvocation.InvokeUnary(getAttributeCallable, PyString.FromString(memberName), span, context);
                 return true;
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
@@ -63,7 +63,7 @@ internal static class PyAttributeLookup
                         throw new LythonRuntimeException("TypeError", "__getattr__ must be callable.", span);
                     }
 
-                    value = getAttrCallable.Invoke([CallArgumentValue.Positional(PyString.FromString(memberName))], span, context);
+                    value = CallableInvocation.InvokeUnary(getAttrCallable, PyString.FromString(memberName), span, context);
                     return true;
                 }
 
@@ -135,10 +135,7 @@ internal static class PyAttributeLookup
         if (descriptor is PyInstance descriptorInstance &&
             TryLookupDescriptorMethod(descriptorInstance, "__set__", context, span, out var callable))
         {
-            _ = callable.Invoke(
-                [CallArgumentValue.Positional(instance), CallArgumentValue.Positional(value)],
-                span,
-                context);
+            _ = CallableInvocation.InvokeBinary(callable, instance, value, span, context);
             return true;
         }
 
@@ -156,10 +153,7 @@ internal static class PyAttributeLookup
         if (descriptor is PyInstance descriptorInstance &&
             TryLookupDescriptorMethod(descriptorInstance, "__delete__", context, span, out var callable))
         {
-            _ = callable.Invoke(
-                [CallArgumentValue.Positional(instance)],
-                span,
-                context);
+            _ = CallableInvocation.InvokeUnary(callable, instance, span, context);
             return true;
         }
 
@@ -211,11 +205,10 @@ internal static class PyAttributeLookup
 
             if (TryLookupDescriptorMethod(descriptorInstance, "__get__", context, span, out var callable))
             {
-                value = callable.Invoke(
-                    [
-                        CallArgumentValue.Positional(instance ?? PyNone.Instance),
-                        CallArgumentValue.Positional(owner)
-                    ],
+                value = CallableInvocation.InvokeBinary(
+                    callable,
+                    instance ?? PyNone.Instance,
+                    owner,
                     span,
                     context);
                 return true;

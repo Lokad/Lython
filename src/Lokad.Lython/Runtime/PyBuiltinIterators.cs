@@ -218,7 +218,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
             var candidate = LythonRuntime.RuntimeValue(current);
             var keep = _function is null
                 ? PyTruthiness.IsTruthy(candidate)
-                : PyTruthiness.IsTruthy(_function.Invoke([CallArgumentValue.Positional(candidate)], _span, _context));
+                : PyTruthiness.IsTruthy(CallableInvocation.InvokeUnary(_function, candidate, _span, _context));
 
             if (keep)
             {
@@ -244,7 +244,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
             var candidate = LythonRuntime.RuntimeValue(current);
             var keep = _function is null
                 ? PyTruthiness.IsTruthy(candidate)
-                : PyTruthiness.IsTruthy(await _function.InvokeAsync([CallArgumentValue.Positional(candidate)], _span, _context).ConfigureAwait(false));
+                : PyTruthiness.IsTruthy(await CallableInvocation.InvokeUnaryAsync(_function, candidate, _span, _context).ConfigureAwait(false));
 
             if (keep)
             {

@@ -254,7 +254,7 @@ internal static partial class PyDataclass
             items.Add(PyTuple.FromOwnedArray([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
         }
 
-        return dictFactory.Invoke([CallArgumentValue.Positional(items)], span, context);
+        return CallableInvocation.InvokeUnary(dictFactory, items, span, context);
     }
 
     private static object BuildTupleFromItems(IEnumerable<object> items, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -266,7 +266,7 @@ internal static partial class PyDataclass
         }
 
         var list = new PyList(MaterializeRuntimeValueItems(items), context.MemoryGovernor, span);
-        return tupleFactory.Invoke([CallArgumentValue.Positional(list)], span, context);
+        return CallableInvocation.InvokeUnary(tupleFactory, list, span, context);
     }
 
     private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);
         }
 
-        _ = write.Invoke([CallArgumentValue.Positional(pyText)], span, context);
+        _ = CallableInvocation.InvokeUnary(write, pyText, span, context);
         return PyNone.Instance;
     }
 
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);
         }
 
-        _ = await write.InvokeAsync([CallArgumentValue.Positional(pyText)], span, context).ConfigureAwait(false);
+        _ = await CallableInvocation.InvokeUnaryAsync(write, pyText, span, context).ConfigureAwait(false);
         return PyNone.Instance;
     }
 

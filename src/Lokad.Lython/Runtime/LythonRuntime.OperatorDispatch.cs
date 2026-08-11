@@ -253,7 +253,7 @@ internal sealed partial class LythonRuntime
         }
 
         return new ValueTask<SpecialMethodInvocation>(
-            SpecialMethodInvocation.Invoked(callable.Invoke([CallArgumentValue.Positional(argument)], span, context)));
+            SpecialMethodInvocation.Invoked(CallableInvocation.InvokeUnary(callable, argument, span, context)));
     }
 
     private static async ValueTask<SpecialMethodInvocation> InvokeBinarySpecialMethodAsync(
@@ -268,7 +268,7 @@ internal sealed partial class LythonRuntime
             return SpecialMethodInvocation.Missing;
         }
 
-        var value = await callable.InvokeAsync([CallArgumentValue.Positional(argument)], span, context).ConfigureAwait(false);
+        var value = await CallableInvocation.InvokeUnaryAsync(callable, argument, span, context).ConfigureAwait(false);
         return SpecialMethodInvocation.Invoked(value);
     }
 

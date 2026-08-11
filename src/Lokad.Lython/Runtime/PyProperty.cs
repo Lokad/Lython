@@ -124,7 +124,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         }
 
         var callable = BindAccessor(_setter, instance, instance.Type, context, span, PropertyAccessorKind.Setter);
-        _ = callable.Invoke([CallArgumentValue.Positional(value)], span, context);
+        _ = CallableInvocation.InvokeUnary(callable, value, span, context);
     }
 
     public void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

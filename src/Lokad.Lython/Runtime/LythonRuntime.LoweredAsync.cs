@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
             }
 
-            current = await callable.InvokeAsync([CallArgumentValue.Positional(current)], span, context).ConfigureAwait(false);
+            current = await CallableInvocation.InvokeUnaryAsync(callable, current, span, context).ConfigureAwait(false);
         }
 
         return current;

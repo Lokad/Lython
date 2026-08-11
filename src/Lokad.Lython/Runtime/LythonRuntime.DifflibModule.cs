@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib junk predicate must be callable or None.", span);
             }
 
-            return IsTruthy(callable.Invoke([CallArgumentValue.Positional(argument)], span, context));
+            return IsTruthy(CallableInvocation.InvokeUnary(callable, argument, span, context));
         }
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)

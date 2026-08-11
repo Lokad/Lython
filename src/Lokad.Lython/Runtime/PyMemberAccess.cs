@@ -165,8 +165,10 @@ internal static class PyMemberAccess
                     throw new LythonRuntimeException("TypeError", "__setattr__ must be callable.", span);
                 }
 
-                _ = setattrCallable.Invoke(
-                    [CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)],
+                _ = CallableInvocation.InvokeBinary(
+                    setattrCallable,
+                    PyString.FromString(memberName),
+                    value,
                     span,
                     context);
                 return true;
@@ -193,10 +195,7 @@ internal static class PyMemberAccess
                     throw new LythonRuntimeException("TypeError", "__delattr__ must be callable.", span);
                 }
 
-                _ = delattrCallable.Invoke(
-                    [CallArgumentValue.Positional(PyString.FromString(memberName))],
-                    span,
-                    context);
+                _ = CallableInvocation.InvokeUnary(delattrCallable, PyString.FromString(memberName), span, context);
                 return true;
             }
         }

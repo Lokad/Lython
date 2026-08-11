@@ -483,13 +483,7 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", "Descriptor method '__get__' must be callable.", span);
             }
 
-            value = callable.Invoke(
-                [
-                    CallArgumentValue.Positional(PyNone.Instance),
-                    CallArgumentValue.Positional(owner)
-                ],
-                span,
-                context);
+            value = CallableInvocation.InvokeBinary(callable, PyNone.Instance, owner, span, context);
             return true;
         }
 

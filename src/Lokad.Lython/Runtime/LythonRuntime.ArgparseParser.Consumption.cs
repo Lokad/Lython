@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
             {
                 try
                 {
-                    converted = RuntimeValue(callable.Invoke([CallArgumentValue.Positional(converted)], span, context));
+                    converted = RuntimeValue(CallableInvocation.InvokeUnary(callable, converted, span, context));
                 }
                 catch (LythonRuntimeException ex) when (ex.ExceptionType is "ArgumentTypeError" or "ValueError" or "TypeError")
                 {

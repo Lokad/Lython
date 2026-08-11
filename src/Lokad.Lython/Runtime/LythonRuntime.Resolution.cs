@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
         }
 
-        return callable.Invoke([CallArgumentValue.Positional(index)], span, context);
+        return CallableInvocation.InvokeUnary(callable, index, span, context);
     }
 
     private static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)

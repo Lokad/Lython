@@ -44,10 +44,7 @@ internal sealed partial class LythonRuntime
 
         public int CompareTo(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
         {
-            var result = Comparer.Invoke(
-                [CallArgumentValue.Positional(Value), CallArgumentValue.Positional(other.Value)],
-                span,
-                context);
+            var result = CallableInvocation.InvokeBinary(Comparer, Value, other.Value, span, context);
             if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
             {
                 throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
@@ -142,7 +139,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"Object has no callable '{methodName}' method.", span);
             }
 
-            var result = callable.Invoke([CallArgumentValue.Positional(other)], span, context);
+            var result = CallableInvocation.InvokeUnary(callable, other, span, context);
             return result switch
             {
                 bool boolean => boolean,
@@ -241,8 +238,10 @@ internal sealed partial class LythonRuntime
 
         while (enumerator.MoveNext())
         {
-            accumulator = callable.Invoke(
-                [CallArgumentValue.Positional(accumulator), CallArgumentValue.Positional(RuntimeValue(enumerator.Current))],
+            accumulator = CallableInvocation.InvokeBinary(
+                callable,
+                accumulator,
+                RuntimeValue(enumerator.Current),
                 span,
                 context);
         }
