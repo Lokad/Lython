@@ -125,18 +125,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < set.Items.Count; i++)
         {
             var value = RuntimeValue(EvaluateLoweredExpression(set.Items[i].Expression, context));
-            if (!set.Items[i].IsUnpacking)
-            {
-                items.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(items.Count, set.Span);
-                continue;
-            }
-
-            foreach (var item in ToSequence(value, set.Items[i].Span, context))
-            {
-                items.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(items.Count, set.Span);
-            }
+            AddSetLiteralItem(items, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
         }
 
         return items;
@@ -312,10 +301,10 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var message = statement.Message is null
-            ? string.Empty
-            : ToInterpolatedPyString(EvaluateLoweredExpression(statement.Message, context), context).AsString();
-        throw new LythonRuntimeException("AssertionError", message, statement.Span);
+        ThrowAssertionError(
+            statement.Message is null ? null : EvaluateLoweredExpression(statement.Message, context),
+            context,
+            statement.Span);
     }
 
     private static void ExecuteLoweredDeleteStatement(LoweredDeleteStatement statement, ExecutionContext context)

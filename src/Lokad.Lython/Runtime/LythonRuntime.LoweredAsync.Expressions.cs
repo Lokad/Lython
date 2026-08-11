@@ -136,15 +136,13 @@ internal sealed partial class LythonRuntime
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i].Expression, context).ConfigureAwait(false));
             if (!set.Items[i].IsUnpacking)
             {
-                items.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(items.Count, set.Span);
+                AddSetLiteralValue(items, value, set.Items[i].Span, set.Span, context);
                 continue;
             }
 
             await foreach (var item in ToSequenceAsync(value, set.Items[i].Span).ConfigureAwait(false))
             {
-                items.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(items.Count, set.Span);
+                AddSetLiteralValue(items, RuntimeValue(item), set.Items[i].Span, set.Span, context);
             }
         }
 
@@ -334,10 +332,12 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var message = statement.Message is null
-            ? string.Empty
-            : ToInterpolatedPyString(await EvaluateLoweredExpressionAsync(statement.Message, context).ConfigureAwait(false), context).AsString();
-        throw new LythonRuntimeException("AssertionError", message, statement.Span);
+        ThrowAssertionError(
+            statement.Message is null
+                ? null
+                : await EvaluateLoweredExpressionAsync(statement.Message, context).ConfigureAwait(false),
+            context,
+            statement.Span);
     }
 
     private static async ValueTask ExecuteLoweredDeleteStatementAsync(LoweredDeleteStatement statement, ExecutionContext context)

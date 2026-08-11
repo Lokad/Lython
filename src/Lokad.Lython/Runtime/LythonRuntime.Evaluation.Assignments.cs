@@ -21,11 +21,17 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var message = statement.Message is null
-            ? string.Empty
-            : ToInterpolatedPyString(EvaluateExpression(statement.Message, context), context).AsString();
-        throw new LythonRuntimeException("AssertionError", message, statement.Span);
+        ThrowAssertionError(
+            statement.Message is null ? null : EvaluateExpression(statement.Message, context),
+            context,
+            statement.Span);
     }
+
+    private static void ThrowAssertionError(object? message, ExecutionContext context, LythonSourceSpan span)
+        => throw new LythonRuntimeException(
+            "AssertionError",
+            message is null ? string.Empty : ToInterpolatedPyString(message, context).AsString(),
+            span);
 
     private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)
     {

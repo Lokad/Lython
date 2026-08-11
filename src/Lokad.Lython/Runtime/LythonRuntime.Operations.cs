@@ -475,21 +475,41 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < set.Items.Count; i++)
         {
             var value = RuntimeValue(EvaluateExpression(set.Items[i].Expression, context));
-            if (!set.Items[i].IsUnpacking)
-            {
-                result.Add(ValidateSetItem(value, set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(result.Count, set.Span);
-                continue;
-            }
-
-            foreach (var item in ToSequence(value, set.Items[i].Span, context))
-            {
-                result.Add(ValidateSetItem(RuntimeValue(item), set.Items[i].Span, context.MemoryGovernor));
-                context.ObserveCollectionCount(result.Count, set.Span);
-            }
+            AddSetLiteralItem(result, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
         }
 
         return result;
+    }
+
+    private static void AddSetLiteralItem(
+        PySet result,
+        object value,
+        bool isUnpacking,
+        LythonSourceSpan itemSpan,
+        LythonSourceSpan setSpan,
+        ExecutionContext context)
+    {
+        if (!isUnpacking)
+        {
+            AddSetLiteralValue(result, value, itemSpan, setSpan, context);
+            return;
+        }
+
+        foreach (var item in ToSequence(value, itemSpan, context))
+        {
+            AddSetLiteralValue(result, RuntimeValue(item), itemSpan, setSpan, context);
+        }
+    }
+
+    private static void AddSetLiteralValue(
+        PySet result,
+        object value,
+        LythonSourceSpan itemSpan,
+        LythonSourceSpan setSpan,
+        ExecutionContext context)
+    {
+        result.Add(ValidateSetItem(value, itemSpan, context.MemoryGovernor));
+        context.ObserveCollectionCount(result.Count, setSpan);
     }
 
     private static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
