@@ -50,6 +50,10 @@ internal abstract class CallableParameterLayout
 
     public ArgumentCountLimit MaximumArgumentCount { get; }
 
+    /// <summary>
+    /// Determines whether another layout accepts the same positional and named
+    /// argument shape; concrete layouts must compare every binding-relevant field.
+    /// </summary>
     internal abstract bool HasSameShape(CallableParameterLayout other);
 }
 

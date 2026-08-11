@@ -15,6 +15,10 @@ internal sealed partial class LythonRuntime
 
     internal abstract record OpenPyxlStylePayload(OpenPyxlStyleKind Kind)
     {
+        /// <summary>
+        /// Projects a Python-visible style member and reports absence without
+        /// manufacturing a value; implementations must expose only their style kind's members.
+        /// </summary>
         public abstract bool TryGetMember(string name, [MaybeNullWhen(false)] out object value);
     }
 
