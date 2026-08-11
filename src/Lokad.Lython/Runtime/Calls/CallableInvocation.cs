@@ -8,6 +8,9 @@ internal static class CallableInvocation
     [ThreadStatic]
     private static CallArgumentValue[]? _binaryArguments;
 
+    [ThreadStatic]
+    private static CallArgumentValue[]? _ternaryArguments;
+
     public static object InvokeUnary(
         LythonRuntime.ICallable callable,
         object value,
@@ -78,6 +81,44 @@ internal static class CallableInvocation
         }
     }
 
+    public static object InvokeTernary(
+        LythonRuntime.ICallable callable,
+        object first,
+        object second,
+        object third,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        var arguments = RentTernaryArguments(first, second, third);
+        try
+        {
+            return callable.Invoke(arguments, span, context);
+        }
+        finally
+        {
+            ReturnTernaryArguments(arguments);
+        }
+    }
+
+    public static async ValueTask<object> InvokeTernaryAsync(
+        LythonRuntime.ICallable callable,
+        object first,
+        object second,
+        object third,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        var arguments = RentTernaryArguments(first, second, third);
+        try
+        {
+            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+        }
+        finally
+        {
+            ReturnTernaryArguments(arguments);
+        }
+    }
+
     private static CallArgumentValue[] RentUnaryArguments(object value)
     {
         var arguments = _unaryArguments ?? new CallArgumentValue[1];
@@ -106,5 +147,23 @@ internal static class CallableInvocation
         arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
         arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
         _binaryArguments ??= arguments;
+    }
+
+    private static CallArgumentValue[] RentTernaryArguments(object first, object second, object third)
+    {
+        var arguments = _ternaryArguments ?? new CallArgumentValue[3];
+        _ternaryArguments = null;
+        arguments[0] = CallArgumentValue.Positional(first);
+        arguments[1] = CallArgumentValue.Positional(second);
+        arguments[2] = CallArgumentValue.Positional(third);
+        return arguments;
+    }
+
+    private static void ReturnTernaryArguments(CallArgumentValue[] arguments)
+    {
+        arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
+        arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
+        arguments[2] = CallArgumentValue.Positional(PyNone.Instance);
+        _ternaryArguments ??= arguments;
     }
 }

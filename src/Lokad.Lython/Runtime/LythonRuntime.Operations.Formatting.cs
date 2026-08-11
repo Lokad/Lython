@@ -104,8 +104,9 @@ internal sealed partial class LythonRuntime
             instance.TryGetAttribute("__format__", context, span, out var formatMember) &&
             formatMember is ICallable formatCallable)
         {
-            var formatted = formatCallable.Invoke(
-                [CallArgumentValue.Positional(PyString.FromString(formatSpecifier, context.MemoryGovernor, span))],
+            var formatted = CallableInvocation.InvokeUnary(
+                formatCallable,
+                PyString.FromString(formatSpecifier, context.MemoryGovernor, span),
                 span,
                 context);
             if (!PyStringOps.TryAsString(formatted, out var formattedText))

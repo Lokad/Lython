@@ -125,8 +125,11 @@ internal static class PyContextManagers
 
         public bool Exit(object exceptionType, object exceptionValue, object traceback)
         {
-            var result = exit.Invoke(
-                [CallArgumentValue.Positional(exceptionType), CallArgumentValue.Positional(exceptionValue), CallArgumentValue.Positional(traceback)],
+            var result = CallableInvocation.InvokeTernary(
+                exit,
+                exceptionType,
+                exceptionValue,
+                traceback,
                 span,
                 context);
             return PyTruthiness.IsTruthy(result);
@@ -176,8 +179,11 @@ internal static class PyContextManagers
 
         public async ValueTask<bool> ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {
-            var result = await exit.InvokeAsync(
-                    [CallArgumentValue.Positional(exceptionType), CallArgumentValue.Positional(exceptionValue), CallArgumentValue.Positional(traceback)],
+            var result = await CallableInvocation.InvokeTernaryAsync(
+                    exit,
+                    exceptionType,
+                    exceptionValue,
+                    traceback,
                     span,
                     context)
                 .ConfigureAwait(false);
