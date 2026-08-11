@@ -223,15 +223,16 @@ import pkgutil
 
 dumps = pkgutil.resolve_name("json.dumps")
 colon = pkgutil.resolve_name("json:dumps")
+max_year = pkgutil.resolve_name("datetime.date.max.year")
 extended = pkgutil.extend_path(["/a"], "pkg")
 __lython_file = open("/out.txt", "w")
-__lython_file.write(dumps({"ok": True}) + "|" + colon({"ok": False}) + "|" + str(extended))
+__lython_file.write(dumps({"ok": True}) + "|" + colon({"ok": False}) + "|" + str(max_year) + "|" + str(extended))
 __lython_file.close()
 """,
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("{\"ok\": true}|{\"ok\": false}|['/a']", host.ReadText("/out.txt"));
+        Assert.Equal("{\"ok\": true}|{\"ok\": false}|9999|['/a']", host.ReadText("/out.txt"));
     }
 
     [Fact]

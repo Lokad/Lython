@@ -166,8 +166,8 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "pkgutil.resolve_name(name) expects 'module:object' or dotted names.", span);
                 }
 
-                var module = ResolveImportedModule(parts[0], context, span);
-                return ResolveObjectPath(module, parts[1], span);
+                var colonModule = ResolveImportedModule(parts[0], context, span);
+                return ResolveObjectPath(colonModule, parts[1], span);
             }
 
             var segments = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
@@ -176,24 +176,25 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "pkgutil.resolve_name(name) expects a valid dotted name.", span);
             }
 
-            for (var length = segments.Length; length >= 1; length--)
+            // Match CPython's left-to-right import probing: once a qualified
+            // prefix is not importable, every remaining segment is an attribute.
+            // This avoids rebuilding and probing every decreasing prefix for the
+            // common module.object.object shape.
+            var moduleName = segments[0];
+            var resolvedModule = ResolveImportedModule(moduleName, context, span);
+            for (var index = 1; index < segments.Length; index++)
             {
-                var moduleName = string.Join(".", segments.Take(length));
-                if (!TryCanImportModule(moduleName, context, span))
+                var candidate = moduleName + "." + segments[index];
+                if (!TryCanImportModule(candidate, context, span))
                 {
-                    continue;
+                    return ResolveObjectPath(resolvedModule, string.Join(".", segments, index, segments.Length - index), span);
                 }
 
-                var module = ResolveImportedModule(moduleName, context, span);
-                if (length == segments.Length)
-                {
-                    return module;
-                }
-
-                return ResolveObjectPath(module, string.Join(".", segments.Skip(length)), span);
+                moduleName = candidate;
+                resolvedModule = ResolveImportedModule(moduleName, context, span);
             }
 
-            throw RuntimeErrors.NoModuleNamed(segments[0], span);
+            return resolvedModule;
         }
 
         private static DiscoveryOptions ParseDiscoveryArguments(
