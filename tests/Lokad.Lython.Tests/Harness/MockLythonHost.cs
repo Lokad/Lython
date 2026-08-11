@@ -453,6 +453,9 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public void CompleteSubprocessAsynchronously() => _subprocess.CompleteAsynchronously = true;
 
+    public Task PauseSubprocessUntilCancellation(IReadOnlyList<string> args)
+        => _subprocess.PauseUntilCancellation(args);
+
     public void SeedSubprocessResult(IReadOnlyList<string> args, int returnCode)
         => SeedSubprocessResult(args, returnCode, string.Empty, string.Empty);
 
@@ -651,6 +654,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         private readonly Dictionary<string, LythonSubprocessResult> _results = new(StringComparer.Ordinal);
         private readonly HashSet<string> _timeouts = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TaskCompletionSource> _cancellationPauses = new(StringComparer.Ordinal);
         private readonly List<LythonSubprocessRequest> _requests = [];
 
         public bool Enabled { get; set; }
@@ -672,6 +676,13 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
         public void SeedTimeout(IReadOnlyList<string> args) => _timeouts.Add(Key(args));
 
+        public Task PauseUntilCancellation(IReadOnlyList<string> args)
+        {
+            var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _cancellationPauses.Add(Key(args), started);
+            return started.Task;
+        }
+
         public ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -685,6 +696,12 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
         private async ValueTask<LythonSubprocessResult> RunDelayedAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
+            if (_cancellationPauses.TryGetValue(Key(request.Args), out var started))
+            {
+                started.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            }
+
             await Task.Delay(25, cancellationToken);
             CompletedAsynchronously = true;
             return Run(request);
