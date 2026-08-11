@@ -65,17 +65,9 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(callSpan);
             return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
         }
-        catch (RegexParseException ex)
+        catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, callSpan);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw RuntimeErrors.Runtime(ex.Message, callSpan);
+            throw translated;
         }
         finally
         {
@@ -102,22 +94,28 @@ internal sealed partial class LythonRuntime
             var arguments = await expandArguments().ConfigureAwait(false);
             return RuntimeValue(await callable.InvokeAsync(arguments, callSpan, context).ConfigureAwait(false));
         }
-        catch (RegexParseException ex)
+        catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, callSpan);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw RuntimeErrors.Runtime(ex.Message, callSpan);
+            throw translated;
         }
         finally
         {
             context.LeaveInterpreterFrame();
         }
+    }
+
+    private static bool TryTranslateCallableException(
+        Exception exception,
+        LythonSourceSpan callSpan,
+        [MaybeNullWhen(false)] out LythonRuntimeException translated)
+    {
+        translated = exception switch
+        {
+            RegexParseException regex => new LythonRuntimeException("ValueError", regex.Message, callSpan),
+            InvalidOperationException invalidOperation => RuntimeErrors.Runtime(invalidOperation.Message, callSpan),
+            _ => null
+        };
+        return translated is not null;
     }
 
     private static readonly IReadOnlyDictionary<PythonExceptionIdentity, PythonExceptionIdentity[]> ExceptionBaseIdentities =
