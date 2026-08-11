@@ -280,6 +280,8 @@ internal static partial class StaticBindingEngine
         AbstractState bindings,
         out AbstractValue returnValue)
     {
+        // This deliberately stops at unsupported control flow instead of guessing. For an if statement,
+        // a returning branch is removed from the continuation state while two returning branches join values.
         foreach (var statement in statements)
         {
             switch (statement)

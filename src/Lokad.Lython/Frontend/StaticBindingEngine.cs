@@ -7,6 +7,8 @@ internal static partial class StaticBindingEngine
     public static void UpdateBindings(StatementSyntax statement, AbstractState bindings)
     {
         var mutatedReceivers = CollectMutatedReceiverNames(statement, bindings);
+        // Aliases to mutable sequences are not tracked. Any known mutating path therefore invalidates
+        // all sequence-shape facts before this statement establishes new bindings.
         if (mutatedReceivers.Any(bindings.IsKnownMutableSequence) ||
             MutatesKnownMutableSequenceThroughAssignment(statement, bindings))
         {
@@ -137,6 +139,7 @@ internal static partial class StaticBindingEngine
 
         foreach (var receiver in mutatedReceivers)
         {
+            // A mutating method may also change the receiver's more specific abstract kind.
             bindings.Remove(receiver);
         }
     }

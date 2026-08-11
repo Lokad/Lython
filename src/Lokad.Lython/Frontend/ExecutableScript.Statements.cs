@@ -10,6 +10,8 @@ internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
     {
+        private readonly record struct CompiledClause(int StartBlock, int EndBlock, int? ExitBlock);
+
         private int? CompileStatements(IReadOnlyList<LoweredStatement> statements, int entryBlock)
         {
             int? current = entryBlock;
@@ -200,107 +202,88 @@ internal sealed partial class ExecutableScript
 
         private int CompileTryStatement(LoweredTryStatement statement, int currentBlock)
         {
-            var tryBlock = CreateBlock();
-            AddInstruction(currentBlock, ExecutableInstruction.Jump(tryBlock, statement.Span));
-
-            var protectedStart = tryBlock;
-            var tryExit = CompileStatements(statement.TryBody, tryBlock);
-            var protectedEnd = _blocks.Count - 1;
-
-            var exceptBlock = -1;
-            var exceptEnd = -1;
-            int? exceptExit = null;
-            if (statement.ExceptBody is not null)
+            CompiledClause CompileClause(IReadOnlyList<LoweredStatement> body)
             {
-                exceptBlock = CreateBlock();
-                exceptExit = CompileStatements(statement.ExceptBody, exceptBlock);
-                exceptEnd = _blocks.Count - 1;
+                var startBlock = CreateBlock();
+                var exitBlock = CompileStatements(body, startBlock);
+                // Compiling a clause may append nested blocks; every one belongs to this protected range.
+                return new CompiledClause(startBlock, _blocks.Count - 1, exitBlock);
             }
 
-            var elseBlock = -1;
-            var elseEnd = -1;
-            int? elseExit = null;
-            if (statement.ElseBody is not null)
+            CompiledClause? CompileOptionalClause(IReadOnlyList<LoweredStatement>? body)
+                => body is null ? null : CompileClause(body);
+
+            void ProtectWithFinally(CompiledClause clause, int finallyBlock)
             {
-                elseBlock = CreateBlock();
-                elseExit = CompileStatements(statement.ElseBody, elseBlock);
-                elseEnd = _blocks.Count - 1;
+                _regions.Add(new ExecutableExceptionRegion(
+                    clause.StartBlock,
+                    clause.EndBlock,
+                    null,
+                    null,
+                    null,
+                    finallyBlock));
             }
 
-            var finallyBlock = -1;
-            int? finallyExit = null;
-            if (statement.FinallyBody is not null)
-            {
-                finallyBlock = CreateBlock();
-                finallyExit = CompileStatements(statement.FinallyBody, finallyBlock);
-            }
+            var tryClause = CompileClause(statement.TryBody);
+            AddInstruction(currentBlock, ExecutableInstruction.Jump(tryClause.StartBlock, statement.Span));
+
+            var exceptClause = CompileOptionalClause(statement.ExceptBody);
+            var elseClause = CompileOptionalClause(statement.ElseBody);
+            var finallyClause = CompileOptionalClause(statement.FinallyBody);
 
             var afterBlock = CreateBlock();
 
             _regions.Add(new ExecutableExceptionRegion(
-                protectedStart,
-                protectedEnd,
+                tryClause.StartBlock,
+                tryClause.EndBlock,
                 statement.Syntax.ExceptionTypeNames,
                 statement.Syntax.ExceptionVariableName,
-                statement.ExceptBody is null ? null : exceptBlock,
-                statement.FinallyBody is null ? null : finallyBlock));
+                exceptClause?.StartBlock,
+                finallyClause?.StartBlock));
 
-            if (tryExit is int tryBlockExit && !IsTerminated(tryBlockExit))
+            if (tryClause.ExitBlock is int tryExit && !IsTerminated(tryExit))
             {
-                AddInstruction(tryBlockExit, ExecutableInstruction.Jump(
-                    statement.ElseBody is not null ? elseBlock : statement.FinallyBody is not null ? finallyBlock : afterBlock,
+                AddInstruction(tryExit, ExecutableInstruction.Jump(
+                    elseClause?.StartBlock ?? finallyClause?.StartBlock ?? afterBlock,
                     statement.Span));
             }
 
-            if (statement.ExceptBody is not null)
+            if (exceptClause is { } handler)
             {
-                if (statement.FinallyBody is not null)
+                if (finallyClause is { } cleanup)
                 {
-                    _regions.Add(new ExecutableExceptionRegion(
-                        exceptBlock,
-                        exceptEnd,
-                        null,
-                        null,
-                        null,
-                        finallyBlock));
+                    // Exceptions raised by a handler still execute the surrounding finally clause.
+                    ProtectWithFinally(handler, cleanup.StartBlock);
                 }
 
-                if (exceptExit is int exceptBlockExit && !IsTerminated(exceptBlockExit))
+                if (handler.ExitBlock is int handlerExit && !IsTerminated(handlerExit))
                 {
                     AddInstruction(
-                        exceptBlockExit,
+                        handlerExit,
                         ExecutableInstruction.ClearException(
                             statement.Syntax.ExceptionVariableName is null ? -1 : InternName(statement.Syntax.ExceptionVariableName),
                             statement.Span));
-                    AddInstruction(exceptBlockExit, ExecutableInstruction.Jump(statement.FinallyBody is not null ? finallyBlock : afterBlock, statement.Span));
+                    AddInstruction(handlerExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
                 }
             }
 
-            if (statement.ElseBody is not null)
+            if (elseClause is { } success)
             {
-                if (statement.FinallyBody is not null)
+                if (finallyClause is { } cleanup)
                 {
-                    _regions.Add(new ExecutableExceptionRegion(
-                        elseBlock,
-                        elseEnd,
-                        null,
-                        null,
-                        null,
-                        finallyBlock));
+                    // The else suite is outside the except handler but remains inside finally protection.
+                    ProtectWithFinally(success, cleanup.StartBlock);
                 }
 
-                if (elseExit is int elseBlockExit && !IsTerminated(elseBlockExit))
+                if (success.ExitBlock is int successExit && !IsTerminated(successExit))
                 {
-                    AddInstruction(elseBlockExit, ExecutableInstruction.Jump(statement.FinallyBody is not null ? finallyBlock : afterBlock, statement.Span));
+                    AddInstruction(successExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
                 }
             }
 
-            if (statement.FinallyBody is not null)
+            if (finallyClause is { ExitBlock: int finallyExit } && !IsTerminated(finallyExit))
             {
-                if (finallyExit is int finallyBlockExit && !IsTerminated(finallyBlockExit))
-                {
-                    AddInstruction(finallyBlockExit, ExecutableInstruction.EndFinally(afterBlock, statement.Span));
-                }
+                AddInstruction(finallyExit, ExecutableInstruction.EndFinally(afterBlock, statement.Span));
             }
 
             return afterBlock;

@@ -44,6 +44,24 @@ internal static class AnnotationDiagnostics
         AbstractState bindings,
         ExpressionSyntax? returnAnnotation)
     {
+        void AnalyzeLoop(
+            IReadOnlyList<StatementSyntax> body,
+            IReadOnlyList<StatementSyntax>? elseStatements)
+        {
+            // A loop may execute zero times, so facts from its body must be joined with entry facts.
+            var bodyBindings = bindings.Clone();
+            AnalyzeStatements(body, diagnostics, bodyBindings, returnAnnotation);
+            var merged = AbstractState.Merge(bindings, bodyBindings);
+            if (elseStatements is not null)
+            {
+                var elseBindings = bindings.Clone();
+                AnalyzeStatements(elseStatements, diagnostics, elseBindings, returnAnnotation);
+                merged = AbstractState.Merge(merged, elseBindings);
+            }
+
+            bindings.ReplaceWith(merged);
+        }
+
         switch (statement)
         {
             case AnnotatedAssignmentStatementSyntax annotatedAssignment:
@@ -95,36 +113,12 @@ internal static class AnnotationDiagnostics
                 }
 
             case ForStatementSyntax forStatement:
-                {
-                    var bodyBindings = bindings.Clone();
-                    AnalyzeStatements(forStatement.Body, diagnostics, bodyBindings, returnAnnotation);
-                    var merged = AbstractState.Merge(bindings, bodyBindings);
-                    if (forStatement.ElseStatements is not null)
-                    {
-                        var elseBindings = bindings.Clone();
-                        AnalyzeStatements(forStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
-                        merged = AbstractState.Merge(merged, elseBindings);
-                    }
-
-                    bindings.ReplaceWith(merged);
-                    break;
-                }
+                AnalyzeLoop(forStatement.Body, forStatement.ElseStatements);
+                break;
 
             case WhileStatementSyntax whileStatement:
-                {
-                    var bodyBindings = bindings.Clone();
-                    AnalyzeStatements(whileStatement.Body, diagnostics, bodyBindings, returnAnnotation);
-                    var merged = AbstractState.Merge(bindings, bodyBindings);
-                    if (whileStatement.ElseStatements is not null)
-                    {
-                        var elseBindings = bindings.Clone();
-                        AnalyzeStatements(whileStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
-                        merged = AbstractState.Merge(merged, elseBindings);
-                    }
-
-                    bindings.ReplaceWith(merged);
-                    break;
-                }
+                AnalyzeLoop(whileStatement.Body, whileStatement.ElseStatements);
+                break;
 
             case WithStatementSyntax withStatement:
                 {
@@ -166,6 +160,7 @@ internal static class AnnotationDiagnostics
 
             case TryStatementSyntax tryStatement:
                 {
+                    // Join every reachable continuation; finally then observes and updates that joined state.
                     var merged = bindings.Clone();
                     var tryBindings = bindings.Clone();
                     AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation);
