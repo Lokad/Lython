@@ -88,7 +88,7 @@ internal sealed partial class ExecutableScript
             }
 
             var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
-            var normalizedRegions = NormalizeRegions(indexMap);
+            var normalizedRegions = NormalizeRegions(ordered, indexMap);
             var requiresLocalVariableMirroring =
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject is null);

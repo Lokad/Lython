@@ -47,32 +47,76 @@ internal sealed partial class ExecutableScript
             return normalized;
         }
 
-        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(IReadOnlyDictionary<int, int> indexMap)
+        private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(
+            IReadOnlyList<int> orderedBlocks,
+            IReadOnlyDictionary<int, int> indexMap)
         {
-            return _regions
-                .Select(region =>
+            var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
+            foreach (var region in _regions)
+            {
+                var firstProtected = LowerBound(orderedBlocks, region.ProtectedStartBlockIndex);
+                var afterLastProtected = UpperBound(orderedBlocks, region.ProtectedEndBlockIndex);
+                if (firstProtected == afterLastProtected)
                 {
-                    var protectedBlocks = indexMap
-                        .Where(pair => pair.Key >= region.ProtectedStartBlockIndex && pair.Key <= region.ProtectedEndBlockIndex)
-                        .Select(pair => pair.Value)
-                        .Order()
-                        .ToArray();
-                    return protectedBlocks.Length == 0
-                        ? null
-                        : new ExecutableExceptionRegion(
-                            protectedBlocks[0],
-                            protectedBlocks[^1],
-                            region.ExceptionTypeNames,
-                            region.ExceptionVariableName,
-                            region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
-                            region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null);
-                })
-                .Where(region => region is not null)
-                .Select(region => region.RequireNotNull())
-                // Runtime unwinding consumes applicable regions from the narrowest
-                // protected range outward, without rescanning the region table.
+                    continue;
+                }
+
+                // orderedBlocks is sorted and indexMap assigns its position as the
+                // normalized index, so a reachable original range remains contiguous.
+                normalized.Add(new ExecutableExceptionRegion(
+                    firstProtected,
+                    afterLastProtected - 1,
+                    region.ExceptionTypeNames,
+                    region.ExceptionVariableName,
+                    region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
+                    region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null));
+            }
+
+            // Runtime unwinding consumes applicable regions from the narrowest
+            // protected range outward, without rescanning the region table.
+            return normalized
                 .OrderBy(region => region.ProtectedEndBlockIndex - region.ProtectedStartBlockIndex)
                 .ToArray();
+
+            static int LowerBound(IReadOnlyList<int> values, int target)
+            {
+                var start = 0;
+                var end = values.Count;
+                while (start < end)
+                {
+                    var middle = start + ((end - start) / 2);
+                    if (values[middle] < target)
+                    {
+                        start = middle + 1;
+                    }
+                    else
+                    {
+                        end = middle;
+                    }
+                }
+
+                return start;
+            }
+
+            static int UpperBound(IReadOnlyList<int> values, int target)
+            {
+                var start = 0;
+                var end = values.Count;
+                while (start < end)
+                {
+                    var middle = start + ((end - start) / 2);
+                    if (values[middle] <= target)
+                    {
+                        start = middle + 1;
+                    }
+                    else
+                    {
+                        end = middle;
+                    }
+                }
+
+                return start;
+            }
         }
 
         private HashSet<int> CollectReachableBlocks(int entryBlockIndex)
