@@ -204,21 +204,14 @@ internal sealed partial class LythonRuntime
             var italic = font.Element(XlsxMain + "i") is not null;
             var strike = font.Element(XlsxMain + "strike") is not null;
             var underline = ReadUnderlineValue(font.Element(XlsxMain + "u"));
-            return new OpenPyxlStyleValue(OpenPyxlStyleKind.Font, new Dictionary<string, object>
-            {
-                ["name"] = ReadStyleElementAttribute(font, "name", "val"),
-                ["sz"] = size,
-                ["size"] = size,
-                ["bold"] = bold,
-                ["b"] = bold,
-                ["italic"] = italic,
-                ["i"] = italic,
-                ["color"] = ReadColorValue(font.Element(XlsxMain + "color")),
-                ["underline"] = underline,
-                ["u"] = underline,
-                ["strike"] = strike,
-                ["strikethrough"] = strike,
-            });
+            return new OpenPyxlStyleValue(new OpenPyxlFontStylePayload(
+                ReadStyleElementAttribute(font, "name", "val"),
+                size,
+                bold,
+                italic,
+                ReadColorValue(font.Element(XlsxMain + "color")),
+                underline,
+                strike));
         }
 
         private static OpenPyxlStyleValue ReadFillStyle(XElement fill)
@@ -227,60 +220,40 @@ internal sealed partial class LythonRuntime
             var fillType = ReadStyleAttribute(pattern, "patternType");
             var fgColor = ReadColorValue(pattern?.Element(XlsxMain + "fgColor"));
             var bgColor = ReadColorValue(pattern?.Element(XlsxMain + "bgColor"));
-            return new OpenPyxlStyleValue(OpenPyxlStyleKind.PatternFill, new Dictionary<string, object>
-            {
-                ["fill_type"] = fillType,
-                ["patternType"] = fillType,
-                ["start_color"] = fgColor,
-                ["fgColor"] = fgColor,
-                ["end_color"] = bgColor,
-                ["bgColor"] = bgColor,
-            });
+            return new OpenPyxlStyleValue(new OpenPyxlPatternFillStylePayload(fillType, fgColor, bgColor));
         }
 
         private static OpenPyxlStyleValue ReadBorderStyle(XElement border)
-            => new(OpenPyxlStyleKind.Border, new Dictionary<string, object>
-            {
-                ["left"] = ReadSideStyle(border.Element(XlsxMain + "left")),
-                ["right"] = ReadSideStyle(border.Element(XlsxMain + "right")),
-                ["top"] = ReadSideStyle(border.Element(XlsxMain + "top")),
-                ["bottom"] = ReadSideStyle(border.Element(XlsxMain + "bottom")),
-            });
+            => new(new OpenPyxlBorderStylePayload(
+                ReadSideStyle(border.Element(XlsxMain + "left")),
+                ReadSideStyle(border.Element(XlsxMain + "right")),
+                ReadSideStyle(border.Element(XlsxMain + "top")),
+                ReadSideStyle(border.Element(XlsxMain + "bottom"))));
 
         private static OpenPyxlStyleValue ReadSideStyle(XElement? side)
         {
             var style = ReadStyleAttribute(side, "style");
-            return new OpenPyxlStyleValue(OpenPyxlStyleKind.Side, new Dictionary<string, object>
-            {
-                ["style"] = style,
-                ["border_style"] = style,
-                ["color"] = ReadColorValue(side?.Element(XlsxMain + "color")),
-            });
+            return new OpenPyxlStyleValue(new OpenPyxlSideStylePayload(
+                style,
+                ReadColorValue(side?.Element(XlsxMain + "color"))));
         }
 
         private static OpenPyxlStyleValue? ReadAlignmentStyle(XElement? alignment)
             => alignment is null
                 ? null
-                : new OpenPyxlStyleValue(OpenPyxlStyleKind.Alignment, new Dictionary<string, object>
-                {
-                    ["horizontal"] = ReadStyleAttribute(alignment, "horizontal"),
-                    ["vertical"] = ReadStyleAttribute(alignment, "vertical"),
-                    ["wrap_text"] = ReadStyleBooleanAttribute(alignment, "wrapText"),
-                    ["wrapText"] = ReadStyleBooleanAttribute(alignment, "wrapText"),
-                    ["text_rotation"] = ReadStyleAttribute(alignment, "textRotation"),
-                    ["textRotation"] = ReadStyleAttribute(alignment, "textRotation"),
-                    ["shrink_to_fit"] = ReadStyleBooleanAttribute(alignment, "shrinkToFit"),
-                    ["shrinkToFit"] = ReadStyleBooleanAttribute(alignment, "shrinkToFit"),
-                });
+                : new OpenPyxlStyleValue(new OpenPyxlAlignmentStylePayload(
+                    ReadStyleAttribute(alignment, "horizontal"),
+                    ReadStyleAttribute(alignment, "vertical"),
+                    ReadStyleBooleanAttribute(alignment, "wrapText"),
+                    ReadStyleAttribute(alignment, "textRotation"),
+                    ReadStyleBooleanAttribute(alignment, "shrinkToFit")));
 
         private static OpenPyxlStyleValue? ReadProtectionStyle(XElement? protection)
             => protection is null
                 ? null
-                : new OpenPyxlStyleValue(OpenPyxlStyleKind.Protection, new Dictionary<string, object>
-                {
-                    ["locked"] = ReadStyleBooleanAttribute(protection, "locked"),
-                    ["hidden"] = ReadStyleBooleanAttribute(protection, "hidden"),
-                });
+                : new OpenPyxlStyleValue(new OpenPyxlProtectionStylePayload(
+                    ReadStyleBooleanAttribute(protection, "locked"),
+                    ReadStyleBooleanAttribute(protection, "hidden")));
 
         private static object ReadStyleElementAttribute(XElement parent, string elementName, string attributeName)
             => ReadStyleAttribute(parent.Element(XlsxMain + elementName), attributeName);

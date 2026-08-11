@@ -185,33 +185,48 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlStyleValue : IPyDynamicAttributes, IPyRenderableValue, IEquatable<OpenPyxlStyleValue>
     {
-        private readonly Dictionary<string, object> _members;
+        public OpenPyxlStyleValue(OpenPyxlStylePayload payload) => Payload = payload;
 
-        public OpenPyxlStyleValue(OpenPyxlStyleKind kind, IReadOnlyDictionary<string, object> members)
-        {
-            Kind = kind;
-            _members = new Dictionary<string, object>(members, StringComparer.Ordinal);
-        }
+        public OpenPyxlStylePayload Payload { get; }
 
-        public OpenPyxlStyleKind Kind { get; }
+        public OpenPyxlStyleKind Kind => Payload.Kind;
 
         public string QualifiedName => OpenPyxlStyleQualifiedName(Kind);
 
         internal OpenPyxlStyleValue Copy(CopyDepth depth)
         {
-            var members = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (var pair in _members)
+            if (depth == CopyDepth.Shallow)
             {
-                members[pair.Key] = depth == CopyDepth.Deep && pair.Value is OpenPyxlStyleValue style
-                    ? style.Copy(CopyDepth.Deep)
-                    : pair.Value;
+                return new OpenPyxlStyleValue(Payload);
             }
 
-            return new OpenPyxlStyleValue(Kind, members);
+            var copied = Payload switch
+            {
+                OpenPyxlBorderStylePayload border => border with
+                {
+                    Left = CopyMember(border.Left),
+                    Right = CopyMember(border.Right),
+                    Top = CopyMember(border.Top),
+                    Bottom = CopyMember(border.Bottom),
+                },
+                OpenPyxlNamedStylePayload named => named with
+                {
+                    Font = named.Font?.Copy(CopyDepth.Deep),
+                    Fill = named.Fill?.Copy(CopyDepth.Deep),
+                    Border = named.Border?.Copy(CopyDepth.Deep),
+                    Alignment = named.Alignment?.Copy(CopyDepth.Deep),
+                    Protection = named.Protection?.Copy(CopyDepth.Deep),
+                },
+                _ => Payload,
+            };
+            return new OpenPyxlStyleValue(copied);
+
+            static object CopyMember(object value)
+                => value is OpenPyxlStyleValue style ? style.Copy(CopyDepth.Deep) : value;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-            => _members.TryGetValue(name, out value);
+            => Payload.TryGetMember(name, out value);
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
@@ -351,21 +366,14 @@ internal sealed partial class LythonRuntime
             : NormalizeOptionalNonNegativeDouble(sizeValue, "openpyxl.styles.Font.size", span).RequireNotNull();
         var underline = FirstStyleValue(arguments, 5, 9);
         var strike = OptionalStyleBool(arguments, 11, OptionalStyleBool(arguments, 10, false, "openpyxl.styles.Font.strike", span), "openpyxl.styles.Font.strikethrough", span);
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.Font, new Dictionary<string, object>
-        {
-            ["name"] = OptionalStyleValue(arguments, 0),
-            ["sz"] = size,
-            ["size"] = size,
-            ["bold"] = bold,
-            ["b"] = bold,
-            ["italic"] = italic,
-            ["i"] = italic,
-            ["color"] = OptionalColorStyleValue(arguments, 4),
-            ["underline"] = underline,
-            ["u"] = underline,
-            ["strike"] = strike,
-            ["strikethrough"] = strike,
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlFontStylePayload(
+            OptionalStyleValue(arguments, 0),
+            size,
+            bold,
+            italic,
+            OptionalColorStyleValue(arguments, 4),
+            underline,
+            strike));
     }
 
     private static object CreatePatternFill(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
@@ -373,28 +381,21 @@ internal sealed partial class LythonRuntime
         _ = span;
         _ = context;
         var fillType = FirstStyleValue(arguments, 0, 5);
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.PatternFill, new Dictionary<string, object>
-        {
-            ["fill_type"] = fillType,
-            ["patternType"] = fillType,
-            ["start_color"] = FirstColorStyleValue(arguments, 1, 3),
-            ["fgColor"] = FirstColorStyleValue(arguments, 3, 1),
-            ["end_color"] = FirstColorStyleValue(arguments, 2, 4),
-            ["bgColor"] = FirstColorStyleValue(arguments, 4, 2),
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlPatternFillStylePayload(
+            fillType,
+            FirstColorStyleValue(arguments, 1, 3),
+            FirstColorStyleValue(arguments, 2, 4)));
     }
 
     private static object CreateBorder(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = span;
         _ = context;
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.Border, new Dictionary<string, object>
-        {
-            ["left"] = OptionalStyleValue(arguments, 0),
-            ["right"] = OptionalStyleValue(arguments, 1),
-            ["top"] = OptionalStyleValue(arguments, 2),
-            ["bottom"] = OptionalStyleValue(arguments, 3),
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlBorderStylePayload(
+            OptionalStyleValue(arguments, 0),
+            OptionalStyleValue(arguments, 1),
+            OptionalStyleValue(arguments, 2),
+            OptionalStyleValue(arguments, 3)));
     }
 
     private static object CreateSide(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -402,12 +403,9 @@ internal sealed partial class LythonRuntime
         _ = span;
         _ = context;
         var style = FirstStyleValue(arguments, 0, 2);
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.Side, new Dictionary<string, object>
-        {
-            ["style"] = style,
-            ["border_style"] = style,
-            ["color"] = OptionalColorStyleValue(arguments, 1),
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlSideStylePayload(
+            style,
+            OptionalColorStyleValue(arguments, 1)));
     }
 
     private static object CreateAlignment(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
@@ -416,27 +414,20 @@ internal sealed partial class LythonRuntime
         var wrapText = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 4, false, "openpyxl.styles.Alignment.wrapText", span), "openpyxl.styles.Alignment.wrap_text", span);
         var textRotation = FirstStyleValue(arguments, 3, 5);
         var shrinkToFit = OptionalStyleBool(arguments, 7, OptionalStyleBool(arguments, 6, false, "openpyxl.styles.Alignment.shrinkToFit", span), "openpyxl.styles.Alignment.shrink_to_fit", span);
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.Alignment, new Dictionary<string, object>
-        {
-            ["horizontal"] = OptionalStyleValue(arguments, 0),
-            ["vertical"] = OptionalStyleValue(arguments, 1),
-            ["wrap_text"] = wrapText,
-            ["wrapText"] = wrapText,
-            ["text_rotation"] = textRotation,
-            ["textRotation"] = textRotation,
-            ["shrink_to_fit"] = shrinkToFit,
-            ["shrinkToFit"] = shrinkToFit,
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlAlignmentStylePayload(
+            OptionalStyleValue(arguments, 0),
+            OptionalStyleValue(arguments, 1),
+            wrapText,
+            textRotation,
+            shrinkToFit));
     }
 
     private static object CreateProtection(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = context;
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.Protection, new Dictionary<string, object>
-        {
-            ["locked"] = OptionalStyleBool(arguments, 0, true, "openpyxl.styles.Protection.locked", span),
-            ["hidden"] = OptionalStyleBool(arguments, 1, false, "openpyxl.styles.Protection.hidden", span),
-        });
+        return new OpenPyxlStyleValue(new OpenPyxlProtectionStylePayload(
+            OptionalStyleBool(arguments, 0, true, "openpyxl.styles.Protection.locked", span),
+            OptionalStyleBool(arguments, 1, false, "openpyxl.styles.Protection.hidden", span)));
     }
 
     private static object CreateNamedStyle(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -460,49 +451,23 @@ internal sealed partial class LythonRuntime
     }
 
     private static OpenPyxlStyleValue CreateNamedStyleValue(object name)
-        => CreateNamedStyleValue(name, null, null, null, null, null, null);
-
-    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat)
-        => CreateNamedStyleValue(name, numberFormat, null, null, null, null, null);
-
-    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font)
-        => CreateNamedStyleValue(name, numberFormat, font, null, null, null, null);
-
-    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill)
-        => CreateNamedStyleValue(name, numberFormat, font, fill, null, null, null);
-
-    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill, object? border)
-        => CreateNamedStyleValue(name, numberFormat, font, fill, border, null, null);
-
-    private static OpenPyxlStyleValue CreateNamedStyleValue(object name, object? numberFormat, object? font, object? fill, object? border, object? alignment)
-        => CreateNamedStyleValue(name, numberFormat, font, fill, border, alignment, null);
+        => new(new OpenPyxlNamedStylePayload(name, PyNone.Instance, null, null, null, null, null));
 
     private static OpenPyxlStyleValue CreateNamedStyleValue(
         object name,
-        object? numberFormat,
-        object? font,
-        object? fill,
-        object? border,
-        object? alignment,
-        object? protection)
-    {
-        return new OpenPyxlStyleValue(OpenPyxlStyleKind.NamedStyle, new Dictionary<string, object>
-        {
-            ["name"] = name,
-            ["number_format"] = numberFormat ?? PyNone.Instance,
-            ["font"] = font ?? PyNone.Instance,
-            ["fill"] = fill ?? PyNone.Instance,
-            ["border"] = border ?? PyNone.Instance,
-            ["alignment"] = alignment ?? PyNone.Instance,
-            ["protection"] = protection ?? PyNone.Instance,
-        });
-    }
+        object numberFormat,
+        OpenPyxlStyleValue? font,
+        OpenPyxlStyleValue? fill,
+        OpenPyxlStyleValue? border,
+        OpenPyxlStyleValue? alignment,
+        OpenPyxlStyleValue? protection)
+        => new(new OpenPyxlNamedStylePayload(name, numberFormat, font, fill, border, alignment, protection));
 
-    private static object NormalizeNamedStyleComponent(object value, string name)
+    private static OpenPyxlStyleValue? NormalizeNamedStyleComponent(object value, string name)
     {
         if (value is PyNone)
         {
-            return PyNone.Instance;
+            return null;
         }
 
         var expected = ExpectedStyleKind(name);
@@ -513,25 +478,30 @@ internal sealed partial class LythonRuntime
 
     private static string NamedStyleName(OpenPyxlStyleValue style, LythonSourceSpan? span)
     {
-        if (!style.TryGetMember("name", out var value))
+        if (style.Payload is not OpenPyxlNamedStylePayload named)
         {
             return "Normal";
         }
 
-        return ExpectString(value, "NamedStyle.name", span);
+        return ExpectString(named.Name, "NamedStyle.name", span);
     }
 
     private static OpenPyxlStyleValue? NamedStyleComponent(OpenPyxlStyleValue style, string name)
-        => style.TryGetMember(name, out var value) &&
-           value is OpenPyxlStyleValue component &&
-           component.Kind == ExpectedStyleKind(name)
-            ? component
+        => style.Payload is OpenPyxlNamedStylePayload named
+            ? name switch
+            {
+                "font" => named.Font,
+                "fill" => named.Fill,
+                "border" => named.Border,
+                "alignment" => named.Alignment,
+                "protection" => named.Protection,
+                _ => null,
+            }
             : null;
 
     private static string? NamedStyleNumberFormat(OpenPyxlStyleValue style)
-        => style.TryGetMember("number_format", out var value) &&
-           value is not PyNone &&
-           PyStringOps.TryAsString(value, out var text)
+        => style.Payload is OpenPyxlNamedStylePayload { NumberFormat: var value } &&
+           value is not PyNone && PyStringOps.TryAsString(value, out var text)
             ? text.AsString()
             : null;
 
