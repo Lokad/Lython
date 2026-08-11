@@ -59,9 +59,16 @@ On the host side, the plumbing is deliberately small:
 var engine = new LythonEngine();
 var result = engine.Run(script, host);
 
-if (!result.Success && result.Failure is { } failure)
+switch (result.State)
 {
-    Console.WriteLine($"{failure.ExceptionType}: {failure.Message}");
+    case LythonExecutionResult.SucceededState _:
+        break;
+    case LythonExecutionResult.CompilationFailedState compilation:
+        Console.WriteLine($"Compilation failed with exit code {compilation.ExitCode}.");
+        break;
+    case LythonExecutionResult.RuntimeFailedState runtime:
+        Console.WriteLine($"{runtime.Failure.ExceptionType}: {runtime.Failure.Message}");
+        break;
 }
 ```
 
@@ -207,7 +214,10 @@ The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs
 
 - `Compile(...)` returns a `LythonCompiledScript` and performs no host effects
 - `Run(...)` and `RunAsync(...)` return a `LythonExecutionResult`
-- failures are reported as structured `LythonRuntimeFailure`
+- `LythonExecutionResult.State` is one of `SucceededState`, `CompilationFailedState`,
+  or `RuntimeFailedState`, so outcome-specific values do not require nullable checks
+- compilation failures carry error diagnostics; runtime failures carry a structured
+  `LythonRuntimeFailure`
 - file and path effects are mediated through `ILythonHost`
 - CLI-style arguments, script origin, and a contained environment map can be passed through `LythonRunOptions`
 - `print(...)` is captured deterministically through `LythonExecutionResult.StandardOutput`
@@ -216,6 +226,11 @@ The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs
   `SystemExit` values retain their Python exit-code semantics
 - projected return values stay CLR-friendly, including `byte[]` for Python bytes values
 - execution limits are configured through `LythonRunOptions`
+
+`Success`, `ReturnValue`, `ExitCode`, and `Failure` remain convenient compatibility
+projections. Values that do not belong to the current outcome are necessarily null;
+new integrations should prefer pattern matching on `State` when they need
+outcome-specific data.
 
 The important runtime guarantees are:
 
@@ -234,13 +249,17 @@ Unless `DisableDefaultLimits` is set, Lython applies practical defaults, includi
 - UTF-8 text reads/writes/appends
 - existence, stat, directory listing, mkdir, remove, copy, and move
 
-All host effects are async and receive the run cancellation token. That base surface is enough for the built-in text/file/path workflows. The richer host-mediated features are optional and exposed through default interface members:
+All host effects are async and receive the run cancellation token. That base surface is enough for the built-in text/file/path workflows. Optional authorities are exposed through default interface members:
 
 - `StandardInput`, `StandardOutput`, and `StandardError`
 - bounded binary reads/writes, used by contained binary-aware modules and non-UTF-8 text codecs
-- `WalkAsync(...)` for `os.walk`
 - `SubprocessRunner` for the host-mediated `subprocess` module surface
 - `Timing` for host-defined monotonic nanoseconds and cancellable delays
+
+`WalkAsync(...)` is a base host operation with a deterministic default implementation
+composed from `StatAsync(...)` and `ListDirAsync(...)`; hosts can override it to avoid
+repeated metadata calls. Globbing is likewise composed by Lython and does not grant a
+separate host capability.
 
 The stream capability is deliberately text-shaped:
 

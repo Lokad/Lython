@@ -1460,16 +1460,20 @@ Run options may include a contained environment mapping. That mapping is script-
 
 ### 12.2 Optional Capabilities
 
-Optional capabilities are limited to:
+The current optional host capabilities are limited to:
 
-- bounded binary reads and writes
-- globbing
-- patch application
-- streams
-- pipes
-- subprocess execution
+- bounded binary reads, writes, and appends
+- host-mediated standard input, standard output, and standard error text streams
+- subprocess execution through an `ILythonSubprocessRunner`
+- monotonic-clock reads and cancellable delays through `ILythonTiming`
 
 These capabilities must remain explicit and capability-bound.
+
+Directory walking is part of the base host contract: its default implementation
+composes `StatAsync` and `ListDirAsync`, while a host may override it for efficiency.
+Globbing is composed inside the runtime from contained directory operations. Lython
+has no patch-application capability, and subprocess pipe modes are values in a
+host-mediated subprocess request rather than an independent stream authority.
 
 Regex support must not depend on an optional host capability. It is part of the base runtime.
 
@@ -1529,6 +1533,12 @@ exit code, including parse diagnostics, static diagnostics, missing host capabil
 projection failures, and unhandled runtime exceptions. Explicit `SystemExit` values
 retain Python exit-code semantics, including zero when no code is supplied. Successful
 fall-through and return values do not imply that the script called `sys.exit`.
+
+The public result models these outcomes as a closed state family: success carries
+the projected return value, compilation failure carries its exit code and result-level
+diagnostics, and runtime failure carries its exit code and structured runtime failure.
+Convenience projections may be nullable when a value does not belong to the current
+state, but the state records themselves must not encode impossible combinations.
 
 ---
 

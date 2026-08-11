@@ -48,6 +48,8 @@ This pending release closes the Studio compatibility findings gathered from codi
 - Replaced weak lowered-assignment, text-flush, codec-option, and missing-capability states with closed variants or typed failures; normalized host text at the boundary and rejected raw CLR strings from runtime switches so `PyString` remains the sole runtime text representation.
 - Consolidated tuple-like recognition, OpenPyXL style inventories, abstract-value capabilities, lattice joins, and function-local binding facts; removed the superseded internal APIs those sources of truth replaced.
 - Removed redundant collection materialization, shared print binding, sequence-unpacking and spreadsheet-column rules, indexed workbook names and styles, and partitioned worksheet validation, formatting, and media models.
+- Replaced nullable callable layouts, executable local slots, and string-tagged OpenPyXL style payloads with explicit domain states; removed the obsolete path-stat compatibility constructor.
+- Reused structural syntax traversal, materialized OpenPyXL package update plans once, and separated percent-format parsing, brace-display parsing, regex contracts, callable catalogs, and workbook responsibilities into cohesive units.
 
 ## 0.7.0 - 2026-07-02
 
