@@ -318,10 +318,11 @@ internal sealed partial class LythonRuntime
                 var styleRegistry = OpenPyxlStyleRegistry.Create(workbook);
                 var generateStyles = ShouldGenerateStyles(workbook, styleRegistry);
                 var preserveLoadedStyleIds = ShouldPreserveOriginalStyles(workbook);
-                var generatedParts = GeneratedPackagePartNames(workbook, generateStyles);
+                var updatedParts = UpdatedPackageParts.Create(workbook);
+                var generatedParts = GeneratedPackagePartNames(workbook, generateStyles, updatedParts);
                 var workbookRelationshipPlan = CreateWorkbookRelationshipPlan(workbook, generateStyles);
                 WritePreservedPackageParts(archive, workbook.PackageSnapshot, generatedParts);
-                WriteXml(archive, "[Content_Types].xml", CreateContentTypes(workbook, generateStyles, generatedParts));
+                WriteXml(archive, "[Content_Types].xml", CreateContentTypes(workbook, generateStyles, generatedParts, updatedParts));
                 WriteXml(archive, "_rels/.rels", CreateRootRelationships(workbook.PackageSnapshot));
                 WriteXml(archive, "xl/workbook.xml", CreateWorkbookXml(workbook, workbookRelationshipPlan));
                 WriteXml(archive, "xl/_rels/workbook.xml.rels", CreateWorkbookRelationships(workbook, generateStyles, workbookRelationshipPlan));
@@ -342,8 +343,8 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                WriteUpdatedLoadedTableParts(archive, workbook);
-                WriteUpdatedLoadedCommentsParts(archive, workbook);
+                WriteUpdatedLoadedTableParts(archive, workbook.PackageSnapshot, updatedParts.Tables);
+                WriteUpdatedLoadedCommentsParts(archive, updatedParts.Comments);
             }
 
             var payload = stream.ToArray();
@@ -519,7 +520,10 @@ internal sealed partial class LythonRuntime
         private static bool ShouldGenerateStyles(OpenPyxlWorkbook workbook, OpenPyxlStyleRegistry styleRegistry)
             => styleRegistry.HasCustomStyles && !ShouldPreserveOriginalStyles(workbook);
 
-        private static HashSet<string> GeneratedPackagePartNames(OpenPyxlWorkbook workbook, bool generateStyles)
+        private static HashSet<string> GeneratedPackagePartNames(
+            OpenPyxlWorkbook workbook,
+            bool generateStyles,
+            UpdatedPackageParts updatedParts)
         {
             var generated = new HashSet<string>(StringComparer.Ordinal)
             {
@@ -535,14 +539,14 @@ internal sealed partial class LythonRuntime
                 generated.Add("xl/styles.xml");
             }
 
-            foreach (var tablePath in UpdatedLoadedTablePartPaths(workbook))
+            foreach (var table in updatedParts.Tables)
             {
-                generated.Add(tablePath);
+                generated.Add(table.Path);
             }
 
-            foreach (var commentsPath in UpdatedLoadedCommentsPartPaths(workbook))
+            foreach (var comments in updatedParts.Comments)
             {
-                generated.Add(commentsPath);
+                generated.Add(comments.Path);
             }
 
             for (var i = 0; i < workbook.Worksheets.Count; i++)
@@ -554,20 +558,6 @@ internal sealed partial class LythonRuntime
 
             return generated;
         }
-
-        private static IEnumerable<string> UpdatedLoadedTablePartPaths(OpenPyxlWorkbook workbook)
-            => workbook.Worksheets
-                .SelectMany(worksheet => worksheet.Tables.Values)
-                .Where(table => table.HasLoadedPartUpdate && table.SourcePath is not null)
-                .Select(table => table.SourcePath.RequireNotNull())
-                .Distinct(StringComparer.Ordinal);
-
-        private static IEnumerable<string> UpdatedLoadedCommentsPartPaths(OpenPyxlWorkbook workbook)
-            => workbook.Worksheets
-                .Where(worksheet => worksheet.HasLoadedCommentsUpdate)
-                .Select(worksheet => worksheet.CommentsSourcePath)
-                .OfType<string>()
-                .Distinct(StringComparer.Ordinal);
 
         private static void WritePreservedPackageParts(ZipArchive archive, OpenPyxlPackageSnapshot? snapshot, IReadOnlySet<string> generatedParts)
         {
@@ -589,26 +579,68 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void WriteUpdatedLoadedTableParts(ZipArchive archive, OpenPyxlWorkbook workbook)
+        private static void WriteUpdatedLoadedTableParts(
+            ZipArchive archive,
+            OpenPyxlPackageSnapshot? snapshot,
+            IReadOnlyList<UpdatedTablePart> tables)
         {
-            foreach (var table in workbook.Worksheets
-                .SelectMany(worksheet => worksheet.Tables.Values)
-                .Where(table => table.HasLoadedPartUpdate && table.SourcePath is not null)
-                .OrderBy(table => table.SourcePath, StringComparer.Ordinal))
+            foreach (var table in tables)
             {
-                WriteXml(archive, table.SourcePath.RequireNotNull(), CreateLoadedTableXml(workbook.PackageSnapshot, table));
+                WriteXml(archive, table.Path, CreateLoadedTableXml(snapshot, table.Table));
             }
         }
 
-        private static void WriteUpdatedLoadedCommentsParts(ZipArchive archive, OpenPyxlWorkbook workbook)
+        private static void WriteUpdatedLoadedCommentsParts(
+            ZipArchive archive,
+            IReadOnlyList<UpdatedCommentsPart> comments)
         {
-            foreach (var worksheet in workbook.Worksheets
-                .Where(worksheet => worksheet.HasLoadedCommentsUpdate && worksheet.CommentsSourcePath is not null)
-                .OrderBy(worksheet => worksheet.CommentsSourcePath, StringComparer.Ordinal))
+            foreach (var commentsPart in comments)
             {
-                WriteXml(archive, worksheet.CommentsSourcePath.RequireNotNull(), CreateLoadedCommentsXml(worksheet));
+                WriteXml(archive, commentsPart.Path, CreateLoadedCommentsXml(commentsPart.Worksheet));
             }
         }
+
+        private sealed record UpdatedPackageParts(
+            IReadOnlyList<UpdatedTablePart> Tables,
+            IReadOnlyList<UpdatedCommentsPart> Comments)
+        {
+            public static UpdatedPackageParts Create(OpenPyxlWorkbook workbook)
+            {
+                // Every downstream package phase consumes this same materialized plan so
+                // preservation, content types, and writes cannot disagree after mutation.
+                var tablesByPath = new Dictionary<string, OpenPyxlTable>(StringComparer.Ordinal);
+                var commentsByPath = new Dictionary<string, OpenPyxlWorksheet>(StringComparer.Ordinal);
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    foreach (var table in worksheet.Tables.Values)
+                    {
+                        if (table.HasLoadedPartUpdate && table.SourcePath is { } tablePath)
+                        {
+                            tablesByPath.TryAdd(tablePath, table);
+                        }
+                    }
+
+                    if (worksheet.HasLoadedCommentsUpdate && worksheet.CommentsSourcePath is { } commentsPath)
+                    {
+                        commentsByPath.TryAdd(commentsPath, worksheet);
+                    }
+                }
+
+                return new UpdatedPackageParts(
+                    tablesByPath
+                        .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                        .Select(static pair => new UpdatedTablePart(pair.Key, pair.Value))
+                        .ToArray(),
+                    commentsByPath
+                        .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                        .Select(static pair => new UpdatedCommentsPart(pair.Key, pair.Value))
+                        .ToArray());
+            }
+        }
+
+        private sealed record UpdatedTablePart(string Path, OpenPyxlTable Table);
+
+        private sealed record UpdatedCommentsPart(string Path, OpenPyxlWorksheet Worksheet);
 
         private static XDocument CreateLoadedTableXml(OpenPyxlPackageSnapshot? snapshot, OpenPyxlTable table)
         {

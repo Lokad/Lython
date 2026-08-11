@@ -17,7 +17,8 @@ internal sealed partial class LythonRuntime
         private static XDocument CreateContentTypes(
             OpenPyxlWorkbook workbook,
             bool generateStyles,
-            IReadOnlySet<string> generatedParts)
+            IReadOnlySet<string> generatedParts,
+            UpdatedPackageParts updatedParts)
         {
             var root = CreateSeededContentTypesRoot(workbook.PackageSnapshot, generatedParts);
             AddOrReplaceContentTypeDefault(root, "rels", "application/vnd.openxmlformats-package.relationships+xml");
@@ -40,19 +41,19 @@ internal sealed partial class LythonRuntime
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
             }
 
-            foreach (var tablePath in UpdatedLoadedTablePartPaths(workbook))
+            foreach (var table in updatedParts.Tables)
             {
                 AddOrReplaceContentTypeOverride(
                     root,
-                    "/" + tablePath,
+                    "/" + table.Path,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml");
             }
 
-            foreach (var commentsPath in UpdatedLoadedCommentsPartPaths(workbook))
+            foreach (var comments in updatedParts.Comments)
             {
                 AddOrReplaceContentTypeOverride(
                     root,
-                    "/" + commentsPath,
+                    "/" + comments.Path,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml");
             }
 
