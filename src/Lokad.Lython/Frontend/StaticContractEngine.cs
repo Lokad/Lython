@@ -195,7 +195,7 @@ internal static class StaticContractEngine
 
         if (!contract.TryGetArgumentShapeFailure(arguments, out var reason, out var offendingExpression))
         {
-            return AnalyzeCallableSemanticContract(call, arguments, diagnostics, bindings, receiver, member.MemberName);
+            return AnalyzeCallableSemanticContract(arguments, diagnostics, bindings, receiver, member.MemberName);
         }
 
         StaticDiagnosticSink.AddError(
@@ -208,13 +208,12 @@ internal static class StaticContractEngine
     }
 
     private static bool AnalyzeCallableSemanticContract(
-        CallExpressionSyntax call,
         ConcreteCallArguments arguments,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
         AbstractValue receiver,
         string memberName)
-        => StaticRegexContractFamily.AnalyzeCallableSemanticContract(call, arguments, diagnostics, bindings, receiver, memberName);
+        => StaticRegexContractFamily.AnalyzeCallableSemanticContract(arguments, diagnostics, bindings, receiver, memberName);
 
     private static bool TryResolveModuleMemberValue(AbstractValue receiverValue, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
