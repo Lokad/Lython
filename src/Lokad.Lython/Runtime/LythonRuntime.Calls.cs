@@ -45,12 +45,25 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
+        return InvokeCallable(
+            callable,
+            callSpan,
+            context,
+            new DeferredCallArguments(expandArguments));
+    }
+
+    private static object InvokeCallable<TArguments>(
+        ICallable callable,
+        LythonSourceSpan callSpan,
+        ExecutionContext context,
+        TArguments arguments)
+        where TArguments : struct, ICallArguments
+    {
         context.EnterInterpreterFrame(callSpan);
         try
         {
             context.CheckExecutionBudget(callSpan);
-            var arguments = expandArguments();
-            return RuntimeValue(callable.Invoke(arguments, callSpan, context));
+            return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
         }
         catch (RegexParseException ex)
         {
@@ -229,7 +242,34 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan callSpan,
         ExecutionContext context,
         CallArgumentValue[] arguments)
-        => InvokeCallableTarget(target, targetSpan, callSpan, context, () => arguments);
+    {
+        if (target is not ICallable callable)
+        {
+            throw RuntimeErrors.NotCallable(targetSpan);
+        }
+
+        return InvokeCallable(
+            callable,
+            callSpan,
+            context,
+            new PreparedCallArguments(arguments));
+    }
+
+    private interface ICallArguments
+    {
+        /// <summary>Supplies arguments after the target has been confirmed callable and its interpreter frame entered.</summary>
+        CallArgumentValue[] Expand();
+    }
+
+    private readonly record struct DeferredCallArguments(Func<CallArgumentValue[]> ExpandArguments) : ICallArguments
+    {
+        public CallArgumentValue[] Expand() => ExpandArguments();
+    }
+
+    private readonly record struct PreparedCallArguments(CallArgumentValue[] Arguments) : ICallArguments
+    {
+        public CallArgumentValue[] Expand() => Arguments;
+    }
 
     internal interface ICallable
     {

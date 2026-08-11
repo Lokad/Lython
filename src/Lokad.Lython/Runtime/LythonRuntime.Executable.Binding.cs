@@ -318,47 +318,17 @@ internal sealed partial class LythonRuntime
 
         if (cache is not null && ReferenceEquals(cache.Target, target))
         {
-            return InvokeExecutableCachedCallable(cache.Callable, callSite.CallSpan, context, arguments);
+            return InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
         }
 
         if (target is ICallable callable)
         {
             cache = new ExecutableCallCache(target, callable);
-            return InvokeExecutableCachedCallable(callable, callSite.CallSpan, context, arguments);
+            return InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
         }
 
         cache = null;
         return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
-    }
-
-    private static object InvokeExecutableCachedCallable(
-        ICallable callable,
-        LythonSourceSpan callSpan,
-        ExecutionContext context,
-        CallArgumentValue[] arguments)
-    {
-        context.EnterInterpreterFrame(callSpan);
-        try
-        {
-            context.CheckExecutionBudget(callSpan);
-            return RuntimeValue(callable.Invoke(arguments, callSpan, context));
-        }
-        catch (RegexParseException ex)
-        {
-            throw new LythonRuntimeException("ValueError", ex.Message, callSpan);
-        }
-        catch (LythonRuntimeException)
-        {
-            throw;
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw RuntimeErrors.Runtime(ex.Message, callSpan);
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
     }
 
     private static ExecutableCell[] CaptureExecutableClosures(
