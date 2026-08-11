@@ -129,48 +129,48 @@ internal static partial class StaticAbstractInterpreter
 
         truth = false;
         return false;
-    }
 
-    private static bool TryResolveNoneComparison(
-        ExpressionSyntax left,
-        ExpressionSyntax right,
-        AbstractState bindings,
-        out bool isNone)
-    {
-        if (right is NoneLiteralExpressionSyntax &&
-            StaticAbstractValueResolver.TryResolve(left, bindings, out var leftValue))
+        static bool TryResolveNoneComparison(
+            ExpressionSyntax left,
+            ExpressionSyntax right,
+            AbstractState bindings,
+            out bool isNone)
         {
-            if (leftValue.Kind == AbstractValueKind.None)
+            if (right is NoneLiteralExpressionSyntax &&
+                StaticAbstractValueResolver.TryResolve(left, bindings, out var leftValue))
             {
-                isNone = true;
-                return true;
+                if (leftValue.Kind == AbstractValueKind.None)
+                {
+                    isNone = true;
+                    return true;
+                }
+
+                if (StaticAbstractFacts.IsDefinitelyNonNone(leftValue))
+                {
+                    isNone = false;
+                    return true;
+                }
             }
 
-            if (StaticAbstractFacts.IsDefinitelyNonNone(leftValue))
+            if (left is NoneLiteralExpressionSyntax &&
+                StaticAbstractValueResolver.TryResolve(right, bindings, out var rightValue))
             {
-                isNone = false;
-                return true;
+                if (rightValue.Kind == AbstractValueKind.None)
+                {
+                    isNone = true;
+                    return true;
+                }
+
+                if (StaticAbstractFacts.IsDefinitelyNonNone(rightValue))
+                {
+                    isNone = false;
+                    return true;
+                }
             }
+
+            isNone = false;
+            return false;
         }
-
-        if (left is NoneLiteralExpressionSyntax &&
-            StaticAbstractValueResolver.TryResolve(right, bindings, out var rightValue))
-        {
-            if (rightValue.Kind == AbstractValueKind.None)
-            {
-                isNone = true;
-                return true;
-            }
-
-            if (StaticAbstractFacts.IsDefinitelyNonNone(rightValue))
-            {
-                isNone = false;
-                return true;
-            }
-        }
-
-        isNone = false;
-        return false;
     }
 
     private static bool StatementsAlwaysExit(IReadOnlyList<StatementSyntax> statements)

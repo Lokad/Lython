@@ -213,18 +213,18 @@ internal static class ScopeDirectiveFactsCollector
                 CollectLocalBindings(body, names);
             }
         }
-    }
 
-    private static void CollectAssignmentTargetBindings(AssignmentTargetSyntax target, HashSet<string> names)
-    {
-        switch (target)
+        static void CollectAssignmentTargetBindings(AssignmentTargetSyntax target, HashSet<string> names)
         {
-            case NameAssignmentTargetSyntax name:
-                names.Add(name.Name);
-                break;
-            case UnpackingAssignmentTargetGroupSyntax unpacking:
-                foreach (var nestedTarget in unpacking.Targets) names.Add(nestedTarget.Name);
-                break;
+            switch (target)
+            {
+                case NameAssignmentTargetSyntax name:
+                    names.Add(name.Name);
+                    break;
+                case UnpackingAssignmentTargetGroupSyntax unpacking:
+                    foreach (var nestedTarget in unpacking.Targets) names.Add(nestedTarget.Name);
+                    break;
+            }
         }
     }
 

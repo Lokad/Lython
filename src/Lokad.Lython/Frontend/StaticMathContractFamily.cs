@@ -19,8 +19,9 @@ internal static class StaticMathContractFamily
 
         if (IsBinaryRealCall(targetName))
         {
-            emitted |= AnalyzeMathRealArgument(arguments, 0, FirstParameterName(targetName), $"{targetName}(...) expects real numbers.", diagnostics, bindings);
-            emitted |= AnalyzeMathRealArgument(arguments, 1, SecondParameterName(targetName), $"{targetName}(...) expects real numbers.", diagnostics, bindings);
+            var isAtan2 = string.Equals(targetName, LythonKnownCallableSignatures.MathAtan2.Name, StringComparison.Ordinal);
+            emitted |= AnalyzeMathRealArgument(arguments, 0, isAtan2 ? "y" : "x", $"{targetName}(...) expects real numbers.", diagnostics, bindings);
+            emitted |= AnalyzeMathRealArgument(arguments, 1, isAtan2 ? "x" : "y", $"{targetName}(...) expects real numbers.", diagnostics, bindings);
             return emitted;
         }
 
@@ -243,12 +244,6 @@ internal static class StaticMathContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.MathFmod.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathCopySign.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathRemainder.Name, StringComparison.Ordinal);
-
-    private static string FirstParameterName(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.MathAtan2.Name, StringComparison.Ordinal) ? "y" : "x";
-
-    private static string SecondParameterName(string targetName)
-        => string.Equals(targetName, LythonKnownCallableSignatures.MathAtan2.Name, StringComparison.Ordinal) ? "x" : "y";
 
     private static bool IsMathRealLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Integer or

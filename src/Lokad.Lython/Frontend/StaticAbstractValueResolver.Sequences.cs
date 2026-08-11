@@ -204,6 +204,31 @@ internal static partial class StaticAbstractValueResolver
                 value = default;
                 return false;
         }
+
+        static bool AreValidSliceBounds(SliceExpressionSyntax slice, AbstractState bindings)
+            => IsValidSliceBound(slice.Start, bindings, false) &&
+               IsValidSliceBound(slice.End, bindings, false) &&
+               IsValidSliceBound(slice.Step, bindings, true);
+
+        static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings, bool rejectZero)
+        {
+            if (expression is null || !TryResolve(expression, bindings, out var value))
+            {
+                return true;
+            }
+
+            if (value.Kind == AbstractValueKind.None)
+            {
+                return true;
+            }
+
+            if (StaticAbstractFacts.IsDefinitelyNonIntegerLike(value))
+            {
+                return false;
+            }
+
+            return !rejectZero || !StaticAbstractFacts.TryGetNonNegativeInt32(value, out var integer) || integer != 0;
+        }
     }
 
     private static bool TryGetIndexedSequenceValue(AbstractValue target, int? index, LythonSourceSpan span, out AbstractValue value)

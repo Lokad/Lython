@@ -255,6 +255,36 @@ internal static class StaticConditionRefinements
             : new AbstractSequenceLengthBounds(0, null);
         bindings.SetSequenceLength(sequenceName, Refine(current, op, length));
         return true;
+
+        static bool IsOrderingOrEqualityComparison(BinaryOperatorSyntax op)
+            => op is BinaryOperatorSyntax.Less or
+                BinaryOperatorSyntax.LessEqual or
+                BinaryOperatorSyntax.Greater or
+                BinaryOperatorSyntax.GreaterEqual or
+                BinaryOperatorSyntax.Equal or
+                BinaryOperatorSyntax.NotEqual;
+
+        static BinaryOperatorSyntax ReverseComparison(BinaryOperatorSyntax op)
+            => op switch
+            {
+                BinaryOperatorSyntax.Less => BinaryOperatorSyntax.Greater,
+                BinaryOperatorSyntax.LessEqual => BinaryOperatorSyntax.GreaterEqual,
+                BinaryOperatorSyntax.Greater => BinaryOperatorSyntax.Less,
+                BinaryOperatorSyntax.GreaterEqual => BinaryOperatorSyntax.LessEqual,
+                _ => op
+            };
+
+        static BinaryOperatorSyntax NegateComparison(BinaryOperatorSyntax op)
+            => op switch
+            {
+                BinaryOperatorSyntax.Less => BinaryOperatorSyntax.GreaterEqual,
+                BinaryOperatorSyntax.LessEqual => BinaryOperatorSyntax.Greater,
+                BinaryOperatorSyntax.Greater => BinaryOperatorSyntax.LessEqual,
+                BinaryOperatorSyntax.GreaterEqual => BinaryOperatorSyntax.Less,
+                BinaryOperatorSyntax.Equal => BinaryOperatorSyntax.NotEqual,
+                BinaryOperatorSyntax.NotEqual => BinaryOperatorSyntax.Equal,
+                _ => op
+            };
     }
 
     private static bool TryGetLengthTarget(ExpressionSyntax expression, AbstractState bindings, out string sequenceName)
@@ -404,33 +434,4 @@ internal static class StaticConditionRefinements
             : new AbstractSequenceLengthBounds(minimum, maximum);
     }
 
-    private static bool IsOrderingOrEqualityComparison(BinaryOperatorSyntax op)
-        => op is BinaryOperatorSyntax.Less or
-            BinaryOperatorSyntax.LessEqual or
-            BinaryOperatorSyntax.Greater or
-            BinaryOperatorSyntax.GreaterEqual or
-            BinaryOperatorSyntax.Equal or
-            BinaryOperatorSyntax.NotEqual;
-
-    private static BinaryOperatorSyntax ReverseComparison(BinaryOperatorSyntax op)
-        => op switch
-        {
-            BinaryOperatorSyntax.Less => BinaryOperatorSyntax.Greater,
-            BinaryOperatorSyntax.LessEqual => BinaryOperatorSyntax.GreaterEqual,
-            BinaryOperatorSyntax.Greater => BinaryOperatorSyntax.Less,
-            BinaryOperatorSyntax.GreaterEqual => BinaryOperatorSyntax.LessEqual,
-            _ => op
-        };
-
-    private static BinaryOperatorSyntax NegateComparison(BinaryOperatorSyntax op)
-        => op switch
-        {
-            BinaryOperatorSyntax.Less => BinaryOperatorSyntax.GreaterEqual,
-            BinaryOperatorSyntax.LessEqual => BinaryOperatorSyntax.Greater,
-            BinaryOperatorSyntax.Greater => BinaryOperatorSyntax.LessEqual,
-            BinaryOperatorSyntax.GreaterEqual => BinaryOperatorSyntax.Less,
-            BinaryOperatorSyntax.Equal => BinaryOperatorSyntax.NotEqual,
-            BinaryOperatorSyntax.NotEqual => BinaryOperatorSyntax.Equal,
-            _ => op
-        };
 }

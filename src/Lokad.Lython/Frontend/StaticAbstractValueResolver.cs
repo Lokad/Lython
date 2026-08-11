@@ -155,6 +155,22 @@ internal static partial class StaticAbstractValueResolver
                 value = default;
                 return false;
         }
+
+        static bool IsLikelyPathConstructor(CallExpressionSyntax call)
+        {
+            var target = call.Target;
+            while (target is ParenthesizedExpressionSyntax parenthesized)
+            {
+                target = parenthesized.Inner;
+            }
+
+            return target is IdentifierExpressionSyntax { Name: "Path" or "PurePath" or "PurePosixPath" or "PosixPath" } or
+                MemberExpressionSyntax
+                {
+                    Target: IdentifierExpressionSyntax { Name: "pathlib" },
+                    MemberName: "Path" or "PurePath" or "PurePosixPath" or "PosixPath"
+                };
+        }
     }
 
     private static bool TryResolveComputed(ExpressionSyntax expression, AbstractState bindings, out AbstractValue value)

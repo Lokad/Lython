@@ -36,42 +36,42 @@ internal static partial class StaticBindingEngine
         {
             CollectMutatedReceiverNames(child, bindings, names);
         }
-    }
 
-    private static void CollectMutatingCallReceiverName(CallExpressionSyntax call, AbstractState bindings, HashSet<string> names)
-    {
-        if (call.Target is MemberExpressionSyntax
+        static void CollectMutatingCallReceiverName(CallExpressionSyntax call, AbstractState bindings, HashSet<string> names)
+        {
+            if (call.Target is MemberExpressionSyntax
+                {
+                    Target: IdentifierExpressionSyntax { Name: "operator" },
+                    MemberName: "setitem"
+                } &&
+                StaticCallArguments.TryGetConcreteArguments(call, bindings, out var operatorArguments) &&
+                operatorArguments.Positional.Count > 0 &&
+                operatorArguments.Positional[0] is IdentifierExpressionSyntax operatorReceiver)
             {
-                Target: IdentifierExpressionSyntax { Name: "operator" },
-                MemberName: "setitem"
-            } &&
-            StaticCallArguments.TryGetConcreteArguments(call, bindings, out var operatorArguments) &&
-            operatorArguments.Positional.Count > 0 &&
-            operatorArguments.Positional[0] is IdentifierExpressionSyntax operatorReceiver)
-        {
-            names.Add(operatorReceiver.Name);
-            return;
-        }
+                names.Add(operatorReceiver.Name);
+                return;
+            }
 
-        if (call.Target is not MemberExpressionSyntax
+            if (call.Target is not MemberExpressionSyntax
+                {
+                    Target: IdentifierExpressionSyntax receiverIdentifier,
+                    MemberName: var memberName
+                } ||
+                !bindings.TryGet(receiverIdentifier.Name, out var receiver) ||
+                !StaticContracts.IsMutatingMember(receiver, memberName))
             {
-                Target: IdentifierExpressionSyntax receiverIdentifier,
-                MemberName: var memberName
-            } ||
-            !bindings.TryGet(receiverIdentifier.Name, out var receiver) ||
-            !StaticContracts.IsMutatingMember(receiver, memberName))
-        {
-            return;
-        }
+                return;
+            }
 
-        if (StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
-            StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) &&
-            !contract.AcceptsArgumentShape(arguments))
-        {
-            return;
-        }
+            if (StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
+                StaticContracts.TryGetCallableContract(receiver, memberName, out var contract) &&
+                !contract.AcceptsArgumentShape(arguments))
+            {
+                return;
+            }
 
-        names.Add(receiverIdentifier.Name);
+            names.Add(receiverIdentifier.Name);
+        }
     }
 
 }

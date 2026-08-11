@@ -124,22 +124,6 @@ internal static partial class StaticAbstractValueResolver
         return false;
     }
 
-    private static bool IsLikelyPathConstructor(CallExpressionSyntax call)
-    {
-        var expression = call.Target;
-        while (expression is ParenthesizedExpressionSyntax parenthesized)
-        {
-            expression = parenthesized.Inner;
-        }
-
-        return expression is IdentifierExpressionSyntax { Name: "Path" or "PurePath" or "PurePosixPath" or "PosixPath" } or
-            MemberExpressionSyntax
-        {
-            Target: IdentifierExpressionSyntax { Name: "pathlib" },
-            MemberName: "Path" or "PurePath" or "PurePosixPath" or "PosixPath"
-        };
-    }
-
     private static AbstractTextFileMode TryGetTextFileMode(ConcreteCallArguments arguments, int modePosition, string modeKeyword)
     {
         if (!arguments.TryGetValue(modePosition, modeKeyword, out var modeExpression))
@@ -172,31 +156,4 @@ internal static partial class StaticAbstractValueResolver
         }
     }
 
-    private static bool AreValidSliceBounds(SliceExpressionSyntax slice, AbstractState bindings)
-        => IsValidSliceBound(slice.Start, bindings) &&
-           IsValidSliceBound(slice.End, bindings) &&
-           IsValidSliceBound(slice.Step, bindings, rejectZero: true);
-
-    private static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings)
-        => IsValidSliceBound(expression, bindings, false);
-
-    private static bool IsValidSliceBound(ExpressionSyntax? expression, AbstractState bindings, bool rejectZero)
-    {
-        if (expression is null || !TryResolve(expression, bindings, out var value))
-        {
-            return true;
-        }
-
-        if (value.Kind == AbstractValueKind.None)
-        {
-            return true;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyNonIntegerLike(value))
-        {
-            return false;
-        }
-
-        return !rejectZero || !StaticAbstractFacts.TryGetNonNegativeInt32(value, out var integer) || integer != 0;
-    }
 }
