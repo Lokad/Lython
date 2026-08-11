@@ -245,20 +245,41 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(InvokeBound(arguments, span, context));
     }
 
-    private sealed class BuiltinCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private abstract class DelegateBoundArgumentsCallable : BoundArgumentsCallable
     {
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
-        private BuiltinCallable(
+        protected DelegateBoundArgumentsCallable(
             LythonCallableSignature signature,
+            PythonCallableKind callableKind,
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, PythonCallableKind.Builtin)
+            : base(signature, callableKind)
         {
             _implementation = implementation;
             _asyncImplementation = asyncImplementation;
         }
+
+        /// <inheritdoc />
+        protected sealed override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _implementation(arguments, span, context);
+
+        /// <inheritdoc />
+        protected sealed override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _asyncImplementation is null
+                ? ValueTask.FromResult(_implementation(arguments, span, context))
+                : _asyncImplementation(arguments, span, context);
+    }
+
+    private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    {
+        private BuiltinCallable(
+            LythonCallableSignature signature,
+            Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
+            : base(signature, PythonCallableKind.Builtin, implementation, asyncImplementation)
+        { }
 
         public static BuiltinCallable Create(LythonCallableSignature signature, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
             => new(signature, implementation, null);
@@ -298,16 +319,6 @@ internal sealed partial class LythonRuntime
 
         public string Name => Signature.Name;
 
-        /// <inheritdoc />
-        protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _implementation(arguments, span, context);
-
-        /// <inheritdoc />
-        protected override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _asyncImplementation is null
-                ? ValueTask.FromResult(_implementation(arguments, span, context))
-                : _asyncImplementation(arguments, span, context);
-
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
@@ -337,20 +348,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : BoundArgumentsCallable
+    private sealed class BoundCallable : DelegateBoundArgumentsCallable
     {
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
-
         private BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, PythonCallableKind.Method)
-        {
-            _implementation = implementation;
-            _asyncImplementation = asyncImplementation;
-        }
+            : base(signature, PythonCallableKind.Method, implementation, asyncImplementation)
+        { }
 
         public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, LythonCallableSignature signature)
             => new(implementation, signature, null);
@@ -407,15 +412,6 @@ internal sealed partial class LythonRuntime
             Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
             => NoArgumentsReceiverBoundCallable<TReceiver>.Create(receiver, name, implementation, asyncImplementation);
 
-        /// <inheritdoc />
-        protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _implementation(arguments, span, context);
-
-        /// <inheritdoc />
-        protected override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _asyncImplementation is null
-                ? ValueTask.FromResult(_implementation(arguments, span, context))
-                : _asyncImplementation(arguments, span, context);
     }
 
     private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable
