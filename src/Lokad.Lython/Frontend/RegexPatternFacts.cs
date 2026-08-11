@@ -16,6 +16,7 @@ internal static class RegexPatternFacts
         Dictionary<string, int>? names = null;
         var inClass = false;
         var isComplete = true;
+        var noNamedGroupTerminatorRemaining = false;
         for (var i = 0; i < pattern.Length; i++)
         {
             var ch = pattern[i];
@@ -50,9 +51,18 @@ internal static class RegexPatternFacts
 
             if (i + 3 < pattern.Length && pattern[i + 2] == 'P' && pattern[i + 3] == '<')
             {
+                if (noNamedGroupTerminatorRemaining)
+                {
+                    isComplete = false;
+                    continue;
+                }
+
                 var end = pattern.IndexOf('>', i + 4);
                 if (end < 0)
                 {
+                    // The first failed search proves that every later named-group
+                    // opener is also unterminated; keep scanning other group forms.
+                    noNamedGroupTerminatorRemaining = true;
                     isComplete = false;
                     continue;
                 }

@@ -601,6 +601,7 @@ internal sealed partial class LythonRuntime
             builder.Append("(?!\\.)");
         }
 
+        var noClosingBracketRemaining = false;
         for (var i = 0; i < segment.Length; i++)
         {
             var ch = segment[i];
@@ -614,7 +615,14 @@ internal sealed partial class LythonRuntime
                     AppendNonSeparatorClass(builder, separators);
                     break;
                 case '[':
-                    i = AppendTranslatedCharacterClass(builder, segment, i);
+                    if (noClosingBracketRemaining)
+                    {
+                        AppendEscapedRegexLiteral(builder, ch);
+                        break;
+                    }
+
+                    i = AppendTranslatedCharacterClass(builder, segment, i, out var foundClosingBracket);
+                    noClosingBracketRemaining = !foundClosingBracket;
                     break;
                 default:
                     AppendEscapedRegexLiteral(builder, ch);
@@ -623,15 +631,21 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static int AppendTranslatedCharacterClass(StringBuilder builder, string segment, int openBracket)
+    private static int AppendTranslatedCharacterClass(
+        StringBuilder builder,
+        string segment,
+        int openBracket,
+        out bool foundClosingBracket)
     {
         var closeBracket = segment.IndexOf(']', openBracket + 1);
         if (closeBracket < 0)
         {
+            foundClosingBracket = false;
             builder.Append("\\[");
             return openBracket;
         }
 
+        foundClosingBracket = true;
         builder.Append('[');
         var index = openBracket + 1;
         if (index < closeBracket && segment[index] is '!' or '^')

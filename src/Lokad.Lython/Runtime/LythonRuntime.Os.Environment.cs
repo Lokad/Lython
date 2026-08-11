@@ -96,6 +96,11 @@ internal sealed partial class LythonRuntime
                         i = end;
                         continue;
                     }
+
+                    // No later braced variable can close once the remaining suffix
+                    // contains no '}', so preserve it without rescanning that suffix.
+                    builder.Append(path.AsSpan(i));
+                    break;
                 }
                 else
                 {

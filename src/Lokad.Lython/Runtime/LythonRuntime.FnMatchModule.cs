@@ -98,8 +98,7 @@ internal sealed partial class LythonRuntime
         {
             var nameRunes = MaterializeRunes(name);
             var patternRunes = MaterializeRunes(pattern);
-            var memo = new Dictionary<(int Name, int Pattern), bool>();
-            return MatchSimple(nameRunes, 0, patternRunes, 0, memo);
+            return MatchSimple(nameRunes, patternRunes);
         }
 
         private static PyString[] MaterializeRunes(PyString value)
@@ -116,52 +115,83 @@ internal sealed partial class LythonRuntime
 
         private static bool MatchSimple(
             IReadOnlyList<PyString> name,
-            int nameIndex,
-            IReadOnlyList<PyString> pattern,
-            int patternIndex,
-            Dictionary<(int Name, int Pattern), bool> memo)
+            IReadOnlyList<PyString> pattern)
         {
-            if (memo.TryGetValue((nameIndex, patternIndex), out var cached))
+            var nameIndex = 0;
+            var patternIndex = 0;
+            var fallbackPatternIndex = -1;
+            var fallbackNameIndex = -1;
+
+            while (nameIndex < name.Count)
             {
-                return cached;
+                if (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
+                {
+                    do
+                    {
+                        patternIndex++;
+                    }
+                    while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'));
+
+                    if (patternIndex == pattern.Count)
+                    {
+                        return true;
+                    }
+
+                    fallbackPatternIndex = patternIndex;
+                    fallbackNameIndex = nameIndex;
+                    continue;
+                }
+
+                if (patternIndex < pattern.Count &&
+                    TryMatchSingleToken(name[nameIndex], pattern, patternIndex, out var nextPatternIndex))
+                {
+                    nameIndex++;
+                    patternIndex = nextPatternIndex;
+                    continue;
+                }
+
+                if (fallbackPatternIndex < 0 || fallbackNameIndex >= name.Count)
+                {
+                    return false;
+                }
+
+                // Retry the suffix after the most recent '*' with one more input
+                // rune assigned to that wildcard, without growing the CLR stack.
+                fallbackNameIndex++;
+                nameIndex = fallbackNameIndex;
+                patternIndex = fallbackPatternIndex;
             }
 
-            bool result;
-            if (patternIndex == pattern.Count)
+            while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
             {
-                result = nameIndex == name.Count;
+                patternIndex++;
             }
-            else
+
+            return patternIndex == pattern.Count;
+
+            static bool TryMatchSingleToken(
+                PyString value,
+                IReadOnlyList<PyString> pattern,
+                int patternIndex,
+                out int nextPatternIndex)
             {
                 var token = pattern[patternIndex];
-                if (token.Utf8Bytes.Length == 1 && token.Utf8Bytes.Span[0] == (byte)'*')
+                if (IsAsciiRune(token, '?'))
                 {
-                    result = MatchSimple(name, nameIndex, pattern, patternIndex + 1, memo);
-                    for (var next = nameIndex; !result && next < name.Count; next++)
-                    {
-                        result = MatchSimple(name, next + 1, pattern, patternIndex + 1, memo);
-                    }
+                    nextPatternIndex = patternIndex + 1;
+                    return true;
                 }
-                else if (token.Utf8Bytes.Length == 1 && token.Utf8Bytes.Span[0] == (byte)'?')
-                {
-                    result = nameIndex < name.Count && MatchSimple(name, nameIndex + 1, pattern, patternIndex + 1, memo);
-                }
-                else if (IsAsciiRune(token, '[') &&
-                         nameIndex < name.Count &&
-                         TryMatchCharacterClass(name[nameIndex], pattern, patternIndex, out var classCloseIndex, out var classMatches))
-                {
-                    result = classMatches && MatchSimple(name, nameIndex + 1, pattern, classCloseIndex + 1, memo);
-                }
-                else
-                {
-                    result = nameIndex < name.Count &&
-                        token.Equals(name[nameIndex]) &&
-                        MatchSimple(name, nameIndex + 1, pattern, patternIndex + 1, memo);
-                }
-            }
 
-            memo[(nameIndex, patternIndex)] = result;
-            return result;
+                if (IsAsciiRune(token, '[') &&
+                    TryMatchCharacterClass(value, pattern, patternIndex, out var classCloseIndex, out var classMatches))
+                {
+                    nextPatternIndex = classCloseIndex + 1;
+                    return classMatches;
+                }
+
+                nextPatternIndex = patternIndex + 1;
+                return token.Equals(value);
+            }
         }
 
         private static bool TryMatchCharacterClass(
@@ -247,6 +277,7 @@ internal sealed partial class LythonRuntime
         {
             var builder = new StringBuilder(pattern.Length + 2);
             builder.Append('^');
+            var noClosingBracketRemaining = false;
             for (var index = 0; index < pattern.Length; index++)
             {
                 var ch = pattern[index];
@@ -259,7 +290,14 @@ internal sealed partial class LythonRuntime
                         builder.Append('.');
                         break;
                     case '[':
-                        index = AppendTranslatedCharacterClass(builder, pattern, index);
+                        if (noClosingBracketRemaining)
+                        {
+                            AppendEscapedRegexLiteral(builder, ch);
+                            break;
+                        }
+
+                        index = AppendTranslatedCharacterClass(builder, pattern, index, out var foundClosingBracket);
+                        noClosingBracketRemaining = !foundClosingBracket;
                         break;
                     default:
                         AppendEscapedRegexLiteral(builder, ch);
@@ -271,11 +309,16 @@ internal sealed partial class LythonRuntime
             return builder.ToString();
         }
 
-        private static int AppendTranslatedCharacterClass(StringBuilder builder, string pattern, int openIndex)
+        private static int AppendTranslatedCharacterClass(
+            StringBuilder builder,
+            string pattern,
+            int openIndex,
+            out bool foundClosingBracket)
         {
             var contentStart = openIndex + 1;
             if (contentStart >= pattern.Length)
             {
+                foundClosingBracket = false;
                 builder.Append("\\[");
                 return openIndex;
             }
@@ -288,6 +331,7 @@ internal sealed partial class LythonRuntime
 
             if (contentStart >= pattern.Length)
             {
+                foundClosingBracket = false;
                 builder.Append("\\[");
                 return openIndex;
             }
@@ -310,10 +354,12 @@ internal sealed partial class LythonRuntime
 
             if (closeIndex < 0)
             {
+                foundClosingBracket = false;
                 builder.Append("\\[");
                 return openIndex;
             }
 
+            foundClosingBracket = true;
             var classBuilder = new StringBuilder(closeIndex - contentStart);
             for (var index = contentStart; index < closeIndex; index++)
             {
