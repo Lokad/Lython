@@ -218,8 +218,13 @@ internal sealed partial class LythonRuntime
         foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
         {
             var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
-            if (IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context) &&
-                context.HostExists(candidate.Path, span))
+            if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
+            {
+                continue;
+            }
+
+            context.RegisterHostCall(span);
+            if (context.HostExists(candidate.Path, span))
             {
                 path = candidate.Path;
                 isPackage = candidate.IsPackage;
@@ -240,8 +245,13 @@ internal sealed partial class LythonRuntime
         foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
         {
             var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
-            if (IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context) &&
-                await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
+            if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
+            {
+                continue;
+            }
+
+            context.RegisterHostCall(span);
+            if (await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
             {
                 return candidate;
             }

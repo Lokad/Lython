@@ -99,6 +99,12 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
+            if (name is not ("timezone" or "altzone" or "daylight" or "tzname"))
+            {
+                return TryGetMember(name, out value);
+            }
+
+            context.RegisterHostCall(span);
             var offset = context.Host.LocalNow.Offset;
             var secondsWest = new BigInteger(-(long)offset.TotalSeconds);
             var zoneName = FixedZoneName(offset);
@@ -113,7 +119,7 @@ internal sealed partial class LythonRuntime
                 _ => MissingMemberValue.Instance,
             };
 
-            return !ReferenceEquals(value, MissingMemberValue.Instance) || TryGetMember(name, out value);
+            return true;
         }
 
         private static object CurrentTime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -251,14 +257,17 @@ internal sealed partial class LythonRuntime
         private static object Localtime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             DateTimeOffset local;
-            var offset = context.Host.LocalNow.Offset;
+            TimeSpan offset;
+            context.RegisterHostCall(span);
+            var localNow = context.Host.LocalNow;
             if (arguments.Length == 0 || arguments[0] is PyNone)
             {
-                context.RegisterHostCall(span);
-                local = context.Host.LocalNow;
+                local = localNow;
+                offset = localNow.Offset;
             }
             else
             {
+                offset = localNow.Offset;
                 local = TimestampToInstant(arguments[0], "time.localtime", span).ToOffset(offset);
             }
 
@@ -283,7 +292,9 @@ internal sealed partial class LythonRuntime
             var local = CreateDateTime(fields, "time.mktime", span);
             try
             {
-                return UnixSeconds(new DateTimeOffset(local, context.Host.LocalNow.Offset));
+                context.RegisterHostCall(span);
+                var offset = context.Host.LocalNow.Offset;
+                return UnixSeconds(new DateTimeOffset(local, offset));
             }
             catch (ArgumentException ex)
             {
@@ -488,6 +499,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
+            context.RegisterHostCall(span);
             var offset = context.Host.LocalNow.Offset;
             return new PyTimezone(offset, FixedZoneName(offset));
         }

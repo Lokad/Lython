@@ -7,7 +7,7 @@ internal sealed class ExecutionServices
     public ExecutionServices(ExecutionState state)
     {
         State = state;
-        BudgetGuards = new ExecutionBudgetGuards(state);
+        BudgetGuards = state.BudgetGuards;
         ValueObservation = new ExecutionValueObservation(state);
     }
 

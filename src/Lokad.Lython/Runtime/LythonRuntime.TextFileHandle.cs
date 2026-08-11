@@ -179,6 +179,7 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
+                context.RegisterHostCall(null);
                 var stat = context.HostStat(path, null);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
@@ -193,6 +194,7 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
+                context.RegisterHostCall(null);
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size

@@ -203,6 +203,54 @@ right = open("/b.txt").read()
         Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("print('x')")]
+    [InlineData("value = input()")]
+    [InlineData("import time\nvalue = time.timezone")]
+    [InlineData("import pkgutil\nvalue = list(pkgutil.iter_modules(['/']))")]
+    [InlineData("value = open('/out.txt', 'a')")]
+    public void ZeroHostCallLimit_RejectsEveryHostFacingSurface(string source)
+    {
+        var host = new MockLythonHost();
+        host.SeedStandardInput("input\n");
+
+        var result = new LythonEngine().Run(
+            source,
+            host,
+            new LythonRunOptions
+            {
+                DisableDefaultLimits = true,
+                MaxHostCalls = 0
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ZeroHostCallLimit_RejectsLocalImportProbing()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/helper.py", "value = 1");
+
+        var result = new LythonEngine().Run(
+            "import helper",
+            host,
+            new LythonRunOptions
+            {
+                DisableDefaultLimits = true,
+                MaxHostCalls = 0,
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" }
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("maximum host call count exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void ZeroCollectionLimit_AllowsEmptyButRejectsNonEmptyCollections()
     {

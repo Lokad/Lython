@@ -21,6 +21,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
         CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
@@ -33,6 +34,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
         CheckInputLimit(utf8.Length, span);
         return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span);
@@ -45,6 +47,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
         if (utf8 is null)
         {
@@ -62,6 +65,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false);
         if (utf8 is null)
         {
@@ -114,6 +118,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         if (_destination.Output is { } output)
         {
             HostOperation.RequireSynchronousCapability(output, _name + ".write", span);
+            _state.BudgetGuards.RegisterHostCall(span);
         }
 
         if (_destination.Capture is { } capture)
@@ -138,6 +143,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_destination.Output is { } output)
         {
+            _state.BudgetGuards.RegisterHostCall(span);
             await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
         }
 
@@ -151,6 +157,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             return PyNone.Instance;
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         HostOperation.Await(output, () => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
         return PyNone.Instance;
     }
@@ -162,6 +169,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             return PyNone.Instance;
         }
 
+        _state.BudgetGuards.RegisterHostCall(span);
         await HostOperation.AwaitAsync(() => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
         return PyNone.Instance;
     }

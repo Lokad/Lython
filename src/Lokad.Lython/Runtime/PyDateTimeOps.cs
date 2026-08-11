@@ -478,11 +478,10 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.now([tz]) expects zero or one argument.", span);
         }
 
-        context.RegisterHostCall(span);
-        var localNow = context.Host.LocalNow;
-
         if (arguments.Length == 0 || arguments[0] is PyNone)
         {
+            context.RegisterHostCall(span);
+            var localNow = context.Host.LocalNow;
             return new PyDateTime(DateTime.SpecifyKind(localNow.DateTime, DateTimeKind.Unspecified));
         }
 
@@ -491,6 +490,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.now(tz) expects tz to be a timezone or None.", span);
         }
 
+        context.RegisterHostCall(span);
         var instant = context.Host.UtcNow.UtcDateTime + tz.Offset;
         return new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), tz);
     }

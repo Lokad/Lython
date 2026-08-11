@@ -35,6 +35,7 @@ internal sealed class ExecutionState
     {
         Host = host;
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
+        BudgetGuards = new ExecutionBudgetGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
@@ -69,6 +70,8 @@ internal sealed class ExecutionState
     public ILythonHost Host { get; }
 
     public LythonRuntime.ExecutionLimits Limits { get; }
+
+    public ExecutionBudgetGuards BudgetGuards { get; }
 
     public MemoryGovernor MemoryGovernor { get; }
 
