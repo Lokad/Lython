@@ -4,6 +4,25 @@ namespace Lokad.Lython.Tests;
 
 public sealed class HostPathScenarioTests
 {
+    [Theory]
+    [InlineData("..\\outside.txt", "backslashes")]
+    [InlineData("C:/outside.txt", "drive prefixes")]
+    public void HostOperations_RejectPlatformAmbiguousContainedPaths(string path, string expectedMessage)
+    {
+        var result = new LythonEngine().Run(
+            "value = open(path).read()",
+            new MockLythonHost("/repo"),
+            new LythonRunOptions
+            {
+                Globals = new Dictionary<string, object?> { ["path"] = path }
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains(expectedMessage, result.Failure.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void OpenAndOsFspathHonorPathLikeObjects()
     {

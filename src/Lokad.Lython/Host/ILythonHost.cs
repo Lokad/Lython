@@ -4,8 +4,11 @@ namespace Lokad.Lython;
 /// Defines every ambient capability visible to a Lython execution.
 /// </summary>
 /// <remarks>
-/// Paths use the host's contained namespace. Implementations must honor cancellation,
-/// avoid ambient process-wide state, and report unsupported operations explicitly.
+/// Paths use the host's contained namespace. Lython supplies absolute POSIX-style
+/// paths without backslashes, NUL characters, unresolved dot segments, or Windows
+/// drive prefixes. Implementations must still map them beneath their contained root,
+/// honor cancellation, avoid ambient process-wide state, and report unsupported
+/// operations explicitly.
 /// </remarks>
 public interface ILythonHost
 {

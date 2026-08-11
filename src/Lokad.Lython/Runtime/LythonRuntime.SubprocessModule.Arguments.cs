@@ -221,7 +221,11 @@ internal sealed partial class LythonRuntime
         return environment;
     }
 
-    private static string? ParseSubprocessCwd(object value, string owner, LythonSourceSpan span)
+    private static string? ParseSubprocessCwd(
+        object value,
+        string owner,
+        LythonSourceSpan span,
+        ExecutionContext context)
     {
         if (value is PyNone or null)
         {
@@ -230,15 +234,18 @@ internal sealed partial class LythonRuntime
 
         if (value is PyPath path)
         {
-            return path.Value.AsString();
+            return NormalizeSubprocessCwd(path.Value.AsString(), context, span);
         }
 
         if (PyStringOps.TryAsString(value, out var text))
         {
-            return text.AsString();
+            return NormalizeSubprocessCwd(text.AsString(), context, span);
         }
 
         throw new LythonRuntimeException("TypeError", $"{owner}(..., cwd=...) expects a string, Path, or None.", span);
+
+        static string NormalizeSubprocessCwd(string cwd, ExecutionContext context, LythonSourceSpan span)
+            => PathOps.RequireContainedPath(PathOps.Normalize(cwd, context.Host.Cwd), span);
     }
 
     private static LythonSubprocessStreamMode ParseSubprocessInputMode(object value, string owner, LythonSourceSpan span)

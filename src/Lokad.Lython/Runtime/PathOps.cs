@@ -4,6 +4,34 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PathOps
 {
+    public static string RequireContainedPath(string path, LythonSourceSpan? span)
+    {
+        if (path.Length == 0 || path[0] != '/')
+        {
+            throw RuntimeErrors.Value("host paths must be absolute within the contained namespace", span);
+        }
+
+        if (path.Contains('\\', StringComparison.Ordinal) || path.Contains('\0', StringComparison.Ordinal))
+        {
+            throw RuntimeErrors.Value("host paths cannot contain backslashes or NUL characters", span);
+        }
+
+        foreach (var segment in path.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (segment is "." or "..")
+            {
+                throw RuntimeErrors.Value("host paths must not contain unresolved dot segments", span);
+            }
+
+            if (segment.Length >= 2 && char.IsAsciiLetter(segment[0]) && segment[1] == ':')
+            {
+                throw RuntimeErrors.Value("host paths cannot contain Windows drive prefixes", span);
+            }
+        }
+
+        return path;
+    }
+
     public static PyString NormalizeLexical(PyString path)
         => PyString.FromString(NormalizeLexical(path.AsString()));
 

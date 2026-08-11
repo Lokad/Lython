@@ -64,6 +64,40 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
     }
 
     [Fact]
+    public void SubprocessRun_NormalizesRelativeCwdInsideTheHostNamespace()
+    {
+        var host = new MockLythonHost("/repo");
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["tool"], 0, "ok", "");
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run(['tool'], cwd='work')",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.NotNull(host.LastSubprocessRequest);
+        Assert.Equal("/repo/work", host.LastSubprocessRequest.RequireNotNull().Cwd);
+    }
+
+    [Fact]
+    public void SubprocessRun_RejectsPlatformAmbiguousCwd()
+    {
+        var host = new MockLythonHost("/repo");
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["tool"], 0, "ok", "");
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run(['tool'], cwd='..\\\\outside')",
+            host);
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("ValueError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("backslashes", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Null(host.LastSubprocessRequest);
+    }
+
+    [Fact]
     public void SubprocessRun_ThreadsStreamModesTextOptionsAndEnvironmentIntoHostRequest()
     {
         var host = new MockLythonHost();

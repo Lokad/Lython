@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
         var environment = ParseSubprocessEnvironment(arguments.Environment, owner, span);
-        var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span);
+        var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span, context);
 
         var stdin = ParseSubprocessInputMode(arguments.StandardInput, owner, span);
         var stdout = ParseSubprocessOutputMode(arguments.StandardOutput, owner, "stdout", span);
