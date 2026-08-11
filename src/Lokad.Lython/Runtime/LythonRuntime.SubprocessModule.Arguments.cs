@@ -194,11 +194,15 @@ internal sealed partial class LythonRuntime
             _ => "strict",
         };
 
-    private static IReadOnlyDictionary<string, string>? ParseSubprocessEnvironment(object value, string owner, LythonSourceSpan span)
+    private static IReadOnlyDictionary<string, string> ParseSubprocessEnvironment(
+        object value,
+        string owner,
+        LythonSourceSpan span,
+        IReadOnlyDictionary<string, string> defaultEnvironment)
     {
         if (value is PyNone or null)
         {
-            return null;
+            return new Dictionary<string, string>(defaultEnvironment, StringComparer.Ordinal);
         }
 
         if (value is not PyDict dict)
@@ -229,7 +233,7 @@ internal sealed partial class LythonRuntime
     {
         if (value is PyNone or null)
         {
-            return null;
+            return PathOps.RequireContainedPath(PathOps.Normalize(context.Host.Cwd), span);
         }
 
         if (value is PyPath path)

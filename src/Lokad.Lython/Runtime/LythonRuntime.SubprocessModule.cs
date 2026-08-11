@@ -165,6 +165,13 @@ internal sealed partial class LythonRuntime
         }
 
         var shell = ParseSubprocessOptionalBool(arguments.Shell, false, owner, "shell", span);
+        var runner = context.Host.SubprocessRunner ??
+            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+        if (shell && !runner.AllowsShellInvocation)
+        {
+            throw new LythonRuntimeException("RuntimeError", "subprocess shell invocation is not available in this host.", span);
+        }
+
         var args = ParseSubprocessArgs(arguments.Args, shell, owner, span);
         int? timeout = arguments.HasTimeout
             ? ParseOptionalInt(arguments.Timeout, $"{owner}(..., timeout=...)", span)
@@ -180,7 +187,7 @@ internal sealed partial class LythonRuntime
         var textMode = ParseSubprocessTextMode(arguments, owner, span);
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
-        var environment = ParseSubprocessEnvironment(arguments.Environment, owner, span);
+        var environment = ParseSubprocessEnvironment(arguments.Environment, owner, span, context.State.Environment);
         var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span, context);
 
         var stdin = ParseSubprocessInputMode(arguments.StandardInput, owner, span);

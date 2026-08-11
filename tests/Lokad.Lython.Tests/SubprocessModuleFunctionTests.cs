@@ -97,6 +97,51 @@ subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=15
     }
 
     [Fact]
+    public void SubprocessRun_UsesContainedCwdAndEnvironmentWhenOmitted()
+    {
+        var host = new MockLythonHost("/repo");
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["tool"], 0, "ok", "");
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run(['tool'])",
+            host,
+            new LythonRunOptions
+            {
+                Environment = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["PATH"] = "/bin",
+                    ["TOKEN"] = "contained",
+                },
+            });
+
+        Assert.True(result.Success, DescribeFailure(result));
+        var request = host.LastSubprocessRequest.RequireNotNull();
+        Assert.Equal("/repo", request.Cwd);
+        Assert.NotNull(request.Environment);
+        Assert.Equal("/bin", request.Environment.RequireNotNull()["PATH"]);
+        Assert.Equal("contained", request.Environment["TOKEN"]);
+    }
+
+    [Fact]
+    public void SubprocessRun_UsesEmptyContainedEnvironmentWhenRunEnvironmentIsOmitted()
+    {
+        var host = new MockLythonHost("/repo");
+        host.EnableSubprocess();
+        host.SeedSubprocessResult(["tool"], 0, "ok", "");
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run(['tool'])",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        var request = host.LastSubprocessRequest.RequireNotNull();
+        Assert.Equal("/repo", request.Cwd);
+        Assert.NotNull(request.Environment);
+        Assert.Empty(request.Environment.RequireNotNull());
+    }
+
+    [Fact]
     public void SubprocessRun_RejectsPlatformAmbiguousCwd()
     {
         var host = new MockLythonHost("/repo");
@@ -154,7 +199,7 @@ __lython_file.close()
     public void SubprocessRun_AllowsStringOrPathCommandWhenShellIsExplicit()
     {
         var host = new MockLythonHost();
-        host.EnableSubprocess();
+        host.EnableSubprocessShell();
         host.SeedSubprocessResult(["echo hi"], 0, "hi", "");
         host.SeedSubprocessResult(["/repo/script.sh"], 0, "path", "");
 
@@ -175,6 +220,23 @@ __lython_file.close()
         Assert.NotNull(host.LastSubprocessRequest);
         Assert.Equal(LythonSubprocessInvocationMode.Shell, host.LastSubprocessRequest.RequireNotNull().InvocationMode);
         Assert.Equal(["/repo/script.sh"], host.LastSubprocessRequest.Args);
+    }
+
+    [Fact]
+    public void SubprocessRun_RejectsShellWithoutHostOptIn()
+    {
+        var host = new MockLythonHost();
+        host.EnableSubprocess();
+
+        var result = new LythonEngine().Run(
+            "import subprocess\nsubprocess.run('echo hi', shell=True)\n",
+            host);
+
+        Assert.False(result.Success);
+        var failure = result.Failure.RequireNotNull();
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Equal("subprocess shell invocation is not available in this host.", failure.Message);
+        Assert.Null(host.LastSubprocessRequest);
     }
 
     [Fact]

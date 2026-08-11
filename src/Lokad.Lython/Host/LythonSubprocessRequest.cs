@@ -58,6 +58,11 @@ public readonly record struct LythonSubprocessOutputLimit
 }
 
 /// <summary>Describes a subprocess operation delegated to <see cref="ILythonSubprocessRunner"/>.</summary>
+/// <remarks>
+/// Runtime-created requests use contained host paths only. When guest code omits
+/// <c>cwd</c> or <c>env</c>, Lython supplies the run's contained host cwd and a copy
+/// of the run environment instead of relying on process ambient defaults.
+/// </remarks>
 public sealed record LythonSubprocessRequest(
     IReadOnlyList<string> Args,
     string? Cwd,

@@ -451,6 +451,12 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public void EnableSubprocess() => _subprocess.Enabled = true;
 
+    public void EnableSubprocessShell()
+    {
+        EnableSubprocess();
+        _subprocess.AllowsShellInvocation = true;
+    }
+
     public void CompleteSubprocessAsynchronously() => _subprocess.CompleteAsynchronously = true;
 
     public Task PauseSubprocessUntilCancellation(IReadOnlyList<string> args)
@@ -658,6 +664,8 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         private readonly List<LythonSubprocessRequest> _requests = [];
 
         public bool Enabled { get; set; }
+
+        public bool AllowsShellInvocation { get; set; }
 
         public bool CompletesSynchronously => !CompleteAsynchronously;
 
