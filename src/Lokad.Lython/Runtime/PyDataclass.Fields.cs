@@ -7,6 +7,15 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDataclass
 {
+    private readonly record struct OwnFieldFacts(
+        string Name,
+        object Annotation,
+        DataclassFieldKind Kind,
+        PyDataclassFieldDefinition? Definition,
+        bool HasDefault,
+        object ClassMemberValue,
+        bool DefaultKwOnly);
+
     private static PyDict BuildFieldMap(IReadOnlyList<DataclassFieldSpec> fields, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var dict = new PyDict(context.MemoryGovernor, span);
@@ -41,70 +50,18 @@ internal static partial class PyDataclass
 
             var hasDefault = fieldDefinition?.HasDefault ?? (statement.Expression is not null);
             var classMemberValue = fieldDefinition?.DefaultValue ?? (statement.Expression is not null && members.TryGetValue(statement.Name, out var value) ? value : PyNone.Instance);
-            var defaultValue = classMemberValue;
-            var hasDefaultFactory = fieldDefinition?.HasDefaultFactory ?? false;
-            var defaultFactory = fieldDefinition?.DefaultFactory ?? PyNone.Instance;
-            var init = fieldDefinition?.Init ?? true;
-            var repr = fieldDefinition?.Repr ?? true;
-            var compare = fieldDefinition?.Compare ?? true;
-            var hash = fieldDefinition?.Hash;
-            var kwOnly = fieldDefinition?.KwOnly ?? defaultKwOnly;
-            var metadata = fieldDefinition?.Metadata ?? new PyDict(context.MemoryGovernor, span);
-
-            if (kind == DataclassFieldKind.ClassVar)
-            {
-                if (fieldDefinition?.KwOnly is not null)
-                {
-                    throw new LythonRuntimeException("TypeError", $"field '{statement.Name}' is a ClassVar but specifies kw_only.", span);
-                }
-
-                init = false;
-                repr = false;
-                compare = false;
-                hash = false;
-                kwOnly = false;
-            }
-            else if (kind == DataclassFieldKind.InitVar)
-            {
-                repr = false;
-                compare = false;
-                hash = false;
-            }
-
-            if (hasDefault && kind != DataclassFieldKind.ClassVar)
-            {
-                defaultValue = ResolveDescriptorBackedDefault(type, defaultValue, context, span);
-            }
-
-            fields.Add(new DataclassFieldSpec(
+            fields.Add(CreateOwnField(
+                new OwnFieldFacts(
                 statement.Name,
                 GetAnnotationValue(annotations, statement.Name, statement.Annotation),
                 kind,
+                fieldDefinition,
                 hasDefault,
-                defaultValue,
-                hasDefaultFactory,
-                defaultFactory,
-                init,
-                repr,
-                compare,
-                hash,
-                kwOnly,
-                metadata,
-                Store: kind == DataclassFieldKind.Normal));
-
-            if (fieldDefinition is null)
-            {
-                continue;
-            }
-
-            if (hasDefault)
-            {
-                type.TrySetMember(statement.Name, classMemberValue);
-            }
-            else
-            {
-                type.RemoveOwnMember(statement.Name);
-            }
+                classMemberValue,
+                defaultKwOnly),
+                type,
+                context,
+                span));
         }
 
         return fields.ToArray();
@@ -149,73 +106,88 @@ internal static partial class PyDataclass
 
             var hasDefault = fieldDefinition?.HasDefault ?? type.TryGetOwnMember(name, out rawMember);
             var classMemberValue = fieldDefinition?.DefaultValue ?? (hasDefault ? rawMember.RequireNotNull() : PyNone.Instance);
-            var defaultValue = classMemberValue;
-            var hasDefaultFactory = fieldDefinition?.HasDefaultFactory ?? false;
-            var defaultFactory = fieldDefinition?.DefaultFactory ?? PyNone.Instance;
-            var init = fieldDefinition?.Init ?? true;
-            var repr = fieldDefinition?.Repr ?? true;
-            var compare = fieldDefinition?.Compare ?? true;
-            var hash = fieldDefinition?.Hash;
-            var kwOnly = fieldDefinition?.KwOnly ?? defaultKwOnly;
-            var metadata = fieldDefinition?.Metadata ?? new PyDict(context.MemoryGovernor, span);
-
-            if (kind == DataclassFieldKind.ClassVar)
-            {
-                if (fieldDefinition?.KwOnly is not null)
-                {
-                    throw new LythonRuntimeException("TypeError", $"field '{name}' is a ClassVar but specifies kw_only.", span);
-                }
-
-                init = false;
-                repr = false;
-                compare = false;
-                hash = false;
-                kwOnly = false;
-            }
-            else if (kind == DataclassFieldKind.InitVar)
-            {
-                repr = false;
-                compare = false;
-                hash = false;
-            }
-
-            if (hasDefault && kind != DataclassFieldKind.ClassVar)
-            {
-                defaultValue = ResolveDescriptorBackedDefault(type, defaultValue, context, span);
-            }
-
-            fields.Add(new DataclassFieldSpec(
+            fields.Add(CreateOwnField(
+                new OwnFieldFacts(
                 name,
                 annotation,
                 kind,
+                fieldDefinition,
                 hasDefault,
-                defaultValue,
-                hasDefaultFactory,
-                defaultFactory,
-                init,
-                repr,
-                compare,
-                hash,
-                kwOnly,
-                metadata,
-                Store: kind == DataclassFieldKind.Normal));
-
-            if (fieldDefinition is null)
-            {
-                continue;
-            }
-
-            if (hasDefault)
-            {
-                type.TrySetMember(name, classMemberValue);
-            }
-            else
-            {
-                type.RemoveOwnMember(name);
-            }
+                classMemberValue,
+                defaultKwOnly),
+                type,
+                context,
+                span));
         }
 
         return fields.ToArray();
+    }
+
+    private static DataclassFieldSpec CreateOwnField(
+        OwnFieldFacts facts,
+        PyType type,
+        LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var defaultValue = facts.ClassMemberValue;
+        var init = facts.Definition?.Init ?? true;
+        var repr = facts.Definition?.Repr ?? true;
+        var compare = facts.Definition?.Compare ?? true;
+        var hash = facts.Definition?.Hash;
+        var kwOnly = facts.Definition?.KwOnly ?? facts.DefaultKwOnly;
+
+        if (facts.Kind == DataclassFieldKind.ClassVar)
+        {
+            if (facts.Definition?.KwOnly is not null)
+            {
+                throw new LythonRuntimeException("TypeError", $"field '{facts.Name}' is a ClassVar but specifies kw_only.", span);
+            }
+
+            init = false;
+            repr = false;
+            compare = false;
+            hash = false;
+            kwOnly = false;
+        }
+        else if (facts.Kind == DataclassFieldKind.InitVar)
+        {
+            repr = false;
+            compare = false;
+            hash = false;
+        }
+
+        if (facts.HasDefault && facts.Kind != DataclassFieldKind.ClassVar)
+        {
+            defaultValue = ResolveDescriptorBackedDefault(type, defaultValue, context, span);
+        }
+
+        if (facts.Definition is not null)
+        {
+            if (facts.HasDefault)
+            {
+                type.TrySetMember(facts.Name, facts.ClassMemberValue);
+            }
+            else
+            {
+                type.RemoveOwnMember(facts.Name);
+            }
+        }
+
+        return new DataclassFieldSpec(
+            facts.Name,
+            facts.Annotation,
+            facts.Kind,
+            facts.HasDefault,
+            defaultValue,
+            facts.Definition?.HasDefaultFactory ?? false,
+            facts.Definition?.DefaultFactory ?? PyNone.Instance,
+            init,
+            repr,
+            compare,
+            hash,
+            kwOnly,
+            facts.Definition?.Metadata ?? new PyDict(context.MemoryGovernor, span),
+            Store: facts.Kind == DataclassFieldKind.Normal);
     }
 
     private static DataclassFieldSpec[] MergeInheritedFields(PyType type, IReadOnlyList<DataclassFieldSpec> ownFields)
