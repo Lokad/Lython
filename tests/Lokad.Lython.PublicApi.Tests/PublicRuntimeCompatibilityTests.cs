@@ -90,6 +90,15 @@ return value
                 "return 1",
                 new PublicTestHost(),
                 new LythonRunOptions { MaxExecutionSteps = -1 }));
+
+        var diagnostic = new LythonDiagnostic("LA1234", "message", LythonDiagnosticSeverity.Error, null);
+        var (code, message, severity, span) = diagnostic;
+        Assert.Equal("LA1234", code);
+        Assert.Equal("message", message);
+        Assert.Equal(LythonDiagnosticSeverity.Error, severity);
+        Assert.Null(span);
+        Assert.Throws<ArgumentException>(() =>
+            new LythonDiagnostic("invalid", "message", LythonDiagnosticSeverity.Error, null));
     }
 
     [Fact]

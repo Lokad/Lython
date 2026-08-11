@@ -295,23 +295,23 @@ internal sealed partial class Parser
         AddDiagnostic(code, message, _position);
     }
 
-    private void AddDiagnostic(string code, string message, int tokenIndex)
+    private void AddDiagnostic(LythonDiagnosticCode code, string message, int tokenIndex)
     {
         var span = tokenIndex >= 0 && tokenIndex < _tokens.Count
             ? SpanOf(tokenIndex)
             : null;
 
         _diagnostics.Add(new LythonDiagnostic(
-            code,
+            code.Value,
             message,
             LythonDiagnosticSeverity.Error,
             span));
     }
 
-    private void AddDiagnostic(string code, string message, LythonSourceSpan span)
+    private void AddDiagnostic(LythonDiagnosticCode code, string message, LythonSourceSpan span)
     {
         _diagnostics.Add(new LythonDiagnostic(
-            code,
+            code.Value,
             message,
             LythonDiagnosticSeverity.Error,
             span));

@@ -15,8 +15,8 @@ internal sealed class StaticAnalysisContext
 
     internal List<LythonDiagnostic> DiagnosticList => _diagnostics;
 
-    public void AddError(string code, string message, LythonSourceSpan span)
+    public void AddError(LythonDiagnosticCode code, string message, LythonSourceSpan span)
     {
-        _diagnostics.Add(new LythonDiagnostic(code, message, LythonDiagnosticSeverity.Error, span));
+        _diagnostics.Add(new LythonDiagnostic(code.Value, message, LythonDiagnosticSeverity.Error, span));
     }
 }
