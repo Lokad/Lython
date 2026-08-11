@@ -244,16 +244,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static int ParseOptionalInt(object value, string name, string signature, LythonSourceSpan span)
-        {
-            return value switch
-            {
-                BigInteger integer => integer < int.MinValue || integer > int.MaxValue
-                    ? throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span)
-                    : (int)integer,
-                int integer => integer,
-                _ => throw new LythonRuntimeException("TypeError", $"{signature} expects {name} to be an integer.", span)
-            };
-        }
+            => RuntimeArgumentValidation.ParseInt32(value, name, signature, span);
 
         private static int ToPythonFlags(PythonReCompileOptions options)
         {

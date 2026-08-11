@@ -3,6 +3,25 @@ using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
+internal static class PyCombinatoricTuple
+{
+    public static PyTuple Create(
+        object[] pool,
+        int[] indices,
+        int count,
+        MemoryGovernor memoryGovernor,
+        LythonSourceSpan span)
+    {
+        var items = new object[count];
+        for (var i = 0; i < count; i++)
+        {
+            items[i] = pool[indices[i]];
+        }
+
+        return PyTuple.FromOwnedArray(items, memoryGovernor, span);
+    }
+}
+
 internal sealed class PyProductIterator : PyIteratorBase
 {
     private readonly IReadOnlyList<IReadOnlyList<object>> _pools;
@@ -354,7 +373,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         if (!_started)
         {
             _started = true;
-            value = CurrentTuple();
+            value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span);
             return true;
         }
 
@@ -379,22 +398,12 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
             _indices[j] = _indices[j - 1] + 1;
         }
 
-        value = CurrentTuple();
+        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span);
         return true;
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.combinations object>");
 
-    private PyTuple CurrentTuple()
-    {
-        var items = new object[_indices.Length];
-        for (var i = 0; i < _indices.Length; i++)
-        {
-            items[i] = _pool[_indices[i]];
-        }
-
-        return PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
-    }
 }
 
 internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
@@ -426,7 +435,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         if (!_started)
         {
             _started = true;
-            value = CurrentTuple();
+            value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span);
             return true;
         }
 
@@ -450,22 +459,12 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
             _indices[j] = next;
         }
 
-        value = CurrentTuple();
+        value = PyCombinatoricTuple.Create(_pool, _indices, _indices.Length, _memoryGovernor, _span);
         return true;
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.combinations_with_replacement object>");
 
-    private PyTuple CurrentTuple()
-    {
-        var items = new object[_indices.Length];
-        for (var i = 0; i < _indices.Length; i++)
-        {
-            items[i] = _pool[_indices[i]];
-        }
-
-        return PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
-    }
 }
 
 internal sealed class PyPermutationsIterator : PyIteratorBase
@@ -511,7 +510,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         if (!_started)
         {
             _started = true;
-            value = CurrentTuple();
+            value = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span);
             return true;
         }
 
@@ -527,7 +526,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
 
             var j = _cycles[i];
             (_indices[i], _indices[^j]) = (_indices[^j], _indices[i]);
-            value = CurrentTuple();
+            value = PyCombinatoricTuple.Create(_pool, _indices, _r, _memoryGovernor, _span);
             return true;
         }
 
@@ -537,17 +536,6 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.permutations object>");
-
-    private PyTuple CurrentTuple()
-    {
-        var items = new object[_r];
-        for (var i = 0; i < _r; i++)
-        {
-            items[i] = _pool[_indices[i]];
-        }
-
-        return PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
-    }
 
     private static void RotateLeft(int[] values, int start)
     {

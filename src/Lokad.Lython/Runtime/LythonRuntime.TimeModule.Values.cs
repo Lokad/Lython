@@ -182,16 +182,7 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-        public int GetPyHashCode()
-        {
-            var hash = new HashCode();
-            foreach (var value in _values)
-            {
-                hash.Add(PyValueComparer.Instance.GetHashCode(value));
-            }
-
-            return hash.ToHashCode();
-        }
+        public int GetPyHashCode() => PyTupleLike.ComputeHashCode(_values);
 
         public bool Equals(TimeStructTimeValue? other)
             => other is not null && _values.SequenceEqual(other._values, PyValueComparer.Instance);

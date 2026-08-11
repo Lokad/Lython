@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
             => InvokeNamedBool(self, "__eq__", other, context, span);
 
         private static bool InvokeBool(object self, OrderingMethod method, object other, ExecutionContext context, LythonSourceSpan span)
-            => InvokeNamedBool(self, MethodName(method), other, context, span);
+            => InvokeNamedBool(self, OrderingMethodName(method), other, context, span);
 
         private static bool InvokeNamedBool(object self, string methodName, object other, ExecutionContext context, LythonSourceSpan span)
         {
@@ -147,17 +147,6 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static string MethodName(OrderingMethod method)
-        {
-            return method switch
-            {
-                OrderingMethod.Lt => "__lt__",
-                OrderingMethod.Le => "__le__",
-                OrderingMethod.Gt => "__gt__",
-                OrderingMethod.Ge => "__ge__",
-                _ => throw new InvalidOperationException("Unknown ordering method.")
-            };
-        }
     }
 
     private static object TotalOrdering(object[] arguments, LythonSourceSpan span, ExecutionContext context)

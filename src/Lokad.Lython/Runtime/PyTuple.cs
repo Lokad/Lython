@@ -190,16 +190,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public IEnumerable<object> Iterate() => this;
 
-    public int GetPyHashCode()
-    {
-        var hash = new HashCode();
-        foreach (var item in this)
-        {
-            hash.Add(PyValueComparer.Instance.GetHashCode(item));
-        }
-
-        return hash.ToHashCode();
-    }
+    public int GetPyHashCode() => PyTupleLike.ComputeHashCode(this);
 
     public PyString RenderPython(PyRenderingContext context)
         => PyRendering.ToReprPyString(this, context);

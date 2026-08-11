@@ -2,6 +2,17 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyTupleLike
 {
+    public static int ComputeHashCode(IEnumerable<object> items)
+    {
+        var hash = new HashCode();
+        foreach (var item in items)
+        {
+            hash.Add(PyValueComparer.Instance.GetHashCode(item));
+        }
+
+        return hash.ToHashCode();
+    }
+
     public static bool TryGetItems(object value, out IReadOnlyList<object> items)
     {
         switch (value)

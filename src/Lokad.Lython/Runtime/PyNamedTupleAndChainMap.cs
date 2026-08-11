@@ -224,16 +224,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
         return value is not PyNone;
     }
-    public int GetPyHashCode()
-    {
-        var hash = new HashCode();
-        foreach (var value in _values)
-        {
-            hash.Add(PyValueComparer.Instance.GetHashCode(value));
-        }
-
-        return hash.ToHashCode();
-    }
+    public int GetPyHashCode() => PyTupleLike.ComputeHashCode(_values);
 
     public PyString RenderPython(PyRenderingContext context)
     {
