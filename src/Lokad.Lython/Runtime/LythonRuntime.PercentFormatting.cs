@@ -15,17 +15,32 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
         => new PercentStringFormatter(template, arguments, context, span).Format();
 
-    private sealed class PercentStringFormatter(
-        PyString template,
-        object arguments,
-        ExecutionContext context,
-        LythonSourceSpan span)
+    private sealed class PercentStringFormatter
     {
-        private readonly string _format = template.AsString();
-        private readonly PyTuple? _tupleArguments = arguments as PyTuple;
-        private readonly GovernedByteBuilder _builder = new(context.MemoryGovernor, span);
+        private readonly string _format;
+        private readonly object _arguments;
+        private readonly PyTuple? _tupleArguments;
+        private readonly GovernedByteBuilder _builder;
+        private readonly PercentSpecifierParser _parser;
+        private readonly ExecutionContext _context;
+        private readonly LythonSourceSpan _span;
         private int _argumentIndex;
         private bool _sawMappingKey;
+
+        public PercentStringFormatter(
+            PyString template,
+            object arguments,
+            ExecutionContext context,
+            LythonSourceSpan span)
+        {
+            _format = template.AsString();
+            _arguments = arguments;
+            _tupleArguments = arguments as PyTuple;
+            _builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            _parser = new PercentSpecifierParser(_format, NextStarInteger, span);
+            _context = context;
+            _span = span;
+        }
 
         public PyString Format()
         {
@@ -49,7 +64,8 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                var specifier = ParseSpecifier(ref index);
+                var specifier = _parser.Parse(ref index);
+                _sawMappingKey |= specifier.MappingKey is not null;
                 var value = specifier.MappingKey is null
                     ? NextArgument()
                     : ResolveMappingValue(specifier.MappingKey);
@@ -60,157 +76,6 @@ internal sealed partial class LythonRuntime
             _builder.AppendString(_format[literalStart..]);
             EnsureAllArgumentsConsumed();
             return _builder.ToPyStringAndRelease();
-        }
-
-        private PercentSpecifier ParseSpecifier(ref int index)
-        {
-            if (index >= _format.Length)
-            {
-                throw PercentValueError("incomplete format");
-            }
-
-            string? mappingKey = null;
-            if (_format[index] == '(')
-            {
-                mappingKey = ParseMappingKey(ref index);
-                _sawMappingKey = true;
-            }
-
-            var alternate = false;
-            var zeroPad = false;
-            var leftAdjust = false;
-            var plusSign = false;
-            var spaceSign = false;
-            while (index < _format.Length)
-            {
-                switch (_format[index])
-                {
-                    case '#':
-                        alternate = true;
-                        index++;
-                        continue;
-                    case '0':
-                        zeroPad = true;
-                        index++;
-                        continue;
-                    case '-':
-                        leftAdjust = true;
-                        index++;
-                        continue;
-                    case '+':
-                        plusSign = true;
-                        index++;
-                        continue;
-                    case ' ':
-                        spaceSign = true;
-                        index++;
-                        continue;
-                }
-
-                break;
-            }
-
-            int? width = null;
-            if (index < _format.Length && _format[index] == '*')
-            {
-                index++;
-                var starWidth = NextStarInteger();
-                if (starWidth < 0)
-                {
-                    leftAdjust = true;
-                    starWidth = -starWidth;
-                }
-
-                width = ToFormatSize(starWidth, "width");
-            }
-            else if (index < _format.Length && char.IsAsciiDigit(_format[index]))
-            {
-                width = ParseFormatSize(ref index, "width");
-            }
-
-            int? precision = null;
-            if (index < _format.Length && _format[index] == '.')
-            {
-                index++;
-                if (index < _format.Length && _format[index] == '*')
-                {
-                    index++;
-                    precision = ToFormatSize(BigInteger.Max(BigInteger.Zero, NextStarInteger()), "precision");
-                }
-                else
-                {
-                    precision = index < _format.Length && char.IsAsciiDigit(_format[index])
-                        ? ParseFormatSize(ref index, "precision")
-                        : 0;
-                }
-            }
-
-            while (index < _format.Length && _format[index] is 'h' or 'l' or 'L')
-            {
-                index++;
-            }
-
-            if (index >= _format.Length)
-            {
-                throw PercentValueError("incomplete format");
-            }
-
-            var conversion = _format[index++];
-            if (conversion is not ('s' or 'r' or 'a' or 'd' or 'i' or 'u' or 'o' or 'x' or 'X' or 'e' or 'E' or 'f' or 'F' or 'g' or 'G' or 'c'))
-            {
-                throw PercentValueError($"unsupported format character '{conversion}'");
-            }
-
-            return new PercentSpecifier(
-                mappingKey,
-                alternate,
-                zeroPad,
-                leftAdjust,
-                plusSign,
-                spaceSign,
-                width,
-                precision,
-                conversion);
-        }
-
-        private string ParseMappingKey(ref int index)
-        {
-            index++;
-            var start = index;
-            var depth = 1;
-            while (index < _format.Length)
-            {
-                if (_format[index] == '(')
-                {
-                    depth++;
-                }
-                else if (_format[index] == ')' && --depth == 0)
-                {
-                    var key = _format[start..index];
-                    index++;
-                    return key;
-                }
-
-                index++;
-            }
-
-            throw PercentValueError("incomplete format key");
-        }
-
-        private int ParseFormatSize(ref int index, string owner)
-        {
-            var value = BigInteger.Zero;
-            while (index < _format.Length && char.IsAsciiDigit(_format[index]))
-            {
-                value = value * 10 + (_format[index] - '0');
-                index++;
-                if (value > int.MaxValue)
-                {
-                    throw PercentValueError($"{owner} too big");
-                }
-            }
-
-            return (int)value;
         }
 
         private object NextArgument()
@@ -231,7 +96,7 @@ internal sealed partial class LythonRuntime
             }
 
             _argumentIndex = 1;
-            return arguments;
+            return _arguments;
         }
 
         private BigInteger NextStarInteger()
@@ -252,16 +117,16 @@ internal sealed partial class LythonRuntime
                 throw PercentTypeError("format requires a mapping");
             }
 
-            var runtimeKey = PyString.FromString(key, context.MemoryGovernor, span);
-            return arguments switch
+            var runtimeKey = PyString.FromString(key, _context.MemoryGovernor, _span);
+            return _arguments switch
             {
                 PyDict dict => dict.TryGetValue(runtimeKey, out var value)
                     ? value
-                    : throw new LythonRuntimeException("KeyError", key, span),
-                PyDefaultDict defaultDict => defaultDict.GetOrCreate(runtimeKey, context, span),
+                    : throw new LythonRuntimeException("KeyError", key, _span),
+                PyDefaultDict defaultDict => defaultDict.GetOrCreate(runtimeKey, _context, _span),
                 PyCounter counter => counter.GetCount(runtimeKey),
-                IPySubscriptableValue mapping => mapping.GetSubscript(runtimeKey, span),
-                PyInstance instance => GetUserItem(instance, runtimeKey, context, span),
+                IPySubscriptableValue mapping => mapping.GetSubscript(runtimeKey, _span),
+                PyInstance instance => GetUserItem(instance, runtimeKey, _context, _span),
                 _ => throw PercentTypeError("format requires a mapping")
             };
         }
@@ -301,12 +166,12 @@ internal sealed partial class LythonRuntime
         {
             var rendered = specifier.Conversion switch
             {
-                's' => ToInterpolatedPyString(value, context),
-                'r' => ToReprPyString(value, context),
+                's' => ToInterpolatedPyString(value, _context),
+                'r' => ToReprPyString(value, _context),
                 'a' => PyString.FromString(
-                    EscapeNonAscii(ToReprPyString(value, context).AsString()),
-                    context.MemoryGovernor,
-                    span),
+                    EscapeNonAscii(ToReprPyString(value, _context).AsString()),
+                    _context.MemoryGovernor,
+                    _span),
                 _ => PyString.Empty
             };
 
@@ -335,7 +200,7 @@ internal sealed partial class LythonRuntime
                 : ToUnsignedBaseString(magnitude, radix, upper);
             if (specifier.Precision is { } precision && digits.Length < precision)
             {
-                context.MemoryGovernor.EnsureCanReserve(precision, span);
+                _context.MemoryGovernor.EnsureCanReserve(precision, _span);
                 digits = new string('0', precision - digits.Length) + digits;
             }
 
@@ -355,29 +220,10 @@ internal sealed partial class LythonRuntime
         private void AppendFloating(object value, PercentSpecifier specifier)
         {
             var floating = CoerceFloat(value);
-            context.MemoryGovernor.EnsureCanReserve((specifier.Precision ?? 6) + 32L, span);
+            _context.MemoryGovernor.EnsureCanReserve((specifier.Precision ?? 6) + 32L, _span);
             var negative = !double.IsNaN(floating) && double.IsNegative(floating);
             var magnitude = Math.Abs(floating);
-            var upper = specifier.Conversion is 'E' or 'F' or 'G';
-            string digits;
-            if (double.IsNaN(magnitude))
-            {
-                digits = upper ? "NAN" : "nan";
-            }
-            else if (double.IsPositiveInfinity(magnitude))
-            {
-                digits = upper ? "INF" : "inf";
-            }
-            else
-            {
-                digits = specifier.Conversion switch
-                {
-                    'f' or 'F' => FormatFixed(magnitude, specifier.Precision ?? 6, specifier.Alternate),
-                    'e' or 'E' => FormatExponential(magnitude, specifier.Precision ?? 6, specifier.Alternate, upper),
-                    'g' or 'G' => FormatGeneral(magnitude, specifier.Precision ?? 6, specifier.Alternate, upper),
-                    _ => string.Empty
-                };
-            }
+            var digits = PercentFloatingFormatter.Format(magnitude, specifier);
 
             var sign = NumericSign(negative, specifier);
             AppendNumeric(sign + digits, sign.Length, specifier);
@@ -400,13 +246,13 @@ internal sealed partial class LythonRuntime
                 var integer = CoerceInteger(value, allowFloat: false);
                 if (integer < 0 || integer > 0x10ffff || integer >= 0xd800 && integer <= 0xdfff)
                 {
-                    throw new LythonRuntimeException("OverflowError", "%c arg not in range(0x110000)", span);
+                    throw new LythonRuntimeException("OverflowError", "%c arg not in range(0x110000)", _span);
                 }
 
                 character = PyString.FromString(
                     new Rune((int)integer).ToString(),
-                    context.MemoryGovernor,
-                    span);
+                    _context.MemoryGovernor,
+                    _span);
             }
 
             AppendPadded(character, specifier.Width, specifier.LeftAdjust);
@@ -423,12 +269,12 @@ internal sealed partial class LythonRuntime
             {
                 if (double.IsPositiveInfinity(floating) || double.IsNegativeInfinity(floating))
                 {
-                    throw new LythonRuntimeException("OverflowError", "cannot convert float infinity to integer", span);
+                    throw new LythonRuntimeException("OverflowError", "cannot convert float infinity to integer", _span);
                 }
 
                 if (double.IsNaN(floating))
                 {
-                    throw new LythonRuntimeException("ValueError", "cannot convert float NaN to integer", span);
+                    throw new LythonRuntimeException("ValueError", "cannot convert float NaN to integer", _span);
                 }
 
                 return new BigInteger(floating);
@@ -442,9 +288,9 @@ internal sealed partial class LythonRuntime
             if (value is PyInstance instance)
             {
                 var methodName = allowFloat ? "__int__" : "__index__";
-                if (instance.TryGetAttribute(methodName, context, span, out var member) && member is ICallable callable)
+                if (instance.TryGetAttribute(methodName, _context, _span, out var member) && member is ICallable callable)
                 {
-                    var converted = callable.Invoke([], span, context);
+                    var converted = callable.Invoke([], _span, _context);
                     if (PyNumberOps.TryAsInteger(converted, out integer))
                     {
                         return integer;
@@ -470,7 +316,7 @@ internal sealed partial class LythonRuntime
                         var converted = (double)integer;
                         if (double.IsInfinity(converted))
                         {
-                            throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+                            throw new LythonRuntimeException("OverflowError", "int too large to convert to float", _span);
                         }
 
                         return converted;
@@ -480,10 +326,10 @@ internal sealed partial class LythonRuntime
                 case PyDecimal decimalValue:
                     return (double)decimalValue.Value;
                 case PyInstance instance when
-                    instance.TryGetAttribute("__float__", context, span, out var member) &&
+                    instance.TryGetAttribute("__float__", _context, _span, out var member) &&
                     member is ICallable callable:
                     {
-                        var converted = callable.Invoke([], span, context);
+                        var converted = callable.Invoke([], _span, _context);
                         if (converted is double result)
                         {
                             return result;
@@ -560,79 +406,8 @@ internal sealed partial class LythonRuntime
                         ? " "
                         : string.Empty;
 
-        private static string FormatFixed(double value, int precision, bool alternate)
-        {
-            var text = value.ToString("F" + precision.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-            return alternate && precision == 0 ? text + "." : text;
-        }
-
-        private static string FormatExponential(double value, int precision, bool alternate, bool upper)
-        {
-            var text = value.ToString("E" + precision.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-            var exponentIndex = text.IndexOf('E');
-            var mantissa = text[..exponentIndex];
-            if (alternate && precision == 0)
-            {
-                mantissa += ".";
-            }
-
-            var exponent = int.Parse(text[(exponentIndex + 1)..], CultureInfo.InvariantCulture);
-            return mantissa + (upper ? "E" : "e") + (exponent < 0 ? "-" : "+") + Math.Abs(exponent).ToString("D2", CultureInfo.InvariantCulture);
-        }
-
-        private static string FormatGeneral(double value, int precision, bool alternate, bool upper)
-        {
-            precision = precision == 0 ? 1 : precision;
-            var rounded = double.Parse(
-                value.ToString("G" + precision.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-                CultureInfo.InvariantCulture);
-            var exponent = rounded == 0.0 ? 0 : (int)Math.Floor(Math.Log10(rounded));
-            var scientific = exponent < -4 || exponent >= precision;
-            if (!scientific)
-            {
-                var decimals = Math.Max(0, precision - exponent - 1);
-                var fixedText = value.ToString("F" + decimals.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-                var integerDigits = fixedText.TrimStart('0').TakeWhile(char.IsAsciiDigit).Count();
-                if (integerDigits <= precision)
-                {
-                    return alternate ? EnsureDecimalPoint(fixedText) : TrimFractionZeros(fixedText);
-                }
-            }
-
-            var exponential = FormatExponential(value, precision - 1, alternate, upper);
-            if (alternate)
-            {
-                return exponential;
-            }
-
-            var marker = upper ? 'E' : 'e';
-            var markerIndex = exponential.IndexOf(marker);
-            return TrimFractionZeros(exponential[..markerIndex]) + exponential[markerIndex..];
-        }
-
-        private static string EnsureDecimalPoint(string value)
-            => value.Contains('.', StringComparison.Ordinal) ? value : value + ".";
-
-        private static string TrimFractionZeros(string value)
-            => value.Contains('.', StringComparison.Ordinal)
-                ? value.TrimEnd('0').TrimEnd('.')
-                : value;
-
-        private int ToFormatSize(BigInteger value, string owner)
-        {
-            if (value > int.MaxValue)
-            {
-                throw new LythonRuntimeException("OverflowError", $"{owner} too big", span);
-            }
-
-            return (int)value;
-        }
-
         private LythonRuntimeException PercentTypeError(string message)
-            => new("TypeError", message, span);
-
-        private LythonRuntimeException PercentValueError(string message)
-            => new("ValueError", message, span);
+            => new("TypeError", message, _span);
     }
 
     private sealed record PercentSpecifier(
