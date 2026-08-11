@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
 
         if (abrupt is PendingException { Exception: var exception } &&
             region.ExceptBlockIndex is int exceptBlock &&
-            MatchesExecutableExceptionType(region.ExceptionTypeNames, exception.ExceptionType))
+            MatchesCaughtException(region.ExceptionTypeNames, exception, context, span))
         {
             pendingAbrupt = null;
             var pyException = CreatePythonExceptionInstance(exception);
@@ -179,9 +179,6 @@ internal sealed partial class LythonRuntime
 
         return best;
     }
-
-    private static bool MatchesExecutableExceptionType(IReadOnlyList<string>? exceptionTypes, string exceptionType)
-        => exceptionTypes is null || exceptionTypes.Any(name => MatchesExceptionTypeName(name, exceptionType));
 
     private static bool TryExecuteExecutableMatchCase(
         ExecutableMatchCaseBinding matchCase,

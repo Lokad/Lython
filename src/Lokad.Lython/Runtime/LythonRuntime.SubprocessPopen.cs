@@ -608,7 +608,7 @@ internal sealed partial class LythonRuntime
                 _context,
                 span);
             return new LythonRuntimeException(
-                "TimeoutExpired",
+                ModuleException("subprocess", "TimeoutExpired"),
                 $"Command timed out after {(timeout is PyNone ? "None" : timeout)}.",
                 span,
                 innerException: null,

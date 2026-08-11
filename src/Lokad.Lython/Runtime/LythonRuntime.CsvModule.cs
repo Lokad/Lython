@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
                 "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer),
                 "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader),
                 "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
-                "Error" => new ExceptionTypeValue("Error"),
+                "Error" => new ExceptionTypeValue(ModuleException("csv", "Error")),
                 "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
                 "QUOTE_ALL" => new BigInteger((int)CsvQuotingMode.All),
                 "QUOTE_NONNUMERIC" => new BigInteger((int)CsvQuotingMode.NonNumeric),
@@ -599,6 +599,6 @@ internal sealed partial class LythonRuntime
         bool Strict);
 
     private static LythonRuntimeException CsvError(string message, LythonSourceSpan span)
-        => new("Error", message, span);
+        => new(ModuleException("csv", "Error"), message, span);
 
 }

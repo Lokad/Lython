@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
     private sealed class CopyModule : PyModule
     {
         public static readonly CopyModule Instance = new();
-        private static readonly ExceptionTypeValue CopyError = new("Error");
+        private static readonly ExceptionTypeValue CopyError = new(ModuleException("copy", "Error"));
 
         private CopyModule() : base("copy")
         {

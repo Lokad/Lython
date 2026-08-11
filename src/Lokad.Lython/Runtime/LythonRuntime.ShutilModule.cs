@@ -8,8 +8,8 @@ internal sealed partial class LythonRuntime
     private sealed class ShutilModule : PyModule
     {
         public static readonly ShutilModule Instance = new();
-        private static readonly ExceptionTypeValue ShutilError = new("Error");
-        private static readonly ExceptionTypeValue ShutilSameFileError = new("SameFileError");
+        private static readonly ExceptionTypeValue ShutilError = new(ModuleException("shutil", "Error"));
+        private static readonly ExceptionTypeValue ShutilSameFileError = new(ModuleException("shutil", "SameFileError"));
 
         private ShutilModule() : base("shutil")
         {
@@ -318,7 +318,7 @@ internal sealed partial class LythonRuntime
     {
         if (string.Equals(source, destination, StringComparison.Ordinal))
         {
-            throw new LythonRuntimeException("SameFileError", $"{owner}() source and destination are the same file.", span);
+            throw new LythonRuntimeException(ModuleException("shutil", "SameFileError"), $"{owner}() source and destination are the same file.", span);
         }
     }
 

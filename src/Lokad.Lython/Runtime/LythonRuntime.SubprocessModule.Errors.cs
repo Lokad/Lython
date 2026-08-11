@@ -34,9 +34,11 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class SubprocessCalledProcessErrorType : ICallable, IPyDynamicAttributes, IPyRenderableValue
+    private sealed class SubprocessCalledProcessErrorType : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType
     {
         public static readonly SubprocessCalledProcessErrorType Instance = new();
+
+        public PythonExceptionIdentity ExceptionIdentity => ModuleException("subprocess", "CalledProcessError");
 
         private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
             "subprocess.CalledProcessError",
@@ -71,7 +73,7 @@ internal sealed partial class LythonRuntime
             var output = GetArgument(bound, 2);
             var stderr = GetArgument(bound, 3);
             var payload = CreateCalledProcessErrorPayload(returnCode, bound[1], output, stderr, context, span);
-            return new PyException("CalledProcessError", $"Command failed with return code {returnCode}.", payload);
+            return new PyException(ExceptionIdentity, $"Command failed with return code {returnCode}.", payload);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -83,9 +85,11 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class SubprocessTimeoutExpiredType : ICallable, IPyDynamicAttributes, IPyRenderableValue
+    private sealed class SubprocessTimeoutExpiredType : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType
     {
         public static readonly SubprocessTimeoutExpiredType Instance = new();
+
+        public PythonExceptionIdentity ExceptionIdentity => ModuleException("subprocess", "TimeoutExpired");
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -106,7 +110,7 @@ internal sealed partial class LythonRuntime
                 LythonKnownCallableSignatures.SubprocessTimeoutExpired,
                 PythonCallableKind.Builtin);
             return new PyException(
-                "TimeoutExpired",
+                ExceptionIdentity,
                 $"Command timed out after {bound[1]}.",
                 CreateTimeoutExpiredPayload(bound[0], bound[1], GetArgument(bound, 2), GetArgument(bound, 3), context, span));
         }

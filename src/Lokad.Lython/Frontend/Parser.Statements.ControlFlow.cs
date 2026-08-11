@@ -103,7 +103,7 @@ internal sealed partial class Parser
                 return false;
             }
 
-            typeName = IdentifierText(typeToken);
+            var qualifiedName = new StringBuilder(IdentifierText(typeToken));
             while (CurrentToken == Token.Dot)
             {
                 ReadToken();
@@ -113,9 +113,10 @@ internal sealed partial class Parser
                     return false;
                 }
 
-                // Runtime exception identities are class names; qualifiers only participate in parsing.
-                typeName = IdentifierText(partToken);
+                qualifiedName.Append('.').Append(IdentifierText(partToken));
             }
+
+            typeName = qualifiedName.ToString();
 
             return true;
         }

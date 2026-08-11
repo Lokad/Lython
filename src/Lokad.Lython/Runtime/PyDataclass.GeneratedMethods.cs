@@ -306,7 +306,7 @@ internal static partial class PyDataclass
         {
             _ = context;
             _ = arguments;
-            throw new LythonRuntimeException("FrozenInstanceError", $"cannot assign to field of frozen dataclass '{typeName}'.", span);
+            throw new LythonRuntimeException(LythonRuntime.ModuleException("dataclasses", "FrozenInstanceError"), $"cannot assign to field of frozen dataclass '{typeName}'.", span);
         }
     }
 
@@ -321,7 +321,7 @@ internal static partial class PyDataclass
         {
             _ = context;
             _ = arguments;
-            throw new LythonRuntimeException("FrozenInstanceError", $"cannot delete field of frozen dataclass '{typeName}'.", span);
+            throw new LythonRuntimeException(LythonRuntime.ModuleException("dataclasses", "FrozenInstanceError"), $"cannot delete field of frozen dataclass '{typeName}'.", span);
         }
     }
 }

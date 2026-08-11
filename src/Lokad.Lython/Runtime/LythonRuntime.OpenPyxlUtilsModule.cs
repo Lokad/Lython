@@ -451,13 +451,13 @@ internal sealed partial class LythonRuntime
         private OpenPyxlUtilsExceptionsModule()
             : base("openpyxl.utils.exceptions", new Dictionary<string, object>
             {
-                ["CellCoordinatesException"] = new ExceptionTypeValue("CellCoordinatesException"),
-                ["IllegalCharacterError"] = new ExceptionTypeValue("IllegalCharacterError"),
-                ["InvalidFileException"] = new ExceptionTypeValue("InvalidFileException"),
-                ["NamedRangeException"] = new ExceptionTypeValue("NamedRangeException"),
-                ["ReadOnlyWorkbookException"] = new ExceptionTypeValue("ReadOnlyWorkbookException"),
-                ["SheetTitleException"] = new ExceptionTypeValue("SheetTitleException"),
-                ["WorkbookAlreadySaved"] = new ExceptionTypeValue("WorkbookAlreadySaved"),
+                ["CellCoordinatesException"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "CellCoordinatesException")),
+                ["IllegalCharacterError"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "IllegalCharacterError")),
+                ["InvalidFileException"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "InvalidFileException")),
+                ["NamedRangeException"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "NamedRangeException")),
+                ["ReadOnlyWorkbookException"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "ReadOnlyWorkbookException")),
+                ["SheetTitleException"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "SheetTitleException")),
+                ["WorkbookAlreadySaved"] = new ExceptionTypeValue(ModuleException("openpyxl.utils.exceptions", "WorkbookAlreadySaved")),
             })
         {
         }

@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
             return context.Services.CurrentException is { } exception
                 ? new PyTuple(
                     [
-                        new ExceptionTypeValue(exception.TypeName),
+                        new ExceptionTypeValue(exception.Identity),
                         exception,
                         PyNone.Instance
                     ],
@@ -354,7 +354,7 @@ internal sealed partial class LythonRuntime
 
             if (name == "FrozenInstanceError")
             {
-                value = new ExceptionTypeValue("FrozenInstanceError");
+                value = new ExceptionTypeValue(ModuleException("dataclasses", "FrozenInstanceError"));
                 return true;
             }
 

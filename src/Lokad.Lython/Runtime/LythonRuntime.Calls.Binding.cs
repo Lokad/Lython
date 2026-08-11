@@ -215,20 +215,28 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IEquatable<ExceptionTypeValue>
+    private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
         public ExceptionTypeValue(string typeName)
+            : this(PythonExceptionIdentity.Builtin(typeName))
         {
-            TypeName = typeName;
         }
 
-        public string TypeName { get; }
+        public ExceptionTypeValue(PythonExceptionIdentity identity)
+        {
+            ExceptionIdentity = identity;
+        }
+
+        public PythonExceptionIdentity ExceptionIdentity { get; }
+
+        public string TypeName => ExceptionIdentity.TypeName;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "__name__" => PyString.FromString(TypeName),
+                "__module__" => PyString.FromString(ExceptionIdentity.ModuleName),
                 "type" => PyString.FromString(TypeName),
                 _ => MissingMemberValue.Instance
             };
@@ -238,17 +246,17 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("<class '" + TypeName + "'>");
+            return PyString.FromString("<class '" + ExceptionIdentity.QualifiedName + "'>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public bool Equals(ExceptionTypeValue? other)
-            => other is not null && string.Equals(TypeName, other.TypeName, StringComparison.Ordinal);
+            => other is not null && ExceptionIdentity == other.ExceptionIdentity;
 
         public override bool Equals(object? obj) => obj is ExceptionTypeValue other && Equals(other);
 
-        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(TypeName);
+        public override int GetHashCode() => ExceptionIdentity.GetHashCode();
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -269,7 +277,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var value = arguments.Length == 0 ? PyNone.Instance : arguments[0].Value;
-                return new PyException(TypeName, FormatSystemExitMessage(value), value);
+                return new PyException(ExceptionIdentity, FormatSystemExitMessage(value), value);
             }
 
             var values = arguments.Select(argument => argument.Value).ToArray();
@@ -281,7 +289,7 @@ internal sealed partial class LythonRuntime
                 _ => PyRendering.ToReprPyString(args, new PyRenderingContext(context)).AsString(),
             };
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            return new PyException(TypeName, message, payload, args);
+            return new PyException(ExceptionIdentity, message, payload, args);
         }
     }
 

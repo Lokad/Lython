@@ -499,7 +499,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("(?P<word>a)(?P<opt>b)?|True|2|1:2|A:2:5|2:-1:(-1, -1)|('A', '-')|A:-|<A->|1:word|True:zzA zzab|ab|['a']|done|a|['a']|a x a|ab z:1|['', 'a', None, 'ay']|error:error|pattern:error", host.ReadText("/out.txt"));
+        Assert.Equal("(?P<word>a)(?P<opt>b)?|True|2|1:2|A:2:5|2:-1:(-1, -1)|('A', '-')|A:-|<A->|1:word|True:zzA zzab|ab|['a']|done|a|['a']|a x a|ab z:1|['', 'a', None, 'ay']|error:PatternError|pattern:PatternError", host.ReadText("/out.txt"));
     }
 
     [Fact]

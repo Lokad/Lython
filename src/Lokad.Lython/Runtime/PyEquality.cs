@@ -28,6 +28,11 @@ internal static class PyEquality
             return true;
         }
 
+        if (left is IPythonExceptionType leftExceptionType && right is IPythonExceptionType rightExceptionType)
+        {
+            return leftExceptionType.ExceptionIdentity == rightExceptionType.ExceptionIdentity;
+        }
+
         if (left is LythonRuntime.OpenPyxlColor leftColor && right is LythonRuntime.OpenPyxlColor rightColor)
         {
             return leftColor.Equals(rightColor);

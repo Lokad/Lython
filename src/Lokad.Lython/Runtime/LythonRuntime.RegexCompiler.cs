@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
             }
             catch (PythonRePatternException ex)
             {
-                throw new LythonRuntimeException("error", ex.Message, span);
+                throw new LythonRuntimeException(ModuleException("re", "PatternError"), ex.Message, span);
             }
         }
 

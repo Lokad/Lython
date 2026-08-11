@@ -2,9 +2,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class LythonRuntimeException : Exception
 {
-    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span) : this(exceptionType, message, span, null, null) { }
+    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span)
+        : this(PythonExceptionIdentity.FromRuntimeTypeName(exceptionType), message, span, null, null) { }
 
-    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span, Exception? innerException) : this(exceptionType, message, span, innerException, null) { }
+    public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span, Exception? innerException)
+        : this(PythonExceptionIdentity.FromRuntimeTypeName(exceptionType), message, span, innerException, null) { }
 
     public LythonRuntimeException(
         string exceptionType,
@@ -12,14 +14,26 @@ internal sealed class LythonRuntimeException : Exception
         LythonSourceSpan? span,
         Exception? innerException,
         object? payload)
+        : this(PythonExceptionIdentity.FromRuntimeTypeName(exceptionType), message, span, innerException, payload)
+    {
+    }
+
+    public LythonRuntimeException(
+        PythonExceptionIdentity identity,
+        string message,
+        LythonSourceSpan? span,
+        Exception? innerException = null,
+        object? payload = null)
         : base(message, innerException)
     {
-        ExceptionType = exceptionType;
+        Identity = identity;
         Span = span;
         Payload = payload;
     }
 
-    public string ExceptionType { get; }
+    public PythonExceptionIdentity Identity { get; }
+
+    public string ExceptionType => Identity.TypeName;
 
     public LythonSourceSpan? Span { get; }
 

@@ -240,7 +240,7 @@ internal sealed partial class LythonRuntime
         catch (LythonRuntimeException ex)
         {
             if (statement.ExceptBody is not null &&
-                (statement.Syntax.ExceptionTypeNames is null || statement.Syntax.ExceptionTypeNames.Any(name => MatchesExceptionTypeName(name, ex.ExceptionType))))
+                MatchesCaughtException(statement.Syntax.ExceptionTypeNames, ex, context, statement.Span))
             {
                 var exceptContext = new ExecutionContext(context);
                 var pyException = CreatePythonExceptionInstance(ex);
@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.RaiseExpectsException(span);
         }
 
-        throw new LythonRuntimeException(instance.TypeName, instance.Message, span, innerException: null, payload: instance.Value);
+        throw new LythonRuntimeException(instance.Identity, instance.Message, span, payload: instance.Value);
     }
 
     private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)

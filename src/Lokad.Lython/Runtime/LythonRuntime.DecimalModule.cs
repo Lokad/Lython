@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                 "ROUND_DOWN" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundDown),
                 "ROUND_UP" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundUp),
                 "ROUND_05UP" => Runtime.Text.PyString.FromString(PyDecimalContext.Round05Up),
-                _ when DecimalExceptionNames.Contains(name, StringComparer.Ordinal) => new ExceptionTypeValue(name),
+                _ when DecimalExceptionNames.Contains(name, StringComparer.Ordinal) => new ExceptionTypeValue(ModuleException("decimal", name)),
                 _ => MissingMemberValue.Instance,
             };
 

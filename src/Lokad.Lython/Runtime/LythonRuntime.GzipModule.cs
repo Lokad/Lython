@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                 "open" => GzipOpenCallable.Instance,
                 "compress" => GzipCompressCallable.Instance,
                 "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.GzipDecompress, Decompress),
-                "BadGzipFile" => new ExceptionTypeValue("BadGzipFile"),
+                "BadGzipFile" => new ExceptionTypeValue(ModuleException("gzip", "BadGzipFile")),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -718,5 +718,5 @@ internal sealed partial class LythonRuntime
         => BadGzip(message, span, null);
 
     private static LythonRuntimeException BadGzip(string message, LythonSourceSpan span, Exception? inner)
-        => new("BadGzipFile", message, span, inner);
+        => new(ModuleException("gzip", "BadGzipFile"), message, span, inner);
 }

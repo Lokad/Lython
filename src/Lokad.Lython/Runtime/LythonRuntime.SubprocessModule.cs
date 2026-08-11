@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 "check_output" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCheckOutput, CheckOutput, CheckOutputAsync),
                 "CompletedProcess" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessCompletedProcess, CompletedProcess),
                 "CalledProcessError" => SubprocessCalledProcessErrorType.Instance,
-                "SubprocessError" => new ExceptionTypeValue("SubprocessError"),
+                "SubprocessError" => new ExceptionTypeValue(ModuleException("subprocess", "SubprocessError")),
                 "TimeoutExpired" => SubprocessTimeoutExpiredType.Instance,
                 "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessPopen, Popen),
                 "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline),
@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var payload = CreateCalledProcessErrorPayload(returnCode, command, output, stderr, context, span);
-        return new LythonRuntimeException("CalledProcessError", message, span, innerException: null, payload: payload);
+        return new LythonRuntimeException(ModuleException("subprocess", "CalledProcessError"), message, span, payload: payload);
     }
 
     private static PyDict CreateCalledProcessErrorPayload(

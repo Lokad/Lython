@@ -313,7 +313,7 @@ internal sealed partial class LythonRuntime
                     var end = text.IndexOf('>', i + 2);
                     if (end < 0)
                     {
-                        throw new LythonRuntimeException("error", "missing > in regex replacement group reference.", span);
+                        throw new LythonRuntimeException(ModuleException("re", "PatternError"), "missing > in regex replacement group reference.", span);
                     }
 
                     AppendExpandedGroup(match, text[(i + 2)..end], builder, span);
@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
 
             if (!TryResolveGroupIndex(match, group, span, out var groupIndex))
             {
-                throw new LythonRuntimeException("error", "invalid regex replacement group reference.", span);
+                throw new LythonRuntimeException(ModuleException("re", "PatternError"), "invalid regex replacement group reference.", span);
             }
 
             var value = ResolveIndexedGroup(match, groupIndex, span, PyString.Empty);

@@ -1,13 +1,20 @@
 namespace Lokad.Lython.Runtime;
 
 internal sealed record PyException(
-    string TypeName,
+    PythonExceptionIdentity Identity,
     string Message,
     object Value,
     PyTuple? ExplicitArgs)
 {
-    public PyException(string TypeName, string Message, object Value)
-        : this(TypeName, Message, Value, null)
+    public PyException(PythonExceptionIdentity identity, string message, object value)
+        : this(identity, message, value, null)
     {
     }
+
+    public PyException(string typeName, string message, object value)
+        : this(PythonExceptionIdentity.FromRuntimeTypeName(typeName), message, value, null)
+    {
+    }
+
+    public string TypeName => Identity.TypeName;
 }

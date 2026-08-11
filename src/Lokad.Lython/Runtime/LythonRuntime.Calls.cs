@@ -107,61 +107,95 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static readonly IReadOnlyDictionary<string, string[]> ExceptionBaseNames =
-        new Dictionary<string, string[]>(StringComparer.Ordinal)
+    private static readonly IReadOnlyDictionary<PythonExceptionIdentity, PythonExceptionIdentity[]> ExceptionBaseIdentities =
+        new Dictionary<PythonExceptionIdentity, PythonExceptionIdentity[]>
         {
-            ["Exception"] = ["BaseException"],
-            ["SystemExit"] = ["BaseException"],
-            ["ArithmeticError"] = ["Exception"],
-            ["AssertionError"] = ["Exception"],
-            ["AttributeError"] = ["Exception"],
-            ["ImportError"] = ["Exception"],
-            ["LookupError"] = ["Exception"],
-            ["MemoryError"] = ["Exception"],
-            ["NameError"] = ["Exception"],
-            ["OSError"] = ["Exception", "IOError", "EnvironmentError"],
-            ["RuntimeError"] = ["Exception"],
-            ["StopIteration"] = ["Exception"],
-            ["SyntaxError"] = ["Exception"],
-            ["TypeError"] = ["Exception"],
-            ["ValueError"] = ["Exception"],
-            ["Warning"] = ["Exception"],
-            ["ZeroDivisionError"] = ["ArithmeticError"],
-            ["OverflowError"] = ["ArithmeticError"],
-            ["KeyError"] = ["LookupError"],
-            ["IndexError"] = ["LookupError"],
-            ["ModuleNotFoundError"] = ["ImportError"],
-            ["FileNotFoundError"] = ["OSError"],
-            ["FileExistsError"] = ["OSError"],
-            ["IsADirectoryError"] = ["OSError"],
-            ["NotADirectoryError"] = ["OSError"],
-            ["PermissionError"] = ["OSError"],
-            ["TimeoutError"] = ["OSError"],
-            ["IOError"] = ["OSError", "EnvironmentError"],
-            ["EnvironmentError"] = ["OSError", "IOError"],
-            ["NotImplementedError"] = ["RuntimeError"],
-            ["RecursionError"] = ["RuntimeError"],
-            ["UnicodeError"] = ["ValueError"],
-            ["UnicodeEncodeError"] = ["UnicodeError"],
-            ["UnicodeDecodeError"] = ["UnicodeError"],
-            ["UnicodeTranslateError"] = ["UnicodeError"],
-            ["JSONDecodeError"] = ["ValueError"],
-            ["BadGzipFile"] = ["OSError"],
-            ["SubprocessError"] = ["Exception"],
-            ["CalledProcessError"] = ["SubprocessError"],
-            ["TimeoutExpired"] = ["SubprocessError"],
+            [BuiltinException("Exception")] = [BuiltinException("BaseException")],
+            [BuiltinException("SystemExit")] = [BuiltinException("BaseException")],
+            [BuiltinException("ArithmeticError")] = [BuiltinException("Exception")],
+            [BuiltinException("AssertionError")] = [BuiltinException("Exception")],
+            [BuiltinException("AttributeError")] = [BuiltinException("Exception")],
+            [BuiltinException("ImportError")] = [BuiltinException("Exception")],
+            [BuiltinException("LookupError")] = [BuiltinException("Exception")],
+            [BuiltinException("MemoryError")] = [BuiltinException("Exception")],
+            [BuiltinException("NameError")] = [BuiltinException("Exception")],
+            [BuiltinException("OSError")] = [BuiltinException("Exception")],
+            [BuiltinException("RuntimeError")] = [BuiltinException("Exception")],
+            [BuiltinException("StopIteration")] = [BuiltinException("Exception")],
+            [BuiltinException("SyntaxError")] = [BuiltinException("Exception")],
+            [BuiltinException("TypeError")] = [BuiltinException("Exception")],
+            [BuiltinException("ValueError")] = [BuiltinException("Exception")],
+            [BuiltinException("Warning")] = [BuiltinException("Exception")],
+            [BuiltinException("ZeroDivisionError")] = [BuiltinException("ArithmeticError")],
+            [BuiltinException("OverflowError")] = [BuiltinException("ArithmeticError")],
+            [BuiltinException("KeyError")] = [BuiltinException("LookupError")],
+            [BuiltinException("IndexError")] = [BuiltinException("LookupError")],
+            [BuiltinException("ModuleNotFoundError")] = [BuiltinException("ImportError")],
+            [BuiltinException("FileNotFoundError")] = [BuiltinException("OSError")],
+            [BuiltinException("FileExistsError")] = [BuiltinException("OSError")],
+            [BuiltinException("IsADirectoryError")] = [BuiltinException("OSError")],
+            [BuiltinException("NotADirectoryError")] = [BuiltinException("OSError")],
+            [BuiltinException("PermissionError")] = [BuiltinException("OSError")],
+            [BuiltinException("TimeoutError")] = [BuiltinException("OSError")],
+            [BuiltinException("IOError")] = [BuiltinException("OSError")],
+            [BuiltinException("EnvironmentError")] = [BuiltinException("OSError")],
+            [BuiltinException("NotImplementedError")] = [BuiltinException("RuntimeError")],
+            [BuiltinException("RecursionError")] = [BuiltinException("RuntimeError")],
+            [BuiltinException("UnicodeError")] = [BuiltinException("ValueError")],
+            [BuiltinException("UnicodeEncodeError")] = [BuiltinException("UnicodeError")],
+            [BuiltinException("UnicodeDecodeError")] = [BuiltinException("UnicodeError")],
+            [BuiltinException("UnicodeTranslateError")] = [BuiltinException("UnicodeError")],
+            [ModuleException("argparse", "ArgumentError")] = [BuiltinException("Exception")],
+            [ModuleException("argparse", "ArgumentTypeError")] = [BuiltinException("Exception")],
+            [ModuleException("copy", "Error")] = [BuiltinException("Exception")],
+            [ModuleException("csv", "Error")] = [BuiltinException("Exception")],
+            [ModuleException("dataclasses", "FrozenInstanceError")] = [BuiltinException("AttributeError")],
+            [ModuleException("decimal", "DecimalException")] = [BuiltinException("ArithmeticError")],
+            [ModuleException("decimal", "InvalidOperation")] = [ModuleException("decimal", "DecimalException")],
+            [ModuleException("decimal", "DivisionByZero")] = [ModuleException("decimal", "DecimalException"), BuiltinException("ZeroDivisionError")],
+            [ModuleException("decimal", "Inexact")] = [ModuleException("decimal", "DecimalException")],
+            [ModuleException("decimal", "Rounded")] = [ModuleException("decimal", "DecimalException")],
+            [ModuleException("decimal", "Overflow")] = [ModuleException("decimal", "Inexact"), ModuleException("decimal", "Rounded")],
+            [ModuleException("decimal", "Underflow")] = [ModuleException("decimal", "Inexact"), ModuleException("decimal", "Rounded"), ModuleException("decimal", "Subnormal")],
+            [ModuleException("decimal", "Subnormal")] = [ModuleException("decimal", "DecimalException")],
+            [ModuleException("decimal", "Clamped")] = [ModuleException("decimal", "DecimalException")],
+            [ModuleException("decimal", "FloatOperation")] = [ModuleException("decimal", "DecimalException"), BuiltinException("TypeError")],
+            [ModuleException("gzip", "BadGzipFile")] = [BuiltinException("OSError")],
+            [ModuleException("json", "JSONDecodeError")] = [BuiltinException("ValueError")],
+            [ModuleException("openpyxl.utils.exceptions", "CellCoordinatesException")] = [BuiltinException("ValueError")],
+            [ModuleException("openpyxl.utils.exceptions", "IllegalCharacterError")] = [BuiltinException("ValueError")],
+            [ModuleException("openpyxl.utils.exceptions", "InvalidFileException")] = [BuiltinException("Exception")],
+            [ModuleException("openpyxl.utils.exceptions", "NamedRangeException")] = [BuiltinException("Exception")],
+            [ModuleException("openpyxl.utils.exceptions", "ReadOnlyWorkbookException")] = [BuiltinException("Exception")],
+            [ModuleException("openpyxl.utils.exceptions", "SheetTitleException")] = [BuiltinException("Exception")],
+            [ModuleException("openpyxl.utils.exceptions", "WorkbookAlreadySaved")] = [BuiltinException("Exception")],
+            [ModuleException("re", "PatternError")] = [BuiltinException("Exception")],
+            [ModuleException("shutil", "Error")] = [BuiltinException("OSError")],
+            [ModuleException("shutil", "SameFileError")] = [ModuleException("shutil", "Error")],
+            [ModuleException("statistics", "StatisticsError")] = [BuiltinException("ValueError")],
+            [ModuleException("subprocess", "SubprocessError")] = [BuiltinException("Exception")],
+            [ModuleException("subprocess", "CalledProcessError")] = [ModuleException("subprocess", "SubprocessError")],
+            [ModuleException("subprocess", "TimeoutExpired")] = [ModuleException("subprocess", "SubprocessError")],
         };
 
-    private static bool MatchesExceptionTypeName(string caughtTypeName, string thrownTypeName)
-        => string.Equals(caughtTypeName, thrownTypeName, StringComparison.Ordinal) ||
-           IsExceptionSubtype(thrownTypeName, caughtTypeName) ||
-           (IsRegexPatternErrorName(caughtTypeName) && IsRegexPatternErrorName(thrownTypeName));
+    private static PythonExceptionIdentity BuiltinException(string typeName)
+        => PythonExceptionIdentity.Builtin(typeName);
 
-    private static bool IsExceptionSubtype(string thrownTypeName, string caughtTypeName)
+    internal static PythonExceptionIdentity ModuleException(string moduleName, string typeName)
+        => PythonExceptionIdentity.Module(moduleName, typeName);
+
+    private static bool MatchesExceptionType(
+        PythonExceptionIdentity caughtIdentity,
+        PythonExceptionIdentity thrownIdentity)
+        => caughtIdentity == thrownIdentity || IsExceptionSubtype(thrownIdentity, caughtIdentity);
+
+    private static bool IsExceptionSubtype(
+        PythonExceptionIdentity thrownIdentity,
+        PythonExceptionIdentity caughtIdentity)
     {
-        var pending = new Stack<string>();
-        pending.Push(thrownTypeName);
-        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var pending = new Stack<PythonExceptionIdentity>();
+        pending.Push(thrownIdentity);
+        var seen = new HashSet<PythonExceptionIdentity>();
         while (pending.Count > 0)
         {
             var current = pending.Pop();
@@ -170,14 +204,14 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!ExceptionBaseNames.TryGetValue(current, out var bases))
+            if (!ExceptionBaseIdentities.TryGetValue(current, out var bases))
             {
                 continue;
             }
 
             foreach (var baseName in bases)
             {
-                if (string.Equals(baseName, caughtTypeName, StringComparison.Ordinal))
+                if (baseName == caughtIdentity)
                 {
                     return true;
                 }
@@ -188,10 +222,6 @@ internal sealed partial class LythonRuntime
 
         return false;
     }
-
-    private static bool IsRegexPatternErrorName(string typeName)
-        => string.Equals(typeName, "error", StringComparison.Ordinal) ||
-           string.Equals(typeName, "PatternError", StringComparison.Ordinal);
 
     private static object InvokeCallableTarget(
         object target,

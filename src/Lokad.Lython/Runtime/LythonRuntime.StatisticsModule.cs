@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "StatisticsError" => new ExceptionTypeValue("StatisticsError"),
+                "StatisticsError" => new ExceptionTypeValue(ModuleException("statistics", "StatisticsError")),
                 "mean" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsMean, Mean),
                 "fmean" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsFMean, FMean),
                 "median" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsMedian, Median),

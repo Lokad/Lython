@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
         private LythonRuntimeException CreateParseFailure(string message, LythonSourceSpan span)
             => _options.ExitOnError
                 ? CreateSystemExit(message, span, status: 2)
-                : new LythonRuntimeException("ArgumentError", message, span);
+                : new LythonRuntimeException(ModuleException("argparse", "ArgumentError"), message, span);
         private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, BigInteger status)
             => new("SystemExit", message, span, innerException: null, payload: status);
         private static LythonRuntimeException CreateSystemExit(string message, LythonSourceSpan span, int status)

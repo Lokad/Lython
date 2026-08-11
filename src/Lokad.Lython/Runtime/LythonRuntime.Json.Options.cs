@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
-            return new LythonRuntimeException("JSONDecodeError", exception.Message, span, exception, payload);
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), exception.Message, span, exception, payload);
         }
 
         private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
