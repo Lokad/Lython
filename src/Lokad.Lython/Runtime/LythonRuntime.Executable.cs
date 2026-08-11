@@ -7,25 +7,27 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Python None is represented by PyNone; this sentinel is the only non-value
+    // stored in executable local slots and keeps the slot arrays non-nullable.
     private static readonly object UninitializedLocal = new();
 
     internal sealed class ExecutableCell
     {
-        public ExecutableCell(object? value) => Value = value;
+        public ExecutableCell(object value) => Value = value;
 
-        public object? Value { get; set; }
+        public object Value { get; set; }
     }
 
     internal sealed class ExecutableFrameState
     {
         private readonly ExecutableCodeObject _codeObject;
-        private readonly object?[] _locals;
+        private readonly object[] _locals;
         private readonly ExecutableCell?[]? _localCells;
         private readonly IReadOnlyList<ExecutableCell>? _closureCells;
 
         public ExecutableFrameState(
             ExecutableCodeObject codeObject,
-            object?[] locals,
+            object[] locals,
             ExecutableCell?[]? localCells,
             IReadOnlyList<ExecutableCell>? closureCells)
         {
@@ -42,7 +44,7 @@ internal sealed partial class LythonRuntime
                 var local = _locals[localSlot];
                 if (!ReferenceEquals(local, UninitializedLocal))
                 {
-                    value = local.RequireNotNull();
+                    value = local;
                     return true;
                 }
             }
@@ -52,7 +54,7 @@ internal sealed partial class LythonRuntime
                 var closure = _closureCells[closureSlot].Value;
                 if (!ReferenceEquals(closure, UninitializedLocal))
                 {
-                    value = closure.RequireNotNull();
+                    value = closure;
                     return true;
                 }
             }
@@ -68,7 +70,7 @@ internal sealed partial class LythonRuntime
                 var value = _locals[pair.Value];
                 if (!ReferenceEquals(value, UninitializedLocal))
                 {
-                    yield return new KeyValuePair<string, object>(pair.Key, value.RequireNotNull());
+                    yield return new KeyValuePair<string, object>(pair.Key, value);
                 }
             }
         }
@@ -266,7 +268,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(null);
         try
         {
-            var locals = new object?[codeObject.LocalNames.Count];
+            var locals = new object[codeObject.LocalNames.Count];
             Array.Fill(locals, UninitializedLocal);
             var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
             ExecutableCell?[]? localCells = null;

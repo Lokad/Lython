@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     private sealed class ExecutableFrameInterpreter(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells)
     {
         private readonly ExecutableValueStack _stack = new(Math.Max(8, codeObject.LocalNames.Count));

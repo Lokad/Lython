@@ -7,7 +7,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object LoadLocal(ExecutableCodeObject codeObject, object?[] locals, int slot, LythonSourceSpan span)
+    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span)
     {
         var value = locals[slot];
         if (ReferenceEquals(value, UninitializedLocal))
@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
         }
 
-        return value.RequireNotNull();
+        return value;
     }
 
     private static object LoadClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, LythonSourceSpan span)
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
-        return cell.Value.RequireNotNull();
+        return cell.Value;
     }
 
     private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
         ExecutableMatchCaseBinding matchCase,
         object subject,
         ExecutionContext context,
-        object?[] locals,
+        object[] locals,
         IReadOnlyList<ExecutableCell?>? localCells)
     {
         var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
     private static void ExecuteExecutableImport(
         ExecutableCodeObject codeObject,
         ExecutableImportBinding importBinding,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
     private static void ExecuteExecutableFunctionDefinition(
         ExecutableCodeObject codeObject,
         ExecutableFunctionBinding functionBinding,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
@@ -411,7 +411,7 @@ internal sealed partial class LythonRuntime
 
     private static void SyncExecutableLocalsFromContext(
         ExecutableCodeObject codeObject,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
@@ -438,7 +438,7 @@ internal sealed partial class LythonRuntime
 
     private static void SyncExecutableLocalFromValue(
         ExecutableCodeObject codeObject,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells,
         string name,
         object value)
@@ -457,7 +457,7 @@ internal sealed partial class LythonRuntime
 
     private static void AssignExecutableBoundName(
         ExecutableCodeObject codeObject,
-        object?[] locals,
+        object[] locals,
         ExecutableCell?[]? localCells,
         string name,
         object value,
