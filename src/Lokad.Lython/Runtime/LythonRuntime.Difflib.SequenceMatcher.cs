@@ -24,6 +24,7 @@ internal sealed partial class LythonRuntime
         private const long BlocksBaseBytes = 64;
         private const long BlockBytesPerEntry = 32;
         private const long ScratchBytesPerEntry = 64;
+        private const long ViewListBaseBytes = 32;
 
         private readonly object? _isjunk;
         private readonly bool _autojunk;
@@ -41,6 +42,12 @@ internal sealed partial class LythonRuntime
         private long _aCharge;
         private long _bCharge;
         private long _chainCharge;
+        private PyDict? _b2jView;
+        private long _b2jViewCharge;
+        private PySet? _bjunkView;
+        private long _bjunkViewCharge;
+        private PySet? _bpopularView;
+        private long _bpopularViewCharge;
         private long _fullBCountCharge;
         private long _matchingBlocksCharge;
         private long _opcodesCharge;
@@ -66,9 +73,9 @@ internal sealed partial class LythonRuntime
             {
                 "a" => _aOriginal,
                 "b" => _bOriginal,
-                "b2j" => CreateB2JDictionary(),
-                "bjunk" => new PySet(_bjunk),
-                "bpopular" => new PySet(_bpopular),
+                "b2j" => GetB2JView(),
+                "bjunk" => GetBjunkView(),
+                "bpopular" => GetBpopularView(),
                 "set_seqs" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -499,6 +506,7 @@ internal sealed partial class LythonRuntime
             _governor.Reserve(chainCharge, span);
             _governor.Commit(chainCharge);
             _governor.Release(_chainCharge);
+            ReleaseViews();
             _b2j = b2j;
             _bjunk = bjunk;
             _bpopular = bpopular;
@@ -533,15 +541,76 @@ internal sealed partial class LythonRuntime
             return counts;
         }
 
-        private PyDict CreateB2JDictionary()
+        private void ReleaseViews()
         {
+            _governor.Release(_b2jViewCharge);
+            _b2jViewCharge = 0;
+            _b2jView = null;
+            _governor.Release(_bjunkViewCharge);
+            _bjunkViewCharge = 0;
+            _bjunkView = null;
+            _governor.Release(_bpopularViewCharge);
+            _bpopularViewCharge = 0;
+            _bpopularView = null;
+        }
+
+        // R03: exposed chain state is a cached snapshot, so repeated access
+        // observes identical objects until set_seq2 rebuilds the chain. Charges
+        // cover the retained view storage; user mutation of a view does not
+        // feed back into matching. Spans are unavailable at member access, so
+        // view charges carry no allocation site.
+        private PyDict GetB2JView()
+        {
+            if (_b2jView is not null)
+            {
+                return _b2jView;
+            }
+
             var dict = new PyDict();
+            var charge = ChainBaseBytes;
             foreach (var pair in _b2j)
             {
                 dict.SetItem(pair.Key, new PyList(pair.Value.Select(index => (object)new BigInteger(index))));
+                charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * pair.Value.Count));
             }
 
+            _governor.Reserve(charge, null);
+            _governor.Commit(charge);
+            _b2jViewCharge = charge;
+            _b2jView = dict;
             return dict;
+        }
+
+        private PySet GetBjunkView()
+        {
+            if (_bjunkView is not null)
+            {
+                return _bjunkView;
+            }
+
+            var view = new PySet(_bjunk);
+            var charge = checked(SetBaseBytes + (SetBytesPerItem * _bjunk.Count));
+            _governor.Reserve(charge, null);
+            _governor.Commit(charge);
+            _bjunkViewCharge = charge;
+            _bjunkView = view;
+            return view;
+        }
+
+        private PySet GetBpopularView()
+        {
+            if (_bpopularView is not null)
+            {
+                return _bpopularView;
+            }
+
+            var view = new PySet(_bpopular);
+            var charge = checked(SetBaseBytes + (SetBytesPerItem * _bpopular.Count));
+            _governor.Reserve(charge, null);
+            _governor.Commit(charge);
+            _bpopularViewCharge = charge;
+            _bpopularView = view;
+            return view;
         }
 
         private List<MatchingBlock> GetMatchingBlocks(LythonSourceSpan span, ExecutionContext context)
@@ -639,22 +708,25 @@ internal sealed partial class LythonRuntime
 
         private MatchingBlock FindLongestMatch(MatchRange range, LythonSourceSpan span, ExecutionContext context)
         {
-            // Row scratch is transient: only the peak row is reserved, and the
-            // reservation releases when the call returns.
+            // Row scratch reuses two maps instead of allocating one per row.
+            // Previous and current coexist, so the reservation always covers
+            // both live maps plus the next insertion before either grows.
             using var reservation = _governor.ReserveTemporary(0, span);
             var bestA = range.ALo;
             var bestB = range.BLo;
             var bestSize = 0;
             var previousLengths = new Dictionary<int, int>();
-            var maxRow = 0;
+            var currentLengths = new Dictionary<int, int>();
+            var coveredEntries = 0;
             var work = 0;
 
             for (var i = range.ALo; i < range.AHi; i++)
             {
-                var newLengths = new Dictionary<int, int>();
+                currentLengths.Clear();
                 if (!_b2j.TryGetValue(_a[i], out var indexes))
                 {
-                    previousLengths = newLengths;
+                    // No match: the cleared map becomes the empty previous row.
+                    (previousLengths, currentLengths) = (currentLengths, previousLengths);
                 }
                 else
                 {
@@ -670,8 +742,15 @@ internal sealed partial class LythonRuntime
                             break;
                         }
 
+                        var need = previousLengths.Count + currentLengths.Count + 1;
+                        if (need > coveredEntries)
+                        {
+                            reservation.Grow(ScratchBytesPerEntry * (need - coveredEntries), span);
+                            coveredEntries = need;
+                        }
+
                         var length = previousLengths.TryGetValue(j - 1, out var previous) ? previous + 1 : 1;
-                        newLengths[j] = length;
+                        currentLengths[j] = length;
                         if (length > bestSize)
                         {
                             bestA = i - length + 1;
@@ -684,20 +763,14 @@ internal sealed partial class LythonRuntime
                             context.CheckExecutionBudget(span);
                         }
                     }
-                }
 
-                if (newLengths.Count > maxRow)
-                {
-                    reservation.Grow(ScratchBytesPerEntry * (newLengths.Count - maxRow), span);
-                    maxRow = newLengths.Count;
+                    (previousLengths, currentLengths) = (currentLengths, previousLengths);
                 }
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
                     context.CheckExecutionBudget(span);
                 }
-
-                previousLengths = newLengths;
             }
 
             while (bestA > range.ALo &&
