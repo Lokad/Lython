@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
             var records = ParseCsvRecords(arguments[0], options, span, context);
             var fieldNames = arguments.Length > 1 && arguments[1] is not PyNone
-                ? ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span)
+                ? ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context)
                 : records.Rows.Count == 0
                     ? null
                     : ToFieldNameList((PyList)records.Rows[0], span);
@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text file handle and field names.", span);
             }
 
-            var fieldNames = ToCsvFieldNames(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span);
+            var fieldNames = ToCsvFieldNames(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span, context);
             var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var extrasAction = GetExtrasAction(arguments, 3, span);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
@@ -269,10 +269,10 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        private static PyString[] ToCsvFieldNames(object value, string message, LythonSourceSpan span)
+        private static PyString[] ToCsvFieldNames(object value, string message, LythonSourceSpan span, ExecutionContext context)
         {
             var names = new List<PyString>();
-            foreach (var item in ToSequence(value, span))
+            foreach (var item in ToSequence(value, span, context))
             {
                 if (!PyStringOps.TryAsString(item, out var name))
                 {
@@ -361,7 +361,7 @@ internal sealed partial class LythonRuntime
         {
             var parser = new CsvRecordParser(options, context, span);
             var physicalLineCount = 0;
-            foreach (var item in ToSequence(source, span))
+            foreach (var item in ToSequence(source, span, context))
             {
                 context.CheckExecutionBudget(span);
                 if (!PyStringOps.TryAsString(item, out var line))

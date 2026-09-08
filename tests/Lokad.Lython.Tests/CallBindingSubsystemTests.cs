@@ -200,4 +200,33 @@ f("a")
         var method = typeof(LythonRuntime).GetMethod("EvaluateLoweredExpression", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
         return method.Invoke(null, [expression, context]).RequireNotNull();
     }
+    [Fact]
+    public void DuplicateKeywordArgumentsAreRejected()
+    {
+        var result = new LythonEngine().Run(
+            """
+def f(x):
+    return x
+return f(x=1, x=2)
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Contains("multiple values", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void KeywordOnlyParametersRejectPositionalCalls()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+def f(*, x):
+    return x
+print(f(1))
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3148");
+    }
 }

@@ -29,10 +29,10 @@ internal sealed partial class LythonRuntime
                 return values.Average();
             }
 
-            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span);
+            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span, context);
             if (weights.Count != values.Count)
             {
-                throw new LythonRuntimeException("StatisticsError", "data and weights must be the same length", span);
+                throw StatisticsError("data and weights must be the same length", span);
             }
 
             var weightedSum = 0.0;
@@ -153,10 +153,10 @@ internal sealed partial class LythonRuntime
                 return data.Count / reciprocalTotal;
             }
 
-            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.harmonic_mean(..., weights=...)", span);
+            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.harmonic_mean(..., weights=...)", span, context);
             if (weights.Count != data.Count)
             {
-                throw new LythonRuntimeException("StatisticsError", "Number of weights does not match data size", span);
+                throw StatisticsError("Number of weights does not match data size", span);
             }
 
             var weightTotal = 0.0;
@@ -274,11 +274,10 @@ internal sealed partial class LythonRuntime
 
         private static object Covariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span);
+            var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span, context);
             if (x.Count < 2)
             {
-                throw new LythonRuntimeException("StatisticsError", "covariance requires at least two data points", span);
+                throw StatisticsError("covariance requires at least two data points", span);
             }
 
             var (xMean, yMean) = (x.Average(), y.Average());
@@ -293,17 +292,16 @@ internal sealed partial class LythonRuntime
 
         private static object Correlation(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.correlation", span);
+            var (x, y) = GetPairedNumericValues(arguments, "statistics.correlation", span, context);
             if (x.Count < 2)
             {
-                throw new LythonRuntimeException("StatisticsError", "correlation requires at least two data points", span);
+                throw StatisticsError("correlation requires at least two data points", span);
             }
 
             var sums = ComputeCenteredSums(x, y);
             if (sums.SumXX == 0.0 || sums.SumYY == 0.0)
             {
-                throw new LythonRuntimeException("StatisticsError", "at least one of the inputs is constant", span);
+                throw StatisticsError("at least one of the inputs is constant", span);
             }
 
             return sums.SumXY / Math.Sqrt(sums.SumXX * sums.SumYY);
@@ -311,16 +309,15 @@ internal sealed partial class LythonRuntime
 
         private static object LinearRegression(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length is < 2 or > 3)
             {
                 throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
             }
 
-            var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span);
+            var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span, context);
             if (x.Count < 2)
             {
-                throw new LythonRuntimeException("StatisticsError", "linear_regression requires at least two data points", span);
+                throw StatisticsError("linear_regression requires at least two data points", span);
             }
 
             var proportional = arguments.Length >= 3 && arguments[2] is not PyNone && IsTruthy(arguments[2]);
@@ -428,24 +425,24 @@ internal sealed partial class LythonRuntime
 
             if (!allowEmpty && values.Count == 0)
             {
-                throw new LythonRuntimeException("StatisticsError", $"{owner}(data) requires at least one data point.", span);
+                throw StatisticsError($"{owner}(data) requires at least one data point.", span);
             }
 
             return values;
         }
 
-        private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span)
+        private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two iterable arguments.", span);
             }
 
-            var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span);
-            var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span);
+            var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span, context);
+            var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span, context);
             if (x.Count != y.Count)
             {
-                throw new LythonRuntimeException("StatisticsError", $"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
+                throw StatisticsError($"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
             }
 
             return new PairedNumericValues(x, y);
@@ -524,21 +521,20 @@ internal sealed partial class LythonRuntime
 
         private static List<object> GetNumericObjects(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
             var values = new List<object>();
-            foreach (var value in ToSequence(arguments[0], span))
+            foreach (var value in ToSequence(arguments[0], span, context))
             {
                 values.Add(value);
             }
 
             if (values.Count == 0)
             {
-                throw new LythonRuntimeException("StatisticsError", $"{owner}(data) requires at least one data point.", span);
+                throw StatisticsError($"{owner}(data) requires at least one data point.", span);
             }
 
             foreach (var value in values)
@@ -558,23 +554,22 @@ internal sealed partial class LythonRuntime
 
             if (arguments.Length > 1)
             {
-                _ = context;
             }
 
-            return GetNumericValuesFromIterable(arguments[0], owner, span);
+            return GetNumericValuesFromIterable(arguments[0], owner, span, context);
         }
 
-        private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span)
+        private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             var values = new List<double>();
-            foreach (var value in ToSequence(data, span))
+            foreach (var value in ToSequence(data, span, context))
             {
                 values.Add(ExpectRealForStatistics(value, owner, span));
             }
 
             if (values.Count == 0)
             {
-                throw new LythonRuntimeException("StatisticsError", $"{owner} requires at least one data point.", span);
+                throw StatisticsError($"{owner} requires at least one data point.", span);
             }
 
             return values;

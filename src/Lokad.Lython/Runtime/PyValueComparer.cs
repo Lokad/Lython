@@ -23,7 +23,7 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
         return obj switch
         {
             _ when PyNumberOps.TryAsNumber(obj, out var numeric) => PyNumberOps.GetHashCode(numeric),
-            _ => throw new InvalidOperationException("unhashable value")
+            _ => throw new PyUnhashableException()
         };
     }
 }

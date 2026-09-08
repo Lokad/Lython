@@ -30,13 +30,12 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> AnyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
         }
 
-        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             if (IsTruthy(item))
             {
@@ -68,13 +67,12 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> AllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);
         }
 
-        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             if (!IsTruthy(item))
             {
@@ -112,7 +110,7 @@ internal sealed partial class LythonRuntime
 
         var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
         EnsureSummableValue(total, span);
-        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             EnsureSummableValue(item, span);
             total = EvaluateAdd(total, item, context, span);

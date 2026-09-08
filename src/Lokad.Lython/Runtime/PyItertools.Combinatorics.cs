@@ -106,12 +106,12 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     private readonly LythonSourceSpan? _allocationSpan;
     private bool _done;
 
-    public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan)
+    public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext context)
     {
         _iterators = new PyIteration.Cursor[iterables.Count];
         for (var i = 0; i < iterables.Count; i++)
         {
-            _iterators[i] = PyIteration.Cursor.Create(iterables[i], span);
+            _iterators[i] = PyIteration.Cursor.Create(iterables[i], span, context);
         }
 
         _fillValue = fillValue;
@@ -272,7 +272,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
     public PyCycleIterator(object source, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _memoryGovernor = memoryGovernor;
         _context = context;
         _span = span;

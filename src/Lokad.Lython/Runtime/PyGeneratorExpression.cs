@@ -43,7 +43,12 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public async ValueTask<List<object>> MaterializeAsync()
     {
+        // See PyIteration.MaterializeAsync: the temporary reservation covers
+        // growth here and the caller-owned final copy, and is released before
+        // ownership transfers without any allocation in between.
+        using var reservation = _closure.MemoryGovernor.ReserveTemporary(0, _span);
         var result = new List<object>();
+        var chargedCapacity = 0;
         while (true)
         {
             var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
@@ -53,8 +58,20 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
             }
 
             result.Add(value);
+            if (result.Capacity > chargedCapacity)
+            {
+                reservation.Grow(16L * (result.Capacity - chargedCapacity), _span);
+                chargedCapacity = result.Capacity;
+            }
+
+            _closure.ObserveCollectionCount(result.Count, _span);
+            if ((result.Count & 63) == 0)
+            {
+                _closure.CheckExecutionBudget(_span);
+            }
         }
 
+        reservation.Grow(16L * result.Count, _span);
         return result;
     }
 
@@ -93,7 +110,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     {
         var clause = clauses[index];
         var iterable = LythonRuntime.EvaluateLoweredExpression(clause.Iterable, context);
-        foreach (var item in LythonRuntime.ToSequence(iterable, clause.Iterable.Span))
+        foreach (var item in LythonRuntime.ToSequence(iterable, clause.Iterable.Span, context))
         {
             var scope = new LythonRuntime.ExecutionContext(context);
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
@@ -124,7 +141,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     {
         var clause = clauses[index];
         var iterable = await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
-        await foreach (var item in LythonRuntime.ToSequenceAsync(iterable, clause.Iterable.Span).ConfigureAwait(false))
+        await foreach (var item in LythonRuntime.ToSequenceAsync(iterable, clause.Iterable.Span, context).ConfigureAwait(false))
         {
             var scope = new LythonRuntime.ExecutionContext(context);
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);

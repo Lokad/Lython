@@ -228,25 +228,25 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "writerow" => BoundCallable.Create((arguments, span, _) =>
+                "writerow" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "csv.writerow(row) expects one argument.", span);
                     }
 
-                    return WriteRow(writer, ToCsvRow(arguments[0], span), span);
+                    return WriteRow(writer, ToCsvRow(arguments[0], span, context), span);
                 }, "csv.writerow", ["row"]),
-                "writerows" => BoundCallable.Create((arguments, span, _) =>
+                "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "csv.writerows(rows) expects one argument.", span);
                     }
 
-                    foreach (var row in ToSequence(arguments[0], span))
+                    foreach (var row in ToSequence(arguments[0], span, context))
                     {
-                        WriteRow(writer, ToCsvRow(row, span), span);
+                        WriteRow(writer, ToCsvRow(row, span, context), span);
                     }
 
                     return PyNone.Instance;
@@ -278,10 +278,10 @@ internal sealed partial class LythonRuntime
             return new BigInteger(rendered.Length);
         }
 
-        public static CsvCell[] ToCsvRow(object row, LythonSourceSpan span)
+        public static CsvCell[] ToCsvRow(object row, LythonSourceSpan span, ExecutionContext context)
         {
             var cells = new List<CsvCell>();
-            foreach (var cell in ToSequence(row, span))
+            foreach (var cell in ToSequence(row, span, context))
             {
                 cells.Add(cell switch
                 {
@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "writeheader" => BoundCallable.Create((arguments, span, _) =>
+                "writeheader" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -454,27 +454,27 @@ internal sealed partial class LythonRuntime
                         row.SetItem(fieldName, fieldName);
                     }
 
-                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span), span);
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span, context), span);
                 }),
-                "writerow" => BoundCallable.Create((arguments, span, _) =>
+                "writerow" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerow(rowdict) expects one argument.", span);
                     }
 
-                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span), span);
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span, context), span);
                 }, "csv.DictWriter.writerow", ["rowdict"]),
-                "writerows" => BoundCallable.Create((arguments, span, _) =>
+                "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerows(rowdicts) expects one argument.", span);
                     }
 
-                    foreach (var row in ToSequence(arguments[0], span))
+                    foreach (var row in ToSequence(arguments[0], span, context))
                     {
-                        CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span), span);
+                        CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span, context), span);
                     }
 
                     return PyNone.Instance;
@@ -485,7 +485,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, object row, LythonSourceSpan span)
+        private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context)
         {
             if (row is not PyDict dict)
             {
@@ -512,7 +512,7 @@ internal sealed partial class LythonRuntime
                 cells.Add(dict.TryGetValue(fieldName, out var value) ? value : writer.RestValue);
             }
 
-            return CsvWriterMembers.ToCsvRow(new PyList(cells), span);
+            return CsvWriterMembers.ToCsvRow(new PyList(cells), span, context);
         }
     }
 

@@ -23,7 +23,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _keyFunction = keyFunction;
         _memoryGovernor = memoryGovernor;
         _context = context;
@@ -269,7 +269,7 @@ internal sealed class PyTeeSharedState
 
     public PyTeeSharedState(object source, int count, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _queues = new Queue<object>[count];
         for (var i = 0; i < _queues.Length; i++)
         {

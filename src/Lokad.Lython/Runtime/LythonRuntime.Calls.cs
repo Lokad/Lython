@@ -575,7 +575,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return Zip(arguments, span);
+            return Zip(arguments, span, context);
         }
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);

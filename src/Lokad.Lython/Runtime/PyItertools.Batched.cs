@@ -11,9 +11,9 @@ internal sealed class PyBatchedIterator : PyIteratorBase
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
 
-    public PyBatchedIterator(object source, int size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span)
+    public PyBatchedIterator(object source, int size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _size = size;
         _strict = strict;
         _memoryGovernor = memoryGovernor;

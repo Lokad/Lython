@@ -95,14 +95,14 @@ internal sealed partial class LythonRuntime
 
                     return handle.Write(text);
                 }, "file.write", ["text"]),
-                "writelines" => BoundCallable.Create((arguments, span, _) =>
+                "writelines" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "file.writelines(lines) expects one argument.", span);
                     }
 
-                    return handle.WriteLines(arguments[0], span);
+                    return handle.WriteLines(arguments[0], span, context);
                 }, "file.writelines", ["lines"]),
                 "flush" => BoundCallable.CreateNoArguments(
                     handle,

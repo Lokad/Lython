@@ -465,14 +465,13 @@ internal sealed partial class LythonRuntime
 
     private static object CountOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "operator.countOf(a, b) expects two arguments.", span);
         }
 
         var count = BigInteger.Zero;
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (AreEqual(item, arguments[1]))
             {
@@ -485,14 +484,13 @@ internal sealed partial class LythonRuntime
 
     private static object IndexOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "operator.indexOf(a, b) expects two arguments.", span);
         }
 
         var index = BigInteger.Zero;
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (AreEqual(item, arguments[1]))
             {

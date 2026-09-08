@@ -22,7 +22,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _function = function;
         _initial = initial;
         _hasInitial = hasInitial;
@@ -111,10 +111,10 @@ internal sealed class PyCompressIterator : PyIteratorBase
     private readonly PyIteration.Cursor _data;
     private readonly PyIteration.Cursor _selectors;
 
-    public PyCompressIterator(object data, object selectors, LythonSourceSpan span)
+    public PyCompressIterator(object data, object selectors, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _data = PyIteration.Cursor.Create(data, span);
-        _selectors = PyIteration.Cursor.Create(selectors, span);
+        _data = PyIteration.Cursor.Create(data, span, context);
+        _selectors = PyIteration.Cursor.Create(selectors, span, context);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -183,7 +183,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         LythonSourceSpan span)
     {
         _predicate = predicate;
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _mode = mode;
         _context = context;
         _span = span;
@@ -318,7 +318,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
     public PyStarmapIterator(LythonRuntime.ICallable function, object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         _function = function;
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _context = context;
         _span = span;
     }
@@ -332,7 +332,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             return false;
         }
 
-        var args = LythonRuntime.ToSequence(current, _span)
+        var args = LythonRuntime.ToSequence(current, _span, _context)
             .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
             .ToArray();
         value = LythonRuntime.RuntimeValue(_function.Invoke(args, _span, _context));
@@ -367,9 +367,9 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
     private object _previous = PyNone.Instance;
     private bool _hasPrevious;
 
-    public PyPairwiseIterator(object source, MemoryGovernor memoryGovernor, LythonSourceSpan span)
+    public PyPairwiseIterator(object source, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _memoryGovernor = memoryGovernor;
         _span = span;
     }

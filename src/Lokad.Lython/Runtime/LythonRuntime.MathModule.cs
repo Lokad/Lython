@@ -111,9 +111,8 @@ internal sealed partial class LythonRuntime
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var p = ToSequence(arguments[0], span).ToArray();
-            var q = ToSequence(arguments[1], span).ToArray();
+            var p = ToSequence(arguments[0], span, context).ToArray();
+            var q = ToSequence(arguments[1], span, context).ToArray();
             if (p.Length != q.Length)
             {
                 throw new LythonRuntimeException("ValueError", "both points must have the same number of dimensions", span);
@@ -224,7 +223,6 @@ internal sealed partial class LythonRuntime
 
         private static object NextAfter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             var x = ExpectReal(arguments[0], "math.nextafter", span);
             var y = ExpectReal(arguments[1], "math.nextafter", span);
             var steps = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
@@ -372,9 +370,8 @@ internal sealed partial class LythonRuntime
 
         private static object SumProd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            var p = ToSequence(arguments[0], span).ToArray();
-            var q = ToSequence(arguments[1], span).ToArray();
+            var p = ToSequence(arguments[0], span, context).ToArray();
+            var q = ToSequence(arguments[1], span, context).ToArray();
             if (p.Length != q.Length)
             {
                 throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);

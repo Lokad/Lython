@@ -57,4 +57,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
+
+    private static LythonRuntimeException StatisticsError(string message, LythonSourceSpan span)
+        => new(ModuleException("statistics", "StatisticsError"), message, span);
 }

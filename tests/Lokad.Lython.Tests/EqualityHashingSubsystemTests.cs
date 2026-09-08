@@ -22,7 +22,7 @@ public sealed class EqualityHashingSubsystemTests
     {
         var comparer = PyValueComparer.Instance;
 
-        var ex = Assert.Throws<InvalidOperationException>(() => comparer.GetHashCode(new PyList([new BigInteger(1)])));
+        var ex = Assert.Throws<PyUnhashableException>(() => comparer.GetHashCode(new PyList([new BigInteger(1)])));
 
         Assert.Contains("unhashable value", ex.Message, StringComparison.Ordinal);
     }

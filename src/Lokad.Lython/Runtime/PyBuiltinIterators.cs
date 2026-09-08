@@ -7,11 +7,11 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     private readonly PyIteration.Cursor _source;
     private readonly string _displayName;
 
-    public PyEnumerableIterator(object source, LythonSourceSpan span) : this(source, span, "iterator") { }
+    public PyEnumerableIterator(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext context) : this(source, span, context, "iterator") { }
 
-    public PyEnumerableIterator(object source, LythonSourceSpan span, string displayName)
+    public PyEnumerableIterator(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext context, string displayName)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _displayName = displayName;
     }
 
@@ -142,7 +142,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         _iterators = new PyIteration.Cursor[iterables.Length];
         for (var i = 0; i < iterables.Length; i++)
         {
-            _iterators[i] = PyIteration.Cursor.Create(iterables[i], span);
+            _iterators[i] = PyIteration.Cursor.Create(iterables[i], span, context);
         }
 
         _context = context;
@@ -206,7 +206,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
         LythonSourceSpan span)
     {
         _function = function;
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _context = context;
         _span = span;
     }

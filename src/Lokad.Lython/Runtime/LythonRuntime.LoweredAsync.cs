@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
             var syntax = statement.Syntax;
             var iterable = await EvaluateLoweredExpressionAsync(statement.Iterable, context).ConfigureAwait(false);
             var broke = false;
-            await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span).ConfigureAwait(false))
+            await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span, context).ConfigureAwait(false))
             {
                 AssignLoopTarget(syntax.Target, item, statement.Iterable.Span, context);
                 var signal = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);

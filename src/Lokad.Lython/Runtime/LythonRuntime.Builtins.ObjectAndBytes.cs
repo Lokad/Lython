@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
             BigInteger size => CreateZeroBytes(size, context, span),
             int size => CreateZeroBytes(new BigInteger(size), context, span),
             bool size => CreateZeroBytes(size ? BigInteger.One : BigInteger.Zero, context, span),
-            _ => CreateBytes(ToByteArray(arguments[0], span), context, span)
+            _ => CreateBytes(ToByteArray(arguments[0], span, context), context, span)
         };
     }
 
@@ -123,15 +123,30 @@ internal sealed partial class LythonRuntime
         return CreateBytes(new byte[(int)size], context, span);
     }
 
-    private static byte[] ToByteArray(object value, LythonSourceSpan span)
+    private static byte[] ToByteArray(object value, LythonSourceSpan span, ExecutionContext context)
     {
         var bytes = new List<byte>();
-        foreach (var item in ToSequence(value, span))
+        foreach (var item in ToSequence(value, span, context))
         {
             bytes.Add(ToByte(item, span));
         }
 
         return [.. bytes];
+
+        static byte ToByte(object value, LythonSourceSpan span)
+        {
+            if (!PyNumberOps.TryAsInteger(value, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "bytes(iterable) expects integers between 0 and 255.", span);
+            }
+
+            if (integer < byte.MinValue || integer > byte.MaxValue)
+            {
+                throw new LythonRuntimeException("ValueError", "bytes(iterable) expects integers between 0 and 255.", span);
+            }
+
+            return (byte)integer;
+        }
     }
 
     private static object Property(object[] arguments, LythonSourceSpan span, ExecutionContext context)

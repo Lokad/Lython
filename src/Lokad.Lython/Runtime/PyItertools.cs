@@ -31,24 +31,27 @@ internal sealed class PyChainIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor[]? _sources;
     private readonly PyIteration.Cursor? _outer;
+    private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
     private PyIteration.Cursor? _current;
     private int _sourceIndex;
 
-    public PyChainIterator(IReadOnlyList<object> sources, LythonSourceSpan span)
+    public PyChainIterator(IReadOnlyList<object> sources, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _sources = new PyIteration.Cursor[sources.Count];
         for (var i = 0; i < sources.Count; i++)
         {
-            _sources[i] = PyIteration.Cursor.Create(sources[i], span);
+            _sources[i] = PyIteration.Cursor.Create(sources[i], span, context);
         }
 
+        _context = context;
         _span = span;
     }
 
-    public PyChainIterator(object outer, LythonSourceSpan span)
+    public PyChainIterator(object outer, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _outer = PyIteration.Cursor.Create(outer, span);
+        _outer = PyIteration.Cursor.Create(outer, span, context);
+        _context = context;
         _span = span;
     }
 
@@ -113,7 +116,7 @@ internal sealed class PyChainIterator : PyIteratorBase
 
         if (_outer is not null && _outer.TryMoveNext(out var nested))
         {
-            cursor = PyIteration.Cursor.Create(nested, _span);
+            cursor = PyIteration.Cursor.Create(nested, _span, _context);
             return true;
         }
 
@@ -138,7 +141,7 @@ internal sealed class PyChainIterator : PyIteratorBase
             var (hasNested, nested) = await _outer.TryMoveNextAsync().ConfigureAwait(false);
             if (hasNested)
             {
-                return OptionalValue<PyIteration.Cursor>.Present(PyIteration.Cursor.Create(nested, _span));
+                return OptionalValue<PyIteration.Cursor>.Present(PyIteration.Cursor.Create(nested, _span, _context));
             }
         }
 
@@ -155,9 +158,9 @@ internal sealed class PyIsliceIterator : PyIteratorBase
     private long _position;
     private bool _skippedStart;
 
-    public PyIsliceIterator(object source, long start, long? stop, long step, LythonSourceSpan span)
+    public PyIsliceIterator(object source, long start, long? stop, long step, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _source = PyIteration.Cursor.Create(source, span);
+        _source = PyIteration.Cursor.Create(source, span, context);
         _start = start;
         _stop = stop;
         _step = step;

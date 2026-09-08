@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.extend(iterable) expects one argument.", span);
                     }
 
-                    deque.Extend(ToSequence(arguments[0], span));
+                    deque.Extend(ToSequence(arguments[0], span, context));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.extendleft(iterable) expects one argument.", span);
                     }
 
-                    deque.ExtendLeft(ToSequence(arguments[0], span));
+                    deque.ExtendLeft(ToSequence(arguments[0], span, context));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),

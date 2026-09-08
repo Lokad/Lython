@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = hasIterable
-            ? new PyDeque(ToSequence(iterable, span), maxLength)
+            ? new PyDeque(ToSequence(iterable, span, context), maxLength)
             : new PyDeque(maxLength);
         context.ObserveCollectionCount(result.Count, span);
         return result;
@@ -366,14 +366,13 @@ internal sealed partial class LythonRuntime
 
         var result = arguments.Length == 0
             ? new PyDeque()
-            : new PyDeque(ToSequence(arguments[0], span));
+            : new PyDeque(ToSequence(arguments[0], span, context));
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }
 
     private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Count(static argument => argument.IsPositional) > 2)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None) accepts only typename and field_names positionally.", span);
@@ -392,10 +391,10 @@ internal sealed partial class LythonRuntime
 
         var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
         var defaults = TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone
-            ? ToSequence(defaultsValue, span).ToArray()
+            ? ToSequence(defaultsValue, span, context).ToArray()
             : [];
 
-        if (defaults.Length > 0 && defaults.Length > ParseNamedTupleFieldNames(fieldNamesValue, span).Count)
+        if (defaults.Length > 0 && defaults.Length > ParseNamedTupleFieldNames(fieldNamesValue, span, context).Count)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
         }
@@ -409,7 +408,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var fields = NormalizeNamedTupleFields(ParseNamedTupleFieldNames(fieldNamesValue, span), rename, span);
+        var fields = NormalizeNamedTupleFields(ParseNamedTupleFieldNames(fieldNamesValue, span, context), rename, span);
         if (defaults.Length > fields.Count)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
@@ -512,7 +511,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(source, span))
+        foreach (var item in ToSequence(source, span, context))
         {
             if (item is not PyTuple tuple || tuple.Count != 2)
             {
@@ -548,7 +547,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(source, span))
+        foreach (var item in ToSequence(source, span, context))
         {
             if (item is not PyTuple tuple || tuple.Count != 2)
             {
@@ -586,7 +585,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        foreach (var item in ToSequence(source, span))
+        foreach (var item in ToSequence(source, span, context))
         {
             counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span);
             context.ObserveCollectionCount(counter.Count, span);
@@ -678,7 +677,7 @@ internal sealed partial class LythonRuntime
         return found;
     }
 
-    private static IReadOnlyList<string> ParseNamedTupleFieldNames(object value, LythonSourceSpan span)
+    private static IReadOnlyList<string> ParseNamedTupleFieldNames(object value, LythonSourceSpan span, ExecutionContext context)
     {
         if (PyStringOps.TryAsString(value, out var text))
         {
@@ -688,7 +687,7 @@ internal sealed partial class LythonRuntime
         }
 
         var names = new List<string>();
-        foreach (var item in ToSequence(value, span))
+        foreach (var item in ToSequence(value, span, context))
         {
             if (!PyStringOps.TryAsString(item, out var name))
             {

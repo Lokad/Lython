@@ -154,10 +154,10 @@ internal sealed partial class LythonRuntime
                 ? BigInteger.Zero
                 : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
 
-        return new PyEnumerateIterator(arguments[0], index, span);
+        return new PyEnumerateIterator(arguments[0], index, span, context);
     }
 
-    private static object Zip(CallArgumentValue[] arguments, LythonSourceSpan span)
+    private static object Zip(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var iterables = new List<object>();
         var strict = false;
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
             strict = IsTruthy(argument.Value);
         }
 
-        return new PyZipIterator([.. iterables], strict, span);
+        return new PyZipIterator([.. iterables], strict, span, context);
     }
 
     private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -236,7 +236,7 @@ internal sealed partial class LythonRuntime
         {
             return arguments[0] is IPyIteratorValue iterator
                 ? iterator
-                : new PyEnumerableIterator(arguments[0], span);
+                : new PyEnumerableIterator(arguments[0], span, context);
         }
 
         if (arguments.Length == 2)
@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
         var iterables = new object[arguments.Length - 1];
         for (var i = 1; i < arguments.Length; i++)
         {
-            _ = PyIteration.Cursor.Create(arguments[i], span);
+            _ = PyIteration.Cursor.Create(arguments[i], span, context);
             iterables[i - 1] = arguments[i];
         }
 

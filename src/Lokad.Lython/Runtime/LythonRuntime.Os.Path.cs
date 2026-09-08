@@ -116,7 +116,6 @@ internal sealed partial class LythonRuntime
 
     private static object OsPathCommonPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "os.path.commonpath(paths) expects one iterable argument.", span);
@@ -127,7 +126,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "os.path.commonpath(paths) expects an iterable of strings, not a single string.", span);
         }
 
-        var sequence = ToSequence(arguments[0], span);
+        var sequence = ToSequence(arguments[0], span, context);
         var paths = new List<string>();
         foreach (var item in sequence)
         {
@@ -144,14 +143,13 @@ internal sealed partial class LythonRuntime
 
     private static object OsPathCommonPrefix(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "os.path.commonprefix(list) expects one iterable argument.", span);
         }
 
         var paths = new List<string>();
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             paths.Add(GetPath(item, "os.path.commonprefix", span));
         }

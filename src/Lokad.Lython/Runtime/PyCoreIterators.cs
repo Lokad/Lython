@@ -97,9 +97,9 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     private readonly PyIteration.Cursor _cursor;
     private BigInteger _index;
 
-    public PyEnumerateIterator(object iterable, BigInteger start, LythonSourceSpan span)
+    public PyEnumerateIterator(object iterable, BigInteger start, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _cursor = PyIteration.Cursor.Create(iterable, span);
+        _cursor = PyIteration.Cursor.Create(iterable, span, context);
         _index = start;
     }
 
@@ -126,9 +126,9 @@ internal sealed class PyZipIterator : PyIteratorBase
     private readonly LythonSourceSpan _span;
     private bool _finished;
 
-    public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span)
+    public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _cursors = iterables.Select(value => PyIteration.Cursor.Create(value, span)).ToArray();
+        _cursors = iterables.Select(value => PyIteration.Cursor.Create(value, span, context)).ToArray();
         _strict = strict;
         _span = span;
     }

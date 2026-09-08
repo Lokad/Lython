@@ -318,11 +318,11 @@ internal sealed partial class LythonRuntime
                 return RequireWriter().Write(text);
             }
 
-            public object WriteLines(object value, LythonSourceSpan span)
+            public object WriteLines(object value, LythonSourceSpan span, ExecutionContext context)
             {
                 EnsureOpen();
                 var writer = RequireWriter();
-                foreach (var item in ToSequence(value, span))
+                foreach (var item in ToSequence(value, span, context))
                 {
                     if (!PyStringOps.TryAsString(item, out var text))
                     {

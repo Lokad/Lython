@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "join" => BoundCallable.Create((arguments, span, _) =>
+                    "join" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
 
                         IEnumerable<PyString> EnumerateParts()
                         {
-                            foreach (var part in ToSequence(arguments[0], span))
+                            foreach (var part in ToSequence(arguments[0], span, context))
                             {
                                 if (!PyStringOps.TryAsString(part, out var partText))
                                 {
