@@ -10,8 +10,24 @@ internal sealed partial class LythonRuntime
 {
     internal sealed class DifflibSequenceMatcherObject
     {
+        // Must remain a power of two: chunk checks below use it as a bit mask.
+        private const int BudgetCheckInterval = 64;
+        private const long SequenceBaseBytes = 32;
+        private const long SequenceBytesPerItem = 16;
+        private const long ChainBaseBytes = 96;
+        private const long ChainKeyBytesPerElement = 96;
+        private const long ChainIndexBytesPerElement = 16;
+        private const long SetBaseBytes = 80;
+        private const long SetBytesPerItem = 24;
+        private const long CountBaseBytes = 96;
+        private const long CountBytesPerEntry = 64;
+        private const long BlocksBaseBytes = 64;
+        private const long BlockBytesPerEntry = 32;
+        private const long ScratchBytesPerEntry = 64;
+
         private readonly object? _isjunk;
         private readonly bool _autojunk;
+        private readonly MemoryGovernor _governor;
         private object _aOriginal;
         private object _bOriginal;
         private IReadOnlyList<object> _a;
@@ -22,14 +38,21 @@ internal sealed partial class LythonRuntime
         private Dictionary<object, int>? _fullBCount;
         private List<MatchingBlock>? _matchingBlocks;
         private List<DiffOpcode>? _opcodes;
+        private long _aCharge;
+        private long _bCharge;
+        private long _chainCharge;
+        private long _fullBCountCharge;
+        private long _matchingBlocksCharge;
+        private long _opcodesCharge;
 
         public DifflibSequenceMatcherObject(object? isjunk, object aOriginal, object bOriginal, bool autojunk, LythonSourceSpan span, ExecutionContext context)
         {
             _isjunk = isjunk;
             _autojunk = autojunk;
+            _governor = context.MemoryGovernor;
             _aOriginal = aOriginal;
             _bOriginal = bOriginal;
-            _a = DifflibModule.MaterializeSequence(aOriginal, span);
+            _a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out _aCharge);
             _b = [];
             _b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
             _bjunk = new HashSet<object>(PyValueComparer.Instance);
@@ -56,14 +79,14 @@ internal sealed partial class LythonRuntime
                     SetSeqs(arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seqs", ["a", "b"]),
-                "set_seq1" => BoundCallable.Create((arguments, span, _) =>
+                "set_seq1" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "SequenceMatcher.set_seq1(a) expects one argument.", span);
                     }
 
-                    SetSeq1(arguments[0], span);
+                    SetSeq1(arguments[0], span, context);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seq1", ["a"]),
                 "set_seq2" => BoundCallable.Create((arguments, span, context) =>
@@ -76,23 +99,23 @@ internal sealed partial class LythonRuntime
                     SetSeq2(arguments[0], span, context);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seq2", ["b"]),
-                "ratio" => BoundCallable.Create((arguments, span, _) =>
+                "ratio" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "SequenceMatcher.ratio() expects no arguments.", span);
                     }
 
-                    return Ratio();
+                    return Ratio(span, context);
                 }),
-                "quick_ratio" => BoundCallable.Create((arguments, span, _) =>
+                "quick_ratio" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "SequenceMatcher.quick_ratio() expects no arguments.", span);
                     }
 
-                    return QuickRatio();
+                    return QuickRatio(span, context);
                 }),
                 "real_quick_ratio" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -114,7 +137,7 @@ internal sealed partial class LythonRuntime
                     var ahi = arguments.Length >= 2 && arguments[1] is not PyNone ? DifflibModule.RequireInt32(arguments[1], "SequenceMatcher.find_longest_match(..., ahi=...) expects an integer or None.", span) : _a.Count;
                     var blo = arguments.Length >= 3 && arguments[2] is not PyNone ? DifflibModule.RequireInt32(arguments[2], "SequenceMatcher.find_longest_match(..., blo=...) expects an integer.", span) : 0;
                     var bhi = arguments.Length >= 4 && arguments[3] is not PyNone ? DifflibModule.RequireInt32(arguments[3], "SequenceMatcher.find_longest_match(..., bhi=...) expects an integer or None.", span) : _b.Count;
-                    var block = FindLongestMatch(new MatchRange(alo, ahi, blo, bhi));
+                    var block = FindLongestMatch(new MatchRange(alo, ahi, blo, bhi), span, context);
                     return new DifflibMatchObject(block.A, block.B, block.Size);
                 }, LythonCallableSignature.Create("SequenceMatcher.find_longest_match", ["alo", "ahi", "blo", "bhi"], requiredCount: 0)),
                 "get_matching_blocks" => BoundCallable.Create((arguments, span, context) =>
@@ -124,7 +147,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "SequenceMatcher.get_matching_blocks() expects no arguments.", span);
                     }
 
-                    return new PyList(GetMatchingBlocks().Select(block => (object)new DifflibMatchObject(block.A, block.B, block.Size)), context.MemoryGovernor, span);
+                    return new PyList(GetMatchingBlocks(span, context).Select(block => (object)new DifflibMatchObject(block.A, block.B, block.Size)), context.MemoryGovernor, span);
                 }),
                 "get_opcodes" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -133,7 +156,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "SequenceMatcher.get_opcodes() expects no arguments.", span);
                     }
 
-                    return new PyList(BuildOpcodes().Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span);
+                    return new PyList(BuildOpcodes(span, context).Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span);
                 }),
                 "get_grouped_opcodes" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -143,7 +166,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var n = arguments.Length == 1 && arguments[0] is not PyNone ? DifflibModule.RequireInt32(arguments[0], "SequenceMatcher.get_grouped_opcodes(..., n=...) expects an integer.", span) : 3;
-                    return new PyList(BuildGroupedOpcodes(n).Select(group => (object)new PyList(group.Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span)), context.MemoryGovernor, span);
+                    return new PyList(BuildGroupedOpcodes(n, span, context).Select(group => (object)new PyList(group.Select(opcode => (object)ToPyTuple(opcode)), context.MemoryGovernor, span)), context.MemoryGovernor, span);
                 }, "SequenceMatcher.get_grouped_opcodes", ["n"], requiredCount: 0),
                 _ => MissingMemberValue.Instance,
             };
@@ -153,39 +176,79 @@ internal sealed partial class LythonRuntime
 
         public void SetSeqs(object aOriginal, object bOriginal, LythonSourceSpan span, ExecutionContext context)
         {
-            SetSeq1(aOriginal, span);
+            SetSeq1(aOriginal, span, context);
             SetSeq2(bOriginal, span, context);
         }
 
-        public void SetSeq1(object aOriginal, LythonSourceSpan span)
+        public void SetSeq1(object aOriginal, LythonSourceSpan span, ExecutionContext context)
         {
+            var array = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out var charge);
             _aOriginal = aOriginal;
-            _a = DifflibModule.MaterializeSequence(aOriginal, span);
-            _matchingBlocks = null;
-            _opcodes = null;
+            _governor.Release(_aCharge);
+            _a = array;
+            _aCharge = charge;
+            ReleaseMatchingBlocks();
+            ReleaseOpcodes();
         }
 
         public void SetSeq2(object bOriginal, LythonSourceSpan span, ExecutionContext context)
         {
+            var array = DifflibModule.MaterializeGovernedSequence(bOriginal, span, context, out var charge);
             _bOriginal = bOriginal;
-            _b = DifflibModule.MaterializeSequence(bOriginal, span);
-            _matchingBlocks = null;
-            _opcodes = null;
-            _fullBCount = null;
+            _governor.Release(_bCharge);
+            _b = array;
+            _bCharge = charge;
+            ReleaseMatchingBlocks();
+            ReleaseOpcodes();
+            ReleaseFullBCount();
             ChainB(span, context);
         }
 
-        public double Ratio()
+        private void ReleaseMatchingBlocks()
         {
-            var matches = GetMatchingBlocks().Sum(block => block.Size);
+            _governor.Release(_matchingBlocksCharge);
+            _matchingBlocksCharge = 0;
+            _matchingBlocks = null;
+        }
+
+        private void ReleaseOpcodes()
+        {
+            _governor.Release(_opcodesCharge);
+            _opcodesCharge = 0;
+            _opcodes = null;
+        }
+
+        private void ReleaseFullBCount()
+        {
+            _governor.Release(_fullBCountCharge);
+            _fullBCountCharge = 0;
+            _fullBCount = null;
+        }
+
+        public double Ratio(LythonSourceSpan span, ExecutionContext context)
+        {
+            var matches = 0;
+            var work = 0;
+            foreach (var block in GetMatchingBlocks(span, context))
+            {
+                matches += block.Size;
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
             return CalculateRatio(matches, _a.Count + _b.Count);
         }
 
-        public double QuickRatio()
+        public double QuickRatio(LythonSourceSpan span, ExecutionContext context)
         {
-            _fullBCount ??= BuildFullBCount();
+            _fullBCount ??= BuildFullBCount(span, context);
+            using var reservation = _governor.ReserveTemporary(0, span);
             var available = new Dictionary<object, int>(PyValueComparer.Instance);
+            var peakCount = 0;
             var matches = 0;
+            var work = 0;
             foreach (var item in _a)
             {
                 if (!available.TryGetValue(item, out var count))
@@ -194,9 +257,20 @@ internal sealed partial class LythonRuntime
                 }
 
                 available[item] = count - 1;
+                if (available.Count > peakCount)
+                {
+                    reservation.Grow(CountBytesPerEntry * (available.Count - peakCount), span);
+                    peakCount = available.Count;
+                }
+
                 if (count > 0)
                 {
                     matches++;
+                }
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
                 }
             }
 
@@ -206,17 +280,20 @@ internal sealed partial class LythonRuntime
         public double RealQuickRatio()
             => CalculateRatio(Math.Min(_a.Count, _b.Count), _a.Count + _b.Count);
 
-        internal List<DiffOpcode> BuildOpcodes()
+        internal List<DiffOpcode> BuildOpcodes(LythonSourceSpan span, ExecutionContext context)
         {
             if (_opcodes is not null)
             {
                 return _opcodes;
             }
 
+            using var reservation = _governor.ReserveTemporary(0, span);
             var opcodes = new List<DiffOpcode>();
+            var chargedOpcodes = 0;
             var i = 0;
             var j = 0;
-            foreach (var block in GetMatchingBlocks())
+            var work = 0;
+            foreach (var block in GetMatchingBlocks(span, context))
             {
                 var tag = DiffTag.Equal;
                 if (i < block.A && j < block.B)
@@ -243,15 +320,33 @@ internal sealed partial class LythonRuntime
                 {
                     opcodes.Add(new DiffOpcode(DiffTag.Equal, block.A, i, block.B, j));
                 }
+
+                if (opcodes.Count > chargedOpcodes)
+                {
+                    reservation.Grow(BlockBytesPerEntry * (opcodes.Count - chargedOpcodes), span);
+                    chargedOpcodes = opcodes.Count;
+                }
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
+            var opcodesCharge = BlocksBaseBytes + (BlockBytesPerEntry * opcodes.Count);
+            _governor.Reserve(opcodesCharge, span);
+            _governor.Commit(opcodesCharge);
+            _governor.Release(_opcodesCharge);
+            _opcodesCharge = opcodesCharge;
             _opcodes = opcodes;
             return opcodes;
         }
 
-        internal List<List<DiffOpcode>> BuildGroupedOpcodes(int contextLines)
+        internal List<List<DiffOpcode>> BuildGroupedOpcodes(int contextLines, LythonSourceSpan span, ExecutionContext context)
         {
-            var codes = BuildOpcodes().Select(static opcode => opcode).ToList();
+            using var reservation = _governor.ReserveTemporary(0, span);
+            var codes = BuildOpcodes(span, context).Select(static opcode => opcode).ToList();
+            reservation.Grow(BlockBytesPerEntry * codes.Count, span);
             if (codes.Count == 0)
             {
                 codes.Add(new DiffOpcode(DiffTag.Equal, 0, 1, 0, 1));
@@ -280,8 +375,15 @@ internal sealed partial class LythonRuntime
             var groups = new List<List<DiffOpcode>>();
             var group = new List<DiffOpcode>();
             var doubleContext = contextLines + contextLines;
+            var work = 0;
             foreach (var code in codes)
             {
+                reservation.Grow(BlockBytesPerEntry, span);
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var current = code;
                 if (current.Tag == DiffTag.Equal && current.I2 - current.I1 > doubleContext)
                 {
@@ -312,71 +414,122 @@ internal sealed partial class LythonRuntime
 
         private void ChainB(LythonSourceSpan span, ExecutionContext context)
         {
-            _b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
-            _bjunk = new HashSet<object>(PyValueComparer.Instance);
-            _bpopular = new HashSet<object>(PyValueComparer.Instance);
+            // Build into locals so a failure (unhashable elements, budgets,
+            // junk-predicate errors) leaves the previous index intact with its
+            // charge; only swap and commit on success.
+            var b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
+            var bjunk = new HashSet<object>(PyValueComparer.Instance);
+            var bpopular = new HashSet<object>(PyValueComparer.Instance);
+            using var reservation = _governor.ReserveTemporary(0, span);
+            var work = 0;
 
             try
             {
                 for (var index = 0; index < _b.Count; index++)
                 {
-                    if (!_b2j.TryGetValue(_b[index], out var indices))
+                    if (!b2j.TryGetValue(_b[index], out var indices))
                     {
                         indices = [];
-                        _b2j[_b[index]] = indices;
+                        b2j[_b[index]] = indices;
+                        reservation.Grow(ChainKeyBytesPerElement, span);
                     }
 
                     indices.Add(index);
+                    reservation.Grow(ChainIndexBytesPerElement, span);
+                    if ((++work & (BudgetCheckInterval - 1)) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
                 }
 
                 if (_isjunk is not null)
                 {
-                    foreach (var item in _b2j.Keys.ToArray())
+                    foreach (var item in b2j.Keys.ToArray())
                     {
                         if (DifflibModule.CallJunkPredicate(_isjunk, item, span, context))
                         {
-                            _bjunk.Add(item);
+                            bjunk.Add(item);
+                        }
+
+                        if ((++work & (BudgetCheckInterval - 1)) == 0)
+                        {
+                            context.CheckExecutionBudget(span);
                         }
                     }
 
-                    foreach (var item in _bjunk)
+                    foreach (var item in bjunk)
                     {
-                        _b2j.Remove(item);
+                        b2j.Remove(item);
                     }
                 }
 
                 if (_autojunk && _b.Count >= 200)
                 {
                     var threshold = _b.Count / 100 + 1;
-                    foreach (var pair in _b2j)
+                    foreach (var pair in b2j)
                     {
                         if (pair.Value.Count > threshold)
                         {
-                            _bpopular.Add(pair.Key);
+                            bpopular.Add(pair.Key);
+                        }
+
+                        if ((++work & (BudgetCheckInterval - 1)) == 0)
+                        {
+                            context.CheckExecutionBudget(span);
                         }
                     }
 
-                    foreach (var item in _bpopular)
+                    foreach (var item in bpopular)
                     {
-                        _b2j.Remove(item);
+                        b2j.Remove(item);
                     }
                 }
             }
-            catch (InvalidOperationException ex) when (string.Equals(ex.Message, "unhashable value", StringComparison.Ordinal))
+            catch (PyUnhashableException)
             {
                 throw new LythonRuntimeException("TypeError", "difflib.SequenceMatcher sequence elements must be hashable.", span);
             }
+
+            var chainCharge =
+                ChainBaseBytes +
+                (ChainKeyBytesPerElement * b2j.Count) +
+                (ChainIndexBytesPerElement * _b.Count) +
+                SetBaseBytes + (SetBytesPerItem * bjunk.Count) +
+                SetBaseBytes + (SetBytesPerItem * bpopular.Count);
+            _governor.Reserve(chainCharge, span);
+            _governor.Commit(chainCharge);
+            _governor.Release(_chainCharge);
+            _b2j = b2j;
+            _bjunk = bjunk;
+            _bpopular = bpopular;
+            _chainCharge = chainCharge;
         }
 
-        private Dictionary<object, int> BuildFullBCount()
+        private Dictionary<object, int> BuildFullBCount(LythonSourceSpan span, ExecutionContext context)
         {
+            using var reservation = _governor.ReserveTemporary(0, span);
             var counts = new Dictionary<object, int>(PyValueComparer.Instance);
+            var work = 0;
             foreach (var item in _b)
             {
-                counts.TryGetValue(item, out var count);
+                if (!counts.TryGetValue(item, out var count))
+                {
+                    reservation.Grow(CountBytesPerEntry, span);
+                    count = 0;
+                }
+
                 counts[item] = count + 1;
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
+            var charge = CountBaseBytes + (CountBytesPerEntry * counts.Count);
+            _governor.Reserve(charge, span);
+            _governor.Commit(charge);
+            _governor.Release(_fullBCountCharge);
+            _fullBCountCharge = charge;
             return counts;
         }
 
@@ -391,26 +544,39 @@ internal sealed partial class LythonRuntime
             return dict;
         }
 
-        private List<MatchingBlock> GetMatchingBlocks()
+        private List<MatchingBlock> GetMatchingBlocks(LythonSourceSpan span, ExecutionContext context)
         {
             if (_matchingBlocks is not null)
             {
                 return _matchingBlocks;
             }
 
+            using var reservation = _governor.ReserveTemporary(0, span);
             var blocks = new List<MatchingBlock>();
+            var chargedBlocks = 0;
             var queue = new Stack<MatchRange>();
             queue.Push(new MatchRange(0, _a.Count, 0, _b.Count));
+            var work = 0;
             while (queue.Count != 0)
             {
                 var range = queue.Pop();
-                var match = FindLongestMatch(range);
+                var match = FindLongestMatch(range, span, context);
                 if (match.Size == 0)
                 {
                     continue;
                 }
 
                 blocks.Add(match);
+                if (blocks.Count > chargedBlocks)
+                {
+                    reservation.Grow(BlockBytesPerEntry * (blocks.Count - chargedBlocks), span);
+                    chargedBlocks = blocks.Count;
+                }
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
                 if (range.ALo < match.A && range.BLo < match.B)
                 {
                     queue.Push(new MatchRange(range.ALo, match.A, range.BLo, match.B));
@@ -432,8 +598,14 @@ internal sealed partial class LythonRuntime
             var i1 = 0;
             var j1 = 0;
             var k1 = 0;
+            var collapseWork = 0;
             foreach (var block in blocks)
             {
+                if ((++collapseWork & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 if (i1 + k1 == block.A && j1 + k1 == block.B)
                 {
                     k1 += block.Size;
@@ -456,16 +628,26 @@ internal sealed partial class LythonRuntime
             }
 
             collapsed.Add(new MatchingBlock(_a.Count, _b.Count, 0));
+            var blocksCharge = BlocksBaseBytes + (BlockBytesPerEntry * collapsed.Count);
+            _governor.Reserve(blocksCharge, span);
+            _governor.Commit(blocksCharge);
+            _governor.Release(_matchingBlocksCharge);
+            _matchingBlocksCharge = blocksCharge;
             _matchingBlocks = collapsed;
             return collapsed;
         }
 
-        private MatchingBlock FindLongestMatch(MatchRange range)
+        private MatchingBlock FindLongestMatch(MatchRange range, LythonSourceSpan span, ExecutionContext context)
         {
+            // Row scratch is transient: only the peak row is reserved, and the
+            // reservation releases when the call returns.
+            using var reservation = _governor.ReserveTemporary(0, span);
             var bestA = range.ALo;
             var bestB = range.BLo;
             var bestSize = 0;
             var previousLengths = new Dictionary<int, int>();
+            var maxRow = 0;
+            var work = 0;
 
             for (var i = range.ALo; i < range.AHi; i++)
             {
@@ -473,29 +655,46 @@ internal sealed partial class LythonRuntime
                 if (!_b2j.TryGetValue(_a[i], out var indexes))
                 {
                     previousLengths = newLengths;
-                    continue;
+                }
+                else
+                {
+                    foreach (var j in indexes)
+                    {
+                        if (j < range.BLo)
+                        {
+                            continue;
+                        }
+
+                        if (j >= range.BHi)
+                        {
+                            break;
+                        }
+
+                        var length = previousLengths.TryGetValue(j - 1, out var previous) ? previous + 1 : 1;
+                        newLengths[j] = length;
+                        if (length > bestSize)
+                        {
+                            bestA = i - length + 1;
+                            bestB = j - length + 1;
+                            bestSize = length;
+                        }
+
+                        if ((++work & (BudgetCheckInterval - 1)) == 0)
+                        {
+                            context.CheckExecutionBudget(span);
+                        }
+                    }
                 }
 
-                foreach (var j in indexes)
+                if (newLengths.Count > maxRow)
                 {
-                    if (j < range.BLo)
-                    {
-                        continue;
-                    }
+                    reservation.Grow(ScratchBytesPerEntry * (newLengths.Count - maxRow), span);
+                    maxRow = newLengths.Count;
+                }
 
-                    if (j >= range.BHi)
-                    {
-                        break;
-                    }
-
-                    var length = previousLengths.TryGetValue(j - 1, out var previous) ? previous + 1 : 1;
-                    newLengths[j] = length;
-                    if (length > bestSize)
-                    {
-                        bestA = i - length + 1;
-                        bestB = j - length + 1;
-                        bestSize = length;
-                    }
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
                 }
 
                 previousLengths = newLengths;
@@ -509,6 +708,11 @@ internal sealed partial class LythonRuntime
                 bestA--;
                 bestB--;
                 bestSize++;
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             while (bestA + bestSize < range.AHi &&
@@ -517,6 +721,11 @@ internal sealed partial class LythonRuntime
                 AreEqual(_a[bestA + bestSize], _b[bestB + bestSize]))
             {
                 bestSize++;
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             while (bestA > range.ALo &&
@@ -527,6 +736,11 @@ internal sealed partial class LythonRuntime
                 bestA--;
                 bestB--;
                 bestSize++;
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             while (bestA + bestSize < range.AHi &&
@@ -535,6 +749,11 @@ internal sealed partial class LythonRuntime
                 AreEqual(_a[bestA + bestSize], _b[bestB + bestSize]))
             {
                 bestSize++;
+
+                if ((++work & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             return new MatchingBlock(bestA, bestB, bestSize);
@@ -545,21 +764,19 @@ internal sealed partial class LythonRuntime
 
         private static PyTuple ToPyTuple(DiffOpcode opcode)
             => new([
-                PyString.FromString(TagName(opcode.Tag)),
+                PyString.FromString(opcode.Tag switch
+                {
+                    DiffTag.Equal => "equal",
+                    DiffTag.Delete => "delete",
+                    DiffTag.Insert => "insert",
+                    DiffTag.Replace => "replace",
+                    _ => throw new InvalidOperationException($"Unknown diff opcode: {opcode.Tag}")
+                }),
                 new BigInteger(opcode.I1),
                 new BigInteger(opcode.I2),
                 new BigInteger(opcode.J1),
                 new BigInteger(opcode.J2)]);
 
-        private static string TagName(DiffTag tag)
-            => tag switch
-            {
-                DiffTag.Equal => "equal",
-                DiffTag.Delete => "delete",
-                DiffTag.Insert => "insert",
-                DiffTag.Replace => "replace",
-                _ => throw new InvalidOperationException($"Unknown diff opcode: {tag}")
-            };
 
         private readonly record struct MatchRange(int ALo, int AHi, int BLo, int BHi);
 

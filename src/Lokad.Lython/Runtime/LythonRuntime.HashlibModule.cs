@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
             "file_digest",
         ];
 
-        private HashlibModule() : base("hashlib")
+        public HashlibModule() : base("hashlib")
         {
         }
 

@@ -202,6 +202,9 @@ internal sealed partial class ExecutableScript
 
         private int CompileTryStatement(LoweredTryStatement statement, int currentBlock)
         {
+            _protectedDepth++;
+            try
+            {
             CompiledClause CompileClause(IReadOnlyList<LoweredStatement> body)
             {
                 var startBlock = CreateBlock();
@@ -287,6 +290,11 @@ internal sealed partial class ExecutableScript
             }
 
             return afterBlock;
+            }
+            finally
+            {
+                _protectedDepth--;
+            }
         }
 
         private int CompileWithStatement(LoweredWithStatement statement, int currentBlock)
@@ -311,7 +319,16 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             var protectedStart = bodyBlock;
-            var bodyExit = CompileStatements(statement.Body, bodyBlock);
+            _protectedDepth++;
+            int? bodyExit;
+            try
+            {
+                bodyExit = CompileStatements(statement.Body, bodyBlock);
+            }
+            finally
+            {
+                _protectedDepth--;
+            }
             var protectedEnd = _blocks.Count - 1;
 
             var finallyBlock = CreateBlock();
@@ -439,6 +456,11 @@ internal sealed partial class ExecutableScript
 
         private int? CompileBreakStatement(LoweredBreakStatement statement, int currentBlock)
         {
+            if (_protectedDepth > 0)
+            {
+                throw new ExecutableLoweringFallbackException("Executable IR lowering does not support break inside a protected with/try region; using the lowered execution path.");
+            }
+
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
@@ -450,6 +472,11 @@ internal sealed partial class ExecutableScript
 
         private int? CompileContinueStatement(LoweredContinueStatement statement, int currentBlock)
         {
+            if (_protectedDepth > 0)
+            {
+                throw new ExecutableLoweringFallbackException("Executable IR lowering does not support continue inside a protected with/try region; using the lowered execution path.");
+            }
+
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit continue outside a loop.");

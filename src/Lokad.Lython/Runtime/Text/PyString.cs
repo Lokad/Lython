@@ -511,7 +511,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         if (Length == _utf8.Length)
         {
-            return Math.Min(startByte + runeCount, _utf8.Length);
+            return (int)Math.Min((long)startByte + runeCount, _utf8.Length);
         }
 
         var offsets = GetRuneByteOffsets();
@@ -521,7 +521,17 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             startRune = ~startRune;
         }
 
-        return offsets[Math.Min(startRune + runeCount, offsets.Length - 1)];
+        var targetRune = (long)startRune + runeCount;
+        if (targetRune < 0)
+        {
+            targetRune = 0;
+        }
+        else if (targetRune > offsets.Length - 1)
+        {
+            targetRune = offsets.Length - 1;
+        }
+
+        return offsets[(int)targetRune];
     }
 
     internal PyString SliceByByteRange(int startByte, int endByte)

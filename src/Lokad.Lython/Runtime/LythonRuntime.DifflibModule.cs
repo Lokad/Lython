@@ -86,16 +86,16 @@ internal sealed partial class LythonRuntime
         private static object UnifiedDiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var options = ParseDiffArguments(arguments, "difflib.unified_diff", span);
-            var a = RequireStringSequence(arguments[0], "difflib.unified_diff(a, b)", span);
-            var b = RequireStringSequence(arguments[1], "difflib.unified_diff(a, b)", span);
+            var a = RequireStringSequence(arguments[0], "difflib.unified_diff(a, b)", span, context);
+            var b = RequireStringSequence(arguments[1], "difflib.unified_diff(a, b)", span, context);
             return new PyList(BuildUnifiedDiff(a, b, options, context, span), context.MemoryGovernor, span);
         }
 
         private static object ContextDiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var options = ParseDiffArguments(arguments, "difflib.context_diff", span);
-            var a = RequireStringSequence(arguments[0], "difflib.context_diff(a, b)", span);
-            var b = RequireStringSequence(arguments[1], "difflib.context_diff(a, b)", span);
+            var a = RequireStringSequence(arguments[0], "difflib.context_diff(a, b)", span, context);
+            var b = RequireStringSequence(arguments[1], "difflib.context_diff(a, b)", span, context);
             return new PyList(BuildContextDiff(a, b, options, context, span), context.MemoryGovernor, span);
         }
 
@@ -106,8 +106,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib.ndiff(a, b[, linejunk][, charjunk]) expects two to four arguments.", span);
             }
 
-            var a = RequireStringSequence(arguments[0], "difflib.ndiff(a, b)", span);
-            var b = RequireStringSequence(arguments[1], "difflib.ndiff(a, b)", span);
+            var a = RequireStringSequence(arguments[0], "difflib.ndiff(a, b)", span, context);
+            var b = RequireStringSequence(arguments[1], "difflib.ndiff(a, b)", span, context);
             var linejunk = ParseOptionalPredicate(arguments, 2, "difflib.ndiff(..., linejunk=...)", span);
             var charjunk = arguments.Length >= 4
                 ? ParseOptionalPredicate(arguments, 3, "difflib.ndiff(..., charjunk=...)", span)
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "difflib.restore(delta, which) expects which to be 1 or 2.", span);
             }
 
-            var lines = RequireStringSequence(arguments[0], "difflib.restore(delta, which)", span);
+            var lines = RequireStringSequence(arguments[0], "difflib.restore(delta, which)", span, context);
             var restored = new List<object>();
             var accepted = which == 1 ? "- " : "+ ";
             foreach (var line in lines)
@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib.get_close_matches(word, possibilities[, n][, cutoff]) expects a string word and an iterable of strings.", span);
             }
 
-            var possibilities = RequireStringSequence(arguments[1], "difflib.get_close_matches(word, possibilities)", span);
+            var possibilities = RequireStringSequence(arguments[1], "difflib.get_close_matches(word, possibilities)", span, context);
             var limit = arguments.Length >= 3 && arguments[2] is not PyNone ? RequireInt32(arguments[2], "difflib.get_close_matches(..., n=...) expects n to be an integer.", span) : 3;
             var cutoff = arguments.Length >= 4 && arguments[3] is not PyNone ? RequireDouble(arguments[3], "difflib.get_close_matches(..., cutoff=...) expects cutoff to be a number.", span) : 0.6;
             if (limit <= 0)
@@ -167,14 +167,20 @@ internal sealed partial class LythonRuntime
 
             var scored = new List<(double Score, PyString Value)>();
             var matcher = new DifflibSequenceMatcherObject(null, PyString.Empty, word, autojunk: true, span, context);
+            var work = 0;
             foreach (var candidate in possibilities)
             {
-                matcher.SetSeq1(candidate, span);
-                if (matcher.RealQuickRatio() >= cutoff &&
-                    matcher.QuickRatio() >= cutoff &&
-                    matcher.Ratio() >= cutoff)
+                matcher.SetSeq1(candidate, span, context);
+                if ((++work & 63) == 0)
                 {
-                    scored.Add((matcher.Ratio(), candidate));
+                    context.CheckExecutionBudget(span);
+                }
+
+                if (matcher.RealQuickRatio() >= cutoff &&
+                    matcher.QuickRatio(span, context) >= cutoff &&
+                    matcher.Ratio(span, context) >= cutoff)
+                {
+                    scored.Add((matcher.Ratio(span, context), candidate));
                 }
             }
 
@@ -194,8 +200,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib.diff_bytes(dfunc, a, b, ...) expects a callable diff function and byte line iterables.", span);
             }
 
-            var a = RequireBytesSequence(arguments[1], "difflib.diff_bytes(..., a=...)", span);
-            var b = RequireBytesSequence(arguments[2], "difflib.diff_bytes(..., b=...)", span);
+            var a = RequireBytesSequence(arguments[1], "difflib.diff_bytes(..., a=...)", span, context);
+            var b = RequireBytesSequence(arguments[2], "difflib.diff_bytes(..., b=...)", span, context);
             var fromfile = ParseOptionalBytes(arguments, 3, [], "difflib.diff_bytes(..., fromfile=...)", span);
             var tofile = ParseOptionalBytes(arguments, 4, [], "difflib.diff_bytes(..., tofile=...)", span);
             var fromfiledate = ParseOptionalBytes(arguments, 5, [], "difflib.diff_bytes(..., fromfiledate=...)", span);
@@ -218,7 +224,7 @@ internal sealed partial class LythonRuntime
                 context);
 
             var bytes = new List<object>();
-            foreach (var line in ToSequence(result, span))
+            foreach (var line in ToSequence(result, span, context))
             {
                 if (!PyStringOps.TryAsString(line, out var text))
                 {
@@ -336,11 +342,11 @@ internal sealed partial class LythonRuntime
             return bytes.ToArray();
         }
 
-        internal static IReadOnlyList<PyString> RequireStringSequence(object value, string owner, LythonSourceSpan span)
+        internal static IReadOnlyList<PyString> RequireStringSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             try
             {
-                return ToSequence(value, span)
+                return ToSequence(value, span, context)
                     .Select(item => PyStringOps.TryAsString(item, out var text)
                         ? text
                         : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span))
@@ -352,11 +358,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static IReadOnlyList<byte[]> RequireBytesSequence(object value, string owner, LythonSourceSpan span)
+        private static IReadOnlyList<byte[]> RequireBytesSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             try
             {
-                return ToSequence(value, span)
+                return ToSequence(value, span, context)
                     .Select(item => item is PyBytes bytes
                         ? bytes.ToArray()
                         : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span))
@@ -368,16 +374,45 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public static IReadOnlyList<object> MaterializeSequence(object value, LythonSourceSpan span)
+        /// <summary>Materializes a matcher sequence with growth, count, and work budgets enforced during iteration.</summary>
+        /// <remarks>Ownership of the exact array transfers to the matcher, which commits
+        /// <paramref name="charge"/> and releases it when sequences are replaced. The temporary
+        /// reservation covers growth and the final copy, and is released before ownership
+        /// transfers without any allocation in between.</remarks>
+        public static object[] MaterializeGovernedSequence(object value, LythonSourceSpan span, ExecutionContext context, out long charge)
         {
+            using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+            var items = new List<object>();
+            var chargedCapacity = 0;
             try
             {
-                return ToSequence(value, span).ToArray();
+                foreach (var item in ToSequence(value, span, context))
+                {
+                    items.Add(item);
+                    if (items.Capacity > chargedCapacity)
+                    {
+                        reservation.Grow(16L * (items.Capacity - chargedCapacity), span);
+                        chargedCapacity = items.Capacity;
+                    }
+
+                    context.ObserveCollectionCount(items.Count, span);
+                    if ((items.Count & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
             {
                 throw new LythonRuntimeException("TypeError", "difflib.SequenceMatcher sequence arguments must be iterable.", span);
             }
+
+            var result = items.ToArray();
+            reservation.Grow(16L * result.Length, span);
+            charge = 32L + (16L * result.Length);
+            context.MemoryGovernor.Reserve(charge, span);
+            context.MemoryGovernor.Commit(charge);
+            return result;
         }
 
         internal static int RequireInt32(object value, string message, LythonSourceSpan span)
@@ -426,7 +461,7 @@ internal sealed partial class LythonRuntime
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
-            var groups = matcher.BuildGroupedOpcodes(options.ContextLines);
+            var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)
             {
@@ -453,7 +488,7 @@ internal sealed partial class LythonRuntime
         private static IEnumerable<object> BuildContextDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
-            var groups = matcher.BuildGroupedOpcodes(options.ContextLines);
+            var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)
             {

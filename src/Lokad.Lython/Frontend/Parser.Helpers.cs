@@ -5,7 +5,60 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
+    /// <summary>Enters one level of syntactic nesting shared by suites and right-recursive expressions.</summary>
+    private bool EnterNestingDepth(int tokenIndex)
+    {
+        if (_nestingDepth >= MaxNestingDepth)
+        {
+            AddDiagnostic(
+                "LA0003",
+                $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.",
+                tokenIndex);
+            return false;
+        }
+
+        _nestingDepth++;
+        return true;
+    }
+
+    private void LeaveNestingDepth() => _nestingDepth--;
+
+    /// <summary>Parses a nested operand expression within the shared nesting budget.</summary>
+    private ExpressionSyntax? ParseNestedExpression(int tokenIndex)
+    {
+        if (!EnterNestingDepth(tokenIndex))
+        {
+            return null;
+        }
+
+        try
+        {
+            return ParseExpression();
+        }
+        finally
+        {
+            LeaveNestingDepth();
+        }
+    }
+
     private IReadOnlyList<StatementSyntax>? ParseSuite(LythonDiagnosticCode code, string message)
+    {
+        if (!EnterNestingDepth(_position))
+        {
+            return null;
+        }
+
+        try
+        {
+            return ParseSuiteCore(code, message);
+        }
+        finally
+        {
+            LeaveNestingDepth();
+        }
+    }
+
+    private IReadOnlyList<StatementSyntax>? ParseSuiteCore(LythonDiagnosticCode code, string message)
     {
         if (TryRead(Token.Eol, out _))
         {

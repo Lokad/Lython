@@ -119,7 +119,7 @@ internal sealed partial class Parser
             firstUnpackingSpan = SpanOf(ReadToken());
         }
 
-        var first = ParseExpression();
+        var first = ParseNestedExpression(_position);
         if (first is null)
         {
             return null;

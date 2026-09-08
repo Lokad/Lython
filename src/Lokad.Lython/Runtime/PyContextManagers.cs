@@ -20,16 +20,15 @@ internal static class PyContextManagers
             LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
+        LythonRuntime.ControlSignal? pendingControl;
         try
         {
-            var signal = LythonRuntime.ExecuteStatements(body, context);
-            if (signal is not null)
-            {
-                throw signal;
-            }
-
+            pendingControl = LythonRuntime.ExecuteStatements(body, context);
+        }
+        catch (LythonRuntime.ReturnSignal)
+        {
             _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
-            return PyNone.Instance;
+            throw;
         }
         catch (LythonRuntime.ControlSignal)
         {
@@ -48,6 +47,15 @@ internal static class PyContextManagers
 
             return PyNone.Instance;
         }
+
+        if (pendingControl is not null)
+        {
+            _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+            throw pendingControl;
+        }
+
+        _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+        return PyNone.Instance;
     }
 
     public static async ValueTask<object> ExecuteWithAsync(
@@ -66,16 +74,15 @@ internal static class PyContextManagers
             LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
+        LythonRuntime.ControlSignal? pendingControl;
         try
         {
-            var signal = await LythonRuntime.ExecuteStatementsAsync(body, context).ConfigureAwait(false);
-            if (signal is not null)
-            {
-                throw signal;
-            }
-
+            pendingControl = await LythonRuntime.ExecuteStatementsAsync(body, context).ConfigureAwait(false);
+        }
+        catch (LythonRuntime.ReturnSignal)
+        {
             _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);
-            return PyNone.Instance;
+            throw;
         }
         catch (LythonRuntime.ControlSignal)
         {
@@ -97,6 +104,15 @@ internal static class PyContextManagers
 
             return PyNone.Instance;
         }
+
+        if (pendingControl is not null)
+        {
+            _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);
+            throw pendingControl;
+        }
+
+        _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);
+        return PyNone.Instance;
     }
 
     public static IPyContextManager Resolve(object target, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

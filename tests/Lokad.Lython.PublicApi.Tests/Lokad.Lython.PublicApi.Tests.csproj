@@ -13,6 +13,18 @@
     <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
   </ItemGroup>
 
+  <!--
+    Shared test-only host fixture, source-linked from the white-box harness
+    (R27). The mock host only uses the public embedding API, so both test
+    assemblies compile the same file without a friend assembly.
+  -->
+  <ItemGroup>
+    <Compile Include="..\Lokad.Lython.Tests\Harness\MockLythonHost.cs" Link="Harness\MockLythonHost.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\DelayedLythonHost.cs" Link="Harness\DelayedLythonHost.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureLoader.cs" Link="Harness\FixtureLoader.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureAssertions.cs" Link="Harness\FixtureAssertions.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>

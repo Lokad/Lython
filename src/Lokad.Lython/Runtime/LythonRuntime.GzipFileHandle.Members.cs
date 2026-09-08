@@ -16,11 +16,7 @@ internal sealed partial class LythonRuntime
                 "mode" => PyString.FromString(_options.Mode),
                 "encoding" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(EncodingName),
                 "errors" when _options.ContentKind == GzipContentKind.Text => PyString.FromString(ErrorsName),
-                "__enter__" => BoundCallable.CreateNoArguments(this, "gzip file.__enter__", static (receiver, span, _) =>
-                {
-                    receiver.EnsureOpen(span);
-                    return receiver;
-                }),
+                "__enter__" => BoundCallable.CreateNoArguments(this, "gzip file.__enter__", static (receiver, span, _) => receiver.Enter(span)),
                 "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
@@ -28,14 +24,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "gzip file __exit__(exc_type, exc, tb) expects three arguments", span);
                     }
 
-                    if (arguments[0] is PyNone)
-                    {
-                        Close(span);
-                    }
-                    else
-                    {
-                        AbortClose();
-                    }
+                    ExitWithOutcome(arguments[0] is PyNone, span);
                     return false;
                 },
                 async (arguments, span, _) =>
@@ -45,14 +34,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "gzip file __exit__(exc_type, exc, tb) expects three arguments", span);
                     }
 
-                    if (arguments[0] is PyNone)
-                    {
-                        await CloseAsync(span).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        AbortClose();
-                    }
+                    await ExitWithOutcomeAsync(arguments[0] is PyNone, span).ConfigureAwait(false);
                     return false;
                 }),
                 "close" => BoundCallable.CreateNoArguments(this, "gzip file.close", static (receiver, span, _) =>
@@ -96,46 +78,61 @@ internal sealed partial class LythonRuntime
                     return new BigInteger(receiver._options.Operation == GzipOperation.Read ? receiver._readCursor : receiver._writeBuffer.Length);
                 }),
                 "seek" => BoundCallable.Create((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),
-                "read" => BoundCallable.Create((arguments, span, _) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span), span), "gzip file.read", ["size"], 0),
-                "readline" => BoundCallable.Create((arguments, span, _) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span), span), "gzip file.readline", ["size"], 0),
-                "readlines" => BoundCallable.Create((arguments, span, _) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span), span), "gzip file.readlines", ["hint"], 0),
+                "read" => BoundCallable.Create((arguments, span, context) => Read(ParseOptionalSize(arguments, "gzip file.read([size])", span, context), span), "gzip file.read", ["size"], 0),
+                "readline" => BoundCallable.Create((arguments, span, context) => ReadLine(ParseOptionalSize(arguments, "gzip file.readline([size])", span, context), span), "gzip file.readline", ["size"], 0),
+                "readlines" => BoundCallable.Create((arguments, span, context) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span, context), span), "gzip file.readlines", ["hint"], 0),
                 "write" => BoundCallable.Create((arguments, span, _) => Write(arguments, span), "gzip file.write", ["data"]),
-                "writelines" => BoundCallable.Create((arguments, span, _) => WriteLines(arguments, span), "gzip file.writelines", ["lines"]),
+                "writelines" => BoundCallable.Create((arguments, span, context) => WriteLines(arguments, span, context), "gzip file.writelines", ["lines"]),
                 _ => MissingMemberValue.Instance,
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public object Enter() => this;
+        public object Enter(LythonSourceSpan? span)
+        {
+            EnsureOpen(span);
+            return this;
+        }
 
-        object IPyContextManager.Enter() => Enter();
+        public object Enter() => Enter(null);
 
-        ValueTask<object> IPyAsyncContextManager.EnterAsync() => ValueTask.FromResult<object>(Enter());
+        object IPyContextManager.Enter() => Enter(null);
+
+        ValueTask<object> IPyAsyncContextManager.EnterAsync() => ValueTask.FromResult<object>(Enter(null));
+
+        /// <summary>Finalizes valid staged writes when the body raised an unrelated error, preserving abort only for validation failures.</summary>
+        private void ExitWithOutcome(bool completedNormally, LythonSourceSpan? span)
+        {
+            if (!completedNormally && _validationFailed)
+            {
+                AbortClose();
+                return;
+            }
+
+            Close(span);
+        }
+
+        private async ValueTask ExitWithOutcomeAsync(bool completedNormally, LythonSourceSpan? span)
+        {
+            if (!completedNormally && _validationFailed)
+            {
+                AbortClose();
+                return;
+            }
+
+            await CloseAsync(span).ConfigureAwait(false);
+        }
 
         bool IPyContextManager.Exit(object exceptionType, object exceptionValue, object traceback)
         {
-            if (exceptionType is PyNone)
-            {
-                Close(null);
-            }
-            else
-            {
-                AbortClose();
-            }
+            ExitWithOutcome(exceptionType is PyNone, null);
             return false;
         }
 
         async ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {
-            if (exceptionType is PyNone)
-            {
-                await CloseAsync(null).ConfigureAwait(false);
-            }
-            else
-            {
-                AbortClose();
-            }
+            await ExitWithOutcomeAsync(exceptionType is PyNone, null).ConfigureAwait(false);
             return false;
         }
 

@@ -127,10 +127,19 @@ internal sealed partial class LythonRuntime
                 return CreateBytes([], _context, span);
             }
 
-            var binaryEnd = size < 0 ? bytes.Length : Math.Min(bytes.Length, _readCursor + size);
-            var binary = bytes.Bytes.Slice(_readCursor, binaryEnd - _readCursor).ToArray();
-            _readCursor = binaryEnd;
-            return CreateBytes(binary, _context, span);
+            var remaining = bytes.Length - _readCursor;
+            var take = size < 0 ? remaining : Math.Min(remaining, size);
+            var binaryEnd = _readCursor + take;
+            var length = binaryEnd - _readCursor;
+            // Cover the transient copy as well as the owned result that
+            // CreateBytes charges; the reservation is released only after
+            // ownership transfers, with no allocation in between.
+            using (_context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
+            {
+                var binary = bytes.Bytes.Slice(_readCursor, length).ToArray();
+                _readCursor = binaryEnd;
+                return CreateBytes(binary, _context, span);
+            }
         }
 
         private object ReadLine(int size, LythonSourceSpan? span)
@@ -145,7 +154,7 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                var end = FindTextLineEnd(source, _readCursor);
+                var end = TextLineScanning.FindLineEndByte(source, _readCursor, _options.Newline);
                 if (size >= 0)
                 {
                     end = Math.Min(end, text.GetByteIndexAfterRunes(_readCursor, size));
@@ -162,25 +171,32 @@ internal sealed partial class LythonRuntime
                 return CreateBytes([], _context, span);
             }
 
-            var binaryEnd = _readCursor;
-            while (binaryEnd < bytes.Length && bytes.Bytes[binaryEnd++] != (byte)'\n')
-            {
-            }
+            // Plain line-feed scanning, shared with text readers and ZIP members.
+            var binaryEnd = TextLineScanning.FindLineEndByte(bytes.Bytes, _readCursor, TextNewlineMode.PreserveLineFeed);
 
             if (size >= 0)
             {
-                binaryEnd = Math.Min(binaryEnd, _readCursor + size);
+                var remainingBytes = bytes.Length - _readCursor;
+                var take = Math.Min(size, remainingBytes);
+                var maxEnd = _readCursor + take;
+                binaryEnd = Math.Min(binaryEnd, maxEnd);
             }
 
-            var lineBytes = bytes.Bytes.Slice(_readCursor, binaryEnd - _readCursor).ToArray();
-            _readCursor = binaryEnd;
-            return CreateBytes(lineBytes, _context, span);
+            var lineLength = binaryEnd - _readCursor;
+            using (_context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(lineLength), span))
+            {
+                var lineBytes = bytes.Bytes.Slice(_readCursor, lineLength).ToArray();
+                _readCursor = binaryEnd;
+                return CreateBytes(lineBytes, _context, span);
+            }
         }
 
         private object ReadLines(int hint, LythonSourceSpan? span)
         {
             EnsureReadable(span);
-            var lines = new List<object>();
+            // Accumulate directly in the governed result so growth is charged
+            // as it happens; no second copy is needed on return.
+            var lines = new PyList([], _context.MemoryGovernor, span);
             var total = 0;
             while (true)
             {
@@ -192,13 +208,19 @@ internal sealed partial class LythonRuntime
 
                 lines.Add(line);
                 total += line is PyString text ? text.Utf8Bytes.Length : ((PyBytes)line).Length;
+                _context.ObserveCollectionCount(lines.Count, span);
+                if ((lines.Count & 63) == 0)
+                {
+                    _context.CheckExecutionBudget(span);
+                }
+
                 if (hint > 0 && total > hint)
                 {
                     break;
                 }
             }
 
-            return new PyList(lines, _context.MemoryGovernor, span);
+            return lines;
         }
 
         private object Write(object[] arguments, LythonSourceSpan span)
@@ -249,7 +271,7 @@ internal sealed partial class LythonRuntime
             return new BigInteger(bytes.Length);
         }
 
-        private object WriteLines(object[] arguments, LythonSourceSpan span)
+        private object WriteLines(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             EnsureWritable(span);
             if (arguments.Length != 1)
@@ -257,7 +279,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "gzip file.writelines(lines) expects one iterable", span);
             }
 
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 _ = Write([item], span);
             }
@@ -345,6 +367,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        /// <summary>
+        /// Finalizes staged writes per the R12 states: validation failures must
+        /// go through <see cref="AbortClose"/> instead; unrelated body errors still
+        /// publish valid writes while propagating; host or budget failures propagate
+        /// with the handle left open and staged output retained for retry. Idempotent.
+        /// </summary>
         private void Close(LythonSourceSpan? span)
         {
             if (IsClosed)
@@ -357,6 +385,7 @@ internal sealed partial class LythonRuntime
             ReleaseWriteBuffers();
         }
 
+        /// <summary>Asynchronous <see cref="Close"/> with identical finalization states.</summary>
         private async ValueTask CloseAsync(LythonSourceSpan? span)
         {
             if (IsClosed)
@@ -369,6 +398,11 @@ internal sealed partial class LythonRuntime
             ReleaseWriteBuffers();
         }
 
+        /// <summary>
+        /// Discards staged output after a validation failure without publishing.
+        /// Only validation failures abort; host or budget failures keep the staged
+        /// output for an explicit retry instead.
+        /// </summary>
         private void AbortClose()
         {
             IsClosed = true;
@@ -385,45 +419,6 @@ internal sealed partial class LythonRuntime
         }
 
         private readonly record struct GzipWritePayload(byte[] Bytes, long MemoryCharge);
-
-        private int FindTextLineEnd(ReadOnlySpan<byte> source, int start)
-        {
-            for (var i = start; i < source.Length; i++)
-            {
-                if (source[i] == (byte)'\n' &&
-                    _options.Newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
-                {
-                    return i + 1;
-                }
-
-                if (source[i] != (byte)'\r')
-                {
-                    continue;
-                }
-
-                if (_options.Newline == TextNewlineMode.PreserveCarriageReturn)
-                {
-                    return i + 1;
-                }
-
-                if (_options.Newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
-                {
-                    if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
-                    {
-                        return i + 2;
-                    }
-
-                    continue;
-                }
-
-                if (_options.Newline == TextNewlineMode.PreserveUniversal)
-                {
-                    return i + 1 < source.Length && source[i + 1] == (byte)'\n' ? i + 2 : i + 1;
-                }
-            }
-
-            return source.Length;
-        }
 
         private void EnsureOpen(LythonSourceSpan? span)
         {
@@ -451,19 +446,46 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static int ParseOptionalSize(object[] arguments, string owner, LythonSourceSpan span)
+        private static int ParseOptionalSize(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length == 0 || arguments[0] is PyNone)
+            if (arguments.Length == 0 || arguments[0] is null or PyNone)
             {
                 return -1;
             }
 
-            if (arguments.Length != 1 || arguments[0] is not BigInteger integer || integer < int.MinValue || integer > int.MaxValue)
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", owner + " expects an integer", span);
+            }
+
+            var candidate = arguments[0];
+            if (candidate is PyInstance indexInstance)
+            {
+                candidate = CoerceGzipIndexProtocol(indexInstance, context, span, owner);
+            }
+
+            if (!Numbers.PyNumberOps.TryAsInteger(candidate, out var integer) || integer < int.MinValue || integer > int.MaxValue)
             {
                 throw new LythonRuntimeException("TypeError", owner + " expects an integer", span);
             }
 
             return (int)integer;
+        }
+
+        private static object CoerceGzipIndexProtocol(PyInstance instance, ExecutionContext context, LythonSourceSpan span, string owner)
+        {
+            if (!instance.TryGetAttribute("__index__", context, span, out var member) || member is not ICallable callable)
+            {
+                return instance;
+            }
+
+            var converted = callable.Invoke([], span, context);
+            if (!Numbers.PyNumberOps.TryAsInteger(converted, out _))
+            {
+                throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
+            }
+
+            return converted;
         }
 
         private static bool IsEmptyReadValue(object value)

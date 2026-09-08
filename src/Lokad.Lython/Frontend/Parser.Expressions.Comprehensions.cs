@@ -139,7 +139,20 @@ internal sealed partial class Parser
 
     private ExpressionSyntax? ParseComprehensionIterableExpression()
     {
-        var expression = ParseOrExpression();
+        if (!EnterNestingDepth(_position))
+        {
+            return null;
+        }
+
+        ExpressionSyntax? expression;
+        try
+        {
+            expression = ParseOrExpression();
+        }
+        finally
+        {
+            LeaveNestingDepth();
+        }
         if (expression is null)
         {
             return null;

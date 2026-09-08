@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(name, span);
         }
 
-        for (var current = context; current is not null; current = current.Parent)
+        for (var current = context; current is not null; current = current.ParentContext)
         {
             if (current.CurrentExecutableFrame is not null &&
                 current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
@@ -97,9 +97,9 @@ internal sealed partial class LythonRuntime
     internal static ExecutionContext GetGlobalContext(ExecutionContext context)
     {
         var current = context;
-        while (current.Parent is not null)
+        while (current.ParentContext is not null)
         {
-            current = current.Parent;
+            current = current.ParentContext;
         }
 
         return current;
@@ -233,12 +233,13 @@ internal sealed partial class LythonRuntime
         => PyIteration.ToSequence(value, span);
 
     internal static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, ExecutionContext context)
-        => value is PyInstance instance
-            ? new PyUserIterator(instance, context, span).Iterate()
-            : PyIteration.ToSequence(value, span);
+        => PyIteration.ToSequence(value, span, context);
 
     internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
         => PyIteration.ToSequenceAsync(value, span);
+
+    internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
+        => PyIteration.ToSequenceAsync(value, span, context);
 
     internal static bool AreEqual(object left, object right) => PyEquality.AreEqual(left, right);
 
@@ -426,7 +427,7 @@ internal sealed partial class LythonRuntime
                 StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
-                var values = MaterializeSequenceForUnpacking(value, span);
+                var values = MaterializeSequenceForUnpacking(value, span, context);
                 if (values.Length != tuple.Items.Count)
                 {
                     throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
@@ -492,7 +493,7 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var values = MaterializeSequenceForUnpacking(value, span);
+        var values = MaterializeSequenceForUnpacking(value, span, context);
         var layout = UnpackingLayout.FromTargets(targets);
         if (!layout.AcceptsValueCount(values.Length))
         {
@@ -526,7 +527,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object[] MaterializeSequenceForUnpacking(object value, LythonSourceSpan span)
+    private static object[] MaterializeSequenceForUnpacking(object value, LythonSourceSpan span, ExecutionContext context)
     {
         if (value is object[] array)
         {
@@ -544,7 +545,7 @@ internal sealed partial class LythonRuntime
         }
 
         var items = new List<object>();
-        foreach (var item in ToSequence(value, span))
+        foreach (var item in ToSequence(value, span, context))
         {
             items.Add(item);
         }

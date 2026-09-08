@@ -12,6 +12,7 @@ internal sealed partial class Parser
             return null;
         }
 
+        var postfixCount = 0;
         while (true)
         {
             IPostfixParser? matchingParser = CurrentToken switch
@@ -25,6 +26,16 @@ internal sealed partial class Parser
             if (matchingParser is null)
             {
                 return expression;
+            }
+
+            postfixCount++;
+            if (postfixCount > MaxNestingDepth)
+            {
+                AddDiagnostic(
+                    "LA0003",
+                    $"Expression chain exceeds the maximum of {MaxNestingDepth} operands.",
+                    _position);
+                return null;
             }
 
             expression = matchingParser.Parse(this, expression);
@@ -107,7 +118,7 @@ internal sealed partial class Parser
                         return null;
                     }
 
-                    var argument = parser.ParseExpression();
+                    var argument = parser.ParseNestedExpression(parser._position);
                     if (argument is null)
                     {
                         return null;
@@ -169,7 +180,7 @@ internal sealed partial class Parser
             ExpressionSyntax? start = null;
             if (parser.CurrentToken != Token.Colon)
             {
-                start = parser.ParseExpression();
+                start = parser.ParseNestedExpression(parser._position);
                 if (start is null)
                 {
                     parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
@@ -186,7 +197,7 @@ internal sealed partial class Parser
                 ExpressionSyntax? end = null;
                 if (parser.CurrentToken != Token.CloseBracket && parser.CurrentToken != Token.Colon)
                 {
-                    end = parser.ParseExpression();
+                    end = parser.ParseNestedExpression(parser._position);
                     if (end is null)
                     {
                         parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
@@ -202,7 +213,7 @@ internal sealed partial class Parser
                     parser.SkipGroupedExpressionTrivia();
                     if (parser.CurrentToken != Token.CloseBracket)
                     {
-                        step = parser.ParseExpression();
+                        step = parser.ParseNestedExpression(parser._position);
                         if (step is null)
                         {
                             parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
@@ -245,7 +256,7 @@ internal sealed partial class Parser
                         break;
                     }
 
-                    var next = parser.ParseExpression();
+                    var next = parser.ParseNestedExpression(parser._position);
                     if (next is null)
                     {
                         parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);

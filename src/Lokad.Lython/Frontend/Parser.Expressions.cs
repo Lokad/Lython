@@ -57,10 +57,29 @@ internal sealed partial class Parser
                 return null;
             }
 
-            var alternative = ParseExpression();
+            var diagnosticCount = _diagnostics.Count;
+            ExpressionSyntax? alternative;
+            if (!EnterNestingDepth(elseToken))
+            {
+                return null;
+            }
+
+            try
+            {
+                alternative = ParseExpression();
+            }
+            finally
+            {
+                LeaveNestingDepth();
+            }
+
             if (alternative is null)
             {
-                AddDiagnostic("LA1016", "Expected expression after 'else'.", elseToken);
+                if (_diagnostics.Count == diagnosticCount)
+                {
+                    AddDiagnostic("LA1016", "Expected expression after 'else'.", elseToken);
+                }
+
                 return null;
             }
 
@@ -267,9 +286,19 @@ internal sealed partial class Parser
             return null;
         }
 
+        var operandCount = 1;
         while (TryGetLeftAssociativeOperator(layer, CurrentToken, out var binaryOperator))
         {
             var operatorToken = ReadToken();
+            operandCount++;
+            if (operandCount > MaxNestingDepth)
+            {
+                AddDiagnostic(
+                    "LA0003",
+                    $"Expression chain exceeds the maximum of {MaxNestingDepth} operands.",
+                    operatorToken);
+                return null;
+            }
             var right = ParseNextLayer(layer);
             if (right is null)
             {
@@ -465,10 +494,29 @@ internal sealed partial class Parser
             }
 
             var operatorToken = ReadToken();
-            var right = ParseUnaryExpression();
+            var diagnosticCount = _diagnostics.Count;
+            ExpressionSyntax? right;
+            if (!EnterNestingDepth(operatorToken))
+            {
+                return null;
+            }
+
+            try
+            {
+                right = ParseUnaryExpression();
+            }
+            finally
+            {
+                LeaveNestingDepth();
+            }
+
             if (right is null)
             {
-                AddDiagnostic("LA1066", "Expected expression after '**'.", operatorToken);
+                if (_diagnostics.Count == diagnosticCount)
+                {
+                    AddDiagnostic("LA1066", "Expected expression after '**'.", operatorToken);
+                }
+
                 return null;
             }
 

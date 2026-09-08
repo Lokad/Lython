@@ -348,7 +348,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             return PyIterationResult.End;
         }
 
-        var values = await PyIteration.MaterializeAsync(current, _span).ConfigureAwait(false);
+        var values = await PyIteration.MaterializeAsync(current, _span, _context).ConfigureAwait(false);
         var args = values
             .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
             .ToArray();

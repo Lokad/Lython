@@ -10,6 +10,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed class DifflibDifferObject
     {
+        // Must remain a power of two: chunk checks below use it as a bit mask.
+        private const int BudgetCheckInterval = 64;
         private readonly object? _linejunk;
         private readonly object? _charjunk;
 
@@ -32,8 +34,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Differ.compare(a, b) expects two arguments.", span);
                     }
 
-                    var a = DifflibModule.RequireStringSequence(arguments[0], "Differ.compare(a, b)", span);
-                    var b = DifflibModule.RequireStringSequence(arguments[1], "Differ.compare(a, b)", span);
+                    var a = DifflibModule.RequireStringSequence(arguments[0], "Differ.compare(a, b)", span, context);
+                    var b = DifflibModule.RequireStringSequence(arguments[1], "Differ.compare(a, b)", span, context);
                     return new PyList(CompareLines(a, b, span, context), context.MemoryGovernor, span);
                 }, "Differ.compare", ["a", "b"]),
                 _ => MissingMemberValue.Instance,
@@ -45,7 +47,7 @@ internal sealed partial class LythonRuntime
         internal IEnumerable<object> CompareLines(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, LythonSourceSpan span, ExecutionContext context)
         {
             var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
-            foreach (var opcode in matcher.BuildOpcodes())
+            foreach (var opcode in matcher.BuildOpcodes(span, context))
             {
                 foreach (var line in opcode.Tag switch
                 {
@@ -107,12 +109,18 @@ internal sealed partial class LythonRuntime
             var bestI = alo;
             var bestJ = blo;
 
+            var gridWork = 0;
             for (var j = blo; j < bhi; j++)
             {
                 var bj = b[j];
                 cruncher.SetSeq2(bj, span, context);
                 for (var i = alo; i < ahi; i++)
                 {
+                    if ((++gridWork & (BudgetCheckInterval - 1)) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+
                     var ai = a[i];
                     if (AreEqual(ai, bj))
                     {
@@ -121,12 +129,12 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    cruncher.SetSeq1(ai, span);
+                    cruncher.SetSeq1(ai, span, context);
                     if (cruncher.RealQuickRatio() > bestRatio &&
-                        cruncher.QuickRatio() > bestRatio &&
-                        cruncher.Ratio() > bestRatio)
+                        cruncher.QuickRatio(span, context) > bestRatio &&
+                        cruncher.Ratio(span, context) > bestRatio)
                     {
-                        bestRatio = cruncher.Ratio();
+                        bestRatio = cruncher.Ratio(span, context);
                         bestI = i;
                         bestJ = j;
                     }
@@ -165,7 +173,7 @@ internal sealed partial class LythonRuntime
                 var aTags = new StringBuilder();
                 var bTags = new StringBuilder();
                 cruncher.SetSeqs(aLine, bLine, span, context);
-                foreach (var opcode in cruncher.BuildOpcodes())
+                foreach (var opcode in cruncher.BuildOpcodes(span, context))
                 {
                     var leftLength = opcode.I2 - opcode.I1;
                     var rightLength = opcode.J2 - opcode.J1;

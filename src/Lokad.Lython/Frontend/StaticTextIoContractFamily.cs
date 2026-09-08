@@ -25,12 +25,13 @@ internal static class StaticTextIoContractFamily
 
         if (member.MemberName == "write_text")
         {
-            StaticContractChecks.AnalyzeTextBoundaryStringArgument(arguments, 0, "text", TextBoundaryCode, TextBoundaryMessage, diagnostics, bindings);
-            if (StaticAbstractValueResolver.TryResolveKnownPath(member.Target, bindings))
+            if (!StaticAbstractValueResolver.TryResolveKnownPath(member.Target, bindings))
             {
-                AnalyzePathWriteTextCall(arguments, diagnostics, bindings);
+                return false;
             }
 
+            StaticContractChecks.AnalyzeTextBoundaryStringArgument(arguments, 0, "text", TextBoundaryCode, TextBoundaryMessage, diagnostics, bindings);
+            AnalyzePathWriteTextCall(arguments, diagnostics, bindings);
             return true;
         }
 
@@ -440,11 +441,7 @@ internal static class StaticTextIoContractFamily
 
         if (encodingExpression is not NoneLiteralExpressionSyntax &&
             StaticAbstractValueResolver.TryResolveKnownString(encodingExpression, bindings, out var encodingText) &&
-            !encodingText.Equals("utf-8", StringComparison.OrdinalIgnoreCase) &&
-            !encodingText.Equals("utf-8-sig", StringComparison.OrdinalIgnoreCase) &&
-            !encodingText.Equals("latin-1", StringComparison.OrdinalIgnoreCase) &&
-            !encodingText.Equals("latin1", StringComparison.OrdinalIgnoreCase) &&
-            !encodingText.Equals("iso-8859-1", StringComparison.OrdinalIgnoreCase))
+            !StaticTextContractFacts.IsSupportedEncodingName(encodingText))
         {
             AddDiagnostic(diagnostics, code, unsupportedEncodingMessage, encodingExpression.Span);
         }
@@ -475,7 +472,7 @@ internal static class StaticTextIoContractFamily
         }
         else if (newlineExpression is not NoneLiteralExpressionSyntax &&
                  StaticAbstractValueResolver.TryResolveKnownString(newlineExpression, bindings, out var newlineText) &&
-                 newlineText is not ("" or "\n" or "\r" or "\r\n"))
+                 !StaticTextContractFacts.IsSupportedNewlineName(newlineText))
         {
             AddDiagnostic(diagnostics, code, unsupportedNewlineMessage, newlineExpression.Span);
         }

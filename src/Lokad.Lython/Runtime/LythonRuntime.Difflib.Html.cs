@@ -38,16 +38,16 @@ internal sealed partial class LythonRuntime
         private object MakeTable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var options = ParseHtmlArguments(arguments, includeCharset: false, span);
-            var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_table(fromlines, tolines)", span);
-            var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_table(fromlines, tolines)", span);
+            var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_table(fromlines, tolines)", span, context);
+            var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_table(fromlines, tolines)", span, context);
             return PyString.FromString(BuildTable(fromLines, toLines, options, context, span));
         }
 
         private object MakeFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var options = ParseHtmlArguments(arguments, includeCharset: true, span);
-            var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_file(fromlines, tolines)", span);
-            var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_file(fromlines, tolines)", span);
+            var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_file(fromlines, tolines)", span, context);
+            var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_file(fromlines, tolines)", span, context);
             var table = BuildTable(fromLines, toLines, options, context, span);
             var html =
                 "<!DOCTYPE html>\n" +
@@ -97,8 +97,8 @@ internal sealed partial class LythonRuntime
             var b = toLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()))).ToArray();
             var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
             var groups = options.Context
-                ? matcher.BuildGroupedOpcodes(options.NumLines).ToArray()
-                : [matcher.BuildOpcodes()];
+                ? matcher.BuildGroupedOpcodes(options.NumLines, span, context).ToArray()
+                : [matcher.BuildOpcodes(span, context)];
 
             var builder = new StringBuilder();
             builder.Append("<table class=\"diff\" summary=\"Differences\">\n");

@@ -12,8 +12,7 @@ internal sealed partial class LythonRuntime
     private readonly record struct MinMaxArguments(
         IReadOnlyList<object> Positional,
         ICallable? Key,
-        object DefaultValue,
-        bool HasDefaultValue);
+        OptionalValue<object> Default);
 
     private enum ExtremumOperation
     {
@@ -27,6 +26,10 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
         }
+
+        // Materialize before validating key so one-time iterable effects precede the key error, matching CPython.
+        var materialized = new PyList(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
+        context.ObserveCollectionCount(materialized.Count, span);
 
         var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
         if (keyCallable is not null &&
@@ -43,7 +46,7 @@ internal sealed partial class LythonRuntime
         }
 
         using var items = SortItems(
-            ToSequence(arguments[0], span, context),
+            materialized,
             keyCallable as ICallable,
             reverse,
             span,
@@ -61,7 +64,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
         }
 
-        var values = await MaterializeSequenceAsync(arguments[0], span).ConfigureAwait(false);
+        var values = await MaterializeSequenceAsync(arguments[0], span, context).ConfigureAwait(false);
         var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
         if (keyCallable is not null &&
             !ReferenceEquals(keyCallable, PyNone.Instance) &&
@@ -86,13 +89,13 @@ internal sealed partial class LythonRuntime
     private static object MinMax(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
         var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
-        var (positional, keyCallable, defaultValue, hasDefaultValue) = BindMinMaxArguments(arguments, operationName, span);
-        using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span) : positional).GetEnumerator();
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
+        using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span, context) : positional).GetEnumerator();
         if (!enumerator.MoveNext())
         {
-            if (hasDefaultValue)
+            if (defaultValue.HasValue)
             {
-                return defaultValue;
+                return defaultValue.Value;
             }
 
             throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
@@ -122,19 +125,19 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
         var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
-        var (positional, keyCallable, defaultValue, hasDefaultValue) = BindMinMaxArguments(arguments, operationName, span);
+        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
         if (positional.Count > 1)
         {
             return await MinMaxValuesAsync(positional, keyCallable, operation, span, context).ConfigureAwait(false);
         }
 
-        await using var cursor = PyIteration.Cursor.Create(positional[0], span);
+        await using var cursor = PyIteration.Cursor.Create(positional[0], span, context);
         var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
-            if (hasDefaultValue)
+            if (defaultValue.HasValue)
             {
-                return defaultValue;
+                return defaultValue.Value;
             }
 
             throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
@@ -201,8 +204,7 @@ internal sealed partial class LythonRuntime
         var positional = new List<object>();
         ICallable? key = null;
         var sawKey = false;
-        object defaultValue = PyNone.Instance;
-        var hasDefaultValue = false;
+        var defaultValue = OptionalValue<object>.Missing;
         foreach (var argument in arguments)
         {
             if (argument.IsPositional)
@@ -230,13 +232,12 @@ internal sealed partial class LythonRuntime
 
             if (argument.KeywordName == "default")
             {
-                if (hasDefaultValue)
+                if (defaultValue.HasValue)
                 {
                     throw new LythonRuntimeException("TypeError", $"{name}() got multiple values for keyword argument 'default'", span);
                 }
 
-                defaultValue = argument.Value;
-                hasDefaultValue = true;
+                defaultValue = OptionalValue<object>.Present(argument.Value);
                 continue;
             }
 
@@ -248,12 +249,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{name} expected at least 1 argument, got 0", span);
         }
 
-        if (positional.Count > 1 && hasDefaultValue)
+        if (positional.Count > 1 && defaultValue.HasValue)
         {
             throw new LythonRuntimeException("TypeError", $"Cannot specify a default for {name}() with multiple positional arguments", span);
         }
 
-        return new MinMaxArguments(positional, key, defaultValue, hasDefaultValue);
+        return new MinMaxArguments(positional, key, defaultValue);
     }
 
     private static bool IsSortKeyLessThan(object left, object right, LythonSourceSpan span, ExecutionContext context)
@@ -311,6 +312,11 @@ internal sealed partial class LythonRuntime
                             ? item
                             : CallableInvocation.InvokeUnary(keyCallable, item, span, context)),
                     span);
+                context.ObserveCollectionCount(entries.Count, span);
+                if ((entries.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             entries.Sort(
@@ -344,6 +350,11 @@ internal sealed partial class LythonRuntime
                             ? item
                             : await CallableInvocation.InvokeUnaryAsync(keyCallable, item, span, context).ConfigureAwait(false)),
                     span);
+                context.ObserveCollectionCount(entries.Count, span);
+                if ((entries.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             await entries.SortAsync(
@@ -359,13 +370,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span)
+    private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
     {
         if (value is PyGeneratorExpression generator)
         {
             return await generator.MaterializeAsync().ConfigureAwait(false);
         }
 
-        return await PyIteration.MaterializeAsync(value, span).ConfigureAwait(false);
+        return await PyIteration.MaterializeAsync(value, span, context).ConfigureAwait(false);
     }
 }

@@ -96,15 +96,17 @@ internal sealed partial class LythonRuntime
 
         public long? MaxExecutionMemoryBytes { get; init; }
 
-        public const int MaxInterpreterDepth = 512;
+        // Counters stay 64-bit wide: reaching 2^63 increments is infeasible, so
+    // enforcement can never wrap around to negative and switch itself off.
+    public const int MaxInterpreterDepth = 512;
 
-        public int ExecutionStepCount { get; set; }
+        public long ExecutionStepCount { get; set; }
 
-        public int CurrentRecursionDepth { get; set; }
+        public long CurrentRecursionDepth { get; set; }
 
-        public int CurrentInterpreterDepth { get; set; }
+        public long CurrentInterpreterDepth { get; set; }
 
-        public int HostCallCount { get; set; }
+        public long HostCallCount { get; set; }
 
         public static ExecutionLimits FromOptions(LythonRunOptions? options)
         {
@@ -131,9 +133,9 @@ internal sealed partial class LythonRuntime
                 return null;
             }
 
-            if (limit.Value.Bytes > int.MaxValue)
+            if (limit.Value.Bytes < 0 || limit.Value.Bytes > int.MaxValue)
             {
-                throw new ArgumentOutOfRangeException(parameterName, limit.Value.Bytes, "This byte limit cannot exceed Int32.MaxValue.");
+                throw new ArgumentOutOfRangeException(parameterName, limit.Value.Bytes, "This byte limit cannot be negative and cannot exceed Int32.MaxValue.");
             }
 
             return (int)limit.Value.Bytes;

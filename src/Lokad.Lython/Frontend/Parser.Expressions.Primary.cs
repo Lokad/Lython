@@ -175,10 +175,29 @@ internal sealed partial class Parser
             return null;
         }
 
-        var body = ParseExpression();
+        var diagnosticCount = _diagnostics.Count;
+        ExpressionSyntax? body;
+        if (!EnterNestingDepth(_position))
+        {
+            return null;
+        }
+
+        try
+        {
+            body = ParseExpression();
+        }
+        finally
+        {
+            LeaveNestingDepth();
+        }
+
         if (body is null)
         {
-            AddDiagnostic("LA1072", "Expected expression body in lambda.", _position);
+            if (_diagnostics.Count == diagnosticCount)
+            {
+                AddDiagnostic("LA1072", "Expected expression body in lambda.", _position);
+            }
+
             return null;
         }
 

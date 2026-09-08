@@ -12,6 +12,8 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     private readonly Dictionary<string, byte[]> _binaryFiles = new(StringComparer.Ordinal);
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _nextWriteBytesFailures = new(StringComparer.Ordinal);
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
     private MockTextInput? _stdin;
@@ -126,6 +128,17 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
+        if (_writeBytesFailures.TryGetValue(path, out var writeFailure))
+        {
+            throw new InvalidOperationException(writeFailure);
+        }
+
+        if (_nextWriteBytesFailures.TryGetValue(path, out var nextFailure))
+        {
+            _nextWriteBytesFailures.Remove(path);
+            throw new InvalidOperationException(nextFailure);
+        }
+
         EnsureDirectory(ParentOf(path));
         _binaryFiles[path] = bytes.ToArray();
         return ValueTask.CompletedTask;
@@ -438,6 +451,22 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     public void FailListDir(string path, string message)
     {
         _listDirFailures[NormalizeDirectory(path)] = message;
+    }
+
+    public void FailWriteBytes(string path, string message)
+    {
+        _writeBytesFailures[NormalizePath(path)] = message;
+    }
+
+    public void ClearWriteBytesFailures()
+    {
+        _writeBytesFailures.Clear();
+        _nextWriteBytesFailures.Clear();
+    }
+
+    public void FailNextWriteBytes(string path, string message)
+    {
+        _nextWriteBytesFailures[NormalizePath(path)] = message;
     }
 
     public void SeedStandardInput(string text)

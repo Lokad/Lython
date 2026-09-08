@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "list(iterable) expects one argument.", span);
         }
 
-        var items = await PyIteration.MaterializeAsync(arguments[0], span).ConfigureAwait(false);
+        var items = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        var items = await PyIteration.MaterializeAsync(arguments[0], span).ConfigureAwait(false);
+        var items = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
         var result = new PyTuple(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
@@ -201,7 +201,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PySet(context.MemoryGovernor, span);
-        await foreach (var item in ToSequenceAsync(arguments[0], span).ConfigureAwait(false))
+        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
             context.ObserveCollectionCount(result.Count, span);

@@ -12,6 +12,12 @@ internal sealed partial class Parser
     private int _position;
     private int _functionDepth;
     private int _unaryOperatorDepth;
+    private int _nestingDepth;
+
+    /// <summary>Maximum simultaneous parser nesting levels. Sized from isolated
+    /// crash probes (descent-heavy shapes overflow near 190 levels on 1MB stacks;
+    /// archive/executable builders tolerate less than 600) with at least 2x margin.</summary>
+    internal const int MaxNestingDepth = 64;
 
     public Parser(LexerResult<Token> tokens)
     {

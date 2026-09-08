@@ -47,6 +47,7 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableStatementFallback> _statementFallbacks = [];
         private readonly List<ExecutableExpressionFallback> _expressionFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
+        private int _protectedDepth;
         private int _syntheticLocalCounter;
 
         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
