@@ -3,7 +3,7 @@ namespace Lokad.Lython.Frontend;
 internal static class StaticTextIoContractFamily
 {
     private const string TextBoundaryCode = "LA3046";
-    private const string TextBoundaryMessage = "Text-only host APIs do not accept bytes; Lython host boundaries are UTF-8 text-shaped only.";
+    private const string TextBoundaryMessage = "Text-only host APIs do not accept bytes; pass str instead.";
     private const string OpenSignature = "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener])";
 
     public static bool TryAnalyze(
@@ -69,7 +69,7 @@ internal static class StaticTextIoContractFamily
             AddDiagnostic(
                 diagnostics,
                 "LA3047",
-                $"Path.{member.MemberName}(...) is not supported by Lython. The host boundary is UTF-8 text-shaped only.",
+                $"Path.{member.MemberName}(...) is not supported by Lython.",
                 member.Span);
             return true;
         }

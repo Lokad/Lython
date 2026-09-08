@@ -20,6 +20,28 @@ public sealed class PublicApiInvariantTests
     }
 
     [Fact]
+    public void PathMetadataRejectsUndefinedKindsAndDirectorySizes()
+    {
+        foreach (var kind in new[] { (LythonPathKind)42, (LythonPathKind)(-1), (LythonPathKind)255 })
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new LythonPathStat(kind, BigInteger.Zero, null));
+        }
+
+        Assert.Throws<ArgumentException>(() => new LythonPathStat(LythonPathKind.Directory, BigInteger.One, null));
+        Assert.Throws<ArgumentException>(() => new LythonPathStat(
+            LythonPathKind.Directory, BigInteger.One, DateTimeOffset.UnixEpoch));
+
+        var directory = new LythonPathStat(LythonPathKind.Directory, BigInteger.Zero, DateTimeOffset.UnixEpoch);
+        Assert.True(directory.Exists);
+        Assert.False(directory.IsFile);
+        Assert.True(directory.IsDir);
+        var missing = new LythonPathStat(LythonPathKind.Missing, BigInteger.Zero, null);
+        Assert.False(missing.Exists);
+        Assert.False(missing.IsFile);
+        Assert.False(missing.IsDir);
+    }
+
+    [Fact]
     public void ExecutionResultsExposeOnlyValidOutcomeStates()
     {
         var success = LythonExecutionResult.Succeeded(
