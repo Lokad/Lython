@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
                 ["range"] = BuiltinCallable.Create("range", Range),
                 ["enumerate"] = BuiltinCallable.Create(LythonCallableSignature.Create("enumerate", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Enumerate),
                 ["zip"] = new ZipCallable(),
-                ["iter"] = BuiltinCallable.Create("iter", Iter),
+                ["iter"] = BuiltinCallable.Create("iter", Iter, IterAsync),
                 ["next"] = BuiltinCallable.Create(LythonCallableSignature.Create("next", ["iterator", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2), Next, NextAsync),
                 ["reversed"] = BuiltinCallable.Create("reversed", Reversed, ["sequence"]),
                 ["map"] = BuiltinCallable.Create("map", Map),

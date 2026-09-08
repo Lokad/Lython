@@ -70,12 +70,19 @@ internal static class PyIteration
 
     private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        foreach (var item in new PyUserIterator(instance, context, span).Iterate())
+        // R08: both __iter__ resolution and __next__ advancement await real
+        // suspension instead of routing through the synchronous protocol.
+        var iterator = await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false);
+        while (true)
         {
-            yield return item;
-        }
+            var (hasValue, value) = await iterator.TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasValue)
+            {
+                yield break;
+            }
 
-        await Task.CompletedTask;
+            yield return value;
+        }
     }
 
     public static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
@@ -208,9 +215,7 @@ internal static class PyIteration
         {
             if (_userIterator is not null)
             {
-                return _userIterator.TryMoveNext(out var userValue)
-                    ? PyIterationResult.Yield(userValue)
-                    : PyIterationResult.End;
+                return await _userIterator.TryMoveNextAsync().ConfigureAwait(false);
             }
 
             if (_value is IPyAsyncIteratorValue asyncIterator)

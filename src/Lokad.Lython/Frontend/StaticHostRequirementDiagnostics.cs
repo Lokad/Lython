@@ -170,8 +170,17 @@ internal static class StaticHostRequirementDiagnostics
                 AnalyzeHostExecutableCall(call, context, host);
                 break;
 
-            // Creating either expression is deferred; its body is not host-executable yet.
-            case GeneratorExpressionSyntax or LambdaExpressionSyntax:
+            // Creating a lambda is deferred; its body is not host-executable yet.
+            // Creating a generator evaluates only its outermost iterable eagerly.
+            case LambdaExpressionSyntax:
+                return;
+
+            case GeneratorExpressionSyntax generator:
+                if (generator.Clauses.Count > 0)
+                {
+                    AnalyzeHostExecutableExpression(generator.Clauses[0].Iterable, context, host);
+                }
+
                 return;
         }
 

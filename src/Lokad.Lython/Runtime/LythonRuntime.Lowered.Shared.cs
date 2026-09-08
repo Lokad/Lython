@@ -114,7 +114,18 @@ internal sealed partial class LythonRuntime
             case LoweredListComprehensionExpression comprehension:
                 return await execution.EvaluateListComprehensionAsync(comprehension, context).ConfigureAwait(false);
             case LoweredGeneratorExpression generator:
-                return new PyGeneratorExpression(generator.Clauses, generator.ItemExpression, context, generator.Span);
+            {
+                // Acquire the outermost iterable eagerly, exactly as the synchronous
+                // construction site does; user __iter__ still resolves synchronously
+                // here (async-capable resolution belongs to a separate change).
+                var outer = await execution.EvaluateExpressionAsync(generator.Clauses[0].Iterable, context).ConfigureAwait(false);
+                return new PyGeneratorExpression(
+                    generator.Clauses,
+                    generator.ItemExpression,
+                    context,
+                    generator.Span,
+                    LythonRuntime.ToSequence(outer, generator.Clauses[0].Iterable.Span, context));
+            }
             case LoweredTupleLiteralExpression tuple:
                 return await execution.EvaluateTupleLiteralAsync(tuple, context).ConfigureAwait(false);
             case LoweredSetLiteralExpression set:

@@ -250,9 +250,19 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 1)
         {
-            return arguments[0] is IPyIteratorValue iterator
-                ? iterator
-                : new PyEnumerableIterator(arguments[0], span, context);
+            if (arguments[0] is IPyIteratorValue iterator)
+            {
+                return iterator;
+            }
+
+            // R08: iter() returns whatever __iter__ produces (often the instance
+            // itself), validated eagerly instead of wrapped sight unseen.
+            if (arguments[0] is PyInstance instance)
+            {
+                return new PyUserIterator(instance, context, span).Iterator;
+            }
+
+            return new PyEnumerableIterator(arguments[0], span, context);
         }
 
         if (arguments.Length == 2)
@@ -267,6 +277,21 @@ internal sealed partial class LythonRuntime
 
         throw new LythonRuntimeException("TypeError", "iter(object[, sentinel]) expects one or two arguments.", span);
     }
+
+    private static ValueTask<object> IterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // R08: only user-defined __iter__ resolution can suspend; every other
+        // shape shares the synchronous implementation.
+        if (arguments.Length == 1 && arguments[0] is PyInstance instance)
+        {
+            return ResolveIterAsync(instance, span, context);
+        }
+
+        return new ValueTask<object>(Iter(arguments, span, context));
+    }
+
+    private static async ValueTask<object> ResolveIterAsync(PyInstance instance, LythonSourceSpan span, ExecutionContext context)
+        => (await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false)).Iterator;
 
     private static object Reversed(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -352,20 +377,35 @@ internal sealed partial class LythonRuntime
 
     private static object Next(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is not 1 and not 2)
         {
             throw new LythonRuntimeException("TypeError", "next(iterator[, default]) expects one or two arguments.", span);
         }
 
-        if (arguments[0] is not IPyIteratorValue iterator)
+        // R08: direct next() over user iterators resolves __next__ through the
+        // same protocol instead of rejecting non-wrapper iterators.
+        if (arguments[0] is PyInstance instance)
+        {
+            if (!PyUserIterator.HasNext(instance, context, span))
+            {
+                throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+            }
+
+            if (PyUserIterator.TryAdvanceInstance(instance, context, span, out var item))
+            {
+                return RuntimeValue(item);
+            }
+        }
+        else if (arguments[0] is IPyIteratorValue iterator)
+        {
+            if (iterator.TryMoveNext(out var value))
+            {
+                return RuntimeValue(value);
+            }
+        }
+        else
         {
             throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
-        }
-
-        if (iterator.TryMoveNext(out var value))
-        {
-            return RuntimeValue(value);
         }
 
         if (arguments.Length == 2)
@@ -378,20 +418,34 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> NextAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is not 1 and not 2)
         {
             throw new LythonRuntimeException("TypeError", "next(iterator[, default]) expects one or two arguments.", span);
         }
 
-        var (hasValue, value) = arguments[0] switch
+        PyIterationResult advanced;
+        if (arguments[0] is PyInstance instance)
         {
-            IPyAsyncIteratorValue asyncIterator => await asyncIterator.TryMoveNextAsync().ConfigureAwait(false),
-            IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
-                ? PyIterationResult.Yield(item)
-                : PyIterationResult.End,
-            _ => throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span),
-        };
+            if (!PyUserIterator.HasNext(instance, context, span))
+            {
+                throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+            }
+
+            advanced = await PyUserIterator.TryAdvanceInstanceAsync(instance, context, span).ConfigureAwait(false);
+        }
+        else
+        {
+            advanced = arguments[0] switch
+            {
+                IPyAsyncIteratorValue asyncIterator => await asyncIterator.TryMoveNextAsync().ConfigureAwait(false),
+                IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
+                    ? PyIterationResult.Yield(item)
+                    : PyIterationResult.End,
+                _ => throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span),
+            };
+        }
+
+        var (hasValue, value) = advanced;
         if (hasValue)
         {
             return RuntimeValue(value);

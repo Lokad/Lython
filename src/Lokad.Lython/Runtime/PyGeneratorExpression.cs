@@ -8,6 +8,12 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     private readonly LoweredExpression _itemExpression;
     private readonly LythonRuntime.ExecutionContext _closure;
     private readonly LythonSourceSpan _span;
+    /// <summary>
+    /// The outermost iterable, evaluated and acquired when the generator is
+    /// created (matching CPython). Rebinding the source name later, or effects
+    /// in its __iter__, are observed at creation, not at first advance.
+    /// </summary>
+    private readonly IEnumerable<object> _outerSequence;
     private IEnumerator<object>? _iterator;
     private IAsyncEnumerator<object>? _asyncIterator;
     private bool _asyncCompleted;
@@ -16,12 +22,14 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         IReadOnlyList<LoweredComprehensionClause> clauses,
         LoweredExpression itemExpression,
         LythonRuntime.ExecutionContext closure,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        IEnumerable<object> outerSequence)
     {
         _clauses = clauses;
         _itemExpression = itemExpression;
         _closure = closure;
         _span = span;
+        _outerSequence = outerSequence;
     }
 
     public bool IsTruthy() => true;
@@ -80,8 +88,15 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         LythonRuntime.ExecutionContext context)
     {
         var clause = clauses[index];
-        var iterable = LythonRuntime.EvaluateLoweredExpression(clause.Iterable, context);
-        foreach (var item in LythonRuntime.ToSequence(iterable, clause.Iterable.Span, context))
+        // The outermost iterable was already evaluated and acquired at
+        // construction; only later clauses evaluate theirs per advance.
+        var items = index == 0
+            ? _outerSequence
+            : LythonRuntime.ToSequence(
+                LythonRuntime.EvaluateLoweredExpression(clause.Iterable, context),
+                clause.Iterable.Span,
+                context);
+        foreach (var item in items)
         {
             var scope = new LythonRuntime.ExecutionContext(context);
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
@@ -111,8 +126,10 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         LythonRuntime.ExecutionContext context)
     {
         var clause = clauses[index];
-        var iterable = await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
-        await foreach (var item in LythonRuntime.ToSequenceAsync(iterable, clause.Iterable.Span, context).ConfigureAwait(false))
+        var items = index == 0
+            ? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
+            : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false), clause.Iterable.Span, context);
+        await foreach (var item in items.ConfigureAwait(false))
         {
             var scope = new LythonRuntime.ExecutionContext(context);
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
