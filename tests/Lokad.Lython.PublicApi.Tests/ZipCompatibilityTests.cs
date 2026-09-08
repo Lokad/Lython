@@ -817,6 +817,47 @@ with zipfile.ZipFile("/out.zip") as archive:
     }
 
     [Fact]
+    public async Task ZipInfoBoolDateTimeIsPreserved()
+    {
+        // R18: CPython exposes supplied booleans as bools instead of rewriting
+        // them to integers; the values still encode like 0/1 on write.
+        var script = new LythonEngine().Compile(
+            """
+            import zipfile
+            info = zipfile.ZipInfo("b.bin", date_time=(1980, 1, 1, True, False, 0))
+            first = info.date_time
+            info.date_time = [2020, 5, 6, True, 8, 10]
+            with zipfile.ZipFile("/out.zip", "w") as archive:
+                archive.writestr(info, b"data")
+            with zipfile.ZipFile("/out.zip") as archive:
+                stored = archive.getinfo("b.bin").date_time
+            return [first, info.date_time, stored]
+            """);
+        Assert.True(script.IsValid);
+        var host = new ZipPublicHost();
+        var sync = script.Run(host);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(
+            new List<object?>
+            {
+                new List<object?> { new BigInteger(1980), new BigInteger(1), new BigInteger(1), true, false, new BigInteger(0) },
+                new List<object?> { new BigInteger(2020), new BigInteger(5), new BigInteger(6), true, new BigInteger(8), new BigInteger(10) },
+                new List<object?> { new BigInteger(2020), new BigInteger(5), new BigInteger(6), new BigInteger(1), new BigInteger(8), new BigInteger(10) },
+            },
+            Assert.IsType<List<object?>>(sync.ReturnValue));
+        var asyncResult = await script.RunAsync(new ZipPublicHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(
+            new List<object?>
+            {
+                new List<object?> { new BigInteger(1980), new BigInteger(1), new BigInteger(1), true, false, new BigInteger(0) },
+                new List<object?> { new BigInteger(2020), new BigInteger(5), new BigInteger(6), true, new BigInteger(8), new BigInteger(10) },
+                new List<object?> { new BigInteger(2020), new BigInteger(5), new BigInteger(6), new BigInteger(1), new BigInteger(8), new BigInteger(10) },
+            },
+            Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
     public void ZipInfoWriterInputsAreHonored()
     {
         var host = new ZipPublicHost();

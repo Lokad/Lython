@@ -228,6 +228,13 @@ internal sealed partial class LythonRuntime
                 return text.AsString();
             }
 
+            // R18: Python bools are integers (True == 1); accept them exactly
+            // like their numeric value instead of rejecting them outright.
+            if (value is bool boolean)
+            {
+                return boolean ? " " : string.Empty;
+            }
+
             if (value is BigInteger integer)
             {
                 if (integer <= BigInteger.Zero)

@@ -22,6 +22,11 @@ internal sealed partial class LythonRuntime
 
             try
             {
+                // Bound the BCL document model before parsing: it materializes
+                // the whole input without budget callbacks, so reserve a
+                // conservative multiple up front and hold it until the governed
+                // values below take ownership.
+                using var documentCharge = context.MemoryGovernor.ReserveTemporary(checked(4L * text.Utf8Bytes.Length), span);
                 using var document = JsonDocument.Parse(text.Utf8Bytes);
                 return ConvertJson(document.RootElement, options, context, span);
             }

@@ -337,12 +337,17 @@ internal sealed partial class LythonRuntime
             }
 
             var parts = new BigInteger[6];
+            var normalized = new object[6];
             for (var i = 0; i < 6; i++)
             {
                 if (!PyNumberOps.TryAsInteger(items[i], out parts[i]))
                 {
                     throw new LythonRuntimeException("TypeError", "ZipInfo date_time must be a 6-tuple of ints.", span);
                 }
+
+                // R18: preserve supplied booleans at the Python boundary instead
+                // of rewriting them to integers; CPython exposes them as bools.
+                normalized[i] = items[i] is bool ? items[i] : (object)parts[i];
             }
 
             if (parts[0] < 1980)
@@ -350,7 +355,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "ZIP does not support timestamps before 1980", span);
             }
 
-            return new PyTuple(parts.Cast<object>().ToArray());
+            return new PyTuple(normalized);
         }
     }
 }

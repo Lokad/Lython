@@ -469,6 +469,46 @@ with open("/out.txt", "w") as output:
     }
 
     [Fact]
+    public async Task JsonDumps_BoolIndentBehavesLikeIntegerOneAndZero()
+    {
+        // R18: Python bools are integers, so indent=True/False behave like 1/0.
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            return [json.dumps([1], indent=True), json.dumps([1], indent=False), json.dumps([1], indent=None), json.dumps([1]), json.dumps([1], indent=1)]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { "[\n 1\n]", "[\n1\n]", "[1]", "[1]", "[\n 1\n]" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task JsonDumps_HiddenInvalidIndentStillFailsAtRuntime()
+    {
+        // R18: the static bool acceptance must not hide genuinely invalid values.
+        const string source = """
+            import json
+            try:
+                json.dumps({}, indent=__bad)
+                return "no-error"
+            except TypeError:
+                return "TypeError"
+            """;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["__bad"] = new List<object?>() } };
+        var sync = new LythonEngine().Run(source, new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("TypeError", sync.ReturnValue);
+        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("TypeError", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void JsonExpandedSurface_InvalidOptionsFailAtCompileTime()
     {
         var result = new LythonEngine().Run(

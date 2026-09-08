@@ -18,14 +18,51 @@ internal sealed partial class LythonRuntime
             try
             {
                 var builder = new StringBuilder();
+                // Charge output growth as it happens; CreateString charges the
+                // final value, at which point this temporary is released.
+                using var charge = new JsonGrowthCharge(context.MemoryGovernor, span);
                 var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
-                AppendJsonValue(builder, value, options, context, span, depth: 0, active);
+                AppendJsonValue(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge);
                 return CreateString(builder.ToString(), context, span);
             }
             catch (InvalidOperationException ex)
             {
                 throw new LythonRuntimeException("TypeError", ex.Message, span);
             }
+        }
+
+        /// <summary>
+        /// Charges JSON output growth incrementally so a huge document meets
+        /// the memory budget while building instead of only at the final
+        /// string. Two bytes per character approximate the UTF-16 backing
+        /// store; the final string charges separately on ownership transfer.
+        /// </summary>
+        private sealed class JsonGrowthCharge : IDisposable
+        {
+            private const int ObserveQuantumChars = 4096;
+
+            private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
+            private readonly LythonSourceSpan? _span;
+            private long _chargedChars;
+
+            public JsonGrowthCharge(MemoryGovernor governor, LythonSourceSpan? span)
+            {
+                _reservation = governor.ReserveTemporary(0, span);
+                _span = span;
+            }
+
+            public void Observe(int currentLength)
+            {
+                if (currentLength - _chargedChars < ObserveQuantumChars)
+                {
+                    return;
+                }
+
+                _reservation.Grow(checked(2L * (currentLength - _chargedChars)), _span);
+                _chargedChars = currentLength;
+            }
+
+            public void Dispose() => _reservation.Dispose();
         }
 
         private static void AppendJsonValue(
@@ -35,7 +72,9 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span,
             int depth,
-            HashSet<object>? active)
+            int defaultDepth,
+            HashSet<object>? active,
+            JsonGrowthCharge charge)
         {
             void AppendDictionary(PyDict dict)
             {
@@ -46,6 +85,47 @@ internal sealed partial class LythonRuntime
 
                 try
                 {
+                    if (!options.SortKeys)
+                    {
+                        // Stream entries in dictionary order without copying them
+                        // aside; only the sorted path below pays for scratch.
+                        builder.Append("{");
+                        var index = 0;
+                        foreach (var pair in dict)
+                        {
+                            context.CheckExecutionBudget(span);
+                            if (!IsSupportedJsonObjectKey(pair.Key))
+                            {
+                                if (options.SkipKeys)
+                                {
+                                    continue;
+                                }
+
+                                throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                            }
+
+                            if (index > 0)
+                            {
+                                builder.Append(options.ItemSeparator);
+                            }
+
+                            AppendJsonValuePrefix(builder, options, depth + 1, index);
+                            _ = TryConvertJsonObjectKey(pair.Key, skipKeys: false, out var key);
+                            AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
+                            builder.Append(options.KeySeparator);
+                            AppendJsonValue(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge);
+                            index++;
+                        }
+
+                        if (index > 0)
+                        {
+                            AppendJsonContainerSuffix(builder, options, depth);
+                        }
+
+                        builder.Append("}");
+                        return;
+                    }
+
                     var entries = new List<(object OriginalKey, object Value)>();
                     foreach (var pair in dict)
                     {
@@ -60,12 +140,8 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    if (options.SortKeys)
-                    {
-                        entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
-                    }
-
-                    builder.Append('{');
+                    entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
+                    builder.Append("{");
                     for (var index = 0; index < entries.Count; index++)
                     {
                         if (index > 0)
@@ -75,9 +151,9 @@ internal sealed partial class LythonRuntime
 
                         AppendJsonValuePrefix(builder, options, depth + 1, index);
                         _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
-                        AppendJsonString(builder, key, options.EnsureAscii);
+                        AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
                         builder.Append(options.KeySeparator);
-                        AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, active);
+                        AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, defaultDepth, active, charge);
                     }
 
                     if (entries.Count > 0)
@@ -85,7 +161,7 @@ internal sealed partial class LythonRuntime
                         AppendJsonContainerSuffix(builder, options, depth);
                     }
 
-                    builder.Append('}');
+                    builder.Append("}");
                 }
                 finally
                 {
@@ -94,7 +170,8 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecutionBudget(span);
-            if (depth >= ExecutionLimits.MaxInterpreterDepth)
+            charge.Observe(builder.Length);
+            if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
                 throw new LythonRuntimeException(
                     "RecursionError",
@@ -108,7 +185,7 @@ internal sealed partial class LythonRuntime
                     builder.Append("null");
                     return;
                 case PyString text:
-                    AppendJsonString(builder, text.AsString(), options.EnsureAscii);
+                    AppendJsonString(builder, text.AsString(), options.EnsureAscii, charge, context, span);
                     return;
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
@@ -126,10 +203,10 @@ internal sealed partial class LythonRuntime
                     builder.Append(PyDecimalOps.Format(decimalValue));
                     return;
                 case PyList list:
-                    AppendJsonSequence(builder, list, options, context, span, depth, active);
+                    AppendJsonSequence(builder, list, options, context, span, depth, defaultDepth, active, charge);
                     return;
                 case PyTuple tuple:
-                    AppendJsonSequence(builder, tuple, options, context, span, depth, active);
+                    AppendJsonSequence(builder, tuple, options, context, span, depth, defaultDepth, active, charge);
                     return;
                 case PyDict dict:
                     AppendDictionary(dict);
@@ -143,13 +220,34 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", span);
                         }
 
-                        AppendJsonValue(builder, replacement, options, context, span, depth, active);
+                        // Replacements that keep producing fresh unsupported objects
+                        // would otherwise recurse past the container depth guard, so
+                        // default applications carry their own depth budget.
+                        AppendJsonValue(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge);
                         return;
                     }
 
-                    throw new InvalidOperationException($"Unsupported json.dumps value type: {value.GetType().Name}");
+                    throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonValueTypeName(value)}");
             }
         }
+
+        private static string JsonValueTypeName(object value)
+            => value switch
+            {
+                PyString => "str",
+                PyBytes => "bytes",
+                PyList => "list",
+                PyDict => "dict",
+                PyTuple => "tuple",
+                PySet => "set",
+                bool => "bool",
+                BigInteger or int => "int",
+                double => "float",
+                PyNone => "NoneType",
+                null => "NoneType",
+                PyInstance instance => instance.Type.Name,
+                _ => value.GetType().Name,
+            };
 
         private static void AppendJsonSequence(
             StringBuilder builder,
@@ -158,7 +256,9 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span,
             int depth,
-            HashSet<object>? active)
+            int defaultDepth,
+            HashSet<object>? active,
+            JsonGrowthCharge charge)
         {
             if (active is not null && !active.Add(sequence))
             {
@@ -178,7 +278,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, index);
-                    AppendJsonValue(builder, item, options, context, span, depth + 1, active);
+                    AppendJsonValue(builder, item, options, context, span, depth + 1, defaultDepth, active, charge);
                     index++;
                 }
 
@@ -263,11 +363,17 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii)
+        private static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             builder.Append('"');
             for (var i = 0; i < text.Length; i++)
             {
+                if ((i & 4095) == 0)
+                {
+                    // Long scalars must stay interruptible and budget-checked.
+                    context.CheckExecutionBudget(span);
+                    charge.Observe(builder.Length);
+                }
                 var ch = text[i];
                 switch (ch)
                 {

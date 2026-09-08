@@ -142,7 +142,7 @@ internal static partial class StaticDataModuleContractFamily
             value.Kind == AbstractValueKind.Unknown ||
             value.Kind == AbstractValueKind.None ||
             value.IsStringLike ||
-            StaticAbstractFacts.IsStrictIntegerLike(value))
+            StaticAbstractFacts.IsIntegerLike(value))
         {
             return;
         }
