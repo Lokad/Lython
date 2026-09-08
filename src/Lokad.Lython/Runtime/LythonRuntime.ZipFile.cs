@@ -32,9 +32,13 @@ internal sealed partial class LythonRuntime
         private readonly List<ZipRecordWriter.PreservedEntry>? _preserved;
         private long _stagedCharges;
         private bool _didModify;
+        // R37: fresh appends (missing/empty target) publish an empty archive on
+        // close even when unmodified; existing appends publish nothing until modified.
+        private readonly bool _freshAppend;
         private PyZipMemberWriter? _activeWriter;
         private PyBytes _comment;
         private GovernedHostBytes? _payload;
+        private Dictionary<string, int>? _nameIndex;
 
         public PyZipFile(
             PyString fileName,
@@ -68,7 +72,7 @@ internal sealed partial class LythonRuntime
             _fileName = fileName;
             _mode = "w";
             _compression = compression;
-            _directory = new ZipArchiveDirectory([], [], false);
+            _directory = new ZipArchiveDirectory([], [], false, 0);
             _comment = comment;
             _infos = new List<PyZipInfo>();
             _payload = null;
@@ -90,7 +94,8 @@ internal sealed partial class LythonRuntime
             List<PyZipInfo> infos,
             GovernedHostBytes? payload,
             List<ZipRecordWriter.PreservedEntry> preserved,
-            ExecutionContext context)
+            ExecutionContext context,
+            bool freshAppend = false)
         {
             _fileName = fileName;
             _mode = "a";
@@ -105,6 +110,7 @@ internal sealed partial class LythonRuntime
             _defaultLevel = defaultLevel;
             _strictTimestamps = strictTimestamps;
             _preserved = preserved;
+            _freshAppend = freshAppend;
         }
 
         public bool IsClosed { get; private set; }
@@ -125,7 +131,7 @@ internal sealed partial class LythonRuntime
                 "read" => BoundCallable.Create((arguments, span, context) => Read(arguments, span, context), "zipfile.ZipFile.read", ["name", "pwd"], 1),
                 "open" => BoundCallable.Create((arguments, span, context) => Open(arguments, span, context), "zipfile.ZipFile.open", ["name", "mode", "pwd", "force_zip64"], 1),
                 "writestr" => BoundCallable.Create((arguments, span, context) => WriteString(arguments, span, context), "zipfile.ZipFile.writestr", ["zinfo_or_arcname", "data", "compress_type", "compresslevel"], 2),
-                "write" => BoundCallable.Create((arguments, span, context) => WriteFile(arguments, span, context), "zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1),
+                "write" => BoundCallable.Create((arguments, span, context) => WriteFile(arguments, span, context), async (arguments, span, context) => await WriteFileAsync(arguments, span, context).ConfigureAwait(false), "zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1),
                 "mkdir" => BoundCallable.Create((arguments, span, context) => MakeDirectory(arguments, span, context), "zipfile.ZipFile.mkdir", ["zinfo_or_arcname", "mode"], 1),
                 "printdir" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.printdir", static (receiver, span, context) => receiver.PrintDirectory(span, context),
                 static (receiver, span, context) => receiver.PrintDirectoryAsync(span, context)),
@@ -210,16 +216,9 @@ internal sealed partial class LythonRuntime
         private object GetInfo(object[] arguments, LythonSourceSpan span)
         {
             EnsureReadMode(span, "getinfo");
-            var name = arguments[0] is PyString text ? text.AsString() : null;
-            if (name is not null)
+            if (arguments[0] is PyString text && FindOrdinalByName(text.AsString(), span) is { } ordinal)
             {
-                for (var i = _infos.Count - 1; i >= 0; i--)
-                {
-                    if (_infos[i].FileName.Equals(name, StringComparison.Ordinal))
-                    {
-                        return _infos[i];
-                    }
-                }
+                return _infos[ordinal];
             }
 
             throw new LythonRuntimeException("KeyError", $"There is no item named '{FormatKey(arguments[0])}' in the archive.", span);
@@ -353,6 +352,7 @@ internal sealed partial class LythonRuntime
             {
                 memberName = SanitizeMemberName(arcname.AsString());
                 method = RequireWriteMethod(_compression, span);
+                context.RegisterHostCall(span);
                 var now = context.Host.LocalNow;
                 var local = now.ToOffset(now.Offset);
                 (dosTime, dosDate) = ZipRecordWriter.EncodeDosDateTime(
@@ -574,6 +574,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 plans.Add(PlanExtraction(ResolveInfoTarget(_infos[i], span), destination, span));
+                context.ObserveCollectionCount(plans.Count, span);
             }
 
             return plans;
@@ -681,6 +682,7 @@ internal sealed partial class LythonRuntime
                     context.CheckExecutionBudget(span);
                 }
 
+                context.RegisterHostCall(span);
                 var stat = context.HostStat(current.ToString(), span);
                 if (stat.Exists)
                 {
@@ -692,6 +694,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
+                context.RegisterHostCall(span);
                 context.HostMkDir(current.ToString(), span);
             }
         }
@@ -713,6 +716,7 @@ internal sealed partial class LythonRuntime
                     context.CheckExecutionBudget(span);
                 }
 
+                context.RegisterHostCall(span);
                 var stat = await context.HostStatAsync(current.ToString(), span).ConfigureAwait(false);
                 if (stat.Exists)
                 {
@@ -724,6 +728,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
+                context.RegisterHostCall(span);
                 await context.HostMkDirAsync(current.ToString(), span).ConfigureAwait(false);
             }
         }
@@ -742,6 +747,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureDirectoryExists(PathOps.Parent(plan.TargetPath), context, span);
+            context.RegisterHostCall(span);
             if (context.HostStat(plan.TargetPath, span).IsDir)
             {
                 throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
@@ -761,6 +767,7 @@ internal sealed partial class LythonRuntime
                 password,
                 context,
                 span);
+            context.RegisterHostCall(span);
             context.WriteHostBytes(plan.TargetPath, bytes, span);
         }
 
@@ -778,6 +785,7 @@ internal sealed partial class LythonRuntime
             }
 
             await EnsureDirectoryExistsAsync(PathOps.Parent(plan.TargetPath), context, span).ConfigureAwait(false);
+            context.RegisterHostCall(span);
             if ((await context.HostStatAsync(plan.TargetPath, span).ConfigureAwait(false)).IsDir)
             {
                 throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
@@ -797,6 +805,7 @@ internal sealed partial class LythonRuntime
                 password,
                 context,
                 span);
+            context.RegisterHostCall(span);
             await context.WriteHostBytesAsync(plan.TargetPath, bytes, span).ConfigureAwait(false);
         }
 
@@ -896,12 +905,12 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)
+        async ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {
             _ = exceptionValue;
             _ = traceback;
-            Close(span: null);
-            return ValueTask.FromResult(false);
+            await CloseAsync(span: null).ConfigureAwait(false);
+            return false;
         }
 
         public async ValueTask CloseAsync(LythonSourceSpan? span)
@@ -952,6 +961,7 @@ internal sealed partial class LythonRuntime
 
         private object WriteString(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            EnsureOpen(span);
             EnsureWriteMode(span);
             RequireNoActiveWriter(span);
             var level = _defaultLevel;
@@ -969,11 +979,18 @@ internal sealed partial class LythonRuntime
             byte[] data;
             if (arguments[1] is PyBytes bytes)
             {
-                data = bytes.Memory.ToArray();
+                using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(bytes.Memory.Length), span))
+                {
+                    data = bytes.Memory.ToArray();
+                }
             }
             else if (arguments[1] is PyString text)
             {
-                data = Encoding.UTF8.GetBytes(text.AsString());
+                var plain = text.AsString();
+                using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(plain)), span))
+                {
+                    data = Encoding.UTF8.GetBytes(plain);
+                }
             }
             else
             {
@@ -1015,6 +1032,7 @@ internal sealed partial class LythonRuntime
             }
 
             var memberName = SanitizeMemberName(arcname.AsString());
+            context.RegisterHostCall(span);
             var now = context.Host.LocalNow;
             var local = now.ToOffset(now.Offset);
             StageEntry(
@@ -1028,8 +1046,9 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private object WriteFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private (string Source, string MemberName) ParseWriteFileArgs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            EnsureOpen(span);
             EnsureWriteMode(span);
             RequireNoActiveWriter(span);
             var source = PathOps.Normalize(
@@ -1045,7 +1064,44 @@ internal sealed partial class LythonRuntime
                 memberName = SanitizeMemberName(source.TrimStart('/'));
             }
 
+            return (source, memberName);
+        }
+
+        private object WriteFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
+            context.RegisterHostCall(span);
             var stat = context.HostStat(source, span);
+            var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);
+            if (staged is not null)
+            {
+                return staged;
+            }
+
+            using var payload = ReadGovernedHostBytesAfterStat(source, stat, context, span);
+            return FinishWriteFile(arguments, memberName, stat, payload, span, context);
+        }
+
+        private async ValueTask<object> WriteFileAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            // R34: same parsing and staging as WriteFile, awaiting host stat/read.
+            var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
+            context.RegisterHostCall(span);
+            var stat = await context.HostStatAsync(source, span).ConfigureAwait(false);
+            var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);
+            if (staged is not null)
+            {
+                return staged;
+            }
+
+            using var payload = await ReadGovernedHostBytesAfterStatAsync(source, stat, context, span).ConfigureAwait(false);
+            return FinishWriteFile(arguments, memberName, stat, payload, span, context);
+        }
+
+        // Shared stat guard: missing sources fail before any payload read and
+        // directories stage via mkdir, exactly as the synchronous path always did.
+        private object? StageWriteFileDirectoryTarget(string source, string memberName, LythonPathStat stat, LythonSourceSpan span, ExecutionContext context)
+        {
             if (!stat.Exists)
             {
                 throw new LythonRuntimeException("FileNotFoundError", $"No such file or directory: '{source}'.", span);
@@ -1056,10 +1112,20 @@ internal sealed partial class LythonRuntime
                 return MakeDirectoryInternal(memberName, 511, context, span);
             }
 
-            using var payload = ReadGovernedHostBytes(source, context, span);
-            var data = payload.Memory.ToArray();
-            var stamp = stat.ModifiedAtTimestamp ?? context.Host.LocalNow;
-            var local = stamp.ToOffset(context.Host.LocalNow.Offset);
+            return null;
+        }
+
+        private object FinishWriteFile(object[] arguments, string memberName, LythonPathStat stat, GovernedHostBytes payload, LythonSourceSpan span, ExecutionContext context)
+        {
+            byte[] data;
+            using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(payload.Memory.Length), span))
+            {
+                data = payload.Memory.ToArray();
+            }
+            context.RegisterHostCall(span);
+            var clock = context.Host.LocalNow;
+            var stamp = stat.ModifiedAtTimestamp ?? clock;
+            var local = stamp.ToOffset(clock.Offset);
             var (year, month, day, hour, minute, second) = ClampWriteDate(
                 local.Year, local.Month, local.Day, local.Hour, local.Minute, local.Second, span);
             var method = RequireWriteMethod(_compression, span);
@@ -1084,6 +1150,7 @@ internal sealed partial class LythonRuntime
 
         private object MakeDirectory(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
+            EnsureOpen(span);
             EnsureWriteMode(span);
             var mode = 511;
             if (arguments.Length >= 2 && arguments[1] is not null and not PyNone)
@@ -1231,9 +1298,14 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan? span,
             bool forceZip64)
         {
-            context.CheckExecutionBudget(span);
-            _didModify = true;
+            EnsureOpen(span);
             var (nameBytes, flags) = EncodeMemberName(name);
+            // R38: reject over-wide record fields before reserving or mutating,
+            // so a failed staging leaves the archive contents untouched.
+            ZipRecordWriter.RequireRecordFieldWidths(nameBytes, comment, extra, span);
+            context.CheckExecutionBudget(span);
+            context.ObserveCollectionCount(_staged.Count + 1, span);
+            _didModify = true;
             var charge = checked(StagedEntryBaseBytes + data.Length + nameBytes.Length + comment.Length + extra.Length);
             context.MemoryGovernor.Reserve(charge, span);
             context.MemoryGovernor.Commit(charge);
@@ -1330,10 +1402,11 @@ internal sealed partial class LythonRuntime
 
         private void PublishStaged(LythonSourceSpan? span)
         {
-            if (_mode == "a" && !_didModify)
+            if (_mode == "a" && !_didModify && !_freshAppend)
             {
                 // Appending nothing publishes nothing, matching CPython;
                 // creating archives always serialize, even when empty.
+                _preserved?.Clear();
                 return;
             }
 
@@ -1345,8 +1418,10 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask PublishStagedAsync(LythonSourceSpan? span)
         {
-            if (_mode == "a" && !_didModify)
+            if (_mode == "a" && !_didModify && !_freshAppend)
             {
+                // Nothing publishes; drop the borrowed slices with the close.
+                _preserved?.Clear();
                 return;
             }
 
@@ -1367,12 +1442,17 @@ internal sealed partial class LythonRuntime
             var payloadCharge = PyBytes.EstimateApproximateBytes(archive.Bytes.Length);
             _context.MemoryGovernor.Reserve(payloadCharge, span);
             _context.MemoryGovernor.Commit(payloadCharge);
-            _context.MemoryGovernor.Release(_stagedCharges);
-            _stagedCharges = 0;
             try
             {
                 _context.RegisterHostCall(span);
                 _context.WriteHostBytes(_fileName.AsString(), archive.Bytes, span);
+                // Published staged data is dead: release its charges and drop the
+                // references together. A failed publish keeps both so a retry
+                // re-serializes from still-charged state.
+                _context.MemoryGovernor.Release(_stagedCharges);
+                _stagedCharges = 0;
+                _staged.Clear();
+                _preserved?.Clear();
             }
             finally
             {
@@ -1391,12 +1471,17 @@ internal sealed partial class LythonRuntime
             var payloadCharge = PyBytes.EstimateApproximateBytes(archive.Bytes.Length);
             _context.MemoryGovernor.Reserve(payloadCharge, span);
             _context.MemoryGovernor.Commit(payloadCharge);
-            _context.MemoryGovernor.Release(_stagedCharges);
-            _stagedCharges = 0;
             try
             {
                 _context.RegisterHostCall(span);
                 await _context.WriteHostBytesAsync(_fileName.AsString(), archive.Bytes, span).ConfigureAwait(false);
+                // Published staged data is dead: release its charges and drop the
+                // references together. A failed publish keeps both so a retry
+                // re-serializes from still-charged state.
+                _context.MemoryGovernor.Release(_stagedCharges);
+                _stagedCharges = 0;
+                _staged.Clear();
+                _preserved?.Clear();
             }
             finally
             {
@@ -1424,18 +1509,42 @@ internal sealed partial class LythonRuntime
                 return ResolveInfoTarget(info, span);
             }
 
-            if (name is PyString text)
+            if (name is PyString text && FindOrdinalByName(text.AsString(), span) is { } ordinal)
             {
-                for (var i = _infos.Count - 1; i >= 0; i--)
-                {
-                    if (_infos[i].FileName.Equals(text.AsString(), StringComparison.Ordinal))
-                    {
-                        return ResolveInfoTarget(_infos[i], span);
-                    }
-                }
+                return ResolveInfoTarget(_infos[ordinal], span);
             }
 
             throw new LythonRuntimeException("KeyError", $"There is no item named '{FormatKey(name)}' in the archive.", span);
+        }
+
+        // R40: last-name-to-ordinal index over the frozen directory view. Names are
+        // decoded once here instead of once per comparison, and later duplicates
+        // overwrite earlier ones, so lookup matches the previous backwards scan
+        // exactly (last wins). Mutable ZipInfo filenames do not affect it: keys
+        // snapshot directory names at build, so a renamed info looks up nothing
+        // new, matching CPython whose name map is likewise fixed at open.
+        // Explicit ZipInfo access bypasses the index through ordinals. The charge
+        // conservatively covers the decoded key strings plus table storage.
+        private int? FindOrdinalByName(string name, LythonSourceSpan? span)
+        {
+            _nameIndex ??= BuildNameIndex(span);
+            return _nameIndex.TryGetValue(name, out var ordinal) ? ordinal : null;
+        }
+
+        private Dictionary<string, int> BuildNameIndex(LythonSourceSpan? span)
+        {
+            var index = new Dictionary<string, int>(_infos.Count, StringComparer.Ordinal);
+            var charge = 0L;
+            for (var i = 0; i < _infos.Count; i++)
+            {
+                var key = _infos[i].FileName;
+                index[key] = i;
+                charge = checked(charge + 64 + 2L * key.Length);
+            }
+
+            _context.MemoryGovernor.Reserve(charge, span);
+            _context.MemoryGovernor.Commit(charge);
+            return index;
         }
 
         private ResolvedMember ResolveInfoTarget(PyZipInfo info, LythonSourceSpan? span)

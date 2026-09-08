@@ -43,11 +43,12 @@ internal readonly record struct ZipDirectoryEntry(
 /// <summary>Bounded parse result for one archive directory.</summary>
 internal sealed class ZipArchiveDirectory
 {
-    public ZipArchiveDirectory(IReadOnlyList<ZipDirectoryEntry> entries, byte[] comment, bool isZip64)
+    public ZipArchiveDirectory(IReadOnlyList<ZipDirectoryEntry> entries, byte[] comment, bool isZip64, long metadataCharge)
     {
         Entries = entries;
         Comment = comment;
         IsZip64 = isZip64;
+        MetadataCharge = metadataCharge;
     }
 
     public IReadOnlyList<ZipDirectoryEntry> Entries { get; }
@@ -55,6 +56,13 @@ internal sealed class ZipArchiveDirectory
     public byte[] Comment { get; }
 
     public bool IsZip64 { get; }
+
+    /// <summary>
+    /// Governor bytes committed for the parsed metadata above. Handles that
+    /// retain the directory keep this charge; recognition-only and failed
+    /// parses release it because nothing takes ownership.
+    /// </summary>
+    public long MetadataCharge { get; }
 }
 
 /// <summary>
@@ -258,19 +266,37 @@ internal static class ZipDirectoryReader
         var entries = new List<ZipDirectoryEntry>();
         var offset = end.DirectoryOffset;
         var scanned = 0;
-        while ((ulong)entries.Count < end.EntryCount)
+        var metadataCharge = 0L;
+        try
         {
-            if ((++scanned & (BudgetCheckInterval - 1)) == 0)
+            // The end-record comment was already copied; charge it with the
+            // entries below so one balance covers the whole directory.
+            var commentCharge = PyBytes.EstimateApproximateBytes(end.Comment.Length);
+            context.MemoryGovernor.Reserve(commentCharge, span);
+            context.MemoryGovernor.Commit(commentCharge);
+            metadataCharge = checked(metadataCharge + commentCharge);
+
+            while ((ulong)entries.Count < end.EntryCount)
             {
-                context.CheckExecutionBudget(span);
+                if ((++scanned & (BudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
+                entries.Add(ReadCentralEntry(bytes, ref offset, directoryEnd, entries.Count, forceUtf8Names, context, span, ref metadataCharge));
             }
 
-            entries.Add(ReadCentralEntry(bytes, ref offset, directoryEnd, entries.Count, forceUtf8Names, context, span));
+            if (offset != directoryEnd)
+            {
+                throw Malformed("central directory has trailing bytes");
+            }
         }
-
-        if (offset != directoryEnd)
+        catch
         {
-            throw Malformed("central directory has trailing bytes");
+            // Nothing takes ownership of a failed parse; release everything
+            // committed above so recognition and open failures stay balanced.
+            context.MemoryGovernor.Release(metadataCharge);
+            throw;
         }
 
         // Overlap limits chain in central order (matching CPython): each entry
@@ -283,7 +309,7 @@ internal static class ZipDirectoryReader
             entries[index] = entries[index] with { DataEndLimit = limit };
         }
 
-        return new ZipArchiveDirectory(entries, end.Comment, end.IsZip64);
+        return new ZipArchiveDirectory(entries, end.Comment, end.IsZip64, metadataCharge);
     }
 
     private static ZipDirectoryEntry ReadCentralEntry(
@@ -293,7 +319,8 @@ internal static class ZipDirectoryReader
         int ordinal,
         bool forceUtf8Names,
         LythonRuntime.ExecutionContext context,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span,
+        ref long metadataCharge)
     {
         const int fixedLength = 46;
         if (offset + fixedLength > directoryEnd)
@@ -326,14 +353,18 @@ internal static class ZipDirectoryReader
             throw Malformed($"central entry #{ordinal} overruns its directory");
         }
 
+        // Reserve before copying: the header already states every length, so the
+        // charge is known before any allocation below.
+        var charge = checked(DirectoryEntryBaseBytes + nameLength + extraLength + commentLength);
+        context.MemoryGovernor.Reserve(charge, span);
+        context.MemoryGovernor.Commit(charge);
+        metadataCharge = checked(metadataCharge + charge);
+
         var nameBytes = bytes.Slice(cursor + fixedLength, nameLength).ToArray();
         var extra = bytes.Slice(cursor + fixedLength + nameLength, extraLength).ToArray();
         var comment = bytes.Slice(cursor + fixedLength + nameLength + extraLength, commentLength).ToArray();
         offset = recordEnd;
 
-        var charge = checked(DirectoryEntryBaseBytes + nameBytes.Length + extra.Length + comment.Length);
-        context.MemoryGovernor.Reserve(charge, span);
-        context.MemoryGovernor.Commit(charge);
         context.ObserveCollectionCount(ordinal + 1, span);
 
         var compressedSize = (ulong)compressedSize32;
@@ -378,7 +409,7 @@ internal static class ZipDirectoryReader
     }
 
     private static (ulong CompressedSize, ulong UncompressedSize, ulong HeaderOffset) ResolveZip64Extra(
-        byte[] extra,
+        ReadOnlySpan<byte> extra,
         uint compressedSize32,
         uint uncompressedSize32,
         uint headerOffset32,
@@ -390,8 +421,8 @@ internal static class ZipDirectoryReader
         var cursor = 0;
         while (cursor + 4 <= extra.Length)
         {
-            var tag = BinaryPrimitives.ReadUInt16LittleEndian(extra.AsSpan(cursor, 2));
-            var size = BinaryPrimitives.ReadUInt16LittleEndian(extra.AsSpan(cursor + 2, 2));
+            var tag = BinaryPrimitives.ReadUInt16LittleEndian(extra.Slice(cursor, 2));
+            var size = BinaryPrimitives.ReadUInt16LittleEndian(extra.Slice(cursor + 2, 2));
             if (cursor + 4 + size > extra.Length)
             {
                 throw Malformed($"central entry #{ordinal} has a truncated extra field");
@@ -399,7 +430,7 @@ internal static class ZipDirectoryReader
 
             if (tag == Zip64ExtraTag)
             {
-                var values = extra.AsSpan(cursor + 4, size);
+                var values = extra.Slice(cursor + 4, size);
                 var position = 0;
                 if (compressedSize32 == uint.MaxValue)
                 {
@@ -504,8 +535,18 @@ internal static class ZipDirectoryReader
 
         if ((flags & DataDescriptorFlag) == 0)
         {
-            var localCompressed = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(cursor + 18, 4));
-            var localUncompressed = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(cursor + 22, 4));
+            var localCompressed32 = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(cursor + 18, 4));
+            var localUncompressed32 = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(cursor + 22, 4));
+            ulong localCompressed = localCompressed32;
+            ulong localUncompressed = localUncompressed32;
+            if (localCompressed32 == uint.MaxValue || localUncompressed32 == uint.MaxValue)
+            {
+                // R38: ZIP64 entries carry real sizes in the local extra field,
+                // merged after any unrelated carried fields.
+                var extraStart = checked(headerOffset + (ulong)fixedLength + localNameLength);
+                (localCompressed, localUncompressed, _) = ResolveZip64Extra(bytes.Slice((int)extraStart, localExtraLength), localCompressed32, localUncompressed32, 0, ordinal);
+            }
+
             if (localCompressed != compressedSize || localUncompressed != uncompressedSize)
             {
                 throw Malformed($"central entry #{ordinal} disagrees with its local sizes");

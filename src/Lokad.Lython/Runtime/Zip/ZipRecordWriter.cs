@@ -126,6 +126,8 @@ internal static class ZipRecordWriter
             throw new LythonRuntimeException("ValueError", "Archive comment is too long.", span);
         }
 
+        RequireRecordFieldWidths(preserved, staged, span);
+
         var total = checked(preserved.Count + staged.Count);
         var layout = new List<LayoutEntry>(total);
         var results = new List<EntryResult>(total);
@@ -166,7 +168,7 @@ internal static class ZipRecordWriter
             var needsZip64 = entry.ForceZip64 || entry.Data.Length * 1.05 > Zip64Limit || payload.Length * 1.05 > Zip64Limit;
             if (needsZip64 && !allowZip64)
             {
-                throw new LythonRuntimeException("LargeZipFile", "Filesize would require ZIP64 extensions", span);
+                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Filesize would require ZIP64 extensions", span);
             }
 
             contentZip64[preserved.Count + index - 1] = needsZip64;
@@ -210,7 +212,7 @@ internal static class ZipRecordWriter
 
             if (!allowZip64)
             {
-                throw new LythonRuntimeException("LargeZipFile", "Zipfile size would require ZIP64 extensions", span);
+                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Zipfile size would require ZIP64 extensions", span);
             }
         }
 
@@ -224,7 +226,7 @@ internal static class ZipRecordWriter
                     context.CheckExecutionBudget(span);
                 }
 
-                AppendCentralEntry(directory, layout[i], results[i], centralOffsets[i], entryZip64[i]);
+                AppendCentralEntry(directory, layout[i], results[i], centralOffsets[i], entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, results[i].CompressedSize, centralOffsets[i], span) : layout[i].Extra, entryZip64[i]);
             }
 
             var directoryBytes = directory.ToArrayAndRelease();
@@ -236,10 +238,10 @@ internal static class ZipRecordWriter
             {
                 if ((ulong)total >= (ulong)Zip64CountLimit)
                 {
-                    throw new LythonRuntimeException("LargeZipFile", "Files count would require ZIP64 extensions", span);
+                    throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Files count would require ZIP64 extensions", span);
                 }
 
-                throw new LythonRuntimeException("LargeZipFile", "Central directory size would require ZIP64 extensions", span);
+                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Central directory size would require ZIP64 extensions", span);
             }
 
             var output = new GovernedByteBuilder(context.MemoryGovernor, span);
@@ -252,14 +254,14 @@ internal static class ZipRecordWriter
                         context.CheckExecutionBudget(span);
                     }
 
-                    output.Append(LocalHeader(layout[i], results[i].Crc, layout[i].CompressedPayload.Length, entryZip64[i], centralOffsets[i]));
+                    output.Append(LocalHeader(layout[i], results[i].Crc, layout[i].CompressedPayload.Length, entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, (ulong)layout[i].CompressedPayload.Length, centralOffsets[i], span) : [], entryZip64[i], centralOffsets[i]));
                     output.Append(layout[i].CompressedPayload.Span);
                 }
 
                 output.Append(directoryBytes);
                 if (useZip64)
                 {
-                    WriteZip64End(output, (ulong)staged.Count, (ulong)directoryBytes.Length, directoryStart);
+                    WriteZip64End(output, (ulong)total, (ulong)directoryBytes.Length, directoryStart);
                 }
 
                 WriteEndRecord(output, total, directoryBytes.Length, directoryStart, comment, useZip64);
@@ -278,9 +280,105 @@ internal static class ZipRecordWriter
     }
 
     private const int MaxCommentLength = 65535;
+    private const int MaxFieldLength = 65535;
+    internal const int Zip64ExtraLength = 28;
+
+    private static void RequireRecordFieldWidths(
+        IReadOnlyList<PreservedEntry> preserved,
+        IReadOnlyList<StagedEntry> staged,
+        LythonSourceSpan? span)
+    {
+        for (var i = 0; i < preserved.Count; i++)
+        {
+            RequireRecordFieldWidths(preserved[i].NameBytes, preserved[i].Comment, preserved[i].Extra, span);
+        }
+
+        for (var i = 0; i < staged.Count; i++)
+        {
+            RequireRecordFieldWidths(staged[i].NameBytes, staged[i].Comment, staged[i].Extra, span);
+        }
+    }
+
+    internal static void RequireRecordFieldWidths(byte[] nameBytes, byte[] comment, byte[] extra, LythonSourceSpan? span)
+    {
+        if (nameBytes.Length > MaxFieldLength)
+        {
+            throw new LythonRuntimeException("ValueError", "ZipInfo filename is too long.", span);
+        }
+
+        if (comment.Length > MaxFieldLength)
+        {
+            throw new LythonRuntimeException("ValueError", "ZipInfo comment is too long.", span);
+        }
+
+        if (extra.Length > MaxFieldLength)
+        {
+            throw new LythonRuntimeException("ValueError", "ZipInfo extra field is too long.", span);
+        }
+    }
+
+    // R38: ZIP64 promotion merges a fresh 0x0001 field with the unrelated fields
+    // already carried, replacing any stale ZIP64 field; a truncated tail is dropped
+    // and the merged encoding must still fit the 16-bit length.
+    internal static byte[] MergeZip64Extra(byte[] existing, ulong uncompressedSize, ulong compressedSize, ulong headerOffset, LythonSourceSpan? span)
+    {
+        if (MergedZip64ExtraLength(existing) > MaxFieldLength)
+        {
+            throw new LythonRuntimeException("ValueError", "ZipInfo extra field is too long.", span);
+        }
+
+        var merged = new byte[MergedZip64ExtraLength(existing)];
+        var position = 0;
+        var offset = 0;
+        while (offset + 4 <= existing.Length)
+        {
+            var tag = BinaryPrimitives.ReadUInt16LittleEndian(existing.AsSpan(offset, 2));
+            var size = BinaryPrimitives.ReadUInt16LittleEndian(existing.AsSpan(offset + 2, 2));
+            if (offset + 4 + size > existing.Length)
+            {
+                break;
+            }
+
+            if (tag != 0x0001)
+            {
+                existing.AsSpan(offset, 4 + size).CopyTo(merged.AsSpan(position));
+                position += 4 + size;
+            }
+
+            offset += 4 + size;
+        }
+
+        Zip64EntryExtra(uncompressedSize, compressedSize, headerOffset).CopyTo(merged.AsSpan(position));
+        return merged;
+    }
 
     private static int LocalHeaderLength(LayoutEntry entry, bool zip64)
-        => 30 + entry.NameBytes.Length + (zip64 ? 28 : 0);
+        => 30 + entry.NameBytes.Length + (zip64 ? MergedZip64ExtraLength(entry.Extra) : 0);
+
+    // Length half of the ZIP64 extra merge, for layout before offsets exist.
+    internal static int MergedZip64ExtraLength(byte[] existing)
+    {
+        var keptLength = 0;
+        var offset = 0;
+        while (offset + 4 <= existing.Length)
+        {
+            var tag = BinaryPrimitives.ReadUInt16LittleEndian(existing.AsSpan(offset, 2));
+            var size = BinaryPrimitives.ReadUInt16LittleEndian(existing.AsSpan(offset + 2, 2));
+            if (offset + 4 + size > existing.Length)
+            {
+                break;
+            }
+
+            if (tag != 0x0001)
+            {
+                keptLength += 4 + size;
+            }
+
+            offset += 4 + size;
+        }
+
+        return keptLength + Zip64ExtraLength;
+    }
 
     private static byte[] CompressEntry(
         StagedEntry entry,
@@ -295,12 +393,26 @@ internal static class ZipRecordWriter
         var output = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            using var stream = new DeflateStream(
+            // Disposal finalizes the raw DEFLATE stream: the final block is
+            // written to the governed builder before the snapshot is taken,
+            // so the returned payload is complete and no fresh charge leaks.
+            using (var stream = new DeflateStream(
                 new LythonRuntime.GzipBufferWriteStream(output),
                 new ZLibCompressionOptions { CompressionLevel = entry.Level },
-                leaveOpen: true);
-            stream.Write(entry.Data, 0, entry.Data.Length);
-            stream.Flush();
+                leaveOpen: true))
+            {
+                stream.Write(entry.Data, 0, entry.Data.Length);
+            }
+
+            if (output.Length == 0)
+            {
+                // BCL emits no bytes at all for empty input, not even a final
+                // block. Spell the canonical empty final fixed block instead,
+                // byte-identical to what zlib and CPython emit, so empty members
+                // stay interoperable and strictly complete.
+                output.Append(new byte[] { 3, 0 });
+            }
+
             return output.ToArrayAndRelease();
         }
         catch
@@ -314,6 +426,7 @@ internal static class ZipRecordWriter
         LayoutEntry entry,
         uint crc,
         int compressedLength,
+        byte[] extra,
         bool zip64,
         ulong headerOffset)
     {
@@ -327,7 +440,6 @@ internal static class ZipRecordWriter
         BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(14, 4), crc);
         BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(18, 4), zip64 ? uint.MaxValue : (uint)compressedLength);
         BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(22, 4), zip64 ? uint.MaxValue : (uint)entry.UncompressedSize);
-        var extra = zip64 ? Zip64EntryExtra(entry.UncompressedSize, (ulong)compressedLength, headerOffset) : [];
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(26, 2), (ushort)entry.NameBytes.Length);
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(28, 2), (ushort)extra.Length);
         var result = new byte[header.Length + entry.NameBytes.Length + extra.Length];
@@ -342,11 +454,9 @@ internal static class ZipRecordWriter
         LayoutEntry entry,
         EntryResult result,
         ulong headerOffset,
+        byte[] extra,
         bool zip64)
     {
-        var extra = zip64
-            ? Zip64EntryExtra(entry.UncompressedSize, result.CompressedSize, headerOffset)
-            : entry.Extra;
         var header = new byte[46];
         BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(0, 4), 0x02014B50);
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(4, 2), (ushort)(entry.CreateSystem << 8 | (zip64 ? Zip64Version : 20)));

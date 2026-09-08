@@ -65,16 +65,20 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
+            context.RegisterHostCall(span);
             var stat = context.HostStat(path, span);
             if (!stat.Exists || !stat.IsFile)
             {
                 return false;
             }
 
-            using var payload = ReadGovernedHostBytes(path, context, span);
+            using var payload = ReadGovernedHostBytesAfterStat(path, stat, context, span);
             try
             {
-                ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
+                var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
+                // Recognition keeps no handle: release the metadata charges that
+                // a retained directory would otherwise own.
+                context.MemoryGovernor.Release(directory.MetadataCharge);
                 return true;
             }
             catch (InvalidDataException)
@@ -89,16 +93,20 @@ internal sealed partial class LythonRuntime
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
+            context.RegisterHostCall(span);
             var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
             if (!stat.Exists || !stat.IsFile)
             {
                 return false;
             }
 
-            using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
+            using var payload = await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false);
             try
             {
-                ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
+                var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
+                // Recognition keeps no handle: release the metadata charges that
+                // a retained directory would otherwise own.
+                context.MemoryGovernor.Release(directory.MetadataCharge);
                 return true;
             }
             catch (InvalidDataException)
@@ -322,6 +330,7 @@ internal sealed partial class LythonRuntime
                 context);
         }
 
+        context.RegisterHostCall(span);
         var stat = context.HostStat(request.Path, span);
         if (!stat.Exists)
         {
@@ -333,7 +342,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = ReadGovernedHostBytes(request.Path, context, span);
+        var payload = ReadGovernedHostBytesAfterStat(request.Path, stat, context, span);
         ZipArchiveDirectory directory;
         try
         {
@@ -372,6 +381,7 @@ internal sealed partial class LythonRuntime
                 context);
         }
 
+        context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
         if (!stat.Exists)
         {
@@ -383,7 +393,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
+        var payload = await ReadGovernedHostBytesAfterStatAsync(request.Path, stat, context, span).ConfigureAwait(false);
         ZipArchiveDirectory directory;
         try
         {
@@ -438,6 +448,7 @@ internal sealed partial class LythonRuntime
 
     private static object OpenZipFileAppend(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
     {
+        context.RegisterHostCall(span);
         var stat = context.HostStat(request.Path, span);
         if (!stat.Exists)
         {
@@ -449,7 +460,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = ReadGovernedHostBytes(request.Path, context, span);
+        var payload = ReadGovernedHostBytesAfterStat(request.Path, stat, context, span);
         if (payload.Memory.Length == 0)
         {
             // CPython treats an empty file as a new archive; anything else
@@ -488,6 +499,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OpenZipFileAppendAsync(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
     {
+        context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
         if (!stat.Exists)
         {
@@ -499,7 +511,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
+        var payload = await ReadGovernedHostBytesAfterStatAsync(request.Path, stat, context, span).ConfigureAwait(false);
         if (payload.Memory.Length == 0)
         {
             payload.Dispose();
@@ -536,7 +548,7 @@ internal sealed partial class LythonRuntime
 
     private static PyZipFile FreshAppendArchive(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span, GovernedHostBytes? payload)
     {
-        var directory = new ZipArchiveDirectory([], [], false);
+        var directory = new ZipArchiveDirectory([], [], false, 0);
         return new PyZipFile(
             CreateString(request.Path, context, span),
             request.Compression,
@@ -548,7 +560,8 @@ internal sealed partial class LythonRuntime
             new List<PyZipInfo>(),
             payload,
             new List<ZipRecordWriter.PreservedEntry>(),
-            context);
+            context,
+            freshAppend: true);
     }
 
     private static List<ZipRecordWriter.PreservedEntry> BuildPreservedEntries(

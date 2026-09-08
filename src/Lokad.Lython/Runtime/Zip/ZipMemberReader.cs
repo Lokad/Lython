@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 
@@ -7,7 +6,8 @@ namespace Lokad.Lython.Runtime.Zip;
 /// <summary>
 /// Governed one-shot member reads shared by <c>read</c>, <c>testzip</c>, and
 /// sequential member handles. Inflates STORED/DEFLATED data under work budgets,
-/// enforces declared lengths and CRCs before bytes are exposed, and applies
+/// enforces declared lengths and CRCs before bytes are exposed, rejects truncated
+/// streams even when lengths and CRCs match, and applies
 /// the encryption/method policy. Returns an uncharged owned array; callers
 /// transfer ownership into governed values (or drop it for validation-only
 /// reads). Data checksums enforce here, never in the directory reader.
@@ -19,7 +19,6 @@ internal static class ZipMemberReader
     private const ushort EncryptedFlag = 0x0001;
     private const ushort PatchedDataFlag = 0x0020;
     private const ushort StrongEncryptionFlag = 0x0040;
-    private const int InflateChunkBytes = 8192;
 
     public static byte[] ReadMemberBytes(
         ReadOnlyMemory<byte> archiveBytes,
@@ -101,25 +100,28 @@ internal static class ZipMemberReader
 
         if (method == StoredMethod)
         {
-            var stored = bytes.Slice((int)dataOffset, (int)compressedSize).ToArray();
-            if ((ulong)stored.Length != uncompressedSize)
+            // Reserve the copy before allocating, and checksum in governed chunks
+            // so huge members stay interruptible instead of one unbudgeted pass.
+            var length = (int)compressedSize;
+            using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
             {
-                throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
-            }
+                var stored = bytes.Slice((int)dataOffset, length).ToArray();
+                if ((ulong)stored.Length != uncompressedSize)
+                {
+                    throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
+                }
 
-            ValidateCrc(stored, expectedCrc, name, span);
-            return stored;
+                if (Crc32.Compute(stored, context, span) != expectedCrc)
+                {
+                    throw BadZipFile($"Bad CRC-32 for file '{name}'.", span);
+                }
+
+                return stored;
+            }
         }
 
         return InflateMember(bytes, (int)dataOffset, (int)compressedSize, uncompressedSize, expectedCrc, name, context, span);
 
-        static void ValidateCrc(ReadOnlySpan<byte> data, uint expectedCrc, string name, LythonSourceSpan? span)
-        {
-            if (~Crc32.Update(uint.MaxValue, data) != expectedCrc)
-            {
-                throw BadZipFile($"Bad CRC-32 for file '{name}'.", span);
-            }
-        }
     }
 
     private static byte[] InflateMember(
@@ -132,64 +134,16 @@ internal static class ZipMemberReader
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan? span)
     {
-        if (uncompressedSize > int.MaxValue)
-        {
-            throw RuntimeErrors.Memory($"zip member '{name}' is too large to materialize", span);
-        }
-
-        var output = new GovernedByteBuilder(context.MemoryGovernor, span);
-        try
-        {
-            using var source = new MemoryStream(bytes.Slice(dataOffset, compressedSize).ToArray(), writable: false);
-            using var deflate = new DeflateStream(source, CompressionMode.Decompress, leaveOpen: false);
-            var buffer = new byte[InflateChunkBytes];
-            var crc = uint.MaxValue;
-            ulong total = 0;
-            while (true)
-            {
-                context.CheckExecutionBudget(span);
-                int count;
-                try
-                {
-                    count = deflate.Read(buffer, 0, buffer.Length);
-                }
-                catch (InvalidDataException exception)
-                {
-                    throw BadZipFile($"Corrupt member '{name}': invalid deflated data ({exception.Message}).", span);
-                }
-
-                if (count == 0)
-                {
-                    break;
-                }
-
-                total = checked(total + (ulong)count);
-                if (total > uncompressedSize)
-                {
-                    throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
-                }
-
-                crc = Crc32.Update(crc, buffer.AsSpan(0, count));
-                output.Append(buffer.AsSpan(0, count));
-            }
-
-            if (total != uncompressedSize)
-            {
-                throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
-            }
-
-            if (~crc != expectedCrc)
-            {
-                throw BadZipFile($"Bad CRC-32 for file '{name}'.", span);
-            }
-
-            return output.ToArrayAndRelease();
-        }
-        catch
-        {
-            output.Release();
-            throw;
-        }
+        // Strict single-pass inflation: the decoder itself enforces the declared
+        // size, the CRC, and end-of-stream finality, so truncated payloads fail
+        // even when their expanded bytes and CRC would otherwise match.
+        return StrictDeflateInflater.Inflate(
+            bytes.Slice(dataOffset, compressedSize),
+            name,
+            uncompressedSize,
+            expectedCrc,
+            context,
+            span);
     }
 
 

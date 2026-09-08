@@ -105,6 +105,20 @@ internal sealed partial class LythonRuntime
     {
         context.RegisterHostCall(span);
         var stat = context.HostStat(path, span);
+        return ReadGovernedHostBytesAfterStat(path, stat, context, span);
+    }
+
+    internal static GovernedHostBytes ReadGovernedHostBytesAfterStat(
+        string path,
+        LythonPathStat stat,
+        ExecutionContext context,
+        LythonSourceSpan? span)
+    {
+        // The caller already registered and observed this stat (for example to
+        // distinguish missing files from directories); reuse it for the size
+        // precheck instead of stating again, then register and perform only
+        // the read. The post-read actual-length check still guards against
+        // growth between the two host observations.
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
@@ -125,6 +139,16 @@ internal sealed partial class LythonRuntime
     {
         context.RegisterHostCall(span);
         var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
+        return await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false);
+    }
+
+    internal static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesAfterStatAsync(
+        string path,
+        LythonPathStat stat,
+        ExecutionContext context,
+        LythonSourceSpan? span)
+    {
+        // Same reuse contract as the synchronous twin above.
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
