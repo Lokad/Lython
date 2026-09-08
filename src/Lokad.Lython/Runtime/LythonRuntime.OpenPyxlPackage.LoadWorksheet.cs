@@ -14,22 +14,32 @@ internal sealed partial class LythonRuntime
 {
     private static partial class OpenPyxlPackage
     {
-        private static void LoadWorksheetCells(
-            ZipArchive archive,
+        private static XDocument LoadWorksheetCells(
+            OpenPyxlLoadSession session,
             string path,
             OpenPyxlWorksheet worksheet,
             IReadOnlyList<string> sharedStrings,
             IReadOnlyList<OpenPyxlCellStyleSnapshot> cellStyles,
             ExcelDateSystem dateSystem,
             bool dataOnly,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
-            var document = LoadXml(archive, path, span);
-            var worksheetRelationships = LoadOptionalRelationships(archive, WorksheetRelationshipsPath(path), span);
+            var document = session.LoadXmlDocument(path);
+            var worksheetRelationships = LoadOptionalRelationships(session, WorksheetRelationshipsPath(path), context, span);
             // Values, formulas, and styles are independent in OOXML. Preserve each
             // backing store even when a cell has no ordinary Python value.
+            var loadedCells = 0;
             foreach (var cell in document.Descendants(XlsxMain + "c"))
             {
+                if ((++loadedCells & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    var cellCharge = ModelCellBytes * ArchiveBudgetCheckInterval;
+                    context.MemoryGovernor.Reserve(cellCharge, span);
+                    context.MemoryGovernor.Commit(cellCharge);
+                    context.CheckExecutionBudget(span);
+                }
+
                 var reference = (string?)cell.Attribute("r");
                 if (reference is null)
                 {
@@ -55,26 +65,34 @@ internal sealed partial class LythonRuntime
                 worksheet.SetLoadedCellDataType(address.Row, address.Column, (string?)cell.Attribute("t"));
             }
 
-            LoadWorksheetStructure(document, worksheet, worksheetRelationships, span);
+            LoadWorksheetStructure(document, worksheet, worksheetRelationships, context, span);
 
-            LoadWorksheetComments(archive, path, worksheet, span);
-            LoadWorksheetTables(archive, path, document, worksheet, worksheetRelationships, span);
-            LoadWorksheetDataValidations(document, worksheet, span);
-            LoadWorksheetConditionalFormatting(document, worksheet, span);
+            LoadWorksheetComments(session, path, worksheet, context, span);
+            LoadWorksheetTables(session, path, document, worksheet, worksheetRelationships, context, span);
+            LoadWorksheetDataValidations(document, worksheet, context, span);
+            LoadWorksheetConditionalFormatting(document, worksheet, context, span);
             LoadWorksheetProtection(document, worksheet, span);
-            LoadWorksheetDrawings(archive, path, document, worksheet, worksheetRelationships, span);
+            LoadWorksheetDrawings(session, path, document, worksheet, worksheetRelationships, context, span);
             worksheet.SetLoadedAutoFilter((string?)document.Descendants(XlsxMain + "autoFilter").FirstOrDefault()?.Attribute("ref"));
             LoadWorksheetViewAndPageLayout(document, worksheet, span);
+            return document;
         }
 
         private static void LoadWorksheetStructure(
             XDocument document,
             OpenPyxlWorksheet worksheet,
             IReadOnlyDictionary<string, string> worksheetRelationships,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
+            var structured = 0;
             foreach (var column in document.Descendants(XlsxMain + "col"))
             {
+                if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var min = ReadPositiveIntAttribute(column, "min", span);
                 var max = ReadPositiveIntAttribute(column, "max", span);
                 if (min is null || max is null)
@@ -84,6 +102,11 @@ internal sealed partial class LythonRuntime
 
                 for (var index = min.Value; index <= max.Value; index++)
                 {
+                    if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+
                     ValidateRowColumn(1, index, span);
                     var dimension = worksheet.GetColumnDimension(index);
                     dimension.Width = ReadNonNegativeDoubleAttribute(column, "width", span);
@@ -93,6 +116,11 @@ internal sealed partial class LythonRuntime
 
             foreach (var rowElement in document.Descendants(XlsxMain + "row"))
             {
+                if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var rowIndex = ReadPositiveIntAttribute(rowElement, "r", span);
                 if (rowIndex is null)
                 {
@@ -107,6 +135,11 @@ internal sealed partial class LythonRuntime
 
             foreach (var mergeCell in document.Descendants(XlsxMain + "mergeCell"))
             {
+                if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var reference = (string?)mergeCell.Attribute("ref");
                 if (reference is not null)
                 {
@@ -116,6 +149,11 @@ internal sealed partial class LythonRuntime
 
             foreach (var hyperlink in document.Descendants(XlsxMain + "hyperlink"))
             {
+                if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var reference = (string?)hyperlink.Attribute("ref");
                 if (reference is null)
                 {
@@ -195,11 +233,12 @@ internal sealed partial class LythonRuntime
         }
 
         private static void LoadWorksheetTables(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             string worksheetPath,
             XDocument worksheetDocument,
             OpenPyxlWorksheet worksheet,
             IReadOnlyDictionary<string, string> worksheetRelationships,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
             foreach (var tablePart in worksheetDocument.Descendants(XlsxMain + "tablePart"))
@@ -210,7 +249,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                var table = LoadTable(archive, ResolvePackagePath(worksheetPath, target), span);
+                var table = LoadTable(session, ResolvePackagePath(worksheetPath, target), context, span);
                 if (table is not null)
                 {
                     worksheet.SetLoadedTable(table);
@@ -218,9 +257,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static OpenPyxlTable? LoadTable(ZipArchive archive, string tablePath, LythonSourceSpan span)
+        private static OpenPyxlTable? LoadTable(OpenPyxlLoadSession session, string tablePath, ExecutionContext context, LythonSourceSpan span)
         {
-            var document = LoadXml(archive, tablePath, span);
+            var document = session.LoadXmlDocument(tablePath);
             var root = document.Root;
             if (root is null)
             {
@@ -252,10 +291,16 @@ internal sealed partial class LythonRuntime
             return table;
         }
 
-        private static void LoadWorksheetDataValidations(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, LythonSourceSpan span)
+        private static void LoadWorksheetDataValidations(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
+            var validated = 0;
             foreach (var element in worksheetDocument.Root?.Element(XlsxMain + "dataValidations")?.Elements(XlsxMain + "dataValidation") ?? [])
             {
+                if ((++validated & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var validation = new OpenPyxlDataValidation(
                     ParseDataValidationType((string?)element.Attribute("type"), "worksheet data-validation type", span),
                     element.Element(XlsxMain + "formula1")?.Value,
@@ -278,10 +323,16 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void LoadWorksheetConditionalFormatting(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, LythonSourceSpan span)
+        private static void LoadWorksheetConditionalFormatting(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
+            var formatted = 0;
             foreach (var element in worksheetDocument.Root?.Elements(XlsxMain + "conditionalFormatting") ?? [])
             {
+                if ((++formatted & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var sqref = (string?)element.Attribute("sqref");
                 if (sqref is null)
                 {
@@ -320,11 +371,12 @@ internal sealed partial class LythonRuntime
         }
 
         private static void LoadWorksheetDrawings(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             string worksheetPath,
             XDocument worksheetDocument,
             OpenPyxlWorksheet worksheet,
             IReadOnlyDictionary<string, string> worksheetRelationships,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
             foreach (var drawingElement in worksheetDocument.Root?.Elements(XlsxMain + "drawing") ?? [])
@@ -337,8 +389,14 @@ internal sealed partial class LythonRuntime
 
                 var drawingPath = ResolvePackagePath(worksheetPath, target);
                 var drawing = new OpenPyxlLoadedDrawing(drawingPath, relationshipId);
-                foreach (var relationship in LoadOptionalRelationshipElements(archive, PartRelationshipsPath(drawingPath), span))
+                var scannedDrawings = 0;
+                foreach (var relationship in LoadOptionalRelationshipElements(session, PartRelationshipsPath(drawingPath), context, span))
                 {
+                    if ((++scannedDrawings & (ArchiveBudgetCheckInterval - 1)) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+
                     var childTarget = (string?)relationship.Attribute("Target");
                     var childRelationshipId = (string?)relationship.Attribute("Id") ?? string.Empty;
                     if (childTarget is null)
@@ -362,12 +420,13 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void LoadWorksheetComments(ZipArchive archive, string worksheetPath, OpenPyxlWorksheet worksheet, LythonSourceSpan span)
+        private static void LoadWorksheetComments(OpenPyxlLoadSession session, string worksheetPath, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
             var target = LoadRelationshipTargetByType(
-                archive,
+                session,
                 WorksheetRelationshipsPath(worksheetPath),
                 "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
+                context,
                 span);
             if (target is null)
             {
@@ -376,15 +435,21 @@ internal sealed partial class LythonRuntime
 
             var commentsPath = ResolvePackagePath(worksheetPath, target);
             worksheet.SetLoadedCommentsSource(commentsPath);
-            var comments = LoadXml(archive, commentsPath, span);
+            var comments = session.LoadXmlDocument(commentsPath);
             var authors = comments.Root
                 ?.Element(XlsxMain + "authors")
                 ?.Elements(XlsxMain + "author")
                 .Select(author => author.Value)
                 .ToArray() ?? [];
 
+            var scannedComments = 0;
             foreach (var comment in comments.Root?.Element(XlsxMain + "commentList")?.Elements(XlsxMain + "comment") ?? [])
             {
+                if ((++scannedComments & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var reference = (string?)comment.Attribute("ref");
                 if (reference is null)
                 {
@@ -453,6 +518,25 @@ internal sealed partial class LythonRuntime
                 "e" => PyString.FromString(rawValue),
                 _ => ParseNumericCell(rawValue, numberFormat, dateSystem),
             };
+
+            static object ParseNumericCell(string rawValue, string numberFormat, ExcelDateSystem dateSystem)
+            {
+                if (double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) &&
+                    IsDateNumberFormat(numberFormat))
+                {
+                    return DateValueFromExcelSerial(serial, numberFormat, dateSystem);
+                }
+
+                if (rawValue.IndexOfAny(['.', 'e', 'E']) < 0 &&
+                    BigInteger.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
+                {
+                    return integer;
+                }
+
+                return double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var floating)
+                    ? floating
+                    : PyString.FromString(rawValue);
+            }
         }
 
         private static object ReadSharedStringValue(string rawValue, IReadOnlyList<string> sharedStrings, LythonSourceSpan span)
@@ -461,29 +545,10 @@ internal sealed partial class LythonRuntime
                 index < 0 ||
                 index >= sharedStrings.Count)
             {
-                throw new LythonRuntimeException("InvalidFileException", "Invalid .xlsx workbook: shared string index is out of range.", span);
+                throw InvalidFileException("Invalid .xlsx workbook: shared string index is out of range.", span);
             }
 
             return PyString.FromString(sharedStrings[index]);
-        }
-
-        private static object ParseNumericCell(string rawValue, string numberFormat, ExcelDateSystem dateSystem)
-        {
-            if (double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) &&
-                IsDateNumberFormat(numberFormat))
-            {
-                return DateValueFromExcelSerial(serial, numberFormat, dateSystem);
-            }
-
-            if (rawValue.IndexOfAny(['.', 'e', 'E']) < 0 &&
-                BigInteger.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
-            {
-                return integer;
-            }
-
-            return double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var floating)
-                ? floating
-                : PyString.FromString(rawValue);
         }
 
         private static int? ReadPositiveIntAttribute(XElement element, string name, LythonSourceSpan span)
@@ -499,7 +564,7 @@ internal sealed partial class LythonRuntime
                 return value;
             }
 
-            throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: attribute {name} expects a positive integer.", span);
+            throw InvalidFileException($"Invalid .xlsx workbook: attribute {name} expects a positive integer.", span);
         }
 
         private static int? ReadNonNegativeIntAttribute(XElement element, string name, LythonSourceSpan span)
@@ -515,7 +580,7 @@ internal sealed partial class LythonRuntime
                 return value;
             }
 
-            throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: attribute {name} expects a non-negative integer.", span);
+            throw InvalidFileException($"Invalid .xlsx workbook: attribute {name} expects a non-negative integer.", span);
         }
 
         private static double? ReadNonNegativeDoubleAttribute(XElement element, string name, LythonSourceSpan span)
@@ -533,7 +598,7 @@ internal sealed partial class LythonRuntime
                 return value;
             }
 
-            throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: attribute {name} expects a non-negative finite number.", span);
+            throw InvalidFileException($"Invalid .xlsx workbook: attribute {name} expects a non-negative finite number.", span);
         }
 
         private static bool ReadBooleanAttribute(XElement element, string name, LythonSourceSpan span)
@@ -551,7 +616,7 @@ internal sealed partial class LythonRuntime
             {
                 "1" or "true" or "True" => true,
                 "0" or "false" or "False" => false,
-                _ => throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: attribute {name} expects a boolean.", span)
+                _ => throw InvalidFileException($"Invalid .xlsx workbook: attribute {name} expects a boolean.", span)
             };
         }
 
@@ -567,7 +632,7 @@ internal sealed partial class LythonRuntime
             {
                 "1" or "true" or "True" => true,
                 "0" or "false" or "False" => false,
-                _ => throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: attribute {name} expects a boolean.", span)
+                _ => throw InvalidFileException($"Invalid .xlsx workbook: attribute {name} expects a boolean.", span)
             };
         }
 

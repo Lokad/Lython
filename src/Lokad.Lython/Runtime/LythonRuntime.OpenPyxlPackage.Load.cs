@@ -14,20 +14,25 @@ internal sealed partial class LythonRuntime
 {
     private static partial class OpenPyxlPackage
     {
-        private static IReadOnlyList<string> LoadSharedStrings(ZipArchive archive)
+        private static IReadOnlyList<string> LoadSharedStrings(OpenPyxlLoadSession session, ExecutionContext context, LythonSourceSpan span)
         {
-            var entry = archive.GetEntry("xl/sharedStrings.xml");
-            if (entry is null)
+            var document = session.LoadOptionalXmlDocument("xl/sharedStrings.xml");
+            if (document is null)
             {
                 return Array.Empty<string>();
             }
+            var strings = new List<string>();
+            var scanned = 0;
+            foreach (var item in document.Root?.Elements(XlsxMain + "si") ?? [])
+            {
+                strings.Add(ReadSharedString(item));
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
 
-            using var stream = entry.Open();
-            var document = XDocument.Load(stream);
-            return document.Root?
-                .Elements(XlsxMain + "si")
-                .Select(ReadSharedString)
-                .ToArray() ?? [];
+            return strings;
         }
 
         private static string ReadSharedString(XElement item)
@@ -50,24 +55,28 @@ internal sealed partial class LythonRuntime
             OpenPyxlStyleValue? Protection,
             string? NamedStyleName);
 
-        private static IReadOnlyList<OpenPyxlCellStyleSnapshot> LoadCellStyles(ZipArchive archive, LythonSourceSpan span)
+        private static IReadOnlyList<OpenPyxlCellStyleSnapshot> LoadCellStyles(XDocument? stylesDocument, ExecutionContext context, LythonSourceSpan span)
         {
-            var entry = archive.GetEntry("xl/styles.xml");
-            if (entry is null)
+            if (stylesDocument is null)
             {
                 return [DefaultCellStyleSnapshot()];
             }
 
-            using var stream = entry.Open();
-            var document = XDocument.Load(stream);
+            var document = stylesDocument;
             var customFormats = ReadCustomNumberFormats(document, span);
-            var fonts = ReadStyleCollection(document, "fonts", ReadFontStyle);
-            var fills = ReadStyleCollection(document, "fills", ReadFillStyle);
-            var borders = ReadStyleCollection(document, "borders", ReadBorderStyle);
+            var fonts = ReadStyleCollection(document, "fonts", ReadFontStyle, context, span);
+            var fills = ReadStyleCollection(document, "fills", ReadFillStyle, context, span);
+            var borders = ReadStyleCollection(document, "borders", ReadBorderStyle, context, span);
             var namedStyleNamesByXfId = ReadNamedStyleNamesByXfId(document, span);
             var styles = new List<OpenPyxlCellStyleSnapshot>();
+            var scannedXfs = 0;
             foreach (var xf in document.Root?.Element(XlsxMain + "cellXfs")?.Elements(XlsxMain + "xf") ?? [])
             {
+                if ((++scannedXfs & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var xfId = ReadNonNegativeIntAttribute(xf, "xfId", span);
                 styles.Add(ReadCellStyleSnapshot(
                     xf,
@@ -84,27 +93,31 @@ internal sealed partial class LythonRuntime
             return styles.Count == 0 ? [DefaultCellStyleSnapshot()] : styles;
         }
 
-        private static IReadOnlyList<OpenPyxlStyleValue> LoadNamedStyles(ZipArchive archive, LythonSourceSpan span)
+        private static IReadOnlyList<OpenPyxlStyleValue> LoadNamedStyles(XDocument? stylesDocument, ExecutionContext context, LythonSourceSpan span)
         {
-            var entry = archive.GetEntry("xl/styles.xml");
-            if (entry is null)
+            if (stylesDocument is null)
             {
                 return [CreateNamedStyleValue(PyString.FromString("Normal"))];
             }
 
-            using var stream = entry.Open();
-            var document = XDocument.Load(stream);
+            var document = stylesDocument;
             var customFormats = ReadCustomNumberFormats(document, span);
-            var fonts = ReadStyleCollection(document, "fonts", ReadFontStyle);
-            var fills = ReadStyleCollection(document, "fills", ReadFillStyle);
-            var borders = ReadStyleCollection(document, "borders", ReadBorderStyle);
+            var fonts = ReadStyleCollection(document, "fonts", ReadFontStyle, context, span);
+            var fills = ReadStyleCollection(document, "fills", ReadFillStyle, context, span);
+            var borders = ReadStyleCollection(document, "borders", ReadBorderStyle, context, span);
             var styleXfs = (document.Root?.Element(XlsxMain + "cellStyleXfs")?.Elements(XlsxMain + "xf") ?? [])
                 .Select(xf => ReadCellStyleSnapshot(xf, customFormats, fonts, fills, borders, span, namedStyleName: null))
                 .ToArray();
 
             var styles = new List<OpenPyxlStyleValue>();
+            var scannedStyles = 0;
             foreach (var cellStyle in document.Root?.Element(XlsxMain + "cellStyles")?.Elements(XlsxMain + "cellStyle") ?? [])
             {
+                if ((++scannedStyles & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 if ((string?)cellStyle.Attribute("name") is not { } name)
                 {
                     continue;
@@ -191,8 +204,23 @@ internal sealed partial class LythonRuntime
         private static List<OpenPyxlStyleValue?> ReadStyleCollection(
             XDocument document,
             string collectionName,
-            Func<XElement, OpenPyxlStyleValue> read)
-            => (document.Root?.Element(XlsxMain + collectionName)?.Elements().Select(element => (OpenPyxlStyleValue?)read(element)).ToList() ?? []);
+            Func<XElement, OpenPyxlStyleValue> read,
+            ExecutionContext context,
+            LythonSourceSpan span)
+        {
+            var styles = new List<OpenPyxlStyleValue?>();
+            var scanned = 0;
+            foreach (var element in document.Root?.Element(XlsxMain + collectionName)?.Elements() ?? [])
+            {
+                styles.Add(read(element));
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            return styles;
+        }
 
         private static OpenPyxlStyleValue ReadFontStyle(XElement font)
         {
@@ -205,7 +233,7 @@ internal sealed partial class LythonRuntime
             var strike = font.Element(XlsxMain + "strike") is not null;
             var underline = ReadUnderlineValue(font.Element(XlsxMain + "u"));
             return new OpenPyxlStyleValue(new OpenPyxlFontStylePayload(
-                ReadStyleElementAttribute(font, "name", "val"),
+                ReadStyleAttribute(font.Element(XlsxMain + "name"), "val"),
                 size,
                 bold,
                 italic,
@@ -255,8 +283,6 @@ internal sealed partial class LythonRuntime
                     ReadStyleBooleanAttribute(protection, "locked"),
                     ReadStyleBooleanAttribute(protection, "hidden")));
 
-        private static object ReadStyleElementAttribute(XElement parent, string elementName, string attributeName)
-            => ReadStyleAttribute(parent.Element(XlsxMain + elementName), attributeName);
 
         private static object ReadStyleAttribute(XElement? element, string attributeName)
             => (string?)element?.Attribute(attributeName) is { } text ? PyString.FromString(text) : PyNone.Instance;
@@ -356,12 +382,18 @@ internal sealed partial class LythonRuntime
                 _ => "General",
             };
 
-        private static Dictionary<string, string> LoadRelationships(ZipArchive archive, string path, LythonSourceSpan span)
+        private static Dictionary<string, string> LoadRelationships(OpenPyxlLoadSession session, string path, ExecutionContext context, LythonSourceSpan span)
         {
-            var document = LoadXml(archive, path, span);
+            var document = session.LoadXmlDocument(path);
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
+            var scanned = 0;
             foreach (var relationship in document.Root?.Elements(PackageRelationships + "Relationship") ?? [])
             {
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var id = (string?)relationship.Attribute("Id");
                 var target = (string?)relationship.Attribute("Target");
                 if (id is not null && target is not null)
@@ -373,14 +405,13 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static string? LoadRelationshipTargetByType(ZipArchive archive, string path, string type, LythonSourceSpan span)
+        private static string? LoadRelationshipTargetByType(OpenPyxlLoadSession session, string path, string type, ExecutionContext context, LythonSourceSpan span)
         {
-            if (archive.GetEntry(path) is null)
+            var document = session.LoadOptionalXmlDocument(path);
+            if (document is null)
             {
                 return null;
             }
-
-            var document = LoadXml(archive, path, span);
             foreach (var relationship in document.Root?.Elements(PackageRelationships + "Relationship") ?? [])
             {
                 var target = (string?)relationship.Attribute("Target");
@@ -393,22 +424,16 @@ internal sealed partial class LythonRuntime
             return null;
         }
 
-        private static XDocument LoadXml(ZipArchive archive, string path, LythonSourceSpan span)
+        private static void LoadWorkbookDefinedNames(XDocument workbook, IReadOnlyList<OpenPyxlWorksheet> worksheets, ExecutionContext context, LythonSourceSpan span)
         {
-            var entry = archive.GetEntry(path);
-            if (entry is null)
-            {
-                throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: missing {path}.", span);
-            }
-
-            using var stream = entry.Open();
-            return XDocument.Load(stream);
-        }
-
-        private static void LoadWorkbookDefinedNames(XDocument workbook, IReadOnlyList<OpenPyxlWorksheet> worksheets, LythonSourceSpan span)
-        {
+            var scanned = 0;
             foreach (var definedName in workbook.Root?.Element(XlsxMain + "definedNames")?.Elements(XlsxMain + "definedName") ?? [])
             {
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var name = (string?)definedName.Attribute("name");
                 var localSheetId = ReadNonNegativeIntAttribute(definedName, "localSheetId", span);
                 if (name is null ||

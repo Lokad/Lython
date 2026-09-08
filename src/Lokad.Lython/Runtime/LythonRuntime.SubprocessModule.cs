@@ -80,6 +80,7 @@ internal sealed partial class LythonRuntime
         {
             BigInteger integer => integer,
             int integer => new BigInteger(integer),
+            bool flag => flag ? BigInteger.One : BigInteger.Zero,
             _ => throw new LythonRuntimeException("TypeError", "subprocess.CompletedProcess(..., returncode=...) expects an integer.", span)
         };
 
@@ -99,7 +100,7 @@ internal sealed partial class LythonRuntime
         }
 
         var items = new List<string>();
-        foreach (var item in ToSequence(arguments[0], span))
+        foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (!PyStringOps.TryAsString(item, out var text))
             {
@@ -172,7 +173,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "subprocess shell invocation is not available in this host.", span);
         }
 
-        var args = ParseSubprocessArgs(arguments.Args, shell, owner, span);
+        var args = ParseSubprocessArgs(arguments.Args, shell, owner, span, context);
         int? timeout = arguments.HasTimeout
             ? ParseOptionalInt(arguments.Timeout, $"{owner}(..., timeout=...)", span)
             : null;

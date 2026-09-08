@@ -360,7 +360,7 @@ internal sealed partial class LythonRuntime
             }
 
             object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 total = MultiplyNumeric(total, item, span);
             }
@@ -379,7 +379,7 @@ internal sealed partial class LythonRuntime
             var partials = new List<double>();
             var infinitySign = 0;
             var sawNaN = false;
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))

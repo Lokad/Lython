@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
             }
 
             var column = 1;
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 context.CheckExecutionBudget(span);
                 SetCellValue(row, column, item);

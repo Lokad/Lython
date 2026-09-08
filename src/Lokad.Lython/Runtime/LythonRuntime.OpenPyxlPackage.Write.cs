@@ -727,24 +727,25 @@ internal sealed partial class LythonRuntime
                 Protection is null;
         }
 
-        private static Dictionary<string, string> LoadOptionalRelationships(ZipArchive archive, string path, LythonSourceSpan span)
+        private static Dictionary<string, string> LoadOptionalRelationships(OpenPyxlLoadSession session, string path, ExecutionContext context, LythonSourceSpan span)
         {
-            if (archive.GetEntry(path) is null)
+            if (!session.ContainsPart(path))
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal);
             }
 
-            return LoadRelationships(archive, path, span);
+            return LoadRelationships(session, path, context, span);
         }
 
-        private static IReadOnlyList<XElement> LoadOptionalRelationshipElements(ZipArchive archive, string path, LythonSourceSpan span)
+        private static IReadOnlyList<XElement> LoadOptionalRelationshipElements(OpenPyxlLoadSession session, string path, ExecutionContext context, LythonSourceSpan span)
         {
-            if (archive.GetEntry(path) is null)
+            var document = session.LoadOptionalXmlDocument(path);
+            if (document is null)
             {
                 return [];
             }
 
-            return LoadXml(archive, path, span)
+            return document
                 .Root?
                 .Elements(PackageRelationships + "Relationship")
                 .Select(relationship => new XElement(relationship))

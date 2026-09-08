@@ -54,6 +54,10 @@ internal static class StaticAbstractFacts
         => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
            value.Kind == AbstractValueKind.Integer;
 
+    public static bool IsKnownBooleanLiteral(ExpressionSyntax expression, AbstractState bindings)
+        => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
+           value.Kind == AbstractValueKind.Boolean;
+
     public static bool IsDefinitelyKnownLiteral(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.IsDefinitelyKnownLiteral(expression, bindings);
 

@@ -40,7 +40,12 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal readonly record struct OpenPyxlPackageSnapshot(IReadOnlyDictionary<string, byte[]> Parts);
+    /// <summary>
+    /// Preserved package parts carried from load to save. Part bytes stay charged
+    /// to the run governor identified by <see cref="MemoryGovernor"/> for the
+    /// lifetime of the snapshot.
+    /// </summary>
+    internal readonly record struct OpenPyxlPackageSnapshot(IReadOnlyDictionary<string, byte[]> Parts, MemoryGovernor Governor);
 
     internal readonly record struct CellAddress(int Row, int Column);
 
@@ -86,16 +91,6 @@ internal sealed partial class LythonRuntime
 
     private static bool IsDateLikeCellValue(object value)
         => value is PyDate or PyDateTime or PyTime or PyTimedelta;
-
-    private static string DefaultDateNumberFormat(object value)
-        => value switch
-        {
-            PyDate => "yyyy-mm-dd",
-            PyDateTime => "yyyy-mm-dd h:mm:ss",
-            PyTime => "h:mm:ss",
-            PyTimedelta => "[hh]:mm:ss",
-            _ => "General",
-        };
 
     private static double ExcelSerialFromDate(PyDate date, ExcelDateSystem dateSystem)
         => ExcelSerialFromDateTime(date.Value.ToDateTime(TimeOnly.MinValue), dateSystem);
@@ -381,12 +376,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static string ValidateDetachedSheetTitle(string title)
-    {
-        ValidateSheetTitle(title, null);
-        return title;
-    }
-
     private static CellAddress ParseCellAddress(string reference, LythonSourceSpan? span)
     {
         var text = reference.Replace("$", string.Empty, StringComparison.Ordinal).Trim();
@@ -584,16 +573,6 @@ internal sealed partial class LythonRuntime
     {
         var address = ParseCellAddress(ExpectString(value, owner, span), span);
         return CellReference(address.Row, address.Column);
-    }
-
-    private static string? NormalizeOptionalRangeReference(object value, string owner, LythonSourceSpan? span)
-    {
-        if (value is PyNone)
-        {
-            return null;
-        }
-
-        return ParseCellRange(ExpectString(value, owner, span), span).Reference;
     }
 
     private static string NormalizeSelectionReference(object value, string owner, LythonSourceSpan? span)

@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
         ForcePipe,
     }
 
-    private static IReadOnlyList<string> ParseSubprocessArgs(object value, bool shell, string owner, LythonSourceSpan span)
+    private static IReadOnlyList<string> ParseSubprocessArgs(object value, bool shell, string owner, LythonSourceSpan span, ExecutionContext context)
     {
         if (PyStringOps.TryAsString(value, out var commandText))
         {
@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
         }
 
         var items = new List<string>();
-        foreach (var item in ToSequence(value, span))
+        foreach (var item in ToSequence(value, span, context))
         {
             if (item is PyPath path)
             {

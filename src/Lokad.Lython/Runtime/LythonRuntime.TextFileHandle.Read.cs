@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     return PyString.Empty;
                 }
 
-                var end = FindLineEndByte(source, _cursorByte);
+                var end = TextLineScanning.FindLineEndByte(source, _cursorByte, newline);
                 if (size >= 0)
                 {
                     end = Math.Min(end, text.GetByteIndexAfterRunes(_cursorByte, size));
@@ -45,47 +45,6 @@ internal sealed partial class LythonRuntime
                 var line = text.SliceByByteRange(_cursorByte, end);
                 _cursorByte = end;
                 return line;
-
-                int FindLineEndByte(ReadOnlySpan<byte> bytes, int startByte)
-                {
-                    for (var i = startByte; i < bytes.Length; i++)
-                    {
-                        if (bytes[i] == (byte)'\n' &&
-                            newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
-                        {
-                            return i + 1;
-                        }
-
-                        if (bytes[i] != (byte)'\r')
-                        {
-                            continue;
-                        }
-
-                        if (newline is TextNewlineMode.PreserveCarriageReturn)
-                        {
-                            return i + 1;
-                        }
-
-                        if (newline is TextNewlineMode.PreserveCarriageReturnLineFeed)
-                        {
-                            if (i + 1 < bytes.Length && bytes[i + 1] == (byte)'\n')
-                            {
-                                return i + 2;
-                            }
-
-                            continue;
-                        }
-
-                        if (newline == TextNewlineMode.PreserveUniversal)
-                        {
-                            return i + 1 < bytes.Length && bytes[i + 1] == (byte)'\n'
-                                ? i + 2
-                                : i + 1;
-                        }
-                    }
-
-                    return bytes.Length;
-                }
             }
         }
     }

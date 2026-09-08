@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "ranges" => RangeList(),
+                "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray()),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -237,9 +237,6 @@ internal sealed partial class LythonRuntime
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-        private PyList RangeList()
-            => new(_ranges.Select(range => (object)PyString.FromString(range.Reference)).ToArray());
     }
 
     private sealed class OpenPyxlAutoFilter : IPyMutableDynamicAttributes, IPyRenderableValue
@@ -272,6 +269,16 @@ internal sealed partial class LythonRuntime
             _worksheet.EnsureCanMutate(null);
             _worksheet.AutoFilterRef = NormalizeOptionalRangeReference(value, "AutoFilter.ref", null);
             return true;
+
+            static string? NormalizeOptionalRangeReference(object rangeValue, string owner, LythonSourceSpan? span)
+            {
+                if (rangeValue is PyNone)
+                {
+                    return null;
+                }
+
+                return ParseCellRange(ExpectString(rangeValue, owner, span), span).Reference;
+            }
         }
 
         public PyString RenderPython(PyRenderingContext context)

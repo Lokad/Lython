@@ -7,8 +7,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static readonly uint[] GzipCrc32Table = BuildGzipCrc32Table();
-
     private sealed class GzipModule : PyModule
     {
         public static readonly GzipModule Instance = new();
@@ -101,7 +99,7 @@ internal sealed partial class LythonRuntime
                                 }
 
                                 output.Append(buffer.AsSpan(0, count));
-                                memberCrc = UpdateGzipCrc32(memberCrc, buffer.AsSpan(0, count));
+                                memberCrc = Crc32.Update(memberCrc, buffer.AsSpan(0, count));
                                 memberLength = unchecked(memberLength + (uint)count);
                             }
 
@@ -468,7 +466,7 @@ internal sealed partial class LythonRuntime
             }
 
             Span<byte> trailer = stackalloc byte[8];
-            BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], ComputeGzipCrc32(data, context, span));
+            BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], Crc32.Compute(data, context, span));
             BinaryPrimitives.WriteUInt32LittleEndian(trailer[4..], unchecked((uint)data.Length));
             outputStream.Write(trailer);
             return output.ToArrayAndRelease();
@@ -516,47 +514,6 @@ internal sealed partial class LythonRuntime
         }
 
         return (uint)numeric;
-    }
-
-    private static uint ComputeGzipCrc32(ReadOnlySpan<byte> data, ExecutionContext context, LythonSourceSpan? span)
-    {
-        var crc = uint.MaxValue;
-        const int budgetChunkLength = 4096;
-        for (var offset = 0; offset < data.Length; offset += budgetChunkLength)
-        {
-            context.CheckExecutionBudget(span);
-            var length = Math.Min(budgetChunkLength, data.Length - offset);
-            crc = UpdateGzipCrc32(crc, data.Slice(offset, length));
-        }
-
-        return ~crc;
-    }
-
-    private static uint UpdateGzipCrc32(uint crc, ReadOnlySpan<byte> data)
-    {
-        foreach (var value in data)
-        {
-            crc = GzipCrc32Table[(crc ^ value) & 0xff] ^ (crc >> 8);
-        }
-
-        return crc;
-    }
-
-    private static uint[] BuildGzipCrc32Table()
-    {
-        var table = new uint[256];
-        for (var index = 0; index < table.Length; index++)
-        {
-            var value = (uint)index;
-            for (var bit = 0; bit < 8; bit++)
-            {
-                value = (value >> 1) ^ (0xedb88320u & unchecked((uint)-(int)(value & 1)));
-            }
-
-            table[index] = value;
-        }
-
-        return table;
     }
 
     private static int ParseGzipHeader(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)

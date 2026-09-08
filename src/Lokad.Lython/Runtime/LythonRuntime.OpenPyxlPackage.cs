@@ -15,10 +15,22 @@ internal sealed partial class LythonRuntime
 {
     private static partial class OpenPyxlPackage
     {
+        // Archive containment bounds. Isolated probing showed hostile archives
+        // crash or stall the pipeline (deep XML hangs, megabytes retained under
+        // kilobyte budgets) while legitimate package parts nest only a few levels.
+        private const int MaxArchiveXmlElementDepth = 1024;
+        private const long XmlDocumentBytesPerByte = 16;
+        private const int ArchiveEntryCopyChunkBytes = 65536;
+        private const long SnapshotBaseBytesPerEntry = 96;
+        private const long ModelCellBytes = 512;
+        // Must remain a power of two: chunk checks below use it as a bit mask.
+        private const int ArchiveBudgetCheckInterval = 64;
+
         public static OpenPyxlWorkbook Load(
             ReadOnlyMemory<byte> payload,
             OpenPyxlLoadOptions options,
-            LythonSourceSpan span)
+            LythonSourceSpan span,
+            ExecutionContext context)
         {
             try
             {
@@ -26,10 +38,13 @@ internal sealed partial class LythonRuntime
                     ? new MemoryStream(segment.Array.RequireNotNull(), segment.Offset, segment.Count, writable: false)
                     : new MemoryStream(payload.ToArray(), writable: false);
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
-                var sharedStrings = LoadSharedStrings(archive);
-                var cellStyles = LoadCellStyles(archive, span);
-                var namedStyles = LoadNamedStyles(archive, span);
-                var workbook = LoadXml(archive, "xl/workbook.xml", span);
+                ValidateArchiveDirectory(archive, context, span);
+                var session = new OpenPyxlLoadSession(archive, context, span);
+                var sharedStrings = LoadSharedStrings(session, context, span);
+                var stylesDocument = session.LoadOptionalXmlDocument("xl/styles.xml");
+                var cellStyles = LoadCellStyles(stylesDocument, context, span);
+                var namedStyles = LoadNamedStyles(stylesDocument, context, span);
+                var workbook = session.LoadXmlDocument("xl/workbook.xml");
                 var dateSystem = ReadBooleanAttribute(
                     workbook.Root?.Element(XlsxMain + "workbookPr") ?? new XElement(XlsxMain + "workbookPr"),
                     "date1904",
@@ -37,7 +52,7 @@ internal sealed partial class LythonRuntime
                     span)
                     ? ExcelDateSystem.Mac1904
                     : ExcelDateSystem.Windows1900;
-                var workbookRels = LoadRelationships(archive, "xl/_rels/workbook.xml.rels", span);
+                var workbookRels = LoadRelationships(session, "xl/_rels/workbook.xml.rels", context, span);
                 var sheets = workbook.Root?
                     .Element(XlsxMain + "sheets")?
                     .Elements(XlsxMain + "sheet")
@@ -45,6 +60,7 @@ internal sealed partial class LythonRuntime
 
                 var worksheets = new List<OpenPyxlWorksheet>();
                 var worksheetPaths = new List<string>();
+                var worksheetFeatureRisks = new List<string>();
                 foreach (var sheet in sheets)
                 {
                     var name = (string?)sheet.Attribute("name") ?? "Sheet";
@@ -57,19 +73,22 @@ internal sealed partial class LythonRuntime
                     var path = ResolvePackagePath("xl/workbook.xml", target);
                     worksheetPaths.Add(path);
                     var worksheet = new OpenPyxlWorksheet(name) { SourcePath = path };
-                    LoadWorksheetCells(
-                        archive,
+                    context.CheckExecutionBudget(span);
+                    var sheetDocument = LoadWorksheetCells(
+                        session,
                         path,
                         worksheet,
                         sharedStrings,
                         cellStyles,
                         dateSystem,
                         options.HasFlag(OpenPyxlLoadOptions.DataOnly),
+                        context,
                         span);
+                    AddUnsupportedWorksheetFeatures(sheetDocument, path, worksheetFeatureRisks);
                     worksheets.Add(worksheet);
                 }
 
-                if (!options.HasFlag(OpenPyxlLoadOptions.KeepLinks) && PackageHasExternalLinks(archive, workbook, span))
+                if (!options.HasFlag(OpenPyxlLoadOptions.KeepLinks) && PackageHasExternalLinks(session, workbook, context, span))
                 {
                     throw new LythonRuntimeException(
                         "NotImplementedError",
@@ -77,16 +96,16 @@ internal sealed partial class LythonRuntime
                         span);
                 }
 
-                LoadWorkbookDefinedNames(workbook, worksheets, span);
+                LoadWorkbookDefinedNames(workbook, worksheets, context, span);
                 var activeIndex = ReadWorkbookActiveIndex(workbook, worksheets.Count, span);
-                var hasVbaProject = PackageHasVbaProject(archive);
-                var saveGuard = AnalyzeSaveGuard(archive, workbook, worksheetPaths, options, span);
+                var hasVbaProject = archive.Entries.Any(entry => IsVbaProjectPackagePart(NormalizePackagePartName(entry.FullName)));
+                var saveGuard = AnalyzeSaveGuard(session, workbook, worksheetPaths, worksheetFeatureRisks, options, context, span);
                 if (options.HasFlag(OpenPyxlLoadOptions.DataOnly))
                 {
                     saveGuard = AddDataOnlySaveGuard(saveGuard);
                 }
 
-                var snapshot = CapturePackageSnapshot(archive);
+                var snapshot = session.Finish(preserve: !options.HasFlag(OpenPyxlLoadOptions.ReadOnly));
                 var result = OpenPyxlWorkbook.FromWorksheets(
                     worksheets,
                     options.HasFlag(OpenPyxlLoadOptions.ReadOnly),
@@ -105,25 +124,27 @@ internal sealed partial class LythonRuntime
             }
             catch (Exception ex) when (ex is InvalidDataException or IOException or XmlException)
             {
-                throw new LythonRuntimeException("InvalidFileException", $"Invalid .xlsx workbook: {ex.Message}", span);
+                throw InvalidFileException($"Invalid .xlsx workbook: {ex.Message}", span);
             }
         }
 
         private static OpenPyxlSaveGuard AnalyzeSaveGuard(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             XDocument workbook,
             IReadOnlyList<string> worksheetPaths,
+            IReadOnlyList<string> worksheetFeatureRisks,
             OpenPyxlLoadOptions options,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
-            var unsupported = new List<string>();
-            AddUnsupportedPackageParts(archive, unsupported, options.HasFlag(OpenPyxlLoadOptions.KeepVba));
+            var unsupported = new List<string>(worksheetFeatureRisks);
+            AddUnsupportedPackageParts(session.Archive, unsupported, options.HasFlag(OpenPyxlLoadOptions.KeepVba), context, span);
             AddUnsupportedWorkbookFeatures(workbook, worksheetPaths.Count, unsupported);
-            AddUnsupportedWorkbookRelationshipFeatures(archive, unsupported, span);
+            AddUnsupportedWorkbookRelationshipFeatures(session, unsupported, context, span);
             foreach (var worksheetPath in worksheetPaths)
             {
-                AddUnsupportedWorksheetFeatures(archive, worksheetPath, unsupported, span);
-                AddUnsupportedWorksheetRelationshipFeatures(archive, worksheetPath, unsupported, span);
+                context.CheckExecutionBudget(span);
+                AddUnsupportedWorksheetRelationshipFeatures(session, worksheetPath, unsupported, context, span);
             }
 
             return unsupported.Count == 0
@@ -131,26 +152,24 @@ internal sealed partial class LythonRuntime
                 : OpenPyxlSaveGuard.Unsafe(SummarizeUnsupportedContent(unsupported));
         }
 
-        private static bool PackageHasExternalLinks(ZipArchive archive, XDocument workbook, LythonSourceSpan span)
+        private static bool PackageHasExternalLinks(OpenPyxlLoadSession session, XDocument workbook, ExecutionContext context, LythonSourceSpan span)
         {
             if (workbook.Root?.Element(XlsxMain + "externalReferences") is not null)
             {
                 return true;
             }
 
-            if (archive.Entries.Any(entry => IsExternalLinkPackagePart(NormalizePackagePartName(entry.FullName))))
+            if (session.Archive.Entries.Any(entry => IsExternalLinkPackagePart(NormalizePackagePartName(entry.FullName))))
             {
                 return true;
             }
 
-            var relationships = LoadXml(archive, "xl/_rels/workbook.xml.rels", span);
+            var relationships = session.LoadXmlDocument("xl/_rels/workbook.xml.rels");
             return relationships.Root?
                 .Elements(PackageRelationships + "Relationship")
                 .Any(relationship => IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink")) == true;
         }
 
-        private static bool PackageHasVbaProject(ZipArchive archive)
-            => archive.Entries.Any(entry => IsVbaProjectPackagePart(NormalizePackagePartName(entry.FullName)));
 
         private static OpenPyxlSaveGuard AddDataOnlySaveGuard(OpenPyxlSaveGuard saveGuard)
         {
@@ -163,10 +182,18 @@ internal sealed partial class LythonRuntime
         private static void AddUnsupportedPackageParts(
             ZipArchive archive,
             List<string> unsupported,
-            bool keepVba)
+            bool keepVba,
+            ExecutionContext context,
+            LythonSourceSpan span)
         {
+            var scanned = 0;
             foreach (var entry in archive.Entries)
             {
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var name = NormalizePackagePartName(entry.FullName);
                 if (name.Length == 0)
                 {
@@ -209,26 +236,26 @@ internal sealed partial class LythonRuntime
         }
 
         private static void AddUnsupportedWorkbookRelationshipFeatures(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             List<string> unsupported,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
             AddUnsupportedRelationshipSaveRisks(
-                archive,
+                session,
                 "xl/_rels/workbook.xml.rels",
                 "workbook relationships",
                 allowExternalHyperlinks: false,
                 unsupported,
+                context,
                 span);
         }
 
         private static void AddUnsupportedWorksheetFeatures(
-            ZipArchive archive,
+            XDocument worksheet,
             string worksheetPath,
-            List<string> unsupported,
-            LythonSourceSpan span)
+            List<string> unsupported)
         {
-            var worksheet = LoadXml(archive, worksheetPath, span);
             foreach (var child in worksheet.Root?.Elements() ?? [])
             {
                 if (child.Name == XlsxMain + "oleObjects")
@@ -243,37 +270,46 @@ internal sealed partial class LythonRuntime
         }
 
         private static void AddUnsupportedWorksheetRelationshipFeatures(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             string worksheetPath,
             List<string> unsupported,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
             var relationshipsPath = WorksheetRelationshipsPath(worksheetPath);
-            if (archive.GetEntry(relationshipsPath) is null)
+            if (!session.ContainsPart(relationshipsPath))
             {
                 return;
             }
 
             AddUnsupportedRelationshipSaveRisks(
-                archive,
+                session,
                 relationshipsPath,
                 relationshipsPath,
                 allowExternalHyperlinks: true,
                 unsupported,
+                context,
                 span);
         }
 
         private static void AddUnsupportedRelationshipSaveRisks(
-            ZipArchive archive,
+            OpenPyxlLoadSession session,
             string relationshipsPath,
             string owner,
             bool allowExternalHyperlinks,
             List<string> unsupported,
+            ExecutionContext context,
             LythonSourceSpan span)
         {
-            var relationships = LoadXml(archive, relationshipsPath, span);
+            var relationships = session.LoadXmlDocument(relationshipsPath);
+            var scanned = 0;
             foreach (var relationship in relationships.Root?.Elements(PackageRelationships + "Relationship") ?? [])
             {
+                if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 if (IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink"))
                 {
                     unsupported.Add(owner + " external link relationship");
@@ -310,8 +346,19 @@ internal sealed partial class LythonRuntime
             return string.Join(", ", distinct, 0, displayedCount) + suffix;
         }
 
-        public static byte[] Save(OpenPyxlWorkbook workbook, ExecutionContext context, LythonSourceSpan span)
+        /// <summary>
+        /// Serialized workbook bytes with their committed governor charge. The
+        /// caller transfers ownership by releasing <see cref="MemoryCharge"/>
+        /// after host publication.
+        /// </summary>
+        internal readonly record struct OpenPyxlSavePayload(byte[] Bytes, long MemoryCharge);
+
+        public static OpenPyxlSavePayload Save(OpenPyxlWorkbook workbook, ExecutionContext context, LythonSourceSpan span)
         {
+            // Output capacity is reserved from model sizes before serializing so
+            // unbounded output growth fails before it is materialized. The commit
+            // transfers to the payload; the caller releases it after host publication.
+            using var reservation = context.MemoryGovernor.ReserveTemporary(EstimateSaveBaseBytes(workbook), span);
             using var stream = new MemoryStream();
             using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -321,55 +368,271 @@ internal sealed partial class LythonRuntime
                 var updatedParts = UpdatedPackageParts.Create(workbook);
                 var generatedParts = GeneratedPackagePartNames(workbook, generateStyles, updatedParts);
                 var workbookRelationshipPlan = CreateWorkbookRelationshipPlan(workbook, generateStyles);
-                WritePreservedPackageParts(archive, workbook.PackageSnapshot, generatedParts);
-                WriteXml(archive, "[Content_Types].xml", CreateContentTypes(workbook, generateStyles, generatedParts, updatedParts));
-                WriteXml(archive, "_rels/.rels", CreateRootRelationships(workbook.PackageSnapshot));
-                WriteXml(archive, "xl/workbook.xml", CreateWorkbookXml(workbook, workbookRelationshipPlan));
-                WriteXml(archive, "xl/_rels/workbook.xml.rels", CreateWorkbookRelationships(workbook, generateStyles, workbookRelationshipPlan));
+                var entryTimestamp = context.Host.LocalNow;
+                WritePreservedPackageParts(archive, workbook.PackageSnapshot, generatedParts, entryTimestamp);
+                WriteXml(archive, "[Content_Types].xml", CreateContentTypes(workbook, generateStyles, generatedParts, updatedParts), entryTimestamp);
+                WriteXml(archive, "_rels/.rels", CreateRootRelationships(workbook.PackageSnapshot), entryTimestamp);
+                WriteXml(archive, "xl/workbook.xml", CreateWorkbookXml(workbook, workbookRelationshipPlan), entryTimestamp);
+                WriteXml(archive, "xl/_rels/workbook.xml.rels", CreateWorkbookRelationships(workbook, generateStyles, workbookRelationshipPlan), entryTimestamp);
                 if (generateStyles)
                 {
-                    WriteXml(archive, "xl/styles.xml", CreateStylesXml(styleRegistry));
+                    WriteXml(archive, "xl/styles.xml", CreateStylesXml(styleRegistry), entryTimestamp);
                 }
 
                 for (var i = 0; i < workbook.Worksheets.Count; i++)
                 {
                     context.CheckExecutionBudget(span);
+                    reservation.Grow(EstimateWorksheetOutputBytes(workbook.Worksheets[i]), span);
                     var worksheetPath = $"xl/worksheets/sheet{i + 1}.xml";
                     var worksheetRelationshipPlan = CreateWorksheetRelationshipPlan(workbook.Worksheets[i]);
-                    WriteXml(archive, worksheetPath, CreateWorksheetXml(workbook.Worksheets[i], styleRegistry, preserveLoadedStyleIds, worksheetRelationshipPlan));
+                    WriteXml(archive, worksheetPath, CreateWorksheetXml(workbook.Worksheets[i], styleRegistry, preserveLoadedStyleIds, worksheetRelationshipPlan, context, span), entryTimestamp);
                     if (worksheetRelationshipPlan.HasRelationships)
                     {
-                        WriteXml(archive, WorksheetRelationshipsPath(worksheetPath), CreateWorksheetRelationships(worksheetRelationshipPlan));
+                        WriteXml(archive, WorksheetRelationshipsPath(worksheetPath), CreateWorksheetRelationships(worksheetRelationshipPlan), entryTimestamp);
                     }
                 }
 
-                WriteUpdatedLoadedTableParts(archive, workbook.PackageSnapshot, updatedParts.Tables);
-                WriteUpdatedLoadedCommentsParts(archive, updatedParts.Comments);
+                WriteUpdatedLoadedTableParts(archive, workbook.PackageSnapshot, updatedParts.Tables, entryTimestamp);
+                WriteUpdatedLoadedCommentsParts(archive, updatedParts.Comments, entryTimestamp);
             }
 
             var payload = stream.ToArray();
-            context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(payload.Length), span);
-            return payload;
+            var payloadCharge = PyBytes.EstimateApproximateBytes(payload.Length);
+            reservation.Grow(payloadCharge, span);
+            context.MemoryGovernor.Reserve(payloadCharge, span);
+            context.MemoryGovernor.Commit(payloadCharge);
+            return new OpenPyxlSavePayload(payload, payloadCharge);
         }
 
-        private static OpenPyxlPackageSnapshot CapturePackageSnapshot(ZipArchive archive)
+        private static long EstimateSaveBaseBytes(OpenPyxlWorkbook workbook)
         {
-            var parts = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-            foreach (var entry in archive.Entries)
+            // Snapshot parts are copied verbatim into the output on top of the
+            // retained snapshot charge, so output capacity accounts for them again.
+            long total = 65536;
+            if (workbook.PackageSnapshot is { } snapshot)
             {
-                var name = NormalizePackagePartName(entry.FullName);
-                if (name.Length == 0 || parts.ContainsKey(name))
+                foreach (var part in snapshot.Parts.Values)
                 {
-                    continue;
-                }
+                    if (part.Length > long.MaxValue - total)
+                    {
+                        return long.MaxValue;
+                    }
 
-                using var entryStream = entry.Open();
-                using var buffer = new MemoryStream();
-                entryStream.CopyTo(buffer);
-                parts[name] = buffer.ToArray();
+                    total += part.Length;
+                }
             }
 
-            return new OpenPyxlPackageSnapshot(parts);
+            return total;
+        }
+
+        private static long EstimateWorksheetOutputBytes(OpenPyxlWorksheet worksheet)
+            => 4096L + (256L * worksheet.Cells.Count);
+
+        private static void ValidateArchiveDirectory(ZipArchive archive, ExecutionContext context, LythonSourceSpan span)
+        {
+            // Central-directory metadata is free to inspect; validate counts and
+            // declared sizes before any entry is expanded.
+            var count = archive.Entries.Count;
+            context.ObserveCollectionCount(count, span);
+            long expandedTotal = 0;
+            foreach (var entry in archive.Entries)
+            {
+                if (entry.Length < 0 || entry.CompressedLength < 0)
+                {
+                    throw InvalidFileException("Invalid .xlsx workbook: corrupt directory metadata.", span);
+                }
+
+                if (entry.Length > long.MaxValue - expandedTotal - SnapshotBaseBytesPerEntry)
+                {
+                    throw InvalidFileException("Invalid .xlsx workbook: declared sizes overflow.", span);
+                }
+
+                expandedTotal += entry.Length + SnapshotBaseBytesPerEntry;
+            }
+
+            context.MemoryGovernor.EnsureCanReserve(expandedTotal, span);
+        }
+
+        private static byte[] ReadBoundedEntryBytes(ZipArchiveEntry entry, ExecutionContext context, LythonSourceSpan span)
+        {
+            var declared = entry.Length;
+            if (declared < 0 || declared > int.MaxValue)
+            {
+                throw InvalidFileException("Invalid .xlsx workbook: unsupported entry size.", span);
+            }
+
+            var length = (int)declared;
+            using var reservation = context.MemoryGovernor.ReserveTemporary(32L + length, span);
+            var result = new byte[length];
+            using var stream = entry.Open();
+            var offset = 0;
+            var crc = 0xFFFFFFFFu;
+            while (offset < length)
+            {
+                var read = stream.Read(result.AsSpan(offset, Math.Min(ArchiveEntryCopyChunkBytes, length - offset)));
+                if (read == 0)
+                {
+                    throw InvalidFileException("Invalid .xlsx workbook: truncated entry.", span);
+                }
+
+                crc = Crc32.Update(crc, result.AsSpan(offset, read));
+
+                offset += read;
+                context.CheckExecutionBudget(span);
+            }
+
+            // A well-formed entry ends exactly at its declared length; trailing
+            // bytes mean the directory lied.
+            if (stream.ReadByte() != -1)
+            {
+                throw InvalidFileException("Invalid .xlsx workbook: entry longer than declared.", span);
+            }
+
+            // The platform does not validate content checksums on read, so compare
+            // against the directory CRC explicitly before the bytes are used.
+            if (~crc != entry.Crc32)
+            {
+                throw InvalidFileException("Invalid .xlsx workbook: entry failed checksum validation.", span);
+            }
+
+            return result;
+        }
+
+        private static void ValidateXmlDocumentBounds(byte[] payload, LythonSourceSpan? span)
+        {
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+            };
+            using var stream = new MemoryStream(payload, writable: false);
+            using var reader = XmlReader.Create(stream, settings);
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element && reader.Depth > MaxArchiveXmlElementDepth)
+                {
+                    throw InvalidFileException($"Invalid .xlsx workbook: XML nesting exceeds the maximum of {MaxArchiveXmlElementDepth} levels.", span);
+                }
+            }
+        }
+
+        private static XDocument ParseBoundedXmlDocument(byte[] payload, MemoryGovernor governor, LythonSourceSpan? span)
+        {
+            ValidateXmlDocumentBounds(payload, span);
+            using var reservation = governor.ReserveTemporary(XmlDocumentBytesPerByte * payload.Length, span);
+            using var stream = new MemoryStream(payload, writable: false);
+            return XDocument.Load(stream);
+        }
+
+        /// <summary>
+        /// Bounded single-flight package reader for one workbook load. Each entry
+        /// is inflated at most once under a retained charge; parsed documents stay
+        /// transient so no DOM ownership accumulates during the load. <see cref="Finish"/>
+        /// transfers retention for preservation parts (writable workbooks) or releases
+        /// everything (read-only workbooks, which can never save).
+        /// </summary>
+        private sealed class OpenPyxlLoadSession
+        {
+            private readonly ZipArchive _archive;
+            private readonly ExecutionContext _context;
+            private readonly LythonSourceSpan _span;
+            private readonly Dictionary<string, byte[]> _bytes = new(StringComparer.Ordinal);
+            private readonly Dictionary<string, long> _charges = new(StringComparer.Ordinal);
+            private readonly HashSet<string> _transferred = new(StringComparer.Ordinal);
+
+            public OpenPyxlLoadSession(ZipArchive archive, ExecutionContext context, LythonSourceSpan span)
+            {
+                _archive = archive;
+                _context = context;
+                _span = span;
+            }
+
+            /// <summary>
+            /// Gets the underlying archive for metadata-only scans (directory
+            /// enumeration, presence checks) that never inflate entries. All
+            /// byte reads go through the session.
+            /// </summary>
+            public ZipArchive Archive => _archive;
+
+            public bool ContainsPart(string path)
+                => _bytes.ContainsKey(path) || _archive.GetEntry(path) is not null;
+
+            public byte[]? GetPartBytes(string path)
+            {
+                if (_bytes.TryGetValue(path, out var cached))
+                {
+                    return cached;
+                }
+
+                var entry = _archive.GetEntry(path);
+                if (entry is null)
+                {
+                    return null;
+                }
+
+                var payload = ReadBoundedEntryBytes(entry, _context, _span);
+                var charge = SnapshotBaseBytesPerEntry + payload.Length;
+                _context.MemoryGovernor.Reserve(charge, _span);
+                _context.MemoryGovernor.Commit(charge);
+                _bytes[path] = payload;
+                _charges[path] = charge;
+                return payload;
+            }
+
+            public XDocument? LoadOptionalXmlDocument(string path)
+            {
+                var payload = GetPartBytes(path);
+                return payload is null
+                    ? null
+                    : ParseBoundedXmlDocument(payload, _context.MemoryGovernor, _span);
+            }
+
+            public XDocument LoadXmlDocument(string path)
+            {
+                return LoadOptionalXmlDocument(path)
+                    ?? throw InvalidFileException($"Invalid .xlsx workbook: missing {path}.", _span);
+            }
+
+            public OpenPyxlPackageSnapshot? Finish(bool preserve)
+            {
+                Dictionary<string, byte[]>? preserved = null;
+                if (preserve)
+                {
+                    preserved = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+                    foreach (var entry in _archive.Entries)
+                    {
+                        var name = NormalizePackagePartName(entry.FullName);
+                        if (name.Length == 0 || preserved.ContainsKey(name))
+                        {
+                            continue;
+                        }
+
+                        // Exact-name reuse keeps single-flight inflation: parts already
+                        // read during the load are shared, untouched parts inflate here
+                        // exactly as the former end-of-load capture did.
+                        var payload = GetPartBytes(entry.FullName);
+                        if (payload is null)
+                        {
+                            continue;
+                        }
+
+                        preserved[name] = payload;
+                        _transferred.Add(entry.FullName);
+                    }
+                }
+
+                foreach (var pair in _charges)
+                {
+                    if (!_transferred.Contains(pair.Key))
+                    {
+                        _context.MemoryGovernor.Release(pair.Value);
+                    }
+                }
+
+                _bytes.Clear();
+                _charges.Clear();
+                _transferred.Clear();
+                return preserved is null ? null : new OpenPyxlPackageSnapshot(preserved, _context.MemoryGovernor);
+            }
         }
 
         private static XDocument? LoadSnapshotXml(OpenPyxlPackageSnapshot? snapshot, string path)
@@ -379,8 +642,10 @@ internal sealed partial class LythonRuntime
                 return null;
             }
 
-            using var stream = new MemoryStream(payload, writable: false);
-            return XDocument.Load(stream);
+            // Snapshot readers have no execution span of their own; the depth
+            // diagnostic therefore carries no span. Charges are transient, so a
+            // snapshot retained from an earlier run cannot leak committed bytes here.
+            return ParseBoundedXmlDocument(payload, snapshot.Value.Governor, span: null);
         }
 
         public static string? StructuralMutationPreservedFeatureReason(OpenPyxlWorksheet worksheet)
@@ -559,7 +824,7 @@ internal sealed partial class LythonRuntime
             return generated;
         }
 
-        private static void WritePreservedPackageParts(ZipArchive archive, OpenPyxlPackageSnapshot? snapshot, IReadOnlySet<string> generatedParts)
+        private static void WritePreservedPackageParts(ZipArchive archive, OpenPyxlPackageSnapshot? snapshot, IReadOnlySet<string> generatedParts, DateTimeOffset timestamp)
         {
             if (snapshot is null)
             {
@@ -573,7 +838,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                var entry = archive.CreateEntry(pair.Key);
+                var entry = CreatePackageEntry(archive, pair.Key, timestamp, CompressionLevel.Optimal);
                 using var stream = entry.Open();
                 stream.Write(pair.Value, 0, pair.Value.Length);
             }
@@ -582,22 +847,32 @@ internal sealed partial class LythonRuntime
         private static void WriteUpdatedLoadedTableParts(
             ZipArchive archive,
             OpenPyxlPackageSnapshot? snapshot,
-            IReadOnlyList<UpdatedTablePart> tables)
+            IReadOnlyList<UpdatedTablePart> tables,
+            DateTimeOffset timestamp)
         {
             foreach (var table in tables)
             {
-                WriteXml(archive, table.Path, CreateLoadedTableXml(snapshot, table.Table));
+                WriteXml(archive, table.Path, CreateLoadedTableXml(snapshot, table.Table), timestamp);
             }
         }
 
         private static void WriteUpdatedLoadedCommentsParts(
             ZipArchive archive,
-            IReadOnlyList<UpdatedCommentsPart> comments)
+            IReadOnlyList<UpdatedCommentsPart> comments,
+            DateTimeOffset timestamp)
         {
             foreach (var commentsPart in comments)
             {
-                WriteXml(archive, commentsPart.Path, CreateLoadedCommentsXml(commentsPart.Worksheet));
+                WriteXml(archive, commentsPart.Path, CreateLoadedCommentsXml(commentsPart.Worksheet), timestamp);
             }
+        }
+
+        /// <summary>Creates an archive entry stamped with the host clock so output never depends on ambient machine time.</summary>
+        private static ZipArchiveEntry CreatePackageEntry(ZipArchive archive, string path, DateTimeOffset timestamp, CompressionLevel level)
+        {
+            var entry = archive.CreateEntry(path, level);
+            entry.LastWriteTime = timestamp;
+            return entry;
         }
 
         private sealed record UpdatedPackageParts(
@@ -706,4 +981,10 @@ internal sealed partial class LythonRuntime
         }
 
     }
+
+    private static LythonRuntimeException InvalidFileException(string message, LythonSourceSpan? span)
+        => new(ModuleException("openpyxl.utils.exceptions", "InvalidFileException"), message, span);
+
+    private static LythonRuntimeException WorkbookAlreadySaved(string message, LythonSourceSpan? span)
+        => new(ModuleException("openpyxl.utils.exceptions", "WorkbookAlreadySaved"), message, span);
 }

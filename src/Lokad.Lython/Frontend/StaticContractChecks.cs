@@ -196,7 +196,8 @@ internal static class StaticContractChecks
         LythonDiagnosticCode code,
         string message,
         List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
+        AbstractState bindings,
+        bool allowBoolean)
     {
         if (!arguments.TryGetValue(position, keyword, out var expression))
         {
@@ -204,7 +205,8 @@ internal static class StaticContractChecks
         }
 
         if (expression is NoneLiteralExpressionSyntax ||
-            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings))
+            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings) ||
+            (allowBoolean && StaticAbstractFacts.IsKnownBooleanLiteral(expression, bindings)))
         {
             return;
         }

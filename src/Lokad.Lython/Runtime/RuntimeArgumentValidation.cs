@@ -44,6 +44,7 @@ internal static class RuntimeArgumentValidation
                 ? throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span)
                 : (int)integer,
             int integer => integer,
+            bool flag => flag ? 1 : 0,
             _ => throw new LythonRuntimeException("TypeError", $"{signature} expects {name} to be an integer.", span)
         };
     }

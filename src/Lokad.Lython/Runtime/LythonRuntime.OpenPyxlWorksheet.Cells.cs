@@ -224,6 +224,18 @@ internal sealed partial class LythonRuntime
             {
                 _dataTypes.Remove(address);
             }
+
+            static string DefaultDateNumberFormat(object cellValue)
+            {
+                return cellValue switch
+                {
+                    PyDate => "yyyy-mm-dd",
+                    PyDateTime => "yyyy-mm-dd h:mm:ss",
+                    PyTime => "h:mm:ss",
+                    PyTimedelta => "[hh]:mm:ss",
+                    _ => "General",
+                };
+            }
         }
         internal void SetLoadedCellValue(int row, int column, object value)
         {

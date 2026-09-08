@@ -199,8 +199,8 @@ internal static partial class StaticDataModuleContractFamily
                 AnalyzeBooleanArgument(arguments, 2, "ispkg", "ModuleInfo._replace(..., ispkg=...) expects a bool.", diagnostics, bindings);
                 break;
             case "index":
-                AnalyzeIntegerArgument(arguments, 1, "start", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
-                AnalyzeIntegerArgument(arguments, 2, "stop", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                AnalyzeStrictIntegerArgument(arguments, 1, "start", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
+                AnalyzeStrictIntegerArgument(arguments, 2, "stop", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
                 break;
         }
     }
@@ -365,6 +365,17 @@ internal static partial class StaticDataModuleContractFamily
         if (IsUnknown(value))
         {
             return false;
+        }
+
+        if (value.Kind == AbstractValueKind.Boolean)
+        {
+            if (value.RequireBoolean())
+            {
+                return false;
+            }
+
+            AddDiagnostic(diagnostics, "LA3158", message, expression.Span);
+            return true;
         }
 
         if (TryGetInt32(value, out var integer))

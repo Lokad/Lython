@@ -18,7 +18,9 @@ internal sealed partial class LythonRuntime
             OpenPyxlWorksheet worksheet,
             OpenPyxlStyleRegistry styleRegistry,
             bool preserveLoadedStyleIds,
-            OpenPyxlWorksheetRelationshipPlan relationshipPlan)
+            OpenPyxlWorksheetRelationshipPlan relationshipPlan,
+            ExecutionContext context,
+            LythonSourceSpan span)
         {
             var sheetData = new XElement(XlsxMain + "sheetData");
             var rowPlan = new SortedDictionary<int, SortedSet<int>>();
@@ -31,12 +33,18 @@ internal sealed partial class LythonRuntime
                 rowPlan.TryAdd(rowIndex, []);
             }
 
+            var serializedCells = 0;
             foreach (var (rowIndex, rowAddresses) in rowPlan)
             {
                 worksheet.RowDimensions.TryGetValue(rowIndex, out var rowDimension);
                 var row = CreateRowXml(rowIndex, rowDimension);
                 foreach (var column in rowAddresses)
                 {
+                    if ((++serializedCells & (ArchiveBudgetCheckInterval - 1)) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+
                     var address = new CellAddress(rowIndex, column);
                     worksheet.Cells.TryGetValue(address, out var value);
                     worksheet.LoadedStyleIds.TryGetValue(address, out var loadedStyleId);
@@ -603,9 +611,10 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static void WriteXml(ZipArchive archive, string path, XDocument document)
+        private static void WriteXml(ZipArchive archive, string path, XDocument document, DateTimeOffset timestamp)
         {
             var entry = archive.CreateEntry(path, CompressionLevel.Fastest);
+            entry.LastWriteTime = timestamp;
             using var stream = entry.Open();
             using var writer = XmlWriter.Create(stream, new XmlWriterSettings
             {

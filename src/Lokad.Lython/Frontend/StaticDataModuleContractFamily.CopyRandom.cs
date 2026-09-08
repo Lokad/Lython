@@ -231,7 +231,8 @@ internal static partial class StaticDataModuleContractFamily
             "LA3101",
             "random.choices(..., k=...) expects k to be a non-negative integer.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: true);
     }
 
     private static bool AnalyzeRandomSeedArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)

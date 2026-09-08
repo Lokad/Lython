@@ -107,6 +107,13 @@ internal sealed partial class LythonRuntime
             _worksheets.Add(copy);
             RegisterWorksheet(copy);
             return copy;
+
+            static string MakeCopyTitle(string sourceTitle)
+            {
+                const string suffix = " Copy";
+                var prefixLength = Math.Min(sourceTitle.Length, 31 - suffix.Length);
+                return sourceTitle[..prefixLength] + suffix;
+            }
         }
 
         private object Index(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -238,13 +245,6 @@ internal sealed partial class LythonRuntime
             }
 
             return Math.Min(index, _worksheets.Count);
-        }
-
-        private static string MakeCopyTitle(string sourceTitle)
-        {
-            const string suffix = " Copy";
-            var prefixLength = Math.Min(sourceTitle.Length, 31 - suffix.Length);
-            return sourceTitle[..prefixLength] + suffix;
         }
 
         private OpenPyxlWorksheet ExpectOwnedWorksheet(object[] arguments, string owner, LythonSourceSpan span)

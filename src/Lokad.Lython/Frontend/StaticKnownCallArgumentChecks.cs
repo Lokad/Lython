@@ -56,6 +56,15 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsIntegerLike);
+
+    internal static bool AnalyzeStrictIntegerArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
         => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, StaticAbstractFacts.IsStrictIntegerLike);
 
     internal static bool AnalyzeIntegerOrNoneArgument(
@@ -65,7 +74,7 @@ internal static class StaticKnownCallArgumentChecks
         string message,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
-        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsStrictIntegerLike(value));
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsIntegerLike(value));
 
     internal static bool AnalyzeBooleanArgument(
         ConcreteCallArguments arguments,

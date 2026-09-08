@@ -197,7 +197,8 @@ internal static class StaticStringContractFamily
                 ? "str.split([separator[, maxsplit]]) expects maxsplit to be an integer."
                 : "str.rsplit([separator[, maxsplit]]) expects maxsplit to be an integer.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: true);
     }
 
     private static void AnalyzeStringStripCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -231,7 +232,7 @@ internal static class StaticStringContractFamily
             AddDiagnostic(diagnostics, "LA3094", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", newExpression.Span);
         }
 
-        StaticContractChecks.AnalyzeOptionalIntegerArgument(arguments, 2, "count", "LA3095", "str.replace(old, new[, count]) expects count to be an integer.", diagnostics, bindings);
+        StaticContractChecks.AnalyzeOptionalIntegerArgument(arguments, 2, "count", "LA3095", "str.replace(old, new[, count]) expects count to be an integer.", diagnostics, bindings, allowBoolean: true);
     }
 
     private static void AnalyzeStringJoinCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -294,7 +295,8 @@ internal static class StaticStringContractFamily
         }
 
         if (expression is NoneLiteralExpressionSyntax ||
-            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings))
+            StaticAbstractFacts.IsKnownIntegerLiteral(expression, bindings) ||
+            StaticAbstractFacts.IsKnownBooleanLiteral(expression, bindings))
         {
             return;
         }

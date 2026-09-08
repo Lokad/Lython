@@ -243,6 +243,12 @@ internal sealed partial class LythonRuntime
                 ? ValidateDetachedSheetTitle(title)
                 : Workbook.RenameWorksheet(this, title, null);
             return true;
+
+            static string ValidateDetachedSheetTitle(string detachedTitle)
+            {
+                ValidateSheetTitle(detachedTitle, null);
+                return detachedTitle;
+            }
         }
 
         public object GetSubscript(object index, LythonSourceSpan span)

@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                await foreach (var item in ToSequenceAsync(value, list.Items[i].Span).ConfigureAwait(false))
+                await foreach (var item in ToSequenceAsync(value, list.Items[i].Span, context).ConfigureAwait(false))
                 {
                     AddListDisplayValue(expanded, item, list.Span, context);
                 }
@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            await foreach (var item in ToSequenceAsync(value, tuple.Items[i].Span).ConfigureAwait(false))
+            await foreach (var item in ToSequenceAsync(value, tuple.Items[i].Span, context).ConfigureAwait(false))
             {
                 AddTupleDisplayValue(expanded, item, tuple.Span, context);
             }
@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            await foreach (var item in ToSequenceAsync(value, set.Items[i].Span).ConfigureAwait(false))
+            await foreach (var item in ToSequenceAsync(value, set.Items[i].Span, context).ConfigureAwait(false))
             {
                 AddSetLiteralValue(items, RuntimeValue(item), set.Items[i].Span, set.Span, context);
             }
@@ -225,7 +225,7 @@ internal sealed partial class LythonRuntime
         var clause = clauses[index];
         var iterable = await EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
 
-        await foreach (var item in ToSequenceAsync(iterable, clause.Iterable.Span).ConfigureAwait(false))
+        await foreach (var item in ToSequenceAsync(iterable, clause.Iterable.Span, context).ConfigureAwait(false))
         {
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 
@@ -422,14 +422,9 @@ internal sealed partial class LythonRuntime
                 call.Call.Target.Span,
                 call.Span,
                 context,
-                () => ExpandLoweredCallArgumentsAsync(call.Arguments, context))
+                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync))
             .ConfigureAwait(false);
     }
-
-    private static ValueTask<CallArgumentValue[]> ExpandLoweredCallArgumentsAsync(
-        IReadOnlyList<LoweredCallArgument> arguments,
-        ExecutionContext context)
-        => CallExpansion.ExpandLoweredArgumentsAsync(arguments, context, EvaluateLoweredExpressionAsync);
 
     private static async ValueTask InvokeInitSubclassAsync(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)
     {

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Globalization;
 using System.Text;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -39,13 +40,23 @@ internal sealed partial class LythonRuntime
             throw UnsupportedTextEncoding(owner, span);
         }
 
-        return encoding.AsString().ToLowerInvariant() switch
+        var encodingName = encoding.AsString();
+        if (StaticTextContractFacts.IsUtf8EncodingName(encodingName))
         {
-            "utf-8" or "utf8" => TextEncodingMode.Utf8,
-            "utf-8-sig" => TextEncodingMode.Utf8Bom,
-            "latin-1" or "latin1" or "iso-8859-1" => TextEncodingMode.Latin1,
-            _ => throw UnsupportedTextEncoding(owner, span)
-        };
+            return TextEncodingMode.Utf8;
+        }
+
+        if (StaticTextContractFacts.IsUtf8SigEncodingName(encodingName))
+        {
+            return TextEncodingMode.Utf8Bom;
+        }
+
+        if (StaticTextContractFacts.IsLatin1EncodingName(encodingName))
+        {
+            return TextEncodingMode.Latin1;
+        }
+
+        throw UnsupportedTextEncoding(owner, span);
     }
 
     private static LythonRuntimeException UnsupportedTextEncoding(string owner, LythonSourceSpan span)
@@ -104,7 +115,13 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"{owner} newline must be None, '', '\\n', '\\r', or '\\r\\n'.", span);
         }
 
-        return newline.AsString() switch
+        var newlineName = newline.AsString();
+        if (!StaticTextContractFacts.IsSupportedNewlineName(newlineName))
+        {
+            throw new LythonRuntimeException("ValueError", $"{owner} newline must be None, '', '\\n', '\\r', or '\\r\\n'.", span);
+        }
+
+        return newlineName switch
         {
             "" => TextNewlineMode.PreserveUniversal,
             "\n" => TextNewlineMode.PreserveLineFeed,

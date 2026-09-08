@@ -14,8 +14,16 @@ internal sealed partial class LythonRuntime
             EnsureCanSave(span);
             var path = NormalizeWorkbookPath(arguments[0], context, span);
             var payload = OpenPyxlPackage.Save(this, context, span);
-            context.RegisterHostCall(span);
-            context.WriteHostBytes(path, payload, span);
+            try
+            {
+                context.RegisterHostCall(span);
+                context.WriteHostBytes(path, payload.Bytes, span);
+            }
+            finally
+            {
+                context.MemoryGovernor.Release(payload.MemoryCharge);
+            }
+
             _saved = true;
             return PyNone.Instance;
         }
@@ -30,8 +38,16 @@ internal sealed partial class LythonRuntime
             EnsureCanSave(span);
             var path = NormalizeWorkbookPath(arguments[0], context, span);
             var payload = OpenPyxlPackage.Save(this, context, span);
-            context.RegisterHostCall(span);
-            await context.WriteHostBytesAsync(path, payload, span).ConfigureAwait(false);
+            try
+            {
+                context.RegisterHostCall(span);
+                await context.WriteHostBytesAsync(path, payload.Bytes, span).ConfigureAwait(false);
+            }
+            finally
+            {
+                context.MemoryGovernor.Release(payload.MemoryCharge);
+            }
+
             _saved = true;
             return PyNone.Instance;
         }
@@ -58,7 +74,7 @@ internal sealed partial class LythonRuntime
 
             if (WriteOnly && _saved)
             {
-                throw new LythonRuntimeException("WorkbookAlreadySaved", "Workbook has already been saved and cannot be saved again.", span);
+                throw WorkbookAlreadySaved("Workbook has already been saved and cannot be saved again.", span);
             }
         }
 

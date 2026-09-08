@@ -206,7 +206,8 @@ internal static class StaticProcessContractFamily
             "LA3024",
             $"{owner}(..., timeout=...) expects an integer or None.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: false);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
             RunLayout.Check,
@@ -230,7 +231,8 @@ internal static class StaticProcessContractFamily
             "LA3028",
             $"{owner}(..., stdin=...) expects a subprocess stream constant or None.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: false);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
             RunLayout.StandardOutput,
@@ -238,7 +240,8 @@ internal static class StaticProcessContractFamily
             "LA3028",
             $"{owner}(..., stdout=...) expects a subprocess stream constant or None.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: false);
         StaticContractChecks.AnalyzeOptionalIntegerArgument(
             arguments,
             RunLayout.StandardError,
@@ -246,7 +249,8 @@ internal static class StaticProcessContractFamily
             "LA3028",
             $"{owner}(..., stderr=...) expects a subprocess stream constant or None.",
             diagnostics,
-            bindings);
+            bindings,
+            allowBoolean: false);
         StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
             arguments,
             RunLayout.Shell,

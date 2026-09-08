@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 using System.IO.Compression;
 using System.Linq;
@@ -60,7 +61,7 @@ internal sealed partial class LythonRuntime
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
             using var payload = ReadGovernedHostBytes(path, context, span);
-            return OpenPyxlPackage.Load(payload.Memory, request.Options, span);
+            return OpenPyxlPackage.Load(payload.Memory, request.Options, span, context);
         }
 
         private static async ValueTask<object> LoadWorkbookAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -68,7 +69,7 @@ internal sealed partial class LythonRuntime
             var request = ParseLoadWorkbookArguments(arguments, span);
             var path = NormalizeWorkbookPath(request.Filename, context, span);
             using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-            return OpenPyxlPackage.Load(payload.Memory, request.Options, span);
+            return OpenPyxlPackage.Load(payload.Memory, request.Options, span, context);
         }
 
         private static LoadWorkbookRequest ParseLoadWorkbookArguments(object[] arguments, LythonSourceSpan span)
@@ -119,11 +120,11 @@ internal sealed partial class LythonRuntime
 
     private class OpenPyxlDeferredModule : PyModule
     {
-        private readonly Dictionary<string, object> _members;
+        private readonly FrozenDictionary<string, object> _members;
 
         public OpenPyxlDeferredModule(string name, IReadOnlyDictionary<string, object> members) : base(name)
         {
-            _members = new Dictionary<string, object>(members, StringComparer.Ordinal);
+            _members = members.ToFrozenDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
         }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
