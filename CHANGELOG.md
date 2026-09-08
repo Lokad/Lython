@@ -2,9 +2,18 @@
 
 ## Unreleased
 
-- Fixed `dir()` to list only resolvable members: removed unimplemented `str` (`casefold`, `isascii`, `istitle`), `bytes` (`hex`), and `dict` (`fromkeys`, `popitem`) entries plus unresolvable `__class__`/`__mro__` style names on numbers and builtin types; unsupported objects now fail `dir()` explicitly.
+The upcoming release remains in development. ZIP compression finalization, asynchronous host routing, lifecycle handling, and resource accounting still require hardening before release.
 
-- Added contained `zipfile` support across `r`, `w`, and `a` modes: ordered duplicate-preserving listings, governed STORED/DEFLATED reads with CRC validation, staged archive creation with single-writer member handles, byte-preserving appends, and destination-contained extraction. Interoperates with CPython in both directions and reads through an independent BCL consumer.
+- Added a contained `zipfile` subset across `r`, `w`, and `a` modes, with ordered duplicate-preserving listings, STORED/DEFLATED member reads, CRC validation, staged archive creation, single-writer member handles, append support, and destination-contained extraction through host capabilities.
+- Isolated mutable builtin module exports between executions while preserving their identity within each run.
+- Added work and memory checks to `difflib.SequenceMatcher`, bounded XLSX entry expansion with length/CRC validation and XML depth checks, and reused loaded workbook parts and parsed style XML.
+- Bounded additional parser recursion and expression-chain shapes, rejected byte limits before narrowing, and widened execution counters.
+- Indexed ZIP member lookup by name (last wins, renames invisible) instead of rescanning the directory per call. Gave difflib matcher views stable identity with invalidation and governed row-scratch reuse. Finished user-iterator dispatch: `iter()` returns the validated `__iter__` result (preserving identity), `next()` advances instances directly, and `__iter__`/`__next__` callbacks await suspension on delayed hosts.
+- Fixed large gzip read sizes, closed-handle context entry, and finalization of valid writes when a context body raises an unrelated exception. Prevented a failing context exit from being invoked twice. Routed ZIP protocol exit through CloseAsync and added an awaiting write() implementation so RunAsync works through hosts whose stat/read operations actually suspend. Rejected ZIP data mutations after close, made fresh appends publish a valid empty archive while unmodified existing appends still publish nothing, and kept failed closes retriable. Validated ZIP record field widths before staging/narrowing, fixed ZIP64 end counts to merged totals, preserved unrelated extra fields across ZIP64 promotion, resolved local ZIP64 sizes on read, and made integer magnitude bit-length allocation-free.
+- Restricted static path text-I/O checks to known path receivers, consumed `sorted()` inputs before invalid-key rejection, delayed invalid sort/min/max key errors until the key would actually be called (empty input with a bad key now succeeds), accepted `json.dumps(indent=True/False)` like 1/0, preserved `ZipInfo` `date_time` booleans, and aligned more integer argument positions with Python's boolean-as-integer behavior.
+- Fixed `dir()` to advertise resolvable members, removing unimplemented entries and rejecting unsupported objects explicitly; added module export, exception ancestry, alias, and return-shape parity coverage.
+- Shared UTF-8 line scanning and codec facts, supplied explicit host-derived XLSX timestamps, tightened path metadata and callable-layout contracts, and centralized copying of run options when linking cancellation.
+- Moved public behavior coverage into the suite that references the production assembly, retaining source-linked tests for internal invariants. Added archive, workbook, gzip-flush, SequenceMatcher, and async-materialization benchmarks with recorded allocation and host-traffic baselines.
 
 ## 0.8.0 - 2026-08-11
 
