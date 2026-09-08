@@ -30,6 +30,14 @@ internal static class PySequenceMaterialization
         var chargedCapacity = 0;
         foreach (var sourceIndex in indices)
         {
+            if (temporary is not null && values.Count == values.Capacity)
+            {
+                // Charge the imminent backing-array growth before appending,
+                // mirroring the shared asynchronous drain.
+                var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                temporary.Grow(checked(16L * (predicted - chargedCapacity)), allocationSpan);
+            }
+
             values.Add(source[sourceIndex]);
             if (values.Capacity > chargedCapacity)
             {

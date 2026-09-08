@@ -520,7 +520,7 @@ internal sealed partial class LythonRuntime
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
-            currentList.AddRange(ToSequence(right, span, context));
+            currentList.AddRange(ToSequence(right, span, context), context, span);
             return currentList;
         }
 

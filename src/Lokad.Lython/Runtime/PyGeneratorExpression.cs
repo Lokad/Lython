@@ -42,38 +42,9 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     }
 
     public async ValueTask<List<object>> MaterializeAsync()
-    {
-        // See PyIteration.MaterializeAsync: the temporary reservation covers
-        // growth here and the caller-owned final copy, and is released before
-        // ownership transfers without any allocation in between.
-        using var reservation = _closure.MemoryGovernor.ReserveTemporary(0, _span);
-        var result = new List<object>();
-        var chargedCapacity = 0;
-        while (true)
-        {
-            var (hasValue, value) = await TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                break;
-            }
-
-            result.Add(value);
-            if (result.Capacity > chargedCapacity)
-            {
-                reservation.Grow(16L * (result.Capacity - chargedCapacity), _span);
-                chargedCapacity = result.Capacity;
-            }
-
-            _closure.ObserveCollectionCount(result.Count, _span);
-            if ((result.Count & 63) == 0)
-            {
-                _closure.CheckExecutionBudget(_span);
-            }
-        }
-
-        reservation.Grow(16L * result.Count, _span);
-        return result;
-    }
+        // Shares the governed drain with PyIteration.MaterializeAsync; the closure
+        // context and creation span preserve this generator's exact budget behavior.
+        => await PyIteration.DrainAsync(IterateAsync(), _span, _closure).ConfigureAwait(false);
 
     public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 

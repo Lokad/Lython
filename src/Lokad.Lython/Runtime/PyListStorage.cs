@@ -8,6 +8,22 @@ internal interface IPyListStorage : IReadOnlyList<object>
 
     void AddRange(IEnumerable<object> values);
 
+    /// <summary>Inserts a value, shifting later elements right. Room for the new
+    /// count must already be ensured; implementations never allocate.</summary>
+    void InsertAt(int index, object value);
+
+    /// <summary>Removes a range in place. Shrinking never releases committed
+    /// capacity accounting (the backing array is retained), matching removal
+    /// through a single slot.</summary>
+    void RemoveRangeAt(int index, int count);
+
+    /// <summary>Replaces a span with new values in place. The final count
+    /// must already be ensured; implementations never allocate.</summary>
+    void ReplaceRange(int start, int removeCount, IReadOnlyList<object> values);
+
+    /// <summary>Replicates the first originalCount elements until totalCount
+    /// slots are filled. Capacity for the total must already be ensured.</summary>
+    void RepeatFill(int originalCount, int totalCount);
     void RemoveAt(int index);
 
     void Clear();
@@ -69,7 +85,10 @@ internal static class PyListStorage
 
         if (storage is SmallPyListStorage small)
         {
-            return new ArrayPyListStorage(small.ToArray(), governor, span);
+            // Reserve for the requested count, not just the old contents: the caller
+            // is about to append up to targetCount items, and the CLR list must not
+            // grow past the ensured capacity uncharged.
+            return new ArrayPyListStorage(small.ToArray(), targetCount, governor, span);
         }
 
         if (storage is ArrayPyListStorage array)
@@ -148,6 +167,55 @@ internal sealed class SmallPyListStorage : IPyListStorage
         Array.Clear(_items, _count, 1);
     }
 
+    public void InsertAt(int index, object value)
+    {
+        Array.Copy(_items, index, _items, index + 1, _count - index);
+        _items[index] = value;
+        _count++;
+    }
+
+    public void RemoveRangeAt(int index, int count)
+    {
+        Array.Copy(_items, index + count, _items, index, _count - index - count);
+        Array.Clear(_items, _count - count, count);
+        _count -= count;
+    }
+
+    public void ReplaceRange(int start, int removeCount, IReadOnlyList<object> values)
+    {
+        var tailCount = _count - start - removeCount;
+        if (values.Count != removeCount)
+        {
+            Array.Copy(_items, start + removeCount, _items, start + values.Count, tailCount);
+        }
+
+        for (var i = 0; i < values.Count; i++)
+        {
+            _items[start + i] = values[i];
+        }
+
+        var newCount = _count - removeCount + values.Count;
+        if (newCount < _count)
+        {
+            Array.Clear(_items, newCount, _count - newCount);
+        }
+
+        _count = newCount;
+    }
+
+    public void RepeatFill(int originalCount, int totalCount)
+    {
+        var position = originalCount;
+        while (position < totalCount)
+        {
+            var chunk = Math.Min(originalCount, totalCount - position);
+            Array.Copy(_items, 0, _items, position, chunk);
+            position += chunk;
+        }
+
+        _count = totalCount;
+    }
+
     public void Clear()
     {
         Array.Clear(_items);
@@ -219,6 +287,28 @@ internal sealed class ArrayPyListStorage : IPyListStorage
     public void AddRange(IEnumerable<object> values) => _items.AddRange(values);
 
     public void RemoveAt(int index) => _items.RemoveAt(index);
+
+    public void InsertAt(int index, object value) => _items.Insert(index, value);
+
+    public void RemoveRangeAt(int index, int count) => _items.RemoveRange(index, count);
+
+    public void ReplaceRange(int start, int removeCount, IReadOnlyList<object> values)
+    {
+        _items.RemoveRange(start, removeCount);
+        _items.InsertRange(start, values);
+    }
+
+    public void RepeatFill(int originalCount, int totalCount)
+    {
+        while (_items.Count < totalCount)
+        {
+            var chunk = Math.Min(originalCount, totalCount - _items.Count);
+            for (var i = 0; i < chunk; i++)
+            {
+                _items.Add(_items[i]);
+            }
+        }
+    }
 
     public void Clear() => _items.Clear();
 

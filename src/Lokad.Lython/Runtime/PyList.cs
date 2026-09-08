@@ -58,33 +58,101 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void AddRange(IEnumerable<object> values)
     {
-        var materialized = values as object[] ?? values.ToArray();
-        _items = PyListStorage.EnsureCapacity(_items, Count + materialized.Length, _memoryGovernor, _allocationSpan);
-        _items.AddRange(materialized);
+        if (values is PyList sourceList)
+        {
+            // Snapshot the source (which may be this list) so extending appends
+            // the original elements; the copy itself is budget-checked.
+            AddRange(sourceList.ToArray());
+            return;
+        }
+
+        if (values is IPyListStorage sourceStorage)
+        {
+            AddRange(sourceStorage.ToArray());
+            return;
+        }
+
+        // List-backed inputs are snapshotted above (PyList implements this interface
+        // through its sequence interfaces, so it must never reach this live count).
+        if (values is IReadOnlyCollection<object> known)
+        {
+            // Bounded, known-size inputs reserve exactly once up front, so the
+            // bulk append below cannot grow past the ensured capacity uncharged.
+            _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
+            foreach (var value in known)
+            {
+                _items.Add(value);
+            }
+
+            return;
+        }
+
+        try
+        {
+            // Unknown-length inputs stream incrementally: growth is charged per
+            // item, so a failing iterable keeps its partial effects and an
+            // unbounded one meets the memory budget instead of hanging.
+            foreach (var value in values)
+            {
+                Add(value);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Iteration observed our own concurrent growth (for example extending
+            // with a live iterator over this list). That cannot terminate like
+            // CPython does, so fail explicitly instead of leaking the CLR error.
+            throw RuntimeErrors.Runtime("list modified during extension.", _allocationSpan);
+        }
+    }
+
+    internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (values is IReadOnlyCollection<object> || values is PyList || values is IPyListStorage)
+        {
+            AddRange(values);
+            context.ObserveCollectionCount(Count, span);
+            return;
+        }
+
+        try
+        {
+            var added = 0;
+            foreach (var value in values)
+            {
+                Add(value);
+                context.ObserveCollectionCount(Count, span);
+                if ((++added & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            throw RuntimeErrors.Runtime("list modified during extension.", span);
+        }
     }
 
     public void Insert(int index, object value)
     {
-        var items = ToArray();
-        var normalized = index;
-        if (normalized < 0)
-        {
-            normalized += items.Length;
-        }
-
-        normalized = Math.Clamp(normalized, 0, items.Length);
-        var updated = new object[items.Length + 1];
-        Array.Copy(items, 0, updated, 0, normalized);
-        updated[normalized] = value;
-        Array.Copy(items, normalized, updated, normalized + 1, items.Length - normalized);
-        ReplaceStorage(updated);
+        var normalized = index < 0 ? index + Count : index;
+        normalized = Math.Clamp(normalized, 0, Count);
+        _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+        _items.InsertAt(normalized, value);
     }
 
     public void Reverse()
     {
-        var items = ToArray();
-        Array.Reverse(items);
-        ReplaceStorage(items);
+        // Swap in place: the count never changes, so no charging is needed.
+        var count = Count;
+        for (var i = 0; i < count / 2; i++)
+        {
+            var opposite = count - 1 - i;
+            var saved = _items[i];
+            _items[i] = _items[opposite];
+            _items[opposite] = saved;
+        }
     }
 
     public void ReplaceAll(IEnumerable<object> values)
@@ -94,27 +162,22 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void RepeatInPlace(int count, LythonSourceSpan span)
     {
-        var items = ToArray();
-        if (count <= 0 || items.Length == 0)
+        if (count <= 0 || Count == 0)
         {
             ReplaceStorage([]);
             return;
         }
 
-        var totalLength = (long)items.Length * count;
+        var totalLength = (long)Count * count;
         if (totalLength > int.MaxValue)
         {
             throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
         }
 
         var total = (int)totalLength;
-        var repeated = new object[total];
-        for (var offset = 0; offset < repeated.Length; offset += items.Length)
-        {
-            Array.Copy(items, 0, repeated, offset, items.Length);
-        }
-
-        ReplaceStorage(repeated);
+        var originalCount = Count;
+        _items = PyListStorage.EnsureCapacity(_items, total, _memoryGovernor, _allocationSpan);
+        _items.RepeatFill(originalCount, total);
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -135,11 +198,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             return;
         }
 
-        var items = ToArray();
-        var updated = new object[items.Length - count];
-        Array.Copy(items, 0, updated, 0, index);
-        Array.Copy(items, index + count, updated, index, items.Length - index - count);
-        ReplaceStorage(updated);
+        _items.RemoveRangeAt(index, count);
     }
 
     public void DeleteSlice(PyIndexing.SliceBounds bounds)
@@ -156,52 +215,60 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             return;
         }
 
-        var items = ToArray();
-        var updated = new object[items.Length - removeCount];
+        // Compact survivors forward, then drop the tail: no scratch arrays,
+        // only the retained backing store moves.
+        var count = Count;
         var destination = 0;
-        for (var source = 0; source < items.Length; source++)
+        for (var source = 0; source < count; source++)
         {
             if (!bounds.Contains(source))
             {
-                updated[destination++] = items[source];
+                if (destination != source)
+                {
+                    _items[destination] = _items[source];
+                }
+
+                destination++;
             }
         }
 
-        ReplaceStorage(updated);
+        if (destination < count)
+        {
+            _items.RemoveRangeAt(destination, count - destination);
+        }
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)
     {
         if (bounds.Step == 1)
         {
-            var items = ToArray();
             var removeCount = Math.Max(bounds.End - bounds.Start, 0);
-            var updated = new object[items.Length - removeCount + values.Count];
-            Array.Copy(items, 0, updated, 0, bounds.Start);
-            for (var i = 0; i < values.Count; i++)
+            IReadOnlyList<object> staged = values;
+            if (values is PyList sourceList)
             {
-                updated[bounds.Start + i] = values[i];
+                // The right-hand side would observe its own replacement;
+                // snapshot it first, as if it had been evaluated eagerly.
+                staged = sourceList.ToArray();
+            }
+            else if (values is IPyListStorage sourceStorage)
+            {
+                staged = sourceStorage.ToArray();
             }
 
-            Array.Copy(
-                items,
-                bounds.Start + removeCount,
-                updated,
-                bounds.Start + values.Count,
-                items.Length - bounds.Start - removeCount);
-            ReplaceStorage(updated);
+            _items = PyListStorage.EnsureCapacity(_items, checked(Count - removeCount + staged.Count), _memoryGovernor, _allocationSpan);
+            _items.ReplaceRange(bounds.Start, removeCount, staged);
             return;
         }
 
-        var indices = bounds.Indices().ToArray();
-        if (indices.Length != values.Count)
+        if (bounds.Count != values.Count)
         {
-            throw new LythonRuntimeException("ValueError", "attempt to assign sequence of size " + values.Count + " to extended slice of size " + indices.Length, span);
+            throw new LythonRuntimeException("ValueError", "attempt to assign sequence of size " + values.Count + " to extended slice of size " + bounds.Count, span);
         }
 
-        for (var i = 0; i < indices.Length; i++)
+        var position = 0;
+        foreach (var index in bounds.Indices())
         {
-            _items[indices[i]] = values[i];
+            _items[index] = values[position++];
         }
     }
 

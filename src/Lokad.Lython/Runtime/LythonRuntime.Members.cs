@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    list.AddRange(ToSequence(arguments[0], span, context).ToArray());
+                    list.AddRange(ToSequence(arguments[0], span, context), context, span);
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.extend", ["iterable"]),

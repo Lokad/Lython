@@ -24,17 +24,32 @@ internal static class PyIteration
 
     /// <summary>Materializes an arbitrary iterable in asynchronous execution, resolving user-defined <c>__iter__</c>.</summary>
     public static async ValueTask<List<object>> MaterializeAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => await DrainAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
+
+    /// <summary>
+    /// Shared asynchronous drain behind every materializer: growth is charged
+    /// before the backing array can allocate (lists double from an initial
+    /// four, matching the storage capacity prediction), so an unbounded input
+    /// meets the memory budget instead of over-allocating first. The temporary
+    /// reservation also covers the caller-owned final copy and is released
+    /// before ownership transfers.
+    /// </summary>
+    internal static async ValueTask<List<object>> DrainAsync(
+        IAsyncEnumerable<object> items,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        // The caller copies the result into a governed container that takes
-        // ownership; the temporary reservation below covers growth here and the
-        // simultaneous final copy, and is released before ownership transfers.
-        // No allocation happens between release and the caller charging
-        // ownership, so retained bytes cannot pass through an uncharged window.
         using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var result = new List<object>();
         var chargedCapacity = 0;
-        await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+        await foreach (var item in items.ConfigureAwait(false))
         {
+            if (result.Count == result.Capacity)
+            {
+                var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
+                reservation.Grow(checked(16L * (predicted - chargedCapacity)), span);
+            }
+
             result.Add(item);
             if (result.Capacity > chargedCapacity)
             {
