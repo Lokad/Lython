@@ -97,7 +97,7 @@ public sealed class BuiltinValidationScenarioTests
     }
 
     [Theory]
-    [InlineData("key = 1\nsorted([1], key = key)\n", "compile", "callable or None")]
+    [InlineData("key = 1\nsorted([1], key = key)\n", "TypeError", "callable or None")]
     public void SortedKeywordFailures_ReportExpectedFailure(string source, string expectedFailureKind, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
 {
     private readonly record struct MinMaxArguments(
         IReadOnlyList<object> Positional,
-        ICallable? Key,
+        object? KeyArgument,
         OptionalValue<object> Default);
 
     private enum ExtremumOperation
@@ -27,17 +27,13 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
         }
 
-        // Materialize before validating key so one-time iterable effects precede the key error, matching CPython.
+        // Materialize before resolving the key so one-time iterable effects precede
+        // the key error, matching CPython. R13: an invalid key only fails when it
+        // would actually be called, so empty input with a bad key succeeds.
         var materialized = new PyList(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
         context.ObserveCollectionCount(materialized.Count, span);
 
-        var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
-        if (keyCallable is not null &&
-            !ReferenceEquals(keyCallable, PyNone.Instance) &&
-            keyCallable is not ICallable)
-        {
-            throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
-        }
+        var keyArgument = arguments.Length >= 2 ? arguments[1] : null;
 
         var reverse = false;
         if (arguments.Length >= 3)
@@ -47,10 +43,11 @@ internal sealed partial class LythonRuntime
 
         using var items = SortItems(
             materialized,
-            keyCallable as ICallable,
+            keyArgument,
             reverse,
             span,
-            context);
+            context,
+            "sorted(..., key=...) expects a callable or None.");
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -65,13 +62,7 @@ internal sealed partial class LythonRuntime
         }
 
         var values = await MaterializeSequenceAsync(arguments[0], span, context).ConfigureAwait(false);
-        var keyCallable = arguments.Length >= 2 ? arguments[1] : null;
-        if (keyCallable is not null &&
-            !ReferenceEquals(keyCallable, PyNone.Instance) &&
-            keyCallable is not ICallable)
-        {
-            throw new LythonRuntimeException("TypeError", "sorted(..., key=...) expects a callable or None.", span);
-        }
+        var keyArgument = arguments.Length >= 2 ? arguments[1] : null;
 
         var reverse = false;
         if (arguments.Length >= 3)
@@ -79,7 +70,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        using var items = await SortItemsAsync(values, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
+        using var items = await SortItemsAsync(values, keyArgument, reverse, span, context, "sorted(..., key=...) expects a callable or None.").ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -89,7 +80,7 @@ internal sealed partial class LythonRuntime
     private static object MinMax(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
         var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
-        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
+        var (positional, keyArgument, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
         using var enumerator = (positional.Count == 1 ? ToSequence(positional[0], span, context) : positional).GetEnumerator();
         if (!enumerator.MoveNext())
         {
@@ -102,6 +93,12 @@ internal sealed partial class LythonRuntime
         }
 
         var best = enumerator.Current;
+        var keyCallable = keyArgument as ICallable;
+        if (keyArgument is not null && keyCallable is null)
+        {
+            throw new LythonRuntimeException("TypeError", $"{operationName}() key must be callable or None", span);
+        }
+
         var bestKey = keyCallable is null
             ? best
             : CallableInvocation.InvokeUnary(keyCallable, best, span, context);
@@ -125,10 +122,10 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> MinMaxAsync(CallArgumentValue[] arguments, ExtremumOperation operation, LythonSourceSpan span, ExecutionContext context)
     {
         var operationName = operation == ExtremumOperation.Minimum ? "min" : "max";
-        var (positional, keyCallable, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
+        var (positional, keyArgument, defaultValue) = BindMinMaxArguments(arguments, operationName, span);
         if (positional.Count > 1)
         {
-            return await MinMaxValuesAsync(positional, keyCallable, operation, span, context).ConfigureAwait(false);
+            return await MinMaxValuesAsync(positional, keyArgument, operation, span, context).ConfigureAwait(false);
         }
 
         await using var cursor = PyIteration.Cursor.Create(positional[0], span, context);
@@ -141,6 +138,12 @@ internal sealed partial class LythonRuntime
             }
 
             throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
+        }
+
+        var keyCallable = keyArgument as ICallable;
+        if (keyArgument is not null && keyCallable is null)
+        {
+            throw new LythonRuntimeException("TypeError", $"{operationName}() key must be callable or None", span);
         }
 
         var bestKey = keyCallable is null
@@ -170,11 +173,17 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> MinMaxValuesAsync(
         IReadOnlyList<object> values,
-        ICallable? keyCallable,
+        object? keyArgument,
         ExtremumOperation operation,
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        var keyCallable = keyArgument as ICallable;
+        if (keyArgument is not null && keyCallable is null)
+        {
+            throw new LythonRuntimeException("TypeError", "min()/max() key must be callable or None", span);
+        }
+
         var best = values[0];
         var bestKey = keyCallable is null
             ? best
@@ -202,7 +211,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var positional = new List<object>();
-        ICallable? key = null;
+        object? key = null;
         var sawKey = false;
         var defaultValue = OptionalValue<object>.Missing;
         foreach (var argument in arguments)
@@ -221,12 +230,10 @@ internal sealed partial class LythonRuntime
                 }
 
                 sawKey = true;
-                if (!ReferenceEquals(argument.Value, PyNone.Instance) && argument.Value is not ICallable)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{name}() key must be callable or None", span);
-                }
-
-                key = argument.Value as ICallable;
+                // R13: delay invalid-key errors until the key would actually be
+                // called, so empty input with a bad key returns default/raises
+                // ValueError instead of TypeError.
+                key = ReferenceEquals(argument.Value, PyNone.Instance) ? null : argument.Value;
                 continue;
             }
 
@@ -295,16 +302,27 @@ internal sealed partial class LythonRuntime
 
     private static PyStableSort.Buffer SortItems(
         IEnumerable<object> values,
-        ICallable? keyCallable,
+        object? keyArgument,
         bool reverse,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context,
+        string keyErrorMessage)
     {
         var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
         try
         {
+            var keyCallable = keyArgument as ICallable;
+            var keyInvalid = keyArgument is not null &&
+                !ReferenceEquals(keyArgument, PyNone.Instance) &&
+                keyCallable is null;
             foreach (var item in values)
             {
+                // R13: an invalid key fails only when it would actually be called.
+                if (keyInvalid)
+                {
+                    throw new LythonRuntimeException("TypeError", keyErrorMessage, span);
+                }
+
                 entries.Add(
                     new PyStableSort.Entry(
                         item,
@@ -333,16 +351,27 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<PyStableSort.Buffer> SortItemsAsync(
         IEnumerable<object> values,
-        ICallable? keyCallable,
+        object? keyArgument,
         bool reverse,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context,
+        string keyErrorMessage)
     {
         var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
         try
         {
+            var keyCallable = keyArgument as ICallable;
+            var keyInvalid = keyArgument is not null &&
+                !ReferenceEquals(keyArgument, PyNone.Instance) &&
+                keyCallable is null;
             foreach (var item in values)
             {
+                // R13: an invalid key fails only when it would actually be called.
+                if (keyInvalid)
+                {
+                    throw new LythonRuntimeException("TypeError", keyErrorMessage, span);
+                }
+
                 entries.Add(
                     new PyStableSort.Entry(
                         item,

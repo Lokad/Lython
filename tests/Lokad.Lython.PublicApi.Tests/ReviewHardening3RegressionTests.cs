@@ -153,33 +153,29 @@ return calls
     }
 
     [Fact]
-    public void SortedEmptyIterableWithBadKeyStillRaisesTypeError()
+    public void SortedEmptyIterableWithBadKeyReturnsEmpty()
     {
+        // R13: an invalid key only fails when it would actually be called.
         var sync = new LythonEngine().Run(
             """
-try:
-    sorted([], key=1)
-except TypeError:
-    print(1)
+print(sorted([], key=1))
 """,
             new MockLythonHost());
         Assert.True(sync.Success, Describe(sync));
-        Assert.Equal("1\n", sync.StandardOutput);
+        Assert.Equal("[]\n", sync.StandardOutput);
     }
 
     [Fact]
-    public async Task SortedEmptyIterableWithBadKeyStillRaisesTypeErrorAsync()
+    public async Task SortedEmptyIterableWithBadKeyReturnsEmptyAsync()
     {
+        // R13: an invalid key only fails when it would actually be called.
         var asyncResult = await new LythonEngine().RunAsync(
             """
-try:
-    sorted([], key=1)
-except TypeError:
-    print(1)
+print(sorted([], key=1))
 """,
             new MockLythonHost());
         Assert.True(asyncResult.Success, Describe(asyncResult));
-        Assert.Equal("1\n", asyncResult.StandardOutput);
+        Assert.Equal("[]\n", asyncResult.StandardOutput);
     }
 
     [Fact]

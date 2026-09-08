@@ -177,12 +177,8 @@ internal static class StaticCollectionContractFamily
             AddDiagnostic(diagnostics, "LA3109", "file is not open for reading.", iterableExpression.Span);
         }
 
-        if (arguments.TryGetValue(1, "key", out var keyExpression) &&
-            keyExpression is not NoneLiteralExpressionSyntax &&
-            StaticAbstractFacts.IsDefinitelyKnownNonCallableLiteral(keyExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3034", "sorted(..., key=...) expects a callable or None.", keyExpression.Span);
-        }
+        // R13: no static key-callable check here. An invalid key only fails when it
+        // would actually be called, so empty input with a bad key succeeds.
 
     }
 
@@ -236,12 +232,8 @@ internal static class StaticCollectionContractFamily
             AddDiagnostic(diagnostics, "LA3123", "list.sort(*, key=None, reverse=False) expects keyword-only arguments.", arguments.Positional[0].Span);
         }
 
-        if (arguments.TryGetValue(0, "key", out var keyExpression) &&
-            keyExpression is not NoneLiteralExpressionSyntax &&
-            StaticAbstractFacts.IsDefinitelyKnownNonCallableLiteral(keyExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3034", "list.sort(..., key=...) expects a callable or None.", keyExpression.Span);
-        }
+        // R13: no static key-callable check here; an invalid key only fails when
+        // the list is non-empty and the key would actually be called.
 
     }
 

@@ -234,7 +234,7 @@ b.pop("0")
 c = [3, 1, 2]
 c.index(1, "0")
 d = [3, 1, 2]
-d.sort(key=1)
+d.sort(key=None)
 e = [3, 1, 2]
 e.sort(reverse="yes")
 f = [3, 1, 2]
@@ -252,7 +252,7 @@ __lython_file.close()
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("insert", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pop", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("index", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3034" && d.Message.Contains("sort", StringComparison.Ordinal));
+        // R13: invalid sort keys fail only at runtime when actually called, so no LA3034 here.
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3123" && d.Message.Contains("keyword-only", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("Extended slice assignment", StringComparison.Ordinal));
         Assert.False(host.Exists("/out.txt"));

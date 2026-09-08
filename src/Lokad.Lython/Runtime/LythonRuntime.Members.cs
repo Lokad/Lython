@@ -149,13 +149,7 @@ internal sealed partial class LythonRuntime
 
         private static object SortList(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var keyCallable = arguments.Length >= 1 ? arguments[0] : null;
-            if (keyCallable is not null &&
-                !ReferenceEquals(keyCallable, PyNone.Instance) &&
-                keyCallable is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", "list.sort(..., key=...) expects a callable or None.", span);
-            }
+            var keyArgument = arguments.Length >= 1 ? arguments[0] : null;
 
             var reverse = false;
             if (arguments.Length >= 2)
@@ -163,20 +157,16 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            using var sorted = SortItems(list, keyCallable as ICallable, reverse, span, context);
+            // R13: an invalid key only fails when the list is non-empty and the
+            // key would actually be called.
+            using var sorted = SortItems(list, keyArgument, reverse, span, context, "list.sort(..., key=...) expects a callable or None.");
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }
 
         private static async ValueTask<object> SortListAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var keyCallable = arguments.Length >= 1 ? arguments[0] : null;
-            if (keyCallable is not null &&
-                !ReferenceEquals(keyCallable, PyNone.Instance) &&
-                keyCallable is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", "list.sort(..., key=...) expects a callable or None.", span);
-            }
+            var keyArgument = arguments.Length >= 1 ? arguments[0] : null;
 
             var reverse = false;
             if (arguments.Length >= 2)
@@ -184,7 +174,9 @@ internal sealed partial class LythonRuntime
                 reverse = IsTruthy(arguments[1]);
             }
 
-            using var sorted = await SortItemsAsync(list, keyCallable as ICallable, reverse, span, context).ConfigureAwait(false);
+            // R13: an invalid key only fails when the list is non-empty and the
+            // key would actually be called.
+            using var sorted = await SortItemsAsync(list, keyArgument, reverse, span, context, "list.sort(..., key=...) expects a callable or None.").ConfigureAwait(false);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }

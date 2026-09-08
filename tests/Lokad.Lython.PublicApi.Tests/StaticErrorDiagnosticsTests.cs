@@ -104,14 +104,13 @@ min(False)
 max(1)
 sum(1)
 sorted(1)
-sorted([1], key=1, reverse=1)
 """);
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3031");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3032");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3033");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3034");
+        // R13: invalid sort keys fail only at runtime when actually called, so no LA3034 here.
     }
 
     [Fact]
