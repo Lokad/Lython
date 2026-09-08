@@ -176,7 +176,12 @@ internal sealed partial class LythonRuntime
             var end = TextLineScanning.FindLineEndByte(source, _cursor, TextNewlineMode.PreserveLineFeed);
             if (size >= 0)
             {
-                end = Math.Min(end, _cursor + size);
+                // Clamp the requested size against the remaining bytes before addition,
+                // mirroring the gzip member reader, so a huge size with a nonzero
+                // cursor cannot overflow into a CLR range failure.
+                var remainingBytes = _content.Length - _cursor;
+                var take = Math.Min(size, remainingBytes);
+                end = Math.Min(end, _cursor + take);
             }
 
             var lineLength = end - _cursor;

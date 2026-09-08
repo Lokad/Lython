@@ -21,24 +21,10 @@ internal static class RuntimeMemoryEstimates
     }
 
     public static long GetMagnitudeBitLength(BigInteger value)
-    {
-        value = BigInteger.Abs(value);
-        if (value.IsZero)
-        {
-            return 0;
-        }
-
-        var bytes = value.ToByteArray(isUnsigned: true, isBigEndian: true);
-        var leading = bytes[0];
-        var leadingBits = 8;
-        while ((leading & 0x80) == 0)
-        {
-            leading <<= 1;
-            leadingBits--;
-        }
-
-        return ((long)bytes.Length - 1) * 8 + leadingBits;
-    }
+        // R42: allocation-free magnitude bit-length. Abs plus GetBitLength
+        // matches the previous ToByteArray scan on zero, negatives, and powers
+        // of two without allocating in proportion to the operand.
+        => BigInteger.Abs(value).GetBitLength();
 
     public static long SaturatingAdd(long left, long right)
     {
