@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fixed `dir()` to list only resolvable members: removed unimplemented `str` (`casefold`, `isascii`, `istitle`), `bytes` (`hex`), and `dict` (`fromkeys`, `popitem`) entries plus unresolvable `__class__`/`__mro__` style names on numbers and builtin types; unsupported objects now fail `dir()` explicitly.
+
+- Added contained `zipfile` support across `r`, `w`, and `a` modes: ordered duplicate-preserving listings, governed STORED/DEFLATED reads with CRC validation, staged archive creation with single-writer member handles, byte-preserving appends, and destination-contained extraction. Interoperates with CPython in both directions and reads through an independent BCL consumer.
+
 ## 0.8.0 - 2026-08-11
 
 This release closes the Studio compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.

@@ -94,6 +94,25 @@ locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to
 Lython's governed runtime values before script code observes them.
 
+Ownership across the execution layers:
+
+- Run-shared services live in one `ExecutionServices` per run, shared by every
+  context: `ExecutionState` (host, limits, governor, budget guards, random
+  state, decimal context, option snapshots, module registries, standard-stream
+  builders and handles, member caches), value-observation guards, and the active
+  exception state, which is saved and restored around nested handling.
+- Lexical scope is the linked `ExecutionFrame.Parent` chain, each frame owning
+  its `Variables` dictionary; the root frame holds module variables.
+- Closure scope anchors at `FunctionClosureContext` (each function or module
+  anchors itself; class bodies inherit their parent anchor), with per-context
+  `NonlocalTargets` resolved once from scope facts.
+- The fast-path interpreter frame (`CurrentExecutableFrame`) is per-context
+  invocation state, not shared.
+- `ParentContext` is the context ancestry chain; `Parent` is the same reference
+  under a shorter name. `State`, `Host`, `Limits`, `MemoryGovernor`, and
+  `Variables` are pure forwarders to the shared services, state, or frame and
+  own nothing themselves.
+
 ## Runtime Values And Protocols
 
 Python-shaped values live under `Runtime/`, with text and numeric primitives in
@@ -127,8 +146,12 @@ default struct value is the ended state.
 
 ## Host Boundary And Containment
 
-`ILythonHost` is the authority root. Optional interfaces add bounded binary I/O,
-subprocesses, timing, and standard streams. Module implementations must not use
+`ILythonHost` is the authority root. Binary read and write live as
+default methods on `ILythonHost` that throw `LythonHostCapabilityUnavailableException`
+unless the host overrides them; binary append instead defaults to a
+non-atomic stat/read/write composition that hosts with native append
+should override. Separate optional interfaces add subprocesses,
+timing, and standard streams. Module implementations must not use
 ambient filesystem APIs, process APIs, environment variables, clocks, delays,
 or entropy as fallbacks.
 
@@ -153,6 +176,14 @@ Path behavior is split between lexical providers and cohesive host-backed
 providers. Lexical operations never call the host. Status, mutation, unsupported
 host-boundary members, and content/enumeration members are independently
 dispatched so authority-bearing behavior remains reviewable.
+
+Archive formats are parsed and serialized by narrow bounded codecs that reuse
+governed buffers, raw DEFLATE mechanics, and the shared CRC-32 operation.
+Writers stage complete validated payloads in governed memory and publish through
+a single host replacement on close, so no partial archive is ever visible.
+Retained payloads stay charged to the owning run, member handles hold owned
+copies, appended entries are carried as validated slices without recompression,
+and extraction plans every destination beneath its root before writing.
 
 ## Module Organization
 

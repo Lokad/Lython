@@ -129,6 +129,7 @@ The builtin module surface is explicitly allowlisted:
 - `sys`
 - `time`
 - `typing`
+- `zipfile`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
 
@@ -141,6 +142,8 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `hashlib` provides deterministic managed `md5`, `sha1`, `sha256`, `sha384`, and `sha512` objects for in-memory bytes, including incremental updates, copies, raw digests, and hexadecimal digests. Its algorithm inventories list only those managed implementations. `file_digest(...)` remains explicitly unsupported because Lython does not expose generic binary file handles.
 
 `gzip.compress(...)` and `gzip.decompress(...)` provide bounded in-memory gzip framing over bytes, including concatenated members and validated CRC/truncation failures. Compression emits a deterministic Python-compatible header; omitted or `None` `mtime` is normalized to zero rather than reading an ambient clock. `gzip.open(...)` adds host-mediated sequential `r`, `w`, and `a` handles in binary or text mode, with the same contained codecs and newline behavior as text `open`. Gzip paths accept strings and path-like values, while random access, arbitrary file objects, and generic binary `open` remain explicitly unsupported.
+
+`zipfile` supports contained read, create, append, and extraction workflows over `r`, `w`, and `a` archives: ordered listings with duplicates preserved, governed STORED/DEFLATED reads with CRC validation, staged `writestr`/`write`/`mkdir` publication, single-writer member handles, byte-preserving appends, and destination-contained `extract`/`extractall` with explicit failures for traversal, symlinks, passwords, and unsupported codecs. Exclusive creation, random access, and archive imports remain explicitly unsupported.
 
 `shlex.quote(...)`, `shlex.join(...)`, and `shlex.split(...)` provide pure POSIX-shell spelling and tokenization helpers. The iterable `shlex.shlex(...)` tokenizer accepts strings and already-authorized readable text handles, with Python-compatible token pushback, line tracking, POSIX/non-POSIX behavior, punctuation grouping, and mutable character classes. Automatic filename-based source inclusion is explicitly unsupported; `push_source(...)` accepts only a supplied string or readable text handle. None of these helpers invokes a shell or infers host-platform command syntax.
 
