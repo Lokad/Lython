@@ -65,6 +65,16 @@ internal sealed partial class LythonRuntime
                 worksheet.SetLoadedCellDataType(address.Row, address.Column, (string?)cell.Attribute("t"));
             }
 
+            // The per-64 charging above leaves a final partial block uncharged;
+            // top it up so small sheets pay proportionally too.
+            var tailCells = loadedCells & (ArchiveBudgetCheckInterval - 1);
+            if (tailCells > 0)
+            {
+                var tailCharge = ModelCellBytes * tailCells;
+                context.MemoryGovernor.Reserve(tailCharge, span);
+                context.MemoryGovernor.Commit(tailCharge);
+            }
+
             LoadWorksheetStructure(document, worksheet, worksheetRelationships, context, span);
 
             LoadWorksheetComments(session, path, worksheet, context, span);

@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Runtime.Zip;
 
 namespace Lokad.Lython.Runtime;
 
@@ -34,12 +35,12 @@ internal sealed partial class LythonRuntime
         {
             try
             {
+                ValidateArchiveDirectory(payload, context, span);
                 using var stream = MemoryMarshal.TryGetArray(payload, out var segment)
                     ? new MemoryStream(segment.Array.RequireNotNull(), segment.Offset, segment.Count, writable: false)
                     : new MemoryStream(payload.ToArray(), writable: false);
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
-                ValidateArchiveDirectory(archive, context, span);
-                var session = new OpenPyxlLoadSession(archive, context, span);
+                using var session = new OpenPyxlLoadSession(archive, context, span);
                 var sharedStrings = LoadSharedStrings(session, context, span);
                 var stylesDocument = session.LoadOptionalXmlDocument("xl/styles.xml");
                 var cellStyles = LoadCellStyles(stylesDocument, context, span);
@@ -428,29 +429,56 @@ internal sealed partial class LythonRuntime
         private static long EstimateWorksheetOutputBytes(OpenPyxlWorksheet worksheet)
             => 4096L + (256L * worksheet.Cells.Count);
 
-        private static void ValidateArchiveDirectory(ZipArchive archive, ExecutionContext context, LythonSourceSpan span)
+        private static void ValidateArchiveDirectory(ReadOnlyMemory<byte> payload, ExecutionContext context, LythonSourceSpan span)
         {
-            // Central-directory metadata is free to inspect; validate counts and
-            // declared sizes before any entry is expanded.
-            var count = archive.Entries.Count;
-            context.ObserveCollectionCount(count, span);
-            long expandedTotal = 0;
-            foreach (var entry in archive.Entries)
+            // Parse the central directory with the bounded ZIP metadata reader
+            // BEFORE touching BCL ZipArchive entries, so hostile entry counts and
+            // declared sizes fail before the platform materializes unbounded
+            // directory objects. Nothing retains the result: release its charges
+            // immediately after gating.
+            ZipArchiveDirectory directory;
+            try
             {
-                if (entry.Length < 0 || entry.CompressedLength < 0)
-                {
-                    throw InvalidFileException("Invalid .xlsx workbook: corrupt directory metadata.", span);
-                }
-
-                if (entry.Length > long.MaxValue - expandedTotal - SnapshotBaseBytesPerEntry)
-                {
-                    throw InvalidFileException("Invalid .xlsx workbook: declared sizes overflow.", span);
-                }
-
-                expandedTotal += entry.Length + SnapshotBaseBytesPerEntry;
+                directory = ZipDirectoryReader.Read(payload, forceUtf8Names: false, context, span);
+            }
+            catch (InvalidDataException exception)
+            {
+                throw InvalidFileException("Invalid .xlsx workbook: " + exception.Message, span);
             }
 
-            context.MemoryGovernor.EnsureCanReserve(expandedTotal, span);
+            try
+            {
+                var count = directory.Entries.Count;
+                context.ObserveCollectionCount(count, span);
+                long expandedTotal = 0;
+                for (var index = 0; index < count; index++)
+                {
+                    if ((index & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+
+                    var entry = directory.Entries[index];
+                    if (entry.UncompressedSize > (ulong)(long.MaxValue - SnapshotBaseBytesPerEntry))
+                    {
+                        throw InvalidFileException("Invalid .xlsx workbook: declared sizes overflow.", span);
+                    }
+
+                    var uncompressed = (long)entry.UncompressedSize;
+                    if (uncompressed > long.MaxValue - expandedTotal - SnapshotBaseBytesPerEntry)
+                    {
+                        throw InvalidFileException("Invalid .xlsx workbook: declared sizes overflow.", span);
+                    }
+
+                    expandedTotal += uncompressed + SnapshotBaseBytesPerEntry;
+                }
+
+                context.MemoryGovernor.EnsureCanReserve(expandedTotal, span);
+            }
+            finally
+            {
+                context.MemoryGovernor.Release(directory.MetadataCharge);
+            }
         }
 
         private static byte[] ReadBoundedEntryBytes(ZipArchiveEntry entry, ExecutionContext context, LythonSourceSpan span)
@@ -530,7 +558,7 @@ internal sealed partial class LythonRuntime
         /// transfers retention for preservation parts (writable workbooks) or releases
         /// everything (read-only workbooks, which can never save).
         /// </summary>
-        private sealed class OpenPyxlLoadSession
+        private sealed class OpenPyxlLoadSession : IDisposable
         {
             private readonly ZipArchive _archive;
             private readonly ExecutionContext _context;
@@ -590,6 +618,23 @@ internal sealed partial class LythonRuntime
             {
                 return LoadOptionalXmlDocument(path)
                     ?? throw InvalidFileException($"Invalid .xlsx workbook: missing {path}.", _span);
+            }
+
+            /// <summary>
+            /// Releases session-owned charges that were never transferred.
+            /// Finish clears its dictionaries, so disposing after a successful
+            /// finish is a no-op; failed loads dispose here instead of leaking.
+            /// </summary>
+            public void Dispose()
+            {
+                foreach (var pair in _charges)
+                {
+                    _context.MemoryGovernor.Release(pair.Value);
+                }
+
+                _bytes.Clear();
+                _charges.Clear();
+                _transferred.Clear();
             }
 
             public OpenPyxlPackageSnapshot? Finish(bool preserve)
