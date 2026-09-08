@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
 {
     private static object Any(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
@@ -48,7 +47,6 @@ internal sealed partial class LythonRuntime
 
     private static object All(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);

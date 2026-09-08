@@ -67,9 +67,9 @@ internal sealed partial class LythonRuntime
             return real;
         }
 
-        private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span)
+        private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = MaterializeSequence(value, span);
+            var values = MaterializeSequence(value, span, context);
             if (values.Count != expectedCount)
             {
                 throw new LythonRuntimeException("ValueError", $"{owner} expects one weight per population item.", span);
@@ -90,9 +90,9 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static double[] ReadCumulativeWeights(object value, int expectedCount, string owner, LythonSourceSpan span)
+        private static double[] ReadCumulativeWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = ReadWeights(value, expectedCount, owner, span);
+            var values = ReadWeights(value, expectedCount, owner, span, context);
             for (var i = 1; i < values.Length; i++)
             {
                 if (values[i] < values[i - 1])
@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
 
         private static List<object> ExpandPopulationCounts(IReadOnlyList<object> population, object countsValue, LythonSourceSpan span, ExecutionContext context)
         {
-            var counts = MaterializeSequence(countsValue, span);
+            var counts = MaterializeSequence(countsValue, span, context);
             if (counts.Count != population.Count)
             {
                 throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
@@ -144,10 +144,10 @@ internal sealed partial class LythonRuntime
             return expanded;
         }
 
-        private static List<object> MaterializeSequence(object value, LythonSourceSpan span)
+        private static List<object> MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
         {
             var result = new List<object>();
-            foreach (var item in ToSequence(value, span))
+            foreach (var item in ToSequence(value, span, context))
             {
                 result.Add(RuntimeValue(item));
             }
@@ -155,14 +155,14 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span)
+        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             if (value is not IPyIndexableValue && value is not PyRange)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} population must be a sequence.", span);
             }
 
-            return MaterializeSequence(value, span);
+            return MaterializeSequence(value, span, context);
         }
 
         private static int ChooseWeightedIndex(PyRandomState state, int populationLength, double[]? weights, double[]? cumulative, LythonSourceSpan span)

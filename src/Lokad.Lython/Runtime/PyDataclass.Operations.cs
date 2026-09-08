@@ -127,6 +127,16 @@ internal static partial class PyDataclass
         }
 
         return new PyTuple(items, context.MemoryGovernor, span);
+
+        static PyType GetDataclassType(object value, LythonSourceSpan span, string owner)
+        {
+            return value switch
+            {
+                PyType type when type.DataclassFields is not null => type,
+                PyInstance instance when instance.Type.DataclassFields is not null => instance.Type,
+                _ => throw new LythonRuntimeException("TypeError", $"{owner} must be called with a dataclass type or instance.", span)
+            };
+        }
     }
 
     public static object AsDict(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -188,15 +198,6 @@ internal static partial class PyDataclass
         return 0;
     }
 
-    private static PyType GetDataclassType(object value, LythonSourceSpan span, string owner)
-    {
-        return value switch
-        {
-            PyType type when type.DataclassFields is not null => type,
-            PyInstance instance when instance.Type.DataclassFields is not null => instance.Type,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner} must be called with a dataclass type or instance.", span)
-        };
-    }
 
     private static object AsDictInner(object value, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {

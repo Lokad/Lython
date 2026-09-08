@@ -246,7 +246,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
         }
 
-        private static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span)
+        private static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span, ExecutionContext context)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
@@ -258,7 +258,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings or None.", span);
             }
 
-            var items = ToSequence(value, span).ToArray();
+            var items = ToSequence(value, span, context).ToArray();
             if (items.Length != 2 ||
                 !PyStringOps.TryAsString(items[0], out var itemSeparator) ||
                 !PyStringOps.TryAsString(items[1], out var keySeparator))

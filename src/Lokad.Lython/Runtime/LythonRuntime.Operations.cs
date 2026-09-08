@@ -14,7 +14,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static void GuardIntegerPower(PyNumber lhs, PyNumber rhs, ExecutionContext context, LythonSourceSpan span)
+    private static void GuardIntegerPower(PyNumber lhs, PyNumber rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (lhs.IsFloat || rhs.IsFloat || rhs.Integer < BigInteger.Zero)
         {
@@ -31,10 +31,10 @@ internal sealed partial class LythonRuntime
             _ => RuntimeMemoryEstimates.SaturatingMultiply(baseBits, (long)exponent)
         };
 
-        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), context, span);
+        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static void GuardIntegerLeftShift(BigInteger lhs, BigInteger rhs, ExecutionContext context, LythonSourceSpan span)
+    private static void GuardIntegerLeftShift(BigInteger lhs, BigInteger rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (rhs < BigInteger.Zero)
         {
@@ -44,12 +44,12 @@ internal sealed partial class LythonRuntime
         var lhsBits = RuntimeMemoryEstimates.GetMagnitudeBitLength(lhs);
         var shiftBits = rhs > long.MaxValue ? long.MaxValue : (long)rhs;
         var resultBits = RuntimeMemoryEstimates.SaturatingAdd(lhsBits, shiftBits);
-        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), context, span);
+        GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static void GuardIntegerResultBytes(long estimatedBytes, ExecutionContext context, LythonSourceSpan span)
+    private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan span)
     {
-        context.MemoryGovernor.EnsureCanReserve(estimatedBytes, span);
+        governor.EnsureCanReserve(estimatedBytes, span);
     }
 
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            GuardIntegerLeftShift(lhs, rhs, context, span);
+            GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
             return PyNumberOps.LeftShift(lhs, rhs);
         }
         catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
         }
 
-        return operand.RequireNotNull();
+        return operand;
     }
 
     private static object EvaluateUnaryMinus(object operand, LythonSourceSpan span)

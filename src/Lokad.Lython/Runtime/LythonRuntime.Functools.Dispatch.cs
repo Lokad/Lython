@@ -196,7 +196,7 @@ internal sealed partial class LythonRuntime
             for (var i = _registrations.Count - 1; i >= 0; i--)
             {
                 var registration = _registrations[i];
-                if (DoesDispatchTypeMatch(typeSpec, registration.TypeSpec))
+                if (IsSubclassAgainstSingleType(typeSpec, registration.TypeSpec))
                 {
                     var distance = GetDispatchTypeDistance(typeSpec, registration.TypeSpec);
                     if (distance < bestDistance)
@@ -607,9 +607,6 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
-
-    private static bool DoesDispatchTypeMatch(object requestedType, object registeredType)
-        => IsSubclassAgainstSingleType(requestedType, registeredType);
 
     private static bool DispatchTypeIdentityEquals(object left, object right)
     {

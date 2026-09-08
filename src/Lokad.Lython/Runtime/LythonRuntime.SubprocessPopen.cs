@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
 
         private void AddCommunicateInput(object input, LythonSourceSpan span)
         {
-            if (input is PyNone or null)
+            if (input is PyNone)
             {
                 return;
             }
@@ -659,7 +659,7 @@ internal sealed partial class LythonRuntime
         private static int? ReadPopenTimeout(object[] arguments, int index, string owner, LythonSourceSpan span)
         {
             var value = GetArgument(arguments, index);
-            if (value is PyNone or null)
+            if (value is PyNone)
             {
                 return null;
             }

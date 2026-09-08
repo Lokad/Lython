@@ -56,23 +56,6 @@ internal sealed partial class LythonRuntime
         return text.AsString();
     }
 
-    private static string? GetEnvironmentMappingValue(object mapping, string key, LythonSourceSpan span)
-    {
-        if (mapping is PyEnvironmentMapping environment)
-        {
-            return environment.TryGetString(key, out var value) ? value : null;
-        }
-
-        if (mapping is PyDict dict)
-        {
-            return dict.TryGetValue(PyString.FromString(key), out var value)
-                ? GetEnvironmentValue(value, "os.get_exec_path", span)
-                : null;
-        }
-
-        throw new LythonRuntimeException("TypeError", "os.get_exec_path(env) expects a mapping or None.", span);
-    }
-
     private static string ExpandVars(string path, IReadOnlyDictionary<string, string> environment)
     {
         if (path.Length == 0)
@@ -106,7 +89,7 @@ internal sealed partial class LythonRuntime
                 {
                     var start = i + 1;
                     var end = start;
-                    while (end < path.Length && IsEnvironmentNameChar(path[end]))
+                    while (end < path.Length && (char.IsAsciiLetterOrDigit(path[end]) || path[end] == '_'))
                     {
                         end++;
                     }
@@ -138,8 +121,6 @@ internal sealed partial class LythonRuntime
         return builder.ToString();
     }
 
-    private static bool IsEnvironmentNameChar(char ch)
-        => char.IsAsciiLetterOrDigit(ch) || ch == '_';
 
     private sealed class PyEnvironmentMapping :
         IMutablePySubscriptableValue,

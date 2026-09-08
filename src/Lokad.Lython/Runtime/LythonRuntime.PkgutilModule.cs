@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
             var values = new List<object>();
             try
             {
-                foreach (var item in PyIteration.ToSequence(arguments[0], span))
+                foreach (var item in PyIteration.ToSequence(arguments[0], span, context))
                 {
                     if (!TryAsPathText(item, out var path))
                     {
@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
             var paths = new List<string>();
             try
             {
-                foreach (var item in PyIteration.ToSequence(path, span))
+                foreach (var item in PyIteration.ToSequence(path, span, context))
                 {
                     if (!TryAsPathText(item, out var itemPath))
                     {

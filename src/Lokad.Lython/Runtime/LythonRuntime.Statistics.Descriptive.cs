@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
 
             if (weightSum == 0.0)
             {
-                throw new LythonRuntimeException("StatisticsError", "sum of weights must be non-zero", span);
+                throw StatisticsError("sum of weights must be non-zero", span);
             }
 
             return weightedSum / weightSum;
@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (value < 0)
                     {
-                        throw new LythonRuntimeException("StatisticsError", "harmonic mean does not support negative values", span);
+                        throw StatisticsError("harmonic mean does not support negative values", span);
                     }
 
                     if (value == 0.0)
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
                 var weight = weights[i];
                 if (value < 0 || weight < 0)
                 {
-                    throw new LythonRuntimeException("StatisticsError", "harmonic mean does not support negative values", span);
+                    throw StatisticsError("harmonic mean does not support negative values", span);
                 }
 
                 if (value == 0.0 && weight > 0.0)
@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
 
             if (weightTotal <= 0.0)
             {
-                throw new LythonRuntimeException("StatisticsError", "Weighted sum must be positive", span);
+                throw StatisticsError("Weighted sum must be positive", span);
             }
 
             return weightTotal / reciprocalTotalWeighted;
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
             {
                 if (value < 0)
                 {
-                    throw new LythonRuntimeException("StatisticsError", "geometric mean does not support negative values", span);
+                    throw StatisticsError("geometric mean does not support negative values", span);
                 }
 
                 if (value == 0.0)
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
             var values = GetNumericValuesFromData(arguments, owner, span, context);
             if (sample && values.Count < 2)
             {
-                throw new LythonRuntimeException("StatisticsError", $"{owner}(data) requires at least two data points.", span);
+                throw StatisticsError($"{owner}(data) requires at least two data points.", span);
             }
 
             var mean = arguments.Length >= 2 && arguments[1] is not PyNone
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
                 var value = method == "inclusive"
                     ? InterpolateInclusiveQuantile(values, i, n)
                     : InterpolateExclusiveQuantile(values, i, n);
-                cutPoints.Add(BoxStatisticalFloat(value));
+                cutPoints.Add(IsWholeInteger(value) ? new BigInteger(value) : value);
             }
 
             return new PyList(cutPoints, context.MemoryGovernor, span);
@@ -333,7 +333,7 @@ internal sealed partial class LythonRuntime
 
                 if (sumXX == 0.0)
                 {
-                    throw new LythonRuntimeException("StatisticsError", "x is constant", span);
+                    throw StatisticsError("x is constant", span);
                 }
 
                 return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
             var sums = ComputeCenteredSums(x, y);
             if (sums.SumXX == 0.0)
             {
-                throw new LythonRuntimeException("StatisticsError", "x is constant", span);
+                throw StatisticsError("x is constant", span);
             }
 
             var slope = sums.SumXY / sums.SumXX;

@@ -329,7 +329,7 @@ internal static partial class PyDataclass
             }
 
             var name = RuntimeArgumentValidation.ExpectString(clsName, "dataclasses.make_dataclass(cls_name=...)", span);
-            var bases = ParseBases(basesArgument, span);
+            var bases = ParseBases(basesArgument, span, context);
             var members = new Dictionary<string, object>(StringComparer.Ordinal);
             if (namespaceArgument is not null && !ReferenceEquals(namespaceArgument, PyNone.Instance))
             {
@@ -387,7 +387,7 @@ internal static partial class PyDataclass
     private static IEnumerable<MakeDataclassField> ParseMakeDataclassFields(object fieldsArgument, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var seenNames = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in LythonRuntime.ToSequence(fieldsArgument, span))
+        foreach (var item in LythonRuntime.ToSequence(fieldsArgument, span, context))
         {
             string name;
             object annotation = PyString.FromString("typing.Any");
@@ -431,7 +431,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private static IReadOnlyList<PyType> ParseBases(object? basesArgument, LythonSourceSpan span)
+    private static IReadOnlyList<PyType> ParseBases(object? basesArgument, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (basesArgument is null || ReferenceEquals(basesArgument, PyNone.Instance))
         {
@@ -439,7 +439,7 @@ internal static partial class PyDataclass
         }
 
         var bases = new List<PyType>();
-        foreach (var item in LythonRuntime.ToSequence(basesArgument, span))
+        foreach (var item in LythonRuntime.ToSequence(basesArgument, span, context))
         {
             if (item is not PyType type)
             {

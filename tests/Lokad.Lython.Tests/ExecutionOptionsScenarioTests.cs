@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -1333,6 +1334,54 @@ text = str(data)
         Assert.Null(result.Failure);
     }
 
+    [Fact]
+    public void StepCounterDoesNotWrapAtIntMaxValue()
+    {
+        var context = new LythonRuntime.ExecutionContext(
+            new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionSteps = int.MaxValue });
+        context.Limits.ExecutionStepCount = int.MaxValue - 1;
+        context.CheckExecutionBudget(null);
+        Assert.Equal((long)int.MaxValue, (long)context.Limits.ExecutionStepCount);
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.CheckExecutionBudget(null));
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Contains("maximum execution step count exceeded", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void HostCallCounterDoesNotWrapAtIntMaxValue()
+    {
+        var context = new LythonRuntime.ExecutionContext(
+            new MockLythonHost(),
+            new LythonRunOptions { MaxHostCalls = int.MaxValue });
+        context.Limits.HostCallCount = int.MaxValue - 1;
+        context.RegisterHostCall(null);
+        Assert.Equal((long)int.MaxValue, (long)context.Limits.HostCallCount);
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.RegisterHostCall(null));
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Contains("maximum host call count exceeded", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RecursionCounterDoesNotWrapAtIntMaxValue()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        context.Limits.CurrentRecursionDepth = int.MaxValue;
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterFunctionCall(null));
+        Assert.Equal("RecursionError", failure.ExceptionType);
+        Assert.Contains("maximum recursion depth exceeded", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InterpreterCounterDoesNotWrapAtIntMaxValue()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);
+        context.Limits.CurrentInterpreterDepth = int.MaxValue;
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterInterpreterFrame(null));
+        Assert.Equal("RuntimeError", failure.ExceptionType);
+        Assert.Contains("maximum interpreter stack depth exceeded", failure.Message, StringComparison.Ordinal);
+    }
+
     private static List<object?> CreateDeeplyNestedList(int depth)
     {
         object? current = "leaf";
@@ -1342,6 +1391,84 @@ text = str(data)
         }
 
         return (List<object?>)current;
+    }
+
+    [Fact]
+    public void LinkedCancellation_PreservesEveryOption()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var options = new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["greeting"] = "hello" },
+            Args = new[] { "first", "second" },
+            Environment = new Dictionary<string, string> { ["MODE"] = "test" },
+            SourcePath = "/entry.py",
+            CancellationToken = cancellation.Token,
+            DisableDefaultLimits = true,
+            DisableLocalModuleImports = true,
+            AllowedLocalModules = new HashSet<string> { "helper" },
+            MaxExecutionSteps = 11,
+            MaxRecursionDepth = 12,
+            MaxHostCalls = 13,
+            MaxCollectionSize = 14,
+            MaxStringLength = 15,
+            MaxHostReadBytes = 16,
+            MaxStandardOutputBytes = 17,
+            MaxStandardErrorBytes = 18,
+            MaxExecutionMemoryBytes = 19,
+            MaxProjectionMemoryBytes = 20,
+        };
+        var properties = typeof(LythonRunOptions).GetProperties();
+        foreach (var property in properties)
+        {
+            var configured = property.GetValue(options);
+            var blank = property.PropertyType.IsValueType ? Activator.CreateInstance(property.PropertyType) : null;
+            Assert.False(Equals(configured, blank), $"option {property.Name} must be non-default in this fixture.");
+        }
+
+        var merged = options.WithCancellation(CancellationToken.None);
+        Assert.Equal(CancellationToken.None, merged.CancellationToken);
+        foreach (var property in properties)
+        {
+            if (property.Name == nameof(LythonRunOptions.CancellationToken))
+            {
+                continue;
+            }
+
+            var expected = property.GetValue(options);
+            var actual = property.GetValue(merged);
+            if (property.PropertyType.IsInterface)
+            {
+                Assert.Same(expected, actual);
+            }
+            else
+            {
+                Assert.Equal(expected, actual);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LinkedCancellation_AppliesLimitsThroughMergedOptions()
+    {
+        using var optionsCancellation = new CancellationTokenSource();
+        using var externalCancellation = new CancellationTokenSource();
+        var result = await new LythonEngine().RunAsync(
+            """
+while True:
+    pass
+""",
+            new MockLythonHost(),
+            new LythonRunOptions
+            {
+                CancellationToken = optionsCancellation.Token,
+                MaxExecutionSteps = 50,
+            },
+            externalCancellation.Token);
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("maximum execution step count exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     private sealed class CallbackGlobalValue : IEnumerable<object>

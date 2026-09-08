@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
         return translated is not null;
     }
 
-    private static readonly IReadOnlyDictionary<PythonExceptionIdentity, PythonExceptionIdentity[]> ExceptionBaseIdentities =
+    internal static readonly IReadOnlyDictionary<PythonExceptionIdentity, PythonExceptionIdentity[]> ExceptionBaseIdentities =
         new Dictionary<PythonExceptionIdentity, PythonExceptionIdentity[]>
         {
             [BuiltinException("Exception")] = [BuiltinException("BaseException")],
@@ -303,7 +303,12 @@ internal sealed partial class LythonRuntime
         /// <summary>Invokes the callable after named arguments have been bound into positional slots.</summary>
         protected abstract object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context);
 
-        /// <summary>Invokes the callable asynchronously after named arguments have been bound into positional slots.</summary>
+        /// <summary>
+        /// Invokes the callable asynchronously after named arguments have been bound into positional slots.
+        /// The default implementation runs the synchronous body inline and returns an already-completed task;
+        /// overrides that await host operations must honor the execution cancellation token. Callers own the
+        /// returned task and await it exactly once.
+        /// </summary>
         protected virtual ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ValueTask.FromResult(InvokeBound(arguments, span, context));
     }

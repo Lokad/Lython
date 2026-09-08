@@ -155,7 +155,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
             }
 
-            return _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span), span);
+            return _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -216,7 +216,9 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         value = name switch
         {
             "_fields" => new PyTuple(_type.FieldNames.Select(PyString.FromString).Cast<object>()),
-            "_field_defaults" => GetTypeMember("_field_defaults"),
+            "_field_defaults" => _type.TryGetMember("_field_defaults", out var fieldDefaults)
+                ? fieldDefaults
+                : throw new InvalidOperationException("Named tuple type member '_field_defaults' is missing."),
             "_asdict" => new BoundNamedTupleAsDict(this),
             "_replace" => new BoundNamedTupleReplace(this),
             _ => PyNone.Instance
@@ -241,12 +243,6 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     internal object[] ToArray() => [.. _values];
 
-    private object GetTypeMember(string name)
-    {
-        return _type.TryGetMember(name, out var value)
-            ? value
-            : throw new InvalidOperationException($"Named tuple type member '{name}' is missing.");
-    }
 
     private sealed class BoundNamedTupleAsDict : LythonRuntime.ICallable, IPyRenderableValue
     {

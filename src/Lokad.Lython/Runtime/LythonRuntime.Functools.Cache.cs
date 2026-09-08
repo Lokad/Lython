@@ -355,6 +355,20 @@ internal sealed partial class LythonRuntime
             var value = callable.Invoke([], span, context);
             pyInstance.SetAttribute(Name, value);
             return value;
+
+            static ICallable BindCallableForInstance(ICallable callable, object instance, PyType owner, ExecutionContext context, LythonSourceSpan span)
+            {
+                var resolved = callable is IPyDescriptor descriptor
+                    ? descriptor.Get(instance, owner, context, span)
+                    : new PyBoundMethod(instance, callable);
+
+                if (resolved is not ICallable bound)
+                {
+                    throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
+                }
+
+                return bound;
+            }
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -592,19 +606,6 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static ICallable BindCallableForInstance(ICallable callable, object instance, PyType owner, ExecutionContext context, LythonSourceSpan span)
-    {
-        var resolved = callable is IPyDescriptor descriptor
-            ? descriptor.Get(instance, owner, context, span)
-            : new PyBoundMethod(instance, callable);
-
-        if (resolved is not ICallable bound)
-        {
-            throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
-        }
-
-        return bound;
-    }
 
     private sealed class CacheKeyMarker : IPyHashableValue
     {

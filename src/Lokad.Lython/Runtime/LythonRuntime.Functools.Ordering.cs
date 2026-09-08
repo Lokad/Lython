@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "functools.reduce(function, iterable[, initializer]) expects a callable, an iterable, and an optional initializer.", span);
         }
 
-        using var enumerator = ToSequence(arguments[1], span).GetEnumerator();
+        using var enumerator = ToSequence(arguments[1], span, context).GetEnumerator();
         object accumulator;
         if (arguments.Length == 3)
         {

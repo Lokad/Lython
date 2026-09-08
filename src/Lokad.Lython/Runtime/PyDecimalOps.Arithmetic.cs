@@ -2,6 +2,12 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDecimalOps
 {
+    internal static LythonRuntimeException DivisionByZero(string message, LythonSourceSpan span)
+        => new(LythonRuntime.ModuleException("decimal", "DivisionByZero"), message, span);
+
+    internal static LythonRuntimeException InvalidOperation(string message, LythonSourceSpan span)
+        => new(LythonRuntime.ModuleException("decimal", "InvalidOperation"), message, span);
+
     public static object Add(object left, object right, LythonSourceSpan span)
         => Binary(left, right, span, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
@@ -20,7 +26,7 @@ internal static partial class PyDecimalOps
 
         if (rhs == 0m)
         {
-            throw new LythonRuntimeException("DivisionByZero", "decimal division by zero", span);
+            throw DivisionByZero("decimal division by zero", span);
         }
 
         return new PyDecimal(lhs / rhs);
@@ -35,7 +41,7 @@ internal static partial class PyDecimalOps
 
         if (rhs == 0m)
         {
-            throw new LythonRuntimeException("DivisionByZero", "decimal modulo by zero", span);
+            throw DivisionByZero("decimal modulo by zero", span);
         }
 
         return new PyDecimal(lhs % rhs, Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
@@ -63,7 +69,7 @@ internal static partial class PyDecimalOps
         {
             if (lhs == 0m)
             {
-                throw new LythonRuntimeException("DivisionByZero", "decimal division by zero", span);
+                throw DivisionByZero("decimal division by zero", span);
             }
 
             return new PyDecimal(1m / Pow(lhs, -exponentInt));

@@ -52,7 +52,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             return Type.DataclassHashMode switch
             {
                 DataclassHashMode.Generated => GetGeneratedDataclassHashCode(fields),
-                DataclassHashMode.Unhashable => throw new InvalidOperationException("unhashable value"),
+                DataclassHashMode.Unhashable => throw new PyUnhashableException(),
                 _ => RuntimeHelpers.GetHashCode(this)
             };
         }

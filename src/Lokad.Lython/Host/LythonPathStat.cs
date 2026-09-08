@@ -20,6 +20,11 @@ public sealed record LythonPathStat
     /// <summary>Creates validated metadata for a path.</summary>
     public LythonPathStat(LythonPathKind kind, BigInteger size, DateTimeOffset? modifiedAt)
     {
+        if (!Enum.IsDefined(kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind), kind, "Path kind must be a defined enumeration value.");
+        }
+
         if (size < BigInteger.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(size), size, "Path size cannot be negative.");
@@ -28,6 +33,11 @@ public sealed record LythonPathStat
         if (kind == LythonPathKind.Missing && (size != BigInteger.Zero || modifiedAt is not null))
         {
             throw new ArgumentException("A missing path cannot have size or modification metadata.", nameof(kind));
+        }
+
+        if (kind == LythonPathKind.Directory && size != BigInteger.Zero)
+        {
+            throw new ArgumentException("A directory path cannot report a nonzero size.", nameof(kind));
         }
 
         Kind = kind;

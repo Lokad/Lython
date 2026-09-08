@@ -79,13 +79,12 @@ internal sealed partial class LythonRuntime
 
         private static object SetState(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "random.setstate(state) expects one state object.", span);
             }
 
-            state.Restore(ParseState(arguments[0], span));
+            state.Restore(ParseState(arguments[0], span, context));
             return PyNone.Instance;
         }
 
@@ -120,13 +119,12 @@ internal sealed partial class LythonRuntime
 
         private static object Choice(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "random.choice(seq) expects one sequence argument.", span);
             }
 
-            var items = MaterializePopulation(arguments[0], "random.choice", span);
+            var items = MaterializePopulation(arguments[0], "random.choice", span, context);
             if (items.Count == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
@@ -142,14 +140,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choices(population[, weights][, cum_weights][, k]) expects one to four arguments.", span);
             }
 
-            var population = MaterializePopulation(arguments[0], "random.choices", span);
+            var population = MaterializePopulation(arguments[0], "random.choices", span, context);
             if (population.Count == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
             }
 
-            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], population.Count, "random.choices(..., weights=...)", span) : null;
-            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], population.Count, "random.choices(..., cum_weights=...)", span) : null;
+            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], population.Count, "random.choices(..., weights=...)", span, context) : null;
+            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], population.Count, "random.choices(..., cum_weights=...)", span, context) : null;
             if (weights is not null && cumulative is not null)
             {
                 throw new LythonRuntimeException("TypeError", "random.choices(...) does not accept both weights and cum_weights.", span);
@@ -198,7 +196,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.sample(population, k, *, counts=None) expects two arguments plus optional counts.", span);
             }
 
-            var population = MaterializePopulation(arguments[0], "random.sample", span);
+            var population = MaterializePopulation(arguments[0], "random.sample", span, context);
             var count = ExpectNonNegativeInt(arguments[1], "random.sample(population, k) expects k to be a non-negative integer.", span);
             var items = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? ExpandPopulationCounts(population, arguments[2], span, context)

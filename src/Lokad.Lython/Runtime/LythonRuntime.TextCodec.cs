@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
 
     private static TextEncodingMode ParseTextEncoding(object value, string owner, LythonSourceSpan span)
     {
-        if (value is null or PyNone)
+        if (value is PyNone)
         {
             return TextEncodingMode.Utf8;
         }
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
 
     private static TextErrorMode ParseTextErrors(object value, string owner, LythonSourceSpan span)
     {
-        if (value is null or PyNone)
+        if (value is PyNone)
         {
             return TextErrorMode.Strict;
         }
@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         }
 
         var decoded = DecodeUtf8ToString(utf8.Span, errors, span);
-        decoded = ApplyReadNewlineMode(decoded, newline);
+        decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded) : decoded;
         return decoded.Length == 0
             ? PyString.Empty
             : PyString.FromString(decoded, governor, span);
@@ -661,11 +661,6 @@ internal sealed partial class LythonRuntime
             builder.Append(value.ToString("x2", CultureInfo.InvariantCulture));
         }
     }
-
-    private static string ApplyReadNewlineMode(string text, TextNewlineMode newline)
-        => newline == TextNewlineMode.TranslateUniversal
-            ? NormalizeNewlineString(text)
-            : text;
 
     private static string NormalizeNewlineString(string text)
     {

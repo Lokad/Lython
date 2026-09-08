@@ -143,22 +143,22 @@ internal sealed partial class LythonRuntime
             return PyDecimalOps.Multiply(left, right, span);
         }
 
-        if (PyStringOps.TryAsString(left, out var leftText) && right is BigInteger rightCount)
+        if (PyStringOps.TryAsString(left, out var leftText) && TryRepeatCount(right, out var rightCount))
         {
             return RepeatString(leftText, rightCount, context, span);
         }
 
-        if (PyStringOps.TryAsString(right, out var rightText) && left is BigInteger leftCount)
+        if (PyStringOps.TryAsString(right, out var rightText) && TryRepeatCount(left, out var leftCount))
         {
             return RepeatString(rightText, leftCount, context, span);
         }
 
-        if (left is PyList leftList && right is BigInteger rightRepeatCount)
+        if (left is PyList leftList && TryRepeatCount(right, out var rightRepeatCount))
         {
             return RepeatList(leftList, rightRepeatCount, context, span);
         }
 
-        if (right is PyList rightList && left is BigInteger leftRepeatCount)
+        if (right is PyList rightList && TryRepeatCount(left, out var leftRepeatCount))
         {
             return RepeatList(rightList, leftRepeatCount, context, span);
         }
@@ -179,6 +179,24 @@ internal sealed partial class LythonRuntime
         }
 
         return PyNumberOps.Multiply(lhs, rhs);
+    }
+
+    private static bool TryRepeatCount(object value, out BigInteger count)
+    {
+        if (value is BigInteger integer)
+        {
+            count = integer;
+            return true;
+        }
+
+        if (value is bool flag)
+        {
+            count = flag ? BigInteger.One : BigInteger.Zero;
+            return true;
+        }
+
+        count = default;
+        return false;
     }
 
     private static object EvaluateDivide(object left, object right, LythonSourceSpan span)
@@ -310,7 +328,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "complex results are not supported by Lython", span);
             }
 
-            GuardIntegerPower(lhs, rhs, context, span);
+            GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
             return PyNumberOps.Power(lhs, rhs);
         }
         catch (OverflowException)

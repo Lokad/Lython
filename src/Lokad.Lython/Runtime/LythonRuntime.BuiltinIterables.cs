@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
 {
     private static object Len(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "len(value) expects one argument.", span);
@@ -75,10 +74,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static readonly string[] StringDirNames = ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"];
-    private static readonly string[] BytesDirNames = ["decode", "hex"];
+    private static readonly string[] StringDirNames = ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"];
+    private static readonly string[] BytesDirNames = ["decode"];
     private static readonly string[] ListDirNames = ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"];
-    private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
+    private static readonly string[] DictDirNames = ["clear", "copy", "get", "items", "keys", "pop", "setdefault", "update", "values"];
     private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
 
     private static object DivMod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -109,19 +108,19 @@ internal sealed partial class LythonRuntime
         BigInteger stop;
         BigInteger step;
 
-        if (arguments.Length == 1 && arguments[0] is BigInteger stopOnly)
+        if (arguments.Length == 1 && TryRangeBound(arguments[0], out var stopOnly))
         {
             start = BigInteger.Zero;
             stop = stopOnly;
             step = BigInteger.One;
         }
-        else if (arguments.Length == 2 && arguments[0] is BigInteger startArg && arguments[1] is BigInteger stopArg)
+        else if (arguments.Length == 2 && TryRangeBound(arguments[0], out var startArg) && TryRangeBound(arguments[1], out var stopArg))
         {
             start = startArg;
             stop = stopArg;
             step = BigInteger.One;
         }
-        else if (arguments.Length == 3 && arguments[0] is BigInteger startValue && arguments[1] is BigInteger stopValue && arguments[2] is BigInteger stepValue)
+        else if (arguments.Length == 3 && TryRangeBound(arguments[0], out var startValue) && TryRangeBound(arguments[1], out var stopValue) && TryRangeBound(arguments[2], out var stepValue))
         {
             start = startValue;
             stop = stopValue;
@@ -130,6 +129,24 @@ internal sealed partial class LythonRuntime
         else
         {
             throw new LythonRuntimeException("TypeError", "range(stop), range(start, stop), or range(start, stop, step) expects integer arguments.", span);
+        }
+
+        static bool TryRangeBound(object value, out BigInteger bound)
+        {
+            if (value is BigInteger integer)
+            {
+                bound = integer;
+                return true;
+            }
+
+            if (value is bool flag)
+            {
+                bound = flag ? BigInteger.One : BigInteger.Zero;
+                return true;
+            }
+
+            bound = default;
+            return false;
         }
 
         if (step == BigInteger.Zero)
@@ -142,7 +159,6 @@ internal sealed partial class LythonRuntime
 
     private static object Enumerate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is not 1 and not 2)
         {
             throw new LythonRuntimeException("TypeError", "enumerate(iterable[, start]) expects one or two arguments.", span);

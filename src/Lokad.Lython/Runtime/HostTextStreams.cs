@@ -180,8 +180,17 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
     private abstract record OutputDestination
     {
+        /// <summary>
+        /// Gets the governed capture sink, or null for host-only handles. The
+        /// builder is owned by its creator (ExecutionState for standard streams,
+        /// released with the run); the handle only appends and never releases it.
+        /// </summary>
         public abstract GovernedByteBuilder? Capture { get; }
 
+        /// <summary>
+        /// Gets the host-owned text stream, or null when the host supplies none.
+        /// The handle registers host calls but never disposes the stream.
+        /// </summary>
         public abstract ILythonTextOutput? Output { get; }
     }
 

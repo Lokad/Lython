@@ -85,7 +85,8 @@ internal static class PyAttributeLookup
         }
 
         if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
-            IsDataDescriptor(rawValue))
+            (rawValue is IPySettableDescriptor ||
+             rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
         {
             value = BindForInstance(instance, rawValue, context, span);
             return true;
@@ -181,11 +182,6 @@ internal static class PyAttributeLookup
             : rawValue;
     }
 
-    private static bool IsDataDescriptor(object rawValue)
-    {
-        return rawValue is IPySettableDescriptor ||
-               rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _);
-    }
 
     private static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
     {

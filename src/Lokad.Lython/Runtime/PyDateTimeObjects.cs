@@ -113,7 +113,7 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public PyTimezone(TimeSpan offset, string? name)
     {
         Offset = offset;
-        Name = name ?? BuildDefaultName(offset);
+        Name = name ?? (offset == TimeSpan.Zero ? "UTC" : PyDateTimeOps.FormatOffset(offset));
     }
 
     public TimeSpan Offset { get; }
@@ -143,8 +143,6 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public override string ToString() => Name;
 
-    private static string BuildDefaultName(TimeSpan offset)
-        => offset == TimeSpan.Zero ? "UTC" : PyDateTimeOps.FormatOffset(offset);
 }
 
 internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableValue

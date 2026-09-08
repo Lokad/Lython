@@ -35,6 +35,27 @@ internal sealed partial class LythonRuntime
             }
 
             return PyNone.Instance;
+
+            static void FlushOutput(ExecutionContext context, PrintOutputTarget outputTarget, LythonSourceSpan span)
+            {
+                switch (outputTarget)
+                {
+                    case StandardOutputTarget:
+                        _ = context.State.Stdout.Flush(span);
+                        break;
+                    case TextFileOutputTarget file:
+                        _ = file.Handle.Flush();
+                        break;
+                    case HostOutputTarget host:
+                        _ = host.Handle.Flush(span);
+                        break;
+                    case PopenInputOutputTarget process:
+                        process.Handle.FlushValue(span);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unsupported print output target.");
+                }
+            }
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -174,26 +195,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void FlushOutput(ExecutionContext context, PrintOutputTarget outputTarget, LythonSourceSpan span)
-        {
-            switch (outputTarget)
-            {
-                case StandardOutputTarget:
-                    _ = context.State.Stdout.Flush(span);
-                    break;
-                case TextFileOutputTarget file:
-                    _ = file.Handle.Flush();
-                    break;
-                case HostOutputTarget host:
-                    _ = host.Handle.Flush(span);
-                    break;
-                case PopenInputOutputTarget process:
-                    process.Handle.FlushValue(span);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unsupported print output target.");
-            }
-        }
 
         private static async ValueTask AppendOutputAsync(PyString value, ExecutionContext context, PrintOutputTarget outputTarget, LythonSourceSpan span)
         {

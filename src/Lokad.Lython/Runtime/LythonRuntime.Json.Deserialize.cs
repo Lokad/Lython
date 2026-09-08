@@ -140,7 +140,8 @@ internal sealed partial class LythonRuntime
         private static JsonDumpOptions ParseJsonDumpOptions(
             object[] arguments,
             JsonDumpCallForm callForm,
-            LythonSourceSpan span)
+            LythonSourceSpan span,
+            ExecutionContext context)
         {
             var offset = callForm == JsonDumpCallForm.Dumps ? 0 : 1;
             EnsureUnsupportedJsonClassIsNone(GetOptional(arguments, offset + 5), "cls", span);
@@ -149,7 +150,7 @@ internal sealed partial class LythonRuntime
             var checkCircular = ParseJsonBoolOption(GetOptional(arguments, offset + 3), defaultValue: true);
             var allowNan = ParseJsonBoolOption(GetOptional(arguments, offset + 4), defaultValue: true);
             var indent = ParseJsonIndent(GetOptional(arguments, offset + 6), span);
-            var separators = ParseJsonSeparators(GetOptional(arguments, offset + 7), indent is not null, span);
+            var separators = ParseJsonSeparators(GetOptional(arguments, offset + 7), indent is not null, span, context);
             var defaultCallable = OptionalJsonCallable(GetOptional(arguments, offset + 8), "default", span);
             var sortKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 9), defaultValue: false);
             return new JsonDumpOptions(skipKeys, ensureAscii, checkCircular, allowNan, indent, separators.ItemSeparator, separators.KeySeparator, defaultCallable, sortKeys);

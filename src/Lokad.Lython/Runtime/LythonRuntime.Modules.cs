@@ -370,7 +370,6 @@ internal sealed partial class LythonRuntime
 
         private static object Fsum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "math.fsum(iterable) expects one iterable.", span);

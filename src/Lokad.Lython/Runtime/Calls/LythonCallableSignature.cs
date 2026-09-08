@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 
 namespace Lokad.Lython.Runtime;
 
@@ -103,7 +104,7 @@ internal sealed class NamedCallableParameterLayout : CallableParameterLayout
         PositionalOnlyCount = positionalOnlyCount;
         ParameterIndices = CreateParameterIndices(ParameterNames, callableName);
 
-        static IReadOnlyDictionary<string, int> CreateParameterIndices(string[] names, string name)
+        static IReadOnlyDictionary<string, int> CreateParameterIndices(ImmutableArray<string> names, string name)
         {
             var indices = new Dictionary<string, int>(names.Length, StringComparer.Ordinal);
             for (var index = 0; index < names.Length; index++)
@@ -118,7 +119,7 @@ internal sealed class NamedCallableParameterLayout : CallableParameterLayout
         }
     }
 
-    public string[] ParameterNames { get; }
+    public ImmutableArray<string> ParameterNames { get; }
 
     public int RequiredCount { get; }
 

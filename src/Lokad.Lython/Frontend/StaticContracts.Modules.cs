@@ -8,7 +8,7 @@ internal static partial class StaticContracts
     private static readonly Dictionary<string, BuiltinModuleSurface> ModuleSurfaces = new(StringComparer.Ordinal)
     {
         ["__future__"] = Members("annotations"),
-        ["builtins"] = BuiltinModuleMembers(),
+        ["builtins"] = new BuiltinModuleSurface(ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"])),
         ["sys"] = Members(
             "argv",
             "stdin",
@@ -667,8 +667,6 @@ internal static partial class StaticContracts
     private static BuiltinModuleSurface Members(params string[] names)
         => new(names);
 
-    private static BuiltinModuleSurface BuiltinModuleMembers()
-        => new(ExecutionState.BuiltinNames.Concat(["__debug__", "__name__", "False", "None", "True"]));
 
     private sealed class BuiltinModuleSurface
     {

@@ -92,4 +92,32 @@ public sealed class LythonRunOptions
 
     /// <summary>Gets the CLR projection-memory limit override.</summary>
     public LythonByteLimit? MaxProjectionMemoryBytes { get; init; }
+
+    /// <summary>
+    /// Copies every option while replacing the cancellation token. This is the
+    /// single copy site for cancellation merging (R32): add future options here
+    /// rather than duplicating the list at call sites.
+    /// </summary>
+    internal LythonRunOptions WithCancellation(CancellationToken cancellationToken)
+        => new()
+        {
+            Globals = Globals,
+            Args = Args,
+            Environment = Environment,
+            SourcePath = SourcePath,
+            CancellationToken = cancellationToken,
+            DisableDefaultLimits = DisableDefaultLimits,
+            DisableLocalModuleImports = DisableLocalModuleImports,
+            AllowedLocalModules = AllowedLocalModules,
+            MaxExecutionSteps = MaxExecutionSteps,
+            MaxRecursionDepth = MaxRecursionDepth,
+            MaxHostCalls = MaxHostCalls,
+            MaxCollectionSize = MaxCollectionSize,
+            MaxStringLength = MaxStringLength,
+            MaxHostReadBytes = MaxHostReadBytes,
+            MaxStandardOutputBytes = MaxStandardOutputBytes,
+            MaxStandardErrorBytes = MaxStandardErrorBytes,
+            MaxExecutionMemoryBytes = MaxExecutionMemoryBytes,
+            MaxProjectionMemoryBytes = MaxProjectionMemoryBytes,
+        };
 }

@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext.TextFileHandle handle => handle.Read(),
                 HostTextInputHandle handle => handle.ReadAll(span),
                 GzipFileHandle handle => handle.ReadRemainingTextForLexer(span),
-                _ => throw UnsupportedLexerStream(span),
+                _ => throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span),
             };
             context.ObserveString(text, span);
             return new LexerSource(text.AsString(), instream, infile);
@@ -189,11 +189,6 @@ internal sealed partial class LythonRuntime
             return ReadExplicitLexerSource(instream, infile, context, span);
         }
 
-        private static LythonRuntimeException UnsupportedLexerStream(LythonSourceSpan span)
-            => new(
-                "TypeError",
-                "shlex.shlex input must be a string or a supported readable text handle.",
-                span);
 
         private sealed record LexerOptions(object Instream, object Infile, bool Posix, string PunctuationChars);
 

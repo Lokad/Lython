@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
     private static LythonSubprocessTextEncoding ParseSubprocessEncoding(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
     {
         var value = arguments.Encoding;
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return LythonSubprocessTextEncoding.Utf8;
         }
@@ -171,7 +171,7 @@ internal sealed partial class LythonRuntime
     private static LythonSubprocessTextErrorMode ParseSubprocessErrors(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
     {
         var value = arguments.Errors;
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return LythonSubprocessTextErrorMode.Strict;
         }
@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         IReadOnlyDictionary<string, string> defaultEnvironment)
     {
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return new Dictionary<string, string>(defaultEnvironment, StringComparer.Ordinal);
         }
@@ -231,7 +231,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return PathOps.RequireContainedPath(PathOps.Normalize(context.Host.Cwd), span);
         }
@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
 
     private static LythonSubprocessStreamMode ParseSubprocessInputMode(object value, string owner, LythonSourceSpan span)
     {
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return LythonSubprocessStreamMode.Inherit;
         }
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
 
     private static LythonSubprocessStreamMode ParseSubprocessOutputMode(object value, string owner, string parameterName, LythonSourceSpan span)
     {
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return LythonSubprocessStreamMode.Inherit;
         }
@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
 
     private static bool ParseSubprocessOptionalBool(object value, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
     {
-        if (value is PyNone or null)
+        if (value is PyNone)
         {
             return defaultValue;
         }

@@ -104,6 +104,27 @@ internal static partial class PyDecimalOps
 
                 throw new LythonRuntimeException("TypeError", "Decimal(...) expects a decimal-compatible string, tuple, or number.", span);
         }
+
+        static bool IsUnsupportedSpecialValue(string text)
+        {
+            var normalized = text.TrimStart('+', '-');
+            return normalized.Equals("nan", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("snan", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("inf", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("infinity", StringComparison.OrdinalIgnoreCase);
+        }
+
+        static int ParseExponent(string text)
+        {
+            var exponentMarker = text.IndexOfAny(['e', 'E']);
+            var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
+            var explicitExponent = exponentMarker < 0
+                ? 0
+                : int.Parse(text[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            var decimalPoint = mantissa.IndexOf('.');
+            var fractionalDigits = decimalPoint < 0 ? 0 : mantissa.Length - decimalPoint - 1;
+            return checked(explicitExponent - fractionalDigits);
+        }
     }
 
     public static PyDecimalTuple CreateTuple(object signValue, object digitsValue, object exponentValue, LythonSourceSpan span)
@@ -129,7 +150,7 @@ internal static partial class PyDecimalOps
         var exponent = tuple.Exponent;
         if (exponent < -28 || exponent > 28 || exponent < int.MinValue || exponent > int.MaxValue)
         {
-            throw new LythonRuntimeException("InvalidOperation", "DecimalTuple exponent is outside Lython's 28-digit fixed-precision scale.", span);
+            throw PyDecimalOps.InvalidOperation("DecimalTuple exponent is outside Lython's 28-digit fixed-precision scale.", span);
         }
 
         var builder = new StringBuilder();
@@ -162,25 +183,10 @@ internal static partial class PyDecimalOps
 
         return decimal.TryParse(builder.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
             ? new PyDecimal(parsed, (int)exponent)
-            : throw new LythonRuntimeException("InvalidOperation", "DecimalTuple is outside Lython's fixed-precision Decimal range.", span);
+            : throw PyDecimalOps.InvalidOperation("DecimalTuple is outside Lython's fixed-precision Decimal range.", span);
     }
 
-    private static int ParseExponent(string text)
-    {
-        var exponentMarker = text.IndexOfAny(['e', 'E']);
-        var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
-        var explicitExponent = exponentMarker < 0
-            ? 0
-            : int.Parse(text[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-        var decimalPoint = mantissa.IndexOf('.');
-        var fractionalDigits = decimalPoint < 0 ? 0 : mantissa.Length - decimalPoint - 1;
-        return checked(explicitExponent - fractionalDigits);
-    }
 
-    private static PyDecimalContext? ExpectContextOrNone(object value, LythonSourceSpan span)
-        => value is PyNone
-            ? null
-            : value as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal method context argument expects a Context or None.", span);
 
     private static int ExpectInt(object value, string message, LythonSourceSpan span)
     {
@@ -263,12 +269,4 @@ internal static partial class PyDecimalOps
         return left.Count.CompareTo(right.Count);
     }
 
-    private static bool IsUnsupportedSpecialValue(string text)
-    {
-        var normalized = text.TrimStart('+', '-');
-        return normalized.Equals("nan", StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals("snan", StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals("inf", StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals("infinity", StringComparison.OrdinalIgnoreCase);
-    }
 }

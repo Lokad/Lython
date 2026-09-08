@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
 {
     private static object Float(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length > 1)
         {
             throw new LythonRuntimeException("TypeError", "float([value]) expects at most one argument.", span);
@@ -54,19 +53,19 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
-    }
 
-    private static double ParsePythonFloatText(string text)
-    {
-        var normalized = text.Trim().Replace("_", string.Empty, StringComparison.Ordinal);
-        return normalized.ToLowerInvariant() switch
+        static double ParsePythonFloatText(string text)
         {
-            "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
-            "-inf" or "-infinity" => double.NegativeInfinity,
-            "nan" or "+nan" => double.NaN,
-            "-nan" => -double.NaN,
-            _ => double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture),
-        };
+            var normalized = text.Trim().Replace("_", string.Empty, StringComparison.Ordinal);
+            return normalized.ToLowerInvariant() switch
+            {
+                "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
+                "-inf" or "-infinity" => double.NegativeInfinity,
+                "nan" or "+nan" => double.NaN,
+                "-nan" => -double.NaN,
+                _ => double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture),
+            };
+        }
     }
 
     private static object Bytes(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -345,19 +344,5 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static byte ToByte(object value, LythonSourceSpan span)
-    {
-        if (!PyNumberOps.TryAsInteger(value, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", "bytes(iterable) expects integers between 0 and 255.", span);
-        }
-
-        if (integer < byte.MinValue || integer > byte.MaxValue)
-        {
-            throw new LythonRuntimeException("ValueError", "bytes(iterable) expects integers between 0 and 255.", span);
-        }
-
-        return (byte)integer;
-    }
 
 }

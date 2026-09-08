@@ -245,7 +245,6 @@ internal sealed partial class LythonRuntime
 
     private static object Bool(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length > 1)
         {
             throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
@@ -256,7 +255,6 @@ internal sealed partial class LythonRuntime
 
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length > 2)
         {
             throw new LythonRuntimeException("TypeError", "int([x[, base]]) expects at most two arguments.", span);
@@ -338,7 +336,6 @@ internal sealed partial class LythonRuntime
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is < 2 or > 3)
         {
             throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects two or three arguments.", span);
@@ -461,7 +458,6 @@ internal sealed partial class LythonRuntime
 
     private static object Callable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "callable(object) expects one argument.", span);

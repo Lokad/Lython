@@ -183,6 +183,23 @@ internal sealed partial class LythonRuntime
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
+
+        static string? GetEnvironmentMappingValue(object mapping, string key, LythonSourceSpan span)
+        {
+            if (mapping is PyEnvironmentMapping environment)
+            {
+                return environment.TryGetString(key, out var value) ? value : null;
+            }
+
+            if (mapping is PyDict dict)
+            {
+                return dict.TryGetValue(PyString.FromString(key), out var value)
+                    ? GetEnvironmentValue(value, "os.get_exec_path", span)
+                    : null;
+            }
+
+            throw new LythonRuntimeException("TypeError", "os.get_exec_path(env) expects a mapping or None.", span);
+        }
     }
 
     private static object OsStat(object[] arguments, LythonSourceSpan span, ExecutionContext context)

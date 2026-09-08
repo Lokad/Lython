@@ -83,7 +83,6 @@ internal sealed partial class LythonRuntime
 
     private static object Tuple(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             return PyTuple.Empty;
@@ -101,7 +100,6 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> TupleAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             return PyTuple.Empty;
@@ -120,7 +118,6 @@ internal sealed partial class LythonRuntime
 
     private static object Dict(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             return new PyDict(context.MemoryGovernor, span);
@@ -733,10 +730,6 @@ internal sealed partial class LythonRuntime
                 names.AddRange(SetDirNames);
                 return names;
 
-            case BigInteger or int or double or bool:
-                names.Add("__class__");
-                return names;
-
             case BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name):
                 names.AddRange(BuiltinTypeMemberNames);
                 return names;
@@ -748,10 +741,6 @@ internal sealed partial class LythonRuntime
 
     private static readonly string[] BuiltinTypeMemberNames =
     [
-        "__base__",
-        "__bases__",
-        "__class__",
-        "__mro__",
         "__name__",
         "__qualname__"
     ];

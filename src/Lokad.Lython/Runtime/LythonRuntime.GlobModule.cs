@@ -94,7 +94,6 @@ internal sealed partial class LythonRuntime
 
     private static object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "glob.escape(pathname) expects one path-like argument.", span);
@@ -569,24 +568,25 @@ internal sealed partial class LythonRuntime
 
         builder.Append('$');
         return builder.ToString();
-    }
 
-    private static List<string> SplitGlobPattern(string pattern, string separators)
-    {
-        var segments = new List<string>();
-        var start = 0;
-        for (var i = 0; i < pattern.Length; i++)
+        static List<string> SplitGlobPattern(string pattern, string separators)
         {
-            if (separators.IndexOf(pattern[i]) >= 0)
+            var segments = new List<string>();
+            var start = 0;
+            for (var i = 0; i < pattern.Length; i++)
             {
-                segments.Add(pattern[start..i]);
-                start = i + 1;
+                if (separators.IndexOf(pattern[i]) >= 0)
+                {
+                    segments.Add(pattern[start..i]);
+                    start = i + 1;
+                }
             }
-        }
 
-        segments.Add(pattern[start..]);
-        return segments;
+            segments.Add(pattern[start..]);
+            return segments;
+        }
     }
+
 
     private static void AppendGlobSegmentRegex(StringBuilder builder, string segment, bool includeHidden, string separators)
     {

@@ -172,7 +172,7 @@ internal sealed partial class LythonRuntime
                     ? new PyList([], context.MemoryGovernor, span)
                     : DefaultForAction(action, context, span);
             object[]? choices = keyword.TryGetValue("choices", out var choicesValue)
-                ? [.. ToSequence(choicesValue, span)]
+                ? [.. ToSequence(choicesValue, span, context)]
                 : null;
             var converter = keyword.TryGetValue("type", out var typeValue) ? ValidateConverter(typeValue, span) : null;
             var constValue = (action == ArgumentAction.StoreConst || nargs.Kind == ArgumentNargsKind.Optional) && keyword.TryGetValue("const", out var constant)

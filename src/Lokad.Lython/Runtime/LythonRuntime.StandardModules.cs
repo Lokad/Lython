@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                 "executable" => PyString.FromString("lython"),
                 "path" => new PyList([PyString.FromString(ContainedImportBaseDirectory(_context))], _context.MemoryGovernor),
                 "modules" => GetModules(),
-                "builtin_module_names" => CreateBuiltinModuleNames(_context),
+                "builtin_module_names" => new PyTuple(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString).ToArray(), _context.MemoryGovernor),
                 "stdlib_module_names" => new PySet(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString), _context.MemoryGovernor),
                 "exit" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExit, Exit),
                 "getdefaultencoding" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
@@ -199,13 +199,6 @@ internal sealed partial class LythonRuntime
         private static string ContainedImportBaseDirectory(ExecutionContext context)
             => context.SourcePath is null ? context.Host.Cwd : PathOps.Parent(context.SourcePath);
 
-        private static PyTuple CreateBuiltinModuleNames(ExecutionContext context)
-            => new(
-                EnumerateDiscoverableBuiltinModuleNames(context)
-                    .Order(StringComparer.Ordinal)
-                    .Select(PyString.FromString)
-                    .ToArray(),
-                context.MemoryGovernor);
 
         private static PyDict CreateModulesSnapshot(ExecutionContext context)
         {

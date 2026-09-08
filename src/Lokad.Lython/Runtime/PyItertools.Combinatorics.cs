@@ -533,23 +533,24 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         _done = true;
         value = PyNone.Instance;
         return false;
+
+        static void RotateLeft(int[] values, int start)
+        {
+            if (start >= values.Length - 1)
+            {
+                return;
+            }
+
+            var first = values[start];
+            for (var i = start; i < values.Length - 1; i++)
+            {
+                values[i] = values[i + 1];
+            }
+
+            values[^1] = first;
+        }
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.permutations object>");
 
-    private static void RotateLeft(int[] values, int start)
-    {
-        if (start >= values.Length - 1)
-        {
-            return;
-        }
-
-        var first = values[start];
-        for (var i = start; i < values.Length - 1; i++)
-        {
-            values[i] = values[i + 1];
-        }
-
-        values[^1] = first;
-    }
 }

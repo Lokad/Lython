@@ -255,14 +255,14 @@ internal sealed partial class LythonRuntime
         }
         private static string JoinUnknownArguments(IEnumerable<string> unknown)
             => string.Join(" ", unknown);
-        private static List<string> ToStringList(object value, string message, LythonSourceSpan span)
+        private static List<string> ToStringList(object value, string message, LythonSourceSpan span, ExecutionContext context)
         {
             if (PyStringOps.TryAsString(value, out _))
             {
                 throw new LythonRuntimeException("TypeError", message, span);
             }
             var result = new List<string>();
-            foreach (var item in ToSequence(value, span))
+            foreach (var item in ToSequence(value, span, context))
             {
                 if (!PyStringOps.TryAsString(item, out var text))
                 {

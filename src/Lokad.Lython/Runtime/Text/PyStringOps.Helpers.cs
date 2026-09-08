@@ -226,9 +226,18 @@ internal static partial class PyStringOps
             return defaultValue;
         }
 
-        if (bound is not BigInteger integer)
+        BigInteger integer;
+        if (bound is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (bound is not BigInteger big)
         {
             throw new InvalidOperationException("slice bounds must be integers or None");
+        }
+        else
+        {
+            integer = big;
         }
 
         if (integer < int.MinValue)

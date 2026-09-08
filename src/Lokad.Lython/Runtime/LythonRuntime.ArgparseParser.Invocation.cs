@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
             }
             var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)
                 ? context.State.Args.Select(static item => item.AsString()).ToList()
-                : ToStringList(argsValue, $"{methodName}(args) expects an iterable of strings.", span);
+                : ToStringList(argsValue, $"{methodName}(args) expects an iterable of strings.", span, context);
             var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)
                 ? null
                 : namespaceValue as ArgparseNamespaceObject ??

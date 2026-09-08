@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
 
     private static object ResolveExecutableName(string name, LythonSourceSpan span, ExecutionContext context)
     {
-        for (var current = context; current is not null; current = current.Parent)
+        for (var current = context; current is not null; current = current.ParentContext)
         {
             if (current.CurrentExecutableFrame is not null &&
                 current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))

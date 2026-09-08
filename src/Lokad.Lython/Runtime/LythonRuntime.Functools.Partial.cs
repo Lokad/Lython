@@ -328,8 +328,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.update_wrapper(wrapper, wrapped) expects a mutable callable wrapper and a wrapped object.", span);
             }
 
-            var assigned = ReadWrapperMemberNames(parsed.Assigned, "assigned", span);
-            var updated = ReadWrapperMemberNames(parsed.Updated, "updated", span);
+            var assigned = ReadWrapperMemberNames(parsed.Assigned, "assigned", span, context);
+            var updated = ReadWrapperMemberNames(parsed.Updated, "updated", span, context);
             ApplyUpdateWrapper(mutableWrapper, parsed.Wrapper, parsed.Wrapped, assigned, updated, context, span);
             return parsed.Wrapper;
         }
@@ -376,10 +376,10 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private static IReadOnlyList<string> ReadWrapperMemberNames(object value, string parameterName, LythonSourceSpan span)
+    private static IReadOnlyList<string> ReadWrapperMemberNames(object value, string parameterName, LythonSourceSpan span, ExecutionContext context)
     {
         var result = new List<string>();
-        foreach (var item in ToSequence(value, span))
+        foreach (var item in ToSequence(value, span, context))
         {
             if (!PyStringOps.TryAsString(item, out var name))
             {

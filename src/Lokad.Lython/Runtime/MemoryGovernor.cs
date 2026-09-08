@@ -65,6 +65,12 @@ internal sealed class MemoryGovernor
     public TemporaryMemoryReservation ReserveTemporary(long bytes, LythonSourceSpan? span)
         => new(this, bytes, span);
 
+    /// <summary>
+    /// Moves reserved bytes to committed ownership, capping at what is reserved.
+    /// The cap is deliberate tolerance: independent release paths cannot drive
+    /// accounting negative, but callers must still pair every reserve with a
+    /// matching commit or release.
+    /// </summary>
     public void Commit(long bytes)
     {
         if (bytes <= 0)
@@ -82,6 +88,10 @@ internal sealed class MemoryGovernor
         }
     }
 
+    /// <summary>
+    /// Returns committed bytes, flooring at zero for the same defensive reason
+    /// as <see cref="Commit"/>: over-release is absorbed, never an exception.
+    /// </summary>
     public void Release(long bytes)
     {
         if (bytes <= 0)

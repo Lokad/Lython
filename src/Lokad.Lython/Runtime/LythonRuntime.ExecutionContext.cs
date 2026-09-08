@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
                 var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
                 foreach (var name in scopeFacts.NonlocalNames)
                 {
-                    for (var current = parent; current is not null && current.Parent is not null; current = current.Parent)
+                    for (var current = parent; current is not null && current.ParentContext is not null; current = current.ParentContext)
                     {
                         if (current.ScopeFacts.LocalNames.Contains(name))
                         {
@@ -136,8 +136,6 @@ internal sealed partial class LythonRuntime
         public ExecutionState State => Services.State;
 
         public ILythonHost Host => Services.Host;
-
-        public ExecutionContext? Parent => ParentContext;
 
         public ExecutionContext? ParentContext { get; }
 

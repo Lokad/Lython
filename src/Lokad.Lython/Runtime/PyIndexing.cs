@@ -71,9 +71,18 @@ internal static class PyIndexing
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)
     {
-        if (index is not BigInteger integer)
+        BigInteger integer;
+        if (index is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (index is not BigInteger big)
         {
             throw RuntimeErrors.Type("Indices must be integers.", span);
+        }
+        else
+        {
+            integer = big;
         }
 
         if (integer < int.MinValue || integer > int.MaxValue)
@@ -140,6 +149,7 @@ internal static class PyIndexing
         {
             null => null,
             BigInteger integer => integer,
+            bool flag => flag ? BigInteger.One : BigInteger.Zero,
             _ => throw RuntimeErrors.Type("Slice indices must be integers or None.", span)
         };
     }

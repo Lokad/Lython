@@ -86,6 +86,18 @@ internal sealed partial class LythonRuntime
         private static object CreateParser(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var options = new ArgparseParserOptions(DefaultProgramName(context));
+
+            static string DefaultProgramName(ExecutionContext context)
+            {
+                if (context.SourcePath is not null)
+                {
+                    var normalized = context.SourcePath.Replace('\\', '/');
+                    var slash = normalized.LastIndexOf('/');
+                    return slash >= 0 ? normalized[(slash + 1)..] : normalized;
+                }
+
+                return "lython";
+            }
             var positionalIndex = 0;
             var assigned = new HashSet<string>(StringComparer.Ordinal);
 
@@ -188,17 +200,6 @@ internal sealed partial class LythonRuntime
             return new ArgparseFileTypeObject(operation, encodingMode, errorsMode);
         }
 
-        private static string DefaultProgramName(ExecutionContext context)
-        {
-            if (context.SourcePath is not null)
-            {
-                var normalized = context.SourcePath.Replace('\\', '/');
-                var slash = normalized.LastIndexOf('/');
-                return slash >= 0 ? normalized[(slash + 1)..] : normalized;
-            }
-
-            return "lython";
-        }
 
         private sealed class ArgumentParserFactory : ICallable
         {

@@ -189,16 +189,16 @@ internal sealed partial class LythonRuntime
         {
             var leftValue = EvaluateExpression(binary.Left, context);
             return IsTruthy(leftValue, context, binary.Left.Span)
-                ? leftValue.RequireNotNull()
-                : EvaluateExpression(binary.Right, context).RequireNotNull();
+                ? leftValue
+                : EvaluateExpression(binary.Right, context);
         }
 
         if (binary.Operator == BinaryOperatorSyntax.And)
         {
             var leftValue = EvaluateExpression(binary.Left, context);
             return !IsTruthy(leftValue, context, binary.Left.Span)
-                ? leftValue.RequireNotNull()
-                : EvaluateExpression(binary.Right, context).RequireNotNull();
+                ? leftValue
+                : EvaluateExpression(binary.Right, context);
         }
 
         var left = EvaluateExpression(binary.Left, context);

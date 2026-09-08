@@ -14,7 +14,7 @@ public sealed class ExecutionContextArchitectureSubsystemTests
         Assert.Same(parent.Services, child.Services);
         Assert.NotSame(parent.Frame, child.Frame);
         Assert.Same(parent.Frame, child.Frame.Parent);
-        Assert.Same(parent, child.Parent);
+        Assert.Same(parent, child.ParentContext);
     }
 }
 

@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
                 RequirePositiveStdev("inv_cdf()", span);
                 if (p <= 0.0 || p >= 1.0)
                 {
-                    throw new LythonRuntimeException("StatisticsError", "p must be in the range 0.0 < p < 1.0", span);
+                    throw StatisticsError("p must be in the range 0.0 < p < 1.0", span);
                 }
 
                 return Mean + Stdev * InverseStandardNormal(p);
@@ -403,7 +403,7 @@ internal sealed partial class LythonRuntime
             {
                 if (Stdev <= 0.0)
                 {
-                    throw new LythonRuntimeException("StatisticsError", $"{owner} not defined when sigma is zero", span);
+                    throw StatisticsError($"{owner} not defined when sigma is zero", span);
                 }
             }
 

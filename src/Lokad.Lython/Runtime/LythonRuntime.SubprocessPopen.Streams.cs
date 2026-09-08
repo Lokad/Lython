@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                 "encoding" => PyString.FromString(_owner.EncodingName),
                 "errors" => PyString.FromString(_owner.ErrorsName),
                 "write" => BoundCallable.Create((arguments, span, _) => WriteBound(arguments, span), "Popen.stdin.write", ["s"]),
-                "writelines" => BoundCallable.Create((arguments, span, _) => WriteLines(arguments, span), "Popen.stdin.writelines", ["lines"]),
+                "writelines" => BoundCallable.Create((arguments, span, context) => WriteLines(arguments, span, context), "Popen.stdin.writelines", ["lines"]),
                 "flush" => BoundCallable.Create((arguments, span, _) => Flush(arguments, span), "Popen.stdin.flush", []),
                 "close" => BoundCallable.Create((arguments, span, _) => CloseBound(arguments, span), "Popen.stdin.close", []),
                 "writable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: true), "Popen.stdin.writable", []),
@@ -106,14 +106,14 @@ internal sealed partial class LythonRuntime
             return Write(text, span);
         }
 
-        private object WriteLines(object[] arguments, LythonSourceSpan span)
+        private object WriteLines(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "Popen.stdin.writelines(lines) expects one iterable.", span);
             }
 
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 if (!PyStringOps.TryAsString(item, out var text))
                 {

@@ -163,7 +163,6 @@ internal sealed partial class LythonRuntime
 
     private static object Islice(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var positional = PositionalOnly(arguments, "itertools.islice", span);
         if (positional.Length is < 2 or > 4)
         {
@@ -246,7 +245,6 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var positionalCount = 0;
         var repeat = 1;
         for (var i = 0; i < arguments.Length; i++)
@@ -294,7 +292,6 @@ internal sealed partial class LythonRuntime
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var iterables = new object[arguments.Length];
         var iterableCount = 0;
         object fillValue = PyNone.Instance;

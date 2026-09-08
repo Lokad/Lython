@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dump(obj, fp, *, ...) expects an object and writable text file handle.", span);
             }
 
-            var text = SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dump, span), context, span);
+            var text = SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dump, span, context), context, span);
             _ = file.Write(text);
             return PyNone.Instance;
         }
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
             }
 
-            return SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dumps, span), context, span);
+            return SerializeJsonText(arguments[0], ParseJsonDumpOptions(arguments, JsonDumpCallForm.Dumps, span, context), context, span);
         }
     }
 }

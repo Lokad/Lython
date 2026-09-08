@@ -198,9 +198,9 @@ internal sealed partial class LythonRuntime
             return alpha * Math.Pow(-Math.Log(NonZeroRandom(state)), 1.0 / beta);
         }
 
-        private static ulong ParseState(object value, LythonSourceSpan span)
+        private static ulong ParseState(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            var items = MaterializeSequence(value, span);
+            var items = MaterializeSequence(value, span, context);
             if (items.Count != 2 ||
                 !PyStringOps.TryAsString(items[0], out var tag) ||
                 tag.AsString() != StateTag ||

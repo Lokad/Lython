@@ -143,27 +143,9 @@ public sealed class LythonCompiledScript
                 effectiveCancellation = linkedCancellation.Token;
             }
 
-            return new LythonRunOptions
-            {
-                Globals = options?.Globals,
-                Args = options?.Args,
-                Environment = options?.Environment,
-                SourcePath = options?.SourcePath,
-                CancellationToken = effectiveCancellation,
-                DisableDefaultLimits = options?.DisableDefaultLimits ?? false,
-                DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false,
-                AllowedLocalModules = options?.AllowedLocalModules,
-                MaxExecutionSteps = options?.MaxExecutionSteps,
-                MaxRecursionDepth = options?.MaxRecursionDepth,
-                MaxHostCalls = options?.MaxHostCalls,
-                MaxCollectionSize = options?.MaxCollectionSize,
-                MaxStringLength = options?.MaxStringLength,
-                MaxHostReadBytes = options?.MaxHostReadBytes,
-                MaxStandardOutputBytes = options?.MaxStandardOutputBytes,
-                MaxStandardErrorBytes = options?.MaxStandardErrorBytes,
-                MaxExecutionMemoryBytes = options?.MaxExecutionMemoryBytes,
-                MaxProjectionMemoryBytes = options?.MaxProjectionMemoryBytes
-            };
+            return options is null
+                ? new LythonRunOptions { CancellationToken = effectiveCancellation }
+                : options.WithCancellation(effectiveCancellation);
         }
 
         async Task<LythonExecutionResult> RunAndDisposeAsync(

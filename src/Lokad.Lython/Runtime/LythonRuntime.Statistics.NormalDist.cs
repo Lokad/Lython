@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                 : 1.0;
             if (stdev < 0.0)
             {
-                throw new LythonRuntimeException("StatisticsError", "sigma must be non-negative", span);
+                throw StatisticsError("sigma must be non-negative", span);
             }
 
             _ = context;
@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
             var values = GetNumericValuesFromData(arguments, "statistics.NormalDist.from_samples", span, context);
             if (values.Count < 2)
             {
-                throw new LythonRuntimeException("StatisticsError", "statistics.NormalDist.from_samples(data) requires at least two data points.", span);
+                throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
             }
 
             var mean = values.Average();
@@ -113,8 +113,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private static object BoxStatisticalFloat(double value)
-            => IsWholeInteger(value) ? new BigInteger(value) : value;
 
         private static bool IsWholeInteger(double value)
             => double.IsFinite(value) && Math.Abs(value % 1.0) < 1e-12;

@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecutionBudget(span);
                 if (!_isSupported)
                 {
-                    throw UnsupportedWindowsPath(span);
+                    throw new LythonRuntimeException("NotImplementedError", $"{Name} is not supported by Lython's normalized POSIX-like path model.", span);
                 }
 
                 var values = new object[arguments.Length];
@@ -143,11 +143,6 @@ internal sealed partial class LythonRuntime
 
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-            private LythonRuntimeException UnsupportedWindowsPath(LythonSourceSpan span)
-                => new(
-                    "NotImplementedError",
-                    $"{Name} is not supported by Lython's normalized POSIX-like path model.",
-                    span);
         }
     }
 }

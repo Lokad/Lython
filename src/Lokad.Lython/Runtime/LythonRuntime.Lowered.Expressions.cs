@@ -414,13 +414,8 @@ internal sealed partial class LythonRuntime
             call.Call.Target.Span,
             call.Span,
             context,
-            () => ExpandLoweredCallArguments(call.Arguments, context));
+            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression));
     }
-
-    private static CallArgumentValue[] ExpandLoweredCallArguments(
-        IReadOnlyList<LoweredCallArgument> arguments,
-        ExecutionContext context)
-        => CallExpansion.ExpandLoweredArguments(arguments, context, EvaluateLoweredExpression);
 
     private static void InvokeInitSubclass(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)
     {

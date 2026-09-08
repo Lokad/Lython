@@ -221,7 +221,7 @@ internal sealed partial class Parser
         {
             for (var i = 0; i < text.Length; i++)
             {
-                if (!IsStringPrefixLetter(text[i]))
+                if (text[i] is not ('r' or 'R' or 'b' or 'B' or 'f' or 'F' or 'u' or 'U'))
                 {
                     construct = string.Empty;
                     return false;
@@ -236,8 +236,6 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool IsStringPrefixLetter(char c)
-        => c is 'r' or 'R' or 'b' or 'B' or 'f' or 'F' or 'u' or 'U';
 
     private static bool IsBytesStringPrefix(string text)
     {

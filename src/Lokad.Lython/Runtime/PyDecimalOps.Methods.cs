@@ -131,6 +131,11 @@ internal static partial class PyDecimalOps
         var rounding = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
         var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? defaultContext : defaultContext;
         return new PyDecimal(Round(value.Value, 0, rounding, context, span), 0);
+
+        static PyDecimalContext? ExpectContextOrNone(object value, LythonSourceSpan span)
+            => value is PyNone
+                ? null
+                : value as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal method context argument expects a Context or None.", span);
     }
 
     public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span)
@@ -219,7 +224,7 @@ internal static partial class PyDecimalOps
 
         if (other == 0m)
         {
-            throw new LythonRuntimeException("DivisionByZero", "decimal remainder_near by zero", span);
+            throw DivisionByZero("decimal remainder_near by zero", span);
         }
 
         var quotient = decimal.Round(value.Value / other, 0, MidpointRounding.ToEven);

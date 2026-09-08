@@ -61,14 +61,13 @@ internal sealed partial class LythonRuntime
 
         private object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2 || !PyStringOps.TryAsString(arguments[1], out var pattern))
             {
                 throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable and a string pattern.", span);
             }
 
             var result = new PyList([], context.MemoryGovernor, span);
-            foreach (var item in ToSequence(arguments[0], span))
+            foreach (var item in ToSequence(arguments[0], span, context))
             {
                 if (!PyStringOps.TryAsString(item, out var name))
                 {

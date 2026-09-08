@@ -87,6 +87,20 @@ public static class LythonSubprocessCompletion
             checked((long)capturedStdout.Length + capturedStderr.Length),
             request.OutputLimit);
         return new LythonSubprocessResult(returnCode, capturedStdout, capturedStderr);
+
+        static ReadOnlyMemory<byte> Combine(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
+        {
+            if (first.Length == 0)
+                return second;
+
+            if (second.Length == 0)
+                return first;
+
+            var combined = new byte[first.Length + second.Length];
+            first.CopyTo(combined);
+            second.CopyTo(combined.AsMemory(first.Length));
+            return combined;
+        }
     }
 
     private static async ValueTask<ReadOnlyMemory<byte>> RouteBufferedOutputAsync(
@@ -130,17 +144,4 @@ public static class LythonSubprocessCompletion
         }
     }
 
-    private static ReadOnlyMemory<byte> Combine(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
-    {
-        if (first.Length == 0)
-            return second;
-
-        if (second.Length == 0)
-            return first;
-
-        var combined = new byte[first.Length + second.Length];
-        first.CopyTo(combined);
-        second.CopyTo(combined.AsMemory(first.Length));
-        return combined;
-    }
 }

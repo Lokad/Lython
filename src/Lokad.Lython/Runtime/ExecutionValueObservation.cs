@@ -105,7 +105,7 @@ internal sealed class ExecutionValueObservation
         };
     }
 
-    internal static long EstimateApproximateValueBytes(object value)
+    private static long EstimateApproximateValueBytes(object value)
     {
         if (!IsReferenceTracked(value))
         {
