@@ -456,6 +456,7 @@ internal static partial class StaticContracts
         ["json"] = Members("load", "loads", "dump", "dumps", "JSONDecodeError", "JSONEncoder", "JSONDecoder"),
         ["csv"] = Members("reader", "writer", "DictReader", "DictWriter", "Error", "QUOTE_MINIMAL", "QUOTE_ALL", "QUOTE_NONE", "QUOTE_NONNUMERIC"),
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),
+        ["zipfile"] = Members("BadZipFile", "BadZipfile", "LargeZipFile", "error", "ZIP_STORED", "ZIP_DEFLATED", "ZIP_BZIP2", "ZIP_LZMA", "is_zipfile", "ZipInfo", "ZipFile"),
     };
 
     private static readonly FrozenDictionary<ModuleMemberName, string> ModuleMemberModules =

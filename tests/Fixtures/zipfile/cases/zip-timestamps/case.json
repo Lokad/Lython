@@ -1,0 +1,122 @@
+{
+  "id": "zip-timestamps",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "timestamps",
+    "metadata",
+    "focused"
+  ],
+  "notes": "DOS date bounds and odd-second truncation (57 becomes 56).",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "min-dos.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 4,
+      "compressSize": 4,
+      "crc32Hex": "b4a5af5a",
+      "dateTime": [
+        1980,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": ""
+    },
+    {
+      "name": "y2k.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 4,
+      "compressSize": 4,
+      "crc32Hex": "76405a86",
+      "dateTime": [
+        1999,
+        12,
+        31,
+        23,
+        59,
+        58
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 45,
+      "extraHex": ""
+    },
+    {
+      "name": "odd-second.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 4,
+      "compressSize": 4,
+      "crc32Hex": "ec9b1c08",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 86,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "min-dos.txt",
+    "y2k.txt",
+    "odd-second.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "6d696e0a",
+      "error": null
+    },
+    {
+      "hex": "79326b0a",
+      "error": null
+    },
+    {
+      "hex": "6f64640a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "min-dos.txt",
+      "hex": "6d696e0a",
+      "error": null
+    },
+    {
+      "name": "y2k.txt",
+      "hex": "79326b0a",
+      "error": null
+    },
+    {
+      "name": "odd-second.txt",
+      "hex": "6f64640a",
+      "error": null
+    }
+  ]
+}

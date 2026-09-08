@@ -593,7 +593,7 @@ internal sealed partial class LythonRuntime
         throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
     }
 
-    private sealed class GzipBufferWriteStream : Stream
+    internal sealed class GzipBufferWriteStream : Stream
     {
         private readonly GovernedByteBuilder _output;
 

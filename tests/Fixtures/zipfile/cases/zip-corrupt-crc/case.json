@@ -1,0 +1,64 @@
+{
+  "id": "zip-corrupt-crc",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "corrupt",
+    "integrity",
+    "focused"
+  ],
+  "notes": "One flipped content byte; testzip names the member, read raises.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "data.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 16,
+      "compressSize": 16,
+      "crc32Hex": "68c4f033",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "data.txt"
+  ],
+  "testzip": "data.txt",
+  "readByIndex": [
+    {
+      "hex": null,
+      "error": {
+        "type": "BadZipFile",
+        "message": "Bad CRC-32 for file 'data.txt'"
+      }
+    }
+  ],
+  "readByName": [
+    {
+      "name": "data.txt",
+      "hex": null,
+      "error": {
+        "type": "BadZipFile",
+        "message": "Bad CRC-32 for file 'data.txt'"
+      }
+    }
+  ]
+}

@@ -114,6 +114,10 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature GzipDecompress = LythonCallableSignature.Create("gzip.decompress", ["data"]);
     public static readonly LythonCallableSignature GzipOpen = LythonCallableSignature.Create("gzip.open", ["filename", "mode", "compresslevel", "encoding", "errors", "newline"], requiredCount: 1);
 
+    public static readonly LythonCallableSignature ZipFile = LythonCallableSignature.Create("zipfile.ZipFile", ["file", "mode", "compression", "allowZip64", "compresslevel", "strict_timestamps", "metadata_encoding"], requiredCount: 1);
+    public static readonly LythonCallableSignature ZipIsZipFile = LythonCallableSignature.Create("zipfile.is_zipfile", ["filename"], requiredCount: 1);
+    public static readonly LythonCallableSignature ZipInfo = LythonCallableSignature.Create("zipfile.ZipInfo", ["filename", "date_time"], requiredCount: 0);
+
     public static readonly LythonCallableSignature ShlexQuote = LythonCallableSignature.Create("shlex.quote", ["s"]);
     public static readonly LythonCallableSignature ShlexJoin = LythonCallableSignature.Create("shlex.join", ["split_command"]);
     public static readonly LythonCallableSignature ShlexSplit = LythonCallableSignature.Create("shlex.split", ["s", "comments", "posix"], requiredCount: 1);

@@ -1,0 +1,90 @@
+{
+  "id": "zip-utf8-names",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "utf8",
+    "metadata",
+    "focused"
+  ],
+  "notes": "UTF-8 flag names; CPython round-trips them exactly.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "\u65e5\u672c\u8a9e.txt",
+      "utf8Flag": true,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 11,
+      "compressSize": 11,
+      "crc32Hex": "5887362c",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": ""
+    },
+    {
+      "name": "emoji-\ud83c\udf89.txt",
+      "utf8Flag": true,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 6,
+      "compressSize": 6,
+      "crc32Hex": "925471a5",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 54,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "\u65e5\u672c\u8a9e.txt",
+    "emoji-\ud83c\udf89.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "75746638206e616d65730a",
+      "error": null
+    },
+    {
+      "hex": "70617274790a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "\u65e5\u672c\u8a9e.txt",
+      "hex": "75746638206e616d65730a",
+      "error": null
+    },
+    {
+      "name": "emoji-\ud83c\udf89.txt",
+      "hex": "70617274790a",
+      "error": null
+    }
+  ]
+}

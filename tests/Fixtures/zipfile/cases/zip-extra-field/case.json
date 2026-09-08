@@ -1,0 +1,58 @@
+{
+  "id": "zip-extra-field",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "extra",
+    "metadata",
+    "focused"
+  ],
+  "notes": "Unknown extra field 0xCAFE must be preserved and ignored.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "extra.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 6,
+      "compressSize": 6,
+      "crc32Hex": "0f42ac49",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": "feca04006d657461"
+    }
+  ],
+  "namelist": [
+    "extra.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "65787472610a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "extra.txt",
+      "hex": "65787472610a",
+      "error": null
+    }
+  ]
+}

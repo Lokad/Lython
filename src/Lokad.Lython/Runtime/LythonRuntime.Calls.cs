@@ -182,6 +182,8 @@ internal sealed partial class LythonRuntime
             [ModuleException("subprocess", "SubprocessError")] = [BuiltinException("Exception")],
             [ModuleException("subprocess", "CalledProcessError")] = [ModuleException("subprocess", "SubprocessError")],
             [ModuleException("subprocess", "TimeoutExpired")] = [ModuleException("subprocess", "SubprocessError")],
+            [ModuleException("zipfile", "BadZipFile")] = [BuiltinException("Exception")],
+            [ModuleException("zipfile", "LargeZipFile")] = [BuiltinException("Exception")],
         };
 
     private static PythonExceptionIdentity BuiltinException(string typeName)

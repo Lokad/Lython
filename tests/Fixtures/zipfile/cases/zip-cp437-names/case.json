@@ -1,0 +1,90 @@
+{
+  "id": "zip-cp437-names",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "cp437",
+    "metadata",
+    "focused"
+  ],
+  "notes": "Raw CP437 name bytes without the UTF-8 flag; CPython decodes as CP437.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "caf\u00e9.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 9,
+      "compressSize": 9,
+      "crc32Hex": "6711d0da",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 0,
+      "headerOffset": 0,
+      "extraHex": ""
+    },
+    {
+      "name": "plain.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 6,
+      "compressSize": 6,
+      "crc32Hex": "3915f9d0",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 0,
+      "headerOffset": 47,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "caf\u00e9.txt",
+    "plain.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "6370343337206f6b0a",
+      "error": null
+    },
+    {
+      "hex": "706c61696e0a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "caf\u00e9.txt",
+      "hex": "6370343337206f6b0a",
+      "error": null
+    },
+    {
+      "name": "plain.txt",
+      "hex": "706c61696e0a",
+      "error": null
+    }
+  ]
+}

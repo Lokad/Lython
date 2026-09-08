@@ -1,0 +1,213 @@
+using System.IO.Compression;
+using System.Numerics;
+using System.Text;
+using Lokad.Lython.Tests.Harness;
+
+namespace Lokad.Lython.PublicApi.Tests;
+
+/// <summary>
+/// Z2 read surface: <c>is_zipfile</c>, <c>ZipInfo</c>, and read-only
+/// <c>ZipFile</c> (listing, lookup, governed reads, validation, lifecycle)
+/// against the trusted fixture catalog in both execution modes.
+/// </summary>
+public sealed class ZipReadSurfaceTests
+{
+    private static readonly string CasesRoot = FindCasesRoot();
+
+    private static string FindCasesRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "tests", "Fixtures", "zipfile", "cases");
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate tests/Fixtures/zipfile/cases from " + AppContext.BaseDirectory);
+    }
+
+    private static MockLythonHost SeedFixture(string caseId, string path = "/t.zip")
+    {
+        var host = new MockLythonHost();
+        host.SeedWorkbook(path, File.ReadAllBytes(Path.Combine(CasesRoot, caseId, "input.zip")));
+        return host;
+    }
+
+    private static byte[] BuildRawArchive(params (byte[] Name, ushort Flags, ushort Method, byte[] Content)[] records)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            var offsets = new List<long>();
+            foreach (var (name, flags, method, content) in records)
+            {
+                offsets.Add(stream.Position);
+                var crc = ComputeCrc32(content);
+                writer.Write(0x04034B50u);
+                writer.Write((ushort)20);
+                writer.Write(flags);
+                writer.Write(method);
+                writer.Write((ushort)0x5C64);
+                writer.Write((ushort)0xD938);
+                writer.Write(crc);
+                writer.Write((uint)content.Length);
+                writer.Write((uint)content.Length);
+                writer.Write((ushort)name.Length);
+                writer.Write((ushort)0);
+                writer.Write(name);
+                writer.Write(content);
+            }
+
+            var directoryOffset = stream.Position;
+            for (var i = 0; i < records.Length; i++)
+            {
+                var (name, flags, method, content) = records[i];
+                var crc = ComputeCrc32(content);
+                writer.Write(0x02014B50u);
+                writer.Write((ushort)20);
+                writer.Write((ushort)20);
+                writer.Write(flags);
+                writer.Write(method);
+                writer.Write((ushort)0x5C64);
+                writer.Write((ushort)0xD938);
+                writer.Write(crc);
+                writer.Write((uint)content.Length);
+                writer.Write((uint)content.Length);
+                writer.Write((ushort)name.Length);
+                writer.Write((ushort)0);
+                writer.Write((ushort)0);
+                writer.Write((ushort)0);
+                writer.Write((ushort)0);
+                writer.Write(0u);
+                writer.Write((uint)offsets[i]);
+                writer.Write(name);
+            }
+
+            var directorySize = stream.Position - directoryOffset;
+            writer.Write(0x06054B50u);
+            writer.Write((ushort)0);
+            writer.Write((ushort)0);
+            writer.Write((ushort)records.Length);
+            writer.Write((ushort)records.Length);
+            writer.Write((uint)directorySize);
+            writer.Write((uint)directoryOffset);
+            writer.Write((ushort)0);
+        }
+
+        return stream.ToArray();
+    }
+
+    private static uint ComputeCrc32(byte[] data)
+    {
+        var crc = 0xFFFFFFFFu;
+        foreach (var value in data)
+        {
+            crc ^= value;
+            for (var bit = 0; bit < 8; bit++)
+            {
+                crc = (crc & 1) == 1 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
+            }
+        }
+
+        return ~crc;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    [Fact]
+    public async Task WriterHonorsRunCancellation()
+    {
+        var host = new DelayedLythonHost("/");
+        using var cancellation = new CancellationTokenSource();
+        var task = new LythonEngine().RunAsync(
+            """
+import zipfile
+with zipfile.ZipFile("/out.zip", "w") as archive:
+    handle = archive.open("a.txt", "w")
+    for i in range(200):
+        handle.write(b"Z")
+    handle.close()
+return 1
+""",
+            host,
+            cancellationToken: cancellation.Token);
+        cancellation.Cancel();
+        var result = await task;
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+
+
+
+
+
+
+
+    private static MockLythonHost SeedMany(params (string CaseId, string Path)[] seeds)
+    {
+        var host = new MockLythonHost();
+        foreach (var (caseId, path) in seeds)
+        {
+            host.SeedWorkbook(path, File.ReadAllBytes(Path.Combine(CasesRoot, caseId, "input.zip")));
+        }
+
+        return host;
+    }
+
+    private static byte[] HexToBytes(string hex)
+    {
+        var result = new byte[hex.Length / 2];
+        for (var i = 0; i < result.Length; i++)
+        {
+            result[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+
+        return result;
+    }
+}
+

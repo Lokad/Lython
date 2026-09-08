@@ -1,0 +1,90 @@
+{
+  "id": "zip-comments",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "comments",
+    "metadata",
+    "focused"
+  ],
+  "notes": "Archive and per-file comments mix UTF-8 bytes with a raw 0xFF byte.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "61726368697665205a3020c3a920ff20726177",
+  "entries": [
+    {
+      "name": "a.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 2,
+      "compressSize": 2,
+      "crc32Hex": "ddeaa107",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "7065722d66696c6520c3a9",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": ""
+    },
+    {
+      "name": "b.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 2,
+      "compressSize": 2,
+      "crc32Hex": "f6c7f2c4",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "72617720ff2062797465",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 37,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "a.txt",
+    "b.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "610a",
+      "error": null
+    },
+    {
+      "hex": "620a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "a.txt",
+      "hex": "610a",
+      "error": null
+    },
+    {
+      "name": "b.txt",
+      "hex": "620a",
+      "error": null
+    }
+  ]
+}

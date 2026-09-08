@@ -1,0 +1,21 @@
+{
+  "id": "zip-empty",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "empty",
+    "focused"
+  ],
+  "notes": "Valid end-of-central-directory with zero entries.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [],
+  "namelist": [],
+  "testzip": null,
+  "readByIndex": [],
+  "readByName": []
+}

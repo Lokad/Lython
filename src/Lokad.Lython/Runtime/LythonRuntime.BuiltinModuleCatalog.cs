@@ -74,6 +74,7 @@ internal sealed partial class LythonRuntime
                 ["json"] = Module(static _ => JsonModule.Instance),
                 ["csv"] = Module(static _ => CsvModule.Instance),
                 ["subprocess"] = Module(static _ => SubprocessModule.Instance, BuiltinModuleCapability.Subprocess),
+                ["zipfile"] = Module(static _ => ZipModule.Instance),
             }.ToFrozenDictionary(StringComparer.Ordinal);
 
         private static readonly string[] KnownNames = Registrations.Keys.Order(StringComparer.Ordinal).ToArray();

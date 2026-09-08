@@ -1,0 +1,58 @@
+{
+  "id": "zip-zip64",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "zip64",
+    "metadata",
+    "focused"
+  ],
+  "notes": "Small archive with true ZIP64 end structures (EOCD64 plus locator).",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "tiny.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 13,
+      "compressSize": 13,
+      "crc32Hex": "3f5d38d9",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 0,
+      "headerOffset": 0,
+      "extraHex": "010018000d000000000000000d000000000000000000000000000000"
+    }
+  ],
+  "namelist": [
+    "tiny.txt"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "7a6970363420666f726365640a",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "tiny.txt",
+      "hex": "7a6970363420666f726365640a",
+      "error": null
+    }
+  ]
+}

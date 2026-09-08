@@ -1,0 +1,89 @@
+{
+  "id": "zip-stored",
+  "kind": "zip",
+  "input": "input.zip",
+  "producer": "CPython 3.13.2",
+  "producerZlib": "1.3.1",
+  "createdByTool": "tools/NewZipFixtures.py",
+  "tags": [
+    "stored",
+    "focused"
+  ],
+  "notes": "Two STORED members with fixed timestamps.",
+  "isZipfile": true,
+  "openError": null,
+  "archiveCommentHex": "",
+  "entries": [
+    {
+      "name": "hello.txt",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 13,
+      "compressSize": 13,
+      "crc32Hex": "38f3db17",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 0,
+      "extraHex": ""
+    },
+    {
+      "name": "data/blob.bin",
+      "utf8Flag": false,
+      "descriptorFlag": false,
+      "compressType": 0,
+      "fileSize": 256,
+      "compressSize": 256,
+      "crc32Hex": "85525d0a",
+      "dateTime": [
+        2024,
+        2,
+        29,
+        12,
+        34,
+        56
+      ],
+      "commentHex": "",
+      "createSystem": 0,
+      "externalAttr": 25165824,
+      "headerOffset": 52,
+      "extraHex": ""
+    }
+  ],
+  "namelist": [
+    "hello.txt",
+    "data/blob.bin"
+  ],
+  "testzip": null,
+  "readByIndex": [
+    {
+      "hex": "68656c6c6f2073746f7265640a",
+      "error": null
+    },
+    {
+      "hex": "0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe",
+      "error": null
+    }
+  ],
+  "readByName": [
+    {
+      "name": "hello.txt",
+      "hex": "68656c6c6f2073746f7265640a",
+      "error": null
+    },
+    {
+      "name": "data/blob.bin",
+      "hex": "0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe0001fffe",
+      "error": null
+    }
+  ]
+}

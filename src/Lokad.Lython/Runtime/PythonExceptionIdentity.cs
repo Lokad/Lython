@@ -21,6 +21,8 @@ internal readonly record struct PythonExceptionIdentity(string ModuleName, strin
             "JSONDecodeError" => Module("json", typeName),
             "StatisticsError" => Module("statistics", typeName),
             "CalledProcessError" or "SubprocessError" or "TimeoutExpired" => Module("subprocess", typeName),
+            "BadZipFile" or "BadZipfile" => Module("zipfile", "BadZipFile"),
+            "LargeZipFile" => Module("zipfile", typeName),
             "CellCoordinatesException" or
             "IllegalCharacterError" or
             "InvalidFileException" or
