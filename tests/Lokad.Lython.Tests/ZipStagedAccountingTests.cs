@@ -226,4 +226,38 @@ public sealed class ZipStagedAccountingTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(10), false }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+
+    [Fact]
+    public async Task RetainedClosedWritersStayCharged()
+    {
+        // R36 public repro: 20 closed DEFLATED writers holding 32KiB each
+        // cannot hide 640KiB of staged storage inside a 512KiB budget.
+        const string script = "import zipfile\npayload = bytes(32768)\nhandles = []\nwith zipfile.ZipFile(\"/out.zip\", \"w\", compression=zipfile.ZIP_DEFLATED) as archive:\n    for i in range(20):\n        handle = archive.open(\"x\" + str(i), \"w\")\n        handle.write(payload)\n        handle.close()\n        handles.append(handle)\nreturn len(handles)\n";
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+
+    [Fact]
+    public async Task ManyTinyMembersEnforceMemoryBudget()
+    {
+        // R36: thousands of individually tiny members still accumulate
+        // staged storage against the memory budget.
+        const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\", \"w\") as archive:\n    for i in range(2000):\n        archive.writestr(\"f\" + str(i), b\"\")\nreturn 1\n";
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
 }
