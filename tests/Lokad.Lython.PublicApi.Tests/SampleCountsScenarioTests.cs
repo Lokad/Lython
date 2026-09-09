@@ -118,4 +118,58 @@ public sealed class SampleCountsScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task PopulationDrainStaysCharged()
+    {
+        // MG15: sample and choices populations drain through the shared
+        // governed sequence. 100,000 refs used to materialize free; now the
+        // backing alone exceeds the budget.
+        var script = new LythonEngine().Compile(
+            """
+            import random
+            return random.sample(range(100000), 5)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task SamplingKeepsValueAndErrorContracts()
+    {
+        // MG15: governing populations and weights must preserve sample shapes
+        // and the oversized/mismatched error contracts.
+        var script = new LythonEngine().Compile(
+            """
+            import random
+            results = []
+            results.append(len(random.sample([1, 2, 3, 4], 2)))
+            results.append(len(random.choices([10, 20, 30], k=2)))
+            try:
+                random.sample([1, 2], 5)
+            except ValueError:
+                results.append("toobig")
+            try:
+                random.sample([1, 2], 1, counts=[1])
+            except ValueError:
+                results.append("parity")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { new BigInteger(2), new BigInteger(2), "toobig", "parity" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }

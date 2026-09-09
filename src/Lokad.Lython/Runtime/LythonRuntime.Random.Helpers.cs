@@ -75,7 +75,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"{owner} expects one weight per population item.", span);
             }
 
+            // The converted copy coexists with the drained values, so it
+            // commits its own exact backing like the median converted copy.
             var result = new double[values.Count];
+            if (values.Count > 0)
+            {
+                context.MemoryGovernor.Reserve(32L + (8L * values.Count), span);
+                context.MemoryGovernor.Commit(32L + (8L * values.Count));
+            }
             for (var i = 0; i < values.Count; i++)
             {
                 var weight = RuntimeArgumentValidation.ExpectReal(values[i], owner, span);
@@ -255,10 +262,52 @@ internal sealed partial class LythonRuntime
 
         private static List<object> MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            var result = new List<object>();
+            // Populations and weights are caller-lifetime scratch with no
+            // governed adopter, so backing commits durably (statistics-drain
+            // shape): sized inputs pay exactly once up front, lazy ones pay
+            // each doubling. Payloads stay owned elsewhere.
+            var governor = context.MemoryGovernor;
+            var sizedCount = value switch
+            {
+                object[] array => array.Length,
+                PyList list => list.Count,
+                PyTuple tuple => tuple.Count,
+                ICollection<object> collection => collection.Count,
+                _ => (int?)null,
+            };
+            var result = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
+            var chargedCapacity = result.Capacity;
+            if (chargedCapacity > 0)
+            {
+                governor.Reserve(8L * chargedCapacity, span);
+                governor.Commit(8L * chargedCapacity);
+            }
+
             foreach (var item in ToSequence(value, span, context))
             {
+                if (result.Count == result.Capacity)
+                {
+                    var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = (int)predicted;
+                }
+
                 result.Add(RuntimeValue(item));
+                if (result.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (result.Capacity - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = result.Capacity;
+                }
+
+                context.ObserveCollectionCount(result.Count, span);
+                if ((result.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             return result;
