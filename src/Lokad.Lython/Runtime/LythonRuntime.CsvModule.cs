@@ -552,7 +552,10 @@ internal sealed partial class LythonRuntime
 
             private void FinishField()
             {
-                _row.Add(PyString.FromString(_field.ToString()));
+                // Decoded fields are retained in every row, so own their
+                // payload here; row and table backing is charged separately
+                // by the governed row containers.
+                _row.Add(PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span));
                 _field.Clear();
                 _fieldStarted = false;
                 _afterQuote = false;
