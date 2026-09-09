@@ -2,15 +2,19 @@
 
 ZIP archive scaling benchmarks live in `ZipArchiveBenchmarks.cs` (200 mixed
 STORED/DEFLATED entries; append adds 20). Release results below (full
-BenchmarkDotNet runs, .NET 10, 2026-09-07); re-record here on release runs
-before changing archive hot paths.
+BenchmarkDotNet runs, .NET 10, Windows 10.0.26200 x64, 2026-09-09, 9d5b827);
+re-record here on release runs before changing archive hot paths.
 
 | Benchmark | Mean | Allocated/op |
 | --- | --- | --- |
-| Write 200 mixed STORED/DEFLATED entries | 1,024.19 us | 657.81 KB |
-| List and read 200 mixed entries | 409.47 us | 2178.97 KB |
-| Append 20 entries to a 200-entry archive | 88.16 us | 553.59 KB |
-| Extract 200 mixed entries | 371.98 us | 2617.53 KB |
+| Write 200 mixed STORED/DEFLATED entries | 1,143.4 us | 669.56 KB |
+| List and read 200 mixed entries | 294.1 us | 493.23 KB |
+| Append 20 entries to a 200-entry archive | 120.9 us | 554.71 KB |
+| Extract 200 mixed entries | 311.8 us | 918.43 KB |
+
+Notes: 6 outliers removed on the write case, 3 on list/read, 6 on append,
+1 on extract. Read and extract allocate far less than the 2026-09-07 figures
+after the staged-storage and reader accounting work.
 
 Gzip flush scaling (`GzipFlushBenchmarks.cs`, fixed 100 KiB payload) confirms
 the R16 recompression concern with confidence intervals:
@@ -49,39 +53,39 @@ runs before changing async sequencing or materialization buffers.
 
 Entry-count scaling (ZipEntryScalingBenchmarks.cs, fixed 256-byte DEFLATED
 entries at 50/200/800 entries; the read benchmark returns total expanded
-bytes: 12,800 / 51,200 / 204,800) from a full BenchmarkDotNet run on the
-same machine shape:
+bytes: 12,800 / 51,200 / 204,800) from a full BenchmarkDotNet run (.NET 10,
+Windows 10.0.26200 x64, 2026-09-09, 9d5b827):
 
 | Benchmark | EntryCount | Mean | Allocated/op |
 | --- | --- | --- | --- |
-| Write N fixed-size DEFLATED entries | 50 | 283.0 us | 213.21 KB |
-| Read N entries and sum expanded bytes | 50 | 103.1 us | 578.59 KB |
-| Write N fixed-size DEFLATED entries | 200 | 1,098.6 us | 773.09 KB |
-| Read N entries and sum expanded bytes | 200 | 452.8 us | 2235.17 KB |
-| Write N fixed-size DEFLATED entries | 800 | 4,545.1 us | 3028.91 KB |
-| Read N entries and sum expanded bytes | 800 | 2,678.1 us | 8861.31 KB |
+| Write N fixed-size DEFLATED entries | 50 | 270.47 us | 215.41 KB |
+| Read N entries and sum expanded bytes | 50 | 94.16 us | 150.42 KB |
+| Write N fixed-size DEFLATED entries | 200 | 1,051.85 us | 778.73 KB |
+| Read N entries and sum expanded bytes | 200 | 339.70 us | 519.7 KB |
+| Write N fixed-size DEFLATED entries | 800 | 4,314.14 us | 3049.51 KB |
+| Read N entries and sum expanded bytes | 800 | 1,485.98 us | 1995.56 KB |
 
-Notes: 2 outliers removed on one read case, 1 on one write case. Write
-cost scales near-linearly with entry count. Read allocation scales about
-linearly too (3.96x for 4x entries from 200 to 800); only read runtime
-grows faster than entry count there (about 5.9x). Re-record on release
+Notes: 16/1/1 outliers removed on the 50/200/800 write cases, 2/0/1 on the
+read cases (same order). Write cost and allocation scale near-linearly with
+entry count (3.9x/3.6x time/allocation from 50 to 200; 4.1x/3.9x from 200
+to 800). Read allocation scales about linearly too (3.5x/3.8x); only read
+runtime grows faster than entry count (3.6x then 4.4x). Re-record on release
 runs before changing archive write/read hot paths.
 
 Compression ratio (CompressionRatioBenchmarks.cs, single 1,000,000-byte
 DEFLATED entry; compressible is a repeated byte, incompressible is
-seeded PRNG bytes) from a full BenchmarkDotNet run on the same machine
-shape:
+seeded PRNG bytes) from a full BenchmarkDotNet run (.NET 10, Windows
+10.0.26200 x64, 2026-09-09, 9d5b827):
 
 | Benchmark | Mean | Allocated/op |
 | --- | --- | --- |
-| Write 1MB maximally compressible entry | 6.347 ms | 3.86 MB |
-| Write 1MB incompressible entry | 18.675 ms | 9.66 MB |
+| Write 1MB maximally compressible entry | 5.211 ms | 3.86 MB |
+| Write 1MB incompressible entry | 18.911 ms | 9.66 MB |
 
-Notes: 1 outlier removed on the compressible case. Incompressible input
-costs about 3x time and 2.5x allocation versus fully compressible input.
-All write figures above predate the corrected DEFLATE serializer and staged
-storage accounting; re-record them on release runs before validating
-write-path changes against these numbers.
+Notes: 3 outliers removed on the compressible case, 2 on the incompressible
+case. Incompressible input costs about 3.6x time and 2.5x allocation versus
+fully compressible input; identical allocation to the 2026-09-07 figures shows
+the corrected serializer did not move compression costs.
 
 Member lookup scaling (`ZipLookupBenchmarks.cs`; each op opens the archive
 and runs 200 indexed getinfo/read pairs against the last entry) from a full
