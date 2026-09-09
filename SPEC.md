@@ -1634,6 +1634,23 @@ Such approximations must lean on the safe side: it is acceptable to reject scrip
 
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
+#### 14.6.1 Combined Peak Envelope
+
+The execution budget and the projection budget are independent governors: the
+execution budget owns guest-retained runtime state, while the projection budget
+owns the returned value plus the standard-output and standard-error captures
+built after execution. Every completed or failed result therefore reports both
+high-water marks (`PeakExecutionMemoryBytes` and `PeakProjectionMemoryBytes`),
+so an embedding host can reconcile enforcement decisions with sampled heap or
+process peaks instead of inferring them from failures alone.
+
+The combined peak envelope is approximately the sum of both budgets plus
+transient host-side allocations: host file reads, subprocess payloads, and
+dependency working state live outside either governor, as do ordinary CLR,
+host, and dependency internals. Approximations must lean toward over-counting,
+so runs fail earlier rather than later, but the runtime must not promise a
+process-RSS ceiling from inside the same managed process.
+
 ---
 
 ## 15. Text Model

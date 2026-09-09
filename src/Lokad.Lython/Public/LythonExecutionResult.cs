@@ -87,6 +87,22 @@ public sealed class LythonExecutionResult
     /// <summary>Gets diagnostics produced before execution.</summary>
     public IReadOnlyList<LythonDiagnostic> Diagnostics { get; }
 
+    /// <summary>
+    /// Gets the peak accounted execution memory in bytes observed during the run.
+    /// This is the high-water mark of the conservative execution governor, not a
+    /// managed-heap or process-RSS measurement; see the SPEC memory-budget section
+    /// for the combined peak envelope.
+    /// </summary>
+    public long PeakExecutionMemoryBytes { get; internal set; }
+
+    /// <summary>
+    /// Gets the peak accounted projection memory in bytes observed while building
+    /// this result. Projection accounting only grows, so this equals the total
+    /// projected return value and captured output charged against the projection
+    /// budget.
+    /// </summary>
+    public long PeakProjectionMemoryBytes { get; internal set; }
+
     /// <summary>Gets projected Python exception details for a runtime failure.</summary>
     public LythonRuntimeFailure? Failure => (State as RuntimeFailedState)?.Failure;
 

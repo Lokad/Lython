@@ -260,20 +260,20 @@ internal sealed partial class LythonRuntime
         {
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
-            return LythonExecutionResult.Succeeded(
+            return AttachPeaks(LythonExecutionResult.Succeeded(
                 returnValue: NormalizePublicValue(returnValue, budget),
                 standardOutput: standardOutput,
                 standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>());
+                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
         }
         catch (ProjectionException ex)
         {
-            return LythonExecutionResult.RuntimeFailed(
+            return AttachPeaks(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
                 failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath),
                 standardOutput: standardOutput,
                 standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>());
+                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
         }
     }
 
@@ -286,20 +286,20 @@ internal sealed partial class LythonRuntime
         {
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
-            return LythonExecutionResult.Succeeded(
+            return AttachPeaks(LythonExecutionResult.Succeeded(
                 returnValue: NormalizePublicValue(signal.Value, budget),
                 standardOutput: standardOutput,
                 standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>());
+                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
         }
         catch (ProjectionException ex)
         {
-            return LythonExecutionResult.RuntimeFailed(
+            return AttachPeaks(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
                 failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath),
                 standardOutput: standardOutput,
                 standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>());
+                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
         }
     }
 
@@ -321,12 +321,15 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        return LythonExecutionResult.RuntimeFailed(
-            exitCode: GetExitCode(exception),
-            failure: RuntimeFailureProjection.ToPublicFailure(exception),
-            standardOutput: standardOutput,
-            standardError: standardError,
-            diagnostics: Array.Empty<LythonDiagnostic>());
+        return AttachPeaks(
+            LythonExecutionResult.RuntimeFailed(
+                exitCode: GetExitCode(exception),
+                failure: RuntimeFailureProjection.ToPublicFailure(exception),
+                standardOutput: standardOutput,
+                standardError: standardError,
+                diagnostics: Array.Empty<LythonDiagnostic>()),
+            context,
+            budget);
 
         static int GetExitCode(LythonRuntimeException exception)
         {
@@ -347,6 +350,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static LythonExecutionResult AttachPeaks(LythonExecutionResult result, ExecutionContext? context, ProjectionBudget? budget)
+    {
+        result.PeakExecutionMemoryBytes = context?.State.MemoryGovernor.PeakAccountedBytes ?? 0;
+        result.PeakProjectionMemoryBytes = budget?.CurrentBytes ?? 0;
+        return result;
+    }
+
     private static string CaptureStandardOutput(ExecutionContext? context, ProjectionBudget? budget)
     {
         if (context is null)
@@ -359,7 +369,12 @@ internal sealed partial class LythonRuntime
             var written = context.State.StandardOutput.WrittenSpan;
             // UTF-8 bytes upper-bound the decoded UTF-16 units, so reserve
             // before decoding; an overrun surfaces as ProjectionError above.
-            budget?.Reserve(32L + (2L * written.Length));
+            // Empty output stays free like other empty values.
+            if (written.Length > 0)
+            {
+                budget?.Reserve(32L + (2L * written.Length));
+            }
+
             return Encoding.UTF8.GetString(written);
         }
         catch (LythonRuntimeException)
@@ -378,7 +393,11 @@ internal sealed partial class LythonRuntime
         try
         {
             var written = context.State.StandardError.WrittenSpan;
-            budget?.Reserve(32L + (2L * written.Length));
+            if (written.Length > 0)
+            {
+                budget?.Reserve(32L + (2L * written.Length));
+            }
+
             return Encoding.UTF8.GetString(written);
         }
         catch (LythonRuntimeException)
