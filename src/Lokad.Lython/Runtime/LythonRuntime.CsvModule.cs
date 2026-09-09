@@ -84,23 +84,19 @@ internal sealed partial class LythonRuntime
                     ? null
                     : ToFieldNameList((PyList)records.Rows[0], span);
 
+            // Rows stay as parsed lists here; dictionaries are converted on
+            // demand by the reader, so early termination never pays for
+            // unconsumed rows.
             var firstDataRow = arguments.Length > 1 && arguments[1] is not PyNone ? 0 : 1;
-            var rows = new PyList([], context.MemoryGovernor, span);
-            if (fieldNames is not null)
-            {
-                for (var i = firstDataRow; i < records.Rows.Count; i++)
-                {
-                    rows.Add(CreateDictReaderRow(
-                        (PyList)records.Rows[i],
-                        fieldNames,
-                        RestKey(arguments, 2),
-                        RestValue(arguments, 3),
-                        context,
-                        span));
-                }
-            }
-
-            return new CsvDictReaderObject(rows, fieldNames, records.PhysicalLineCount, context.MemoryGovernor, span);
+            return new CsvDictReaderObject(
+                records.Rows,
+                fieldNames,
+                firstDataRow,
+                RestKey(arguments, 2),
+                RestValue(arguments, 3),
+                records.PhysicalLineCount,
+                context.MemoryGovernor,
+                span);
         }
 
         private object Writer(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -327,34 +323,6 @@ internal sealed partial class LythonRuntime
             }
 
             return text == "ignore" ? CsvExtrasAction.Ignore : CsvExtrasAction.Raise;
-        }
-
-        private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, ExecutionContext context, LythonSourceSpan span)
-        {
-            var dict = new PyDict(context.MemoryGovernor, span);
-            var count = Math.Min(row.Count, fieldNames.Length);
-            for (var i = 0; i < count; i++)
-            {
-                dict.SetItem(fieldNames[i], row[i]);
-            }
-
-            for (var i = count; i < fieldNames.Length; i++)
-            {
-                dict.SetItem(fieldNames[i], restValue);
-            }
-
-            if (row.Count > fieldNames.Length)
-            {
-                var extras = new object[row.Count - fieldNames.Length];
-                for (var i = fieldNames.Length; i < row.Count; i++)
-                {
-                    extras[i - fieldNames.Length] = row[i];
-                }
-
-                dict.SetItem(ValidateDictionaryKey(restKey, span, context.MemoryGovernor), new PyList(extras, context.MemoryGovernor, span));
-            }
-
-            return dict;
         }
 
         private static CsvReadResult ParseCsvRecords(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
