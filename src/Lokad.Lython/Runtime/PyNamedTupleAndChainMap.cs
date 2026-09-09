@@ -450,6 +450,19 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return defaultValue;
     }
 
+    // Merged views visit every key of every map beside the governed copy;
+    // reserve the transient list plus dedup-set peak before building.
+    internal long EstimateMergeScratchBytes()
+    {
+        var total = 0L;
+        foreach (var map in _maps)
+        {
+            total = checked(total + map.Count);
+        }
+
+        return checked(total * 64L);
+    }
+
     private IReadOnlyList<object> BuildMergedKeys()
     {
         var keys = new List<object>();
@@ -548,6 +561,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.keys() expects no arguments.", span);
             }
 
+            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
             return new PyList(_owner.BuildMergedKeys(), context.MemoryGovernor, span);
         }
     }
@@ -566,6 +580,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.values() expects no arguments.", span);
             }
 
+            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
             return new PyList(_owner.BuildMergedItems().Select(pair => pair.Value), context.MemoryGovernor, span);
         }
     }
@@ -584,6 +599,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.items() expects no arguments.", span);
             }
 
+            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
             return new PyList(
                 _owner.BuildMergedItems().Select(pair => PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span)),
                 context.MemoryGovernor,
