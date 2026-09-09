@@ -1,3 +1,4 @@
+using Lokad.Lython.Tests.Harness;
 using System.Numerics;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -52,5 +53,24 @@ public sealed class PyStringPrimitiveTests
         Assert.Equal(["β", "β", "β"], repeated.EnumerateRunes().Select(r => r.AsString()).ToArray());
         Assert.Equal(PyString.FromString("βββ"), repeated);
         Assert.Equal(repeated.GetHashCode(), PyString.FromString("βββ").GetHashCode());
+    }
+    [Fact]
+    public void RuneOffsetCacheIsChargedOnceAcrossAliases()
+    {
+        // MG06: the rune-offset table is per-string state shared by every
+        // alias. Indexing one alias commits it once; indexing another alias
+        // reuses it instead of charging again (ASCII results are cached
+        // singletons, so the table is the only charge here).
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var text = PyString.FromString("abé", context.MemoryGovernor, span);
+        var alias = text;
+
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Equal("a", text.Index(0).AsString());
+        Assert.Equal(32 + (4 * 4), context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal("b", alias.Index(1).AsString());
+        Assert.Equal(32 + (4 * 4), context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
 }

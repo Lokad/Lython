@@ -109,7 +109,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
-    internal static long EstimateApproximateBytes(int utf8Length) => 32L + utf8Length;
+    internal static long EstimateApproximateBytes(int utf8Length) => 128L + utf8Length;
 
     public bool IsTruthy() => Length != 0;
 

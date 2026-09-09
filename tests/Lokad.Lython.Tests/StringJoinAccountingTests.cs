@@ -32,7 +32,7 @@ public sealed class StringJoinAccountingTests
 
         Assert.Equal(string.Join(",", Enumerable.Repeat("abcdefghij", 100)), result.AsString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(32 + 1099, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(128 + 1099, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
         // The builder peaks above the retained charge and releases the
         // difference: with an ungoverned builder the peak would equal the
         // retained charge exactly (same idiom as SetConstructionAccounting).

@@ -24,8 +24,8 @@ public sealed class RendererGovernanceTests
 
         Assert.Equal("xyyz", text.AsString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(36, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
-        Assert.Equal(44, context.MemoryGovernor.PeakAccountedBytes - peakBefore);
+        Assert.Equal(128 + 4, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(8 + 132, context.MemoryGovernor.PeakAccountedBytes - peakBefore);
     }
     [Fact]
     public void OnlyGovernedJoinOverloadRemains()
