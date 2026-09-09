@@ -299,8 +299,15 @@ internal sealed partial class LythonRuntime
             var stat = context.HostStat(options.Path, span);
             if (stat is { Exists: true, IsFile: true })
             {
-                using var compressed = ReadGovernedHostBytes(options.Path, context, span);
-                return GzipFileHandle.ForWrite(options, compressed.Memory.ToArray(), context);
+                // Copy while charged, then release before the write handle takes its
+                // own charge, so the accounted peak covers one copy instead of two.
+                byte[] prefix;
+                using (var compressed = ReadGovernedHostBytes(options.Path, context, span))
+                {
+                    prefix = compressed.Memory.ToArray();
+                }
+
+                return GzipFileHandle.ForWrite(options, prefix, context);
             }
 
             return GzipFileHandle.ForWrite(options, [], context);
@@ -327,8 +334,15 @@ internal sealed partial class LythonRuntime
             var stat = await context.HostStatAsync(options.Path, span).ConfigureAwait(false);
             if (stat is { Exists: true, IsFile: true })
             {
-                using var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
-                return GzipFileHandle.ForWrite(options, compressed.Memory.ToArray(), context);
+                // Copy while charged, then release before the write handle takes its
+                // own charge, so the accounted peak covers one copy instead of two.
+                byte[] prefix;
+                using (var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false))
+                {
+                    prefix = compressed.Memory.ToArray();
+                }
+
+                return GzipFileHandle.ForWrite(options, prefix, context);
             }
 
             return GzipFileHandle.ForWrite(options, [], context);
