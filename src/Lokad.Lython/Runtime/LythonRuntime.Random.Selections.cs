@@ -198,19 +198,21 @@ internal sealed partial class LythonRuntime
 
             var population = MaterializePopulation(arguments[0], "random.sample", span, context);
             var count = ExpectNonNegativeInt(arguments[1], "random.sample(population, k) expects k to be a non-negative integer.", span);
-            var items = arguments.Length >= 3 && arguments[2] is not PyNone
-                ? ExpandPopulationCounts(population, arguments[2], span, context)
-                : population;
-            if (count > items.Count)
+            if (arguments.Length >= 3 && arguments[2] is not PyNone)
+            {
+                return SampleCountedPositions(population, arguments[2], count, state, span, context);
+            }
+
+            if (count > population.Count)
             {
                 throw new LythonRuntimeException("ValueError", "Sample larger than population or is negative.", span);
             }
 
-            ShuffleMaterialized(state, items);
+            ShuffleMaterialized(state, population);
             var result = new object[count];
             for (var i = 0; i < count; i++)
             {
-                result[i] = items[i];
+                result[i] = population[i];
             }
 
             return new PyList(result, context.MemoryGovernor, span);

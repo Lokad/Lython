@@ -104,26 +104,92 @@ internal sealed partial class LythonRuntime
             return values;
         }
 
-        private static List<object> ExpandPopulationCounts(IReadOnlyList<object> population, object countsValue, LythonSourceSpan span, ExecutionContext context)
+        private static object SampleCountedPositions(
+            List<object> population,
+            object countsValue,
+            int count,
+            PyRandomState state,
+            LythonSourceSpan span,
+            ExecutionContext context)
         {
-            var counts = MaterializeSequence(countsValue, span, context);
+            // Counted sampling without expanding: drain the counts once, map
+            // them to cumulative bounds, draw k distinct expanded positions
+            // with Floyd's algorithm (exactly k draws, O(k) state), and map
+            // each position back to its pool. Uniform over the expanded
+            // multiset like shuffling the expansion, but the live structures
+            // scale with pools plus picks instead of the expanded total.
+            var governor = context.MemoryGovernor;
+            var sizedCount = countsValue switch
+            {
+                object[] array => array.Length,
+                PyList list => list.Count,
+                PyTuple tuple => tuple.Count,
+                ICollection<object> collection => collection.Count,
+                _ => (int?)null,
+            };
+            if (sizedCount.HasValue && sizedCount.Value != population.Count)
+            {
+                throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
+            }
+
+            var counts = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
+            var chargedCapacity = counts.Capacity;
+            if (chargedCapacity > 0)
+            {
+                governor.Reserve(8L * chargedCapacity, span);
+                governor.Commit(8L * chargedCapacity);
+            }
+
+            foreach (var item in ToSequence(countsValue, span, context))
+            {
+                if (counts.Count == counts.Capacity)
+                {
+                    var predicted = counts.Capacity == 0 ? 4L : (long)counts.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = (int)predicted;
+                }
+
+                counts.Add(RuntimeValue(item));
+                if (counts.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (counts.Capacity - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = counts.Capacity;
+                }
+
+                context.ObserveCollectionCount(counts.Count, span);
+                if ((counts.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
             if (counts.Count != population.Count)
             {
                 throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
             }
 
-            var total = BigInteger.Zero;
-            var parsed = new int[counts.Count];
+            var cumulative = counts.Count == 0 ? [] : new long[counts.Count];
+            if (counts.Count > 0)
+            {
+                governor.Reserve(24L + (8L * counts.Count), span);
+                governor.Commit(24L + (8L * counts.Count));
+            }
+
+            var total = 0L;
             for (var i = 0; i < counts.Count; i++)
             {
-                var count = RuntimeArgumentValidation.ExpectInteger(counts[i], "random.sample(..., counts=...) expects integer counts.", span);
-                if (count < BigInteger.Zero || count > int.MaxValue)
+                var single = RuntimeArgumentValidation.ExpectInteger(counts[i], "random.sample(..., counts=...) expects integer counts.", span);
+                if (single < BigInteger.Zero || single > int.MaxValue)
                 {
                     throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects non-negative counts.", span);
                 }
 
-                parsed[i] = (int)count;
-                total += count;
+                total += (long)(int)single;
+                cumulative[i] = total;
             }
 
             if (total > int.MaxValue)
@@ -132,20 +198,59 @@ internal sealed partial class LythonRuntime
             }
 
             context.ObserveCollectionCount((int)total, span);
-            // The expanded table is transient scratch for shuffling, dropped once
-            // the sample is drawn: bound its peak (plus the counts scratch behind
-            // it) with a temporary reservation instead of accruing it.
-            using var expansion = context.MemoryGovernor.ReserveTemporary(16L * (long)total + 12L * counts.Count, span);
-            var expanded = new List<object>((int)total);
-            for (var i = 0; i < population.Count; i++)
+            if (count > total)
             {
-                for (var j = 0; j < parsed[i]; j++)
+                throw new LythonRuntimeException("ValueError", "Sample larger than population or is negative.", span);
+            }
+
+            var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
+            if (count > 0)
+            {
+                governor.Reserve(80L + (24L * count), span);
+                governor.Commit(80L + (24L * count));
+            }
+
+            var result = new object[count];
+            for (var drawn = 0; drawn < count; drawn++)
+            {
+                var resume = total - count + drawn;
+                var draw = (int)state.NextBelow((ulong)(resume + 1));
+                if (!selected.Add(draw))
                 {
-                    expanded.Add(population[i]);
+                    selected.Add((int)resume);
+                }
+
+                result[drawn] = population[MapCountedPosition(cumulative, draw)];
+                if (((drawn + 1) & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
                 }
             }
 
-            return expanded;
+            return new PyList(result, governor, span);
+        }
+
+        // Maps an expanded position to its pool: the first cumulative
+        // bound above it. Plateaus from zero counts resolve to the pool
+        // after them, matching the expanded layout.
+        private static int MapCountedPosition(long[] cumulative, long position)
+        {
+            var lo = 0;
+            var hi = cumulative.Length - 1;
+            while (lo < hi)
+            {
+                var mid = lo + ((hi - lo) >> 1);
+                if (cumulative[mid] > position)
+                {
+                    hi = mid;
+                }
+                else
+                {
+                    lo = mid + 1;
+                }
+            }
+
+            return lo;
         }
 
         private static List<object> MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
