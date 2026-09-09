@@ -339,9 +339,9 @@ public sealed class RuntimeStorageSubsystemTests
         dict.Clear();
         set.Clear();
 
-        // The cleared list retains its small backing array under charge;
-        // only the grown array charges are gone.
-        Assert.Equal(64 + (16 * 8), governor.CurrentCommittedBytes);
+        // The cleared list and dict retain their small backing arrays under
+        // charge; only the grown storage charges are gone.
+        Assert.Equal(2 * (64 + (16 * 8)), governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

@@ -20,7 +20,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = PyDictStorage.Create();
+        _items = PyDictStorage.Create(0, governor, allocationSpan);
     }
 
     public PyDict(PyDict other)
@@ -155,7 +155,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 _memoryGovernor.Release(released);
             }
 
-            _items = PyDictStorage.Create();
+            _items = PyDictStorage.Create(0, _memoryGovernor, _allocationSpan);
             return;
         }
 

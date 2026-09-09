@@ -45,7 +45,7 @@ internal static class PyDictStorage
         => Create(targetCount, governor, null);
 
     public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
-        => targetCount <= SmallCapacity ? new SmallPyDictStorage() : new MapPyDictStorage(targetCount, governor, span);
+        => targetCount <= SmallCapacity ? new SmallPyDictStorage(governor, span) : new MapPyDictStorage(targetCount, governor, span);
 
     public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items)
         => Create(items, null, null);
@@ -58,7 +58,7 @@ internal static class PyDictStorage
         var materialized = items as KeyValuePair<object, object>[] ?? items.ToArray();
         if (materialized.Length <= SmallCapacity)
         {
-            var small = new SmallPyDictStorage();
+            var small = new SmallPyDictStorage(governor, span);
             foreach (var pair in materialized)
             {
                 _ = small.SetItem(pair.Key, pair.Value);
@@ -89,13 +89,39 @@ internal static class PyDictStorage
             return storage;
         }
 
-        return new MapPyDictStorage(small, targetCount, governor, span);
+        var promoted = new MapPyDictStorage(small, targetCount, governor, span);
+        var released = small.ReleaseCommittedBytes();
+        if (released > 0)
+        {
+            governor?.Release(released);
+        }
+
+        return promoted;
     }
 }
 
 internal sealed class SmallPyDictStorage : IPyDictStorage
 {
     private readonly List<KeyValuePair<object, object>> _items = [];
+    private long _committedBytes;
+
+    // Backing charge at the established per-slot rate: the list object plus
+    // the eight-reference array it can grow without promotion.
+    private const long SmallBackingBytes = 64L + (16L * 8);
+
+    public SmallPyDictStorage()
+    {
+    }
+
+    public SmallPyDictStorage(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is not null)
+        {
+            governor.Reserve(SmallBackingBytes, span);
+            governor.Commit(SmallBackingBytes);
+            _committedBytes = SmallBackingBytes;
+        }
+    }
 
     public int Count => _items.Count;
 
@@ -204,7 +230,12 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
         return clone;
     }
 
-    public long ReleaseCommittedBytes() => 0;
+    public long ReleaseCommittedBytes()
+    {
+        var released = _committedBytes;
+        _committedBytes = 0;
+        return released;
+    }
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
     {
