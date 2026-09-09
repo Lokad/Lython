@@ -523,42 +523,42 @@ internal sealed partial class LythonRuntime
 
     private static object CreateComment(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        ChargeStyleValue(context, span);
         var text = ExpectString(arguments[0], "openpyxl.comments.Comment(text)", span);
         var author = ExpectString(arguments[1], "openpyxl.comments.Comment(author)", span);
+        ChargeStyleValue(context, span);
         return new OpenPyxlComment(text, author);
     }
 
     private static object CreateTable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var displayName = arguments.Length > 0 && arguments[0] is not PyNone
             ? ExpectString(arguments[0], "openpyxl.worksheet.table.Table(displayName)", span)
             : "Table1";
         var reference = arguments.Length > 1 && arguments[1] is not PyNone
             ? ExpectString(arguments[1], "openpyxl.worksheet.table.Table(ref)", span)
             : "A1";
+        ChargeStyleValue(context, span);
         return new OpenPyxlTable(displayName, reference);
     }
 
     private static object CreateTableStyleInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var name = arguments.Length > 0 && arguments[0] is not PyNone
             ? ExpectString(arguments[0], "openpyxl.worksheet.table.TableStyleInfo(name)", span)
             : "TableStyleMedium2";
-        return new OpenPyxlTableStyleInfo(
+        var tableStyle = new OpenPyxlTableStyleInfo(
             name,
             OptionalStyleBool(arguments, 1, false, "openpyxl.worksheet.table.TableStyleInfo.showFirstColumn", span),
             OptionalStyleBool(arguments, 2, false, "openpyxl.worksheet.table.TableStyleInfo.showLastColumn", span),
             OptionalStyleBool(arguments, 3, true, "openpyxl.worksheet.table.TableStyleInfo.showRowStripes", span),
             OptionalStyleBool(arguments, 4, false, "openpyxl.worksheet.table.TableStyleInfo.showColumnStripes", span));
+        ChargeStyleValue(context, span);
+        return tableStyle;
     }
 
     private static object CreateDataValidation(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        return new OpenPyxlDataValidation(
+        var validation = new OpenPyxlDataValidation(
             ParseDataValidationType(
                 OptionalNullableString(arguments, 0, "openpyxl.worksheet.datavalidation.DataValidation.type", span),
                 "openpyxl.worksheet.datavalidation.DataValidation.type",
@@ -576,6 +576,8 @@ internal sealed partial class LythonRuntime
             OptionalNullableString(arguments, 8, "openpyxl.worksheet.datavalidation.DataValidation.error", span),
             OptionalNullableString(arguments, 9, "openpyxl.worksheet.datavalidation.DataValidation.promptTitle", span),
             OptionalNullableString(arguments, 10, "openpyxl.worksheet.datavalidation.DataValidation.prompt", span));
+        ChargeStyleValue(context, span);
+        return validation;
     }
 
     private static string? OptionalNullableString(object[] arguments, int index, string owner, LythonSourceSpan span)

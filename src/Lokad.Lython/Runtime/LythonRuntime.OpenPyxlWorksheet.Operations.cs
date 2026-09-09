@@ -28,6 +28,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Table with name " + table.DisplayName + " already exists.", span);
             }
 
+            ReserveRegistrySlot();
             _tables[table.DisplayName] = table;
             return PyNone.Instance;
         }
@@ -54,6 +55,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Worksheet.add_data_validation(data_validation) expects openpyxl.worksheet.datavalidation.DataValidation.", span);
             }
 
+            ReserveRegistrySlot();
             AddDataValidation(validation);
             return PyNone.Instance;
         }

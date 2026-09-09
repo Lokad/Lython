@@ -579,6 +579,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "DataValidationList.append(data_validation) expects openpyxl.worksheet.datavalidation.DataValidation.", span);
             }
 
+            _worksheet.ReserveRegistrySlot();
             _worksheet.AddDataValidation(validation);
             return PyNone.Instance;
         }

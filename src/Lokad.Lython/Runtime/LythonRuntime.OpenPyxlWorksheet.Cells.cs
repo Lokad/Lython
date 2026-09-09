@@ -497,6 +497,15 @@ internal sealed partial class LythonRuntime
                     copy._memoryGovernor.Commit(copiedMergeBytes);
                     copy._committedMergeBytes += copiedMergeBytes;
                 }
+
+                var copiedRegistrySlots = checked((long)copy._tables.Count + copy._dataValidations.Count);
+                if (copiedRegistrySlots > 0)
+                {
+                    var copiedRegistryBytes = checked(RegistrySlotBytes * copiedRegistrySlots);
+                    copy._memoryGovernor.Reserve(copiedRegistryBytes, copy._allocationSpan);
+                    copy._memoryGovernor.Commit(copiedRegistryBytes);
+                    copy._committedRegistryBytes += copiedRegistryBytes;
+                }
             }
 
             copy._protection.CopyFrom(_protection);

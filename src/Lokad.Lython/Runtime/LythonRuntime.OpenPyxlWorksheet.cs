@@ -85,6 +85,10 @@ internal sealed partial class LythonRuntime
         // Row/column dimension entries are retained per index the same way;
         // dimensions have no guest delete path, so nothing is released.
         private const long DimensionSlotBytes = 64;
+        // Table and data-validation registry entries are retained the same
+        // way; neither registry has a guest delete path, so nothing is released.
+        private const long RegistrySlotBytes = 64;
+        private long _committedRegistryBytes;
 
         public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
@@ -102,6 +106,18 @@ internal sealed partial class LythonRuntime
             _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
             _memoryGovernor.Commit(CellSlotBytes);
             _committedCellBytes += CellSlotBytes;
+        }
+
+        internal void ReserveRegistrySlot()
+        {
+            if (_memoryGovernor is null)
+            {
+                return;
+            }
+
+            _memoryGovernor.Reserve(RegistrySlotBytes, _allocationSpan);
+            _memoryGovernor.Commit(RegistrySlotBytes);
+            _committedRegistryBytes += RegistrySlotBytes;
         }
 
         private void ReleaseCellSlot()
