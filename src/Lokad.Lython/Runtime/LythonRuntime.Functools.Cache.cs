@@ -20,14 +20,22 @@ internal sealed partial class LythonRuntime
         private readonly Dictionary<object, CacheEntry> _cache = new(PyValueComparer.Instance);
         private readonly LinkedList<object> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private readonly MemoryGovernor _memoryGovernor;
+        private long _committedEntryBytes;
         private BigInteger _hits;
         private BigInteger _misses;
 
-        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode)
+        // Per-entry infrastructure (dictionary slot, recency node and entry
+        // record) is charged here; keys and results arrive with their own
+        // ownership from construction and invocation.
+        private const long EntryInfrastructureBytes = 128;
+
+        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor)
         {
             _callable = callable;
             _maxSize = maxSize;
             _keyMode = keyMode;
+            _memoryGovernor = memoryGovernor;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -45,7 +53,7 @@ internal sealed partial class LythonRuntime
             var result = _callable.Invoke(arguments, span, context);
             if (_maxSize != 0)
             {
-                Store(key, result);
+                Store(key, result, span);
             }
 
             return result;
@@ -123,7 +131,7 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        private void Store(object key, object value)
+        private void Store(object key, object value, LythonSourceSpan span)
         {
             if (_cache.TryGetValue(key, out var existing))
             {
@@ -131,6 +139,10 @@ internal sealed partial class LythonRuntime
                 Touch(existing);
                 return;
             }
+
+            _memoryGovernor.Reserve(EntryInfrastructureBytes, span);
+            _memoryGovernor.Commit(EntryInfrastructureBytes);
+            _committedEntryBytes += EntryInfrastructureBytes;
 
             if (_maxSize is null)
             {
@@ -145,6 +157,8 @@ internal sealed partial class LythonRuntime
                 var oldest = _recency.First.RequireNotNull();
                 _recency.RemoveFirst();
                 _cache.Remove(oldest.Value);
+                _memoryGovernor.Release(EntryInfrastructureBytes);
+                _committedEntryBytes -= EntryInfrastructureBytes;
             }
         }
 
@@ -179,6 +193,8 @@ internal sealed partial class LythonRuntime
         {
             _cache.Clear();
             _recency.Clear();
+            _memoryGovernor.Release(_committedEntryBytes);
+            _committedEntryBytes = 0;
             _hits = BigInteger.Zero;
             _misses = BigInteger.Zero;
         }
@@ -410,7 +426,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode);
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor);
         ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
         return wrapper;
     }
