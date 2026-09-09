@@ -1,6 +1,8 @@
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using System.Linq;
+using System.Xml.Linq;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -308,6 +310,90 @@ public sealed class OpenPyxlAccountingTests
         Assert.Contains("execution canceled", failure.InnerException?.Message ?? string.Empty, StringComparison.Ordinal);
         ((IDisposable)session).Dispose();
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+
+    private static void InvokeLoadWorksheetDataValidations(object document, object worksheet, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetDataValidations", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetDataValidations not found.");
+        method.Invoke(null, [document, worksheet, context, span]);
+    }
+
+    [Fact]
+    public void ValidationTextIsChargedProportionally()
+    {
+        // R02: retained validation strings join the per-validation charge.
+        const string first = @"<dataValidation type=""whole"" operator=""between"" errorTitle=""ET"" error=""E"" promptTitle=""PT"" prompt=""P""><formula1>1</formula1><formula2>10</formula2><sqref>A1</sqref></dataValidation>";
+        const string second = @"<dataValidation type=""whole"" operator=""between"" error=""E2""><formula1>100</formula1><sqref>A2</sqref></dataValidation>";
+        var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><dataValidations>" + first + second + "</dataValidations></worksheet>");
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        InvokeLoadWorksheetDataValidations(document, NewWorksheet("Sheet1"), context, span);
+        // Two validations at 512 bytes plus 9 and 5 retained text bytes.
+        Assert.Equal(2L * 512L + 14L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void ConditionalFormattingMarkupIsCharged()
+    {
+        // R02: the model keeps a full copy of each rule element, so its
+        // markup joins the per-rule charge.
+        const string rule = @"<cfRule type=""cellIs"" operator=""greaterThan"" priority=""1""><formula>5</formula></cfRule>";
+        var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><conditionalFormatting sqref=""A1"">" + rule + "</conditionalFormatting></worksheet>");
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        InvokeLoadWorksheetConditionalFormatting(document, NewWorksheet("Sheet1"), context, span);
+        var sourceRule = document.Descendants().First(e => e.Name.LocalName == "cfRule");
+        // The charge covers the detached model copy, so replicate the copy here.
+        var markup = System.Text.Encoding.UTF8.GetByteCount(new XElement(sourceRule).ToString());
+        Assert.Equal(512L + markup, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static void InvokeLoadWorksheetConditionalFormatting(object document, object worksheet, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetConditionalFormatting", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetConditionalFormatting not found.");
+        method.Invoke(null, [document, worksheet, context, span]);
+    }
+
+    private static void InvokeLoadWorksheetTables(object session, string path, object document, object worksheet, object relationships, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetTables", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetTables not found.");
+        method.Invoke(null, [session, path, document, worksheet, relationships, context, span]);
+    }
+
+    [Fact]
+    public void TableNamesAreCharged()
+    {
+        // R02: the model keeps table display/style names and the source path.
+        const string table = @"<table id=""1"" name=""T1"" displayName=""Table1"" ref=""A1:B2"" xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><tableStyleInfo name=""TableStyleMedium9""/></table>";
+        using var stream = new MemoryStream(BuildArchive(("xl/tables/table1.xml", table)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><tableParts><tablePart r:id=""rId1"" xmlns:r=""http://schemas.openxmlformats.org/officeDocument/2006/relationships""/></tableParts></worksheet>");
+        var relationships = new Dictionary<string, string> { ["rId1"] = "../tables/table1.xml" };
+        InvokeLoadWorksheetTables(session, "xl/worksheets/sheet1.xml", document, NewWorksheet("Sheet1"), relationships, context, span);
+        var length = Encoding.UTF8.GetByteCount(table);
+        Assert.Equal((96L + length) + ((long)16 * length) + 512L + 6L + 20L + 17L, context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        // The worksheet still owns its table, so only part and DOM charges release.
+        Assert.Equal(512L + 6L + 20L + 17L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

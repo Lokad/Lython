@@ -257,8 +257,13 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
+            var scannedTables = 0;
             foreach (var tablePart in worksheetDocument.Descendants(XlsxMain + "tablePart"))
             {
+                if ((++scannedTables & (ArchiveBudgetCheckInterval - 1)) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
                 var relationshipId = (string?)tablePart.Attribute(XlsxRelationships + "id");
                 if (relationshipId is null || !worksheetRelationships.TryGetValue(relationshipId, out var target))
                 {
@@ -293,27 +298,57 @@ internal sealed partial class LythonRuntime
 
             var table = new OpenPyxlTable(displayName, ParseCellRange(reference, span).Reference);
             table.SetLoadedSource(tablePath);
+            string? tableStyleName = null;
             var style = root.Element(XlsxMain + "tableStyleInfo");
-            if (style is not null && (string?)style.Attribute("name") is { } styleName)
+            if (style is not null && (string?)style.Attribute("name") is { } resolvedStyleName)
             {
+                tableStyleName = resolvedStyleName;
                 table.TableStyleInfo = new OpenPyxlTableStyleInfo(
-                    styleName,
+                    tableStyleName,
                     ReadBooleanAttribute(style, "showFirstColumn", defaultValue: false, span),
                     ReadBooleanAttribute(style, "showLastColumn", defaultValue: false, span),
                     ReadBooleanAttribute(style, "showRowStripes", defaultValue: true, span),
                     ReadBooleanAttribute(style, "showColumnStripes", defaultValue: false, span));
             }
 
+            // The model keeps display and style names plus the source path.
+            var tableCharge = ModelCellBytes + Encoding.UTF8.GetByteCount(displayName) + Encoding.UTF8.GetByteCount(tablePath);
+            if (tableStyleName is not null)
+            {
+                tableCharge += Encoding.UTF8.GetByteCount(tableStyleName);
+            }
+
+            context.MemoryGovernor.Reserve(tableCharge, span);
+            context.MemoryGovernor.Commit(tableCharge);
+
             return table;
+        }
+
+        // Retained validation strings: formulas plus the four message titles and bodies.
+        private static long ValidationTextBytes(XElement element)
+        {
+            var bytes = 0L;
+            bytes += Encoding.UTF8.GetByteCount(element.Element(XlsxMain + "formula1")?.Value ?? string.Empty);
+            bytes += Encoding.UTF8.GetByteCount(element.Element(XlsxMain + "formula2")?.Value ?? string.Empty);
+            bytes += Encoding.UTF8.GetByteCount((string?)element.Attribute("errorTitle") ?? string.Empty);
+            bytes += Encoding.UTF8.GetByteCount((string?)element.Attribute("error") ?? string.Empty);
+            bytes += Encoding.UTF8.GetByteCount((string?)element.Attribute("promptTitle") ?? string.Empty);
+            bytes += Encoding.UTF8.GetByteCount((string?)element.Attribute("prompt") ?? string.Empty);
+            return bytes;
         }
 
         private static void LoadWorksheetDataValidations(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
             var validated = 0;
+            var validationTextBytes = 0L;
             foreach (var element in worksheetDocument.Root?.Element(XlsxMain + "dataValidations")?.Elements(XlsxMain + "dataValidation") ?? [])
             {
                 if ((++validated & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
+                    var validationCharge = (ModelCellBytes * ArchiveBudgetCheckInterval) + validationTextBytes;
+                    context.MemoryGovernor.Reserve(validationCharge, span);
+                    context.MemoryGovernor.Commit(validationCharge);
+                    validationTextBytes = 0;
                     context.CheckExecutionBudget(span);
                 }
 
@@ -335,17 +370,31 @@ internal sealed partial class LythonRuntime
                     validation.AddRange(reference, span);
                 }
 
+                validationTextBytes += ValidationTextBytes(element);
                 worksheet.AddDataValidation(validation);
+            }
+
+            var tailValidated = validated & (ArchiveBudgetCheckInterval - 1);
+            if (tailValidated > 0 || validationTextBytes > 0)
+            {
+                var tailCharge = (ModelCellBytes * tailValidated) + validationTextBytes;
+                context.MemoryGovernor.Reserve(tailCharge, span);
+                context.MemoryGovernor.Commit(tailCharge);
             }
         }
 
         private static void LoadWorksheetConditionalFormatting(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
             var formatted = 0;
+            var formattingTextBytes = 0L;
             foreach (var element in worksheetDocument.Root?.Elements(XlsxMain + "conditionalFormatting") ?? [])
             {
                 if ((++formatted & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
+                    var formattingCharge = (ModelCellBytes * ArchiveBudgetCheckInterval) + formattingTextBytes;
+                    context.MemoryGovernor.Reserve(formattingCharge, span);
+                    context.MemoryGovernor.Commit(formattingCharge);
+                    formattingTextBytes = 0;
                     context.CheckExecutionBudget(span);
                 }
 
@@ -363,7 +412,21 @@ internal sealed partial class LythonRuntime
                         rule.Elements(XlsxMain + "formula").Select(formula => formula.Value).ToArray(),
                         new XElement(rule)))
                     .ToArray();
+                foreach (var rule in rules)
+                {
+                    // The model keeps a full copy of each rule element.
+                    formattingTextBytes += Encoding.UTF8.GetByteCount(rule.SourceXml?.ToString() ?? string.Empty);
+                }
+
                 worksheet.AddLoadedConditionalFormatting(sqref, rules, span);
+            }
+
+            var tailFormatted = formatted & (ArchiveBudgetCheckInterval - 1);
+            if (tailFormatted > 0 || formattingTextBytes > 0)
+            {
+                var tailCharge = (ModelCellBytes * tailFormatted) + formattingTextBytes;
+                context.MemoryGovernor.Reserve(tailCharge, span);
+                context.MemoryGovernor.Commit(tailCharge);
             }
         }
 
