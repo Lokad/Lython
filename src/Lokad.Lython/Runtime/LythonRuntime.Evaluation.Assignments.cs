@@ -405,7 +405,31 @@ internal sealed partial class LythonRuntime
         if (target is PyList list)
         {
             list.AttachMemoryGovernor(context.MemoryGovernor, span);
-            var values = ToSequence(value, span, context).ToArray();
+            // The drained values array duplicates the retained content beside
+            // it while SetSlice runs; grow a transient reservation with the
+            // drain (mirroring the shared drains) and cover the final array,
+            // released on return.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var collected = new List<object>();
+            var chargedCapacity = 0;
+            foreach (var item in ToSequence(value, span, context))
+            {
+                if (collected.Count == collected.Capacity)
+                {
+                    var predicted = collected.Capacity == 0 ? 4L : (long)collected.Capacity * 2L;
+                    scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
+                }
+
+                collected.Add(item);
+                if (collected.Capacity > chargedCapacity)
+                {
+                    scratch.Grow(16L * (collected.Capacity - chargedCapacity), span);
+                    chargedCapacity = collected.Capacity;
+                }
+            }
+
+            scratch.Grow(16L * collected.Count, span);
+            var values = collected.ToArray();
             var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);
             list.SetSlice(bounds, values, span);
             context.ObserveCollectionCount(list.Count, span);
