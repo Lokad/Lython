@@ -56,9 +56,21 @@ internal sealed class ExecutionState
         Args = argvSource
             .Select(arg => Text.PyString.FromString(arg, argvGovernor, allocationSpan: null))
             .ToArray();
-        Environment = options?.Environment is null
-            ? new Dictionary<string, string>(StringComparer.Ordinal)
-            : new Dictionary<string, string>(options.Environment, StringComparer.Ordinal);
+        // Host-provided environment is guest-visible through os.environ, so own
+        // the copy table up front at the dictionary slot rate; keys and values
+        // stay host-owned references. Absent or empty environments stay free.
+        var providedEnvironment = options?.Environment;
+        if (providedEnvironment is null || providedEnvironment.Count == 0)
+        {
+            Environment = new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+        else
+        {
+            var environmentTableBytes = 80L + (32L * providedEnvironment.Count);
+            MemoryGovernor.Reserve(environmentTableBytes, null);
+            MemoryGovernor.Commit(environmentTableBytes);
+            Environment = new Dictionary<string, string>(providedEnvironment, StringComparer.Ordinal);
+        }
         ImportedModules = new Dictionary<string, PyModule>(StringComparer.Ordinal);
         LoadingModules = new HashSet<string>(StringComparer.Ordinal);
         StandardOutput = new Text.GovernedByteBuilder(
