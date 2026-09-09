@@ -490,6 +490,9 @@ internal sealed partial class LythonRuntime
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
+                // The items array duplicates the retained copy below while it
+                // is built; hold it transiently (MG22).
+                using var scratch = context.MemoryGovernor.ReserveTemporary(16L * list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
@@ -507,6 +510,8 @@ internal sealed partial class LythonRuntime
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Count, null);
+                // Same transient items-array peak as NormalizePyList (MG22).
+                using var scratch = context.MemoryGovernor.ReserveTemporary(16L * tuple.Count, null);
                 var items = new object[tuple.Count];
                 for (var i = 0; i < tuple.Count; i++)
                 {
@@ -524,6 +529,8 @@ internal sealed partial class LythonRuntime
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
+                // Same transient items-array peak as NormalizePyList (MG22).
+                using var scratch = context.MemoryGovernor.ReserveTemporary(16L * list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
@@ -541,6 +548,8 @@ internal sealed partial class LythonRuntime
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Length, null);
+                // Same transient items-array peak as NormalizePyList (MG22).
+                using var scratch = context.MemoryGovernor.ReserveTemporary(16L * tuple.Length, null);
                 var items = new object[tuple.Length];
                 for (var i = 0; i < tuple.Length; i++)
                 {
