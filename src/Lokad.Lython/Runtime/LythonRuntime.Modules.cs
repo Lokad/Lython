@@ -362,7 +362,7 @@ internal sealed partial class LythonRuntime
             object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
-                total = MultiplyNumeric(total, item, span);
+                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
             }
 
             return RuntimeValue(total);
