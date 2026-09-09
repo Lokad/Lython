@@ -458,11 +458,30 @@ internal sealed partial class LythonRuntime
                 .Select(author => author.Value)
                 .ToArray() ?? [];
 
+            // Author strings persist through per-comment references, so they pay
+            // once up front instead of per comment.
+            var authorBytes = 0L;
+            foreach (var authorName in authors)
+            {
+                authorBytes += Encoding.UTF8.GetByteCount(authorName);
+            }
+
+            if (authorBytes > 0)
+            {
+                context.MemoryGovernor.Reserve(authorBytes, span);
+                context.MemoryGovernor.Commit(authorBytes);
+            }
+
             var scannedComments = 0;
+            var commentTextBytes = 0L;
             foreach (var comment in comments.Root?.Element(XlsxMain + "commentList")?.Elements(XlsxMain + "comment") ?? [])
             {
                 if ((++scannedComments & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
+                    var commentCharge = (ModelCellBytes * ArchiveBudgetCheckInterval) + commentTextBytes;
+                    context.MemoryGovernor.Reserve(commentCharge, span);
+                    context.MemoryGovernor.Commit(commentCharge);
+                    commentTextBytes = 0;
                     context.CheckExecutionBudget(span);
                 }
 
@@ -476,7 +495,16 @@ internal sealed partial class LythonRuntime
                 var authorId = ReadNonNegativeIntAttribute(comment, "authorId", span) ?? 0;
                 var author = authorId < authors.Length ? authors[authorId] : string.Empty;
                 var text = string.Concat(comment.Element(XlsxMain + "text")?.Descendants(XlsxMain + "t").Select(t => t.Value) ?? []);
+                commentTextBytes += Encoding.UTF8.GetByteCount(text);
                 worksheet.SetLoadedComment(address.Row, address.Column, new OpenPyxlComment(text, author));
+            }
+
+            var tailComments = scannedComments & (ArchiveBudgetCheckInterval - 1);
+            if (tailComments > 0 || commentTextBytes > 0)
+            {
+                var tailCharge = (ModelCellBytes * tailComments) + commentTextBytes;
+                context.MemoryGovernor.Reserve(tailCharge, span);
+                context.MemoryGovernor.Commit(tailCharge);
             }
         }
 

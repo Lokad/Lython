@@ -230,4 +230,61 @@ public sealed class OpenPyxlAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+
+    [Fact]
+    public void OverlappingDomChargesAccumulate()
+    {
+        // R02: live DOMs coexist, so each parse adds its charge instead of
+        // reusing one transient reservation.
+        const string first = @"<a xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><b>one</b></a>";
+        const string second = @"<a xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><b>two</b></a>";
+        using var stream = new MemoryStream(BuildArchive(("p1.xml", first), ("p2.xml", second)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        Assert.NotNull(InvokeLoadOptionalXmlDocument(session, "p1.xml"));
+        var firstLength = Encoding.UTF8.GetByteCount(first);
+        Assert.Equal((96L + firstLength) + ((long)16 * firstLength), context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.NotNull(InvokeLoadOptionalXmlDocument(session, "p2.xml"));
+        var secondLength = Encoding.UTF8.GetByteCount(second);
+        Assert.Equal((96L + firstLength) + ((long)16 * firstLength) + (96L + secondLength) + ((long)16 * secondLength), context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static void InvokeLoadWorksheetComments(object session, string path, object worksheet, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetComments", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetComments not found.");
+        method.Invoke(null, [session, path, worksheet, context, span]);
+    }
+
+    [Fact]
+    public void CommentTextIsChargedProportionally()
+    {
+        // R02: retained comment and author text joins the per-comment charge
+        // instead of hiding behind bare budget checks.
+        const string rels = @"<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships""><Relationship Id=""rId1"" Type=""http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments"" Target=""../comments1.xml""/></Relationships>";
+        const string comments = @"<comments xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><authors><author>Ann</author></authors><commentList><comment ref=""A1"" authorId=""0""><text><t>hi there</t></text></comment><comment ref=""A2"" authorId=""0""><text><t>yo</t></text></comment></commentList></comments>";
+        using var stream = new MemoryStream(BuildArchive(("xl/worksheets/_rels/sheet1.xml.rels", rels), ("xl/comments1.xml", comments)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        InvokeLoadWorksheetComments(session, "xl/worksheets/sheet1.xml", NewWorksheet("Sheet1"), context, span);
+        var relsLength = Encoding.UTF8.GetByteCount(rels);
+        var commentsLength = Encoding.UTF8.GetByteCount(comments);
+        Assert.Equal((96L + relsLength) + ((long)16 * relsLength) + (96L + commentsLength) + ((long)16 * commentsLength) + 3L + (2L * 512L + 10L), context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        // The worksheet still owns its comments, so only part and DOM charges release.
+        Assert.Equal(3L + (2L * 512L + 10L), context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
 }
