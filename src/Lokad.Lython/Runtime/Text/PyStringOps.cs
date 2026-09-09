@@ -558,6 +558,16 @@ internal static partial class PyStringOps
             return value;
         }
 
+        // Bound the expansion before the padding buffer is built: the result
+        // is exactly the source bytes plus one ASCII zero per missing char, so a
+        // hostile width fails here instead of materializing multi-megabyte CLR
+        // strings (or worse) ahead of the governed result charge.
+        var governor = value.OwnerMemoryGovernor;
+        if (governor is not null)
+        {
+            governor.EnsureCanReserve(32L + value.Utf8Bytes.Length + ((long)width - value.Length), value.AllocationSpan);
+        }
+
         var text = value.AsString();
         var prefix = text.Length > 0 && (text[0] == '+' || text[0] == '-') ? text[..1] : string.Empty;
         var rest = prefix.Length == 0 ? text : text[1..];
