@@ -295,7 +295,20 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public string AsString()
     {
+        // The decoded cache stays uncharged: this accessor serves hot transient
+        // reads (rendering, comparisons, host writes), so charging it here would
+        // accrue permanent phantom bytes for dropped views. Only the large,
+        // rarely built rune-offset table below is charged.
         return _decodedString ??= Utf8.GetString(_utf8);
+    }
+
+    private void CommitCacheCharge(long bytes)
+    {
+        if (_memoryGovernor is not null && bytes > 0)
+        {
+            _memoryGovernor.Reserve(bytes, _allocationSpan);
+            _memoryGovernor.Commit(bytes);
+        }
     }
 
     public string AsString(int runeIndex)
@@ -581,6 +594,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return _runeByteOffsets;
         }
 
+        // The offset table persists as a cache alongside the decoded text.
+        CommitCacheCharge(32L + (4L * ((long)Length + 1)));
         var offsets = new int[Length + 1];
         var runeIndex = 0;
         for (var byteIndex = 0; byteIndex < _utf8.Length;)
