@@ -377,13 +377,6 @@ internal sealed partial class LythonRuntime
                 copy._cells[pair.Key] = pair.Value;
             }
 
-            if (copy._memoryGovernor is not null && copy._cells.Count > 0)
-            {
-                var copiedBytes = checked(CellSlotBytes * (long)copy._cells.Count);
-                copy._memoryGovernor.Reserve(copiedBytes, copy._allocationSpan);
-                copy._memoryGovernor.Commit(copiedBytes);
-                copy._committedCellBytes += copiedBytes;
-            }
             copy._minRow = _minRow;
             copy._maxRow = _maxRow;
             copy._minColumn = _minColumn;
@@ -444,6 +437,39 @@ internal sealed partial class LythonRuntime
                 copy._mergedRanges.Add(range);
                 copy._mergedRangeSet.Add(range);
             }
+
+            // Copies duplicate every charged table, so carry the matching pool
+            // totals. Tables without a mutation charge (data types, loaded ids,
+            // formulas, named styles, tables, validations, formattings,
+            // dimensions) stay free here as they do on mutation.
+            if (copy._memoryGovernor is not null)
+            {
+                var copiedCellSlots = checked((long)copy._cells.Count + copy._numberFormats.Count + copy._hyperlinks.Count + copy._comments.Count);
+                if (copiedCellSlots > 0)
+                {
+                    var copiedCellBytes = checked(CellSlotBytes * copiedCellSlots);
+                    copy._memoryGovernor.Reserve(copiedCellBytes, copy._allocationSpan);
+                    copy._memoryGovernor.Commit(copiedCellBytes);
+                    copy._committedCellBytes += copiedCellBytes;
+                }
+
+                if (copy._cellStyles.Count > 0)
+                {
+                    var copiedStyleBytes = checked(CellStyleSlotBytes * (long)copy._cellStyles.Count);
+                    copy._memoryGovernor.Reserve(copiedStyleBytes, copy._allocationSpan);
+                    copy._memoryGovernor.Commit(copiedStyleBytes);
+                    copy._committedStyleBytes += copiedStyleBytes;
+                }
+
+                if (copy._mergedRanges.Count > 0)
+                {
+                    var copiedMergeBytes = checked(MergeSlotBytes * (long)copy._mergedRanges.Count);
+                    copy._memoryGovernor.Reserve(copiedMergeBytes, copy._allocationSpan);
+                    copy._memoryGovernor.Commit(copiedMergeBytes);
+                    copy._committedMergeBytes += copiedMergeBytes;
+                }
+            }
+
             copy._protection.CopyFrom(_protection);
             return copy;
         }
