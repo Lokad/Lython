@@ -389,12 +389,28 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, ...) missing field_names.", span);
         }
 
+        var fieldNames = ParseNamedTupleFieldNames(fieldNamesValue, span, context);
         var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
-        var defaults = TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone
-            ? ToSequence(defaultsValue, span, context).ToArray()
-            : [];
+        // Drain at most one past the field count: longer inputs fail with the
+        // same TypeError below without a proportional transient. Parsing the
+        // names first also matches CPython left-to-right validation.
+        object[] defaults = [];
+        if (TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone)
+        {
+            var collected = new List<object>();
+            foreach (var item in ToSequence(defaultsValue, span, context))
+            {
+                collected.Add(item);
+                if (collected.Count > fieldNames.Count)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+                }
+            }
 
-        if (defaults.Length > 0 && defaults.Length > ParseNamedTupleFieldNames(fieldNamesValue, span, context).Count)
+            defaults = collected.ToArray();
+        }
+
+        if (defaults.Length > 0 && defaults.Length > fieldNames.Count)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
         }
@@ -408,7 +424,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var fields = NormalizeNamedTupleFields(ParseNamedTupleFieldNames(fieldNamesValue, span, context), rename, span);
+        var fields = NormalizeNamedTupleFields(fieldNames, rename, span);
         if (defaults.Length > fields.Count)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
