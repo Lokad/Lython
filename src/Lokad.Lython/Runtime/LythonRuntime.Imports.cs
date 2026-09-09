@@ -347,6 +347,18 @@ internal sealed partial class LythonRuntime
         return resolved.RequireNotNull();
     }
 
+    // Each newly registered module retains a registry slot plus handle wrapper,
+    // name strings, and exported-table infrastructure for the run. Per-variable
+    // exported entries stay open (module-table ownership belongs to the
+    // frontend/import envelope); re-imports hit the registry and pay nothing.
+    private const long ImportedModuleBytes = 512;
+
+    private static void ChargeImportedModule(ExecutionContext context, LythonSourceSpan? span)
+    {
+        context.MemoryGovernor.Reserve(ImportedModuleBytes, span);
+        context.MemoryGovernor.Commit(ImportedModuleBytes);
+    }
+
     private static bool TryResolveKnownImportedModule(
         string moduleName,
         ExecutionContext context,
@@ -363,6 +375,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        ChargeImportedModule(context, null);
         context.State.ImportedModules[moduleName] = module;
         return true;
     }
@@ -409,6 +422,7 @@ internal sealed partial class LythonRuntime
         }
 
         var loaded = new ScriptPyModule(moduleName, exported);
+        ChargeImportedModule(context, span);
         context.State.ImportedModules[moduleName] = loaded;
         return loaded;
     }
