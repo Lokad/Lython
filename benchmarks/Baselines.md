@@ -83,9 +83,32 @@ All write figures above predate the corrected DEFLATE serializer and staged
 storage accounting; re-record them on release runs before validating
 write-path changes against these numbers.
 
-Lookup and integer-sizing workloads (`ZipLookupBenchmarks.cs`,
-`IntegerSizingBenchmarks.cs`) have no recorded figures yet; record them on
-release runs before changing member lookup or integer guard paths.
+Member lookup scaling (`ZipLookupBenchmarks.cs`; each op opens the archive
+and runs 200 indexed getinfo/read pairs against the last entry) from a full
+BenchmarkDotNet run (.NET 10, Windows 10.0.26200 x64, 2026-09-09, 9d5b827):
+
+| Benchmark | EntryCount | Mean | Allocated/op |
+| --- | --- | --- | --- |
+| Lookup last entry by name 200 times | 50 | 286.7 us | 340.31 KB |
+| Lookup last entry by name 200 times | 200 | 318.9 us | 549.14 KB |
+| Lookup last entry by name 200 times | 800 | 775.5 us | 1383.3 KB |
+
+Notes: 8 outliers removed on the 50-entry case, 6 on the 800-entry case.
+The 50 to 200 step barely moves (287 to 319 us) while the 800-entry directory
+parse dominates its row; per-op cost includes opening the archive.
+
+Integer magnitude sizing (`IntegerSizingBenchmarks.cs`) from the same run shape:
+
+| Benchmark | Mean | Allocated/op |
+| --- | --- | --- | --- |
+| Shift a million-bit integer | 89.74 us | 146.42 KB |
+| Power to a million-bit integer | 35,310.72 us | 146.6 KB |
+| Shift a thousand-bit integer | 10.77 us | 24.41 KB |
+
+Notes: 1 outlier removed on the power and thousand-bit cases. Shift and power
+at a million bits allocate nearly identically, showing the magnitude guard
+sizes without proportional scratch. Re-record on release runs before changing
+member lookup or integer guard paths.
 at the same expanded size. Re-record on release runs before changing
 archive compression or staging paths.
 
