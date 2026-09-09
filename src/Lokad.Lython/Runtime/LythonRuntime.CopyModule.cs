@@ -150,9 +150,10 @@ internal sealed partial class LythonRuntime
         private readonly LythonSourceSpan? _span;
 
         // One memo entry retains a CLR map slot, a view-dict entry and an
-        // identity key. Internal memos cover them with transient scratch that
-        // releases when the copy completes; user-supplied dicts keep their own
-        // durable ownership instead.
+        // identity key. Both internal and user-supplied memos cover the CLR
+        // mirror with transient scratch that releases when the copy completes;
+        // user-supplied dicts additionally keep durable ownership of their own
+        // entries.
         private const long MemoEntryBytes = 128;
 
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
@@ -162,9 +163,11 @@ internal sealed partial class LythonRuntime
             _span = span;
         }
 
-        private CopyMemo(PyDict external)
+        private CopyMemo(PyDict external, ExecutionContext context, LythonSourceSpan span)
         {
             _external = external;
+            _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            _span = span;
         }
 
         public void Dispose() => _scratch?.Dispose();
@@ -173,13 +176,12 @@ internal sealed partial class LythonRuntime
 
         public static CopyMemo FromExternal(object value, ExecutionContext context, LythonSourceSpan span)
         {
-            _ = context;
             if (value is not PyDict dict)
             {
                 throw new LythonRuntimeException("TypeError", "copy.deepcopy(..., memo=...) expects a dict or None.", span);
             }
 
-            return new CopyMemo(dict);
+            return new CopyMemo(dict, context, span);
         }
 
         public bool TryGet(object original, [MaybeNullWhen(false)] out object copied)
