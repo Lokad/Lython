@@ -58,7 +58,7 @@ internal static class PyListStorage
         if (items is IReadOnlyCollection<object> collection)
         {
             return collection.Count <= SmallCapacity
-                ? new SmallPyListStorage(items)
+                ? new SmallPyListStorage(items, governor, span)
                 : new ArrayPyListStorage(items, collection.Count, governor, span);
         }
 
@@ -88,7 +88,14 @@ internal static class PyListStorage
             // Reserve for the requested count, not just the old contents: the caller
             // is about to append up to targetCount items, and the CLR list must not
             // grow past the ensured capacity uncharged.
-            return new ArrayPyListStorage(small.ToArray(), targetCount, governor, span);
+            var promoted = new ArrayPyListStorage(small.ToArray(), targetCount, governor, span);
+            var released = small.ReleaseCommittedBytes();
+            if (released > 0)
+            {
+                governor?.Release(released);
+            }
+
+            return promoted;
         }
 
         if (storage is ArrayPyListStorage array)
@@ -104,7 +111,7 @@ internal static class PyListStorage
         MemoryGovernor? governor,
         LythonSourceSpan? span)
     {
-        IPyListStorage storage = new SmallPyListStorage();
+        IPyListStorage storage = new SmallPyListStorage(System.Array.Empty<object>(), governor, span);
         foreach (var item in items)
         {
             storage = EnsureCapacity(storage, checked(storage.Count + 1), governor, span);
@@ -119,15 +126,32 @@ internal sealed class SmallPyListStorage : IPyListStorage
 {
     private readonly object[] _items;
     private int _count;
+    private long _committedBytes;
+
+    // Backing charge at the established per-slot rate: the array is always
+    // exactly SmallCapacity references plus the object header.
+    private const long SmallBackingBytes = 64L + (16L * PyListStorage.SmallCapacity);
 
     public SmallPyListStorage()
+        : this(System.Array.Empty<object>(), null, null)
     {
-        _items = new object[PyListStorage.SmallCapacity];
     }
 
     public SmallPyListStorage(IEnumerable<object> items)
-        : this()
+        : this(items, null, null)
     {
+    }
+
+    public SmallPyListStorage(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is not null)
+        {
+            governor.Reserve(SmallBackingBytes, span);
+            governor.Commit(SmallBackingBytes);
+            _committedBytes = SmallBackingBytes;
+        }
+
+        _items = new object[PyListStorage.SmallCapacity];
         foreach (var item in items)
         {
             _items[_count++] = item;
@@ -231,7 +255,12 @@ internal sealed class SmallPyListStorage : IPyListStorage
 
     public IPyListStorage Clone() => new SmallPyListStorage(ToArray());
 
-    public long ReleaseCommittedBytes() => 0;
+    public long ReleaseCommittedBytes()
+    {
+        var released = _committedBytes;
+        _committedBytes = 0;
+        return released;
+    }
 
     public IEnumerator<object> GetEnumerator()
     {

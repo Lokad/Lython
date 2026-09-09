@@ -282,7 +282,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
                 _memoryGovernor.Release(released);
             }
 
-            _items = PyListStorage.Create();
+            _items = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
             return;
         }
 
