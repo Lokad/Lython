@@ -353,7 +353,7 @@ internal sealed partial class LythonRuntime
 
     private static object CopyDeque(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo)
     {
-        var clone = new PyDeque(deque.MaxLength);
+        var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
         memo.Remember(deque, clone);
         foreach (var item in deque)
         {

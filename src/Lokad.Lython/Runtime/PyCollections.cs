@@ -216,15 +216,31 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
+internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
 {
     private readonly LinkedList<object> _items = [];
+
+    // LinkedList nodes are separate heap objects (prev/next/value plus header);
+    // charge each live node so retained deques accumulate like other containers.
+    // Empty deques stay free like empty sets; the list object itself remains
+    // wrapper overhead (MG04).
+    private const long DequeNodeBytes = 64;
+    private MemoryGovernor? _memoryGovernor;
+    private LythonSourceSpan? _allocationSpan;
+    private long _committedNodeBytes;
 
     public PyDeque() : this((int?)null) { }
 
     public PyDeque(int? maxLength)
     {
         MaxLength = maxLength;
+    }
+
+    public PyDeque(int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        MaxLength = maxLength;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
     }
 
     public PyDeque(IEnumerable<object> items) : this(items, null) { }
@@ -238,7 +254,29 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
     }
 
+    public PyDeque(IEnumerable<object> items, int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        : this(maxLength, governor, allocationSpan)
+    {
+        foreach (var item in items)
+        {
+            Append(item);
+        }
+    }
+
     public int? MaxLength { get; }
+
+    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    public LythonSourceSpan? AllocationSpan => _allocationSpan;
+
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        _memoryGovernor ??= governor;
+        _allocationSpan ??= allocationSpan;
+    }
 
     public int Count => _items.Count;
 
@@ -255,9 +293,14 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         if (MaxLength is int maxLength && _items.Count == maxLength)
         {
+            // Bounded eviction reuses one node charge: the list stays at maxlen,
+            // so no new budget is needed and a tight budget still rotates.
             _items.RemoveFirst();
+            _items.AddLast(value);
+            return;
         }
 
+        ReserveNode();
         _items.AddLast(value);
     }
 
@@ -270,9 +313,13 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         if (MaxLength is int maxLength && _items.Count == maxLength)
         {
+            // Same charge reuse as Append: eviction keeps the node count flat.
             _items.RemoveLast();
+            _items.AddFirst(value);
+            return;
         }
 
+        ReserveNode();
         _items.AddFirst(value);
     }
 
@@ -285,6 +332,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         var value = _items.Last.RequireNotNull().Value;
         _items.RemoveLast();
+        ReleaseNode();
         return value;
     }
 
@@ -297,6 +345,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         var value = _items.First.RequireNotNull().Value;
         _items.RemoveFirst();
+        ReleaseNode();
         return value;
     }
 
@@ -343,16 +392,19 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         if (index <= 0)
         {
+            ReserveNode();
             _items.AddFirst(value);
             return;
         }
 
         if (index >= _items.Count)
         {
+            ReserveNode();
             _items.AddLast(value);
             return;
         }
 
+        ReserveNode();
         _items.AddBefore(GetNodeAt(index), value);
     }
 
@@ -364,6 +416,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             if (PyEquality.AreEqual(current.Value, candidate))
             {
                 _items.Remove(current);
+                ReleaseNode();
                 return true;
             }
 
@@ -375,11 +428,20 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     public void Reverse()
     {
-        var items = _items.ToArray();
-        _items.Clear();
-        for (var i = items.Length - 1; i >= 0; i--)
+        // Swap values in place: the node count never changes, so no charging
+        // is needed and no snapshot array escapes ownership.
+        if (_items.Count <= 1)
         {
-            _items.AddLast(items[i]);
+            return;
+        }
+
+        var forward = _items.First.RequireNotNull();
+        var backward = _items.Last.RequireNotNull();
+        for (var i = 0; i < _items.Count / 2; i++)
+        {
+            (forward.Value, backward.Value) = (backward.Value, forward.Value);
+            forward = forward.Next.RequireNotNull();
+            backward = backward.Previous.RequireNotNull();
         }
     }
 
@@ -402,21 +464,36 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
         if (steps > 0)
         {
+            // Rotate reuses nodes: pop and re-add balance exactly, so keep the
+            // committed charge flat instead of releasing and re-reserving.
             for (var i = 0; i < steps; i++)
             {
-                _items.AddFirst(Pop());
+                var moved = _items.Last.RequireNotNull().Value;
+                _items.RemoveLast();
+                _items.AddFirst(moved);
             }
         }
         else if (steps < 0)
         {
             for (var i = 0; i > steps; i--)
             {
-                _items.AddLast(PopLeft());
+                var moved = _items.First.RequireNotNull().Value;
+                _items.RemoveFirst();
+                _items.AddLast(moved);
             }
         }
     }
 
-    public void Clear() => _items.Clear();
+    public void Clear()
+    {
+        if (_memoryGovernor is not null && _committedNodeBytes > 0)
+        {
+            _memoryGovernor.Release(_committedNodeBytes);
+            _committedNodeBytes = 0;
+        }
+
+        _items.Clear();
+    }
 
     public object GetItem(int index) => GetNodeAt(index).Value;
 
@@ -424,8 +501,20 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     public object GetSlice(IEnumerable<int> indices)
     {
-        var source = _items.ToArray();
-        return new PyDeque(EnumerateSliceItems(), MaxLength);
+        // Snapshot the source under a transient reservation when governed so
+        // peak scratch is bounded; the retained slice charges durably below.
+        var governor = _memoryGovernor;
+        var span = _allocationSpan;
+        object[] source;
+        if (governor is null)
+        {
+            source = _items.ToArray();
+        }
+        else
+        {
+            using var scratch = governor.ReserveTemporary(checked(24L + (8L * _items.Count)), span);
+            source = _items.ToArray();
+        }
 
         IEnumerable<object> EnumerateSliceItems()
         {
@@ -434,9 +523,15 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
                 yield return source[index];
             }
         }
+
+        return governor is null
+            ? new PyDeque(EnumerateSliceItems(), MaxLength)
+            : new PyDeque(EnumerateSliceItems(), MaxLength, governor, span);
     }
 
-    public object CreateSlice(IEnumerable<object> items) => new PyDeque(items, MaxLength);
+    public object CreateSlice(IEnumerable<object> items) => _memoryGovernor is null
+        ? new PyDeque(items, MaxLength)
+        : new PyDeque(items, MaxLength, _memoryGovernor, _allocationSpan);
 
     public void SetItem(int index, object value) => SetIndex(index, value);
 
@@ -450,6 +545,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     {
         var node = GetNodeAt(index);
         _items.Remove(node);
+        ReleaseNode();
     }
 
     public bool IsTruthy() => Count != 0;
@@ -471,6 +567,31 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    private void ReserveNode()
+    {
+        if (_memoryGovernor is null)
+        {
+            return;
+        }
+
+        _memoryGovernor.Reserve(DequeNodeBytes, _allocationSpan);
+        _memoryGovernor.Commit(DequeNodeBytes);
+        _committedNodeBytes += DequeNodeBytes;
+    }
+
+    private void ReleaseNode()
+    {
+        // Attached prepopulated nodes were never charged (MG03 gap), so only
+        // release when a matching reservation is actually held.
+        if (_memoryGovernor is null || _committedNodeBytes < DequeNodeBytes)
+        {
+            return;
+        }
+
+        _memoryGovernor.Release(DequeNodeBytes);
+        _committedNodeBytes -= DequeNodeBytes;
+    }
 
     private LinkedListNode<object> GetNodeAt(int index)
     {

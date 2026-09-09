@@ -351,8 +351,8 @@ internal sealed partial class LythonRuntime
         }
 
         var result = hasIterable
-            ? new PyDeque(ToSequence(iterable, span, context), maxLength)
-            : new PyDeque(maxLength);
+            ? new PyDeque(ToSequence(iterable, span, context), maxLength, context.MemoryGovernor, span)
+            : new PyDeque(maxLength, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }
@@ -365,8 +365,8 @@ internal sealed partial class LythonRuntime
         }
 
         var result = arguments.Length == 0
-            ? new PyDeque()
-            : new PyDeque(ToSequence(arguments[0], span, context));
+            ? new PyDeque(null, context.MemoryGovernor, span)
+            : new PyDeque(ToSequence(arguments[0], span, context), null, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
     }

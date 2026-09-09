@@ -20,6 +20,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.append(value) expects one argument.", span);
                     }
 
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.Append(arguments[0]);
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
@@ -31,6 +32,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.appendleft(value) expects one argument.", span);
                     }
 
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.AppendLeft(arguments[0]);
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
@@ -64,6 +66,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.extend(iterable) expects one argument.", span);
                     }
 
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.Extend(ToSequence(arguments[0], span, context));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
@@ -75,6 +78,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.extendleft(iterable) expects one argument.", span);
                     }
 
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.ExtendLeft(ToSequence(arguments[0], span, context));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
@@ -87,7 +91,7 @@ internal sealed partial class LythonRuntime
                 "copy" => BoundCallable.CreateNoArguments(
                     deque,
                     "deque.copy",
-                    static (receiver, _, _) => new PyDeque(receiver, receiver.MaxLength)),
+                    static (receiver, span, context) => new PyDeque(receiver, receiver.MaxLength, context.MemoryGovernor, span)),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -124,6 +128,7 @@ internal sealed partial class LythonRuntime
                     var index = ExpectDequeInsertIndex(arguments[0], span);
                     try
                     {
+                        deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                         deque.Insert(index, arguments[1]);
                     }
                     catch (InvalidOperationException ex) when (ex.Message == "deque already at its maximum size")
