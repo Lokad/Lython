@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "object.__new__(cls, ...) expects the first argument to be a class.", span);
             }
 
-            return new PyInstance(type);
+            return new PyInstance(type, context.MemoryGovernor, span);
         }
     }
 
@@ -267,6 +267,7 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
+            instance.AttachMemoryGovernor(context.MemoryGovernor, span);
             instance.SetAttribute(name.AsString(), arguments[2].Value);
             return PyNone.Instance;
         }

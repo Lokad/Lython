@@ -189,7 +189,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return InvokeBuiltInType(arguments, span, context);
         }
 
-        object instance = new PyInstance(this);
+        object instance = new PyInstance(this, context.MemoryGovernor, span);
         if (TryGetMember("__new__", out var allocator))
         {
             if (allocator is not LythonRuntime.ICallable newCallable)
@@ -236,7 +236,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return InvokeBuiltInType(arguments, span, context);
         }
 
-        object instance = new PyInstance(this);
+        object instance = new PyInstance(this, context.MemoryGovernor, span);
         if (TryGetMember("__new__", out var allocator))
         {
             if (allocator is not LythonRuntime.ICallable newCallable)

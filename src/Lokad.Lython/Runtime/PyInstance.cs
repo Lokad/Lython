@@ -3,16 +3,45 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable
+internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue
 {
     private readonly Dictionary<string, object> _attributes = new(StringComparer.Ordinal);
+
+    // Attribute tables grow one CLR entry per guest attribute name; charge
+    // each new key so retained attributes accumulate. The key strings
+    // themselves are caller-owned (often shared parser constants); only the
+    // table slot is charged here. Empty instances stay free.
+    private const long AttributeSlotBytes = 64;
+    private MemoryGovernor? _memoryGovernor;
+    private LythonSourceSpan? _allocationSpan;
+    private long _committedAttributeBytes;
 
     public PyInstance(PyType type)
     {
         Type = type;
     }
 
+    public PyInstance(PyType type, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        Type = type;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+    }
+
     public PyType Type { get; }
+
+    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    public LythonSourceSpan? AllocationSpan => _allocationSpan;
+
+    public void AttachMemoryGovernor(MemoryGovernor governor)
+        => AttachMemoryGovernor(governor, null);
+
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        _memoryGovernor ??= governor;
+        _allocationSpan ??= allocationSpan;
+    }
 
     public bool TryGetOwnAttribute(string name, [MaybeNullWhen(false)] out object value) => _attributes.TryGetValue(name, out value);
 
@@ -21,9 +50,35 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
     public bool TryGetAttribute(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         => PyAttributeLookup.TryResolveInstanceMember(this, name, context, span, out value);
 
-    public void SetAttribute(string name, object value) => _attributes[name] = value;
+    public void SetAttribute(string name, object value)
+    {
+        if (_memoryGovernor is not null && !_attributes.ContainsKey(name))
+        {
+            _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
+            _memoryGovernor.Commit(AttributeSlotBytes);
+            _committedAttributeBytes += AttributeSlotBytes;
+        }
 
-    public bool RemoveAttribute(string name) => _attributes.Remove(name);
+        _attributes[name] = value;
+    }
+
+    public bool RemoveAttribute(string name)
+    {
+        if (!_attributes.Remove(name))
+        {
+            return false;
+        }
+
+        // Only release a matching reservation: attributes adopted from an
+        // ungoverned table (MG03 gap) hold no charge to return.
+        if (_memoryGovernor is not null && _committedAttributeBytes >= AttributeSlotBytes)
+        {
+            _memoryGovernor.Release(AttributeSlotBytes);
+            _committedAttributeBytes -= AttributeSlotBytes;
+        }
+
+        return true;
+    }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
