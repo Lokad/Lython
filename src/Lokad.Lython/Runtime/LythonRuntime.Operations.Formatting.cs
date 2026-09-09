@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
-            return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span);
+            return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context.MemoryGovernor);
         }
 
         if (RequiresNumericFormat(spec))
@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
             text = text.Length <= precision ? text : text[..precision];
         }
 
-        return ApplyInterpolatedFormatPadding(text, spec, numericPrefixLength: 0, numeric: false, span);
+        return ApplyInterpolatedFormatPadding(text, spec, numericPrefixLength: 0, numeric: false, span, context.MemoryGovernor);
     }
 
     private static bool TryFormatNumericValue(
@@ -427,7 +427,8 @@ internal sealed partial class LythonRuntime
         InterpolatedFormatSpecifier spec,
         int numericPrefixLength,
         bool numeric,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        MemoryGovernor? governor)
     {
         if (spec.Width is not { } width || text.Length >= width)
         {
@@ -448,6 +449,16 @@ internal sealed partial class LythonRuntime
         }
 
         var padding = width - text.Length;
+        // Bound the expansion before any padding buffer is built: the result
+        // is exactly the source text plus one fill per missing char, so a
+        // hostile width fails here instead of materializing multi-megabyte
+        // CLR strings ahead of the governed result charge (zfill shape).
+        if (governor is not null)
+        {
+            var fillWidth = fill <= 0x7F ? 1L : fill <= 0x7FF ? 2L : 3L;
+            governor.EnsureCanReserve(32L + Encoding.UTF8.GetByteCount(text) + (fillWidth * padding), span);
+        }
+
         var padText = new string(fill, padding);
         return align switch
         {
