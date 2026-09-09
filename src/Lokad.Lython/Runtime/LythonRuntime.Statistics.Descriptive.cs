@@ -15,9 +15,35 @@ internal sealed partial class LythonRuntime
 
         private static object Mean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValues(arguments, "statistics.mean", span, context);
-            var total = values.Sum(static v => v);
-            var mean = total / values.Count;
+            // Streamed count and sum over a single pass: the additions run in
+            // encounter order, so the double arithmetic is identical to the
+            // materialized sum, but scratch stays O(1) however large the input.
+            // Error precedence mirrors GetNumericObjects: arity, then emptiness,
+            // then per-element validation.
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "statistics.mean(data) expects one iterable argument.", span);
+            }
+
+            var total = 0.0;
+            var count = 0;
+            foreach (var value in ToSequence(arguments[0], span, context))
+            {
+                total += ExpectRealForStatistics(value, "statistics.mean", span);
+                count++;
+                context.ObserveCollectionCount(count, span);
+                if ((count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            if (count == 0)
+            {
+                throw StatisticsError("statistics.mean(data) requires at least one data point.", span);
+            }
+
+            var mean = total / count;
             return IsWholeInteger(mean) ? new BigInteger(mean) : mean;
         }
 
