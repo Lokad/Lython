@@ -58,12 +58,16 @@ internal sealed partial class LythonRuntime
         }
         private object SetDefaults(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             foreach (var argument in arguments)
             {
                 if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", "argparse.ArgumentParser.set_defaults(...) accepts keyword arguments only.", span);
+                }
+                if (!_defaults.ContainsKey(argument.KeywordName))
+                {
+                    context.MemoryGovernor.Reserve(DefaultsSlotBytes, span);
+                    context.MemoryGovernor.Commit(DefaultsSlotBytes);
                 }
                 _defaults[argument.KeywordName] = argument.Value;
             }

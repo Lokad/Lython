@@ -269,6 +269,12 @@ internal sealed partial class LythonRuntime
 
     internal sealed partial class ArgumentParserObject
     {
+        // One spec record plus its list slot and two lookup-index entries.
+        private const long ArgumentSpecInfrastructureBytes = 256;
+        // One group record plus its list slot.
+        private const long ArgumentGroupBytes = 128;
+        // One defaults-table slot; keys and values stay caller-owned.
+        private const long DefaultsSlotBytes = 64;
         private readonly List<ArgumentSpec> _arguments = [];
         private readonly Dictionary<string, ArgumentSpec> _optionalArgumentsByName = new(StringComparer.Ordinal);
         private readonly Dictionary<string, ArgumentSpec> _argumentsByDestination = new(StringComparer.Ordinal);

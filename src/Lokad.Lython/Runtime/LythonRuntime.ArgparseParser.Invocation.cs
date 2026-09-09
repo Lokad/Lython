@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            RegisterArgument(CreateArgumentSpec(arguments, span, groupId: null, context));
+            RegisterArgument(CreateArgumentSpec(arguments, span, groupId: null, context), context, span);
             return PyNone.Instance;
         }
         private object AddMutuallyExclusiveGroup(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -31,16 +31,44 @@ internal sealed partial class LythonRuntime
                     span);
             }
             var required = arguments.Length == 1 && IsTruthy(arguments[0].Value);
+            // Groups are retained alongside the parser like specs below.
+            context.MemoryGovernor.Reserve(ArgumentGroupBytes, span);
+            context.MemoryGovernor.Commit(ArgumentGroupBytes);
             var group = new ArgparseMutuallyExclusiveGroupObject(this, _nextGroupId++, required);
             _groups.Add(group);
             return group;
         }
         internal void AddArgumentToGroup(CallArgumentValue[] arguments, LythonSourceSpan span, int groupId, ExecutionContext context)
         {
-            RegisterArgument(CreateArgumentSpec(arguments, span, groupId, context));
+            RegisterArgument(CreateArgumentSpec(arguments, span, groupId, context), context, span);
         }
         private void RegisterArgument(ArgumentSpec spec)
         {
+            RegisterArgument(spec, null, null);
+        }
+        private void RegisterArgument(ArgumentSpec spec, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            // Spec records, list slots and both lookup indexes are retained for
+            // the parser lifetime alongside every retained option string, so
+            // own them here at two bytes per character plus infrastructure.
+            // Parse-time namespace tables mirror these entries one-to-one.
+            var stringChars = spec.Destination.Length
+                + (spec.HelpText?.Length ?? 0)
+                + (spec.Metavar?.Length ?? 0)
+                + (spec.VersionText?.Length ?? 0);
+            foreach (var optionName in spec.OptionNames)
+            {
+                stringChars += optionName.Length;
+            }
+
+            // The constructor fixed help spec arrives without a governor and stays
+            // free like other engine-owned constants; every guest call pays.
+            if (context is not null)
+            {
+                var charge = checked(ArgumentSpecInfrastructureBytes + (2L * stringChars));
+                context.MemoryGovernor.Reserve(charge, span);
+                context.MemoryGovernor.Commit(charge);
+            }
             _arguments.Add(spec);
             _argumentsByDestination.TryAdd(spec.Destination, spec);
             if (spec.IsPositional)
