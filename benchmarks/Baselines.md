@@ -62,9 +62,10 @@ same machine shape:
 | Read N entries and sum expanded bytes | 800 | 2,678.1 us | 8861.31 KB |
 
 Notes: 2 outliers removed on one read case, 1 on one write case. Write
-cost scales near-linearly with entry count; read allocation grows faster
-than entry count at 800 entries. Re-record on release runs before changing
-archive write/read hot paths.
+cost scales near-linearly with entry count. Read allocation scales about
+linearly too (3.96x for 4x entries from 200 to 800); only read runtime
+grows faster than entry count there (about 5.9x). Re-record on release
+runs before changing archive write/read hot paths.
 
 Compression ratio (CompressionRatioBenchmarks.cs, single 1,000,000-byte
 DEFLATED entry; compressible is a repeated byte, incompressible is
@@ -77,7 +78,14 @@ shape:
 | Write 1MB incompressible entry | 18.675 ms | 9.66 MB |
 
 Notes: 1 outlier removed on the compressible case. Incompressible input
-costs about 3x time and 2.5x allocation versus fully compressible input
+costs about 3x time and 2.5x allocation versus fully compressible input.
+All write figures above predate the corrected DEFLATE serializer and staged
+storage accounting; re-record them on release runs before validating
+write-path changes against these numbers.
+
+Lookup and integer-sizing workloads (`ZipLookupBenchmarks.cs`,
+`IntegerSizingBenchmarks.cs`) have no recorded figures yet; record them on
+release runs before changing member lookup or integer guard paths.
 at the same expanded size. Re-record on release runs before changing
 archive compression or staging paths.
 

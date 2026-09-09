@@ -3,61 +3,58 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Entry-count scaling benchmarks for contained ZIP archives: write and
-/// read fixed-size DEFLATED entries at 50/200/800 entries so archive cost can
-/// be related to entry count versus expanded bytes. The read benchmark returns
-/// the total expanded bytes, keeping that figure next to the allocation
-/// column. Baselines are recorded on release runs; see
+/// Member-lookup scaling benchmarks for contained ZIP archives: repeated getinfo
+/// and read of the last entry by name at 50/200/800 entries, so the governed
+/// last-name-to-ordinal index shows constant-time behavior instead of directory
+/// rescans. Baselines are recorded on release runs; see
 /// <c>benchmarks/Baselines.md</c>.
 /// </summary>
 [MemoryDiagnoser]
-public class ZipEntryScalingBenchmarks
+public class ZipLookupBenchmarks
 {
     [Params(50, 200, 800)]
     public int EntryCount { get; set; }
 
-    private LythonCompiledScript _write = null!;
-    private LythonCompiledScript _read = null!;
+    private LythonCompiledScript _lookup = null!;
     private byte[] _sourceArchive = null!;
 
     [GlobalSetup]
     public void Setup()
     {
         var engine = new LythonEngine();
-        _write = Compile(
+        var write = Compile(
             engine,
             "import zipfile\n"
-            + "with zipfile.ZipFile(\"/a.zip\", \"w\", compression=zipfile.ZIP_DEFLATED) as archive:\n"
+            + "with zipfile.ZipFile(\"/a.zip\", \"w\") as archive:\n"
             + $"    for i in range({EntryCount}):\n"
             + "        archive.writestr(\"f\" + str(i) + \".txt\", \"v\" * 256)\n"
             + "return 1\n");
-        _read = Compile(
+        var lastName = "f" + (EntryCount - 1) + ".txt";
+        _lookup = Compile(
             engine,
             "import zipfile\n"
             + "total = 0\n"
             + "with zipfile.ZipFile(\"/a.zip\") as archive:\n"
-            + "    for name in archive.namelist():\n"
-            + "        total = total + len(archive.read(name))\n"
+            + "    for i in range(200):\n"
+            + $"        archive.getinfo(\"{lastName}\")\n"
+            + $"        total = total + len(archive.read(\"{lastName}\"))\n"
             + "return total\n");
         var seed = new ZipBinaryHost();
-        var built = _write.Run(seed);
+        var built = write.Run(seed);
         if (!built.Success)
         {
-            throw new InvalidOperationException(built.Failure?.Message ?? "ZIP scaling benchmark seed failed.");
+            throw new InvalidOperationException(built.Failure?.Message ?? "ZIP lookup benchmark seed failed.");
         }
 
         _sourceArchive = seed.ReadBytes("/a.zip");
     }
 
-    [Benchmark(Description = "Write N fixed-size DEFLATED entries")]
-    public object? WriteEntries() => Run(_write, new ZipBinaryHost());
-
-    [Benchmark(Description = "Read N entries and sum expanded bytes")]
-    public object? ReadEntries()
+    [Benchmark(Description = "Lookup last entry by name 200 times")]
+    public object? LookupLast()
     {
         var host = new ZipBinaryHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_read, host);
+        return Run(_lookup, host);
     }
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
@@ -78,5 +75,4 @@ public class ZipEntryScalingBenchmarks
             ? result.ReturnValue
             : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
     }
-
 }
