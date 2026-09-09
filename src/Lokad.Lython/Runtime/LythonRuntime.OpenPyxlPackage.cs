@@ -76,6 +76,7 @@ internal sealed partial class LythonRuntime
                     var path = ResolvePackagePath("xl/workbook.xml", target);
                     worksheetPaths.Add(path);
                     var worksheet = new OpenPyxlWorksheet(name) { SourcePath = path };
+                    worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
                     context.CheckExecutionBudget(span);
                     var sheetDocument = LoadWorksheetCells(
                         session,

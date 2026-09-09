@@ -19,6 +19,7 @@ internal sealed partial class LythonRuntime
             title = MakeUniqueSheetTitle(title, current: null, span);
 
             var worksheet = new OpenPyxlWorksheet(title) { Workbook = this };
+            worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
             var active = _worksheets.Count == 0 ? null : _worksheets[ActiveIndex];
             if (arguments.Length >= 2 && arguments[1] is not PyNone)
             {

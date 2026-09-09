@@ -62,6 +62,46 @@ internal sealed partial class LythonRuntime
         private bool _hasPageMargins;
         private bool _hasStructuralMutation;
         private bool _hasLoadedCommentsUpdate;
+        private MemoryGovernor? _memoryGovernor;
+        private LythonSourceSpan? _allocationSpan;
+        private long _committedCellBytes;
+
+        // Guest-mutated cell tables grow one CLR entry per address; charge each
+        // new key so retained cells accumulate. Values pass through by
+        // reference and stay guest-owned; loaded cells stay under R02 package
+        // accounting, which never routes through these writers.
+        private const long CellSlotBytes = 64;
+
+        public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        {
+            _memoryGovernor ??= governor;
+            _allocationSpan ??= allocationSpan;
+        }
+
+        private void ReserveCellSlot()
+        {
+            if (_memoryGovernor is null)
+            {
+                return;
+            }
+
+            _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+            _memoryGovernor.Commit(CellSlotBytes);
+            _committedCellBytes += CellSlotBytes;
+        }
+
+        private void ReleaseCellSlot()
+        {
+            // Only release a matching reservation: entries adopted from an
+            // ungoverned table hold no charge to return.
+            if (_memoryGovernor is null || _committedCellBytes < CellSlotBytes)
+            {
+                return;
+            }
+
+            _memoryGovernor.Release(CellSlotBytes);
+            _committedCellBytes -= CellSlotBytes;
+        }
 
         public OpenPyxlWorksheet(string title)
         {

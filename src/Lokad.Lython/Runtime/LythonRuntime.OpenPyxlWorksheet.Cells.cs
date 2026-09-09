@@ -196,6 +196,7 @@ internal sealed partial class LythonRuntime
             {
                 if (_cells.Remove(address))
                 {
+                    ReleaseCellSlot();
                     InvalidateDimensionsAfterRemoval(address);
                 }
                 _dataTypes.Remove(address);
@@ -204,6 +205,11 @@ internal sealed partial class LythonRuntime
                 return;
             }
             var added = !_cells.ContainsKey(address);
+            if (added)
+            {
+                ReserveCellSlot();
+            }
+
             _cells[address] = normalized;
             if (added)
             {
@@ -316,9 +322,22 @@ internal sealed partial class LythonRuntime
         internal OpenPyxlWorksheet Copy(string title)
         {
             var copy = new OpenPyxlWorksheet(title);
+            if (_memoryGovernor is not null)
+            {
+                copy.AttachMemoryGovernor(_memoryGovernor, _allocationSpan);
+            }
+
             foreach (var pair in _cells)
             {
                 copy._cells[pair.Key] = pair.Value;
+            }
+
+            if (copy._memoryGovernor is not null && copy._cells.Count > 0)
+            {
+                var copiedBytes = checked(CellSlotBytes * (long)copy._cells.Count);
+                copy._memoryGovernor.Reserve(copiedBytes, copy._allocationSpan);
+                copy._memoryGovernor.Commit(copiedBytes);
+                copy._committedCellBytes += copiedBytes;
             }
             copy._minRow = _minRow;
             copy._maxRow = _maxRow;

@@ -432,6 +432,8 @@ internal sealed partial class LythonRuntime
             var address = new CellAddress(row, column);
             if (!_cellObjects.TryGetValue(address, out var cell))
             {
+                // Wrapper caches stay uncharged with the other model maps;
+                // only the value table below is owned here.
                 cell = new OpenPyxlCell(this, row, column);
                 _cellObjects[address] = cell;
             }
