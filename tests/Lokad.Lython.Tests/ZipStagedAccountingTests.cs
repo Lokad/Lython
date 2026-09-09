@@ -1,5 +1,6 @@
 using System.IO;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Zip;
@@ -258,6 +259,27 @@ public sealed class ZipStagedAccountingTests
         var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+
+    [Fact]
+    public async Task CancelledStagedWriteFailsExplicitly()
+    {
+        // R36: a cancelled staged write honors cancellation instead of
+        // running to completion or failing with an unrelated error.
+        const string script = "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\") as archive:\n    archive.writestr(\"a\", bytes(1000))\nreturn 1\n";
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var options = new LythonRunOptions { CancellationToken = cancellation.Token };
+        var sync = new LythonEngine().Run(script, new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+
+        var asyncResult = await new LythonEngine().RunAsync(script, new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 
 }
