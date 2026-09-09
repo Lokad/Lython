@@ -553,12 +553,37 @@ internal sealed partial class LythonRuntime
             return list.ToArray();
         }
 
+        // Unpack targets are fixed-arity except for one starred remainder, so
+        // the drained prefix is transient scratch coexisting with live iteration
+        // state. Mirror the shared asynchronous drain: charge backing growth
+        // before it can allocate, observe the collection count per item, and
+        // cover the final array until the starred list (or names) take over.
+        using var temporary = context.MemoryGovernor.ReserveTemporary(0, span);
         var items = new List<object>();
+        var chargedCapacity = 0;
         foreach (var item in ToSequence(value, span, context))
         {
+            if (items.Count == items.Capacity)
+            {
+                var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
+                temporary.Grow(checked(16L * (predicted - chargedCapacity)), span);
+            }
+
             items.Add(item);
+            if (items.Capacity > chargedCapacity)
+            {
+                temporary.Grow(16L * (items.Capacity - chargedCapacity), span);
+                chargedCapacity = items.Capacity;
+            }
+
+            context.ObserveCollectionCount(items.Count, span);
+            if ((items.Count & 63) == 0)
+            {
+                context.CheckExecutionBudget(span);
+            }
         }
 
+        temporary.Grow(16L * items.Count, span);
         return [.. items];
     }
 

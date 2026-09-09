@@ -250,4 +250,56 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
+    [Fact]
+    public async Task FixedArityUnpackingMeetsBudgetBeforeCounting()
+    {
+        // MG05: fixed-arity unpacking drains the whole iterable before
+        // checking the arity. With an uncharged drain the 500,000 pulls
+        // complete and the count check reports ValueError; with a governed
+        // drain the budget fails first with MemoryError.
+        var script = new LythonEngine().Compile(
+            """
+            try:
+                try:
+                    a, b = range(500000)
+                except ValueError:
+                    return "value"
+            except MemoryError:
+                return "memory"
+            return "neither"
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task UnpackingSucceedsWhenFunded()
+    {
+        // MG05: funded fixed-arity and starred unpacking must still succeed in
+        // both modes.
+        var script = new LythonEngine().Compile(
+            """
+            a, *b = range(5)
+            c, d = [10, 20]
+            return [a, len(b), c, d]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { new BigInteger(0), new BigInteger(4), new BigInteger(10), new BigInteger(20) };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
 }
