@@ -127,8 +127,9 @@ internal static partial class StaticStructuralDiagnostics
                 StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
             BinaryOperatorSyntax.BitwiseOr or
-            BinaryOperatorSyntax.BitwiseXor or
-            BinaryOperatorSyntax.BitwiseAnd => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
+            BinaryOperatorSyntax.BitwiseAnd => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
+            left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
+            BinaryOperatorSyntax.BitwiseXor => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
             BinaryOperatorSyntax.LeftShift or
             BinaryOperatorSyntax.RightShift => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right),
             _ => true

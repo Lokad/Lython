@@ -82,7 +82,6 @@ public sealed class CounterDecimalAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-
     private static object InvokeOperator(
         string name,
         LythonRuntime.ExecutionContext context,
@@ -148,8 +147,48 @@ public sealed class CounterDecimalAccountingTests
             CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.Equal(0, neg.Count);
         Assert.Equal(intNegBacking + 64L, Committed(context) - beforeDecNeg);
+    }
+
+    [Fact]
+    public void CounterBitwiseSelectionsStayFree()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var key = PyString.FromString("a");
+        static PyCounter CounterWith(LythonRuntime.ExecutionContext context, LythonSourceSpan span, object key, object value)
+        {
+            var counter = new PyCounter(context.MemoryGovernor, span);
+            counter.SetItem(key, value);
+            return counter;
+        }
+
+        static long Committed(LythonRuntime.ExecutionContext context) => context.MemoryGovernor.CurrentCommittedBytes;
+
+        var leftCount = new PyDecimal(1m);
+        var rightCount = new PyDecimal(2m);
+        var beforeIntOr = Committed(context);
+        _ = InvokeOperator("EvaluateBitwiseOr", context, span,
+            CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
+        var intOrBacking = Committed(context) - beforeIntOr;
+        var beforeDecOr = Committed(context);
+        var union = (PyCounter)InvokeOperator("EvaluateBitwiseOr", context, span,
+            CounterWith(context, span, key, leftCount), CounterWith(context, span, key, rightCount));
+        Assert.True(union.TryGetValue(key, out var unionValue));
+        Assert.Same(rightCount, unionValue);
+        Assert.Equal(intOrBacking, Committed(context) - beforeDecOr);
+
+        var beforeIntAnd = Committed(context);
+        _ = InvokeOperator("EvaluateBitwiseAnd", context, span,
+            CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
+        var intAndBacking = Committed(context) - beforeIntAnd;
+        var beforeDecAnd = Committed(context);
+        var intersection = (PyCounter)InvokeOperator("EvaluateBitwiseAnd", context, span,
+            CounterWith(context, span, key, leftCount), CounterWith(context, span, key, rightCount));
+        Assert.True(intersection.TryGetValue(key, out var intersectionValue));
+        Assert.Same(leftCount, intersectionValue);
+        Assert.Equal(intAndBacking, Committed(context) - beforeDecAnd);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
-
 

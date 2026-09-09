@@ -2804,4 +2804,49 @@ print(random.choices([1, 2], k=True))
         Assert.True(compiled.IsValid);
         Assert.DoesNotContain(compiled.Diagnostics, d => d.Code is "LA3092" or "LA3095" or "LA3101" or "LA3076");
     }
+
+    [Fact]
+    public async Task CounterBitwiseOperators_AcceptCounterPairsAtCompileTime()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import decimal
+            from collections import Counter
+            one = decimal.Decimal(1)
+            two = decimal.Decimal(2)
+            c = Counter({"a": one})
+            d = Counter({"a": two})
+            vals = []
+            vals.append(str((c | d)["a"]))
+            vals.append(str((c & d)["a"]))
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write("|".join(vals))
+            __lython_file.close()
+            """);
+        Assert.True(script.IsValid);
+        Assert.DoesNotContain(script.Diagnostics, d => d.Code == "LA3141");
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2|1", syncHost.ReadText("/out.txt"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2|1", asyncHost.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void CounterBitwiseXor_StillRejectedAtCompileTime()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+            from collections import Counter
+            c = Counter({"a": 1})
+            d = Counter({"a": 2})
+            c ^ d
+            """);
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3141");
+    }
 }
