@@ -332,8 +332,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Constructed style values retain one wrapper plus payload record. Factories
-    // built without a context (internal defaults) stay free like other constants.
+    // Constructed style values retain one wrapper plus payload record. Comments
+    // retain text, author and their wrapper. Factories built without a context
+    // (internal defaults) stay free like other constants.
     private const long StyleValueBytes = 128;
 
     private static void ChargeStyleValue(ExecutionContext? context, LythonSourceSpan? span)
@@ -522,7 +523,7 @@ internal sealed partial class LythonRuntime
 
     private static object CreateComment(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
+        ChargeStyleValue(context, span);
         var text = ExpectString(arguments[0], "openpyxl.comments.Comment(text)", span);
         var author = ExpectString(arguments[1], "openpyxl.comments.Comment(author)", span);
         return new OpenPyxlComment(text, author);

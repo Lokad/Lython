@@ -5,8 +5,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG17: constructed style values commit object storage; internal defaults
-/// built without a context stay free.
+/// MG17: constructed style values and comments commit object storage;
+/// internal defaults built without a context stay free.
 /// </summary>
 public sealed class StyleValueAccountingTests
 {
@@ -35,6 +35,36 @@ public sealed class StyleValueAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         _ = CreateFont(null, null);
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static object CreateComment(LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        var method = typeof(LythonRuntime).GetMethod("CreateComment", BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("CreateComment not found.");
+        object?[] args = [Lokad.Lython.Runtime.Text.PyString.FromString("t"), Lokad.Lython.Runtime.Text.PyString.FromString("a")];
+        return method.Invoke(null, [args, span, context])
+            ?? throw new InvalidOperationException("CreateComment returned null.");
+    }
+
+    [Fact]
+    public void CommentValueCommitsExactly()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        _ = CreateComment(context, span);
+        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void ContextFreeCommentStaysFree()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        _ = CreateComment(null, null);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
