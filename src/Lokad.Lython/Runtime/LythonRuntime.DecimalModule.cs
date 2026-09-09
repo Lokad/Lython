@@ -53,9 +53,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Constructed decimals retain a small fixed-size payload; charge one table
-    // slot per fresh value once built (the expression evaluates first, so failed
-    // constructions leak nothing). Aliased Decimal inputs stay free.
+    // Constructed decimal-family values (decimals, tuples, contexts) retain
+    // a small fixed-size payload; charge one table slot per fresh value once built
+    // (the expression evaluates first, so failed constructions leak nothing).
+    // Aliased inputs stay free.
     private const long DecimalValueBytes = 64;
 
     internal static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
@@ -69,15 +70,6 @@ internal sealed partial class LythonRuntime
     // single-digit rotate); charge only fresh values.
     internal static object OwnFreshDecimal(object result, PyDecimal input, ExecutionContext context, LythonSourceSpan span)
         => ReferenceEquals(result, input) ? result : OwnDecimalValue(result, context, span);
-
-    // DecimalTuple values add one table slot for the wrapper on top of the
-    // governed digit-tuple backing.
-    internal static object OwnDecimalTupleValue(object value, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.MemoryGovernor.Reserve(DecimalValueBytes, span);
-        context.MemoryGovernor.Commit(DecimalValueBytes);
-        return value;
-    }
 
     private static object DecimalCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -111,12 +103,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "decimal.DecimalTuple(sign, digits, exponent) expects three arguments.", span);
         }
 
-        return OwnDecimalTupleValue(PyDecimalOps.CreateTuple(arguments[0], arguments[1], arguments[2], span, context.MemoryGovernor), context, span);
+        return OwnDecimalValue(PyDecimalOps.CreateTuple(arguments[0], arguments[1], arguments[2], span, context.MemoryGovernor), context, span);
     }
 
     private static object DecimalContextCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length > 8)
         {
             throw new LythonRuntimeException("TypeError", "decimal.Context(...) expects supported context options.", span);
@@ -148,7 +139,7 @@ internal sealed partial class LythonRuntime
             ? ExpectPyDict(arguments[7], "decimal.Context(..., traps=...) expects a dict or None.", span)
             : null;
 
-        return new PyDecimalContext(precision, rounding, emin, emax, capitals, clamp, flags, traps);
+        return OwnDecimalValue(new PyDecimalContext(precision, rounding, emin, emax, capitals, clamp, flags, traps), context, span);
     }
 
     private static object DecimalGetContext(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -180,7 +171,7 @@ internal sealed partial class LythonRuntime
         }
 
         var requested = arguments.Length == 0 ? null : ExpectDecimalContextOrNone(arguments[0], "decimal.localcontext([context]) expects a Context or None.", span);
-        return new PyDecimalLocalContext(context, requested);
+        return OwnDecimalValue(new PyDecimalLocalContext(context, requested), context, span);
     }
 
     private static PyDecimalContext? ExpectDecimalContextOrNone(object value, string message, LythonSourceSpan span)

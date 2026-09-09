@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.as_tuple() expects no arguments.", span);
                     }
 
-                    return OwnDecimalTupleValue(PyDecimalOps.AsTuple(decimalValue, context.MemoryGovernor, span), context, span);
+                    return OwnDecimalValue(PyDecimalOps.AsTuple(decimalValue, context.MemoryGovernor, span), context, span);
                 }, "Decimal.as_tuple", []),
                 "adjusted" => BoundCallable.Create((arguments, span, _) =>
                 {

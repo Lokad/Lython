@@ -102,14 +102,14 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
             "clamp" => new BigInteger(Clamp),
             "flags" => _flags,
             "traps" => _traps,
-            "copy" => new PyDecimalBoundCallable((arguments, span) =>
+            "copy" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length != 0)
                 {
                     throw new LythonRuntimeException("TypeError", "Context.copy() expects no arguments.", span);
                 }
 
-                return Copy();
+                return LythonRuntime.OwnDecimalValue(Copy(), context, span);
             }, "Context.copy", []),
             "clear_flags" => new PyDecimalBoundCallable((arguments, span) =>
             {
