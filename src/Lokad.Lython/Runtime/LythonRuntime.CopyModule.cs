@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -148,6 +149,14 @@ internal sealed partial class LythonRuntime
         private readonly PyDict _external;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
         private readonly LythonSourceSpan? _span;
+        private readonly bool _trustExternalView;
+
+        // External-view hits are keyed by lossy 32-bit identity hashes, so a
+        // hit must prove it belongs to the requested original. Verified
+        // originals live in a table anchored by the user dict (shared across
+        // resumptions and nested copies, dying with the dict); internal memos
+        // rely on the exact per-call map instead and never consult the view.
+        private static readonly ConditionalWeakTable<PyDict, Dictionary<BigInteger, object>> VerifiedOriginals = new();
 
         // One memo entry retains a CLR map slot, a view-dict entry and an
         // identity key. Both internal and user-supplied memos cover the CLR
@@ -156,11 +165,16 @@ internal sealed partial class LythonRuntime
         // entries.
         private const long MemoEntryBytes = 128;
 
+        // One verify-table slot per distinct entry, owned durably by the user
+        // dict like its own entries (table creation rides on the first entry).
+        private const long VerifyEntryBytes = 64;
+
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
         {
             _external = new PyDict();
             _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _span = span;
+            _trustExternalView = false;
         }
 
         private CopyMemo(PyDict external, ExecutionContext context, LythonSourceSpan span)
@@ -168,6 +182,7 @@ internal sealed partial class LythonRuntime
             _external = external;
             _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _span = span;
+            _trustExternalView = true;
         }
 
         public void Dispose() => _scratch?.Dispose();
@@ -191,8 +206,17 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (!_trustExternalView)
+            {
+                copied = PyNone.Instance;
+                return false;
+            }
+
             var key = IdentityKey(original);
-            if (_external.TryGetValue(key, out copied))
+            if (_external.TryGetValue(key, out copied)
+                && VerifiedOriginals.TryGetValue(_external, out var originals)
+                && originals.TryGetValue(key, out var recorded)
+                && ReferenceEquals(recorded, original))
             {
                 _references[original] = copied;
                 return true;
@@ -207,6 +231,33 @@ internal sealed partial class LythonRuntime
             _scratch?.Grow(MemoEntryBytes, _span);
             _references[original] = copied;
             _external.SetItem(IdentityKey(original), copied);
+            if (_trustExternalView)
+            {
+                RecordVerifiedOriginal(original);
+            }
+        }
+
+        private void RecordVerifiedOriginal(object original)
+        {
+            var key = IdentityKey(original);
+            var table = VerifiedOriginals.GetValue(
+                _external,
+                static view =>
+                {
+                    view.OwnerMemoryGovernor?.Reserve(VerifyEntryBytes, null);
+                    view.OwnerMemoryGovernor?.Commit(VerifyEntryBytes);
+                    return new Dictionary<BigInteger, object>();
+                });
+            if (table.TryAdd(key, original))
+            {
+                var owner = _external.OwnerMemoryGovernor;
+                owner?.Reserve(VerifyEntryBytes, _span);
+                owner?.Commit(VerifyEntryBytes);
+            }
+            else
+            {
+                table[key] = original;
+            }
         }
 
         private static BigInteger IdentityKey(object value)
