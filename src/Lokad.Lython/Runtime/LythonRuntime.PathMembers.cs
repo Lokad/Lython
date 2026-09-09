@@ -130,14 +130,14 @@ internal sealed partial class LythonRuntime
                 "to_integral_value" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.to_integral_value", ["rounding", "context"], requiredCount: 0)),
                 "to_integral_exact" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.to_integral_exact", ["rounding", "context"], requiredCount: 0)),
                 "to_integral" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.to_integral", ["rounding", "context"], requiredCount: 0)),
-                "as_tuple" => BoundCallable.Create((arguments, span, _) =>
+                "as_tuple" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Decimal.as_tuple() expects no arguments.", span);
                     }
 
-                    return PyDecimalOps.AsTuple(decimalValue);
+                    return OwnDecimalTupleValue(PyDecimalOps.AsTuple(decimalValue, context.MemoryGovernor, span), context, span);
                 }, "Decimal.as_tuple", []),
                 "adjusted" => BoundCallable.Create((arguments, span, _) =>
                 {

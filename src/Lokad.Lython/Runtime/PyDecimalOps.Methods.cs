@@ -51,6 +51,9 @@ internal static partial class PyDecimalOps
     }
 
     public static PyDecimalTuple AsTuple(PyDecimal value)
+        => AsTuple(value, null, null);
+
+    public static PyDecimalTuple AsTuple(PyDecimal value, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var coefficient = value.Exponent >= 0
             ? decimal.Abs(value.Value) / Pow(10m, value.Exponent)
@@ -67,7 +70,10 @@ internal static partial class PyDecimalOps
             digits[i] = new BigInteger(digitsText[i] - '0');
         }
 
-        return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, new PyTuple(digits), new BigInteger(value.Exponent));
+        var digitsTuple = governor is null
+            ? new PyTuple(digits)
+            : new PyTuple(digits, governor, span);
+        return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, digitsTuple, new BigInteger(value.Exponent));
     }
 
     public static BigInteger Adjusted(PyDecimal value)

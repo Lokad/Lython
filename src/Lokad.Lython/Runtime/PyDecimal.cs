@@ -125,7 +125,7 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static PyDecimalTuple CreateTuple(object signValue, object digitsValue, object exponentValue, LythonSourceSpan span)
+    public static PyDecimalTuple CreateTuple(object signValue, object digitsValue, object exponentValue, LythonSourceSpan span, MemoryGovernor governor)
     {
         var sign = ExpectInt(signValue, "DecimalTuple(sign, digits, exponent) expects sign 0 or 1.", span);
         if (sign is not 0 and not 1)
@@ -138,7 +138,7 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "DecimalTuple exponent must be an integer.", span);
         }
 
-        var digits = MaterializeDigits(digitsValue, span);
+        var digits = MaterializeDigits(digitsValue, span, governor);
         return new PyDecimalTuple(sign, digits, exponent);
     }
 
@@ -198,7 +198,7 @@ internal static partial class PyDecimalOps
         return (int)integer;
     }
 
-    private static PyTuple MaterializeDigits(object value, LythonSourceSpan span)
+    private static PyTuple MaterializeDigits(object value, LythonSourceSpan span, MemoryGovernor governor)
     {
         IEnumerable<object> items = value switch
         {
@@ -224,7 +224,7 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("ValueError", "DecimalTuple digits cannot be empty.", span);
         }
 
-        return new PyTuple(materialized);
+        return new PyTuple(materialized, governor, span);
     }
 
     private static string DigitsToString(PyTuple digits)

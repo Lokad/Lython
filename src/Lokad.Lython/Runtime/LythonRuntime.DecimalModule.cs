@@ -70,6 +70,15 @@ internal sealed partial class LythonRuntime
     internal static object OwnFreshDecimal(object result, PyDecimal input, ExecutionContext context, LythonSourceSpan span)
         => ReferenceEquals(result, input) ? result : OwnDecimalValue(result, context, span);
 
+    // DecimalTuple values add one table slot for the wrapper on top of the
+    // governed digit-tuple backing.
+    internal static object OwnDecimalTupleValue(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        context.MemoryGovernor.Reserve(DecimalValueBytes, span);
+        context.MemoryGovernor.Commit(DecimalValueBytes);
+        return value;
+    }
+
     private static object DecimalCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)
@@ -97,13 +106,12 @@ internal sealed partial class LythonRuntime
 
     private static object DecimalTupleCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "decimal.DecimalTuple(sign, digits, exponent) expects three arguments.", span);
         }
 
-        return PyDecimalOps.CreateTuple(arguments[0], arguments[1], arguments[2], span);
+        return OwnDecimalTupleValue(PyDecimalOps.CreateTuple(arguments[0], arguments[1], arguments[2], span, context.MemoryGovernor), context, span);
     }
 
     private static object DecimalContextCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
