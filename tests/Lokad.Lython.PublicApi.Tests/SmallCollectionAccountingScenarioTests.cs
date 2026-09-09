@@ -135,4 +135,69 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
+    [Fact]
+    public async Task SetFilterOperationsSucceedWhenFunded()
+    {
+        // MG05: set intersection/difference paths rebuild through governed
+        // filter scratch; funded operations must still succeed in both modes.
+        var script = new LythonEngine().Compile(
+            """
+            s = set(range(3000))
+            t = set(range(1500, 4500))
+            a = s & t
+            b = s - t
+            c = s ^ t
+            d = s.intersection(t)
+            e = s.difference(t)
+            f = s.symmetric_difference(t)
+            return [len(a), len(b), len(c), len(d), len(e), len(f)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var expected = new List<object?>
+        {
+            new BigInteger(1500),
+            new BigInteger(1500),
+            new BigInteger(3000),
+            new BigInteger(1500),
+            new BigInteger(1500),
+            new BigInteger(3000),
+        };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task SetFilterOperationsOverBudgetFail()
+    {
+        // MG05: the same filters stay bounded; a budget far below one table
+        // charge must fail instead of retaining uncharged scratch.
+        var script = new LythonEngine().Compile(
+            """
+            s = set(range(3000))
+            t = set(range(1500, 4500))
+            a = s & t
+            b = s - t
+            c = s ^ t
+            d = s.intersection(t)
+            e = s.difference(t)
+            f = s.symmetric_difference(t)
+            return [len(a), len(b), len(c), len(d), len(e), len(f)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
 }

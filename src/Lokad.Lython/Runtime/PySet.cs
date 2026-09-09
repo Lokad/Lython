@@ -103,6 +103,11 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     private static long EstimateSnapshotBytes(int count) => 24L + (8L * count);
 
+    // Filter scratch holds only references, so an empty bound allocates
+    // nothing and reserves nothing: filtering an empty set stays free even
+    // under a zero budget.
+    private static long EstimateFilterBytes(int count) => count == 0 ? 0L : 24L + (8L * count);
+
     public PySet(PySet other)
     {
         _items = new HashSet<object>(other._items, PyValueComparer.Instance);
@@ -204,35 +209,47 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public void IntersectWith(PySet other)
     {
-        if (_memoryGovernor is null)
+        var governor = _memoryGovernor;
+        if (governor is null)
         {
             _items.IntersectWith(other._items);
             return;
         }
 
+        // The filter list holds only references to already-owned items, but
+        // its backing array coexists with the live table, so cover it with a
+        // transient reservation sized by the exact upper bound.
+        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count), _allocationSpan);
         RebuildFrom(FilterContained(other, keepContained: true));
     }
 
     public void ExceptWith(PySet other)
     {
-        if (_memoryGovernor is null)
+        var governor = _memoryGovernor;
+        if (governor is null)
         {
             _items.ExceptWith(other._items);
             return;
         }
 
+        // Same transient filter scratch as IntersectWith above.
+        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count), _allocationSpan);
         RebuildFrom(FilterContained(other, keepContained: false));
     }
 
     public void SymmetricExceptWith(PySet other)
     {
-        if (_memoryGovernor is null)
+        var governor = _memoryGovernor;
+        if (governor is null)
         {
             _items.SymmetricExceptWith(other._items);
             return;
         }
 
-        var symmetric = new List<object>();
+        // Both tables stay live while the symmetric list is built, so the
+        // transient reservation covers the exact combined upper bound.
+        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count + other.Count), _allocationSpan);
+        var symmetric = new List<object>(Count + other.Count);
         foreach (var item in _items)
         {
             if (!other._items.Contains(item))
@@ -308,7 +325,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     private List<object> FilterContained(PySet other, bool keepContained)
     {
-        var result = new List<object>();
+        var result = new List<object>(Count);
         foreach (var item in _items)
         {
             if (other._items.Contains(item) == keepContained)
