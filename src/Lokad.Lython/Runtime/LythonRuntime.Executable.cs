@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
             context = new ExecutionContext(host, options);
             ExecuteExecutableCodeObject(script.EntryPoint, context);
 
-            return CreateSuccessfulResult(context, null);
+            return CreateSuccessfulResult(context, null, options);
         }
         catch (ReturnSignal signal)
         {
@@ -238,7 +238,7 @@ internal sealed partial class LythonRuntime
         }
         catch (LythonRuntimeException ex)
         {
-            return CreateRuntimeFailureResult(ex, context);
+            return CreateRuntimeFailureResult(ex, context, options);
         }
     }
 
