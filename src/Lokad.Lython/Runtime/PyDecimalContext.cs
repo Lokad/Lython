@@ -121,23 +121,28 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 _flags = new PyDict();
                 return PyNone.Instance;
             }, "Context.clear_flags", []),
-            "create_decimal" => new PyDecimalBoundCallable((arguments, span) =>
+            "create_decimal" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length is < 1 or > 2)
                 {
                     throw new LythonRuntimeException("TypeError", "Context.create_decimal(value) expects one value argument.", span);
                 }
 
-                return PyDecimalOps.Parse(arguments[0], span);
+                if (arguments[0] is PyDecimal)
+                {
+                    return arguments[0];
+                }
+
+                return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span), context, span);
             }, "Context.create_decimal", ["value"]),
-            "create_decimal_from_float" => new PyDecimalBoundCallable((arguments, span) =>
+            "create_decimal_from_float" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length != 1 || arguments[0] is not double floating || !double.IsFinite(floating))
                 {
                     throw new LythonRuntimeException("TypeError", "Context.create_decimal_from_float(f) expects one finite float.", span);
                 }
 
-                return new PyDecimal((decimal)floating);
+                return LythonRuntime.OwnDecimalValue(new PyDecimal((decimal)floating), context, span);
             }, "Context.create_decimal_from_float", ["f"]),
             _ => MissingMemberValue.Instance,
         };
@@ -232,7 +237,8 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
 internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRenderableValue
 {
-    private readonly Func<object[], LythonSourceSpan, object> _implementation;
+    private readonly Func<object[], LythonSourceSpan, object>? _implementation;
+    private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object>? _contextImplementation;
     private readonly LythonCallableSignature _signature;
 
     public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, object> implementation, string name)
@@ -262,11 +268,26 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
         _signature = signature;
     }
 
+    public PyDecimalBoundCallable(Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string name, string[] parameterNames)
+        : this(implementation, LythonCallableSignature.Create(name, parameterNames))
+    {
+    }
+
+    private PyDecimalBoundCallable(
+        Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation,
+        LythonCallableSignature signature)
+    {
+        _contextImplementation = implementation;
+        _signature = signature;
+    }
+
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
         var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Method);
-        return _implementation(positional, span);
+        return _contextImplementation is not null
+            ? _contextImplementation(positional, span, context)
+            : _implementation!(positional, span);
     }
 
     public PyString RenderPython(PyRenderingContext context)

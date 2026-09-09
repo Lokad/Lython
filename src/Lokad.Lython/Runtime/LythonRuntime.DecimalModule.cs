@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
     // constructions leak nothing). Aliased Decimal inputs stay free.
     private const long DecimalValueBytes = 64;
 
-    private static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
+    internal static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
     {
         context.MemoryGovernor.Reserve(DecimalValueBytes, span);
         context.MemoryGovernor.Commit(DecimalValueBytes);
