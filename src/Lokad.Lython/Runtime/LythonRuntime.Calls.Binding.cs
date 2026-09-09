@@ -16,7 +16,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         var bound = new Dictionary<string, object>(StringComparer.Ordinal);
-        var extraPositional = new PyList([], context.MemoryGovernor, span);
+        // The overflow list is scratch: most calls never spill positionals,
+        // so materialize it only on the first spill instead of charging every
+        // invocation for a list that is dropped before return.
+        PyList? extraPositional = null;
         var extraKeywords = new Dictionary<string, object>(StringComparer.Ordinal);
         var positionalIndex = 0;
 
@@ -31,6 +34,7 @@ internal sealed partial class LythonRuntime
                         throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
                     }
 
+                    extraPositional ??= new PyList([], context.MemoryGovernor, span);
                     extraPositional.Add(argument.Value);
                     continue;
                 }
@@ -96,7 +100,10 @@ internal sealed partial class LythonRuntime
 
         if (plan.VariadicList is not null)
         {
-            bound[plan.VariadicList.Name] = CreateTuple(extraPositional.Count, i => extraPositional[i], context, span);
+            var overflow = extraPositional;
+            bound[plan.VariadicList.Name] = overflow is null
+                ? CreateTuple(0, _ => PyNone.Instance, context, span)
+                : CreateTuple(overflow.Count, i => overflow[i], context, span);
         }
 
         if (plan.VariadicDictionary is not null)
@@ -111,6 +118,17 @@ internal sealed partial class LythonRuntime
         }
 
         return bound;
+    }
+
+    // Constructed function objects retain a wrapper plus binding plan and
+    // default map per evaluation. Defs and lambdas execute per evaluation,
+    // so each constructed value charges once built.
+    private const long FunctionValueBytes = 128;
+
+    private static void ChargeFunctionValue(ExecutionContext? context, LythonSourceSpan? span)
+    {
+        context?.MemoryGovernor.Reserve(FunctionValueBytes, span);
+        context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
