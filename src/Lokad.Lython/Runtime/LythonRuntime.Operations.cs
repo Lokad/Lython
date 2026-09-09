@@ -49,21 +49,19 @@ internal sealed partial class LythonRuntime
 
     private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan span)
     {
-        // The resulting payload has no owner tracking after this point, so own
-        // the estimate durably: repeated individually-affordable operations
-        // accumulate instead of bypassing the aggregate budget.
-        governor.Reserve(estimatedBytes, span);
-        governor.Commit(estimatedBytes);
+        // Preflight only: fail before materializing a giant result. Durable
+        // ownership of the actual result happens at the arithmetic sites below.
+        governor.EnsureCanReserve(estimatedBytes, span);
     }
 
-    // Parsed and converted integers above the inline range retain heap magnitude
-    // storage with no owner tracking after this point; own it durably like
-    // operation results. Inline-range values and aliased inputs stay free.
-    private static BigInteger OwnParsedInteger(BigInteger value, MemoryGovernor governor, LythonSourceSpan span)
+    // Integers above the inline range retain heap magnitude storage with no owner
+    // tracking after this point; own them durably. Inline-range values, floats
+    // and aliased inputs stay free.
+    private static object OwnHeapInteger(object value, MemoryGovernor governor, LythonSourceSpan span)
     {
-        if (RuntimeMemoryEstimates.GetMagnitudeBitLength(value) > 64)
+        if (value is BigInteger integer && RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64)
         {
-            var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(value);
+            var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer);
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
         }
@@ -71,7 +69,7 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
-    private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
+    private static object EvaluateBitwiseOr(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -99,10 +97,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '|'.", span);
         }
 
-        return PyNumberOps.BitwiseOr(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateBitwiseXor(object left, object right, LythonSourceSpan span)
+    private static object EvaluateBitwiseXor(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -125,10 +123,10 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '^'.", span);
         }
 
-        return PyNumberOps.BitwiseXor(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateBitwiseAnd(object left, object right, LythonSourceSpan span)
+    private static object EvaluateBitwiseAnd(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -156,7 +154,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '&'.", span);
         }
 
-        return PyNumberOps.BitwiseAnd(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, span);
     }
 
     private static object EvaluateLeftShift(object left, object right, ExecutionContext context, LythonSourceSpan span)
@@ -169,7 +167,7 @@ internal sealed partial class LythonRuntime
         try
         {
             GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
-            return PyNumberOps.LeftShift(lhs, rhs);
+            return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
         {
@@ -181,7 +179,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateRightShift(object left, object right, LythonSourceSpan span)
+    private static object EvaluateRightShift(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
@@ -190,7 +188,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return PyNumberOps.RightShift(lhs, rhs);
+            return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
         {
@@ -227,7 +225,7 @@ internal sealed partial class LythonRuntime
         return operand;
     }
 
-    private static object EvaluateUnaryMinus(object operand, LythonSourceSpan span)
+    private static object EvaluateUnaryMinus(object operand, ExecutionContext context, LythonSourceSpan span)
     {
         if (operand is PyCounter negativeCounter)
         {
@@ -254,7 +252,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
         }
 
-        return PyNumberOps.Negate(numeric);
+        return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, span);
     }
 
     private static PyCounter BuildCounterUnaryResult(
@@ -356,14 +354,14 @@ internal sealed partial class LythonRuntime
         return governor is null ? new PyCounter() : new PyCounter(governor, allocationSpan);
     }
 
-    private static object EvaluateBitwiseNot(object operand, LythonSourceSpan span)
+    private static object EvaluateBitwiseNot(object operand, ExecutionContext context, LythonSourceSpan span)
     {
         if (!PyNumberOps.TryAsInteger(operand, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "Operand is not an integer.", span);
         }
 
-        return PyNumberOps.BitwiseNot(integer);
+        return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, span);
     }
 
     private static bool TryGetNumericOperands(object left, object right, out PyNumber lhs, out PyNumber rhs)

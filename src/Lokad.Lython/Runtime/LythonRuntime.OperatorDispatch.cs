@@ -97,17 +97,17 @@ internal sealed partial class LythonRuntime
         => op switch
         {
             BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, span),
-            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, span),
+            BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, context, span),
             BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, span),
             BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, span),
-            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, span),
+            BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, context, span),
             BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, span),
             BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, span),
-            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, span),
-            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, span),
-            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, span),
+            BinaryOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(left, right, context, span),
+            BinaryOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(left, right, context, span),
+            BinaryOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(left, right, context, span),
             BinaryOperatorSyntax.LeftShift => EvaluateLeftShift(left, right, context, span),
-            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, span),
+            BinaryOperatorSyntax.RightShift => EvaluateRightShift(left, right, context, span),
             BinaryOperatorSyntax.Is => AreIdentical(left, right),
             BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
             _ => throw new InvalidOperationException($"Unknown eager binary operator: {op}"),
@@ -161,8 +161,8 @@ internal sealed partial class LythonRuntime
         {
             UnaryOperatorSyntax.Not => !IsTruthy(operand, context, span),
             UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, span),
-            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, span),
-            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, span),
+            UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, context, span),
+            UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, context, span),
             _ => throw new InvalidOperationException($"Unknown unary operator: {op}"),
         };
 

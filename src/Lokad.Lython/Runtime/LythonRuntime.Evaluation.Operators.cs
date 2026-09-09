@@ -89,13 +89,13 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span);
         }
 
-        return PyNumberOps.Add(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
     }
 
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAdd(left, right, context, span);
 
-    private static object EvaluateSubtract(object left, object right, LythonSourceSpan span)
+    private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (left is PySet leftSet && right is PySet rightSet)
         {
@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '-'.", span);
         }
 
-        return PyNumberOps.Subtract(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
     }
 
     private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span)
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Operands are not compatible with '*'.", span);
         }
 
-        return PyNumberOps.Multiply(lhs, rhs);
+        return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
     }
 
     private static bool TryRepeatCount(object value, out BigInteger count)
@@ -248,7 +248,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateFloorDivide(object left, object right, LythonSourceSpan span)
+    private static object EvaluateFloorDivide(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
         if (left is PyTimedelta || right is PyTimedelta)
         {
@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return PyNumberOps.FloorDivide(lhs, rhs);
+            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (DivideByZeroException)
         {
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return PyNumberOps.Modulo(lhs, rhs);
+            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (DivideByZeroException)
         {
@@ -329,7 +329,7 @@ internal sealed partial class LythonRuntime
             }
 
             GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
-            return PyNumberOps.Power(lhs, rhs);
+            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
         }
         catch (OverflowException)
         {

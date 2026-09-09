@@ -57,6 +57,54 @@ public sealed class IntegerPayloadAccountingScenarioTests
     }
 
     [Fact]
+    public async Task ManyRetainedProductsStayCharged()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            x = 10 ** 100
+            rs = []
+            i = 0
+            while i < 2000:
+                rs.append(x * x)
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task ManyRetainedDifferencesStayCharged()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            a = 10 ** 400
+            rs = []
+            i = 0
+            while i < 2000:
+                rs.append(a - i)
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
     public async Task SmallPowersAndShiftsStillProject()
     {
         var script = new LythonEngine().Compile("return [(1 << 10), (2 ** 10), (3 << 0)]\n");

@@ -23,24 +23,24 @@ internal sealed partial class LythonRuntime
                 "not_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
                 "is_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreIdentical(left, right))),
                 "is_not" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
-                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, _) => Unary(arguments, span, EvaluateAbsolute)),
-                "neg" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryMinus)),
+                "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateAbsolute(value, context, innerSpan))),
+                "neg" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryMinus(value, context, innerSpan))),
                 "pos" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPos, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryPlus)),
-                "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, _) => Unary(arguments, span, EvaluateBitwiseNot)),
+                "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateBitwiseNot(value, context, innerSpan))),
                 "index" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateIndex(value, context, innerSpan))),
                 "add" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
-                "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSub, (arguments, span, _) => Binary(arguments, span, EvaluateSubtract)),
+                "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSub, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateSubtract(left, right, context, innerSpan))),
                 "mul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
                 "truediv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, _) => Binary(arguments, span, EvaluateDivide)),
-                "floordiv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, _) => Binary(arguments, span, EvaluateFloorDivide)),
+                "floordiv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateFloorDivide(left, right, context, innerSpan))),
                 "mod" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMod, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateModulo(left, right, context, innerSpan))),
                 "pow" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPow, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluatePower(left, right, context, innerSpan))),
                 "matmul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMatMul, (arguments, span, _) => Binary(arguments, span, UnsupportedMatMul)),
                 "lshift" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateLeftShift(left, right, context, innerSpan))),
-                "rshift" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorRShift, (arguments, span, _) => Binary(arguments, span, EvaluateRightShift)),
-                "and_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAnd, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseAnd)),
-                "or_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorOr, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseOr)),
-                "xor" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorXor, (arguments, span, _) => Binary(arguments, span, EvaluateBitwiseXor)),
+                "rshift" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorRShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateRightShift(left, right, context, innerSpan))),
+                "and_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAnd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseAnd(left, right, context, innerSpan))),
+                "or_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorOr, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseOr(left, right, context, innerSpan))),
+                "xor" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorXor, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseXor(left, right, context, innerSpan))),
                 "concat" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorConcat, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateConcat(left, right, context, innerSpan))),
                 "eq" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorEq, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreEqual(left, right))),
                 "ne" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreEqual(left, right))),
@@ -272,7 +272,7 @@ internal sealed partial class LythonRuntime
         return operation(arguments[0], arguments[1], span);
     }
 
-    private static object EvaluateAbsolute(object value, LythonSourceSpan span)
+    private static object EvaluateAbsolute(object value, ExecutionContext context, LythonSourceSpan span)
     {
         if (value is PyDecimal decimalValue)
         {
@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "operator.abs(obj) expects a numeric value.", span);
         }
 
-        return number.IsFloat ? Math.Abs(number.Floating) : BigInteger.Abs(number.Integer);
+        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
     }
 
     private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)

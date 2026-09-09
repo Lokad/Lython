@@ -290,10 +290,10 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
-                double floating => OwnParsedInteger(FloatToInteger(floating, "int", span, Math.Truncate), context.MemoryGovernor, span),
-                PyDecimal decimalValue => OwnParsedInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
-                PyString text => OwnParsedInteger(ParsePythonIntegerText(text.AsString(), numberBase, span), context.MemoryGovernor, span),
-                PyBytes bytes => OwnParsedInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span), context.MemoryGovernor, span),
+                double floating => OwnHeapInteger(FloatToInteger(floating, "int", span, Math.Truncate), context.MemoryGovernor, span),
+                PyDecimal decimalValue => OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
+                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span), context.MemoryGovernor, span),
+                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span), context.MemoryGovernor, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)
             };
@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "abs(x) expects a numeric value.", span);
         }
 
-        return number.IsFloat ? Math.Abs(number.Floating) : BigInteger.Abs(number.Integer);
+        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
     }
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -365,7 +365,7 @@ internal sealed partial class LythonRuntime
             }
 
             var result = BigInteger.ModPow(normalizedBase, exponent, absModulus);
-            return modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result;
+            return OwnHeapInteger(modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result, context.MemoryGovernor, span);
         }
 
         return EvaluatePower(arguments[0], arguments[1], context, span);
