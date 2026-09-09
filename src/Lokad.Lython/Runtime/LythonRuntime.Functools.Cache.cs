@@ -317,7 +317,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.cached_property(func) expects one callable argument.", span);
             }
 
-            return new PyCachedProperty(callable);
+            return new PyCachedProperty(callable, context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -333,10 +333,18 @@ internal sealed partial class LythonRuntime
     {
         private readonly ICallable _callable;
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        // Metadata tables grow one CLR entry per guest attribute name;
+        // charge each new key so retained attributes accumulate. Descriptors
+        // have no attribute delete path, so nothing is released.
+        private const long AttributeSlotBytes = 64;
+        private MemoryGovernor? _memoryGovernor;
+        private LythonSourceSpan? _allocationSpan;
 
-        public PyCachedProperty(ICallable callable)
+        public PyCachedProperty(ICallable callable, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
             _callable = callable;
+            _memoryGovernor = governor;
+            _allocationSpan = allocationSpan;
         }
 
         public string? Name { get; private set; }
@@ -417,6 +425,12 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
+            if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
+            {
+                _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(AttributeSlotBytes);
+            }
+
             _metadata[name] = value;
             return true;
         }
