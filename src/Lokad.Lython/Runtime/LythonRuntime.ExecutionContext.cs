@@ -34,9 +34,10 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
+            var normalizedContainers = new Dictionary<object, object>(ReferenceEqualityComparer.Instance);
             foreach (var pair in globals)
             {
-                Frame.Variables[pair.Key] = NormalizeRuntimeValue(pair.Value, this);
+                Frame.Variables[pair.Key] = NormalizeRuntimeValue(pair.Value, this, normalizedContainers);
             }
         }
 
@@ -374,17 +375,19 @@ internal sealed partial class LythonRuntime
 
         private const int MaxGlobalNormalizationDepth = 1_000;
 
-        private static object NormalizeRuntimeValue(object? value, ExecutionContext context)
+        private static object NormalizeRuntimeValue(object? value, ExecutionContext context, Dictionary<object, object> normalizedContainers)
             => NormalizeRuntimeValue(
                 value,
                 context,
                 new HashSet<object>(ReferenceEqualityComparer.Instance),
+                normalizedContainers,
                 depth: 0);
 
         private static object NormalizeRuntimeValue(
             object? value,
             ExecutionContext context,
             HashSet<object> activeContainers,
+            Dictionary<object, object> normalizedContainers,
             int depth)
         {
             if (depth > MaxGlobalNormalizationDepth)
@@ -436,27 +439,32 @@ internal sealed partial class LythonRuntime
 
             var valueType = value.GetType();
             return valueType == typeof(PyList)
-                ? NormalizeContainer(value, activeContainers, () => NormalizePyList((PyList)value, context, activeContainers, depth + 1))
+                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyList((PyList)value, context, activeContainers, normalizedContainers, depth + 1))
                 : valueType == typeof(PyTuple)
-                    ? NormalizeContainer(value, activeContainers, () => NormalizePyTuple((PyTuple)value, context, activeContainers, depth + 1))
+                    ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyTuple((PyTuple)value, context, activeContainers, normalizedContainers, depth + 1))
                     : valueType == typeof(List<object?>)
-                        ? NormalizeContainer(value, activeContainers, () => NormalizeObjectList((List<object?>)value, context, activeContainers, depth + 1))
+                        ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectList((List<object?>)value, context, activeContainers, normalizedContainers, depth + 1))
                         : valueType == typeof(object?[])
-                            ? NormalizeContainer(value, activeContainers, () => NormalizeObjectArray((object?[])value, context, activeContainers, depth + 1))
+                            ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectArray((object?[])value, context, activeContainers, normalizedContainers, depth + 1))
                             : valueType == typeof(PySet)
-                                ? NormalizeContainer(value, activeContainers, () => NormalizePySet((PySet)value, context, activeContainers, depth + 1))
+                                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePySet((PySet)value, context, activeContainers, normalizedContainers, depth + 1))
                                 : valueType == typeof(HashSet<object?>)
-                                    ? NormalizeContainer(value, activeContainers, () => NormalizeObjectSet((HashSet<object?>)value, context, activeContainers, depth + 1))
+                                    ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectSet((HashSet<object?>)value, context, activeContainers, normalizedContainers, depth + 1))
                                     : valueType == typeof(Dictionary<string, object?>)
-                                        ? NormalizeContainer(value, activeContainers, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, depth + 1))
+                                        ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, normalizedContainers, depth + 1))
                                         : valueType == typeof(Dictionary<object, object?>)
-                                            ? NormalizeContainer(value, activeContainers, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, depth + 1))
+                                            ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, normalizedContainers, depth + 1))
                                             : valueType == typeof(PyDict)
-                                                ? NormalizeContainer(value, activeContainers, () => NormalizePyDict((PyDict)value, context, activeContainers, depth + 1))
+                                                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyDict((PyDict)value, context, activeContainers, normalizedContainers, depth + 1))
                                                 : throw RuntimeErrors.Type("initial global values may contain only supported scalar and collection values", null);
 
-            static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Func<T> normalize)
+            static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Dictionary<object, object> normalizedContainers, Func<T> normalize)
             {
+                if (normalizedContainers.TryGetValue(container, out var existing))
+                {
+                    return (T)existing;
+                }
+
                 if (!activeContainers.Add(container))
                 {
                     throw RuntimeErrors.Type("initial global values cannot contain reference cycles", null);
@@ -464,7 +472,9 @@ internal sealed partial class LythonRuntime
 
                 try
                 {
-                    return normalize();
+                    var result = normalize();
+                    normalizedContainers[container] = result!;
+                    return result;
                 }
                 finally
                 {
@@ -476,13 +486,14 @@ internal sealed partial class LythonRuntime
                 PyList list,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, depth);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
@@ -492,13 +503,14 @@ internal sealed partial class LythonRuntime
                 PyTuple tuple,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Count, null);
                 var items = new object[tuple.Count];
                 for (var i = 0; i < tuple.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, depth);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
@@ -508,13 +520,14 @@ internal sealed partial class LythonRuntime
                 List<object?> list,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, depth);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
@@ -524,13 +537,14 @@ internal sealed partial class LythonRuntime
                 object?[] tuple,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Length, null);
                 var items = new object[tuple.Length];
                 for (var i = 0; i < tuple.Length; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, depth);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
@@ -540,13 +554,14 @@ internal sealed partial class LythonRuntime
                 PySet set,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, depth)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, depth)));
                 }
 
                 return normalized;
@@ -556,13 +571,14 @@ internal sealed partial class LythonRuntime
                 HashSet<object?> set,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, depth)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, depth)));
                 }
 
                 return normalized;
@@ -572,13 +588,14 @@ internal sealed partial class LythonRuntime
                 Dictionary<string, object?> dict,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
-                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
+                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
                 }
 
                 return normalized;
@@ -588,6 +605,7 @@ internal sealed partial class LythonRuntime
                 Dictionary<object, object?> dict,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
@@ -595,8 +613,8 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, depth), null, context.MemoryGovernor),
-                        NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
                 }
 
                 return normalized;
@@ -606,6 +624,7 @@ internal sealed partial class LythonRuntime
                 PyDict dict,
                 ExecutionContext context,
                 HashSet<object> activeContainers,
+                Dictionary<object, object> normalizedContainers,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
@@ -613,8 +632,8 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, depth), null, context.MemoryGovernor),
-                        NormalizeRuntimeValue(pair.Value, context, activeContainers, depth));
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
                 }
 
                 return normalized;
