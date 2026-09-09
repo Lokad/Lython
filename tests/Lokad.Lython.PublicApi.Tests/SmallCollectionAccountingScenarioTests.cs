@@ -200,4 +200,54 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
+    [Fact]
+    public async Task BytesSlicesSucceedWhenFunded()
+    {
+        // MG05: byte slices drain lazy bounds through governed scratch;
+        // funded slices must still succeed in both modes.
+        var script = new LythonEngine().Compile(
+            """
+            data = bytes(10240)
+            a = data[::2]
+            b = data[100:9000:3]
+            c = data[::-1]
+            return [len(a), len(b), len(c)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { new BigInteger(5120), new BigInteger(2967), new BigInteger(10240) };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task BytesSlicesOverBudgetFail()
+    {
+        // MG05: the same slices stay bounded; a budget far below the combined
+        // source, scratch and copies must fail instead of retaining uncharged
+        // scratch.
+        var script = new LythonEngine().Compile(
+            """
+            data = bytes(10240)
+            a = data[::2]
+            b = data[100:9000:3]
+            c = data[::-1]
+            return [len(a), len(b), len(c)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 32768 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
 }

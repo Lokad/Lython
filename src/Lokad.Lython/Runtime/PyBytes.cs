@@ -154,12 +154,31 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
             return slice;
         }
 
+        // Lazy indices (for example slice bounds) arrive without a count, but
+        // each one addresses the already-sized source. Charge backing growth
+        // incrementally, mirroring the shared sequence-slice drain, and let
+        // the owning PyBytes charge the final copy.
+        using var temporary = _memoryGovernor?.ReserveTemporary(0, _allocationSpan);
         var values = new List<byte>();
+        var chargedCapacity = 0;
         foreach (var item in indices)
         {
+            if (temporary is not null && values.Count == values.Capacity)
+            {
+                // Charge the imminent backing-array growth before appending.
+                var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                temporary.Grow(checked(predicted - chargedCapacity), _allocationSpan);
+            }
+
             values.Add(_bytes[item]);
+            if (values.Capacity > chargedCapacity)
+            {
+                temporary?.Grow(values.Capacity - chargedCapacity, _allocationSpan);
+                chargedCapacity = values.Capacity;
+            }
         }
 
+        temporary?.Grow(EstimateApproximateBytes(values.Count), _allocationSpan);
         return [.. values];
     }
 }
