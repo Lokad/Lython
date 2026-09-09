@@ -262,6 +262,7 @@ internal sealed class PyTeeSharedState
 
     private readonly PyIteration.Cursor _source;
     private readonly Queue<object>[] _queues;
+    private readonly int[] _highWaterMarks;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
@@ -271,14 +272,34 @@ internal sealed class PyTeeSharedState
     {
         _source = PyIteration.Cursor.Create(source, span, context);
         _queues = new Queue<object>[count];
+        _highWaterMarks = new int[count];
         for (var i = 0; i < _queues.Length; i++)
         {
             _queues[i] = new Queue<object>();
         }
 
+        // Queue objects plus the queue table, retained for the shared-state lifetime.
+        var constructionCharge = 64L + (80L * count);
+        memoryGovernor.Reserve(constructionCharge, span);
+        memoryGovernor.Commit(constructionCharge);
+
         _memoryGovernor = memoryGovernor;
         _context = context;
         _span = span;
+    }
+
+    private void ChargeBackingGrowth(int queueIndex)
+    {
+        // Backing arrays only grow and outlive dequeued payloads, so the
+        // high-water mark prices retained capacity independently, once.
+        if (_queues[queueIndex].Count > _highWaterMarks[queueIndex])
+        {
+            var growth = _queues[queueIndex].Count - _highWaterMarks[queueIndex];
+            _highWaterMarks[queueIndex] = _queues[queueIndex].Count;
+            var backingCharge = 16L * growth;
+            _memoryGovernor.Reserve(backingCharge, _span);
+            _memoryGovernor.Commit(backingCharge);
+        }
     }
 
     public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)
@@ -316,6 +337,7 @@ internal sealed class PyTeeSharedState
             _memoryGovernor.Reserve(QueuedItemBytes, _span);
             _memoryGovernor.Commit(QueuedItemBytes);
             _queues[i].Enqueue(value);
+            ChargeBackingGrowth(i);
             _context.ObserveCollectionCount(_queues[i].Count, _span);
         }
 
@@ -356,6 +378,7 @@ internal sealed class PyTeeSharedState
             _memoryGovernor.Reserve(QueuedItemBytes, _span);
             _memoryGovernor.Commit(QueuedItemBytes);
             _queues[i].Enqueue(value);
+            ChargeBackingGrowth(i);
             _context.ObserveCollectionCount(_queues[i].Count, _span);
         }
 
