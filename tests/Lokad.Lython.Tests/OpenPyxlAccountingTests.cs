@@ -429,4 +429,27 @@ public sealed class OpenPyxlAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+
+    private static void InvokeLoadWorksheetProtection(object document, object worksheet, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetProtection", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetProtection not found.");
+        method.Invoke(null, [document, worksheet, context, span]);
+    }
+
+    [Fact]
+    public void ProtectionAuthStringsAreCharged()
+    {
+        // R02: the model keeps protection auth strings; charge them with the entry.
+        var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><sheetProtection password=""secret"" algorithmName=""SHA-512"" hashValue=""AB"" saltValue=""CD""/></worksheet>");
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        InvokeLoadWorksheetProtection(document, NewWorksheet("Sheet1"), context, span);
+        Assert.Equal(512L + 6L + 7L + 2L + 2L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
 }

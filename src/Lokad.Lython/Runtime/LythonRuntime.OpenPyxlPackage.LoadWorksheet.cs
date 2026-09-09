@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
             LoadWorksheetTables(session, path, document, worksheet, worksheetRelationships, context, span);
             LoadWorksheetDataValidations(document, worksheet, context, span);
             LoadWorksheetConditionalFormatting(document, worksheet, context, span);
-            LoadWorksheetProtection(document, worksheet, span);
+            LoadWorksheetProtection(document, worksheet, context, span);
             LoadWorksheetDrawings(session, path, document, worksheet, worksheetRelationships, context, span);
             worksheet.SetLoadedAutoFilter((string?)document.Descendants(XlsxMain + "autoFilter").FirstOrDefault()?.Attribute("ref"));
             LoadWorksheetViewAndPageLayout(document, worksheet, span);
@@ -430,7 +430,10 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void LoadWorksheetProtection(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, LythonSourceSpan span)
+        private static long NullableTextBytes(string? value)
+            => value is null ? 0 : Encoding.UTF8.GetByteCount(value);
+
+        private static void LoadWorksheetProtection(XDocument worksheetDocument, OpenPyxlWorksheet worksheet, ExecutionContext context, LythonSourceSpan span)
         {
             var protection = worksheetDocument.Root?.Element(XlsxMain + "sheetProtection");
             if (protection is null)
@@ -438,15 +441,28 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
+            var password = (string?)protection.Attribute("password");
+            var algorithmName = (string?)protection.Attribute("algorithmName");
+            var hashValue = (string?)protection.Attribute("hashValue");
+            var saltValue = (string?)protection.Attribute("saltValue");
             worksheet.Protection.SetLoaded(
                 ReadBooleanAttribute(protection, "sheet", defaultValue: false, span),
                 ReadBooleanAttribute(protection, "objects", defaultValue: false, span),
                 ReadBooleanAttribute(protection, "scenarios", defaultValue: false, span),
-                (string?)protection.Attribute("password"),
-                (string?)protection.Attribute("algorithmName"),
-                (string?)protection.Attribute("hashValue"),
-                (string?)protection.Attribute("saltValue"),
+                password,
+                algorithmName,
+                hashValue,
+                saltValue,
                 ReadNonNegativeIntAttribute(protection, "spinCount", span));
+
+            // The model keeps the auth strings; charge them with the entry.
+            var protectionCharge = ModelCellBytes
+                + NullableTextBytes(password)
+                + NullableTextBytes(algorithmName)
+                + NullableTextBytes(hashValue)
+                + NullableTextBytes(saltValue);
+            context.MemoryGovernor.Reserve(protectionCharge, span);
+            context.MemoryGovernor.Commit(protectionCharge);
         }
 
         private static void LoadWorksheetDrawings(
