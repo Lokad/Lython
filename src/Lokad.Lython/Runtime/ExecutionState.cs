@@ -41,8 +41,20 @@ internal sealed class ExecutionState
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
         AllowedLocalModules = options?.AllowedLocalModules;
-        Args = (options?.Args ?? Array.Empty<string>())
-            .Select(Text.PyString.FromString)
+        // Host-provided argv is guest-retained through sys.argv, so its string
+        // payload and backing array charge the execution budget up front like
+        // any other retained collection. Empty argv stays free.
+        var argvSource = options?.Args ?? Array.Empty<string>();
+        var argvGovernor = MemoryGovernor;
+        if (argvSource.Count > 0)
+        {
+            var argvArrayBytes = PyTuple.EstimateApproximateBytes(argvSource.Count);
+            argvGovernor.Reserve(argvArrayBytes, null);
+            argvGovernor.Commit(argvArrayBytes);
+        }
+
+        Args = argvSource
+            .Select(arg => Text.PyString.FromString(arg, argvGovernor, allocationSpan: null))
             .ToArray();
         Environment = options?.Environment is null
             ? new Dictionary<string, string>(StringComparer.Ordinal)
