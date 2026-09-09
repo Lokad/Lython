@@ -40,7 +40,11 @@ internal sealed partial class LythonRuntime
             var options = ParseHtmlArguments(arguments, includeCharset: false, span);
             var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_table(fromlines, tolines)", span, context);
             var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_table(fromlines, tolines)", span, context);
-            return LythonRuntime.CreateString(BuildTable(fromLines, toLines, options, context, span), context, span);
+            var (table, tableBuilderBytes) = BuildTable(fromLines, toLines, options, context, span);
+            // Cover the assembly scratch alongside the owned output below.
+            using var tableScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            tableScratch.Grow(tableBuilderBytes, span);
+            return LythonRuntime.CreateString(table, context, span);
         }
 
         private object MakeFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -48,7 +52,9 @@ internal sealed partial class LythonRuntime
             var options = ParseHtmlArguments(arguments, includeCharset: true, span);
             var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_file(fromlines, tolines)", span, context);
             var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_file(fromlines, tolines)", span, context);
-            var table = BuildTable(fromLines, toLines, options, context, span);
+            var (table, tableBuilderBytes) = BuildTable(fromLines, toLines, options, context, span);
+            using var tableScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            tableScratch.Grow(tableBuilderBytes, span);
             var html =
                 "<!DOCTYPE html>\n" +
                 "<html><head><meta charset=\"" + Html(options.Charset) + "\">\n" +
@@ -56,6 +62,8 @@ internal sealed partial class LythonRuntime
                 "</head><body>\n" +
                 table +
                 "\n</body></html>\n";
+            // Cover the wrapper concatenation alongside the builder above.
+            tableScratch.Grow(checked(2L * html.Length), span);
             return LythonRuntime.CreateString(html, context, span);
         }
 
@@ -91,7 +99,7 @@ internal sealed partial class LythonRuntime
             return text.AsString();
         }
 
-        private string BuildTable(IReadOnlyList<PyString> fromLines, IReadOnlyList<PyString> toLines, HtmlOptions options, ExecutionContext context, LythonSourceSpan span)
+        private (string Table, long BuilderBytes) BuildTable(IReadOnlyList<PyString> fromLines, IReadOnlyList<PyString> toLines, HtmlOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             var a = fromLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()), context.MemoryGovernor, span)).ToArray();
             var b = toLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()), context.MemoryGovernor, span)).ToArray();
@@ -128,7 +136,9 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append("</tbody>\n</table>");
-            return builder.ToString();
+            // UTF-16 content bytes bound the live assembly scratch; chunk
+            // overallocation slack rides with the output charge below.
+            return (builder.ToString(), checked((long)builder.Capacity * 2));
         }
 
         private string PrepareHtmlLine(string line)
