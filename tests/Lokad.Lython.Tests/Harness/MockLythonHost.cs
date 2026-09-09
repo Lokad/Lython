@@ -14,6 +14,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _nextWriteBytesFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _nextWriteTextFailures = new(StringComparer.Ordinal);
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
     private MockTextInput? _stdin;
@@ -91,6 +92,12 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         var text = Utf8.GetString(utf8.Span);
 
         path = NormalizePath(path);
+        if (_nextWriteTextFailures.TryGetValue(path, out var nextFailure))
+        {
+            _nextWriteTextFailures.Remove(path);
+            throw new InvalidOperationException(nextFailure);
+        }
+
         EnsureDirectory(ParentOf(path));
         _rawTextFiles.Remove(path);
         _files[path] = text;
@@ -462,6 +469,11 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         _writeBytesFailures.Clear();
         _nextWriteBytesFailures.Clear();
+    }
+
+    public void FailNextWriteText(string path, string message)
+    {
+        _nextWriteTextFailures[NormalizePath(path)] = message;
     }
 
     public void FailNextWriteBytes(string path, string message)
