@@ -230,7 +230,16 @@ internal sealed partial class LythonRuntime
             pools[positionalIndex++] = MaterializeSequence(argument.Value, span, context);
         }
 
-        var repeated = new IReadOnlyList<object>[pools.Length * repeat];
+        var repeatedLength = (long)pools.Length * repeat;
+        if (repeatedLength > int.MaxValue)
+        {
+            throw RuntimeErrors.Memory("itertools.product(...) repeat count is too large.", span);
+        }
+
+        // The repeated table shares pool references but is itself retained.
+        context.MemoryGovernor.Reserve(64L + (16L * repeatedLength), span);
+        context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
+        var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
         for (var i = 0; i < repeat; i++)
         {
@@ -277,7 +286,16 @@ internal sealed partial class LythonRuntime
             pools[positionalIndex++] = await MaterializeItSequenceAsync(argument.Value, span, context).ConfigureAwait(false);
         }
 
-        var repeated = new IReadOnlyList<object>[pools.Length * repeat];
+        var repeatedLength = (long)pools.Length * repeat;
+        if (repeatedLength > int.MaxValue)
+        {
+            throw RuntimeErrors.Memory("itertools.product(...) repeat count is too large.", span);
+        }
+
+        // The repeated table shares pool references but is itself retained.
+        context.MemoryGovernor.Reserve(64L + (16L * repeatedLength), span);
+        context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
+        var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
         for (var i = 0; i < repeat; i++)
         {
@@ -517,25 +535,32 @@ internal sealed partial class LythonRuntime
     private static object[] MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
     {
         var sequence = ToSequence(value, span, context);
+        object[] pool;
         if (sequence is object[] direct)
         {
-            var copy = new object[direct.Length];
-            Array.Copy(direct, copy, direct.Length);
-            for (var i = 0; i < copy.Length; i++)
+            pool = new object[direct.Length];
+            Array.Copy(direct, pool, direct.Length);
+            for (var i = 0; i < pool.Length; i++)
             {
-                copy[i] = RuntimeValue(copy[i]);
+                pool[i] = RuntimeValue(pool[i]);
+            }
+        }
+        else
+        {
+            var list = new List<object>();
+            foreach (var item in sequence)
+            {
+                list.Add(RuntimeValue(item));
             }
 
-            return copy;
+            pool = [.. list];
         }
 
-        var list = new List<object>();
-        foreach (var item in sequence)
-        {
-            list.Add(RuntimeValue(item));
-        }
-
-        return [.. list];
+        // The iterator owns the pool for its lifetime; charge the array once here.
+        // Shared pools are referenced, never recharged, downstream.
+        context.MemoryGovernor.Reserve(64L + (16L * pool.Length), span);
+        context.MemoryGovernor.Commit(64L + (16L * pool.Length));
+        return pool;
     }
 
     private static async ValueTask<object[]> MaterializeItSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
@@ -546,7 +571,10 @@ internal sealed partial class LythonRuntime
             list.Add(RuntimeValue(item));
         }
 
-        return [.. list];
+        object[] pool = [.. list];
+        context.MemoryGovernor.Reserve(64L + (16L * pool.Length), span);
+        context.MemoryGovernor.Commit(64L + (16L * pool.Length));
+        return pool;
     }
 
     private static long ExpectNonNegativeLong(object value, string message, LythonSourceSpan span)

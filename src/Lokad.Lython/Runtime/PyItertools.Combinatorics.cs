@@ -22,6 +22,23 @@ internal static class PyCombinatoricTuple
     }
 }
 
+internal static class PyCombinatoricOwnership
+{
+    // Index tables persist for the iterator lifetime; charge them once at
+    // construction instead of per produced tuple.
+    internal static void ChargeIndexArray(MemoryGovernor? governor, LythonSourceSpan? span, int length)
+    {
+        if (governor is null)
+        {
+            return;
+        }
+
+        var bytes = 32L + (4L * length);
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+    }
+}
+
 internal sealed class PyProductIterator : PyIteratorBase
 {
     private readonly IReadOnlyList<IReadOnlyList<object>> _pools;
@@ -34,6 +51,7 @@ internal sealed class PyProductIterator : PyIteratorBase
     public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan)
     {
         _pools = pools;
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, allocationSpan, pools.Count);
         _indices = new int[pools.Count];
         _memoryGovernor = memoryGovernor;
         _allocationSpan = allocationSpan;
@@ -351,6 +369,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
     public PyCombinationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
         _pool = pool;
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _indices = new int[r];
         _memoryGovernor = memoryGovernor;
         _span = span;
@@ -418,6 +437,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
     public PyCombinationsWithReplacementIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
         _pool = pool;
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _indices = new int[r];
         _memoryGovernor = memoryGovernor;
         _span = span;
@@ -481,6 +501,8 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
     public PyPermutationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
         _pool = pool;
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, pool.Length);
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _r = r;
         _memoryGovernor = memoryGovernor;
         _span = span;
