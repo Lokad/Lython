@@ -90,4 +90,34 @@ public sealed class OpenPyxlAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
+
+    [Fact]
+    public void SessionDomChargeCoversConsumption()
+    {
+        var bytes = File.ReadAllBytes(FixturePath("excel-basic", "input.xlsx"));
+        using var stream = new MemoryStream(bytes, writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var payload = InvokeGetPartBytes(session, "xl/workbook.xml") ?? throw new InvalidOperationException("workbook part missing.");
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        var document = InvokeLoadOptionalXmlDocument(session, "xl/workbook.xml");
+        Assert.NotNull(document);
+        // The DOM outlives its parse reservation: 16 bytes per payload byte
+        // (XmlDocumentBytesPerByte) stay committed while the load consumes it.
+        Assert.Equal(before + 16L * payload.Length, context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static object? InvokeLoadOptionalXmlDocument(object session, string path)
+    {
+        var method = session.GetType().GetMethod("LoadOptionalXmlDocument", BindingFlags.Public | BindingFlags.Instance)
+            ?? throw new InvalidOperationException("LoadOptionalXmlDocument not found.");
+        return method.Invoke(session, [path]);
+    }
+
 }

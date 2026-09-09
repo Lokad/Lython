@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.IO.Compression;
+using System.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -102,4 +104,87 @@ public sealed class OpenPyxlAccountingScenarioTests
             new List<object?> { new BigInteger(1), new BigInteger(63), new BigInteger(63) },
             Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+
+    [Fact]
+    public async Task DeepXmlNestingIsRejectedOnTheSingleParse()
+    {
+        // R02: depth validation rides the same reader that builds the DOM, so
+        // a hostile part fails during the one parse instead of a pre-scan.
+        var seed = new MockLythonHost();
+        var built = new LythonEngine().Run(
+            """
+            import openpyxl
+            wb = openpyxl.Workbook()
+            wb.save("/t.xlsx")
+            return 1
+            """,
+            seed);
+        Assert.True(built.Success, built.Failure?.Message);
+        var mangled = ReplacePackagePart(seed.ReadBytes("/t.xlsx"), "xl/workbook.xml", DeepDocument(1100));
+
+        var script = new LythonEngine().Compile(
+            """
+            import openpyxl
+            return openpyxl.load_workbook("/deep.xlsx")
+            """);
+        Assert.True(script.IsValid);
+        var syncHost = new MockLythonHost();
+        syncHost.SeedBytes("/deep.xlsx", mangled);
+        var sync = script.Run(syncHost);
+        Assert.False(sync.Success);
+        Assert.Equal("InvalidFileException", sync.Failure?.ExceptionType);
+        Assert.Contains("nesting", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+
+        var asyncHost = new MockLythonHost();
+        asyncHost.SeedBytes("/deep.xlsx", mangled);
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("InvalidFileException", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("nesting", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    private static string DeepDocument(int depth)
+    {
+        var builder = new StringBuilder("<root>");
+        for (var i = 0; i < depth; i++)
+        {
+            builder.Append("<x>");
+        }
+
+        for (var i = 0; i < depth; i++)
+        {
+            builder.Append("</x>");
+        }
+
+        builder.Append("</root>");
+        return builder.ToString();
+    }
+
+    private static byte[] ReplacePackagePart(byte[] package, string path, string content)
+    {
+        using var input = new MemoryStream(package, writable: false);
+        using var output = new MemoryStream();
+        using (var reader = new ZipArchive(input, ZipArchiveMode.Read))
+        using (var writer = new ZipArchive(output, ZipArchiveMode.Create))
+        {
+            foreach (var entry in reader.Entries)
+            {
+                var target = writer.CreateEntry(entry.FullName);
+                using var destination = target.Open();
+                if (entry.FullName == path)
+                {
+                    var replacement = Encoding.UTF8.GetBytes(content);
+                    destination.Write(replacement, 0, replacement.Length);
+                }
+                else
+                {
+                    using var source = entry.Open();
+                    source.CopyTo(destination);
+                }
+            }
+        }
+
+        return output.ToArray();
+    }
+
 }
