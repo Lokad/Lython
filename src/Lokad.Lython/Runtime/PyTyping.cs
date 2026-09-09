@@ -467,7 +467,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         context.CheckExecutionBudget(span);
         return Kind == PyTypingConstructedKind.TypedDict
             ? CreateTypedDict(arguments, span, context)
-            : CreateNamedTuple(arguments, span);
+            : CreateNamedTuple(arguments, span, context);
     }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -523,7 +523,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         return dict;
     }
 
-    private object CreateNamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span)
+    private object CreateNamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var values = new object[_fieldNames.Count];
         Array.Fill(values, PyNone.Instance);
@@ -551,7 +551,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
             values[fieldIndex] = argument.Value;
         }
 
-        return new PyTypingNamedTupleObject(Name, _fieldNames, values);
+        return new PyTypingNamedTupleObject(Name, _fieldNames, values, context.MemoryGovernor, span);
 
         int IndexOfField(string name)
         {
@@ -568,11 +568,13 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
     }
 }
 
-internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes
+internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyGovernedValue
 {
     private readonly string _typeName;
     private readonly IReadOnlyList<string> _fieldNames;
     private readonly object[] _values;
+    private readonly MemoryGovernor? _memoryGovernor;
+    private readonly LythonSourceSpan? _allocationSpan;
 
     public PyTypingNamedTupleObject(string typeName, IReadOnlyList<string> fieldNames, object[] values)
     {
@@ -580,6 +582,24 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
         _fieldNames = fieldNames;
         _values = values;
     }
+
+    // Guest-constructed instances own their backing array at the tuple slot
+    // rate, matching collections.namedtuple.
+    public PyTypingNamedTupleObject(string typeName, IReadOnlyList<string> fieldNames, object[] values, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        var backingBytes = PyTuple.EstimateApproximateBytes(values.Length);
+        governor.Reserve(backingBytes, allocationSpan);
+        governor.Commit(backingBytes);
+        _typeName = typeName;
+        _fieldNames = fieldNames;
+        _values = values;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+    }
+
+    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
     public int Count => _values.Length;
 
@@ -676,7 +696,7 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
                 values[fieldIndex] = argument.Value;
             }
 
-            return new PyTypingNamedTupleObject(_owner._typeName, _owner._fieldNames, values);
+            return new PyTypingNamedTupleObject(_owner._typeName, _owner._fieldNames, values, context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
