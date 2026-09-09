@@ -83,9 +83,8 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
         return PyString.FromString(
-            $"Context(prec={Precision}, rounding='{RoundingName(Rounding)}', Emin={Emin}, Emax={Emax}, capitals={Capitals}, clamp={Clamp})");
+            $"Context(prec={Precision}, rounding='{RoundingName(Rounding)}', Emin={Emin}, Emax={Emax}, capitals={Capitals}, clamp={Clamp})", context.Context.MemoryGovernor);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -399,7 +398,8 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
         => PyString.FromString(
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"DecimalTuple(sign={Sign}, digits={PyRendering.ToPythonString(Digits, context)}, exponent={Exponent})"));
+                $"DecimalTuple(sign={Sign}, digits={PyRendering.ToPythonString(Digits, context)}, exponent={Exponent})"),
+            context.Context.MemoryGovernor);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }
