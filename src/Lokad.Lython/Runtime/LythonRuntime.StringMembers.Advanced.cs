@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
                         }
 
-                        return JoinStrings(text, EnumerateParts());
+                        return JoinStrings(text, EnumerateParts(), context.MemoryGovernor, span);
 
                         IEnumerable<PyString> EnumerateParts()
                         {

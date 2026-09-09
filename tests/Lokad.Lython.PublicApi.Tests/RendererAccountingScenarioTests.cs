@@ -81,4 +81,54 @@ public sealed class RendererAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task JoinContractsStayExact()
+    {
+        // MG06: routing str.join through the owning governor must not change
+        // joined output or the non-string rejection.
+        var script = new LythonEngine().Compile(
+            """
+            results = []
+            results.append(",".join(["a", "b", "c"]))
+            results.append("-".join([]))
+            results.append(":".join(["x"]))
+            try:
+                ",".join(["a", 1])
+            except TypeError:
+                results.append("nonstring")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { "a,b,c", "", "x", "nonstring" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task JoinScaleSucceedsWhenFunded()
+    {
+        // MG06: governed joins must not break legitimately large joins; a
+        // 2,000-part join stays proportional and succeeds funded.
+        var script = new LythonEngine().Compile(
+            """
+            parts = ["abcdefghij"] * 2000
+            r = ",".join(parts)
+            return len(r)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(21999), Assert.IsType<BigInteger>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(21999), Assert.IsType<BigInteger>(asyncResult.ReturnValue));
+    }
 }

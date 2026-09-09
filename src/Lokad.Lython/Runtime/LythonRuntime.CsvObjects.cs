@@ -565,9 +565,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts)
+    private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        var builder = new GovernedByteBuilder();
+        var builder = new GovernedByteBuilder(governor, span);
         var first = true;
         foreach (var part in parts)
         {
