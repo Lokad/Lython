@@ -28,14 +28,12 @@ internal sealed class PyDecimal : IPyTruthyValue, IPyRenderableValue, IPyHashabl
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
-        return PyString.FromString($"Decimal('{PyDecimalOps.Format(this)}')");
+        return PyString.FromString($"Decimal('{PyDecimalOps.Format(this)}')", context.Context.MemoryGovernor);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
-        _ = context;
-        return PyString.FromString(PyDecimalOps.Format(this));
+        return PyString.FromString(PyDecimalOps.Format(this), context.Context.MemoryGovernor);
     }
 
     public int GetPyHashCode()

@@ -42,4 +42,21 @@ public sealed class RendererGovernanceTests
         Assert.Equal(4, surviving.GetParameters().Length);
         Assert.Equal(typeof(PyRenderingContext), surviving.GetParameters()[3].ParameterType);
     }
+    [Fact]
+    public void DecimalReprCommitsExactOutput()
+    {
+        // Decimal rendering discarded its context entirely; the governed
+        // result commits exactly its estimate with no builder transient.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var rendering = new PyRenderingContext(context);
+        var value = new PyDecimal(1.5m);
+
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        var text = value.RenderPython(rendering);
+
+        Assert.Equal("Decimal('1.5')", text.AsString());
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(128 + 14, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+    }
 }

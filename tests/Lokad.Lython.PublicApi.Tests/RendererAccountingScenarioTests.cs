@@ -191,4 +191,51 @@ public sealed class RendererAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task RetainedDecimalReprsStayCharged()
+    {
+        // MG06 probe: 1,000 retained decimal reprs hold ~40KB of text beside
+        // small charged sources under a 64KiB budget.
+        var script = new LythonEngine().Compile(
+            """
+            from decimal import Decimal
+            d = Decimal("1.234567890123456789012345678")
+            out = []
+            for i in range(1000):
+                out.append(repr(d))
+            return len(out)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task DecimalRendererContractsStayExact()
+    {
+        // MG06: governing decimal rendering must not change repr/str output.
+        var script = new LythonEngine().Compile(
+            """
+            from decimal import Decimal
+            d = Decimal("1.5")
+            e = Decimal("0.000001")
+            return [repr(d), str(d), repr(e), str(e)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { "Decimal('1.5')", "1.5", "Decimal('0.000001')", "0.000001" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }
