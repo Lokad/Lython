@@ -404,7 +404,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     {
         value = name switch
         {
-            "maps" => new PyList(_maps.Cast<object>()),
+            "maps" => OwnedMapsList(),
             "parents" => CreateParents(),
             "get" => new BoundChainMapGet(this),
             "keys" => new BoundChainMapKeys(this),
@@ -430,6 +430,16 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         var governor = _maps[0].OwnerMemoryGovernor;
         return new PyChainMap(governor is null ? [new PyDict()] : [new PyDict(governor)]);
+    }
+
+    // The maps view is a fresh list per access; charge its backing through the
+    // visible map governor like the parents fallback so retained views stay owned.
+    private PyList OwnedMapsList()
+    {
+        var governor = _maps[0].OwnerMemoryGovernor;
+        return governor is null
+            ? new PyList(_maps.Cast<object>())
+            : new PyList(_maps.Cast<object>(), governor, null);
     }
 
     public PyString RenderPython(PyRenderingContext context)
