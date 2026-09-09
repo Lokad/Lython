@@ -28,11 +28,25 @@ internal sealed partial class LythonRuntime
             RegexDebugFlag |
             PythonAsciiFlag;
 
-        // Deliberately conservative allowance for retained dependency compilation
-        // state, calibrated against the audit probe (~65MiB per 1000 retained
-        // compilations of 'a(b|c)*d'). Lython-owned record and group tables ride
-        // inside it; per-match scratch and larger-than-probe patterns remain open.
+        // Retained dependency compilation state scales with capture slots and
+        // pattern size, not just pattern count. Base allowance holds the
+        // audited single-group shape (~65MiB per 1000 retained compilations of
+        // 'a(b|c)*d', heap-measured 1:1); each further slot budgets 2KiB and
+        // each pattern byte past 64 budgets 256B, covering the steepest
+        // heap-measured shapes (50-group, 500-group, and 2KB single-group
+        // patterns at 1.0-2.4x headroom). Lython-owned record and group tables
+        // ride inside it; per-match scratch stays separately bounded.
         internal const long CompiledPatternBytes = 65536;
+        private const long GroupSlotBytes = 2048;
+        private const long PatternByteBytes = 256;
+        private const int BaseGroupSlots = 2;
+        private const int BasePatternBytes = 64;
+
+        internal static long EstimatePatternBytes(int captureSlotCount, int patternLength)
+            => checked(
+                CompiledPatternBytes +
+                (GroupSlotBytes * Math.Max(0, captureSlotCount - BaseGroupSlots)) +
+                (PatternByteBytes * Math.Max(0, patternLength - BasePatternBytes)));
 
         internal readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
 
@@ -55,13 +69,17 @@ internal sealed partial class LythonRuntime
                 ? ParseFlags(arguments[1], signature, span)
                 : PythonReCompileOptions.None;
 
+            // Summarizing never throws (best-effort scan); hoisting it ahead of
+            // the reservation sizes both the peak scratch and the durable charge.
+            var groupSummary = RegexPatternFacts.SummarizeGroups(pattern.AsString());
+            var patternBytes = EstimatePatternBytes(groupSummary.CaptureSlotCount, pattern.Utf8Bytes.Length);
+
             // Cover peak compilation scratch as well as the retained pattern;
             // the temporary releases on invalid patterns, the durable charge stays.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(CompiledPatternBytes, span);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(patternBytes, span);
             try
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
-                var groupSummary = RegexPatternFacts.SummarizeGroups(pattern.AsString());
                 var reportedFlags = ToPythonFlags(options) | ParseLeadingInlinePythonFlags(pattern.AsString());
                 if ((reportedFlags & PythonAsciiFlag) == 0)
                 {
@@ -75,8 +93,8 @@ internal sealed partial class LythonRuntime
                     compiled,
                     groupSummary.CaptureSlotCount,
                     groupSummary.NamedGroups);
-                context.MemoryGovernor.Reserve(CompiledPatternBytes, span);
-                context.MemoryGovernor.Commit(CompiledPatternBytes);
+                context.MemoryGovernor.Reserve(patternBytes, span);
+                context.MemoryGovernor.Commit(patternBytes);
                 return result;
             }
             catch (PythonRePatternException ex)

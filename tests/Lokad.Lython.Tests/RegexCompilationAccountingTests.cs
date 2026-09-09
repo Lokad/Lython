@@ -33,6 +33,30 @@ public sealed class RegexCompilationAccountingTests
     }
 
     [Fact]
+    public void GroupAndLengthTermsCommitExactly()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        // Ten groups: 65536 + 9 x 2048, length inside the free envelope.
+        _ = CreatePattern(PyString.FromString(string.Concat(Enumerable.Repeat("(a)", 10))), context, span);
+        Assert.Equal(83968L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void LongPatternLengthTermCommitsExactly()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        // 100 chars, no groups: 65536 + 36 x 256.
+        _ = CreatePattern(PyString.FromString(new string('a', 100)), context, span);
+        Assert.Equal(74752L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
     public void FailedCompilationReleasesScratch()
     {
         var host = new MockLythonHost();
