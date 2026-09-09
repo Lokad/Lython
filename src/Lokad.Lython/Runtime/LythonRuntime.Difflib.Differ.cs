@@ -170,33 +170,7 @@ internal sealed partial class LythonRuntime
             var bLine = b[bestJ];
             if (equalI is null)
             {
-                var aTags = new StringBuilder();
-                var bTags = new StringBuilder();
-                cruncher.SetSeqs(aLine, bLine, span, context);
-                foreach (var opcode in cruncher.BuildOpcodes(span, context))
-                {
-                    var leftLength = opcode.I2 - opcode.I1;
-                    var rightLength = opcode.J2 - opcode.J1;
-                    switch (opcode.Tag)
-                    {
-                        case DiffTag.Replace:
-                            aTags.Append('^', leftLength);
-                            bTags.Append('^', rightLength);
-                            break;
-                        case DiffTag.Delete:
-                            aTags.Append('-', leftLength);
-                            break;
-                        case DiffTag.Insert:
-                            bTags.Append('+', rightLength);
-                            break;
-                        case DiffTag.Equal:
-                            aTags.Append(' ', leftLength);
-                            bTags.Append(' ', rightLength);
-                            break;
-                    }
-                }
-
-                foreach (var line in QFormat(aLine.AsString(), bLine.AsString(), aTags.ToString(), bTags.ToString(), context.MemoryGovernor, span))
+                foreach (var line in BuildFancyTagLines(cruncher, aLine, bLine, span, context))
                 {
                     yield return line;
                 }
@@ -210,6 +184,52 @@ internal sealed partial class LythonRuntime
             {
                 yield return line;
             }
+        }
+
+        // The tag builders, their snapshots, and the whitespace rebuilds plus
+        // QFormat intermediates below are per-pair transient scratch scaling
+        // with line length: both builders and both snapshots stay live while
+        // QFormat materializes (roughly 18 UTF-16 bytes per combined code
+        // unit), so 24x stays conservative including builder slack. The
+        // reservation covers that peak beside the governed outputs, which stay
+        // committed after it releases. Lines are yielded only after release,
+        // so nested pairs never stack reservations.
+        private static object[] BuildFancyTagLines(
+            DifflibSequenceMatcherObject cruncher,
+            PyString aLine,
+            PyString bLine,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var scratchBytes = checked(24L * ((long)aLine.GetUtf16CodeUnitCount() + bLine.GetUtf16CodeUnitCount()));
+            using var scratch = context.MemoryGovernor.ReserveTemporary(scratchBytes, span);
+            var aTags = new StringBuilder();
+            var bTags = new StringBuilder();
+            cruncher.SetSeqs(aLine, bLine, span, context);
+            foreach (var opcode in cruncher.BuildOpcodes(span, context))
+            {
+                var leftLength = opcode.I2 - opcode.I1;
+                var rightLength = opcode.J2 - opcode.J1;
+                switch (opcode.Tag)
+                {
+                    case DiffTag.Replace:
+                        aTags.Append('^', leftLength);
+                        bTags.Append('^', rightLength);
+                        break;
+                    case DiffTag.Delete:
+                        aTags.Append('-', leftLength);
+                        break;
+                    case DiffTag.Insert:
+                        bTags.Append('+', rightLength);
+                        break;
+                    case DiffTag.Equal:
+                        aTags.Append(' ', leftLength);
+                        bTags.Append(' ', rightLength);
+                        break;
+                }
+            }
+
+            return QFormat(aLine.AsString(), bLine.AsString(), aTags.ToString(), bTags.ToString(), context.MemoryGovernor, span).ToArray();
         }
 
         private IEnumerable<object> FancyHelper(IReadOnlyList<PyString> a, int alo, int ahi, IReadOnlyList<PyString> b, int blo, int bhi, LythonSourceSpan span, ExecutionContext context)
