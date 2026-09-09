@@ -30,6 +30,19 @@ internal static partial class PyDateTimeOps
         requiredCount: 1);
 
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+    // Constructed date/time values retain small fixed-size payloads; charge one
+    // table slot per value once built (the expression evaluates first, so failed
+    // constructions leak nothing). Member projections stay uncharged.
+    private const long DateTimeValueBytes = 64;
+
+    private static T OwnDateTimeValue<T>(T value, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+    {
+        context.MemoryGovernor.Reserve(DateTimeValueBytes, span);
+        context.MemoryGovernor.Commit(DateTimeValueBytes);
+        return value;
+    }
+
     private static readonly Regex OffsetTextRegex = new(
         @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
         RegexOptions.CultureInvariant);
@@ -152,7 +165,6 @@ internal static partial class PyDateTimeOps
 
     public static object CreateTimedelta(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         var bound = CallBinder.BindNamedArguments(arguments, span, TimedeltaCallSignature, PythonCallableKind.Builtin);
 
         var days = GetReal(ArgAt(bound, 0), "datetime.timedelta", span);
@@ -174,7 +186,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return new PyTimedelta(new BigInteger(Math.Round(totalMicroseconds, MidpointRounding.ToEven)));
+            return OwnDateTimeValue(new PyTimedelta(new BigInteger(Math.Round(totalMicroseconds, MidpointRounding.ToEven))), context, span);
         }
         catch (OverflowException ex)
         {
@@ -184,22 +196,20 @@ internal static partial class PyDateTimeOps
 
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         var bound = CallBinder.BindNamedArguments(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
 
-        return new PyDate(new DateOnly(
+        return OwnDateTimeValue(new PyDate(new DateOnly(
             GetInteger(ArgAt(bound, 0), "datetime.date", span),
             GetInteger(ArgAt(bound, 1), "datetime.date", span),
-            GetInteger(ArgAt(bound, 2), "datetime.date", span)));
+            GetInteger(ArgAt(bound, 2), "datetime.date", span))), context, span);
     }
 
     public static object CreateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         var bound = CallBinder.BindNamedArguments(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
 
         var fold = GetFold(ArgAt(bound, 5), "datetime.time", span);
-        return new PyTime(
+        return OwnDateTimeValue(new PyTime(
             new TimeOnly(
                 GetInteger(ArgAt(bound, 0), "datetime.time", span),
                 GetInteger(ArgAt(bound, 1), "datetime.time", span),
@@ -207,17 +217,16 @@ internal static partial class PyDateTimeOps
                 GetInteger(ArgAt(bound, 3), "datetime.time", span) / 1000,
                 GetInteger(ArgAt(bound, 3), "datetime.time", span) % 1000),
             GetTimezone(ArgAt(bound, 4), "datetime.time", span),
-            fold);
+            fold), context, span);
     }
 
     public static object CreateDateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         var bound = CallBinder.BindNamedArguments(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
 
         var microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
         var fold = GetFold(ArgAt(bound, 8), "datetime.datetime", span);
-        return new PyDateTime(
+        return OwnDateTimeValue(new PyDateTime(
             new DateTime(
                 GetInteger(ArgAt(bound, 0), "datetime.datetime", span),
                 GetInteger(ArgAt(bound, 1), "datetime.datetime", span),
@@ -228,7 +237,7 @@ internal static partial class PyDateTimeOps
                 microsecond / 1000,
                 DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
             GetTimezone(ArgAt(bound, 7), "datetime.datetime", span),
-            fold);
+            fold), context, span);
     }
 
     public static object CreateTzInfo(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -244,7 +253,6 @@ internal static partial class PyDateTimeOps
 
     public static object CreateTimezone(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         var bound = CallBinder.BindNamedArguments(arguments, span, TimezoneCallSignature, PythonCallableKind.Builtin);
 
         if (ArgAt(bound, 0) is not PyTimedelta delta)
@@ -266,7 +274,7 @@ internal static partial class PyDateTimeOps
 
         return delta.TotalMicroseconds.IsZero && name is null
             ? PyTimezone.Utc
-            : new PyTimezone(delta.Value, name);
+            : OwnDateTimeValue(new PyTimezone(delta.Value, name), context, span);
     }
 
     public static object DateFromIsoFormat(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -279,7 +287,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return new PyDate(ParseIsoDate(text.AsString()));
+            return OwnDateTimeValue(new PyDate(ParseIsoDate(text.AsString())), context, span);
         }
         catch (FormatException)
         {
@@ -295,7 +303,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.date.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return new PyDate(DateFromOrdinalValue(arguments[0], "datetime.date.fromordinal", span));
+        return OwnDateTimeValue(new PyDate(DateFromOrdinalValue(arguments[0], "datetime.date.fromordinal", span)), context, span);
     }
 
     public static object DateFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -318,7 +326,7 @@ internal static partial class PyDateTimeOps
 
         context.RegisterHostCall(span);
         var instant = DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.date.fromtimestamp", span), span);
-        return new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime));
+        return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime)), context, span);
     }
 
     public static object TimeFromIsoFormat(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -365,7 +373,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return new PyDateTime(DateFromOrdinalValue(arguments[0], "datetime.datetime.fromordinal", span).ToDateTime(TimeOnly.MinValue));
+        return OwnDateTimeValue(new PyDateTime(DateFromOrdinalValue(arguments[0], "datetime.datetime.fromordinal", span).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -376,7 +384,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.datetime.fromisocalendar", span).ToDateTime(TimeOnly.MinValue));
+        return OwnDateTimeValue(new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.datetime.fromisocalendar", span).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -390,7 +398,7 @@ internal static partial class PyDateTimeOps
         if (arguments.Length == 1 || arguments[1] is PyNone)
         {
             context.RegisterHostCall(span);
-            return new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(context.Host.LocalNow.Offset).DateTime, DateTimeKind.Unspecified));
+            return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(context.Host.LocalNow.Offset).DateTime, DateTimeKind.Unspecified)), context, span);
         }
 
         if (arguments[1] is not PyTimezone tz)
@@ -398,7 +406,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects tz to be a timezone or None.", span);
         }
 
-        return new PyDateTime(DateTime.SpecifyKind(instant.UtcDateTime + tz.Offset, DateTimeKind.Unspecified), tz);
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant.UtcDateTime + tz.Offset, DateTimeKind.Unspecified), tz), context, span);
     }
 
     public static object DateTimeUtcFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -409,7 +417,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.utcfromtimestamp(timestamp) expects one argument.", span);
         }
 
-        return new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.datetime.utcfromtimestamp", span), span).UtcDateTime, DateTimeKind.Unspecified));
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], "datetime.datetime.utcfromtimestamp", span), span).UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }
 
     public static object DateTimeCombine(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -441,7 +449,7 @@ internal static partial class PyDateTimeOps
                 _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects tzinfo to be a timezone or None.", span)
             };
 
-        return new PyDateTime(date.ToDateTime(time.Value), timezone, time.Fold);
+        return OwnDateTimeValue(new PyDateTime(date.ToDateTime(time.Value), timezone, time.Fold), context, span);
     }
 
     public static object DateTimeStrptime(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -468,7 +476,7 @@ internal static partial class PyDateTimeOps
     {
         _ = arguments;
         context.RegisterHostCall(span);
-        return new PyDate(DateOnly.FromDateTime(context.Host.LocalNow.DateTime));
+        return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(context.Host.LocalNow.DateTime)), context, span);
     }
 
     public static object DateTimeNow(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -482,7 +490,7 @@ internal static partial class PyDateTimeOps
         {
             context.RegisterHostCall(span);
             var localNow = context.Host.LocalNow;
-            return new PyDateTime(DateTime.SpecifyKind(localNow.DateTime, DateTimeKind.Unspecified));
+            return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(localNow.DateTime, DateTimeKind.Unspecified)), context, span);
         }
 
         if (arguments[0] is not PyTimezone tz)
@@ -492,7 +500,7 @@ internal static partial class PyDateTimeOps
 
         context.RegisterHostCall(span);
         var instant = context.Host.UtcNow.UtcDateTime + tz.Offset;
-        return new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), tz);
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), tz), context, span);
     }
 
     public static object DateTimeUtcNow(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -500,7 +508,7 @@ internal static partial class PyDateTimeOps
         _ = arguments;
         context.RegisterHostCall(span);
         var utcNow = context.Host.UtcNow;
-        return new PyDateTime(DateTime.SpecifyKind(utcNow.UtcDateTime, DateTimeKind.Unspecified));
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(utcNow.UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }
 
     public static PyIsoCalendarDate IsoCalendar(DateOnly date)
