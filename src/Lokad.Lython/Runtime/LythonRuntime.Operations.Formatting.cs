@@ -172,7 +172,7 @@ internal sealed partial class LythonRuntime
         {
             if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%')
             {
-                return TryFormatFloatingValue((double)integer, spec, span, out text, out numericPrefixLength);
+                return TryFormatFloatingValue((double)integer, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
             }
 
             text = FormatIntegerValue(integer, spec, span, out numericPrefixLength);
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Format code '{spec.Type}' requires an integer value.", span);
             }
 
-            return TryFormatFloatingValue(floating, spec, span, out text, out numericPrefixLength);
+            return TryFormatFloatingValue(floating, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
         }
 
         if (value is PyDecimal decimalValue)
@@ -196,7 +196,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Format code '{spec.Type}' requires an integer value.", span);
             }
 
-            return TryFormatFloatingValue((double)decimalValue.Value, spec, span, out text, out numericPrefixLength);
+            return TryFormatFloatingValue((double)decimalValue.Value, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
         }
 
         _ = context;
@@ -284,6 +284,7 @@ internal sealed partial class LythonRuntime
         double value,
         InterpolatedFormatSpecifier spec,
         LythonSourceSpan span,
+        MemoryGovernor? governor,
         out string text,
         out int numericPrefixLength)
     {
@@ -299,6 +300,17 @@ internal sealed partial class LythonRuntime
         if (spec.Alternate)
         {
             throw new LythonRuntimeException("ValueError", "Alternate floating-point formatting is not supported.", span);
+        }
+
+        // Guest-controlled precision scales the output without bound from a
+        // tiny input, so bound it before BCL formatting materializes it.
+        // Small precisions behave exactly as before; non-finite values
+        // always render short. Integer digits of a double need at most 309
+        // chars; significant-digit codes need at most precision plus a few.
+        if (governor is not null && double.IsFinite(value) && spec.Precision is { } digits && digits > 1024)
+        {
+            var headroom = spec.Type is null or 'g' or 'G' ? 16L : 320L;
+            governor.EnsureCanReserve(32L + headroom + digits, span);
         }
 
         var formatted = type switch
