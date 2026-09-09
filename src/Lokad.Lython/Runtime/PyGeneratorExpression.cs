@@ -30,6 +30,9 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         _closure = closure;
         _span = span;
         _outerSequence = outerSequence;
+        // Generator objects retain clauses, item, closure and sequence per live
+        // generator; charge one constructed-value unit like other iterators.
+        PyIteratorBase.ChargeIteratorValue(closure.MemoryGovernor, span);
     }
 
     public bool IsTruthy() => true;
