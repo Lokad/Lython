@@ -105,6 +105,21 @@ public sealed class IntegerPayloadAccountingScenarioTests
     }
 
     [Fact]
+    public async Task SingleHugeShiftFailsOnPreflight()
+    {
+        var script = new LythonEngine().Compile("return 1 << 10000000\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
     public async Task SmallPowersAndShiftsStillProject()
     {
         var script = new LythonEngine().Compile("return [(1 << 10), (2 ** 10), (3 << 0)]\n");
