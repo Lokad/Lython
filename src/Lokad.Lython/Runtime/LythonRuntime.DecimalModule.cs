@@ -65,6 +65,11 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
+    // Decimal method results reuse the input for aliasing winners (min/max,
+    // single-digit rotate); charge only fresh values.
+    internal static object OwnFreshDecimal(object result, PyDecimal input, ExecutionContext context, LythonSourceSpan span)
+        => ReferenceEquals(result, input) ? result : OwnDecimalValue(result, context, span);
+
     private static object DecimalCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)
