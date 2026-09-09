@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
         public object GetSubscript(object index, LythonSourceSpan span)
         {
             var column = ParseColumnName(ExpectString(index, "Worksheet.column_dimensions[...] key", span), MaxWorksheetColumn, span);
-            return _worksheet.GetColumnDimension(column);
+            return _worksheet.GetOrCreateColumnDimension(column);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
         {
             var row = ExpectPositiveInt(index, "Worksheet.row_dimensions[...] key", span);
             ValidateRowColumn(row, 1, span);
-            return _worksheet.GetRowDimension(row);
+            return _worksheet.GetOrCreateRowDimension(row);
         }
 
         public PyString RenderPython(PyRenderingContext context)

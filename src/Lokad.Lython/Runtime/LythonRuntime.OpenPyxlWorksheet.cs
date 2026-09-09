@@ -74,6 +74,9 @@ internal sealed partial class LythonRuntime
         // Merged-range registry entries are retained the same way.
         private const long MergeSlotBytes = 64;
         private long _committedMergeBytes;
+        // Row/column dimension entries are retained per index the same way;
+        // dimensions have no guest delete path, so nothing is released.
+        private const long DimensionSlotBytes = 64;
 
         public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {

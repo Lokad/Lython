@@ -351,6 +351,42 @@ internal sealed partial class LythonRuntime
             _hasPageMargins = true;
         }
 
+        internal OpenPyxlColumnDimension GetOrCreateColumnDimension(int column)
+        {
+            if (_columnDimensions.TryGetValue(column, out var dimension))
+            {
+                return dimension;
+            }
+
+            if (_memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(DimensionSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(DimensionSlotBytes);
+            }
+
+            dimension = new OpenPyxlColumnDimension(this, column);
+            _columnDimensions[column] = dimension;
+            return dimension;
+        }
+
+        internal OpenPyxlRowDimension GetOrCreateRowDimension(int row)
+        {
+            if (_rowDimensions.TryGetValue(row, out var dimension))
+            {
+                return dimension;
+            }
+
+            if (_memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(DimensionSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(DimensionSlotBytes);
+            }
+
+            dimension = new OpenPyxlRowDimension(this, row);
+            _rowDimensions[row] = dimension;
+            return dimension;
+        }
+
         internal OpenPyxlColumnDimension GetColumnDimension(int column)
         {
             if (!_columnDimensions.TryGetValue(column, out var dimension))
