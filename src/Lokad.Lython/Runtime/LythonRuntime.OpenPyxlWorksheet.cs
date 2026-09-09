@@ -71,6 +71,9 @@ internal sealed partial class LythonRuntime
         // reference and stay guest-owned; loaded cells stay under R02 package
         // accounting, which never routes through these writers.
         private const long CellSlotBytes = 64;
+        // Merged-range registry entries are retained the same way.
+        private const long MergeSlotBytes = 64;
+        private long _committedMergeBytes;
 
         public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {

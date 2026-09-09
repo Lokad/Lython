@@ -198,6 +198,13 @@ internal sealed partial class LythonRuntime
             var range = ParseCellRangeArguments(arguments, "Worksheet.merge_cells", span);
             if (_mergedRangeSet.Add(range))
             {
+                if (_memoryGovernor is not null)
+                {
+                    _memoryGovernor.Reserve(MergeSlotBytes, _allocationSpan);
+                    _memoryGovernor.Commit(MergeSlotBytes);
+                    _committedMergeBytes += MergeSlotBytes;
+                }
+
                 _mergedRanges.Add(range);
             }
 
@@ -212,6 +219,12 @@ internal sealed partial class LythonRuntime
             if (!_mergedRangeSet.Remove(range))
             {
                 throw new LythonRuntimeException("ValueError", $"Cell range {range.Reference} is not merged.", span);
+            }
+
+            if (_memoryGovernor is not null && _committedMergeBytes >= MergeSlotBytes)
+            {
+                _memoryGovernor.Release(MergeSlotBytes);
+                _committedMergeBytes -= MergeSlotBytes;
             }
 
             _mergedRanges.Remove(range);
