@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
             var keywordDict = new PyDict(context.MemoryGovernor, span);
             foreach (var pair in extraKeywords)
             {
-                keywordDict.SetItem(PyString.FromString(pair.Key), pair.Value);
+                keywordDict.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
             }
 
             bound[plan.VariadicDictionary.Name] = keywordDict;
