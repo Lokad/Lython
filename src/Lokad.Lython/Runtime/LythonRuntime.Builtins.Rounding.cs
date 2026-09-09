@@ -16,14 +16,22 @@ internal sealed partial class LythonRuntime
             ? ToInt32(RuntimeArgumentValidation.ExpectInteger(arguments[1], "round(number[, ndigits]) expects ndigits to be an integer.", span), "round(number[, ndigits])", span)
             : (int?)null;
 
-        return OwnHeapInteger(arguments[0] switch
+        var rounded = arguments[0] switch
         {
             bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, digits, span),
             BigInteger integer => RoundInteger(integer, digits, span),
             double floating => RoundFloat(floating, digits, span),
             PyDecimal decimalValue => RoundDecimal(decimalValue, digits, context.DecimalContext, span),
             _ => throw new LythonRuntimeException("TypeError", "round(number[, ndigits]) expects a numeric value.", span)
-        }, context.MemoryGovernor, span);
+        };
+
+        // Decimal rounding reuses the input past 28 digits; charge only fresh values.
+        if (rounded is PyDecimal roundedDecimal && !ReferenceEquals(roundedDecimal, arguments[0]))
+        {
+            return OwnDecimalValue(roundedDecimal, context, span);
+        }
+
+        return OwnHeapInteger(rounded, context.MemoryGovernor, span);
 
         static object RoundInteger(BigInteger value, int? digits, LythonSourceSpan span)
         {
