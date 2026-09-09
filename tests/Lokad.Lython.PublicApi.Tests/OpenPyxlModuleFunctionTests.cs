@@ -3972,4 +3972,61 @@ wb.save("/out.xlsx")
         public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
             => _inner.StatAsync(path, cancellationToken);
     }
+
+    [Fact]
+    public void OpenPyxlChartAndImage_DimensionsBehaveLikeOptionalNumbers()
+    {
+        // R26: dimensions store validated doubles; arbitrary fields keep
+        // Python values with None for absence.
+        var result = new LythonEngine().Run(
+            """
+            from openpyxl.chart import BarChart
+            from openpyxl.drawing.image import Image
+
+            out = []
+            chart = BarChart()
+            out.append(chart.width is None)
+            out.append(chart.height is None)
+            out.append(chart.style is None)
+            out.append(chart.title is None)
+            out.append(chart.anchor is None)
+            chart.width = 10
+            chart.height = 2.5
+            chart.style = "x"
+            chart.title = "T"
+            chart.anchor = "C3"
+            out.append(str(chart.width))
+            out.append(str(chart.height))
+            out.append(chart.style)
+            out.append(chart.title)
+            out.append(chart.anchor)
+            chart.width = None
+            out.append(chart.width is None)
+            try:
+                chart.width = "x"
+            except TypeError:
+                out.append("type-ok")
+            try:
+                chart.height = -1
+            except ValueError:
+                out.append("value-ok")
+            image = Image("/image.png")
+            out.append(image.width is None)
+            out.append(image.anchor is None)
+            image.width = 7
+            image.height = None
+            out.append(str(image.width))
+            out.append(image.height is None)
+            image.anchor = "B2"
+            out.append(image.anchor)
+            return out
+            """,
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            new List<object?> { true, true, true, true, true, "10.0", "2.5", "x", "T", "C3", true, "type-ok", "value-ok", true, true, "7.0", true, "B2" },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+
 }

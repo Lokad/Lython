@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
     internal sealed class OpenPyxlChartStub : IPyMutableDynamicAttributes, IPyRenderableValue
     {
         private readonly List<object> _series = new();
-        private object? _categories;
+        private object _categories = PyNone.Instance;
 
         public OpenPyxlChartStub(OpenPyxlChartKind chartKind)
         {
@@ -353,13 +353,13 @@ internal sealed partial class LythonRuntime
 
         public string? Title { get; private set; }
 
-        public object? Style { get; private set; }
+        public object Style { get; private set; } = PyNone.Instance;
 
-        public object? Anchor { get; set; }
+        public object Anchor { get; set; } = PyNone.Instance;
 
-        public object? Width { get; private set; }
+        public double? Width { get; private set; }
 
-        public object? Height { get; private set; }
+        public double? Height { get; private set; }
 
         public OpenPyxlChartAxis XAxis { get; }
 
@@ -376,14 +376,14 @@ internal sealed partial class LythonRuntime
                 "relationship_id" => PyNone.Instance,
                 "drawing_path" => PyNone.Instance,
                 "title" => Title is null ? PyNone.Instance : PyString.FromString(Title),
-                "style" => Style ?? PyNone.Instance,
-                "anchor" => Anchor ?? PyNone.Instance,
-                "width" => Width ?? PyNone.Instance,
-                "height" => Height ?? PyNone.Instance,
+                "style" => Style,
+                "anchor" => Anchor,
+                "width" => Width.HasValue ? Width.Value : PyNone.Instance,
+                "height" => Height.HasValue ? Height.Value : PyNone.Instance,
                 "x_axis" => XAxis,
                 "y_axis" => YAxis,
                 "series" => new PyList(_series),
-                "categories" => _categories ?? PyNone.Instance,
+                "categories" => _categories,
                 "add_data" => BoundCallable.Create(AddData, "Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1),
                 "set_categories" => BoundCallable.Create(SetCategories, "Chart.set_categories", ["labels"]),
                 "append" => BoundCallable.Create(Append, "Chart.append", ["value"]),
@@ -401,16 +401,16 @@ internal sealed partial class LythonRuntime
                     Title = value is PyNone ? null : ExpectString(value, "Chart.title", null);
                     return true;
                 case "style":
-                    Style = value is PyNone ? null : value;
+                    Style = value ?? PyNone.Instance;
                     return true;
                 case "anchor":
-                    Anchor = value is PyNone ? null : value;
+                    Anchor = value ?? PyNone.Instance;
                     return true;
                 case "width":
-                    Width = NormalizeOptionalNonNegativeDouble(value, "Chart.width", null) ?? null;
+                    Width = NormalizeOptionalNonNegativeDouble(value, "Chart.width", null);
                     return true;
                 case "height":
-                    Height = NormalizeOptionalNonNegativeDouble(value, "Chart.height", null) ?? null;
+                    Height = NormalizeOptionalNonNegativeDouble(value, "Chart.height", null);
                     return true;
                 default:
                     return false;
@@ -447,7 +447,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "Chart.set_categories(labels) expects one argument.", span);
             }
 
-            _categories = arguments[0];
+            _categories = arguments[0] ?? PyNone.Instance;
             return PyNone.Instance;
         }
 
@@ -609,11 +609,11 @@ internal sealed partial class LythonRuntime
 
         public string Source { get; }
 
-        public object? Anchor { get; set; }
+        public object Anchor { get; set; } = PyNone.Instance;
 
-        public object? Width { get; private set; }
+        public double? Width { get; private set; }
 
-        public object? Height { get; private set; }
+        public double? Height { get; private set; }
 
         public string Format => PathOps.Suffix(Source).TrimStart('.').ToLowerInvariant();
 
@@ -628,9 +628,9 @@ internal sealed partial class LythonRuntime
                 "relationship_id" => PyNone.Instance,
                 "drawing_path" => PyNone.Instance,
                 "format" => PyString.FromString(Format),
-                "anchor" => Anchor ?? PyNone.Instance,
-                "width" => Width ?? PyNone.Instance,
-                "height" => Height ?? PyNone.Instance,
+                "anchor" => Anchor,
+                "width" => Width.HasValue ? Width.Value : PyNone.Instance,
+                "height" => Height.HasValue ? Height.Value : PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -641,19 +641,19 @@ internal sealed partial class LythonRuntime
         {
             if (name == "anchor")
             {
-                Anchor = value is PyNone ? null : value;
+                Anchor = value ?? PyNone.Instance;
                 return true;
             }
 
             if (name == "width")
             {
-                Width = NormalizeOptionalNonNegativeDouble(value, "Image.width", null) ?? null;
+                Width = NormalizeOptionalNonNegativeDouble(value, "Image.width", null);
                 return true;
             }
 
             if (name == "height")
             {
-                Height = NormalizeOptionalNonNegativeDouble(value, "Image.height", null) ?? null;
+                Height = NormalizeOptionalNonNegativeDouble(value, "Image.height", null);
                 return true;
             }
 
