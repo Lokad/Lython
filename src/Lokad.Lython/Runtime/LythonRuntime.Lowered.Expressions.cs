@@ -393,11 +393,13 @@ internal sealed partial class LythonRuntime
     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
     {
         var loweredParameters = LowerLambdaParameters(lambda);
-        return new LambdaFunction(
+        var function = new LambdaFunction(
             loweredParameters,
             lambda.Body,
             context,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
+        ChargeFunctionValue(context, lambda.Span);
+        return function;
     }
 
     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)

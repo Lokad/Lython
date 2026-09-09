@@ -154,11 +154,13 @@ internal sealed partial class LythonRuntime
                 parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
                 parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
             .ToArray();
-        return new LambdaFunction(
+        var function = new LambdaFunction(
             loweredParameters,
             LoweredScript.LowerStandaloneExpression(lambda.Body),
             context,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
+        ChargeFunctionValue(context, lambda.Span);
+        return function;
     }
 
     private static void ExecuteAugmentedAssignment(AugmentedAssignmentStatementSyntax statement, ExecutionContext context)

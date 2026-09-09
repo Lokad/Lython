@@ -325,13 +325,17 @@ internal sealed partial class LythonRuntime
         LoweredFunctionDefinitionStatement functionDefinition,
         ExecutionContext context,
         Dictionary<string, object> defaults)
-        => new(
+    {
+        var function = new PyFunction(
             functionDefinition.Syntax.Name,
             functionDefinition.Parameters,
             functionDefinition.Body,
             context.FunctionClosureContext,
             defaults,
             ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
+        ChargeFunctionValue(context, functionDefinition.Span);
+        return function;
+    }
 
     private static PyType CreateLoweredClassType(
         LoweredClassDefinitionStatement classDefinition,

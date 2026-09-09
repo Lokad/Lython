@@ -407,11 +407,13 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> CreateLoweredLambdaAsync(LoweredLambdaExpression lambda, ExecutionContext context)
     {
         var loweredParameters = LowerLambdaParameters(lambda);
-        return new LambdaFunction(
+        var function = new LambdaFunction(
             loweredParameters,
             lambda.Body,
             context,
             await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false));
+        ChargeFunctionValue(context, lambda.Span);
+        return function;
     }
 
     private static async ValueTask<object> InvokeLoweredCallAsync(LoweredCallExpression call, ExecutionContext context)
