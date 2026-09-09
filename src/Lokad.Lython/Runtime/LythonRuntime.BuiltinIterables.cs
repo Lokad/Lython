@@ -313,11 +313,13 @@ internal sealed partial class LythonRuntime
 
         if (target is IPyIndexableValue indexable)
         {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             return new PyReversedIterator(indexable.Length, indexable.GetIndex);
         }
 
         if (PyStringOps.TryAsString(target, out var text))
         {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             return new PyReversedIterator(text.Length, text.Index);
         }
 

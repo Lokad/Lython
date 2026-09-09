@@ -5,6 +5,21 @@ namespace Lokad.Lython.Runtime;
 
 internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableValue, IPyTruthyValue
 {
+    // Iterator objects retain callbacks, cursors and spans per live iterator;
+    // charge one constructed-value unit when a governor is present.
+    internal const long IteratorValueBytes = 128;
+
+    internal static void ChargeIteratorValue(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is null)
+        {
+            return;
+        }
+
+        governor.Reserve(IteratorValueBytes, span);
+        governor.Commit(IteratorValueBytes);
+    }
+
     public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
     public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);

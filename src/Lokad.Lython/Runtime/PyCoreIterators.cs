@@ -94,13 +94,18 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
 
 internal sealed class PyEnumerateIterator : PyIteratorBase
 {
+    private readonly MemoryGovernor _governor;
+    private readonly LythonSourceSpan _span;
     private readonly PyIteration.Cursor _cursor;
     private BigInteger _index;
 
     public PyEnumerateIterator(object iterable, BigInteger start, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _cursor = PyIteration.Cursor.Create(iterable, span, context);
+        _governor = context.MemoryGovernor;
+        _span = span;
         _index = start;
+        ChargeIteratorValue(context.MemoryGovernor, span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -111,7 +116,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
             return false;
         }
 
-        value = PyTuple.FromOwnedArray([_index, item]);
+        value = new PyTuple([_index, item], _governor, _span);
         _index++;
         return true;
     }
@@ -122,6 +127,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
 internal sealed class PyZipIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor[] _cursors;
+    private readonly MemoryGovernor _governor;
     private readonly bool _strict;
     private readonly LythonSourceSpan _span;
     private bool _finished;
@@ -129,8 +135,10 @@ internal sealed class PyZipIterator : PyIteratorBase
     public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _cursors = iterables.Select(value => PyIteration.Cursor.Create(value, span, context)).ToArray();
+        _governor = context.MemoryGovernor;
         _strict = strict;
         _span = span;
+        ChargeIteratorValue(context.MemoryGovernor, span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -163,7 +171,7 @@ internal sealed class PyZipIterator : PyIteratorBase
             return false;
         }
 
-        value = new PyTuple(items);
+        value = new PyTuple(items, _governor, _span);
         return true;
     }
 

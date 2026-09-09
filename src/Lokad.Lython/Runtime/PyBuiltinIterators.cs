@@ -13,6 +13,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     {
         _source = PyIteration.Cursor.Create(source, span, context);
         _displayName = displayName;
+        ChargeIteratorValue(context.MemoryGovernor, span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -58,6 +59,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
         _callable = callable;
         _sentinel = sentinel;
         _context = context;
+        ChargeIteratorValue(context.MemoryGovernor, span);
         _span = span;
     }
 
@@ -146,6 +148,7 @@ internal sealed class PyMapIterator : PyIteratorBase
         }
 
         _context = context;
+        ChargeIteratorValue(context.MemoryGovernor, span);
         _span = span;
     }
 
@@ -208,6 +211,7 @@ internal sealed class PyFilterIterator : PyIteratorBase
         _function = function;
         _source = PyIteration.Cursor.Create(source, span, context);
         _context = context;
+        ChargeIteratorValue(context.MemoryGovernor, span);
         _span = span;
     }
 
