@@ -78,10 +78,13 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             }
         }
 
-        return new PyNamedTupleObject(this, values);
+        return new PyNamedTupleObject(this, values, context.MemoryGovernor, span);
     }
 
     public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, LythonSourceSpan? span)
+        => CreateFromValues(values, null, span);
+
+    public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var materialized = values.ToArray();
         if (materialized.Length != _fieldNames.Length)
@@ -89,7 +92,9 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             throw new LythonRuntimeException("TypeError", $"{_typeName}._make(iterable) expects {_fieldNames.Length} values.", span);
         }
 
-        return new PyNamedTupleObject(this, materialized);
+        return governor is null
+            ? new PyNamedTupleObject(this, materialized)
+            : new PyNamedTupleObject(this, materialized, governor, span);
     }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -155,7 +160,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
             }
 
-            return _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), span);
+            return _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -173,16 +178,35 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     }
 }
 
-internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyHashableValue
+internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyHashableValue, IPyGovernedValue
 {
     private readonly PyNamedTupleType _type;
     private readonly object[] _values;
+    private readonly MemoryGovernor? _memoryGovernor;
+    private readonly LythonSourceSpan? _allocationSpan;
 
     public PyNamedTupleObject(PyNamedTupleType type, object[] values)
     {
         _type = type;
         _values = [.. values];
     }
+
+    // Guest-constructed instances own their backing array at the tuple slot
+    // rate; engine-owned tuples without a governor stay free.
+    public PyNamedTupleObject(PyNamedTupleType type, object[] values, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    {
+        var backingBytes = PyTuple.EstimateApproximateBytes(values.Length);
+        governor.Reserve(backingBytes, allocationSpan);
+        governor.Commit(backingBytes);
+        _type = type;
+        _values = [.. values];
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+    }
+
+    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
     public PyNamedTupleType Type => _type;
 
@@ -308,7 +332,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
                 values[fieldIndex] = argument.Value;
             }
 
-            return new PyNamedTupleObject(_owner._type, values);
+            return new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
