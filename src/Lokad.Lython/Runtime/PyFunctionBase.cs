@@ -7,6 +7,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 {
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly LythonRuntime.ExecutionContext _closure;
+    // Metadata tables grow one CLR entry per guest attribute name; charge
+    // each new key so retained attributes accumulate. The key strings
+    // themselves are caller-owned; only the table slot is charged here.
+    // Functions have no attribute delete path, so nothing is released.
+    private const long AttributeSlotBytes = 64;
+    private MemoryGovernor? _memoryGovernor;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
     private readonly ScopeDirectiveFacts _scopeFacts;
 
@@ -19,6 +25,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         Name = name;
         _closure = closure;
+        _memoryGovernor = closure.MemoryGovernor;
         _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
@@ -103,6 +110,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public bool TrySetMember(string name, object value)
     {
+        if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
+        {
+            _memoryGovernor.Reserve(AttributeSlotBytes, null);
+            _memoryGovernor.Commit(AttributeSlotBytes);
+        }
+
         _metadata[name] = value;
         return true;
     }
