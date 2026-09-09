@@ -30,6 +30,9 @@ internal sealed partial class LythonRuntime
         // ownership from construction and invocation.
         private const long EntryInfrastructureBytes = 128;
 
+        // Wrapper attribute slots ride the instance-attribute rate.
+        private const long MetadataSlotBytes = 64;
+
         public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor)
         {
             _callable = callable;
@@ -116,6 +119,14 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
+            // Wrapper attribute slots ride the instance-attribute rate; the
+            // creation-time update_wrapper pass routes through here as well.
+            if (!_metadata.ContainsKey(name))
+            {
+                _memoryGovernor.Reserve(MetadataSlotBytes, null);
+                _memoryGovernor.Commit(MetadataSlotBytes);
+            }
+
             _metadata[name] = value;
             return true;
         }

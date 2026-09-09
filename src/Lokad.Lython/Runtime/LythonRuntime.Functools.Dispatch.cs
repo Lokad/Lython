@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.singledispatch(func) expects one callable argument.", span);
             }
 
-            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: false);
+            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: false, context.MemoryGovernor, span);
             ApplyUpdateWrapper(dispatcher, dispatcher, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
             return dispatcher;
         }
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.singledispatchmethod(func) expects one callable argument.", span);
             }
 
-            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: true);
+            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: true, context.MemoryGovernor, span);
             ApplyUpdateWrapper(dispatcher, dispatcher, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
             return new PySingleDispatchMethod(dispatcher);
         }
@@ -74,11 +74,21 @@ internal sealed partial class LythonRuntime
         private readonly bool _methodMode;
         private readonly List<SingleDispatchRegistration> _registrations = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private readonly MemoryGovernor _memoryGovernor;
+        private readonly LythonSourceSpan _allocationSpan;
+        private long _committedRegistrationBytes;
 
-        public PySingleDispatchDispatcher(ICallable defaultCallable, bool methodMode)
+        // One registration record plus its list slot.
+        private const long RegistrationBytes = 64;
+        // Wrapper attribute slots ride the instance-attribute rate.
+        private const long MetadataSlotBytes = 64;
+
+        public PySingleDispatchDispatcher(ICallable defaultCallable, bool methodMode, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
             _defaultCallable = defaultCallable;
             _methodMode = methodMode;
+            _memoryGovernor = governor;
+            _allocationSpan = allocationSpan;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -159,6 +169,12 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
+            if (!_metadata.ContainsKey(name))
+            {
+                _memoryGovernor.Reserve(MetadataSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(MetadataSlotBytes);
+            }
+
             _metadata[name] = value;
             return true;
         }
@@ -217,7 +233,19 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "singledispatch.register(cls, func) expects cls to be a supported class/type.", span);
             }
 
-            _registrations.RemoveAll(registration => DispatchTypeIdentityEquals(registration.TypeSpec, typeSpec));
+            // Re-registration replaces in place: release the displaced record
+            // before charging its successor so the count stays exact.
+            var removed = _registrations.RemoveAll(registration => DispatchTypeIdentityEquals(registration.TypeSpec, typeSpec));
+            if (removed > 0)
+            {
+                var released = checked(RegistrationBytes * removed);
+                _memoryGovernor.Release(released);
+                _committedRegistrationBytes -= released;
+            }
+
+            _memoryGovernor.Reserve(RegistrationBytes, span);
+            _memoryGovernor.Commit(RegistrationBytes);
+            _committedRegistrationBytes += RegistrationBytes;
             _registrations.Add(new SingleDispatchRegistration(typeSpec, callable));
         }
 

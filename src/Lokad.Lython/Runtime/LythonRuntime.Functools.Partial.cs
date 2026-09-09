@@ -6,17 +6,37 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class PyPartial : ICallable, IPyRenderableValue, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes
+    private sealed class PyPartial : ICallable, IPyRenderableValue, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyGovernedValue
     {
         private readonly ICallable _callable;
         private readonly CallArgumentValue[] _boundArguments;
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private readonly MemoryGovernor _memoryGovernor;
+        private readonly LythonSourceSpan _allocationSpan;
 
-        public PyPartial(ICallable callable, CallArgumentValue[] boundArguments)
+        // Bound-argument arrays are retained per partial object; call-argument
+        // slots run wider than plain references, so cover them at 32B each.
+        // Partialmethod-derived partials alias the method array but pay again:
+        // safe-direction double ownership beats an unowned alias.
+        private static long EstimateBoundArgumentsBytes(int count) => 32L + (32L * count);
+
+        // Wrapper attribute slots ride the same rate as instance attributes.
+        private const long MetadataSlotBytes = 64;
+
+        public PyPartial(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
+            var backingBytes = EstimateBoundArgumentsBytes(boundArguments.Length);
+            governor.Reserve(backingBytes, allocationSpan);
+            governor.Commit(backingBytes);
             _callable = callable;
             _boundArguments = boundArguments;
+            _memoryGovernor = governor;
+            _allocationSpan = allocationSpan;
         }
+
+        public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+        public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -113,6 +133,12 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
+            if (!_metadata.ContainsKey(name))
+            {
+                _memoryGovernor.Reserve(MetadataSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(MetadataSlotBytes);
+            }
+
             _metadata[name] = value;
             return true;
         }
@@ -223,7 +249,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
-            return new PyPartial(callable, arguments[1..]);
+            return new PyPartial(callable, arguments[1..], context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -239,11 +265,15 @@ internal sealed partial class LythonRuntime
     {
         private readonly ICallable _callable;
         private readonly CallArgumentValue[] _boundArguments;
+        private readonly MemoryGovernor _memoryGovernor;
+        private readonly LythonSourceSpan _allocationSpan;
 
-        public PyPartialMethod(ICallable callable, CallArgumentValue[] boundArguments)
+        public PyPartialMethod(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
             _callable = callable;
             _boundArguments = boundArguments;
+            _memoryGovernor = governor;
+            _allocationSpan = allocationSpan;
         }
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -266,7 +296,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod target must resolve to a callable.", span);
             }
 
-            return new PyPartial(callable, _boundArguments);
+            return new PyPartial(callable, _boundArguments, _memoryGovernor, _allocationSpan);
         }
 
         public void BindOwner(PyType owner)
@@ -301,7 +331,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
-            return new PyPartialMethod(callable, arguments[1..]);
+            return new PyPartialMethod(callable, arguments[1..], context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -364,7 +394,7 @@ internal sealed partial class LythonRuntime
                 bound[i] = arguments[i];
             }
 
-            return new PyPartial(UpdateWrapperCallable.Instance, bound);
+            return new PyPartial(UpdateWrapperCallable.Instance, bound, context.MemoryGovernor, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
