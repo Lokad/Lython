@@ -53,6 +53,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Constructed decimals retain a small fixed-size payload; charge one table
+    // slot per fresh value once built (the expression evaluates first, so failed
+    // constructions leak nothing). Aliased Decimal inputs stay free.
+    private const long DecimalValueBytes = 64;
+
+    private static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        context.MemoryGovernor.Reserve(DecimalValueBytes, span);
+        context.MemoryGovernor.Commit(DecimalValueBytes);
+        return value;
+    }
+
     private static object DecimalCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)
@@ -65,9 +77,17 @@ internal sealed partial class LythonRuntime
             _ = ExpectDecimalContextOrNone(arguments[1], "decimal.Decimal(..., context=...) expects a Context or None.", span);
         }
 
-        return arguments.Length == 0 || arguments[0] is PyNone
-            ? new PyDecimal(0m)
-            : PyDecimalOps.Parse(arguments[0], span);
+        if (arguments.Length == 0 || arguments[0] is PyNone)
+        {
+            return OwnDecimalValue(new PyDecimal(0m), context, span);
+        }
+
+        if (arguments[0] is PyDecimal)
+        {
+            return arguments[0];
+        }
+
+        return OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span), context, span);
     }
 
     private static object DecimalTupleCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
