@@ -103,7 +103,9 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        var builder = new GovernedByteBuilder();
+        var builder = _memoryGovernor is null
+            ? new GovernedByteBuilder()
+            : new GovernedByteBuilder(_memoryGovernor, _allocationSpan);
         builder.AppendAscii("b'");
         foreach (var value in _bytes)
         {
