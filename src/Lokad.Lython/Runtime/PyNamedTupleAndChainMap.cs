@@ -405,7 +405,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         value = name switch
         {
             "maps" => new PyList(_maps.Cast<object>()),
-            "parents" => new PyChainMap(_maps.Skip(1)),
+            "parents" => CreateParents(),
             "get" => new BoundChainMapGet(this),
             "keys" => new BoundChainMapKeys(this),
             "values" => new BoundChainMapValues(this),
@@ -417,6 +417,21 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         return value is not PyNone;
     }
+
+    private PyChainMap CreateParents()
+    {
+        // The fallback map behind a single-map ChainMap borrows its governor
+        // from the visible map so parents writes stay charged; a fully
+        // ungoverned parent stays free like its maps.
+        if (_maps.Count > 1)
+        {
+            return new PyChainMap(_maps.Skip(1));
+        }
+
+        var governor = _maps[0].OwnerMemoryGovernor;
+        return new PyChainMap(governor is null ? [new PyDict()] : [new PyDict(governor)]);
+    }
+
     public PyString RenderPython(PyRenderingContext context)
             => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(_maps, context), ")", context);
 
@@ -482,20 +497,20 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return keys.Count;
     }
 
-    private static PyDict ExpectMap(object value, LythonSourceSpan span)
+    private static PyDict ExpectMap(object value, LythonSourceSpan span, MemoryGovernor governor)
         => value switch
         {
             PyDict dict => dict,
-            PyDefaultDict defaultDict => ToPyDict(defaultDict),
+            PyDefaultDict defaultDict => ToPyDict(defaultDict, governor, span),
             _ => throw new LythonRuntimeException("TypeError", "ChainMap maps must be dictionaries.", span)
         };
 
-    internal static IReadOnlyList<PyDict> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span)
-        => values.Select(value => ExpectMap(value, span)).ToArray();
+    internal static IReadOnlyList<PyDict> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span, MemoryGovernor governor)
+        => values.Select(value => ExpectMap(value, span, governor)).ToArray();
 
-    private static PyDict ToPyDict(PyDefaultDict defaultDict)
+    private static PyDict ToPyDict(PyDefaultDict defaultDict, MemoryGovernor governor, LythonSourceSpan span)
     {
-        var dict = new PyDict();
+        var dict = new PyDict(governor, span);
         foreach (var pair in defaultDict)
         {
             dict.SetItem(pair.Key, pair.Value);
@@ -592,7 +607,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
             var maps = new List<PyDict>
             {
-                arguments.Length == 0 ? new PyDict(context.MemoryGovernor, span) : ExpectMap(arguments[0].Value, span)
+                arguments.Length == 0 ? new PyDict(context.MemoryGovernor, span) : ExpectMap(arguments[0].Value, span, context.MemoryGovernor)
             };
             maps.AddRange(_owner._maps);
             return new PyChainMap(maps);

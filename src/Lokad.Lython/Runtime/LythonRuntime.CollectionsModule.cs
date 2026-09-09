@@ -484,7 +484,7 @@ internal sealed partial class LythonRuntime
 
         return maps.Count == 0
             ? new PyChainMap([new PyDict(context.MemoryGovernor, span)])
-            : new PyChainMap(PyChainMap.NormalizeMaps(maps, span));
+            : new PyChainMap(PyChainMap.NormalizeMaps(maps, span, context.MemoryGovernor));
     }
 
     private static void PopulateDefaultDict(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
