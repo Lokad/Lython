@@ -117,18 +117,19 @@ at the same expanded size. Re-record on release runs before changing
 archive compression or staging paths.
 
 Host traffic (deterministic single-run counts from a counting host; host
-call counts and byte totals do not depend on build configuration):
+call counts and byte totals do not depend on build configuration; asserted
+repeatably by `ZipHostTrafficTests`):
 
 | Benchmark case | Host calls | Bytes in | Bytes out |
 | --- | --- | --- | --- |
-| ZIP write 200 mixed entries | write x1 | 0 | 20,197 |
-| ZIP list+read 200 entries (20,100 expanded) | read x1, stat x2 | 20,197 | 0 |
-| ZIP append 20 to 200-entry archive | read x1, stat x2, write x1 | 20,197 | 22,037 |
-| ZIP extract 200 entries | mkdir x1, read x1, stat x403, write x200 | 20,197 | 20,100 |
-| ZIP write 50/200/800 fixed entries | write x1 | 0 | 5,002 / 20,202 / 81,402 |
-| ZIP read 50/200/800 entries | read x1, stat x2 | 5,002 / 20,202 / 81,402 | 0 |
-| ZIP write 1MB compressible entry | write x1 | 0 | 1,106 |
-| ZIP write 1MB incompressible entry | write x1 | 0 | 1,000,433 |
+| ZIP write 200 mixed entries | write x1 | 0 | 19,366 |
+| ZIP list+read 200 entries (20,100 expanded) | read x1, stat x1 | 19,366 | 0 |
+| ZIP append 20 to 200-entry archive | read x1, stat x1, write x1 | 19,366 | 21,206 |
+| ZIP extract 200 entries | mkdir x1, read x1, stat x402, write x200 | 19,366 | 20,100 |
+| ZIP write 50/200/800 fixed entries | write x1 | 0 | 4,802 / 19,402 / 78,202 |
+| ZIP read 50/200/800 entries | read x1, stat x1 | 4,802 / 19,402 / 78,202 | 0 |
+| ZIP write 1MB compressible entry | write x1 | 0 | 1,101 |
+| ZIP write 1MB incompressible entry | write x1 | 0 | 1,000,428 |
 | gzip write 100 KiB, 0/10/100 flushes | write x1/x10/x100 | 0 | 251 / 1,621 / 15,297 |
 | openpyxl save 500-row workbook | write x1 | 0 | 19,487 |
 | openpyxl load and read cells | read x1, stat x1 | 19,487 | 0 |
