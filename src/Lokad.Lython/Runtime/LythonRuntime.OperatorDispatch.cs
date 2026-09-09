@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, span),
             BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, context, span),
             BinaryOperatorSyntax.Multiply => EvaluateMultiply(left, right, context, span),
-            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, span),
+            BinaryOperatorSyntax.Divide => EvaluateDivide(left, right, context, span),
             BinaryOperatorSyntax.FloorDivide => EvaluateFloorDivide(left, right, context, span),
             BinaryOperatorSyntax.Modulo => EvaluateModulo(left, right, context, span),
             BinaryOperatorSyntax.Power => EvaluatePower(left, right, context, span),

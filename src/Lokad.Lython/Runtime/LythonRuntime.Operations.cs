@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyDecimal decimalValue)
         {
-            return new PyDecimal(-decimalValue.Value, decimalValue.Exponent);
+            return OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), context, span);
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))

@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments[0] is PyDecimal decimalValue)
         {
-            return new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent);
+            return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
         }
 
         if (!PyNumberOps.TryAsNumber(arguments[0], out var number))

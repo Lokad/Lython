@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                 "add" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
                 "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSub, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateSubtract(left, right, context, innerSpan))),
                 "mul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
-                "truediv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, _) => Binary(arguments, span, EvaluateDivide)),
+                "truediv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateDivide(left, right, context, innerSpan))),
                 "floordiv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateFloorDivide(left, right, context, innerSpan))),
                 "mod" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMod, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateModulo(left, right, context, innerSpan))),
                 "pow" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPow, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluatePower(left, right, context, innerSpan))),
@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
     {
         if (value is PyDecimal decimalValue)
         {
-            return new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent);
+            return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
         }
 
         if (!PyNumberOps.TryAsNumber(value, out var number))
