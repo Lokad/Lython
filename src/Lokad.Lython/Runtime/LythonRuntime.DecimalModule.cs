@@ -66,6 +66,20 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
+    // Counter-derived decimal counts are always fresh values; charge them against
+    // the owning counter's governor when present. Ungoverned counters stay free.
+    internal static object OwnDecimalValue(object value, MemoryGovernor? governor, LythonSourceSpan span)
+    {
+        if (governor is null)
+        {
+            return value;
+        }
+
+        governor.Reserve(DecimalValueBytes, span);
+        governor.Commit(DecimalValueBytes);
+        return value;
+    }
+
     // Decimal method results reuse the input for aliasing winners (min/max,
     // single-digit rotate); charge only fresh values.
     internal static object OwnFreshDecimal(object result, PyDecimal input, ExecutionContext context, LythonSourceSpan span)

@@ -374,12 +374,12 @@ internal sealed partial class LythonRuntime
                 }, "Counter.get", ["key", "default"], 1),
                 "update" => new CounterUpdateCallable(counter, subtract: false),
                 "subtract" => new CounterUpdateCallable(counter, subtract: true),
-                "total" => BoundCallable.CreateNoArguments(counter, "Counter.total", static (receiver, span, _) =>
+                "total" => BoundCallable.CreateNoArguments(counter, "Counter.total", static (receiver, span, context) =>
                 {
                     object total = BigInteger.Zero;
                     foreach (var pair in receiver.Items)
                     {
-                        total = AddCounterCounts(total, ExpectCounterCount(pair.Value, span), span);
+                        total = AddCounterCounts(total, ExpectCounterCount(pair.Value, span), span, context.MemoryGovernor);
                     }
 
                     return total;

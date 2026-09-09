@@ -107,7 +107,8 @@ internal static partial class StaticStructuralDiagnostics
             BinaryOperatorSyntax.Subtract => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
-                StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
+                StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
+                left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
             BinaryOperatorSyntax.Multiply => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 StaticAbstractFacts.IsNormalDistNumericPair(left, right) ||
@@ -275,7 +276,8 @@ internal static partial class StaticStructuralDiagnostics
            StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
            StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
-           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple;
+           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter;
 
     private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)
         => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||

@@ -566,7 +566,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in otherCounter)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span) : delta, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -578,7 +578,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in dict)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span) : delta, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -602,7 +602,7 @@ internal sealed partial class LythonRuntime
         foreach (var pair in keywordItems)
         {
             var delta = ExpectCounterCount(pair.Value, span);
-            counter.Increment(PyString.FromString(pair.Key), subtract ? NegateCounterCount(delta, span) : delta, span);
+            counter.Increment(PyString.FromString(pair.Key), subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }

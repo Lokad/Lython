@@ -195,7 +195,7 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     {
         if (_items.TryGetValue(key, out var value))
         {
-            _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span));
+            _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor));
             return;
         }
 
