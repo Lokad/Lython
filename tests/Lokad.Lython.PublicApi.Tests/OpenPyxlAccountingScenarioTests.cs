@@ -187,4 +187,46 @@ public sealed class OpenPyxlAccountingScenarioTests
         return output.ToArray();
     }
 
+
+    [Fact]
+    public async Task CancelledLoadFailsExplicitly()
+    {
+        // R02: a cancelled load honors cancellation instead of running to
+        // completion or failing with an unrelated error.
+        var seed = new MockLythonHost();
+        var built = new LythonEngine().Run(
+            """
+            import openpyxl
+            wb = openpyxl.Workbook()
+            wb.save("/t.xlsx")
+            return 1
+            """,
+            seed);
+        Assert.True(built.Success, built.Failure?.Message);
+
+        var script = new LythonEngine().Compile(
+            """
+            import openpyxl
+            return openpyxl.load_workbook("/t.xlsx")
+            """);
+        Assert.True(script.IsValid);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var options = new LythonRunOptions { CancellationToken = cancellation.Token };
+
+        var syncHost = new MockLythonHost();
+        syncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
+        var sync = script.Run(syncHost, options);
+        Assert.False(sync.Success);
+        Assert.Equal("RuntimeError", sync.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+
+        var asyncHost = new MockLythonHost();
+        asyncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
+        var asyncResult = await script.RunAsync(asyncHost, options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
 }

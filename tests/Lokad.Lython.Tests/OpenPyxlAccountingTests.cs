@@ -287,4 +287,28 @@ public sealed class OpenPyxlAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+
+    [Fact]
+    public void CancelledCellLoadReleasesEverything()
+    {
+        // R02: a load that dies on cancellation retains nothing, since no
+        // model charge commits before the first guard fires.
+        var xml = SheetXml(@"<c r=""A1""/>");
+        using var stream = new MemoryStream(BuildArchive(("xl/worksheets/sheet1.xml", xml)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var failure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeLoadWorksheetCells(session, "xl/worksheets/sheet1.xml", NewWorksheet("Sheet1"), new List<string>(), context, span));
+        Assert.Equal("LythonRuntimeException", failure.InnerException?.GetType().Name);
+        Assert.Contains("execution canceled", failure.InnerException?.Message ?? string.Empty, StringComparison.Ordinal);
+        ((IDisposable)session).Dispose();
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
 }
