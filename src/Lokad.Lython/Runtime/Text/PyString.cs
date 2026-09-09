@@ -65,6 +65,44 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
     }
 
+    /// <summary>
+    /// Counts the UTF-16 code units the decoded CLR string needs. Astral runes
+    /// (4-byte UTF-8 sequences) decode to a surrogate pair, so this exceeds
+    /// <see cref="Length"/> whenever astral characters are present. Projection
+    /// budgets must use this width: rune counts undercharge astral payloads.
+    /// </summary>
+    public int GetUtf16CodeUnitCount()
+    {
+        var units = 0;
+        var bytes = _utf8.AsSpan();
+        for (var i = 0; i < bytes.Length;)
+        {
+            var lead = bytes[i];
+            if (lead < 0x80)
+            {
+                units += 1;
+                i += 1;
+            }
+            else if (lead < 0xE0)
+            {
+                units += 1;
+                i += 2;
+            }
+            else if (lead < 0xF0)
+            {
+                units += 1;
+                i += 3;
+            }
+            else
+            {
+                units += 2;
+                i += 4;
+            }
+        }
+
+        return units;
+    }
+
     public ReadOnlyMemory<byte> Utf8Bytes => _utf8;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;

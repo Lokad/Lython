@@ -61,7 +61,7 @@ internal static class PublicProjection
 
     public static string ProjectString(PyString text, ProjectionBudget? budget)
     {
-        budget?.Reserve(32L + (2L * text.Length));
+        budget?.Reserve(32L + (2L * text.GetUtf16CodeUnitCount()));
         return text.AsString();
     }
 
@@ -91,7 +91,7 @@ internal static class PublicProjection
 
     public static string ProjectPath(PyPath path, ProjectionBudget? budget)
     {
-        budget?.Reserve(32L + (2L * path.Value.Length));
+        budget?.Reserve(32L + (2L * path.Value.GetUtf16CodeUnitCount()));
         return path.Value.AsString();
     }
 

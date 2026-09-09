@@ -1313,6 +1313,27 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
     }
 
     [Fact]
+    public void ProjectionBudget_CountsAstralResultsAtUtf16Width()
+    {
+        // 100 astral runes project to 200 UTF-16 code units (432 bytes with
+        // the object header); the old rune-based estimate charged only 232.
+        var result = new LythonEngine().Run(
+            """
+return chr(128512) * 100
+""",
+            new MockLythonHost(),
+            new LythonRunOptions
+            {
+                MaxProjectionMemoryBytes = 300
+            });
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("ProjectionError", result.Failure.RequireNotNull().ExceptionType);
+        Assert.Contains("projection memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DeeplyNestedGlobalRendering_IsStackSafe()
     {
         var nested = CreateDeeplyNestedList(700);

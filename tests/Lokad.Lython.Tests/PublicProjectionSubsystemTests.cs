@@ -180,4 +180,20 @@ return value
 
         Assert.Contains("projection memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void PublicProjection_ChargesAstralTextAtUtf16Width()
+    {
+        var emoji = char.ConvertFromUtf32(0x1F600);
+        var text = PyString.FromString(emoji);
+
+        // One astral rune decodes to a UTF-16 surrogate pair, so the CLR
+        // payload needs 32 + 2 * 2 bytes; the old rune-based estimate held 34.
+        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectString(text, new ProjectionBudget(34)));
+        Assert.Equal(emoji, PublicProjection.ProjectString(text, new ProjectionBudget(36)));
+
+        var path = new PyPath(text);
+        Assert.Throws<ProjectionException>(() => PublicProjection.ProjectPath(path, new ProjectionBudget(34)));
+        Assert.Equal(emoji, PublicProjection.ProjectPath(path, new ProjectionBudget(36)));
+    }
 }
