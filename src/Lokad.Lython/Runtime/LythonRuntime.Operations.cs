@@ -56,6 +56,21 @@ internal sealed partial class LythonRuntime
         governor.Commit(estimatedBytes);
     }
 
+    // Parsed and converted integers above the inline range retain heap magnitude
+    // storage with no owner tracking after this point; own it durably like
+    // operation results. Inline-range values and aliased inputs stay free.
+    private static BigInteger OwnParsedInteger(BigInteger value, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        if (RuntimeMemoryEstimates.GetMagnitudeBitLength(value) > 64)
+        {
+            var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(value);
+            governor.Reserve(bytes, span);
+            governor.Commit(bytes);
+        }
+
+        return value;
+    }
+
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)

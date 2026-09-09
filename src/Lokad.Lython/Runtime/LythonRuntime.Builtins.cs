@@ -290,10 +290,10 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
-                double floating => FloatToInteger(floating, "int", span, Math.Truncate),
-                PyDecimal decimalValue => new BigInteger(decimal.Truncate(decimalValue.Value)),
-                PyString text => ParsePythonIntegerText(text.AsString(), numberBase, span),
-                PyBytes bytes => ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span),
+                double floating => OwnParsedInteger(FloatToInteger(floating, "int", span, Math.Truncate), context.MemoryGovernor, span),
+                PyDecimal decimalValue => OwnParsedInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
+                PyString text => OwnParsedInteger(ParsePythonIntegerText(text.AsString(), numberBase, span), context.MemoryGovernor, span),
+                PyBytes bytes => OwnParsedInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span), context.MemoryGovernor, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)
             };
