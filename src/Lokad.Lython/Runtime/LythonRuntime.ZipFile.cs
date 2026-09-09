@@ -235,11 +235,7 @@ internal sealed partial class LythonRuntime
             }
 
             var target = ResolveReadTarget(arguments[0], span);
-            object? password = arguments.Length < 2 ? null : arguments[1];
-            if (password is null)
-            {
-                password = PyNone.Instance;
-            }
+            object password = (arguments.Length < 2 ? null : arguments[1]) ?? PyNone.Instance;
 
             var bytes = ZipMemberReader.ReadMemberBytes(
                 payload.Memory,
@@ -277,8 +273,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "open() requires mode \"r\" or \"w\"", span);
             }
 
-            object? password = arguments.Length >= 3 ? arguments[2] : null;
-            if (password is not null and not PyNone && modeText == "w")
+            object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
+            if (password is not PyNone && modeText == "w")
             {
                 throw new LythonRuntimeException("ValueError", "pwd is only supported for reading files", span);
             }
@@ -473,24 +469,24 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct ZipExtractRequest(ResolvedMember Target, object Password, string Destination);
 
-        private readonly record struct ZipExtractAllRequest(object? Members, object Password, string Destination);
+        private readonly record struct ZipExtractAllRequest(object Members, object Password, string Destination);
 
         private ZipExtractAllRequest ParseExtractAllArguments(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner)
         {
-            object? members = arguments.Length >= 2 ? arguments[1] : null;
-            object? password = arguments.Length >= 3 ? arguments[2] : null;
+            object members = (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance;
+            object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
             var destination = ResolveExtractionRoot(
-                arguments.Length >= 1 ? arguments[0] : null, context, span, owner);
-            return new ZipExtractAllRequest(members, password ?? PyNone.Instance, destination);
+                (arguments.Length >= 1 ? arguments[0] : null) ?? PyNone.Instance, context, span, owner);
+            return new ZipExtractAllRequest(members, password, destination);
         }
 
         private ZipExtractRequest ParseExtractArguments(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner)
         {
             var target = ResolveReadTarget(arguments[0], span);
-            object? password = arguments.Length >= 3 ? arguments[2] : null;
+            object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
             var destination = ResolveExtractionRoot(
-                arguments.Length >= 2 ? arguments[1] : null, context, span, owner);
-            return new ZipExtractRequest(target, password ?? PyNone.Instance, destination);
+                (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance, context, span, owner);
+            return new ZipExtractRequest(target, password, destination);
         }
 
         private object ExtractAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -546,10 +542,10 @@ internal sealed partial class LythonRuntime
         }
 
         private List<PlannedExtraction> PlanExtractions(
-            object? members, string destination, ExecutionContext context, LythonSourceSpan span)
+            object members, string destination, ExecutionContext context, LythonSourceSpan span)
         {
             var plans = new List<PlannedExtraction>();
-            if (members is not null && members is not PyNone)
+            if (members is not PyNone)
             {
                 var count = 0;
                 foreach (var item in ToSequence(members, span, context))
@@ -655,9 +651,9 @@ internal sealed partial class LythonRuntime
             return string.Join("/", kept);
         }
 
-        private string ResolveExtractionRoot(object? value, ExecutionContext context, LythonSourceSpan span, string owner)
+        private string ResolveExtractionRoot(object value, ExecutionContext context, LythonSourceSpan span, string owner)
         {
-            if (value is not null && value is not PyNone)
+            if (value is not PyNone)
             {
                 return ResolveZipPath(value, context, span, owner);
             }
@@ -736,7 +732,7 @@ internal sealed partial class LythonRuntime
         private static void ExtractPlanned(
             ReadOnlyMemory<byte> payload,
             PlannedExtraction plan,
-            object? password,
+            object password,
             ExecutionContext context,
             LythonSourceSpan? span)
         {
@@ -774,7 +770,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask ExtractPlannedAsync(
             ReadOnlyMemory<byte> payload,
             PlannedExtraction plan,
-            object? password,
+            object password,
             ExecutionContext context,
             LythonSourceSpan? span)
         {
