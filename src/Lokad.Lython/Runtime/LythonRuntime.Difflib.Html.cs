@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
             var options = ParseHtmlArguments(arguments, includeCharset: false, span);
             var fromLines = DifflibModule.RequireStringSequence(arguments[0], "HtmlDiff.make_table(fromlines, tolines)", span, context);
             var toLines = DifflibModule.RequireStringSequence(arguments[1], "HtmlDiff.make_table(fromlines, tolines)", span, context);
-            return PyString.FromString(BuildTable(fromLines, toLines, options, context, span));
+            return LythonRuntime.CreateString(BuildTable(fromLines, toLines, options, context, span), context, span);
         }
 
         private object MakeFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                 "</head><body>\n" +
                 table +
                 "\n</body></html>\n";
-            return PyString.FromString(html);
+            return LythonRuntime.CreateString(html, context, span);
         }
 
         private HtmlOptions ParseHtmlArguments(object[] arguments, bool includeCharset, LythonSourceSpan span)
@@ -93,9 +93,9 @@ internal sealed partial class LythonRuntime
 
         private string BuildTable(IReadOnlyList<PyString> fromLines, IReadOnlyList<PyString> toLines, HtmlOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var a = fromLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()))).ToArray();
-            var b = toLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()))).ToArray();
-            var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
+            var a = fromLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()), context.MemoryGovernor, span)).ToArray();
+            var b = toLines.Select(line => PyString.FromString(PrepareHtmlLine(line.AsString()), context.MemoryGovernor, span)).ToArray();
+            var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
             var groups = options.Context
                 ? matcher.BuildGroupedOpcodes(options.NumLines, span, context).ToArray()
                 : [matcher.BuildOpcodes(span, context)];
