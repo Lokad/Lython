@@ -36,7 +36,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "copy.copy(x) expects one argument.", span);
             }
 
-            return CopyValue(arguments[0], CopyDepth.Shallow, context, span, new CopyMemo(context, span), graphDepth: 0);
+            using var memo = new CopyMemo(context, span);
+            return CopyValue(arguments[0], CopyDepth.Shallow, context, span, memo, graphDepth: 0);
         }
 
         private object DeepCopy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -46,7 +47,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "copy.deepcopy(x, memo=None) expects one or two arguments.", span);
             }
 
-            var memo = arguments.Length == 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
+            using var memo = arguments.Length == 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
                 ? CopyMemo.FromExternal(arguments[1], context, span)
                 : new CopyMemo(context, span);
 
@@ -141,20 +142,32 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class CopyMemo
+    private sealed class CopyMemo : IDisposable
     {
         private readonly Dictionary<object, object> _references = new(ReferenceEqualityComparer.Instance);
         private readonly PyDict _external;
+        private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
+        private readonly LythonSourceSpan? _span;
+
+        // One memo entry retains a CLR map slot, a view-dict entry and an
+        // identity key. Internal memos cover them with transient scratch that
+        // releases when the copy completes; user-supplied dicts keep their own
+        // durable ownership instead.
+        private const long MemoEntryBytes = 128;
 
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
         {
-            _external = new PyDict(context.MemoryGovernor, span);
+            _external = new PyDict();
+            _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            _span = span;
         }
 
         private CopyMemo(PyDict external)
         {
             _external = external;
         }
+
+        public void Dispose() => _scratch?.Dispose();
 
         public PyDict ExternalView => _external;
 
@@ -189,6 +202,7 @@ internal sealed partial class LythonRuntime
 
         public void Remember(object original, object copied)
         {
+            _scratch?.Grow(MemoEntryBytes, _span);
             _references[original] = copied;
             _external.SetItem(IdentityKey(original), copied);
         }
