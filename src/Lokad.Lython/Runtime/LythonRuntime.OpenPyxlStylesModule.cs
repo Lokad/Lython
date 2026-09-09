@@ -332,6 +332,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Constructed style values retain one wrapper plus payload record. Factories
+    // built without a context (internal defaults) stay free like other constants.
+    private const long StyleValueBytes = 128;
+
+    private static void ChargeStyleValue(ExecutionContext? context, LythonSourceSpan? span)
+    {
+        context?.MemoryGovernor.Reserve(StyleValueBytes, span);
+        context?.MemoryGovernor.Commit(StyleValueBytes);
+    }
+
     private static object CreateColor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;
@@ -343,6 +353,7 @@ internal sealed partial class LythonRuntime
 
         // openpyxl accepts its legacy `type` argument but derives the actual kind
         // exclusively from the first populated payload in this precedence order.
+        ChargeStyleValue(context, span);
         return indexed is not null
             ? OpenPyxlColor.FromIndexed(indexed, tint)
             : auto is not null
@@ -363,6 +374,7 @@ internal sealed partial class LythonRuntime
             : NormalizeOptionalNonNegativeDouble(sizeValue, "openpyxl.styles.Font.size", span).RequireNotNull();
         var underline = FirstStyleValue(arguments, 5, 9);
         var strike = OptionalStyleBool(arguments, 11, OptionalStyleBool(arguments, 10, false, "openpyxl.styles.Font.strike", span), "openpyxl.styles.Font.strikethrough", span);
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlFontStylePayload(
             OptionalStyleValue(arguments, 0),
             size,
@@ -378,6 +390,7 @@ internal sealed partial class LythonRuntime
         _ = span;
         _ = context;
         var fillType = FirstStyleValue(arguments, 0, 5);
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlPatternFillStylePayload(
             fillType,
             FirstColorStyleValue(arguments, 1, 3),
@@ -388,6 +401,7 @@ internal sealed partial class LythonRuntime
     {
         _ = span;
         _ = context;
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlBorderStylePayload(
             OptionalStyleValue(arguments, 0),
             OptionalStyleValue(arguments, 1),
@@ -400,6 +414,7 @@ internal sealed partial class LythonRuntime
         _ = span;
         _ = context;
         var style = FirstStyleValue(arguments, 0, 2);
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlSideStylePayload(
             style,
             OptionalColorStyleValue(arguments, 1)));
@@ -411,6 +426,7 @@ internal sealed partial class LythonRuntime
         var wrapText = OptionalStyleBool(arguments, 2, OptionalStyleBool(arguments, 4, false, "openpyxl.styles.Alignment.wrapText", span), "openpyxl.styles.Alignment.wrap_text", span);
         var textRotation = FirstStyleValue(arguments, 3, 5);
         var shrinkToFit = OptionalStyleBool(arguments, 7, OptionalStyleBool(arguments, 6, false, "openpyxl.styles.Alignment.shrinkToFit", span), "openpyxl.styles.Alignment.shrink_to_fit", span);
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlAlignmentStylePayload(
             OptionalStyleValue(arguments, 0),
             OptionalStyleValue(arguments, 1),
@@ -422,6 +438,7 @@ internal sealed partial class LythonRuntime
     private static object CreateProtection(object[] arguments, LythonSourceSpan? span, ExecutionContext? context)
     {
         _ = context;
+        ChargeStyleValue(context, span);
         return new OpenPyxlStyleValue(new OpenPyxlProtectionStylePayload(
             OptionalStyleBool(arguments, 0, true, "openpyxl.styles.Protection.locked", span),
             OptionalStyleBool(arguments, 1, false, "openpyxl.styles.Protection.hidden", span)));
@@ -437,6 +454,7 @@ internal sealed partial class LythonRuntime
             name = PyString.FromString("Normal");
         }
 
+        ChargeStyleValue(context, span);
         return CreateNamedStyleValue(
             name,
             OptionalStyleValue(arguments, 5),
