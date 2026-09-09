@@ -468,11 +468,19 @@ internal sealed partial class LythonRuntime
 
                 var drawingPath = ResolvePackagePath(worksheetPath, target);
                 var drawing = new OpenPyxlLoadedDrawing(drawingPath, relationshipId);
+                // The model keeps drawing and child paths plus relationship ids.
+                var drawingTextBytes = Encoding.UTF8.GetByteCount(drawingPath) + Encoding.UTF8.GetByteCount(relationshipId);
                 var scannedDrawings = 0;
+                var childTextBytes = 0L;
                 foreach (var relationship in LoadOptionalRelationshipElements(session, PartRelationshipsPath(drawingPath), context, span))
                 {
                     if ((++scannedDrawings & (ArchiveBudgetCheckInterval - 1)) == 0)
                     {
+                        var drawingCharge = (ModelCellBytes * ArchiveBudgetCheckInterval) + drawingTextBytes + childTextBytes;
+                        context.MemoryGovernor.Reserve(drawingCharge, span);
+                        context.MemoryGovernor.Commit(drawingCharge);
+                        drawingTextBytes = 0;
+                        childTextBytes = 0;
                         context.CheckExecutionBudget(span);
                     }
 
@@ -485,14 +493,24 @@ internal sealed partial class LythonRuntime
 
                     if (IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"))
                     {
+                        childTextBytes += Encoding.UTF8.GetByteCount(ResolvePackagePath(drawingPath, childTarget)) + Encoding.UTF8.GetByteCount(childRelationshipId);
                         drawing.AddChart(new OpenPyxlLoadedChart(ResolvePackagePath(drawingPath, childTarget), childRelationshipId, drawingPath));
                         continue;
                     }
 
                     if (IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"))
                     {
+                        childTextBytes += Encoding.UTF8.GetByteCount(ResolvePackagePath(drawingPath, childTarget)) + Encoding.UTF8.GetByteCount(childRelationshipId);
                         drawing.AddImage(new OpenPyxlLoadedImage(ResolvePackagePath(drawingPath, childTarget), childRelationshipId, drawingPath));
                     }
+                }
+
+                var tailDrawings = scannedDrawings & (ArchiveBudgetCheckInterval - 1);
+                if (tailDrawings > 0 || drawingTextBytes > 0 || childTextBytes > 0)
+                {
+                    var tailCharge = (ModelCellBytes * tailDrawings) + drawingTextBytes + childTextBytes;
+                    context.MemoryGovernor.Reserve(tailCharge, span);
+                    context.MemoryGovernor.Commit(tailCharge);
                 }
 
                 worksheet.AddLoadedDrawing(drawing);

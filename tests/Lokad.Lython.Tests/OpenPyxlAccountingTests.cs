@@ -397,4 +397,36 @@ public sealed class OpenPyxlAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+
+    private static void InvokeLoadWorksheetDrawings(object session, string path, object document, object worksheet, object relationships, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetDrawings", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetDrawings not found.");
+        method.Invoke(null, [session, path, document, worksheet, relationships, context, span]);
+    }
+
+    [Fact]
+    public void DrawingPathsAreCharged()
+    {
+        // R02: the model keeps drawing and child paths plus relationship ids.
+        const string rels = @"<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships""><Relationship Id=""rId9"" Type=""http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"" Target=""charts/chart1.xml""/></Relationships>";
+        using var stream = new MemoryStream(BuildArchive(("xl/drawings/_rels/drawing1.xml.rels", rels)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var document = XDocument.Parse(@"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><drawing r:id=""rId1"" xmlns:r=""http://schemas.openxmlformats.org/officeDocument/2006/relationships""/></worksheet>");
+        var relationships = new Dictionary<string, string> { ["rId1"] = "../drawings/drawing1.xml" };
+        InvokeLoadWorksheetDrawings(session, "xl/worksheets/sheet1.xml", document, NewWorksheet("Sheet1"), relationships, context, span);
+        var length = Encoding.UTF8.GetByteCount(rels);
+        Assert.Equal((96L + length) + ((long)16 * length) + 512L + 24L + 4L + 29L + 4L, context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        // The worksheet still owns its drawing, so only part and DOM charges release.
+        Assert.Equal(512L + 24L + 4L + 29L + 4L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
 }
