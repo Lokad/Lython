@@ -121,4 +121,59 @@ public sealed class StatisticsStreamingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task MedianDrainStaysCharged()
+    {
+        // MG15: median keeps the objects list and the converted doubles list
+        // alive together. Both used to materialize free; now their combined
+        // backing alone exceeds the budget.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            return statistics.median(range(100001))
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task MedianKeepsValueAndErrorContracts()
+    {
+        // MG15: governing the objects drain and the converted copy must
+        // preserve median values and the empty / non-real error contracts.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            results = []
+            results.append(statistics.median([1, 4, 2, 3]))
+            results.append(statistics.median_low([1, 2, 3, 4]))
+            results.append(statistics.median_high([1, 2, 3, 4]))
+            try:
+                statistics.median([])
+            except statistics.StatisticsError:
+                results.append("empty")
+            try:
+                statistics.median_low([1, "x"])
+            except TypeError:
+                results.append("nonreal")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { 2.5, new BigInteger(2), new BigInteger(3), "empty", "nonreal" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }

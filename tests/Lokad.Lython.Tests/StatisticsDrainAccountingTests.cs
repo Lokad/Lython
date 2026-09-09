@@ -62,4 +62,50 @@ public sealed class StatisticsDrainAccountingTests
         // exactly the final backing size: (4 - 0) + (8 - 4) + ... + (1024 - 512).
         Assert.Equal(8 * 1024, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
+    private static List<object> InvokeObjectsDrain(object[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StatisticsModule not found.");
+        var drain = moduleType.GetMethod("GetNumericObjects", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetNumericObjects not found.");
+        return Assert.IsType<List<object>>(drain.Invoke(null, [arguments, "statistics.test", span, context]));
+    }
+
+    [Fact]
+    public void ObjectsDrainCommitsExactBackingOnce()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
+
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        var values = InvokeObjectsDrain([data], context, span);
+
+        Assert.Equal(1000, values.Count);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(8000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+    }
+
+    [Fact]
+    public void ConvertedCopyCommitsAlongsideObjects()
+    {
+        // Median keeps the objects list and the converted doubles list alive
+        // together; both backings stay charged, not just the first.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StatisticsModule not found.");
+        var convert = moduleType.GetMethod("GetNumericValues", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetNumericValues not found.");
+        var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
+
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        var values = Assert.IsType<List<double>>(convert.Invoke(null, [new object[] { data }, "statistics.test", span, context]));
+
+        Assert.Equal(1000, values.Count);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(16000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+    }
 }

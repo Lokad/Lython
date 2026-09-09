@@ -552,10 +552,45 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
-            var values = new List<object>();
+            // Same durable backing ownership as the doubles drain: the objects
+            // list is required scratch for selection with no governed adopter.
+            // Payloads stay owned elsewhere; only reference slots commit here.
+            var governor = context.MemoryGovernor;
+            var values = arguments[0] is IReadOnlyCollection<object> sized
+                ? new List<object>(sized.Count)
+                : new List<object>();
+            var chargedCapacity = values.Capacity;
+            if (chargedCapacity > 0)
+            {
+                governor.Reserve(8L * chargedCapacity, span);
+                governor.Commit(8L * chargedCapacity);
+            }
+
             foreach (var value in ToSequence(arguments[0], span, context))
             {
+                if (values.Count == values.Capacity)
+                {
+                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = (int)predicted;
+                }
+
                 values.Add(value);
+                if (values.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (values.Capacity - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = values.Capacity;
+                }
+
+                context.ObserveCollectionCount(values.Count, span);
+                if ((values.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             if (values.Count == 0)
@@ -642,7 +677,11 @@ internal sealed partial class LythonRuntime
         private static List<double> GetNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             var values = GetNumericObjects(arguments, owner, span, context);
+            // The converted copy coexists with the objects list, so it commits
+            // its own exact backing: both live representations stay charged.
             var result = new List<double>(values.Count);
+            context.MemoryGovernor.Reserve(8L * values.Count, span);
+            context.MemoryGovernor.Commit(8L * values.Count);
             foreach (var value in values)
             {
                 result.Add(ExpectRealForStatistics(value, owner, span));
