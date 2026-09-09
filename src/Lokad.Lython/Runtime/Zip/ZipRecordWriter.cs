@@ -129,6 +129,11 @@ internal static class ZipRecordWriter
         RequireRecordFieldWidths(preserved, staged, span);
 
         var total = checked(preserved.Count + staged.Count);
+        // Compressed payloads, directory bytes and layout structures stay live
+        // through publication; charge them here so an unbounded entry meets the
+        // budget before downstream builders allocate for it.
+        using var transient = context.MemoryGovernor.ReserveTemporary(0, span);
+        transient.Grow(256L * total, span);
         var layout = new List<LayoutEntry>(total);
         var results = new List<EntryResult>(total);
         var contentZip64 = new bool[total];
@@ -164,6 +169,12 @@ internal static class ZipRecordWriter
 
             var crc = Crc32.Compute(entry.Data, context, span);
             var payload = CompressEntry(entry, context, span);
+            if (entry.Method != 0)
+            {
+                // STORED payloads are the staged bytes themselves, already
+                // charged; only compressed copies need cover here.
+                transient.Grow(payload.Length, span);
+            }
             results.Add(new EntryResult(crc, (ulong)payload.Length));
             var needsZip64 = entry.ForceZip64 || entry.Data.Length * 1.05 > Zip64Limit || payload.Length * 1.05 > Zip64Limit;
             if (needsZip64 && !allowZip64)
@@ -230,6 +241,7 @@ internal static class ZipRecordWriter
             }
 
             var directoryBytes = directory.ToArrayAndRelease();
+            transient.Grow(directoryBytes.Length, span);
             var useZip64 =
                 (ulong)total >= (ulong)Zip64CountLimit ||
                 (ulong)directoryBytes.Length > uint.MaxValue ||

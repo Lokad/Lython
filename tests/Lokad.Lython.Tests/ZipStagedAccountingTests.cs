@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Reflection;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -281,5 +283,41 @@ public sealed class ZipStagedAccountingTests
         Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
         Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
+
+
+    private static object InvokeSerializeArchive(byte[] data, LythonRuntime.ExecutionContext context)
+    {
+        var writerType = typeof(LythonRuntime).Assembly.GetType("Lokad.Lython.Runtime.Zip.ZipRecordWriter")
+            ?? throw new InvalidOperationException("ZipRecordWriter not found.");
+        var entryType = writerType.GetNestedType("StagedEntry", BindingFlags.Public | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StagedEntry not found.");
+        var ctor = Assert.Single(entryType.GetConstructors());
+        var entry = ctor.Invoke(["a", new byte[] { 97 }, (ushort)0, (ushort)0, (ushort)0, (ushort)8, 6, Array.Empty<byte>(), Array.Empty<byte>(), 0, 0u, data, null, false]);
+        var staged = Array.CreateInstance(entryType, 1);
+        staged.SetValue(entry, 0);
+        var method = writerType.GetMethod("SerializeArchive", BindingFlags.Public | BindingFlags.Static)
+            ?? throw new InvalidOperationException("SerializeArchive not found.");
+        return method.Invoke(null, [staged, Array.Empty<byte>(), true, context, null])
+            ?? throw new InvalidOperationException("SerializeArchive returned null.");
+    }
+
+    [Fact]
+    public void DeflatedSerializeTransientsStayCharged()
+    {
+        // R36: one incompressible DEFLATED entry holds staged, compressed and
+        // builder copies at once; the serializer transients stay charged, so a
+        // budget between one and two payloads fails instead of succeeding.
+        // Measured old peak is about 600KB accounted for a 200KB payload.
+        var data = new byte[200000];
+        new Random(42).NextBytes(data);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 700000 });
+        var failure = Assert.Throws<TargetInvocationException>(() => InvokeSerializeArchive(data, context));
+        Assert.Equal("LythonRuntimeException", failure.InnerException?.GetType().Name);
+        Assert.Contains("memory budget exceeded", failure.InnerException?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
 
 }
