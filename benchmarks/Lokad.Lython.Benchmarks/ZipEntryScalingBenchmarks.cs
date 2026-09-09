@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Entry-count scaling benchmarks for contained ZIP archives (R30): write and
+/// Entry-count scaling benchmarks for contained ZIP archives: write and
 /// read fixed-size DEFLATED entries at 50/200/800 entries so archive cost can
 /// be related to entry count versus expanded bytes. The read benchmark returns
 /// the total expanded bytes, keeping that figure next to the allocation

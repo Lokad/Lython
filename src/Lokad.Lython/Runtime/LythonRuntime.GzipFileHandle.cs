@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
         }
 
         /// <summary>
-        /// Finalizes staged writes per the R12 states: validation failures must
+        /// Finalizes staged writes: validation failures must
         /// go through <see cref="AbortClose"/> instead; unrelated body errors still
         /// publish valid writes while propagating; host or budget failures propagate
         /// with the handle left open and staged output retained for retry. Idempotent.

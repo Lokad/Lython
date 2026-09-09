@@ -9,7 +9,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     /// <summary>
-    /// Read-only contained ZIP archive handle. The compressed payload is
+    /// Contained ZIP archive handle for 'r', 'w' and 'a' modes. The compressed payload is
     /// retained under a governor charge until <c>close()</c>; directory
     /// metadata stays available afterwards (CPython answers listings from its
     /// cache too), while data operations fail explicitly once closed.

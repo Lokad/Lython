@@ -5,13 +5,12 @@ using System.Text.Json;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// Z0 fixture-validity gate for the contained-`zipfile` plan. The catalog under
+/// Fixture-validity gate for the contained `zipfile` module. The catalog under
 /// tests/Fixtures/zipfile is authored by CPython 3.13 (tools/NewZipFixtures.py)
-/// and carries trusted CPython observations in each case.json manifest. Lython
-/// has no zipfile module yet, so these tests pin the fixtures using only the
-/// independent BCL reader plus raw byte checks, and they document exactly where
-/// BCL behavior diverges from the Python contract. The future implementation
-/// must agree with the manifests, not with BCL:
+/// and carries trusted CPython observations in each case.json manifest. These tests
+/// pin the fixtures using only the independent BCL reader plus raw byte checks,
+/// and they document exactly where BCL behavior diverges from the Python contract.
+/// Lython must agree with the manifests, not with BCL (covered by the parity suites):
 /// duplicate lookup (BCL first-wins versus Python last-wins), CRC validation
 /// (BCL reads corrupt members without complaint), CP437/comment decoding (BCL
 /// lossy replacement versus Python CP437/raw bytes), and error categories
@@ -286,7 +285,7 @@ public sealed class ZipFixtureCatalogTests
         var payload = LoadPayload("zip-comments");
         Assert.True(FindByteSequence(payload, HexToBytes(commentHex)) >= 0);
         // BCL decodes the comment as UTF-8 with replacement: raw bytes need an
-        // explicit byte-preserving path in the future implementation.
+        // explicit byte-preserving path in Lython's implementation.
         using var archive = OpenReadable(payload);
         Assert.Equal("archive Z0 \u00e9 \ufffd raw", archive.Comment);
         Assert.Equal("7065722d66696c6520c3a9", root.GetProperty("entries")[0].GetProperty("commentHex").GetString());
@@ -305,7 +304,7 @@ public sealed class ZipFixtureCatalogTests
         var expectedCrc = Convert.ToUInt32(root.GetProperty("entries")[0].GetProperty("crc32Hex").GetString(), 16);
 
         // The BCL reader returns the corrupt bytes without complaint, so CRC
-        // enforcement must be manual in the future implementation.
+        // enforcement must be manual in Lython's implementation.
         using var archive = OpenReadable(LoadPayload("zip-corrupt-crc"));
         var content = ReadEntryBytes(archive.Entries[0]);
         Assert.NotEqual(expectedCrc, ComputeCrc32(content));

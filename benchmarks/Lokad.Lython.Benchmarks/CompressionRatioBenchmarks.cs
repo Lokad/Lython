@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Compression-ratio benchmarks for contained ZIP writes (R30): a single
+/// Compression-ratio benchmarks for contained ZIP writes: a single
 /// 1,000,000-byte entry that is either maximally compressible (repeated byte)
 /// or incompressible (seeded PRNG bytes), both written STORED-blind as
 /// DEFLATED. Payloads are built in-script from supported primitives

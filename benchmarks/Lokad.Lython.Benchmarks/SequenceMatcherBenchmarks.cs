@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// SequenceMatcher scaling benchmarks (R30): similarity ratios over small and
+/// SequenceMatcher scaling benchmarks: similarity ratios over small and
 /// large near-identical inputs, plus opcode generation over the large pair.
 /// </summary>
 [MemoryDiagnoser]

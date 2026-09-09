@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Flush-scaling benchmarks for contained gzip writes (R16): a fixed 100 KiB
+/// Flush-scaling benchmarks for contained gzip writes: a fixed 100 KiB
 /// payload written with 0, 10, and 100 explicit flushes. Repeated dirty
 /// flushes recompress growing prefixes, so scaling here guards that cost.
 /// </summary>

@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Async-path benchmarks for large collection materialization (R04/R30):
+/// Async-path benchmarks for large collection materialization:
 /// sorting, list materialization with aggregation, and generator consumption
 /// executed through <c>RunAsync</c> so the async sequence machinery
 /// (<c>ToSequenceAsync</c> and its intermediate buffers) is measured.

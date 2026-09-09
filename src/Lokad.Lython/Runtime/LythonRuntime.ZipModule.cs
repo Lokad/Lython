@@ -9,11 +9,12 @@ internal sealed partial class LythonRuntime
 {
     /// <summary>
     /// Contained <c>zipfile</c> surface (read/write stages): exception identities,
-    /// compression constants, <c>is_zipfile</c>, <c>ZipInfo</c>, read-only and
-    /// staged-creation <c>ZipFile</c> with sequential member handles.
+    /// compression constants, <c>is_zipfile</c>, <c>ZipInfo</c>, and <c>ZipFile</c>
+    /// across read, staged-creation and append modes with sequential member handles.
     /// <c>BadZipfile</c> and <c>error</c> are the same object as <c>BadZipFile</c>,
     /// matching CPython's legacy aliases.
-    /// Modes <c>'a'</c> and <c>'x'</c> stay explicitly rejected.
+    /// Mode <c>'a'</c> preserves existing entries while staging additions;
+    /// mode <c>'x'</c> stays explicitly rejected.
     /// </summary>
     private sealed class ZipModule : PyModule
     {

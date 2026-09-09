@@ -1,8 +1,8 @@
 # Lython zipfile Fixtures (Z0)
 
-This directory contains CPython-authored archive fixtures for the planned
-contained `zipfile` module. They pin the trusted behavior that later stages
-implement; no production code reads them yet.
+This directory contains CPython-authored archive fixtures for the contained
+`zipfile` module. They pin the trusted behavior the implementation agrees
+with; only tests read them, never production code.
 
 Layout:
 
@@ -35,5 +35,5 @@ descriptor flags, corrupt outcomes) and fails loudly if CPython disagrees.
 Validity gate: `ZipFixtureCatalogTests` reads every fixture with the
 independent BCL reader plus raw byte checks and documents where BCL behavior
 diverges from the Python contract (duplicate lookup, CRC validation, CP437 and
-comment decoding, error categories). The future implementation must agree with
+comment decoding, error categories). Lython's implementation must agree with
 the manifests, not with BCL.

@@ -4,7 +4,9 @@ using System.Text;
 namespace Lokad.Lython.Runtime.Zip;
 
 /// <summary>
-/// Parsed immutable metadata for one central-directory entry. Sizes and
+/// Parsed snapshot metadata for one central-directory entry. The value is
+/// immutable; name, comment and extra bytes are per-parse copies owned by
+/// the entry. Sizes and
 /// offsets are ZIP64-resolved <c>ulong</c> values kept wide until a consumer
 /// validates them against representation and run limits. Names preserve raw
 /// bytes alongside the decoded form; duplicate names keep directory order and

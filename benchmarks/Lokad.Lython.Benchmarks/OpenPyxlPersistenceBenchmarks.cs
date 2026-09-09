@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// OpenPyXL persistence scaling benchmarks (R30): workbook creation plus
+/// OpenPyXL persistence scaling benchmarks: workbook creation plus
 /// save, and load plus cell reads, over a mid-size worksheet.
 /// </summary>
 [MemoryDiagnoser]

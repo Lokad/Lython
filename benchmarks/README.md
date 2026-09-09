@@ -8,6 +8,9 @@ The goal is not to benchmark every Python feature. It is to keep a small, explic
 - list and dictionary construction/copy behavior
 - runtime-to-public projection costs
 - core execution overhead for representative short scripts
+- contained ZIP archive behavior and scaling (entry counts, compression ratios, appends)
+- SequenceMatcher similarity workloads and async collection materialization paths
+- gzip flush scaling and OpenPyXL persistence
 
 ## Project
 
