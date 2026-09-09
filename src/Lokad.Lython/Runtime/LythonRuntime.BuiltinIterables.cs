@@ -101,9 +101,11 @@ internal sealed partial class LythonRuntime
             span);
     }
 
+    // Range bounds are inline values; charge one table slot for the object itself.
+    private const long RangeValueBytes = 64;
+
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         BigInteger start;
         BigInteger stop;
         BigInteger step;
@@ -154,6 +156,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "range() arg 3 must not be zero", span);
         }
 
+        context.MemoryGovernor.Reserve(RangeValueBytes, span);
+        context.MemoryGovernor.Commit(RangeValueBytes);
         return new PyRange(start, stop, step);
     }
 
