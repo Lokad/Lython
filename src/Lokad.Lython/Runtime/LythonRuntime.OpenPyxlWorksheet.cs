@@ -69,7 +69,10 @@ internal sealed partial class LythonRuntime
         // Guest-mutated cell tables grow one CLR entry per address; charge each
         // new key so retained cells accumulate. Values pass through by
         // reference and stay guest-owned; loaded cells stay under R02 package
-        // accounting, which never routes through these writers.
+        // accounting, which never routes through these writers. String-valued
+        // annotation tables (hyperlinks, number formats) share this fungible
+        // per-slot pool: every unit is 64B and every release pairs with a real
+        // removal, so the total stays exact across maps.
         private const long CellSlotBytes = 64;
         // Merged-range registry entries are retained the same way.
         private const long MergeSlotBytes = 64;

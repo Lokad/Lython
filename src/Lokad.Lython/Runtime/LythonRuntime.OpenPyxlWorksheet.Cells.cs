@@ -140,12 +140,23 @@ internal sealed partial class LythonRuntime
             var address = new CellAddress(row, column);
             if (value is PyNone)
             {
-                _hyperlinks.Remove(address);
+                if (_hyperlinks.Remove(address))
+                {
+                    ReleaseCellSlot();
+                }
+
                 return;
             }
             var target = value is OpenPyxlHyperlink hyperlink
                 ? hyperlink.Target
                 : ExpectString(value, "Cell.hyperlink", null);
+            if (!_hyperlinks.ContainsKey(address) && _memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(CellSlotBytes);
+                _committedCellBytes += CellSlotBytes;
+            }
+
             _hyperlinks[address] = target;
         }
         internal void SetCellComment(int row, int column, object value)
@@ -193,9 +204,20 @@ internal sealed partial class LythonRuntime
             var address = new CellAddress(row, column);
             if (format == "General")
             {
-                _numberFormats.Remove(address);
+                if (_numberFormats.Remove(address))
+                {
+                    ReleaseCellSlot();
+                }
+
                 return;
             }
+            if (!_numberFormats.ContainsKey(address) && _memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(CellSlotBytes);
+                _committedCellBytes += CellSlotBytes;
+            }
+
             _numberFormats[address] = format;
         }
         internal void SetCellValue(int row, int column, object value)
