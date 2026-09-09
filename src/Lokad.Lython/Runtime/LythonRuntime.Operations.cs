@@ -49,7 +49,11 @@ internal sealed partial class LythonRuntime
 
     private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan span)
     {
-        governor.EnsureCanReserve(estimatedBytes, span);
+        // The resulting payload has no owner tracking after this point, so own
+        // the estimate durably: repeated individually-affordable operations
+        // accumulate instead of bypassing the aggregate budget.
+        governor.Reserve(estimatedBytes, span);
+        governor.Commit(estimatedBytes);
     }
 
     private static object EvaluateBitwiseOr(object left, object right, LythonSourceSpan span)
