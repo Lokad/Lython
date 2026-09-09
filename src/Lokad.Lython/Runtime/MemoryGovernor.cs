@@ -69,7 +69,7 @@ internal sealed class MemoryGovernor
     /// Moves reserved bytes to committed ownership, capping at what is reserved.
     /// The cap is deliberate tolerance: independent release paths cannot drive
     /// accounting negative, but callers must still pair every reserve with a
-    /// matching commit or release.
+    /// matching commit or release. Debug builds throw on unpaired use.
     /// </summary>
     public void Commit(long bytes)
     {
@@ -77,6 +77,13 @@ internal sealed class MemoryGovernor
         {
             return;
         }
+
+#if DEBUG
+        if (bytes > CurrentReservedBytes)
+        {
+            throw new InvalidOperationException($"MemoryGovernor.Commit({bytes}) exceeds {CurrentReservedBytes} reserved bytes.");
+        }
+#endif
 
         var committed = Math.Min(bytes, CurrentReservedBytes);
         CurrentReservedBytes -= committed;
@@ -91,6 +98,7 @@ internal sealed class MemoryGovernor
     /// <summary>
     /// Returns committed bytes, flooring at zero for the same defensive reason
     /// as <see cref="Commit"/>: over-release is absorbed, never an exception.
+    /// Debug builds throw on unpaired use.
     /// </summary>
     public void Release(long bytes)
     {
@@ -98,6 +106,13 @@ internal sealed class MemoryGovernor
         {
             return;
         }
+
+#if DEBUG
+        if (bytes > CurrentCommittedBytes)
+        {
+            throw new InvalidOperationException($"MemoryGovernor.Release({bytes}) exceeds {CurrentCommittedBytes} committed bytes.");
+        }
+#endif
 
         CurrentCommittedBytes = Math.Max(0, CurrentCommittedBytes - bytes);
     }
