@@ -590,6 +590,16 @@ internal sealed partial class LythonRuntime
             var ownCapturedBytes =
                 (_request.StandardOutput == LythonSubprocessStreamMode.Pipe ? (long)result.StandardOutputUtf8.Length : 0L) +
                 (_request.StandardError == LythonSubprocessStreamMode.Pipe ? (long)result.StandardErrorUtf8.Length : 0L);
+            if (ownCapturedBytes > 0)
+            {
+                // Raw buffers stay retained in _result alongside the decoded
+                // strings, so own them too; both live representations stay
+                // charged. Runs once per Popen like the assignment below.
+                var rawBytes = checked(32L + ownCapturedBytes);
+                _context.MemoryGovernor.Reserve(rawBytes, span);
+                _context.MemoryGovernor.Commit(rawBytes);
+            }
+
             _cumulativePipelineOutputBytes = checked(_cumulativePipelineOutputBytes + ownCapturedBytes);
             if (_context.Limits.MaxStringLength is { } maximum && _cumulativePipelineOutputBytes > maximum)
             {
