@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -107,5 +108,48 @@ public sealed class StatisticsDrainAccountingTests
         Assert.Equal(1000, values.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(16000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+    }
+    [Fact]
+    public void FrequencyMapCommitsExactBackingOnce()
+    {
+        // The mode frequency table, order list and result list are pre-sized
+        // to the input count (distinct keys never exceed it), so the whole
+        // structure commits exactly once with no growth.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StatisticsModule not found.");
+        var frequency = moduleType.GetMethod("GetModeCounts", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetModeCounts not found.");
+        var data = Enumerable.Range(0, 1000).Select(static i => (object)new BigInteger(i)).ToList();
+
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        var counts = Assert.IsType<List<KeyValuePair<object, int>>>(
+            frequency.Invoke(null, [data, context.MemoryGovernor, span]));
+
+        Assert.Equal(1000, counts.Count);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(96 + (32 * 1000) + 48 + (24 * 1000), context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+    }
+
+    [Fact]
+    public void EmptyFrequencyMapChargesNothing()
+    {
+        // Multimode over empty input allocates nothing, so it stays free even
+        // under a zero budget.
+        var governor = new MemoryGovernor(0);
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StatisticsModule not found.");
+        var frequency = moduleType.GetMethod("GetModeCounts", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetModeCounts not found.");
+
+        var counts = Assert.IsType<List<KeyValuePair<object, int>>>(
+            frequency.Invoke(null, [new List<object>(), governor, span]));
+
+        Assert.Empty(counts);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
     }
 }

@@ -108,13 +108,13 @@ internal sealed partial class LythonRuntime
         private static object Mode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var values = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
-            return GetModeCounts(values, span).First().Key;
+            return GetModeCounts(values, context.MemoryGovernor, span).First().Key;
         }
 
         private static object MultiMode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var values = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
-            var counts = GetModeCounts(values, span);
+            var counts = GetModeCounts(values, context.MemoryGovernor, span);
             var modes = new object[counts.Count];
             for (var i = 0; i < counts.Count; i++)
             {
@@ -389,10 +389,24 @@ internal sealed partial class LythonRuntime
                 RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
         }
 
-        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, LythonSourceSpan span)
+        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor governor, LythonSourceSpan span)
         {
-            var counts = new Dictionary<object, int>(PyValueComparer.Instance);
-            var order = new List<object>();
+            if (values.Count == 0)
+            {
+                return [];
+            }
+
+            // The frequency table, order list and result list are required
+            // scratch with no governed adopter (multimode adopts only the
+            // extracted modes array), so all three commit durably like string
+            // payloads. Distinct keys never exceed the input count, so
+            // pre-sizing bounds every structure exactly with no growth.
+            governor.Reserve(96L + (32L * values.Count), span);
+            governor.Commit(96L + (32L * values.Count));
+            governor.Reserve(48L + (24L * values.Count), span);
+            governor.Commit(48L + (24L * values.Count));
+            var counts = new Dictionary<object, int>(values.Count, PyValueComparer.Instance);
+            var order = new List<object>(values.Count);
             foreach (var value in values)
             {
                 try
@@ -418,7 +432,7 @@ internal sealed partial class LythonRuntime
                 maxCount = Math.Max(maxCount, count);
             }
 
-            var result = new List<KeyValuePair<object, int>>();
+            var result = new List<KeyValuePair<object, int>>(values.Count);
             foreach (var value in order)
             {
                 var count = counts[value];

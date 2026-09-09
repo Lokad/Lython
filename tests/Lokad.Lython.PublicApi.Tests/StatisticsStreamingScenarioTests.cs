@@ -176,4 +176,59 @@ public sealed class StatisticsStreamingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task ModeFrequencyMapStaysCharged()
+    {
+        // MG15: mode builds a frequency table plus order and result lists over
+        // the drained values. All three used to materialize free; now their
+        // combined backing alone exceeds the budget.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            return statistics.mode(range(100000))
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task ModeKeepsValueAndErrorContracts()
+    {
+        // MG15: governing the frequency map must preserve mode values over
+        // string keys as well as the empty / unhashable error contracts.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            results = []
+            results.append(statistics.mode([3, 1, 3, 2, 2, 3]))
+            results.append(statistics.mode("abac"))
+            results.append(len(statistics.multimode([1, 2, 1, 2, 3])))
+            try:
+                statistics.mode([])
+            except statistics.StatisticsError:
+                results.append("empty")
+            try:
+                statistics.mode([[1], [1]])
+            except TypeError:
+                results.append("unhashable")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { new BigInteger(3), "a", new BigInteger(2), "empty", "unhashable" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }
