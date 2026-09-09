@@ -8,6 +8,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedBytes;
+    // Committed capacity, not live CLR capacity: it lags behind after a failed
+    // growth so the retry re-charges instead of riding enlarged storage for free.
+    private int _capacity;
 
     public PySet()
     {
@@ -75,7 +78,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         // At a growth boundary, probe first so a duplicate cannot allocate before
         // the memory governor approves the next table. Otherwise Add needs one lookup.
-        if (Count < _items.EnsureCapacity(0))
+        // Committed capacity, not live CLR capacity, so usage past a failed growth
+        // still routes through EnsureCapacity below.
+        if (Count < _capacity)
         {
             return _items.Add(item);
         }
@@ -124,6 +129,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 _memoryGovernor.Release(_committedBytes);
                 _committedBytes = 0;
+                _capacity = 0;
             }
 
             _items = new HashSet<object>(PyValueComparer.Instance);
@@ -220,25 +226,26 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return;
         }
 
-        var previousCapacity = _items.EnsureCapacity(0);
-        if (targetCount <= previousCapacity)
+        if (targetCount <= _capacity)
         {
             return;
         }
 
         if (_memoryGovernor is not null)
         {
-            _memoryGovernor.EnsureCanReserve(EstimateSlots(previousCapacity, targetCount), _allocationSpan);
+            _memoryGovernor.EnsureCanReserve(EstimateSlots(_capacity, targetCount), _allocationSpan);
         }
 
         var newCapacity = _items.EnsureCapacity(targetCount);
-        if (_memoryGovernor is not null && newCapacity > previousCapacity)
+        if (_memoryGovernor is not null && newCapacity > _capacity)
         {
-            var bytes = EstimateSlots(previousCapacity, newCapacity);
+            var bytes = EstimateSlots(_capacity, newCapacity);
             _memoryGovernor.Reserve(bytes, _allocationSpan);
             _memoryGovernor.Commit(bytes);
             _committedBytes += bytes;
         }
+
+        _capacity = newCapacity;
     }
 
     private static long EstimateSlots(int previousCapacity, int newCapacity)
