@@ -28,6 +28,12 @@ internal sealed partial class LythonRuntime
             RegexDebugFlag |
             PythonAsciiFlag;
 
+        // Deliberately conservative allowance for retained dependency compilation
+        // state, calibrated against the audit probe (~65MiB per 1000 retained
+        // compilations of 'a(b|c)*d'). Lython-owned record and group tables ride
+        // inside it; per-match scratch and larger-than-probe patterns remain open.
+        internal const long CompiledPatternBytes = 65536;
+
         internal readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);
 
         internal readonly record struct RegexSubstituteInputs(
@@ -38,7 +44,7 @@ internal sealed partial class LythonRuntime
 
         internal readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
 
-        internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span)
+        internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var pattern))
             {
@@ -49,6 +55,9 @@ internal sealed partial class LythonRuntime
                 ? ParseFlags(arguments[1], signature, span)
                 : PythonReCompileOptions.None;
 
+            // Cover peak compilation scratch as well as the retained pattern;
+            // the temporary releases on invalid patterns, the durable charge stays.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(CompiledPatternBytes, span);
             try
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
@@ -59,13 +68,16 @@ internal sealed partial class LythonRuntime
                     reportedFlags |= PythonUnicodeFlag;
                 }
 
-                return new RePatternObject(
+                var result = new RePatternObject(
                     pattern,
                     options,
                     reportedFlags,
                     compiled,
                     groupSummary.CaptureSlotCount,
                     groupSummary.NamedGroups);
+                context.MemoryGovernor.Reserve(CompiledPatternBytes, span);
+                context.MemoryGovernor.Commit(CompiledPatternBytes);
+                return result;
             }
             catch (PythonRePatternException ex)
             {
@@ -73,7 +85,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span)
+        internal static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
             {
@@ -94,11 +106,11 @@ internal sealed partial class LythonRuntime
             }
 
             return new RegexPatternRange(
-                CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span),
+                CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span, context),
                 CreateSubjectRange(text, pos, endPos));
         }
 
-        internal static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span)
+        internal static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 3 or > 7 || !PyStringOps.TryAsString(arguments[2], out var text))
             {
@@ -130,13 +142,13 @@ internal sealed partial class LythonRuntime
             else
             {
                 object[] patternArguments = arguments.Length >= 5 ? [arguments[0], arguments[4]] : [arguments[0]];
-                pattern = CreatePattern(patternArguments, signature, span);
+                pattern = CreatePattern(patternArguments, signature, span, context);
             }
 
             return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
         }
 
-        internal static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span)
+        internal static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 2 or > 6 || !PyStringOps.TryAsString(arguments[1], out var text))
             {
@@ -164,7 +176,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 object[] patternArguments = arguments.Length >= 4 ? [arguments[0], arguments[3]] : [arguments[0]];
-                pattern = CreatePattern(patternArguments, signature, span);
+                pattern = CreatePattern(patternArguments, signature, span, context);
                 if (arguments.Length >= 3)
                 {
                     maxSplit = ParseOptionalIntOrDefault(arguments[2], 0, "maxsplit", signature, span);

@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
         private object Compile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return RegexCompiler.CreatePattern(arguments, "re.compile(pattern[, flags])", span);
+            return RegexCompiler.CreatePattern(arguments, "re.compile(pattern[, flags])", span, context);
         }
 
         private object Search(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -145,14 +145,14 @@ internal sealed partial class LythonRuntime
         private object FindAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span);
+            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span, context);
             return RegexMatcher.CreateFindAllResult(inputs.Pattern, inputs.Range, span, context);
         }
 
         private object FindIter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span);
+            var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span, context);
             return RegexMatcher.CreateFindIterMatches(inputs.Pattern, inputs.Range, context, span);
         }
 
@@ -165,7 +165,7 @@ internal sealed partial class LythonRuntime
         private object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span);
+            var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span, context);
             return RegexMatcher.ProjectSplitResult(inputs.Pattern.Regex.SplitDetailed(inputs.Range.Segment.Utf8Bytes.Span, inputs.MaxSplit), span, context);
         }
 
@@ -208,7 +208,8 @@ internal sealed partial class LythonRuntime
             var inputs = RegexCompiler.CreatePatternAndRange(
                 arguments,
                 $"re.{operationName}(pattern, string[, flags][, pos][, endpos])",
-                span);
+                span,
+                context);
             if (!inputs.Range.IsValid)
             {
                 return PyNone.Instance;
@@ -237,7 +238,8 @@ internal sealed partial class LythonRuntime
             var inputs = RegexCompiler.CreateSubstituteInputs(
                 arguments,
                 $"re.{operationName}(pattern, replacement, string[, count][, flags][, pos][, endpos])",
-                span);
+                span,
+                context);
             return RegexMatcher.ExecuteSubstitute(
                 inputs.Pattern,
                 inputs.Replacement,
