@@ -60,10 +60,21 @@ internal sealed partial class LythonRuntime
             namedStyle ??= Workbook?.FindNamedStyle(name);
             if (name == "Normal")
             {
-                _cellNamedStyles.Remove(address);
+                if (_cellNamedStyles.Remove(address))
+                {
+                    ReleaseCellSlot();
+                }
+
                 ApplyNamedStyle(address, namedStyle);
                 return;
             }
+            if (!_cellNamedStyles.ContainsKey(address) && _memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(CellSlotBytes);
+                _committedCellBytes += CellSlotBytes;
+            }
+
             _cellNamedStyles[address] = name;
             ApplyNamedStyle(address, namedStyle);
         }
@@ -84,10 +95,20 @@ internal sealed partial class LythonRuntime
             {
                 if (numberFormat == "General")
                 {
-                    _numberFormats.Remove(address);
+                    if (_numberFormats.Remove(address))
+                    {
+                        ReleaseCellSlot();
+                    }
                 }
                 else
                 {
+                    if (!_numberFormats.ContainsKey(address) && _memoryGovernor is not null)
+                    {
+                        _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+                        _memoryGovernor.Commit(CellSlotBytes);
+                        _committedCellBytes += CellSlotBytes;
+                    }
+
                     _numberFormats[address] = numberFormat;
                 }
             }
@@ -101,7 +122,15 @@ internal sealed partial class LythonRuntime
         {
             if (NamedStyleComponent(style, component) is { } value)
             {
-                _cellStyles[(address, component)] = value;
+                var key = (address, component);
+                if (!_cellStyles.ContainsKey(key) && _memoryGovernor is not null)
+                {
+                    _memoryGovernor.Reserve(CellStyleSlotBytes, _allocationSpan);
+                    _memoryGovernor.Commit(CellStyleSlotBytes);
+                    _committedStyleBytes += CellStyleSlotBytes;
+                }
+
+                _cellStyles[key] = value;
             }
         }
         internal void SetCellStyle(int row, int column, OpenPyxlCellStyleComponent component, object value)
@@ -444,7 +473,7 @@ internal sealed partial class LythonRuntime
             // dimensions) stay free here as they do on mutation.
             if (copy._memoryGovernor is not null)
             {
-                var copiedCellSlots = checked((long)copy._cells.Count + copy._numberFormats.Count + copy._hyperlinks.Count + copy._comments.Count);
+                var copiedCellSlots = checked((long)copy._cells.Count + copy._numberFormats.Count + copy._hyperlinks.Count + copy._comments.Count + copy._cellNamedStyles.Count);
                 if (copiedCellSlots > 0)
                 {
                     var copiedCellBytes = checked(CellSlotBytes * copiedCellSlots);

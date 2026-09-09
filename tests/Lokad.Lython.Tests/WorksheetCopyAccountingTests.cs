@@ -41,13 +41,14 @@ public sealed class WorksheetCopyAccountingTests
         sheet.SetCellComment(2, 1, new LythonRuntime.OpenPyxlComment("n", "m"));
         sheet.SetCellStyle(1, 1, LythonRuntime.OpenPyxlCellStyleComponent.Font, NewFont());
         sheet.SetCellStyle(2, 1, LythonRuntime.OpenPyxlCellStyleComponent.Font, NewFont());
+        sheet.SetCellNamedStyle(3, 1, PyString.FromString("Weird"));
         _ = CallMerge(sheet, context, span, "A3:A4");
         _ = CallMerge(sheet, context, span, "B3:B4");
         // Cell pool: 2 values + 1 format + 1 hyperlink + 1 comment = 5 slots;
-        // style pool: 2 entries; merge pool: 2 ranges.
-        Assert.Equal(9L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        // style pool: 2 entries; merge pool: 2 ranges; named-style name: 1 slot.
+        Assert.Equal(10L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         var copy = sheet.Copy("C");
-        Assert.Equal(2L * 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(2L * 10L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(new BigInteger(5), copy.GetCellValue(1, 1));
         Assert.Equal("0.00", copy.GetCellNumberFormat(1, 1));
