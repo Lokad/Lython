@@ -373,13 +373,25 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in ToSequence(source, span, context))
         {
-            var values = ToSequence(pair, span, context).ToArray();
-            if (values.Length != 2)
+            using var enumerator = ToSequence(pair, span, context).GetEnumerator();
+            if (!enumerator.MoveNext())
             {
                 throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
             }
 
-            target.SetItem(ValidateDictionaryKey(values[0], span, context.MemoryGovernor), values[1]);
+            var key = enumerator.Current;
+            if (!enumerator.MoveNext())
+            {
+                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
+            }
+
+            var value = enumerator.Current;
+            if (enumerator.MoveNext())
+            {
+                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
+            }
+
+            target.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), value);
         }
     }
 
