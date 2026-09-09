@@ -74,6 +74,10 @@ internal sealed partial class LythonRuntime
         // Merged-range registry entries are retained the same way.
         private const long MergeSlotBytes = 64;
         private long _committedMergeBytes;
+        // Per-cell style entries are retained the same way; style objects stay
+        // guest-owned.
+        private const long CellStyleSlotBytes = 64;
+        private long _committedStyleBytes;
         // Row/column dimension entries are retained per index the same way;
         // dimensions have no guest delete path, so nothing is released.
         private const long DimensionSlotBytes = 64;

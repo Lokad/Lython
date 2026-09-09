@@ -111,7 +111,12 @@ internal sealed partial class LythonRuntime
             var key = (new CellAddress(row, column), component);
             if (value is PyNone)
             {
-                _cellStyles.Remove(key);
+                if (_cellStyles.Remove(key) && _memoryGovernor is not null && _committedStyleBytes >= CellStyleSlotBytes)
+                {
+                    _memoryGovernor.Release(CellStyleSlotBytes);
+                    _committedStyleBytes -= CellStyleSlotBytes;
+                }
+
                 return;
             }
             var expected = ExpectedStyleKind(component);
@@ -119,6 +124,13 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError", "Cell." + CellStyleComponentName(component) + " expects " + OpenPyxlStyleQualifiedName(expected) + ".", null);
             }
+            if (!_cellStyles.ContainsKey(key) && _memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(CellStyleSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(CellStyleSlotBytes);
+                _committedStyleBytes += CellStyleSlotBytes;
+            }
+
             _cellStyles[key] = value;
         }
         internal void SetCellHyperlink(int row, int column, object value)
