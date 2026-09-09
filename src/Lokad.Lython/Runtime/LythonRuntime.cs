@@ -306,9 +306,9 @@ internal sealed partial class LythonRuntime
     private static LythonExecutionResult CreateRuntimeFailureResult(LythonRuntimeException exception, ExecutionContext? context, LythonRunOptions? options)
     {
         exception.SetSourcePathIfMissing(context?.SourcePath);
-        // Failure details themselves are projected without a budget (remaining
-        // MG23 gap); only the retained output copies below share the run
-        // budget, keeping whatever partial output fits.
+        // Failure details share the run budget with the retained output copies
+        // below (MG23): oversized messages truncate with an explicit marker and
+        // keep their type, while captures keep whatever partial output fits.
         var budget = CreateProjectionBudget(options);
         string standardOutput = string.Empty;
         string standardError = string.Empty;
@@ -321,10 +321,23 @@ internal sealed partial class LythonRuntime
         {
         }
 
+        LythonRuntimeFailure failure;
+        try
+        {
+            failure = RuntimeFailureProjection.ToPublicFailure(exception, budget);
+        }
+        catch (ProjectionException)
+        {
+            // Even the truncated minimum overran (captures consumed the budget):
+            // keep the original type with empty details, mirroring the success
+            // path's fixed ProjectionError fallback allocation.
+            failure = new LythonRuntimeFailure(exception.ExceptionType, string.Empty, exception.Span, [], exception.SourcePath);
+        }
+
         return AttachPeaks(
             LythonExecutionResult.RuntimeFailed(
                 exitCode: GetExitCode(exception),
-                failure: RuntimeFailureProjection.ToPublicFailure(exception),
+                failure: failure,
                 standardOutput: standardOutput,
                 standardError: standardError,
                 diagnostics: Array.Empty<LythonDiagnostic>()),

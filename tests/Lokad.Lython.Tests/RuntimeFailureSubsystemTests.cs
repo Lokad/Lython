@@ -12,7 +12,7 @@ public sealed class RuntimeFailureSubsystemTests
         ex.AddFrame("inner", span);
         ex.AddFrame("outer", span);
 
-        var failure = RuntimeFailureProjection.ToPublicFailure(ex);
+        var failure = RuntimeFailureProjection.ToPublicFailure(ex, new ProjectionBudget(null));
 
         Assert.Equal("ValueError", failure.ExceptionType);
         Assert.Equal("bad", failure.Message);

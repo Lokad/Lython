@@ -1638,8 +1638,10 @@ Lython does not need to promise a perfect hard memory ceiling from inside the sa
 
 The execution budget and the projection budget are independent governors: the
 execution budget owns guest-retained runtime state, while the projection budget
-owns the returned value plus the standard-output and standard-error captures
-built after execution. Every completed or failed result therefore reports both
+owns the returned value, the failure details, and the standard-output
+and standard-error captures built after execution. Oversized failure messages
+truncate with an explicit marker and keep their exception type; when even the
+truncated minimum overruns, the type survives with empty details. Every completed or failed result therefore reports both
 high-water marks (`PeakExecutionMemoryBytes` and `PeakProjectionMemoryBytes`),
 so an embedding host can reconcile enforcement decisions with sampled heap or
 process peaks instead of inferring them from failures alone.
