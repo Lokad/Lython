@@ -5,8 +5,8 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDecimalOps
 {
-    public static PyString ToEngineeringString(PyDecimal value)
-        => PyString.FromString(Format(value));
+    public static PyString ToEngineeringString(PyDecimal value, MemoryGovernor governor, LythonSourceSpan? span)
+        => PyString.FromString(Format(value), governor, span);
 
     public static string Format(PyDecimal value)
     {

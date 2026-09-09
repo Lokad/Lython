@@ -155,14 +155,14 @@ internal sealed partial class LythonRuntime
                 "is_finite" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_finite", arguments, span, true), "Decimal.is_finite", []),
                 "is_zero" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_zero", arguments, span, decimalValue.Value == 0m), "Decimal.is_zero", []),
                 "is_signed" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_signed", arguments, span, decimalValue.IsSigned), "Decimal.is_signed", []),
-                "to_eng_string" => BoundCallable.Create((arguments, span, _) =>
+                "to_eng_string" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Decimal.to_eng_string() expects no arguments.", span);
                     }
 
-                    return PyDecimalOps.ToEngineeringString(decimalValue);
+                    return PyDecimalOps.ToEngineeringString(decimalValue, context.MemoryGovernor, span);
                 }, "Decimal.to_eng_string", []),
                 "scaleb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ScaleB(decimalValue, arguments, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.scaleb", ["other", "context"], requiredCount: 1)),
                 "shift" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Shift(decimalValue, arguments, span), decimalValue, context, span), "Decimal.shift", ["other"]),
