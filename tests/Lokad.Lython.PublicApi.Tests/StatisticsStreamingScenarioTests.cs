@@ -68,4 +68,57 @@ public sealed class StatisticsStreamingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task VarianceDrainStaysCharged()
+    {
+        // MG15: multi-pass statistics share the governed numeric drain. The
+        // 100,000 doubles used to materialize free; now their backing alone
+        // exceeds the budget before any pass runs.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            return statistics.pvariance(range(100000))
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task VarianceKeepsValueAndErrorContracts()
+    {
+        // MG15: governing the drain must preserve values and the empty /
+        // non-real error contracts of the sorting paths.
+        var script = new LythonEngine().Compile(
+            """
+            import statistics
+            results = []
+            results.append(statistics.pvariance([2, 4, 4, 4, 5, 5, 7, 9]))
+            try:
+                statistics.pvariance([])
+            except statistics.StatisticsError:
+                results.append("empty")
+            try:
+                statistics.pvariance([1, "x"])
+            except TypeError:
+                results.append("nonreal")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?> { 4.0, "empty", "nonreal" };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }

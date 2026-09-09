@@ -587,10 +587,48 @@ internal sealed partial class LythonRuntime
 
         private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = new List<double>();
+            // The doubles list is required scratch for sorting and multi-pass
+            // statistics with no governed adopter, so growth commits durably
+            // (like string payloads), instead of riding a released transient.
+            // Sized inputs commit the exact backing once up front; the loop
+            // keeps a growth backstop for sources whose count disagrees.
+            var governor = context.MemoryGovernor;
+            var values = data is IReadOnlyCollection<object> sized
+                ? new List<double>(sized.Count)
+                : new List<double>();
+            var chargedCapacity = values.Capacity;
+            if (chargedCapacity > 0)
+            {
+                governor.Reserve(8L * chargedCapacity, span);
+                governor.Commit(8L * chargedCapacity);
+            }
+
             foreach (var value in ToSequence(data, span, context))
             {
-                values.Add(ExpectRealForStatistics(value, owner, span));
+                var real = ExpectRealForStatistics(value, owner, span);
+                if (values.Count == values.Capacity)
+                {
+                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = (int)predicted;
+                }
+
+                values.Add(real);
+                if (values.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (values.Capacity - chargedCapacity));
+                    governor.Reserve(delta, span);
+                    governor.Commit(delta);
+                    chargedCapacity = values.Capacity;
+                }
+
+                context.ObserveCollectionCount(values.Count, span);
+                if ((values.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             if (values.Count == 0)
