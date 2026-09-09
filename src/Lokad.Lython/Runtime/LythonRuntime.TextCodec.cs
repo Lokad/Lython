@@ -249,6 +249,22 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        if (errors != TextErrorMode.Strict)
+        {
+            // Non-strict decoding builds whole StringBuilder scratch before the
+            // governed result charge. Bound it first: decoded text never exceeds
+            // the input length except for backslash escapes (four chars per
+            // byte), and newline rewriting only shrinks. (zfill shape.)
+            var expansion = errors == TextErrorMode.BackslashReplace ? 4L : 1L;
+            governor.EnsureCanReserve(32L + (expansion * utf8.Length), span);
+        }
+        else if (newline == TextNewlineMode.TranslateUniversal && utf8.Span.Contains((byte)'\r'))
+        {
+            // Strict decoding is scratch-free, but newline rewriting builds
+            // an equal-or-smaller copy first.
+            governor.EnsureCanReserve(32L + utf8.Length, span);
+        }
+
         var decoded = DecodeUtf8ToString(utf8.Span, errors, span);
         decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded) : decoded;
         return decoded.Length == 0
