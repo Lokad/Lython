@@ -383,6 +383,7 @@ internal sealed partial class LythonRuntime
 
         PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
+        ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
         return type;
     }
 

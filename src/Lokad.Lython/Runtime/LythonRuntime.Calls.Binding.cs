@@ -125,6 +125,19 @@ internal sealed partial class LythonRuntime
     // so each constructed value charges once built.
     private const long FunctionValueBytes = 128;
 
+    // Constructed class objects retain a type record plus one namespace slot per
+    // member; charge the base plus per-member slots once built. Member values
+    // stay owned by their own construction.
+    private const long ClassTypeBaseBytes = 128;
+    private const long ClassMemberSlotBytes = 64;
+
+    internal static void ChargeClassTypeValue(int memberCount, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        var bytes = checked(ClassTypeBaseBytes + ClassMemberSlotBytes * (long)memberCount);
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+    }
+
     private static void ChargeFunctionValue(ExecutionContext? context, LythonSourceSpan? span)
     {
         context?.MemoryGovernor.Reserve(FunctionValueBytes, span);

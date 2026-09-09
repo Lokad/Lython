@@ -378,6 +378,7 @@ internal static partial class PyDataclass
 
             ApplyRuntime(type, options, context, span);
             type.InitializeClassMembers(context, span);
+            LythonRuntime.ChargeClassTypeValue(members.Count, context.MemoryGovernor, span);
             return type;
         }
     }
