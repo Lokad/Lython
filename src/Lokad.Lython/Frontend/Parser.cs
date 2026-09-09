@@ -29,18 +29,30 @@ internal sealed partial class Parser
     {
         var statements = new List<StatementSyntax>();
 
+        ValidateNumberIdentifierGluing();
         SkipEndOfLines();
 
+        StatementSyntax? previousStatement = null;
+        var previousEndTokenIndex = 0;
         while (CurrentToken != Token.End)
         {
+            var gapStartTokenIndex = _position;
             var statement = ParseStatement();
             if (statement is null)
             {
                 Synchronize();
+                previousStatement = null;
             }
             else
             {
                 statements.Add(statement);
+                if (previousStatement is not null)
+                {
+                    CheckStatementSeparation(previousStatement.Span, statement.Span, previousEndTokenIndex, gapStartTokenIndex);
+                }
+
+                previousStatement = statement;
+                previousEndTokenIndex = _position;
             }
 
             SkipEndOfLines();
@@ -52,6 +64,60 @@ internal sealed partial class Parser
         }
 
         return new FrontendResult(new ScriptSyntax(statements), Array.Empty<LythonDiagnostic>());
+    }
+
+    // Statements on the same source line must be separated by a semicolon.
+    // Compares statement spans (not bare tokens) so compound statements ending
+    // on an earlier line never trip: only a strictly advancing statement that
+    // starts where the previous one ended fails. Queued splits (import a, b)
+    // overlap and are exempt.
+    private void CheckStatementSeparation(LythonSourceSpan previousSpan, LythonSourceSpan currentSpan, int gapStartTokenIndex, int gapEndTokenIndex)
+    {
+        var previousEnd = previousSpan.Start + previousSpan.Length;
+        // Strictly overlapping only: merely abutting spans (f(1)f(2)) still
+        if (currentSpan.Start < previousEnd)
+        {
+            return;
+        }
+
+        _tokens.LineOfPosition(previousEnd, out var previousLine, out _);
+        _tokens.LineOfPosition(currentSpan.Start, out var currentLine, out _);
+        if (currentLine != previousLine)
+        {
+            return;
+        }
+
+        for (var index = gapStartTokenIndex; index < gapEndTokenIndex; index++)
+        {
+            if (_tokens.Tokens[index].Token == Token.Semicolon)
+            {
+                return;
+            }
+        }
+
+        AddDiagnostic("LA1001", "Expected end-of-line after statement.", currentSpan);
+    }
+
+    // Numbers glued to identifiers (1x, 0x1F, 1j) lex as two adjacent tokens
+    // but are one invalid literal in Python. Keywords lex as their own tokens,
+    // so `1in[1,2]` stays valid: only a true Identifier abutting the number
+    // fails. Runs before parsing; diagnostics accumulate with the parse below.
+    private void ValidateNumberIdentifierGluing()
+    {
+        for (var index = 0; index + 1 < _tokens.Count; index++)
+        {
+            var current = _tokens.Tokens[index];
+            if (current.Token is not Token.Integer and not Token.Float)
+            {
+                continue;
+            }
+
+            var next = _tokens.Tokens[index + 1];
+            if (next.Token == Token.Identifier && next.Start == current.Start + current.Length)
+            {
+                AddDiagnostic("LA1009", "Invalid number literal.", Merge(index, index + 1));
+            }
+        }
     }
 
     private StatementSyntax? ParseStatement()

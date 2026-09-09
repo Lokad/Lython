@@ -130,16 +130,27 @@ internal sealed partial class Parser
         var statements = new List<StatementSyntax>();
         SkipEndOfLines();
 
+        StatementSyntax? previousStatement = null;
+        var previousEndTokenIndex = 0;
         while (CurrentToken is not Token.Dedent and not Token.End)
         {
+            var gapStartTokenIndex = _position;
             var statement = ParseStatement();
             if (statement is null)
             {
                 Synchronize();
+                previousStatement = null;
             }
             else
             {
                 statements.Add(statement);
+                if (previousStatement is not null)
+                {
+                    CheckStatementSeparation(previousStatement.Span, statement.Span, previousEndTokenIndex, gapStartTokenIndex);
+                }
+
+                previousStatement = statement;
+                previousEndTokenIndex = _position;
             }
 
             SkipEndOfLines();
