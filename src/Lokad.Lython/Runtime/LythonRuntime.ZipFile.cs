@@ -897,6 +897,12 @@ internal sealed partial class LythonRuntime
         {
             _ = exceptionValue;
             _ = traceback;
+            if (exceptionType is not PyNone && _activeWriter is not null)
+            {
+                AbandonUnfinishedWrites();
+                return false;
+            }
+
             Close(span: null);
             return false;
         }
@@ -905,8 +911,27 @@ internal sealed partial class LythonRuntime
         {
             _ = exceptionValue;
             _ = traceback;
+            if (exceptionType is not PyNone && _activeWriter is not null)
+            {
+                AbandonUnfinishedWrites();
+                return false;
+            }
+
             await CloseAsync(span: null).ConfigureAwait(false);
             return false;
+        }
+
+        // Unwinding with an open writer must not mask the in-flight error
+        // with a lifecycle error: CPython raises here, but that would hide
+        // cancellation (and any other failure) behind a close complaint.
+        // Drop the writer reference and mark closed without publishing;
+        // staged entries and their charges stay retained exactly like a
+        // failed close, and the payload is left undisposed for the same
+        // aliasing reason. Explicit close keeps its strict contract.
+        private void AbandonUnfinishedWrites()
+        {
+            _activeWriter = null;
+            IsClosed = true;
         }
 
         public async ValueTask CloseAsync(LythonSourceSpan? span)

@@ -162,6 +162,9 @@ public sealed class ZipReadSurfaceTests
     {
         var host = new DelayedLythonHost("/");
         using var cancellation = new CancellationTokenSource();
+        // Park archive publication until cancellation fires, so it provably
+        // lands mid-operation instead of racing run startup.
+        var publishStarted = host.PauseWriteUntilCancellation("/out.zip");
         var task = new LythonEngine().RunAsync(
             """
 import zipfile
@@ -174,19 +177,42 @@ return 1
 """,
             host,
             cancellationToken: cancellation.Token);
+        await publishStarted.WaitAsync(TimeSpan.FromSeconds(30));
         cancellation.Cancel();
-        var result = await task;
+        var result = await task.WaitAsync(TimeSpan.FromSeconds(30));
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
     }
 
-
-
-
-
-
-
+    [Fact]
+    public async Task WriterCancellationWithOpenMemberPropagatesCancellation()
+    {
+        // Cancel from inside a long write loop so the member handle is still
+        // open when unwinding starts. Either interleaving (mid-loop abort or
+        // publish abort) must report cancellation, never a lifecycle error
+        // about the open handle.
+        var host = new DelayedLythonHost("/");
+        using var cancellation = new CancellationTokenSource();
+        var task = new LythonEngine().RunAsync(
+            """
+import zipfile
+with zipfile.ZipFile("/out.zip", "w") as archive:
+    handle = archive.open("a.txt", "w")
+    for i in range(1000000):
+        handle.write(b"Z")
+    handle.close()
+return 1
+""",
+            host,
+            cancellationToken: cancellation.Token);
+        await Task.Delay(250);
+        cancellation.Cancel();
+        var result = await task.WaitAsync(TimeSpan.FromSeconds(60));
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task ZipMemberReadlineWithHugeSizeStaysBounded()

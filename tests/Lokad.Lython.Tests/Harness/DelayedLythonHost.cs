@@ -3,6 +3,7 @@ namespace Lokad.Lython.Tests.Harness;
 internal sealed class DelayedLythonHost : ILythonHost
 {
     private readonly MockLythonHost _inner;
+    private readonly Dictionary<string, TaskCompletionSource> _writePauses = new(StringComparer.Ordinal);
 
     public DelayedLythonHost()
         : this("/")
@@ -62,8 +63,26 @@ internal sealed class DelayedLythonHost : ILythonHost
         return await _inner.ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Parks the next write to <paramref name="path"/> until the caller cancels,
+    /// returning a task that completes when the parked write starts. Mirrors
+    /// the subprocess pause used to prove in-flight cancellation.
+    /// </summary>
+    public Task PauseWriteUntilCancellation(string path)
+    {
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _writePauses[path] = started;
+        return started.Task;
+    }
+
     public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
+        if (_writePauses.TryGetValue(path, out var paused))
+        {
+            paused.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        }
+
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
