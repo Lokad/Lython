@@ -131,4 +131,64 @@ public sealed class RendererAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(21999), Assert.IsType<BigInteger>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task RetainedIntReprsStayCharged()
+    {
+        // MG06 probe: 30 retained reprs of a 20KB integer hold ~600KB of
+        // digit text beside a small charged source under a 64KiB budget.
+        var script = new LythonEngine().Compile(
+            """
+            big = 10 ** 20000
+            out = []
+            for i in range(30):
+                out.append(repr(big))
+            return len(out)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task ScalarRendererContractsStayExact()
+    {
+        // MG06: governing scalar outputs must not change rendered values,
+        // including interpolated ints, doubles, and exception messages.
+        var script = new LythonEngine().Compile(
+            """
+            results = []
+            results.append(repr(12345678901234567890123))
+            results.append(repr(1.5))
+            results.append(str(2.5))
+            results.append(f"{10 ** 30}")
+            try:
+                raise ValueError("y" * 5000)
+            except ValueError as e:
+                results.append(len(str(e)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new List<object?>
+        {
+            "12345678901234567890123",
+            "1.5",
+            "2.5",
+            "1000000000000000000000000000000",
+            new BigInteger(5000),
+        };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
 }

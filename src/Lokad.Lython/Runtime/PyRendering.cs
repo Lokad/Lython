@@ -11,6 +11,8 @@ internal static class PyRendering
     private static readonly PyString TrueLiteral = PyString.FromString("True");
     private static readonly PyString FalseLiteral = PyString.FromString("False");
     private static readonly PyString EmptySetLiteral = PyString.FromString("set()");
+    private static readonly PyString FileLiteral = PyString.FromString("<file>");
+    private static readonly PyString ObjectLiteral = PyString.FromString("<object>");
 
     public static PyString ToInterpolatedPyString(object value, PyRenderingContext context)
     {
@@ -26,14 +28,14 @@ internal static class PyRendering
             {
                 PyNone => PyStringOps.NoneLiteral,
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
-                BigInteger integer => PyString.FromString(integer.ToString()),
-                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)),
+                BigInteger integer => PyString.FromString(integer.ToString(), context.Context.MemoryGovernor),
+                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
                 LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: true),
                 LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: true),
                 LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: true),
-                PyException exception => PyString.FromString(exception.Message),
+                PyException exception => PyString.FromString(exception.Message, context.Context.MemoryGovernor),
                 LythonRuntime.ReMatchObject match => match.Value,
-                LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
+                LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
             };
         }
@@ -57,14 +59,14 @@ internal static class PyRendering
             {
                 PyNone => PyStringOps.NoneLiteral,
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
-                BigInteger integer => PyString.FromString(integer.ToString()),
-                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)),
+                BigInteger integer => PyString.FromString(integer.ToString(), context.Context.MemoryGovernor),
+                double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
                 LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: false),
                 LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: false),
                 LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: false),
-                PyException exception => PyString.FromString(exception.Message),
+                PyException exception => PyString.FromString(exception.Message, context.Context.MemoryGovernor),
                 LythonRuntime.ReMatchObject match => match.Value,
-                LythonRuntime.ExecutionContext.TextFileHandle => PyString.FromString("<file>"),
+                LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
             };
         }
@@ -194,8 +196,8 @@ internal static class PyRendering
             PySet set => RenderReprSet(set, context, activeContainers),
             PyNone => PyStringOps.NoneLiteral,
             bool boolean => boolean ? TrueLiteral : FalseLiteral,
-            BigInteger integer => PyString.FromString(integer.ToString()),
-            double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)),
+            BigInteger integer => PyString.FromString(integer.ToString(), context.Context.MemoryGovernor),
+            double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
             LythonRuntime.DictKeysView view => RenderReprSequence(view, "dict_keys([", "])", "dict_keys([...])", context, activeContainers),
             LythonRuntime.DictValuesView view => RenderReprSequence(view, "dict_values([", "])", "dict_values([...])", context, activeContainers),
             LythonRuntime.DictItemsView view => RenderReprSequence(view, "dict_items([", "])", "dict_items([...])", context, activeContainers),
@@ -206,7 +208,7 @@ internal static class PyRendering
         };
     }
 
-    private static PyString RenderOpaqueObject() => PyString.FromString("<object>");
+    private static PyString RenderOpaqueObject() => ObjectLiteral;
 
     private static PyString RenderMatchRepr(
         LythonRuntime.ReMatchObject match,
