@@ -298,7 +298,13 @@ internal sealed partial class LythonRuntime
         {
             if (TryInvokeCopyHook(instance, depth, context, span, memo, out var copied))
             {
-                memo.Remember(value, copied);
+                // CPython does not memoize self-copies (if y is not x): the hook
+                // runs again per occurrence instead of aliasing through the memo.
+                if (!ReferenceEquals(copied, instance))
+                {
+                    memo.Remember(value, copied);
+                }
+
                 return copied;
             }
 
