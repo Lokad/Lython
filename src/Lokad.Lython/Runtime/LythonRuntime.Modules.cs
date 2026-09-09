@@ -562,7 +562,7 @@ internal sealed partial class LythonRuntime
                 return number.Integer;
             }
 
-            return FloatToInteger(number.Floating, owner, span, func);
+            return OwnHeapInteger(FloatToInteger(number.Floating, owner, span, func), context.MemoryGovernor, span);
         }
     }
 

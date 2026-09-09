@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                 result *= i;
             }
 
-            return result;
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Gcd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, "math.gcd", span, context)));
             }
 
-            return result;
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Lcm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.Abs(result / BigInteger.GreatestCommonDivisor(result, value) * value);
             }
 
-            return result;
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Comb(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
                 result = result * (n - count + i) / i;
             }
 
-            return result;
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object Perm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -101,12 +101,12 @@ internal sealed partial class LythonRuntime
                 result *= n - i;
             }
 
-            return result;
+            return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
         private static object ISqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            return IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "math.isqrt", span, context));
+            return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "math.isqrt", span, context)), context.MemoryGovernor, span);
         }
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -385,7 +385,8 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "math.sumprod(...) expects iterables of real numbers.", span);
                 }
 
-                total = AddNumericObjects(total, PyNumberOps.Multiply(left, right), span);
+                var product = OwnHeapInteger(PyNumberOps.Multiply(left, right), context.MemoryGovernor, span);
+                total = EvaluateAdd(total, product, context, span);
             }
 
             return RuntimeValue(total);
@@ -488,16 +489,6 @@ internal sealed partial class LythonRuntime
             }
 
             return y > x ? Math.BitIncrement(x) : Math.BitDecrement(x);
-        }
-
-        private static object AddNumericObjects(object lhs, object rhs, LythonSourceSpan span)
-        {
-            if (!PyNumberOps.TryAsNumber(lhs, out var left) || !PyNumberOps.TryAsNumber(rhs, out var right))
-            {
-                throw new LythonRuntimeException("TypeError", "math.sumprod(...) expects iterables of real numbers.", span);
-            }
-
-            return PyNumberOps.Add(left, right);
         }
 
         private static bool IsNonPositiveInteger(double value)
