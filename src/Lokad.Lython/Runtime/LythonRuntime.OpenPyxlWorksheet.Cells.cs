@@ -166,13 +166,24 @@ internal sealed partial class LythonRuntime
             var address = new CellAddress(row, column);
             if (value is PyNone)
             {
-                _comments.Remove(address);
+                if (_comments.Remove(address))
+                {
+                    ReleaseCellSlot();
+                }
+
                 return;
             }
             if (value is not OpenPyxlComment comment)
             {
                 throw new LythonRuntimeException("TypeError", "Cell.comment expects openpyxl.comments.Comment or None.", null);
             }
+            if (!_comments.ContainsKey(address) && _memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(CellSlotBytes);
+                _committedCellBytes += CellSlotBytes;
+            }
+
             _comments[address] = comment;
         }
         internal bool IsDateCell(int row, int column)
