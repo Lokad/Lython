@@ -46,15 +46,15 @@ internal sealed partial class LythonRuntime
 
         internal IEnumerable<object> CompareLines(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, LythonSourceSpan span, ExecutionContext context)
         {
-            var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
+            var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
             foreach (var opcode in matcher.BuildOpcodes(span, context))
             {
                 foreach (var line in opcode.Tag switch
                 {
                     DiffTag.Replace => FancyReplace(a, opcode.I1, opcode.I2, b, opcode.J1, opcode.J2, span, context),
-                    DiffTag.Delete => Dump("-", a, opcode.I1, opcode.I2),
-                    DiffTag.Insert => Dump("+", b, opcode.J1, opcode.J2),
-                    DiffTag.Equal => Dump(" ", a, opcode.I1, opcode.I2),
+                    DiffTag.Delete => Dump("-", a, opcode.I1, opcode.I2, context.MemoryGovernor, span),
+                    DiffTag.Insert => Dump("+", b, opcode.J1, opcode.J2, context.MemoryGovernor, span),
+                    DiffTag.Equal => Dump(" ", a, opcode.I1, opcode.I2, context.MemoryGovernor, span),
                     _ => throw new InvalidOperationException($"Unknown diff opcode: {opcode.Tag}")
                 })
                 {
@@ -63,36 +63,36 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static IEnumerable<object> Dump(string tag, IReadOnlyList<PyString> lines, int lo, int hi)
+        private static IEnumerable<object> Dump(string tag, IReadOnlyList<PyString> lines, int lo, int hi, MemoryGovernor governor, LythonSourceSpan span)
         {
             for (var i = lo; i < hi; i++)
             {
-                yield return DifflibModule.Prefix(tag + " ", lines[i]);
+                yield return DifflibModule.Prefix(tag + " ", lines[i], governor, span);
             }
         }
 
-        private IEnumerable<object> PlainReplace(IReadOnlyList<PyString> a, int alo, int ahi, IReadOnlyList<PyString> b, int blo, int bhi)
+        private IEnumerable<object> PlainReplace(IReadOnlyList<PyString> a, int alo, int ahi, IReadOnlyList<PyString> b, int blo, int bhi, MemoryGovernor governor, LythonSourceSpan span)
         {
             if (bhi - blo < ahi - alo)
             {
-                foreach (var line in Dump("+", b, blo, bhi))
+                foreach (var line in Dump("+", b, blo, bhi, governor, span))
                 {
                     yield return line;
                 }
 
-                foreach (var line in Dump("-", a, alo, ahi))
+                foreach (var line in Dump("-", a, alo, ahi, governor, span))
                 {
                     yield return line;
                 }
             }
             else
             {
-                foreach (var line in Dump("-", a, alo, ahi))
+                foreach (var line in Dump("-", a, alo, ahi, governor, span))
                 {
                     yield return line;
                 }
 
-                foreach (var line in Dump("+", b, blo, bhi))
+                foreach (var line in Dump("+", b, blo, bhi, governor, span))
                 {
                     yield return line;
                 }
@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
             {
                 if (equalI is null || equalJ is null)
                 {
-                    foreach (var line in PlainReplace(a, alo, ahi, b, blo, bhi))
+                    foreach (var line in PlainReplace(a, alo, ahi, b, blo, bhi, context.MemoryGovernor, span))
                     {
                         yield return line;
                     }
@@ -196,14 +196,14 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                foreach (var line in QFormat(aLine.AsString(), bLine.AsString(), aTags.ToString(), bTags.ToString()))
+                foreach (var line in QFormat(aLine.AsString(), bLine.AsString(), aTags.ToString(), bTags.ToString(), context.MemoryGovernor, span))
                 {
                     yield return line;
                 }
             }
             else
             {
-                yield return DifflibModule.Prefix("  ", aLine);
+                yield return DifflibModule.Prefix("  ", aLine, context.MemoryGovernor, span);
             }
 
             foreach (var line in FancyHelper(a, bestI + 1, ahi, b, bestJ + 1, bhi, span, context))
@@ -221,27 +221,27 @@ internal sealed partial class LythonRuntime
                     return FancyReplace(a, alo, ahi, b, blo, bhi, span, context);
                 }
 
-                return Dump("-", a, alo, ahi);
+                return Dump("-", a, alo, ahi, context.MemoryGovernor, span);
             }
 
-            return blo < bhi ? Dump("+", b, blo, bhi) : [];
+            return blo < bhi ? Dump("+", b, blo, bhi, context.MemoryGovernor, span) : [];
         }
 
-        private static IEnumerable<object> QFormat(string aLine, string bLine, string aTags, string bTags)
+        private static IEnumerable<object> QFormat(string aLine, string bLine, string aTags, string bTags, MemoryGovernor governor, LythonSourceSpan span)
         {
             aTags = KeepOriginalWhitespace(aLine, aTags).TrimEnd();
             bTags = KeepOriginalWhitespace(bLine, bTags).TrimEnd();
 
-            yield return PyString.FromString("- " + aLine);
+            yield return PyString.FromString("- " + aLine, governor, span);
             if (aTags.Length != 0)
             {
-                yield return PyString.FromString("? " + aTags + "\n");
+                yield return PyString.FromString("? " + aTags + "\n", governor, span);
             }
 
-            yield return PyString.FromString("+ " + bLine);
+            yield return PyString.FromString("+ " + bLine, governor, span);
             if (bTags.Length != 0)
             {
-                yield return PyString.FromString("? " + bTags + "\n");
+                yield return PyString.FromString("? " + bTags + "\n", governor, span);
             }
         }
 

@@ -455,7 +455,7 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
+            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
             var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)
@@ -463,16 +463,16 @@ internal sealed partial class LythonRuntime
                 if (!started)
                 {
                     started = true;
-                    yield return PyString.FromString("--- " + FileHeader(options.FromFile, options.FromFileDate) + options.LineTerminator);
-                    yield return PyString.FromString("+++ " + FileHeader(options.ToFile, options.ToFileDate) + options.LineTerminator);
+                    yield return LythonRuntime.CreateString("--- " + FileHeader(options.FromFile, options.FromFileDate) + options.LineTerminator, context, span);
+                    yield return LythonRuntime.CreateString("+++ " + FileHeader(options.ToFile, options.ToFileDate) + options.LineTerminator, context, span);
                 }
 
                 var first = group[0];
                 var last = group[^1];
-                yield return PyString.FromString("@@ -" + FormatUnifiedRange(first.I1, last.I2) + " +" + FormatUnifiedRange(first.J1, last.J2) + " @@" + options.LineTerminator);
+                yield return LythonRuntime.CreateString("@@ -" + FormatUnifiedRange(first.I1, last.I2) + " +" + FormatUnifiedRange(first.J1, last.J2) + " @@" + options.LineTerminator, context, span);
                 foreach (var opcode in group)
                 {
-                    foreach (var line in FormatUnifiedOpcode(opcode, a, b))
+                    foreach (var line in FormatUnifiedOpcode(opcode, a, b, context.MemoryGovernor, span))
                     {
                         yield return line;
                     }
@@ -482,7 +482,7 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> BuildContextDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>()), new PyList(b.Cast<object>()), autojunk: true, span, context);
+            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
             var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)
@@ -490,26 +490,26 @@ internal sealed partial class LythonRuntime
                 if (!started)
                 {
                     started = true;
-                    yield return PyString.FromString("*** " + FileHeader(options.FromFile, options.FromFileDate) + options.LineTerminator);
-                    yield return PyString.FromString("--- " + FileHeader(options.ToFile, options.ToFileDate) + options.LineTerminator);
+                    yield return LythonRuntime.CreateString("*** " + FileHeader(options.FromFile, options.FromFileDate) + options.LineTerminator, context, span);
+                    yield return LythonRuntime.CreateString("--- " + FileHeader(options.ToFile, options.ToFileDate) + options.LineTerminator, context, span);
                 }
 
                 var first = group[0];
                 var last = group[^1];
-                yield return PyString.FromString("***************" + options.LineTerminator);
-                yield return PyString.FromString("*** " + FormatContextRange(first.I1, last.I2) + " ****" + options.LineTerminator);
+                yield return LythonRuntime.CreateString("***************" + options.LineTerminator, context, span);
+                yield return LythonRuntime.CreateString("*** " + FormatContextRange(first.I1, last.I2) + " ****" + options.LineTerminator, context, span);
                 if (group.Any(static opcode => opcode.Tag is DiffTag.Replace or DiffTag.Delete))
                 {
-                    foreach (var line in FormatContextOldLines(group, a))
+                    foreach (var line in FormatContextOldLines(group, a, context.MemoryGovernor, span))
                     {
                         yield return line;
                     }
                 }
 
-                yield return PyString.FromString("--- " + FormatContextRange(first.J1, last.J2) + " ----" + options.LineTerminator);
+                yield return LythonRuntime.CreateString("--- " + FormatContextRange(first.J1, last.J2) + " ----" + options.LineTerminator, context, span);
                 if (group.Any(static opcode => opcode.Tag is DiffTag.Replace or DiffTag.Insert))
                 {
-                    foreach (var line in FormatContextNewLines(group, b))
+                    foreach (var line in FormatContextNewLines(group, b, context.MemoryGovernor, span))
                     {
                         yield return line;
                     }
@@ -517,47 +517,47 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static IEnumerable<PyString> FormatUnifiedOpcode(DiffOpcode opcode, IReadOnlyList<PyString> a, IReadOnlyList<PyString> b)
+        private static IEnumerable<PyString> FormatUnifiedOpcode(DiffOpcode opcode, IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, MemoryGovernor governor, LythonSourceSpan span)
         {
             switch (opcode.Tag)
             {
                 case DiffTag.Equal:
                     for (var i = opcode.I1; i < opcode.I2; i++)
                     {
-                        yield return Prefix(" ", a[i]);
+                        yield return Prefix(" ", a[i], governor, span);
                     }
 
                     break;
                 case DiffTag.Delete:
                     for (var i = opcode.I1; i < opcode.I2; i++)
                     {
-                        yield return Prefix("-", a[i]);
+                        yield return Prefix("-", a[i], governor, span);
                     }
 
                     break;
                 case DiffTag.Insert:
                     for (var j = opcode.J1; j < opcode.J2; j++)
                     {
-                        yield return Prefix("+", b[j]);
+                        yield return Prefix("+", b[j], governor, span);
                     }
 
                     break;
                 case DiffTag.Replace:
                     for (var i = opcode.I1; i < opcode.I2; i++)
                     {
-                        yield return Prefix("-", a[i]);
+                        yield return Prefix("-", a[i], governor, span);
                     }
 
                     for (var j = opcode.J1; j < opcode.J2; j++)
                     {
-                        yield return Prefix("+", b[j]);
+                        yield return Prefix("+", b[j], governor, span);
                     }
 
                     break;
             }
         }
 
-        private static IEnumerable<PyString> FormatContextOldLines(IReadOnlyList<DiffOpcode> group, IReadOnlyList<PyString> a)
+        private static IEnumerable<PyString> FormatContextOldLines(IReadOnlyList<DiffOpcode> group, IReadOnlyList<PyString> a, MemoryGovernor governor, LythonSourceSpan span)
         {
             foreach (var opcode in group)
             {
@@ -576,12 +576,12 @@ internal sealed partial class LythonRuntime
 
                 for (var i = opcode.I1; i < opcode.I2; i++)
                 {
-                    yield return Prefix(prefix, a[i]);
+                    yield return Prefix(prefix, a[i], governor, span);
                 }
             }
         }
 
-        private static IEnumerable<PyString> FormatContextNewLines(IReadOnlyList<DiffOpcode> group, IReadOnlyList<PyString> b)
+        private static IEnumerable<PyString> FormatContextNewLines(IReadOnlyList<DiffOpcode> group, IReadOnlyList<PyString> b, MemoryGovernor governor, LythonSourceSpan span)
         {
             foreach (var opcode in group)
             {
@@ -600,13 +600,13 @@ internal sealed partial class LythonRuntime
 
                 for (var j = opcode.J1; j < opcode.J2; j++)
                 {
-                    yield return Prefix(prefix, b[j]);
+                    yield return Prefix(prefix, b[j], governor, span);
                 }
             }
         }
 
-        internal static PyString Prefix(string prefix, PyString line)
-            => PyString.FromString(prefix + line.AsString());
+        internal static PyString Prefix(string prefix, PyString line, MemoryGovernor governor, LythonSourceSpan? span)
+            => PyString.FromString(prefix + line.AsString(), governor, span);
 
         private static string FileHeader(string file, string date)
             => string.IsNullOrEmpty(date) ? file : file + "\t" + date;
