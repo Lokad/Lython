@@ -40,13 +40,68 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(governor, allocationSpan)
     {
-        var materialized = items as object[] ?? items.ToArray();
-        EnsureCapacity(materialized.Length);
-        foreach (var item in materialized)
+        // Reserve the table before any copy exists. Sized snapshots then ride
+        // a transient reservation while they coexist with the table; the
+        // snapshot keeps enumeration robust when reentrant user equality code
+        // mutates the source mid-copy.
+        if (items is object[] array)
         {
-            _items.Add(item);
+            EnsureCapacity(array.Length);
+            foreach (var item in array)
+            {
+                _items.Add(item);
+            }
+
+            return;
+        }
+
+        if (items is PySet other)
+        {
+            EnsureCapacity(other.Count);
+            if (other.Count == 0)
+            {
+                return;
+            }
+
+            using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(other.Count), allocationSpan);
+            var materialized = other._items.ToArray();
+            foreach (var item in materialized)
+            {
+                _items.Add(item);
+            }
+
+            return;
+        }
+
+        if (items is ICollection<object> collection)
+        {
+            EnsureCapacity(collection.Count);
+            if (collection.Count == 0)
+            {
+                return;
+            }
+
+            using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(collection.Count), allocationSpan);
+            var materialized = new object[collection.Count];
+            collection.CopyTo(materialized, 0);
+            foreach (var item in materialized)
+            {
+                _items.Add(item);
+            }
+
+            return;
+        }
+
+        // Lazy source: no count exists to pre-size from, so Add governs each
+        // growth step with the committed-capacity atomicity above instead of
+        // draining the whole source into an uncharged array first.
+        foreach (var item in items)
+        {
+            _ = Add(item);
         }
     }
+
+    private static long EstimateSnapshotBytes(int count) => 24L + (8L * count);
 
     public PySet(PySet other)
     {

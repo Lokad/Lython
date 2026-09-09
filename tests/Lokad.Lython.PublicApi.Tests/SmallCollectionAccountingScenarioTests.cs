@@ -86,4 +86,53 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.Equal(new List<object?> { true, new BigInteger(0) }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
 
+    [Fact]
+    public async Task SetCopiesAndUnionsSucceedWhenFunded()
+    {
+        // MG05: set.copy/union/operator paths route through the governed
+        // snapshot constructor; funded copies must still succeed in both modes.
+        var script = new LythonEngine().Compile(
+            """
+            s = set(range(5000))
+            t = s.copy()
+            u = s | s
+            v = s.union(s)
+            return [len(t), len(u), len(v)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var expected = new List<object?> { new BigInteger(5000), new BigInteger(5000), new BigInteger(5000) };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task SetCopiesOverBudgetFail()
+    {
+        // MG05: the same copies stay bounded; a budget far below one table
+        // charge must fail instead of retaining uncharged copies.
+        var script = new LythonEngine().Compile(
+            """
+            s = set(range(5000))
+            t = s.copy()
+            u = s | s
+            v = s.union(s)
+            return [len(t), len(u), len(v)]
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
 }
