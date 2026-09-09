@@ -37,6 +37,12 @@ internal sealed partial class LythonRuntime
     private const int PopenPipeSizeIndex = 24;
     private const int PopenProcessGroupIndex = 25;
 
+    // Wrapper-state slice (MG21): retained Popen handles own the 128B
+    // constructed-value unit, and each pipe-stream wrapper they create owns
+    // one 64B slot, both for the handle lifetime.
+    private const long PopenWrapperBytes = 128;
+    private const long PopenStreamBytes = 64;
+
     private static object Popen(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         static void ValidateCompatibilityOptions(object[] arguments, LythonSourceSpan span)
@@ -98,7 +104,16 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(args.Count, span);
-        return new PyPopen(invocation.Request, args, pipelineInput, context, span);
+        var handle = new PyPopen(invocation.Request, args, pipelineInput, context, span);
+        // Wrapper-state slice (MG21): the retained handle plus its pipe-stream
+        // wrappers stay live with the script but own no governor charges yet.
+        // Commit the 128B constructed-value unit plus 64B per created stream
+        // after successful construction (a throwing constructor leaks nothing);
+        // dropped handles retain like gzip append prefixes (handle lifetime).
+        var wrapperBytes = checked(PopenWrapperBytes + (PopenStreamBytes * handle.OwnedStreamCount));
+        context.MemoryGovernor.Reserve(wrapperBytes, span);
+        context.MemoryGovernor.Commit(wrapperBytes);
+        return handle;
     }
 
     private static void RequirePopenNone(object[] arguments, int index, string name, LythonSourceSpan span)
@@ -231,7 +246,10 @@ internal sealed partial class LythonRuntime
                 : null;
             context.ObserveCollectionCount(args.Count, span);
             pipelineInput?.AttachAsPipelineInput(context, span);
+            OwnedStreamCount = (_stdin is null ? 0 : 1) + (_stdout is null ? 0 : 1) + (_stderr is null ? 0 : 1);
         }
+
+        internal int OwnedStreamCount { get; }
 
         public bool IsCompleted => _result is not null;
 
