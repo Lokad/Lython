@@ -24,6 +24,8 @@ internal sealed partial class LythonRuntime
         private const int ArchiveEntryCopyChunkBytes = 65536;
         private const long SnapshotBaseBytesPerEntry = 96;
         private const long ModelCellBytes = 512;
+        // Per-string table overhead: object header plus the list reference.
+        private const long ModelStringBytes = 40;
         // Must remain a power of two: chunk checks below use it as a bit mask.
         private const int ArchiveBudgetCheckInterval = 64;
 
@@ -427,7 +429,28 @@ internal sealed partial class LythonRuntime
         }
 
         private static long EstimateWorksheetOutputBytes(OpenPyxlWorksheet worksheet)
-            => 4096L + (256L * worksheet.Cells.Count);
+        {
+            // Cell text and formula markup scale the output beyond the flat
+            // per-cell allowance, so the reservation precedes serialization.
+            // The final payload charge still backstops the estimate.
+            long total = 4096L + (256L * worksheet.Cells.Count);
+            foreach (var pair in worksheet.Cells)
+            {
+                if (pair.Value is PyString text)
+                {
+                    total = RuntimeMemoryEstimates.SaturatingAdd(total, text.Utf8Bytes.Length);
+                }
+
+                var formula = worksheet.GetFormulaXml(pair.Key.Row, pair.Key.Column);
+                if (formula is not null)
+                {
+                    total = RuntimeMemoryEstimates.SaturatingAdd(total, 64L + (2L * formula.Value.Length));
+                }
+            }
+
+            return total;
+        }
+
 
         private static void ValidateArchiveDirectory(ReadOnlyMemory<byte> payload, ExecutionContext context, LythonSourceSpan span)
         {
@@ -628,6 +651,7 @@ internal sealed partial class LythonRuntime
             private readonly Dictionary<string, long> _charges = new(StringComparer.Ordinal);
             private readonly HashSet<string> _transferred = new(StringComparer.Ordinal);
             private long _domCharge;
+            private long _tableCharge;
 
             public OpenPyxlLoadSession(ZipArchive archive, ExecutionContext context, LythonSourceSpan span)
             {
@@ -666,6 +690,18 @@ internal sealed partial class LythonRuntime
                 _bytes[path] = payload;
                 _charges[path] = charge;
                 return payload;
+            }
+
+            /// <summary>
+            /// Commits a charge for model text the load drops when it finishes
+            /// (for example the shared-string table). Released by <see cref="Finish"/>
+            /// and <see cref="Dispose"/> with the other never-transferred charges.
+            /// </summary>
+            public void CommitTransientModelCharge(long charge)
+            {
+                _context.MemoryGovernor.Reserve(charge, _span);
+                _context.MemoryGovernor.Commit(charge);
+                _tableCharge = checked(_tableCharge + charge);
             }
 
             public XDocument? LoadOptionalXmlDocument(string path)
@@ -711,6 +747,13 @@ internal sealed partial class LythonRuntime
                     // Parsed documents never transfer; their lifetime ends here.
                     _context.MemoryGovernor.Release(_domCharge);
                     _domCharge = 0;
+                }
+
+                if (_tableCharge > 0)
+                {
+                    // Dropped load tables (for example shared strings) never transfer either.
+                    _context.MemoryGovernor.Release(_tableCharge);
+                    _tableCharge = 0;
                 }
 
                 _bytes.Clear();
@@ -759,6 +802,13 @@ internal sealed partial class LythonRuntime
                     // Parsed documents never transfer; their lifetime ends here.
                     _context.MemoryGovernor.Release(_domCharge);
                     _domCharge = 0;
+                }
+
+                if (_tableCharge > 0)
+                {
+                    // Dropped load tables (for example shared strings) never transfer either.
+                    _context.MemoryGovernor.Release(_tableCharge);
+                    _tableCharge = 0;
                 }
 
                 _bytes.Clear();

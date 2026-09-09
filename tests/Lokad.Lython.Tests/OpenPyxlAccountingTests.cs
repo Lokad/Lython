@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Reflection;
+using System.Text;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -118,6 +119,115 @@ public sealed class OpenPyxlAccountingTests
         var method = session.GetType().GetMethod("LoadOptionalXmlDocument", BindingFlags.Public | BindingFlags.Instance)
             ?? throw new InvalidOperationException("LoadOptionalXmlDocument not found.");
         return method.Invoke(session, [path]);
+    }
+
+
+    private static byte[] BuildArchive(params (string Path, string Content)[] parts)
+    {
+        using var output = new MemoryStream();
+        using (var writer = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var part in parts)
+            {
+                var entry = writer.CreateEntry(part.Path);
+                using var destination = entry.Open();
+                var bytes = Encoding.UTF8.GetBytes(part.Content);
+                destination.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        return output.ToArray();
+    }
+
+    private static string SharedStringsXml(params string[] values)
+        => @"<sst xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main"">"
+            + string.Concat(values.Select(v => "<si><t>" + v + "</t></si>"))
+            + "</sst>";
+
+    private static string SheetXml(string inner)
+        => @"<worksheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main""><sheetData>"
+            + inner
+            + "</sheetData></worksheet>";
+
+    private static object InvokeLoadSharedStrings(object session, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadSharedStrings", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadSharedStrings not found.");
+        return method.Invoke(null, [session, context, span])
+            ?? throw new InvalidOperationException("LoadSharedStrings returned null.");
+    }
+
+    private static object NewWorksheet(string title)
+    {
+        var type = typeof(LythonRuntime).GetNestedType("OpenPyxlWorksheet", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlWorksheet not found.");
+        var ctor = type.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, [typeof(string)])
+            ?? throw new InvalidOperationException("Worksheet constructor not found.");
+        return ctor.Invoke([title]);
+    }
+
+    private static object InvokeLoadWorksheetCells(object session, string path, object worksheet, object sharedStrings, object context, object span)
+    {
+        var package = typeof(LythonRuntime).GetNestedType("OpenPyxlPackage", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlPackage not found.");
+        var method = package.GetMethod("LoadWorksheetCells", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("LoadWorksheetCells not found.");
+        var snapshotType = package.GetNestedType("OpenPyxlCellStyleSnapshot", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("OpenPyxlCellStyleSnapshot not found.");
+        var dateSystemType = typeof(LythonRuntime).GetNestedType("ExcelDateSystem", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("ExcelDateSystem not found.");
+        var dateSystem = Activator.CreateInstance(dateSystemType)
+            ?? throw new InvalidOperationException("ExcelDateSystem default missing.");
+        return method.Invoke(null, [session, path, worksheet, sharedStrings, Array.CreateInstance(snapshotType, 0), dateSystem, false, context, span])
+            ?? throw new InvalidOperationException("LoadWorksheetCells returned null.");
+    }
+
+    [Fact]
+    public void SharedStringTableTextIsCharged()
+    {
+        // R02: the shared-string table outlives the load, so its text pays here
+        // rather than at per-cell reference sites.
+        var xml = SharedStringsXml("abc", "defgh");
+        using var stream = new MemoryStream(BuildArchive(("xl/sharedStrings.xml", xml)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var strings = Assert.IsAssignableFrom<IReadOnlyList<string>>(InvokeLoadSharedStrings(session, context, span));
+        Assert.Equal(["abc", "defgh"], strings);
+        // Part bytes (96 + length) plus the live DOM (16 per byte) plus the
+        // table tail (2 strings at 40 bytes plus 8 text bytes).
+        var length = Encoding.UTF8.GetByteCount(xml);
+        Assert.Equal((96L + length) + ((long)16 * length) + (2L * 40L + 8L), context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+    [Fact]
+    public void CellTextIsChargedProportionally()
+    {
+        // R02: retained value text joins the per-cell charge instead of hiding
+        // inside the flat 512-byte allowance.
+        var xml = SheetXml(@"<c r=""A1""/><c r=""A2""><v>12</v></c><c r=""A3"" t=""inlineStr""><is><t>hello</t></is></c>");
+        using var stream = new MemoryStream(BuildArchive(("xl/worksheets/sheet1.xml", xml)), writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var session = NewLoadSession(archive, context, span);
+        var document = InvokeLoadWorksheetCells(session, "xl/worksheets/sheet1.xml", NewWorksheet("Sheet1"), new List<string>(), context, span);
+        Assert.NotNull(document);
+        // Part bytes plus the live DOM plus three cells (3 at 512 bytes plus
+        // the 0-, 2- and 5-byte concatenated contents).
+        var length = Encoding.UTF8.GetByteCount(xml);
+        Assert.Equal((96L + length) + ((long)16 * length) + (3L * 512L + 7L), context.MemoryGovernor.CurrentCommittedBytes);
+        ((IDisposable)session).Dispose();
+        // The worksheet still owns its cells, so only the part and DOM charges release.
+        Assert.Equal(3L * 512L + 7L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
 }

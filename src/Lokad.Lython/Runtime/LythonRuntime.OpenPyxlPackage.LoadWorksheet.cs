@@ -30,15 +30,21 @@ internal sealed partial class LythonRuntime
             // Values, formulas, and styles are independent in OOXML. Preserve each
             // backing store even when a cell has no ordinary Python value.
             var loadedCells = 0;
+            var textBytes = 0L;
             foreach (var cell in document.Descendants(XlsxMain + "c"))
             {
                 if ((++loadedCells & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    var cellCharge = ModelCellBytes * ArchiveBudgetCheckInterval;
+                    var cellCharge = (ModelCellBytes * ArchiveBudgetCheckInterval) + textBytes;
                     context.MemoryGovernor.Reserve(cellCharge, span);
                     context.MemoryGovernor.Commit(cellCharge);
+                    textBytes = 0;
                     context.CheckExecutionBudget(span);
                 }
+
+                // Retained values and formulas scale with their text, so the
+                // concatenated content joins the per-cell charge.
+                textBytes += Encoding.UTF8.GetByteCount(cell.Value);
 
                 var reference = (string?)cell.Attribute("r");
                 if (reference is null)
@@ -68,9 +74,9 @@ internal sealed partial class LythonRuntime
             // The per-64 charging above leaves a final partial block uncharged;
             // top it up so small sheets pay proportionally too.
             var tailCells = loadedCells & (ArchiveBudgetCheckInterval - 1);
-            if (tailCells > 0)
+            if (tailCells > 0 || textBytes > 0)
             {
-                var tailCharge = ModelCellBytes * tailCells;
+                var tailCharge = (ModelCellBytes * tailCells) + textBytes;
                 context.MemoryGovernor.Reserve(tailCharge, span);
                 context.MemoryGovernor.Commit(tailCharge);
             }

@@ -23,13 +23,27 @@ internal sealed partial class LythonRuntime
             }
             var strings = new List<string>();
             var scanned = 0;
+            var textBytes = 0L;
             foreach (var item in document.Root?.Elements(XlsxMain + "si") ?? [])
             {
-                strings.Add(ReadSharedString(item));
+                var shared = ReadSharedString(item);
+                strings.Add(shared);
+                textBytes += Encoding.UTF8.GetByteCount(shared);
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
+                    // The table outlives parsing but is dropped when the load
+                    // finishes, so its text pays through the session.
+                    var blockCharge = (ModelStringBytes * ArchiveBudgetCheckInterval) + textBytes;
+                    session.CommitTransientModelCharge(blockCharge);
+                    textBytes = 0;
                     context.CheckExecutionBudget(span);
                 }
+            }
+
+            var tailStrings = scanned & (ArchiveBudgetCheckInterval - 1);
+            if (tailStrings > 0 || textBytes > 0)
+            {
+                session.CommitTransientModelCharge((ModelStringBytes * tailStrings) + textBytes);
             }
 
             return strings;
