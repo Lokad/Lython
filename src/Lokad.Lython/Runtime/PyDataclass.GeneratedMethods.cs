@@ -158,7 +158,7 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__repr__() expected a bound instance.", span);
             }
 
-            var builder = new GovernedByteBuilder();
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             builder.AppendString(typeName);
             builder.AppendAscii("(");
             for (var i = 0; i < fields.Count; i++)

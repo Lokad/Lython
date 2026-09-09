@@ -71,7 +71,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
         if (Type.DataclassReprEnabled && Type.DataclassReprFields is { } renderedFields)
         {
-            var builder = new GovernedByteBuilder();
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
             builder.AppendString(Type.Name);
             builder.AppendAscii("(");
             for (var i = 0; i < renderedFields.Length; i++)

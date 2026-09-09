@@ -394,7 +394,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return value is not PyNone;
     }
     public PyString RenderPython(PyRenderingContext context)
-            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(_maps, context), ")");
+            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(_maps, context), ")", context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 

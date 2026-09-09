@@ -144,7 +144,8 @@ internal sealed partial class LythonRuntime
             => PyRendering.JoinRenderedSequence(
                 "operator.itemgetter(",
                 _items.Select(item => PyRendering.ToReprPyString(item, context)),
-                ")");
+                ")",
+                context);
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }

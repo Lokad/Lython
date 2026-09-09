@@ -91,25 +91,6 @@ internal static class PyRendering
         }
     }
 
-    public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix)
-    {
-        var builder = new GovernedByteBuilder();
-        builder.AppendString(prefix);
-        var first = true;
-        foreach (var item in items)
-        {
-            if (!first)
-            {
-                builder.AppendAscii(", ");
-            }
-
-            builder.Append(item);
-            first = false;
-        }
-
-        builder.AppendString(suffix);
-        return builder.ToPyStringAndRelease();
-    }
 
     public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix, PyRenderingContext context)
     {
@@ -156,9 +137,9 @@ internal static class PyRendering
         return builder.ToPyStringAndRelease();
     }
 
-    public static PyString RenderSingletonTuple(PyString item)
+    public static PyString RenderSingletonTuple(PyString item, MemoryGovernor governor)
     {
-        var builder = new GovernedByteBuilder();
+        var builder = new GovernedByteBuilder(governor);
         builder.AppendAscii("(");
         builder.Append(item);
         builder.Append(PyStringOps.CommaLiteral);
@@ -308,7 +289,7 @@ internal static class PyRendering
         try
         {
             return tuple.Count == 1
-                ? RenderSingletonTuple(ToReprPyStringCore(tuple[0], context, activeContainers))
+                ? RenderSingletonTuple(ToReprPyStringCore(tuple[0], context, activeContainers), context.Context.MemoryGovernor)
                 : RenderReprItems(tuple, "(", ")", context, activeContainers);
         }
         finally
