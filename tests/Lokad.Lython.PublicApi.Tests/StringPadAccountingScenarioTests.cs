@@ -194,4 +194,43 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task PercentWidthStaysCharged()
+    {
+        // MG07: percent width padding streams through the governed builder,
+        // so a two-million pad fails on growth charges instead of escaping.
+        var script = new LythonEngine().Compile(
+            """
+            return "%2000000s" % "x"
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task LjustWidthStaysCharged()
+    {
+        // MG07: ljust/rjust/center pad through the same governed builder
+        // shape; a two-million pad fails on growth charges.
+        var script = new LythonEngine().Compile(
+            """
+            return "x".ljust(2000000)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
 }
