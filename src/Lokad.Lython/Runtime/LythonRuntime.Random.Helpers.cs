@@ -132,6 +132,10 @@ internal sealed partial class LythonRuntime
             }
 
             context.ObserveCollectionCount((int)total, span);
+            // The expanded table is transient scratch for shuffling, dropped once
+            // the sample is drawn: bound its peak (plus the counts scratch behind
+            // it) with a temporary reservation instead of accruing it.
+            using var expansion = context.MemoryGovernor.ReserveTemporary(16L * (long)total + 12L * counts.Count, span);
             var expanded = new List<object>((int)total);
             for (var i = 0; i < population.Count; i++)
             {
