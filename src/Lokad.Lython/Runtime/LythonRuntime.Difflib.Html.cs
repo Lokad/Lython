@@ -12,10 +12,10 @@ internal sealed partial class LythonRuntime
     {
         private readonly int _tabsize;
         private readonly int? _wrapcolumn;
-        private readonly object? _linejunk;
-        private readonly object? _charjunk;
+        private readonly ICallable? _linejunk;
+        private readonly ICallable? _charjunk;
 
-        public DifflibHtmlDiffObject(int tabsize, int? wrapcolumn, object? linejunk, object? charjunk)
+        public DifflibHtmlDiffObject(int tabsize, int? wrapcolumn, ICallable? linejunk, ICallable? charjunk)
         {
             _tabsize = tabsize;
             _wrapcolumn = wrapcolumn;

@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         private const long ScratchBytesPerEntry = 64;
         private const long ViewListBaseBytes = 32;
 
-        private readonly object? _isjunk;
+        private readonly ICallable? _isjunk;
         private readonly bool _autojunk;
         private readonly MemoryGovernor _governor;
         private object _aOriginal;
@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
         private long _matchingBlocksCharge;
         private long _opcodesCharge;
 
-        public DifflibSequenceMatcherObject(object? isjunk, object aOriginal, object bOriginal, bool autojunk, LythonSourceSpan span, ExecutionContext context)
+        public DifflibSequenceMatcherObject(ICallable? isjunk, object aOriginal, object bOriginal, bool autojunk, LythonSourceSpan span, ExecutionContext context)
         {
             _isjunk = isjunk;
             _autojunk = autojunk;

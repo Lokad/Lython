@@ -291,7 +291,7 @@ internal sealed partial class LythonRuntime
         private object ConvertArgumentValue(ArgumentSpec spec, string optionName, string token, LythonSourceSpan span, ExecutionContext context)
         {
             object converted = PyString.FromString(token);
-            if (spec.Converter is ICallable callable)
+            if (spec.Converter is { } callable)
             {
                 try
                 {

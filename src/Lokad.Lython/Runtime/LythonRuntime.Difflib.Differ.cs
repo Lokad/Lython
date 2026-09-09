@@ -12,10 +12,10 @@ internal sealed partial class LythonRuntime
     {
         // Must remain a power of two: chunk checks below use it as a bit mask.
         private const int BudgetCheckInterval = 64;
-        private readonly object? _linejunk;
-        private readonly object? _charjunk;
+        private readonly ICallable? _linejunk;
+        private readonly ICallable? _charjunk;
 
-        public DifflibDifferObject(object? linejunk, object? charjunk)
+        public DifflibDifferObject(ICallable? linejunk, ICallable? charjunk)
         {
             _linejunk = linejunk;
             _charjunk = charjunk;
@@ -25,8 +25,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "linejunk" => _linejunk ?? PyNone.Instance,
-                "charjunk" => _charjunk ?? PyNone.Instance,
+                "linejunk" => _linejunk is null ? PyNone.Instance : _linejunk,
+                "charjunk" => _charjunk is null ? PyNone.Instance : _charjunk,
                 "compare" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)

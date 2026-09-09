@@ -52,15 +52,15 @@ internal sealed partial class LythonRuntime
                     span),
             };
         }
-        private static object? ValidateConverter(object value, LythonSourceSpan span)
+        private static ICallable? ValidateConverter(object value, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
                 return null;
             }
-            if (value is ICallable)
+            if (value is ICallable callable)
             {
-                return value;
+                return callable;
             }
             throw new LythonRuntimeException(
                 "TypeError",

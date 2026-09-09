@@ -185,19 +185,19 @@ internal sealed partial class LythonRuntime
         private static bool IsJsonNumberTokenByte(byte value)
             => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
-        private static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
+        private static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
             => InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
 
-        private static object? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
+        private static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
                 return null;
             }
 
-            if (value is ICallable)
+            if (value is ICallable callable)
             {
-                return value;
+                return callable;
             }
 
             throw new LythonRuntimeException("TypeError", $"json option {parameterName}=... expects a callable or None.", span);
@@ -280,11 +280,11 @@ internal sealed partial class LythonRuntime
             => index < arguments.Length ? arguments[index] : PyNone.Instance;
 
         private sealed record JsonLoadOptions(
-            object? ObjectHook,
-            object? ParseFloat,
-            object? ParseInt,
-            object? ParseConstant,
-            object? ObjectPairsHook);
+            ICallable? ObjectHook,
+            ICallable? ParseFloat,
+            ICallable? ParseInt,
+            ICallable? ParseConstant,
+            ICallable? ObjectPairsHook);
 
         private enum JsonDumpCallForm
         {
@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
             string? IndentUnit,
             string ItemSeparator,
             string KeySeparator,
-            object? DefaultCallable,
+            ICallable? DefaultCallable,
             bool SortKeys);
 
         private sealed class UnsupportedJsonClassFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue

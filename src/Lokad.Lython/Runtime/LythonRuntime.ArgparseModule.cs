@@ -439,7 +439,7 @@ internal sealed partial class LythonRuntime
         bool Required,
         object DefaultValue,
         IReadOnlyList<object>? Choices,
-        object? Converter,
+        ICallable? Converter,
         bool IsPositional,
         ArgumentNargs Nargs,
         int? GroupId,

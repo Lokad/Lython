@@ -297,19 +297,19 @@ internal sealed partial class LythonRuntime
                 ParseOptionalString(arguments, 7, "\n", $"{owner}(..., lineterm=...)", span));
         }
 
-        private static object? ParseOptionalPredicate(object[] arguments, int index, string owner, LythonSourceSpan span)
+        private static ICallable? ParseOptionalPredicate(object[] arguments, int index, string owner, LythonSourceSpan span)
         {
             if (arguments.Length <= index || arguments[index] is PyNone)
             {
                 return null;
             }
 
-            if (arguments[index] is not ICallable)
+            if (arguments[index] is ICallable callable)
             {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a callable or None.", span);
+                return callable;
             }
 
-            return arguments[index];
+            throw new LythonRuntimeException("TypeError", $"{owner} expects a callable or None.", span);
         }
 
         private static string ParseOptionalString(object[] arguments, int index, string defaultValue, string owner, LythonSourceSpan span)
@@ -443,19 +443,14 @@ internal sealed partial class LythonRuntime
         private static BuiltinCallable DefaultCharacterJunkCallable()
             => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk);
 
-        internal static bool CallJunkPredicate(object? predicate, object argument, LythonSourceSpan span, ExecutionContext context)
+        internal static bool CallJunkPredicate(ICallable? predicate, object argument, LythonSourceSpan span, ExecutionContext context)
         {
             if (predicate is null)
             {
                 return false;
             }
 
-            if (predicate is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "difflib junk predicate must be callable or None.", span);
-            }
-
-            return IsTruthy(CallableInvocation.InvokeUnary(callable, argument, span, context));
+            return IsTruthy(CallableInvocation.InvokeUnary(predicate, argument, span, context));
         }
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
