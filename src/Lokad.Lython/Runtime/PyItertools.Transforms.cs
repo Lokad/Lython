@@ -323,6 +323,13 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         _span = span;
     }
 
+    // Per-element argument arrays scale with the element, not the output: one
+    // 24B CallArgumentValue slot (placement enum plus two references) per item,
+    // live beside the drained element while the call runs. The sync shape drains
+    // lazily, so it grows the reservation incrementally like the shared drains;
+    // the async shape reuses MaterializeAsync and covers the exact final array.
+    private const long ArgumentSlotBytes = 24;
+
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecutionBudget(_span);
@@ -332,9 +339,30 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             return false;
         }
 
-        var args = LythonRuntime.ToSequence(current, _span, _context)
-            .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
-            .ToArray();
+        // The argument array duplicates the streamed element beside it; grow a
+        // transient reservation with the backing list (mirroring the shared
+        // drains) and cover the final exact array, released after the call.
+        using var scratch = _context.MemoryGovernor.ReserveTemporary(0, _span);
+        var collected = new List<CallArgumentValue>();
+        var chargedCapacity = 0;
+        foreach (var item in LythonRuntime.ToSequence(current, _span, _context))
+        {
+            if (collected.Count == collected.Capacity)
+            {
+                var predicted = collected.Capacity == 0 ? 4L : (long)collected.Capacity * 2L;
+                scratch.Grow(checked(ArgumentSlotBytes * (predicted - chargedCapacity)), _span);
+            }
+
+            collected.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)));
+            if (collected.Capacity > chargedCapacity)
+            {
+                scratch.Grow(ArgumentSlotBytes * (collected.Capacity - chargedCapacity), _span);
+                chargedCapacity = collected.Capacity;
+            }
+        }
+
+        scratch.Grow(ArgumentSlotBytes * collected.Count, _span);
+        var args = collected.ToArray();
         value = LythonRuntime.RuntimeValue(_function.Invoke(args, _span, _context));
         return true;
     }
@@ -349,9 +377,17 @@ internal sealed class PyStarmapIterator : PyIteratorBase
         }
 
         var values = await PyIteration.MaterializeAsync(current, _span, _context).ConfigureAwait(false);
-        var args = values
-            .Select(item => CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)))
-            .ToArray();
+        // The drained list stays governed beside this exact-size copy, released
+        // after the call completes.
+        using var scratch = _context.MemoryGovernor.ReserveTemporary(checked(ArgumentSlotBytes * (long)values.Count), _span);
+        var args = values.Count == 0
+            ? Array.Empty<CallArgumentValue>()
+            : new CallArgumentValue[values.Count];
+        for (var index = 0; index < values.Count; index++)
+        {
+            args[index] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(values[index]));
+        }
+
         var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(args, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
