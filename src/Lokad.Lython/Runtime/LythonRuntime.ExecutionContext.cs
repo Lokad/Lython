@@ -35,9 +35,12 @@ internal sealed partial class LythonRuntime
             }
 
             var normalizedContainers = new Dictionary<object, object>(ReferenceEqualityComparer.Instance);
+            // The shared memo outlives every container it records; cover one
+            // table slot per distinct entry transiently for the run (MG22).
+            using var memoScratch = MemoryGovernor.ReserveTemporary(0, null);
             foreach (var pair in globals)
             {
-                Frame.Variables[pair.Key] = NormalizeRuntimeValue(pair.Value, this, normalizedContainers);
+                Frame.Variables[pair.Key] = NormalizeRuntimeValue(pair.Value, this, normalizedContainers, memoScratch);
             }
         }
 
@@ -375,12 +378,18 @@ internal sealed partial class LythonRuntime
 
         private const int MaxGlobalNormalizationDepth = 1_000;
 
-        private static object NormalizeRuntimeValue(object? value, ExecutionContext context, Dictionary<object, object> normalizedContainers)
+        // One memo-table slot per distinct normalized container, covering the
+        // shared identity map plus its growth slack (MG22). The path-only
+        // active set stays bounded by MaxGlobalNormalizationDepth.
+        private const long MemoEntryBytes = 64;
+
+        private static object NormalizeRuntimeValue(object? value, ExecutionContext context, Dictionary<object, object> normalizedContainers, MemoryGovernor.TemporaryMemoryReservation memoScratch)
             => NormalizeRuntimeValue(
                 value,
                 context,
                 new HashSet<object>(ReferenceEqualityComparer.Instance),
                 normalizedContainers,
+                memoScratch,
                 depth: 0);
 
         private static object NormalizeRuntimeValue(
@@ -388,6 +397,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             HashSet<object> activeContainers,
             Dictionary<object, object> normalizedContainers,
+            MemoryGovernor.TemporaryMemoryReservation memoScratch,
             int depth)
         {
             if (depth > MaxGlobalNormalizationDepth)
@@ -439,26 +449,26 @@ internal sealed partial class LythonRuntime
 
             var valueType = value.GetType();
             return valueType == typeof(PyList)
-                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyList((PyList)value, context, activeContainers, normalizedContainers, depth + 1))
+                ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyList((PyList)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                 : valueType == typeof(PyTuple)
-                    ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyTuple((PyTuple)value, context, activeContainers, normalizedContainers, depth + 1))
+                    ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyTuple((PyTuple)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                     : valueType == typeof(List<object?>)
-                        ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectList((List<object?>)value, context, activeContainers, normalizedContainers, depth + 1))
+                        ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectList((List<object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                         : valueType == typeof(object?[])
-                            ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectArray((object?[])value, context, activeContainers, normalizedContainers, depth + 1))
+                            ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectArray((object?[])value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                             : valueType == typeof(PySet)
-                                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePySet((PySet)value, context, activeContainers, normalizedContainers, depth + 1))
+                                ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePySet((PySet)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                 : valueType == typeof(HashSet<object?>)
-                                    ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectSet((HashSet<object?>)value, context, activeContainers, normalizedContainers, depth + 1))
+                                    ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectSet((HashSet<object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                     : valueType == typeof(Dictionary<string, object?>)
-                                        ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, normalizedContainers, depth + 1))
+                                        ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeStringKeyDictionary((Dictionary<string, object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                         : valueType == typeof(Dictionary<object, object?>)
-                                            ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, normalizedContainers, depth + 1))
+                                            ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizeObjectKeyDictionary((Dictionary<object, object?>)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                             : valueType == typeof(PyDict)
-                                                ? NormalizeContainer(value, activeContainers, normalizedContainers, () => NormalizePyDict((PyDict)value, context, activeContainers, normalizedContainers, depth + 1))
+                                                ? NormalizeContainer(value, activeContainers, normalizedContainers, memoScratch, () => NormalizePyDict((PyDict)value, context, activeContainers, normalizedContainers, memoScratch, depth + 1))
                                                 : throw RuntimeErrors.Type("initial global values may contain only supported scalar and collection values", null);
 
-            static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Dictionary<object, object> normalizedContainers, Func<T> normalize)
+            static T NormalizeContainer<T>(object container, HashSet<object> activeContainers, Dictionary<object, object> normalizedContainers, MemoryGovernor.TemporaryMemoryReservation memoScratch, Func<T> normalize)
             {
                 if (normalizedContainers.TryGetValue(container, out var existing))
                 {
@@ -470,6 +480,7 @@ internal sealed partial class LythonRuntime
                     throw RuntimeErrors.Type("initial global values cannot contain reference cycles", null);
                 }
 
+                memoScratch.Grow(MemoEntryBytes, null);
                 try
                 {
                     var result = normalize();
@@ -487,6 +498,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
@@ -496,7 +508,7 @@ internal sealed partial class LythonRuntime
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, depth);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, memoScratch, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
@@ -507,6 +519,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Count, null);
@@ -515,7 +528,7 @@ internal sealed partial class LythonRuntime
                 var items = new object[tuple.Count];
                 for (var i = 0; i < tuple.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, depth);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, memoScratch, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
@@ -526,6 +539,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(list.Count, null);
@@ -534,7 +548,7 @@ internal sealed partial class LythonRuntime
                 var items = new object[list.Count];
                 for (var i = 0; i < list.Count; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, depth);
+                    items[i] = NormalizeRuntimeValue(list[i], context, activeContainers, normalizedContainers, memoScratch, depth);
                 }
 
                 return new PyList(items, context.MemoryGovernor, null);
@@ -545,6 +559,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(tuple.Length, null);
@@ -553,7 +568,7 @@ internal sealed partial class LythonRuntime
                 var items = new object[tuple.Length];
                 for (var i = 0; i < tuple.Length; i++)
                 {
-                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, depth);
+                    items[i] = NormalizeRuntimeValue(tuple[i], context, activeContainers, normalizedContainers, memoScratch, depth);
                 }
 
                 return new PyTuple(items, context.MemoryGovernor, null);
@@ -564,13 +579,14 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, depth)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, memoScratch, depth)));
                 }
 
                 return normalized;
@@ -581,13 +597,14 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(set.Count, null);
                 var normalized = new PySet(context.MemoryGovernor, null);
                 foreach (var item in set)
                 {
-                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, depth)));
+                    normalized.Add(RuntimeValue(NormalizeRuntimeValue(item, context, activeContainers, normalizedContainers, memoScratch, depth)));
                 }
 
                 return normalized;
@@ -598,13 +615,14 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
                 var normalized = new PyDict(context.MemoryGovernor, null);
                 foreach (var pair in dict)
                 {
-                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
+                    normalized.SetItem(CreateString(pair.Key, context, null), NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, memoScratch, depth));
                 }
 
                 return normalized;
@@ -615,6 +633,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
@@ -622,8 +641,8 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, depth), null, context.MemoryGovernor),
-                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, memoScratch, depth));
                 }
 
                 return normalized;
@@ -634,6 +653,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context,
                 HashSet<object> activeContainers,
                 Dictionary<object, object> normalizedContainers,
+                MemoryGovernor.TemporaryMemoryReservation memoScratch,
                 int depth)
             {
                 context.ObserveCollectionCount(dict.Count, null);
@@ -641,8 +661,8 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, depth), null, context.MemoryGovernor),
-                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, depth));
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null, context.MemoryGovernor),
+                        NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, memoScratch, depth));
                 }
 
                 return normalized;
