@@ -18,12 +18,21 @@ internal sealed partial class LythonRuntime
 
         return arguments[0] switch
         {
+            PyChainMap chainMap => LenChainMap(chainMap, span, context),
             IPySizedValue sized => new BigInteger(sized.Length),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
             PyInstance instance => GetInstanceLength(instance, context, span),
             _ => throw new LythonRuntimeException("TypeError", "Object has no len().", span)
         };
+    }
+
+    // len() builds only the throwaway dedup set; reuse the merge estimate
+    // conservatively since duplicates collapse in the set but pay in visits.
+    private static BigInteger LenChainMap(PyChainMap chainMap, LythonSourceSpan span, ExecutionContext context)
+    {
+        using var scratch = context.MemoryGovernor.ReserveTemporary(chainMap.EstimateMergeScratchBytes(), span);
+        return new BigInteger(chainMap.Count);
     }
 
     private static BigInteger GetInstanceLength(PyInstance instance, ExecutionContext context, LythonSourceSpan span)

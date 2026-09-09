@@ -543,8 +543,13 @@ internal sealed partial class LythonRuntime
             case PyCounter counter:
                 return counter.Items;
             case PyChainMap chainMap:
+            {
+                // The merged list plus dedup set peak beside the governed destination,
+                // like the keys()/values()/items() views; hold the same transient estimate.
+                using var scratch = context.MemoryGovernor.ReserveTemporary(chainMap.EstimateMergeScratchBytes(), span);
                 return chainMap.Iterate().Select(key =>
                     new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
+            }
             case PyInstance instance:
                 if (!TryResolveRuntimeMember(instance, "keys", context, span, out var keysMember))
                 {
