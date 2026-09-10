@@ -59,6 +59,7 @@ internal static class PyMemberAccess
     {
         if (target is not IPyContextualDynamicAttributes &&
             target is not PyPath &&
+            target is not LythonPathStat &&
             target is not PySuper &&
             target is not PyInstance &&
             target is not PyType &&
@@ -74,6 +75,11 @@ internal static class PyMemberAccess
         }
 
         if (target is PyPath path && LythonRuntime.PathMembers.TryGetMember(path, memberName, context, span, out value))
+        {
+            return true;
+        }
+
+        if (target is LythonPathStat stat && LythonRuntime.PathStatMembers.TryGetMember(stat, memberName, context, span, out value))
         {
             return true;
         }

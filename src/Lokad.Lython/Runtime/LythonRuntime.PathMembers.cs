@@ -8,6 +8,22 @@ internal sealed partial class LythonRuntime
 {
     internal static class PathStatMembers
     {
+        public static bool TryGetMember(
+            LythonPathStat stat,
+            string name,
+            ExecutionContext context,
+            LythonSourceSpan span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            if (string.Equals(name, "modified_at", StringComparison.Ordinal))
+            {
+                value = PyString.FromString(stat.ModifiedAt, context.MemoryGovernor, span);
+                return true;
+            }
+
+            return TryGetMember(stat, name, out value);
+        }
+
         public static bool TryGetMember(LythonPathStat stat, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
