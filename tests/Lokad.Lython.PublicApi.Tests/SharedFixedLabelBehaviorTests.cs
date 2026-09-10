@@ -1515,6 +1515,41 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task FactoryCallableClassIdentity()
+    {
+        // Factory and member callables report their defining kind like
+        // CPython: the namedtuple factory is a function, while partial,
+        // partialmethod and deque members are types, each aliasing the
+        // object their __class__ and __new__ owner resolve to.
+        var script = new LythonEngine().Compile("""
+            from collections import namedtuple, deque
+            from functools import partial, partialmethod
+            results = []
+            results.append(type(namedtuple) is type(lambda: 0))
+            results.append(namedtuple.__class__ is type(namedtuple))
+            results.append(namedtuple.__new__ is type(namedtuple).__new__)
+            results.append(type(partial) is type)
+            results.append(partial.__class__ is type)
+            results.append(type(partialmethod) is type)
+            results.append(type(deque) is type)
+            results.append(deque.__class__ is type)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
