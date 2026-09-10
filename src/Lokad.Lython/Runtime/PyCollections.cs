@@ -149,6 +149,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public PyCounter(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
+        // Own the shell beside the governed inner dict.
+        governor.Reserve(64L, allocationSpan);
+        governor.Commit(64L);
         _items = new PyDict(governor, allocationSpan);
     }
 
@@ -161,6 +164,8 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public PyCounter(PyCounter other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
+        governor.Reserve(64L, allocationSpan);
+        governor.Commit(64L);
         _items = new PyDict(other._items, governor, allocationSpan);
     }
 
