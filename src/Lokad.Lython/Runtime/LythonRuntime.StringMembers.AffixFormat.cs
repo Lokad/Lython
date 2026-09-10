@@ -232,7 +232,43 @@ internal sealed partial class LythonRuntime
 
             if (table is PyDefaultDict defaultdict)
             {
-                return defaultdict.TryGetValue(new BigInteger(ordinal), out value);
+                try
+                {
+                    value = defaultdict.GetOrCreate(new BigInteger(ordinal), context, span);
+                    return true;
+                }
+                catch (LythonRuntimeException ex) when (ex.ExceptionType is "KeyError" or "IndexError" or "LookupError")
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+            }
+
+            // User mappings run the __getitem__ protocol like CPython:
+            // LookupError misses keep the character, other failures (and
+            // non-callable slots) propagate with their texts.
+            if (table is PyInstance userMapping)
+            {
+                if (!userMapping.TryGetAttribute("__getitem__", context, span, out var member) || member is null)
+                {
+                    throw new LythonRuntimeException("TypeError", "'" + userMapping.Type.Name + "' object is not subscriptable", span);
+                }
+
+                if (member is not ICallable getter)
+                {
+                    throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+                }
+
+                try
+                {
+                    value = getter.Invoke([CallArgumentValue.Positional(new BigInteger(ordinal))], span, context);
+                    return true;
+                }
+                catch (LythonRuntimeException ex) when (ex.ExceptionType is "KeyError" or "IndexError" or "LookupError")
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
             }
 
             if (TryLookupSequenceItem(table, ordinal, out value))

@@ -3455,6 +3455,71 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task StringTranslateMappings()
+    {
+        // str.translate accepts user mappings and defaultdicts through the
+        // mapping protocol like CPython, with LookupError misses and exact
+        // failure texts.
+        var script = new LythonEngine().Compile("""
+            import collections
+            results = []
+            class M:
+                def __getitem__(self, k):
+                    if k == 97:
+                        return "X"
+                    raise KeyError(k)
+            results.append("abc".translate(M()))
+            class T:
+                def __getitem__(self, k):
+                    raise TypeError("nope")
+            try:
+                "abc".translate(T())
+            except TypeError as e:
+                results.append(str(e))
+            class V:
+                def __getitem__(self, k):
+                    return 1.5
+            try:
+                "abc".translate(V())
+            except TypeError as e:
+                results.append(str(e))
+            dd = collections.defaultdict(int, {97: "Z"})
+            results.append("abc".translate(dd))
+            results.append(dd == {97: "Z", 98: 0, 99: 0})
+            class N:
+                __getitem__ = 42
+            try:
+                "abc".translate(N())
+            except TypeError as e:
+                results.append(str(e))
+            class Q:
+                pass
+            try:
+                "abc".translate(Q())
+            except TypeError as e:
+                results.append(str(e))
+            results.append("abc".translate({97: 98}))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "Xbc", "nope", "character mapping must return integer, None or str",
+            "Z\0\0", true,
+            "'int' object is not callable",
+            "'Q' object is not subscriptable",
+            "bbc",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
