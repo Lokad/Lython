@@ -104,9 +104,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         value = name switch
         {
             "__name__" => _nameValue,
-            "__qualname__" => OwnerType is not null
-                ? PyString.FromString(OwnerType.Name + "." + Name)
-                : _nameValue,
+            "__qualname__" => QualName(),
             "__module__" => TryGetModuleName(out var moduleName) ? moduleName : PyNone.Instance,
             _ => PyNone.Instance,
         };
@@ -116,6 +114,21 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // The defining module is resolved per read by walking the closure frame
     // chain to its module root and aliasing that frame.__name__ string, so
     // reads cost no retained storage and alias stably like CPython.
+    // __qualname__ prefers the defining class (first-wins owner) and otherwise
+    // prefixes the enclosing function path. A class scope between a function
+    // scope and the definition stays invisible, so that segment is missing.
+    private PyString QualName()
+    {
+        if (OwnerType is { } owner)
+        {
+            return PyString.FromString(owner.Name + "." + Name);
+        }
+
+        return PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
+            ? PyString.FromString(path + ".<locals>." + Name)
+            : _nameValue;
+    }
+
     internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
         => TryGetModuleName(_closure, out moduleName);
 

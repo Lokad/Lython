@@ -143,6 +143,11 @@ internal sealed partial class LythonRuntime
 
         public ExecutionContext? ParentContext { get; }
 
+        // Names the invoked function for nested-qualname resolution; null outside
+        // function invocations (modules, class bodies and other plain scopes
+        // contribute no segment). Set once per invocation frame.
+        public string? FunctionName { get; internal set; }
+
         public ExecutionContext FunctionClosureContext { get; }
 
         internal ScopeDirectiveFacts ScopeFacts { get; }

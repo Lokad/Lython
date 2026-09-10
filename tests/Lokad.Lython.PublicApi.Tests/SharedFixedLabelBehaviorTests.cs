@@ -386,4 +386,38 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task NestedQualnames()
+    {
+        var script = new LythonEngine().Compile("""
+            def o():
+                def i():
+                    pass
+                return i
+            class C:
+                class D:
+                    def m(self):
+                        pass
+            def outer():
+                return lambda: 1
+            l = lambda: 0
+            f = o()
+            return [f.__qualname__, C.D().m.__qualname__, l.__qualname__,
+                outer().__qualname__, l.__name__, l.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "o.<locals>.i", "D.m", "<lambda>", "outer.<locals>.<lambda>",
+            "<lambda>", "__main__",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

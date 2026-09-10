@@ -196,7 +196,7 @@ internal sealed partial class LythonRuntime
         return defaults;
     }
 
-    private sealed class LambdaFunction : ICallable
+    private sealed class LambdaFunction : ICallable, IPyDynamicAttributes
     {
         private readonly LoweredExpression _body;
         private readonly FunctionBindingPlan _bindingPlan;
@@ -207,6 +207,34 @@ internal sealed partial class LythonRuntime
             _body = body;
             _closure = closure;
             _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues);
+        }
+
+        // Lambdas report CPython-style names from their binding plan and defining
+        // scope: <lambda>, the nested qualname and the defining module.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__name__")
+            {
+                value = PyString.FromString("<lambda>");
+                return true;
+            }
+
+            if (name == "__qualname__")
+            {
+                value = PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
+                    ? PyString.FromString(path + ".<locals>.<lambda>")
+                    : PyString.FromString("<lambda>");
+                return true;
+            }
+
+            if (name == "__module__" && PyFunctionBase.TryGetModuleName(_closure, out var moduleName))
+            {
+                value = moduleName;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

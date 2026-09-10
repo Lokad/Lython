@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
         Ge,
     }
 
-    private sealed class TotalOrderingMethod : IPyBindableCallable, INamedRuntimeCallable, IPyMethodModule, IPyDynamicAttributes
+    private sealed class TotalOrderingMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         // Generated ordering methods live in functools like their CPython
         // counterparts, which functools.total_ordering synthesizes.

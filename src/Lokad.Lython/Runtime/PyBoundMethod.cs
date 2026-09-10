@@ -3,12 +3,6 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-/// <summary>Exposes a fixed __module__ label for generated method objects.</summary>
-internal interface IPyMethodModule
-{
-    PyString? ModuleName { get; }
-}
-
 internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
 {
     private readonly object _self;
@@ -26,39 +20,25 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         };
     }
 
-    // Bound methods expose the wrapped __self__/__func__ plus
-    // function.__name__/__module__ like CPython bound methods; engine method
-    // objects without names stay missing, matching method-wrapper surface
-    // (no __module__ there).
+    // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__
+    // like CPython (including user-assigned overrides), alongside the bound
+    // __self__/__func__ pair; engine objects without member handling stay
+    // missing, matching method-wrapper surface (no __module__ there).
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        // __qualname__ prefixes the defining class like CPython (subclasses keep
-        // the defining owner since BindOwner is first-wins); otherwise it falls
-        // back to the plain name.
-        if (name == "__qualname__" &&
-            _function is PyFunctionBase qualified &&
-            qualified.OwnerType is { } owner)
+        if (name is "__name__" or "__qualname__" or "__module__" &&
+            _function is IPyDynamicAttributes attributes &&
+            attributes.TryGetMember(name, out value))
         {
-            value = PyString.FromString(owner.Name + "." + qualified.Name);
             return true;
         }
 
-        if (name is "__name__" or "__qualname__")
+        // Engine slot-method objects carry names but no member handling; keep
+        // reporting them like before.
+        if (name is "__name__" or "__qualname__" &&
+            _function is INamedRuntimeCallable named)
         {
-            var functionName = _function switch
-            {
-                PyFunctionBase function => function.Name,
-                INamedRuntimeCallable named => named.Name,
-                _ => null,
-            };
-
-            if (functionName is null)
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            value = PyString.FromString(functionName);
+            value = PyString.FromString(named.Name);
             return true;
         }
 
@@ -72,25 +52,6 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         {
             value = _function;
             return true;
-        }
-
-        if (name == "__module__")
-        {
-            if (_function is PyFunctionBase function &&
-                function.TryGetModuleName(out var moduleName))
-            {
-                value = moduleName;
-                return true;
-            }
-
-            if (_function is IPyMethodModule generated && generated.ModuleName is not null)
-            {
-                value = generated.ModuleName;
-                return true;
-            }
-
-            value = PyNone.Instance;
-            return false;
         }
 
         value = PyNone.Instance;
