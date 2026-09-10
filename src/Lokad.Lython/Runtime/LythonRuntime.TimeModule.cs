@@ -163,6 +163,11 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
+        // Fixed engine vocabulary: share both labels forever like the
+        // built-in origin instead of charging a fresh copy per call.
+        private static readonly PyString UtcClockImplementation = PyString.FromString("Lython host UTC wall clock");
+        private static readonly PyString MonotonicClockImplementation = PyString.FromString("Lython host monotonic clock");
+
         private static object GetClockInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (!PyStringOps.TryAsString(arguments[0], out var nameValue))
@@ -171,24 +176,41 @@ internal sealed partial class LythonRuntime
             }
 
             var name = nameValue.AsString();
-            return name switch
+            bool adjustable;
+            PyString implementation;
+            bool monotonic;
+            double resolution;
+            switch (name)
             {
-                "time" => new TimeClockInfoValue(
-                    adjustable: true,
-                    implementation: "Lython host UTC wall clock",
-                    monotonic: false,
-                    resolution: 1d / TimeSpan.TicksPerSecond),
-                "monotonic" or "perf_counter" => new TimeClockInfoValue(
-                    adjustable: false,
-                    implementation: "Lython host monotonic clock",
-                    monotonic: true,
-                    resolution: context.ReadHostMonotonicResolutionNanoseconds(span) / 1_000_000_000d),
-                "process_time" or "thread_time" => throw new LythonRuntimeException(
-                    "NotImplementedError",
-                    $"time.get_clock_info('{name}') is unsupported because Lython has no host {name.Replace('_', ' ')} capability.",
-                    span),
-                _ => throw new LythonRuntimeException("ValueError", $"unknown clock: {name}", span),
-            };
+                case "time":
+                    adjustable = true;
+                    implementation = UtcClockImplementation;
+                    monotonic = false;
+                    resolution = 1d / TimeSpan.TicksPerSecond;
+                    break;
+                case "monotonic":
+                case "perf_counter":
+                    adjustable = false;
+                    implementation = MonotonicClockImplementation;
+                    monotonic = true;
+                    resolution = context.ReadHostMonotonicResolutionNanoseconds(span) / 1_000_000_000d;
+                    break;
+                case "process_time":
+                case "thread_time":
+                    throw new LythonRuntimeException(
+                        "NotImplementedError",
+                        $"time.get_clock_info('{name}') is unsupported because Lython has no host {name.Replace('_', ' ')} capability.",
+                        span);
+                default:
+                    throw new LythonRuntimeException("ValueError", $"unknown clock: {name}", span);
+            }
+
+            // Clock-info objects retain a small fixed payload beside the shared
+            // implementation labels below; charge one table slot per fresh value
+            // once the clock name has validated.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new TimeClockInfoValue(adjustable, implementation, monotonic, resolution);
         }
 
         private static TimeSpan ReadSleepDuration(object value, LythonSourceSpan span)

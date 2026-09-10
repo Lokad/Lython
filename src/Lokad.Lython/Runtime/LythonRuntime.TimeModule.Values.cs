@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
 {
     private sealed class TimeClockInfoValue(
         bool adjustable,
-        string implementation,
+        PyString implementation,
         bool monotonic,
         double resolution) : IPyDynamicAttributes, IPyRenderableValue
     {
@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "adjustable" => adjustable,
-                "implementation" => PyString.FromString(implementation),
+                "implementation" => implementation,
                 "monotonic" => monotonic,
                 "resolution" => resolution,
                 _ => MissingMemberValue.Instance,
@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                     => PyString.FromString(
                         "namespace(" +
                         $"adjustable={PyRendering.ToPythonString(adjustable, context)}, " +
-                        $"implementation={PyRendering.ToPythonString(PyString.FromString(implementation), context)}, " +
+                        $"implementation={PyRendering.ToPythonString(implementation, context)}, " +
                         $"monotonic={PyRendering.ToPythonString(monotonic, context)}, " +
                         $"resolution={PyRendering.ToPythonString(resolution, context)})");
 
