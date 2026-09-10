@@ -206,7 +206,7 @@ internal sealed partial class LythonRuntime
             {
                 if (argument.IsKeyword)
                 {
-                    dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
+                    dict.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
                 }
             }
 

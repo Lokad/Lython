@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in keywordItems)
         {
-            result.SetItem(PyString.FromString(pair.Key), RuntimeValue(pair.Value));
+            result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), RuntimeValue(pair.Value));
             context.ObserveCollectionCount(result.Count, span);
         }
 
@@ -478,7 +478,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in keywordItems)
         {
-            dict.SetItem(PyString.FromString(pair.Key), RuntimeValue(pair.Value));
+            dict.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), RuntimeValue(pair.Value));
             context.ObserveCollectionCount(dict.Count, span);
         }
 
@@ -618,7 +618,7 @@ internal sealed partial class LythonRuntime
         foreach (var pair in keywordItems)
         {
             var delta = ExpectCounterCount(pair.Value, span);
-            counter.Increment(PyString.FromString(pair.Key), subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+            counter.Increment(PyString.FromString(pair.Key, context.MemoryGovernor, span), subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }
