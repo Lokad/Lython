@@ -107,20 +107,21 @@ internal static class PyEquality
 
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
-            if (leftDict.Count != rightDict.Count)
-            {
-                return false;
-            }
+            return DictContentEqual(
+                leftDict.Count,
+                leftDict,
+                rightDict.Count,
+                key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
 
-            foreach (var pair in leftDict)
-            {
-                if (!rightDict.TryGetValue(pair.Key, out var other) || !AreEqual(pair.Value, other))
-                {
-                    return false;
-                }
-            }
+        if (left is PyDefaultDict leftDefaultDict)
+        {
+            return DefaultDictContentEquals(leftDefaultDict, right);
+        }
 
-            return true;
+        if (right is PyDefaultDict rightDefaultDict)
+        {
+            return DefaultDictContentEquals(rightDefaultDict, left);
         }
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
@@ -237,6 +238,52 @@ internal static class PyEquality
             leftCallable.BoundName is not null &&
             string.Equals(leftCallable.BoundName, rightCallable.BoundName, StringComparison.Ordinal) &&
             ReferenceEquals(leftCallable.BoundReceiver, rightCallable.BoundReceiver);
+    }
+
+    private static bool DictContentEqual(
+        int leftCount,
+        IEnumerable<KeyValuePair<object, object>> leftPairs,
+        int rightCount,
+        Func<object, (bool Found, object? Value)> rightLookup)
+    {
+        if (leftCount != rightCount)
+        {
+            return false;
+        }
+
+        foreach (var pair in leftPairs)
+        {
+            var (found, other) = rightLookup(pair.Key);
+            if (!found || !AreEqual(pair.Value, other))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool DefaultDictContentEquals(PyDefaultDict candidate, object other)
+    {
+        if (other is PyDict plain)
+        {
+            return DictContentEqual(
+                candidate.Count,
+                candidate.Items,
+                plain.Count,
+                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
+
+        if (other is PyDefaultDict fellow)
+        {
+            return DictContentEqual(
+                candidate.Count,
+                candidate.Items,
+                fellow.Count,
+                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
+
+        return false;
     }
 
     private static bool BuiltinTypeMethodsEqual(object left, object right)

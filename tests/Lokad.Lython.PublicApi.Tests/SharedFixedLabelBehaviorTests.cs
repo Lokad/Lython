@@ -3346,6 +3346,47 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task DefaultDictDictInterop()
+    {
+        // defaultdict compares and constructs by mapping content like
+        // CPython (the factory never participates in either).
+        var script = new LythonEngine().Compile("""
+            import collections
+            results = []
+            d = collections.defaultdict(int)
+            d["a"] = 1
+            results.append(d == {"a": 1})
+            results.append({"a": 1} == d)
+            results.append(d == collections.defaultdict(int, {"a": 1}))
+            results.append(d == collections.defaultdict(str, {"a": 1}))
+            results.append(d == {"a": 2})
+            results.append(d == {})
+            results.append(d == [("a", 1)])
+            results.append(d == 1)
+            results.append(d != {"a": 2})
+            results.append(d != {"a": 1})
+            results.append(dict(d) == {"a": 1})
+            results.append(dict(d, b=2) == {"a": 1, "b": 2})
+            results.append(dict(collections.defaultdict(int)) == {})
+            results.append(d == d)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, false, false, false, false, true, false,
+            true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

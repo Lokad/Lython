@@ -380,6 +380,16 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (source is PyDefaultDict defaultdict)
+        {
+            foreach (var pair in defaultdict.Items)
+            {
+                target.SetItem(pair.Key, pair.Value);
+            }
+
+            return;
+        }
+
         foreach (var pair in ToSequence(source, span, context))
         {
             using var enumerator = ToSequence(pair, span, context).GetEnumerator();
