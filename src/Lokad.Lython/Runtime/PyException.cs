@@ -21,4 +21,7 @@ internal sealed record PyException(
     // Explicit raise causes ride alongside the value; handlers rewrap
     // through the thrown CLR exception, which carries the same slot.
     public PyException? Cause { get; init; }
+
+    // Notes accumulate through add_note and back the __notes__ list.
+    public PyList? Notes { get; set; }
 }

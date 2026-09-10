@@ -55,6 +55,11 @@ internal sealed partial class LythonRuntime
                 "type" => PyString.FromString(exception.TypeName),
                 "message" => PyString.FromString(exception.Message),
                 "args" => CreateExceptionArgs(exception),
+                "__notes__" => (object?)exception.Notes ?? MissingMemberValue.Instance,
+                "add_note" => BoundCallable.Create(
+                    (arguments, span, context) => AddExceptionNote(exception, arguments, span, context),
+                    "add_note",
+                    ["note"]),
                 "__cause__" => (object?)exception.Cause ?? PyNone.Instance,
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
                 _ => MissingMemberValue.Instance,
@@ -104,6 +109,26 @@ internal sealed partial class LythonRuntime
 
             value = PyNone.Instance;
             return false;
+        }
+
+        // Notes charge like ordinary list growth: the list is governed
+        // from creation and every note observes the retained count.
+        private static object AddExceptionNote(PyException exception, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "add_note(note) expects one argument.", span);
+            }
+
+            if (!PyStringOps.TryAsString(arguments[0], out var note))
+            {
+                throw new LythonRuntimeException("TypeError", "add_note(note) expects one string argument.", span);
+            }
+
+            exception.Notes ??= new PyList([], context.MemoryGovernor, span);
+            exception.Notes.Add(note);
+            context.ObserveCollectionCount(exception.Notes.Count, span);
+            return PyNone.Instance;
         }
 
         private static PyTuple CreateExceptionArgs(PyException exception)

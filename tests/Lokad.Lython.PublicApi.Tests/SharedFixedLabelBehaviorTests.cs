@@ -1299,6 +1299,47 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ExceptionNotes()
+    {
+        // add_note accumulates governed notes like CPython while
+        // __notes__ stays missing until the first note; writes stay
+        // unsupported like every other exception attribute.
+        var script = new LythonEngine().Compile("""
+            e = ValueError("v")
+            results = []
+            results.append(hasattr(e, "__notes__"))
+            e.add_note("n1")
+            e.add_note("n2")
+            results.append(len(e.__notes__) == 2)
+            results.append(e.__notes__[0] == "n1")
+            results.append(e.__notes__ is e.__notes__)
+            try:
+                e.add_note(42)
+            except TypeError:
+                results.append("note-type")
+            e2 = ValueError("w")
+            results.append(hasattr(e2, "__notes__"))
+            try:
+                e.__notes__ = ["x"]
+            except TypeError:
+                results.append("read-only")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            false, true, true, true, "note-type", false, "read-only",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
