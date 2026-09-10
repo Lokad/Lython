@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
                 ? ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context)
                 : records.ParsedRows.Count == 0
                     ? null
-                    : ToFieldNameList((PyList)records.ParsedRows[0], span);
+                    : ToFieldNameList((PyList)records.ParsedRows[0], span, context);
 
             // Rows parse on demand and dictionaries convert on demand, so early
             // termination never pays for unconsumed rows or dictionaries.
@@ -266,7 +266,12 @@ internal sealed partial class LythonRuntime
 
         private static PyString[] ToCsvFieldNames(object value, string message, LythonSourceSpan span, ExecutionContext context)
         {
+            // The drain list doubles geometrically beside the retained array, so
+            // the drain rides a transient reservation while the final array commits
+            // at the slot rate; names themselves stay aliased to existing owners.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var names = new List<PyString>();
+            var chargedCapacity = 0;
             foreach (var item in ToSequence(value, span, context))
             {
                 if (!PyStringOps.TryAsString(item, out var name))
@@ -274,14 +279,33 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", message, span);
                 }
 
+                if (names.Count == names.Capacity)
+                {
+                    var predicted = names.Capacity == 0 ? 4L : (long)names.Capacity * 2L;
+                    scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
+                }
+
                 names.Add(name);
+                if (names.Capacity > chargedCapacity)
+                {
+                    scratch.Grow(checked(16L * (names.Capacity - chargedCapacity)), span);
+                    chargedCapacity = names.Capacity;
+                }
             }
 
-            return [.. names];
+            var result = names.ToArray();
+            var owned = checked(32L + 16L * result.Length);
+            context.MemoryGovernor.Reserve(owned, span);
+            context.MemoryGovernor.Commit(owned);
+            return result;
         }
 
-        private static PyString[] ToFieldNameList(PyList row, LythonSourceSpan span)
+        private static PyString[] ToFieldNameList(PyList row, LythonSourceSpan span, ExecutionContext context)
         {
+            // The header array is retained by the reader; names stay aliased.
+            var owned = checked(32L + 16L * row.Count);
+            context.MemoryGovernor.Reserve(owned, span);
+            context.MemoryGovernor.Commit(owned);
             var names = new PyString[row.Count];
             for (var i = 0; i < row.Count; i++)
             {
