@@ -14,14 +14,13 @@ internal sealed partial class LythonRuntime
     {
         private object FormatUsage(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             RequireNoArguments(arguments, "argparse.ArgumentParser.format_usage", span);
-            return FormatUsageText();
+            return AdoptHelpText(FormatUsageText(), context, span);
         }
         private object FormatHelp(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             RequireNoArguments(arguments, "argparse.ArgumentParser.format_help", span);
-            return FormatHelpText(context);
+            return AdoptHelpText(FormatHelpText(context), context, span);
         }
         private object PrintUsage(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -91,6 +90,13 @@ internal sealed partial class LythonRuntime
             _ = context;
             throw new LythonRuntimeException("NotImplementedError", "argparse.ArgumentParser.add_subparsers(...) is not supported by Lython.", span);
         }
+        // Help renders build fresh text on every call; adopt the escaping
+        // results into the caller governor like converted scalar renders.
+        // Print paths keep the transient form since output capture governs
+        // downstream.
+        private static PyString AdoptHelpText(PyString text, ExecutionContext context, LythonSourceSpan span)
+            => PyString.FromString(text.AsString(), context.MemoryGovernor, span);
+
         private PyString FormatUsageText()
         {
             var usage = _options.Usage;
