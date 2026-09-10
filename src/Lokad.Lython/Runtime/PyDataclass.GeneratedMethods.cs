@@ -16,8 +16,26 @@ internal static partial class PyDataclass
     private static readonly IReadOnlyDictionary<string, object> EmptyDefaultValues =
         new Dictionary<string, object>(StringComparer.Ordinal);
 
-    private sealed class DataclassInitMethod : IPyBindableCallable
+    private sealed class DataclassInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__init__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly IReadOnlyList<DataclassFieldSpec> _fields;
         private readonly string _typeName;
@@ -144,8 +162,26 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassReprMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
+    private sealed class DataclassReprMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__repr__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -180,8 +216,26 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable
+    private sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__eq__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         private readonly FunctionBindingPlan _bindingPlan =
             new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
 
@@ -225,8 +279,33 @@ internal static partial class PyDataclass
         GreaterEqual
     }
 
-    private sealed class DataclassOrderMethod : IPyBindableCallable
+    private sealed class DataclassOrderMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => _operation switch
+        {
+            DataclassOrderOperation.Less => "__lt__",
+            DataclassOrderOperation.LessEqual => "__le__",
+            DataclassOrderOperation.Greater => "__gt__",
+            DataclassOrderOperation.GreaterEqual => "__ge__",
+            _ => throw new InvalidOperationException("Unsupported dataclass order operation."),
+        };
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly DataclassOrderOperation _operation;
         private readonly string _typeName;
@@ -276,8 +355,26 @@ internal static partial class PyDataclass
 
     }
 
-    private sealed class DataclassHashMethod(string typeName) : IPyBindableCallable
+    private sealed class DataclassHashMethod(string typeName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__hash__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -295,8 +392,26 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassFrozenSetAttrMethod(string typeName) : IPyBindableCallable
+    private sealed class DataclassFrozenSetAttrMethod(string typeName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__setattr__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
@@ -310,8 +425,26 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassFrozenDelAttrMethod(string typeName) : IPyBindableCallable
+    private sealed class DataclassFrozenDelAttrMethod(string typeName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public string Name => "__delattr__";
+
+        // Generated dunder methods expose __name__ like their CPython
+        // counterparts; __module__ stays missing (the defining module is
+        // not threaded into generated-method objects).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)

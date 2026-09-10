@@ -188,8 +188,22 @@ internal sealed partial class LythonRuntime
         return new PyClassMethod(callable);
     }
 
-    private sealed class ObjectNewMethod : ICallable
+    private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes
     {
+        // object.__new__ is a slot wrapper: CPython exposes __name__ but no
+        // __module__ there, matching method-wrapper surface.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString("__new__");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
@@ -203,8 +217,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitMethod : IPyBindableCallable
+    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => "__init__";
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -222,8 +238,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitSubclassMethod : IPyBindableCallable
+    private sealed class ObjectInitSubclassMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => "__init_subclass__";
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -246,8 +264,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectSetAttrMethod : IPyBindableCallable
+    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => "__setattr__";
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -277,8 +297,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectDelAttrMethod : IPyBindableCallable
+    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => "__delattr__";
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -311,8 +333,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectGetAttrMethod : IPyBindableCallable
+    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => "__getattribute__";
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)

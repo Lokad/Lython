@@ -66,8 +66,17 @@ internal sealed partial class LythonRuntime
         Ge,
     }
 
-    private sealed class TotalOrderingMethod : IPyBindableCallable
+    private sealed class TotalOrderingMethod : IPyBindableCallable, INamedRuntimeCallable
     {
+        public string Name => _generatedMethod switch
+        {
+            OrderingMethod.Lt => "__lt__",
+            OrderingMethod.Le => "__le__",
+            OrderingMethod.Gt => "__gt__",
+            OrderingMethod.Ge => "__ge__",
+            _ => throw new InvalidOperationException("Unsupported ordering method."),
+        };
+
         private readonly OrderingMethod _rootMethod;
         private readonly OrderingMethod _generatedMethod;
 
