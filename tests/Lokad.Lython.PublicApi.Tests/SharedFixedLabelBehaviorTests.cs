@@ -1094,6 +1094,50 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task HandlerAndCaseBindingsReadInFunctionScope()
+    {
+        // Except-as and match-case bindings read like CPython inside their
+        // own bodies when the reader sits in a function scope.
+        var script = new LythonEngine().Compile("""
+            results = []
+            def read_except():
+                try:
+                    raise ValueError("boom")
+                except ValueError as e:
+                    return str(e)
+                return "unreached"
+            results.append(read_except())
+            def read_case(subject):
+                match subject:
+                    case {"value": captured} if captured > 10:
+                        return captured
+                    case [first, *rest]:
+                        return rest
+                    case _:
+                        return "none"
+            results.append(read_case({"value": 42}))
+            results.append(read_case([1, 2, 3]))
+            results.append(read_case(0))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "boom",
+            new BigInteger(42),
+            new List<object?> { new BigInteger(2), new BigInteger(3) },
+            "none",
+        };
+        var syncBindings = script.Run(new MockLythonHost());
+        Assert.True(syncBindings.Success, syncBindings.Failure?.Message);
+        Assert.Equal(expected, syncBindings.ReturnValue);
+
+        var asyncBindings = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncBindings.Success, asyncBindings.Failure?.Message);
+        Assert.Equal(expected, asyncBindings.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

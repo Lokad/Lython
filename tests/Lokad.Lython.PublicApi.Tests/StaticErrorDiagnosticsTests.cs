@@ -2144,6 +2144,28 @@ def bad_pattern(subject):
     }
 
     [Fact]
+    public void HandlerAndCaseBindings_AreAssignedWithinTheirBodies()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+def read_except():
+    try:
+        pass
+    except Exception as error:
+        return error
+
+def read_case(subject):
+    match subject:
+        case {"value": captured} if captured > 0:
+            return captured
+        case _:
+            return None
+""");
+
+        Assert.True(compiled.IsValid);
+    }
+
+    [Fact]
     public void FunctionLocalMaybeAssignedBranches_RemainAccepted()
     {
         var compiled = new LythonEngine().Compile(

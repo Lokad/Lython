@@ -75,6 +75,14 @@ internal static class StaticNameBindingDiagnostics
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
+            if (statement is MatchStatementSyntax matchGuardOwner &&
+                IsMatchCaseGuard(matchGuardOwner, expression))
+            {
+                // Case guards run after their own pattern binds, so they are
+                // analyzed per case below with the pattern names in scope.
+                continue;
+            }
+
             AnalyzeExpression(expression, context, localNames, maybeAssigned);
         }
 
@@ -183,6 +191,12 @@ internal static class StaticNameBindingDiagnostics
                     foreach (var matchCase in matchStatement.Cases)
                     {
                         var caseAssigned = Clone(maybeAssigned);
+                        ScopeDirectiveFactsCollector.CollectPatternBindings(matchCase.Pattern, caseAssigned);
+                        if (matchCase.Guard is not null)
+                        {
+                            AnalyzeExpression(matchCase.Guard, context, localNames, caseAssigned);
+                        }
+
                         AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
                         unionAssigned.UnionWith(caseAssigned);
                     }
@@ -215,7 +229,20 @@ internal static class StaticNameBindingDiagnostics
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptAssigned = Clone(maybeAssigned);
+                        if (exceptClause.ExceptionVariableName is not null)
+                        {
+                            exceptAssigned.Add(exceptClause.ExceptionVariableName);
+                        }
+
                         AnalyzeStatements(exceptClause.Body, context, localNames, exceptAssigned);
+                        if (exceptClause.ExceptionVariableName is not null &&
+                            !maybeAssigned.Contains(exceptClause.ExceptionVariableName))
+                        {
+                            // The handler variable is deleted when the handler
+                            // exits like CPython, so it must not leak outward.
+                            exceptAssigned.Remove(exceptClause.ExceptionVariableName);
+                        }
+
                         maybeAssigned.UnionWith(exceptAssigned);
                     }
                     if (tryStatement.ElseBody is not null)
@@ -347,6 +374,19 @@ internal static class StaticNameBindingDiagnostics
                 StringComparer.Ordinal);
             AnalyzeExpression(lambda.Body, context, localNames, maybeAssigned);
         }
+    }
+
+    private static bool IsMatchCaseGuard(MatchStatementSyntax matchStatement, ExpressionSyntax expression)
+    {
+        foreach (var matchCase in matchStatement.Cases)
+        {
+            if (matchCase.Guard is not null && ReferenceEquals(matchCase.Guard, expression))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void AddLoopTarget(LoopTargetSyntax target, HashSet<string> maybeAssigned)

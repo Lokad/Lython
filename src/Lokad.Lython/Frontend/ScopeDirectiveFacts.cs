@@ -244,7 +244,7 @@ internal static class ScopeDirectiveFactsCollector
         }
     }
 
-    private static void CollectPatternBindings(PatternSyntax pattern, HashSet<string> names)
+    internal static void CollectPatternBindings(PatternSyntax pattern, HashSet<string> names)
     {
         switch (pattern)
         {
