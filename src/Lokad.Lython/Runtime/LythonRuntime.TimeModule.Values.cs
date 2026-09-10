@@ -47,6 +47,8 @@ internal sealed partial class LythonRuntime
 
         public string Name => "time.struct_time";
 
+        internal TypeNewMethod? NewSlot { get; set; }
+
         // The struct_time name is fixed on the global singleton, so reads alias
         // stably like CPython instead of rebuilding per read.
         private readonly PyString _nameValue = PyString.FromString("struct_time");
@@ -80,6 +82,11 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "__new__" && LythonRuntime.TryGetTypeNewSlot(this, out value))
+            {
+                return true;
+            }
+
             value = name switch
             {
                 "__name__" => _nameValue,

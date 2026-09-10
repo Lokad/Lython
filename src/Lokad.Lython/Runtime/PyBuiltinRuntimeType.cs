@@ -81,6 +81,28 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
             return true;
         }
 
+        // Opaque types without their own slot share object.__new__ like
+        // CPython pure-Python classes (the choke serves the owning ones).
+        if (memberName == "__new__")
+        {
+            if (TryGetMember(memberName, out value))
+            {
+                return true;
+            }
+
+            if (!context.TryGetBuiltin("object", out var objectBase) ||
+                objectBase is not PyType objectType ||
+                !objectType.TryLookupInMro(memberName, 0, out var sharedRaw, out _) ||
+                sharedRaw is not IPyDescriptor sharedDescriptor)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = sharedDescriptor.Get(null, objectType, context, span);
+            return true;
+        }
+
         return TryGetMember(memberName, out value);
     }
 

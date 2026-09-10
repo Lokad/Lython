@@ -202,7 +202,8 @@ internal static class PyAttributeLookup
                 ReferenceEquals(classValue, PyType.MethodWrapperType) ||
                 ReferenceEquals(classValue, PyType.WrapperDescriptorType) ||
                 ReferenceEquals(classValue, PyType.RegexPatternType) ||
-                ReferenceEquals(classValue, PyType.RegexMatchType))
+                ReferenceEquals(classValue, PyType.RegexMatchType) ||
+                ReferenceEquals(classValue, LythonRuntime.StatisticsModule.NormalDistType))
             {
                 if (!context.TryGetBuiltin("object", out var sharedBase) ||
                     sharedBase is not PyType sharedType ||

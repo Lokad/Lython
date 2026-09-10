@@ -734,6 +734,44 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task OpaqueNewSlots()
+    {
+        // Random, struct_time and tzinfo own their __new__ slot while
+        // pure-Python-shaped opaques share object.__new__, like CPython.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import random
+            import statistics
+            import time
+            r = random.Random()
+            t = time.struct_time((2024, 1, 1, 0, 0, 0, 0, 1, -1))
+            n = statistics.NormalDist(0, 1)
+            return [random.Random.__new__.__qualname__,
+                r.__new__ is random.Random.__new__,
+                (r.__new__).__self__ is random.Random,
+                t.__new__ is time.struct_time.__new__,
+                (t.__new__).__qualname__,
+                datetime.tzinfo.__new__.__qualname__,
+                statistics.NormalDist.__new__ is object.__new__,
+                n.__new__ is object.__new__,
+                type(n.__new__).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "Random.__new__", true, true, true, "struct_time.__new__",
+            "tzinfo.__new__", true, true, "builtin_function_or_method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

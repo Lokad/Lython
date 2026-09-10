@@ -703,14 +703,16 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // Datetime runtime types own their slot too, qualified by the short
-        // type name like CPython (timedelta.__new__).
+        // Datetime, random and tzinfo runtime types own their slot too,
+        // qualified by the short type name like CPython.
         if (classValue is PyBuiltinRuntimeType datetimeType &&
             (ReferenceEquals(datetimeType, PyDateTimeOps.TimedeltaType) ||
              ReferenceEquals(datetimeType, PyDateTimeOps.DateType) ||
              ReferenceEquals(datetimeType, PyDateTimeOps.TimeType) ||
              ReferenceEquals(datetimeType, PyDateTimeOps.DateTimeType) ||
-             ReferenceEquals(datetimeType, PyDateTimeOps.TimezoneType)))
+             ReferenceEquals(datetimeType, PyDateTimeOps.TimezoneType) ||
+             ReferenceEquals(datetimeType, PyDateTimeOps.TzInfoType) ||
+             ReferenceEquals(datetimeType, LythonRuntime.RandomModule.RandomType)))
         {
             _datetimeTypeNewSlots ??= new Dictionary<PyBuiltinRuntimeType, TypeNewMethod>(ReferenceEqualityComparer.Instance);
             if (!_datetimeTypeNewSlots.TryGetValue(datetimeType, out var datetimeSlot))
@@ -720,6 +722,15 @@ internal sealed partial class LythonRuntime
             }
 
             value = datetimeSlot;
+            return true;
+        }
+
+        // struct_time owns its slot through its dedicated singleton, like
+        // the builtin constructors above.
+        if (classValue is TimeStructTimeType structTimeType)
+        {
+            structTimeType.NewSlot ??= new TypeNewMethod(structTimeType, BuiltinCallable.ShortCallableName(structTimeType.Name));
+            value = structTimeType.NewSlot;
             return true;
         }
 
