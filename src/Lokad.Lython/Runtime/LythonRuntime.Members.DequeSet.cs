@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
                     var candidate = ValidateSetItem(arguments[0], span, context.MemoryGovernor);
                     if (!set.Remove(candidate))
                     {
-                        throw new LythonRuntimeException("KeyError", "set item was not found.", span);
+                        throw new LythonRuntimeException("KeyError", "set item was not found.", span, null, arguments[0]);
                     }
 
                     return PyNone.Instance;
@@ -240,11 +240,16 @@ internal sealed partial class LythonRuntime
                     receiver.Clear();
                     return PyNone.Instance;
                 }),
-                "pop" => BoundCallable.CreateNoArguments(set, "set.pop", static (receiver, span, _) =>
+                "pop" => BoundCallable.CreateNoArguments(set, "set.pop", static (receiver, span, context) =>
                 {
                     if (!receiver.TryPop(out var item))
                     {
-                        throw new LythonRuntimeException("KeyError", "pop from an empty set", span);
+                        throw new LythonRuntimeException(
+                            "KeyError",
+                            "pop from an empty set",
+                            span,
+                            null,
+                            PyString.FromString("pop from an empty set", context.MemoryGovernor, span));
                     }
 
                     return item;

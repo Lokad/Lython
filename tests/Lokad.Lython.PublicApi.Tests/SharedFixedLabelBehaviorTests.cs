@@ -1904,6 +1904,44 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task SetMissingElementCarriesKey()
+    {
+        // Set misses carry their element like CPython, so str renders the
+        // key through repr and args holds it; the pop message keeps its
+        // text while gaining the argument.
+        var script = new LythonEngine().Compile("""
+            results = []
+            s = {1, 2}
+            try:
+                s.remove(3)
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == (3,))
+            try:
+                set().pop()
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("pop from an empty set",))
+            s.discard(99)
+            results.append(sorted(s))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "3", true, "'pop from an empty set'", true,
+            new List<object?> { new BigInteger(1), new BigInteger(2) },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
