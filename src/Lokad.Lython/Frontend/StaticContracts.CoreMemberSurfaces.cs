@@ -57,6 +57,7 @@ internal static partial class StaticContracts
     {
         "count",
         "decode",
+        "endswith",
         "find",
         "fromhex",
         "hex",
@@ -64,6 +65,7 @@ internal static partial class StaticContracts
         "maketrans",
         "rfind",
         "rindex",
+        "startswith",
         "translate",
     };
 

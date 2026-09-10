@@ -100,6 +100,10 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rindex", 1, 3, "LA3174", "bytes.rindex(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "hex", 0, 2, "LA3173", "bytes.hex([sep[, bytes_per_sep]]) expects zero to two arguments.", parameterNames: ["sep", "bytes_per_sep"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "hex", 0, 2, "LA3173", "bytes.hex([sep[, bytes_per_sep]]) expects zero to two arguments.", parameterNames: ["sep", "bytes_per_sep"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "startswith", 1, 3, "LA3175", "bytes.startswith(prefix[, start[, end]]) expects one to three arguments.", parameterNames: ["prefix", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "startswith", 1, 3, "LA3175", "bytes.startswith(prefix[, start[, end]]) expects one to three arguments.", parameterNames: ["prefix", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
         }
 
         static void AddStringCallableContract(

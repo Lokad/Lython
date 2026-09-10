@@ -42,6 +42,8 @@ internal sealed partial class LythonRuntime
                 "index" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "index", arguments, span, context)) { BoundName = "bytes.index", BoundReceiver = bytes },
                 "rfind" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rfind", arguments, span, context)) { BoundName = "bytes.rfind", BoundReceiver = bytes },
                 "rindex" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rindex", arguments, span, context)) { BoundName = "bytes.rindex", BoundReceiver = bytes },
+                "startswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "startswith", arguments, span, context, isStart: true)) { BoundName = "bytes.startswith", BoundReceiver = bytes },
+                "endswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "endswith", arguments, span, context, isStart: false)) { BoundName = "bytes.endswith", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -523,6 +525,104 @@ internal sealed partial class LythonRuntime
         }
 
         return count;
+    }
+
+    private static object StartsOrEndsWithBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool isStart)
+    {
+        object? prefix = null;
+        object? startArgument = null;
+        object? endArgument = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                prefix = argument.Value;
+            }
+            else if (positionals == 2)
+            {
+                startArgument = argument.Value;
+            }
+            else if (positionals == 3)
+            {
+                endArgument = argument.Value;
+            }
+        }
+
+        if (positionals < 1)
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " expected at least 1 argument, got 0", span);
+        }
+
+        if (positionals > 3)
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " expected at most 3 arguments, got " + positionals, span);
+        }
+
+        var source = value.Bytes;
+        int start;
+        int end;
+        try
+        {
+            start = NormalizeBytesBound(startArgument, source.Length, 0);
+            end = NormalizeBytesBound(endArgument, source.Length, source.Length);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new LythonRuntimeException("TypeError", "slice indices must be integers or None or have an __index__ method", span);
+        }
+
+        var startBeyondLength = startArgument switch
+        {
+            BigInteger integer => integer > source.Length,
+            int integer => integer > source.Length,
+            _ => false,
+        };
+
+        if (prefix is PyBytes prefixBytes)
+        {
+            return !startBeyondLength && (isStart
+                ? StartsWithBytes(source, prefixBytes.Bytes, start, end)
+                : EndsWithBytes(source, prefixBytes.Bytes, start, end));
+        }
+
+        if (prefix is not PyTuple tuple)
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " first arg must be bytes or a tuple of bytes, not " + UnboundTypeMethod.PythonTypeName(prefix, context), span);
+        }
+
+        foreach (var item in tuple)
+        {
+            if (item is not PyBytes itemBytes)
+            {
+                throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(item, context) + "'", span);
+            }
+
+            if (!startBeyondLength && (isStart
+                ? StartsWithBytes(source, itemBytes.Bytes, start, end)
+                : EndsWithBytes(source, itemBytes.Bytes, start, end)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool StartsWithBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prefix, int start, int end)
+    {
+        return end - start >= prefix.Length && source.Slice(start, prefix.Length).SequenceEqual(prefix);
+    }
+
+    private static bool EndsWithBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> suffix, int start, int end)
+    {
+        return end - start >= suffix.Length && source.Slice(end - suffix.Length, suffix.Length).SequenceEqual(suffix);
     }
 
     private sealed class RawBoundCallable(

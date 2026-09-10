@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "count", "decode", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "translate"])
+            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "startswith", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["count", "decode", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "translate"])
+            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "startswith", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4143,6 +4143,83 @@ public sealed class SharedFixedLabelBehaviorTests
             new BigInteger(-1), new BigInteger(0), new BigInteger(-1),
             "subsection not found",
             "subsection not found",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesAffixMembers()
+    {
+        // bytes affixes like CPython: bytes or tuple needles with bounds,
+        // empty-range misses, and the descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"abc".startswith(b"a"))
+            results.append(b"abc".startswith((b"x", b"a")))
+            results.append(b"abc".startswith(()))
+            results.append(b"abc".startswith(b""))
+            results.append(b"abc".endswith(b"c"))
+            results.append(b"abc".endswith((b"c", b"a")))
+            results.append(b"abc".startswith(b"b", 1))
+            results.append(b"abc".startswith(b"b", 1, 2))
+            results.append(b"abc".endswith(b"b", 0, 2))
+            results.append(b"abc".startswith(b"", 5))
+            results.append(b"abc".startswith(b"", 2, 1))
+            results.append(bytes.startswith(b"abc", b"a"))
+            results.append(bytes.endswith(b"abc", b"c"))
+            results.append(type(b"ab".startswith).__name__)
+            results.append(type(bytes.startswith).__name__)
+            results.append(bytes.startswith.__name__)
+            results.append(hasattr(bytes, "endswith"))
+            results.append("startswith" in dir(b"ab"))
+            results.append("endswith" in dir(bytes))
+            h = b"ab"
+            results.append(h.startswith == h.startswith)
+            results.append(bytes.startswith == bytes.startswith)
+            try:
+                b"ab".startswith()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".startswith(b"a", 1, 2, 3)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".startswith(prefix=b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".startswith(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".startswith((1,))
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".startswith(b"a", "x")
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, false, true, true, true, true, true, true, false,
+            false, true, true, "builtin_function_or_method", "method_descriptor",
+            "startswith", true, true, true, true, true,
+            "startswith expected at least 1 argument, got 0",
+            "startswith expected at most 3 arguments, got 4",
+            "bytes.startswith() takes no keyword arguments",
+            "startswith first arg must be bytes or a tuple of bytes, not int",
+            "a bytes-like object is required, not 'int'",
+            "slice indices must be integers or None or have an __index__ method",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
