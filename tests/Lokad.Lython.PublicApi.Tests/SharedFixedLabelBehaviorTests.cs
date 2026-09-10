@@ -2414,6 +2414,55 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BuiltinTypeDirLists()
+    {
+        // dir() on builtin type constructors lists their instance members
+        // plus the construction slot like CPython (other dunders stay out,
+        // matching the instance lists), and every listed name resolves.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
+            results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
+            results.append(dir(bytes) == ["__new__", "decode", "fromhex"])
+            results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "setdefault", "update", "values"])
+            results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
+            results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
+            results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "setdefault", "update", "values"])
+            results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
+            results.append(dir(b"") == ["decode", "fromhex"])
+            for n in dir(list):
+                if not hasattr(list, n):
+                    results.append(n)
+            for n in dir(dict):
+                if not hasattr(dict, n):
+                    results.append(n)
+            for n in dir(str):
+                if not hasattr(str, n):
+                    results.append(n)
+            for n in dir(bytes):
+                if not hasattr(bytes, n):
+                    results.append(n)
+            for n in dir(set):
+                if not hasattr(set, n):
+                    results.append(n)
+            results.append("truthful")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, "truthful",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

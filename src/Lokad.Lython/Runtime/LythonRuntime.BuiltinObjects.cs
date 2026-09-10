@@ -751,8 +751,24 @@ internal sealed partial class LythonRuntime
                 names.AddRange(SetDirNames);
                 return names;
 
+            case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set":
+                names.AddRange(builtin.Name switch
+                {
+                    "list" => ListDirNames,
+                    "str" => StringDirNames,
+                    "bytes" => BytesDirNames,
+                    _ => SetDirNames,
+                });
+                names.Add("__new__");
+                return names;
+
             case BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name):
                 names.AddRange(BuiltinTypeMemberNames);
+                return names;
+
+            case DictCallable:
+                names.AddRange(DictDirNames);
+                names.Add("__new__");
                 return names;
 
             default:
