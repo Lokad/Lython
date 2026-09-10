@@ -1653,6 +1653,36 @@ host, and dependency internals. Approximations must lean toward over-counting,
 so runs fail earlier rather than later, but the runtime must not promise a
 process-RSS ceiling from inside the same managed process.
 
+#### 14.6.2 Compilation and Import Envelope
+
+The execution and projection governors begin at execution. Compilation
+(parse, binding, lowering, and executable construction) runs outside either
+governor, so a host must understand what bounds compilation instead.
+
+Compilation inputs are bounded and host-mediated. A source unit longer than
+`MaxSourceLength` (1,000,000 characters) fails with an explicit diagnostic,
+as do delimiter nesting beyond `MaxSyntaxNesting` (512) and unary-operator
+nesting beyond `MaxUnaryOperatorNesting` (256); string and comment text does
+not count toward nesting. Sources reach the frontend only through host files,
+host options, and allowlisted local imports, never from guest execution, so
+compilation load is host-driven by construction.
+
+Measured 2026-09-10 (thread-allocated bytes around `Compile`, isolated
+processes): cost scales linearly at roughly 5KB per simple statement
+(about 500-2300x transient and 35-300x retained per source byte; 1MB of
+`pass` statements allocates about 538MB transiently and retains about 37MB).
+There is no separate compilation budget: hosts compiling large or numerous
+sources should stay well below the input maximums and reuse compiled scripts
+(`compile once, run many times`).
+
+Per-import retained state during execution is governed: each registered
+module commits its registry slot, exported entries commit per entry at
+construction, and the aggregate registered-module total honors
+`MaxCollectionSize`. Local-module sources compile under the same input limits
+above. A full retained-executable audit remains open work; until it lands,
+hosts should treat the per-source retained multiples above, times the module
+count, as the import envelope.
+
 ---
 
 ## 15. Text Model
