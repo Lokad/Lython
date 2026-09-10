@@ -583,6 +583,7 @@ internal sealed partial class LythonRuntime
             IPyRawBoundCallable => PyType.BuiltinFunctionType,
             BuiltinTypeMethod => PyType.BuiltinFunctionType,
             UnboundTypeMethod => PyType.MethodDescriptorType,
+            TupleGetter => PyType.TupleGetterType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
             PyDataclass.DataclassReprMethod => PyType.FunctionType,
             PyDataclass.DataclassEqMethod => PyType.FunctionType,

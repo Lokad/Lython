@@ -119,6 +119,8 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             : new PyNamedTupleObject(this, materialized, governor, span);
     }
 
+    private Dictionary<string, TupleGetter>? _fieldGetters;
+
     public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         // Tuple sequence members live on the run tuple constructor, so
@@ -128,6 +130,21 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             tupleType is IPyContextualDynamicAttributes tupleAttributes &&
             tupleAttributes.TryGetMember(name, context, span, out value))
         {
+            return true;
+        }
+
+        // Fields resolve to shared per-field descriptors like CPython.
+        var fieldIndex = IndexOfField(name);
+        if (fieldIndex >= 0)
+        {
+            _fieldGetters ??= new Dictionary<string, TupleGetter>(StringComparer.Ordinal);
+            if (!_fieldGetters.TryGetValue(name, out var getter))
+            {
+                getter = new TupleGetter(this, fieldIndex);
+                _fieldGetters[name] = getter;
+            }
+
+            value = getter;
             return true;
         }
 
@@ -227,6 +244,203 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private static class Missing
     {
         public static readonly object Value = new();
+    }
+}
+
+// Namedtuple field descriptors behave like CPython _tuplegetter objects:
+// per-field documentation, method-wrapper __get__/__set__ slots, shared per
+// owner so identity holds, and no value semantics beyond that (notably not
+// callable, and without __name__/__qualname__/__objclass__ like CPython).
+internal sealed class TupleGetter : IPyDynamicAttributes, IPyRenderableValue
+{
+    private readonly object _owner;
+    private readonly int _index;
+
+    internal TupleGetter(object owner, int index)
+    {
+        _owner = owner;
+        _index = index;
+    }
+
+    internal int Index => _index;
+
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        if (name == "__doc__")
+        {
+            value = PyString.FromString("Alias for field number " + _index);
+            return true;
+        }
+
+        if (name == "__module__")
+        {
+            value = LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections");
+            return true;
+        }
+
+        if (name == "__get__")
+        {
+            value = new PyBoundMethod(this, TupleGetterGetMethod.Instance);
+            return true;
+        }
+
+        if (name == "__set__")
+        {
+            value = new PyBoundMethod(this, TupleGetterSetMethod.Instance);
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        _ = context;
+        return PyString.FromString("<_tuplegetter(" + _index + ", 'Alias for field number " + _index + "')>");
+    }
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public override string ToString() => $"<_tuplegetter({_index}, 'Alias for field number {_index}')>";
+}
+
+internal sealed class TupleGetterGetMethod : LythonRuntime.ICallable, IPyDynamicAttributes, IPySlotWrapper
+{
+    internal static readonly TupleGetterGetMethod Instance = new();
+
+    private TupleGetterGetMethod()
+    {
+    }
+
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        if (name == "__name__")
+        {
+            value = PyString.FromString("__get__");
+            return true;
+        }
+
+        if (name == "__qualname__")
+        {
+            value = PyString.FromString("_tuplegetter.__get__");
+            return true;
+        }
+
+        if (name == "__objclass__")
+        {
+            value = PyType.TupleGetterType;
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecutionBudget(span);
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "wrapper __get__() takes no keyword arguments", span);
+            }
+        }
+
+        // arguments[0] is the getter the bound method prepended.
+        var positionals = arguments.Length - 1;
+        if (positionals < 1)
+        {
+            throw new LythonRuntimeException("TypeError", " expected at least 1 argument, got 0", span);
+        }
+
+        if (positionals > 2)
+        {
+            throw new LythonRuntimeException("TypeError", " expected at most 2 arguments, got " + positionals, span);
+        }
+
+        if (arguments[0].Value is not TupleGetter getter)
+        {
+            throw new LythonRuntimeException("TypeError", "__get__(None, None) is invalid", span);
+        }
+
+        var target = arguments[1].Value;
+        if (target is PyNone)
+        {
+            if (positionals == 2 && arguments[2].Value is not PyNone)
+            {
+                return getter;
+            }
+
+            throw new LythonRuntimeException("TypeError", "__get__(None, None) is invalid", span);
+        }
+
+        if (!LythonRuntime.DoesObjectMatchBuiltinType("tuple", target))
+        {
+            throw new LythonRuntimeException("TypeError", "descriptor for index '" + getter.Index + "' for tuple subclasses doesn't apply to a '" + LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context) + "' object", span);
+        }
+
+        return target switch
+        {
+            PyTuple tuple => tuple[getter.Index],
+            PyNamedTupleObject namedTuple => namedTuple.GetItem(getter.Index),
+            PyTypingNamedTupleObject typingTuple => typingTuple.GetItem(getter.Index),
+            LythonRuntime.TimeStructTimeValue structTime => structTime.GetItem(getter.Index),
+            _ => throw new LythonRuntimeException("TypeError", "descriptor for index '" + getter.Index + "' for tuple subclasses doesn't apply to a '" + LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context) + "' object", span),
+        };
+    }
+}
+
+internal sealed class TupleGetterSetMethod : LythonRuntime.ICallable, IPyDynamicAttributes, IPySlotWrapper
+{
+    internal static readonly TupleGetterSetMethod Instance = new();
+
+    private TupleGetterSetMethod()
+    {
+    }
+
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        if (name == "__name__")
+        {
+            value = PyString.FromString("__set__");
+            return true;
+        }
+
+        if (name == "__qualname__")
+        {
+            value = PyString.FromString("_tuplegetter.__set__");
+            return true;
+        }
+
+        if (name == "__objclass__")
+        {
+            value = PyType.TupleGetterType;
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecutionBudget(span);
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "wrapper __set__() takes no keyword arguments", span);
+            }
+        }
+
+        if (arguments.Length - 1 != 2)
+        {
+            throw new LythonRuntimeException("TypeError", " expected 2 arguments, got " + (arguments.Length - 1), span);
+        }
+
+        throw new LythonRuntimeException("AttributeError", "can't set attribute", span);
     }
 }
 

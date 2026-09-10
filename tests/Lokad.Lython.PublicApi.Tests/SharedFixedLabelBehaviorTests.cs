@@ -3152,13 +3152,13 @@ public sealed class SharedFixedLabelBehaviorTests
             P = collections.namedtuple("P", ["x", "y"])
             p = P(1, 2)
             results.append(dir(p) == ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index", "x", "y"])
-            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index"])
+            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"])
             results.append(p._make([3, 4]) == P(3, 4))
             results.append(p._field_defaults == {})
             T = typing.NamedTuple("T", [("x", int), ("y", int)])
             t = T(1, 2)
             results.append(dir(t) == ["_fields", "_replace", "count", "index", "x", "y"])
-            results.append(dir(T) == ["count", "index"])
+            results.append(dir(T) == ["count", "index", "x", "y"])
             for n in dir(p):
                 if not hasattr(p, n):
                     results.append(n)
@@ -3376,6 +3376,74 @@ public sealed class SharedFixedLabelBehaviorTests
         {
             true, true, true, true, false, false, false, false, true, false,
             true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task NamedTupleFieldDescriptors()
+    {
+        // Namedtuple field reads share per-field descriptors like CPython,
+        // with documentation, method-wrapper slots, and dir() coverage.
+        var script = new LythonEngine().Compile("""
+            import collections
+            import typing
+            results = []
+            P = collections.namedtuple("P", ["x", "y"])
+            results.append(str(P.x))
+            results.append(type(P.x).__name__)
+            results.append(P.x.__doc__)
+            results.append(P.x.__module__)
+            results.append(hasattr(P.x, "__name__"))
+            results.append(P.x == P.x)
+            results.append(P.x is P.x)
+            results.append(P.x == P.y)
+            results.append(P.x.__get__(P(1, 2)))
+            results.append(P.x.__get__(None, P) is P.x)
+            results.append(type(P.x.__get__).__name__)
+            results.append(P.x.__get__.__qualname__)
+            results.append(P.x.__get__.__self__ is P.x)
+            results.append(P.x.__set__.__qualname__)
+            try:
+                P.x.__get__(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                P.x.__set__(P(1, 2), 5)
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                P.x.__get__()
+            except TypeError as e:
+                results.append(str(e))
+            results.append(callable(P.x))
+            T = typing.NamedTuple("T", [("x", int)])
+            results.append(str(T.x))
+            results.append(T.x is T.x)
+            results.append(T.x == P.x)
+            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"])
+            results.append(dir(P(1, 2)) == ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index", "x", "y"])
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "<_tuplegetter(0, 'Alias for field number 0')>", "_tuplegetter",
+            "Alias for field number 0", "collections", false, true, true,
+            false, new BigInteger(1), true, "method-wrapper",
+            "_tuplegetter.__get__", true, "_tuplegetter.__set__",
+            "descriptor for index '0' for tuple subclasses doesn't apply to a 'int' object",
+            "can't set attribute",
+            " expected at least 1 argument, got 0",
+            false,
+            "<_tuplegetter(0, 'Alias for field number 0')>", true, false,
+            true, true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

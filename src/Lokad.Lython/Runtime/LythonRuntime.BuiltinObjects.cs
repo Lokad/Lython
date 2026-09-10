@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
             "random.Random";
     }
 
-    private static bool DoesObjectMatchBuiltinType(string typeName, object value)
+    internal static bool DoesObjectMatchBuiltinType(string typeName, object value)
     {
         return typeName switch
         {
@@ -779,11 +779,21 @@ internal sealed partial class LythonRuntime
                 names.AddRange(TypingNamedTupleDirNames);
                 return names;
 
-            case PyNamedTupleType:
+            case PyNamedTupleType namedTupleType:
+                foreach (var field in namedTupleType.FieldNames)
+                {
+                    names.Add(field);
+                }
+
                 names.AddRange(NamedTupleTypeDirNames);
                 return names;
 
             case PyTypingConstructedType constructed when constructed.Kind == PyTypingConstructedKind.NamedTuple:
+                foreach (var field in constructed.FieldNames)
+                {
+                    names.Add(field);
+                }
+
                 names.AddRange(TupleDirNames);
                 return names;
 

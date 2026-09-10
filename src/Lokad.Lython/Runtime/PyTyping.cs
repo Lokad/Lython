@@ -523,6 +523,21 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
 
     public PyTypingConstructedKind Kind { get; }
 
+    internal IReadOnlyList<string> FieldNames => _fieldNames;
+
+    internal int IndexOfField(string name)
+    {
+        for (var i = 0; i < _fieldNames.Count; i++)
+        {
+            if (string.Equals(_fieldNames[i], name, StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
@@ -531,8 +546,28 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
             : CreateNamedTuple(arguments, span, context);
     }
 
+    private Dictionary<string, TupleGetter>? _fieldGetters;
+
     public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        // Fields resolve to shared per-field descriptors like CPython.
+        if (Kind == PyTypingConstructedKind.NamedTuple)
+        {
+            var fieldIndex = IndexOfField(name);
+            if (fieldIndex >= 0)
+            {
+                _fieldGetters ??= new Dictionary<string, TupleGetter>(StringComparer.Ordinal);
+                if (!_fieldGetters.TryGetValue(name, out var getter))
+                {
+                    getter = new TupleGetter(this, fieldIndex);
+                    _fieldGetters[name] = getter;
+                }
+
+                value = getter;
+                return true;
+            }
+        }
+
         // Tuple sequence members live on the run tuple constructor, so
         // reads alias its cached descriptors like CPython.
         if (Kind == PyTypingConstructedKind.NamedTuple &&
