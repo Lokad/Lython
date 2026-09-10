@@ -1869,6 +1869,41 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TypingCallableClassIdentity()
+    {
+        // Typing callables report their defining kind like CPython:
+        // factory functions are functions, while TypeVar/NewType are
+        // types; each aliases the object its class reads resolve to.
+        var script = new LythonEngine().Compile("""
+            import typing
+            results = []
+            results.append(type(typing.NamedTuple) is type(lambda: 0))
+            results.append(typing.NamedTuple.__class__ is type(typing.NamedTuple))
+            results.append(type(typing.TypedDict) is type(lambda: 0))
+            results.append(type(typing.TypeVar) is type)
+            results.append(typing.TypeVar.__class__ is type)
+            results.append(type(typing.NewType) is type)
+            results.append(type(typing.cast) is type(lambda: 0))
+            results.append(type(typing.get_origin) is type(lambda: 0))
+            results.append(type(typing.get_args) is type(lambda: 0))
+            results.append(typing.NamedTuple.__init_subclass__.__self__ is type(typing.NamedTuple))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
