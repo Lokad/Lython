@@ -687,16 +687,20 @@ public sealed class SharedFixedLabelBehaviorTests
     public async Task ValueClassIdentities()
     {
         var script = new LythonEngine().Compile("""
+            class C:
+                pass
             return [[].__class__ is list, {}.__class__ is dict,
                 (1,).__class__ is tuple, {1}.__class__ is set,
                 "s".__class__ is str,
                 (1).__class__ is int, (1.5).__class__ is float,
-                True.__class__ is bool]
+                True.__class__ is bool, None.__class__ is type(None),
+                C.__class__ is type, type(C) is type]
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true,
+            true, true, true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

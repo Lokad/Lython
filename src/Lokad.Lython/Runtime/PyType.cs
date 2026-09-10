@@ -10,6 +10,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     private static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     private static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
+    internal static readonly PyBuiltinRuntimeType NoneType = CreateOpaqueRuntimeType("NoneType");
 
     private readonly Dictionary<string, object> _members;
 
@@ -321,7 +322,8 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         return value switch
         {
             PyInstance instance => instance.Type,
-            PyType type => type.MetaType ?? throw new LythonRuntimeException("TypeError", "Class has no metatype.", span),
+            PyType type => type.MetaType ?? GetBuiltinTypeObject(context, "type", span),
+            PyNone => NoneType,
             bool => GetBuiltinTypeObject(context, "bool", span),
             BigInteger or int => GetBuiltinTypeObject(context, "int", span),
             double => GetBuiltinTypeObject(context, "float", span),

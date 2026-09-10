@@ -486,50 +486,52 @@ internal sealed partial class LythonRuntime
 
     // Core values report their run type object like CPython: plain names resolve
     // through builtins, dotted names through the defining module registry.
+    // Core values report their run type object like CPython (plain names resolve
+    // through builtins, dotted names through the defining module registry).
     internal static bool TryGetValueClass(
         object value,
         ExecutionContext context,
         [MaybeNullWhen(false)] out object classValue)
     {
-        string? typeName = value switch
+        object? resolved = value switch
         {
-            PyList => "list",
-            PyDict => "dict",
-            PyTuple => "tuple",
-            PySet => "set",
-            PyString => "str",
-            string => "str",
-            PyBytes => "bytes",
-            byte[] => "bytes",
-            BigInteger => "int",
-            int => "int",
-            double => "float",
-            bool => "bool",
-            PyDecimal => "decimal.Decimal",
+            PyList => TryGetBuiltinOrNull(context, "list"),
+            PyDict => TryGetBuiltinOrNull(context, "dict"),
+            PyTuple => TryGetBuiltinOrNull(context, "tuple"),
+            PySet => TryGetBuiltinOrNull(context, "set"),
+            PyString => TryGetBuiltinOrNull(context, "str"),
+            string => TryGetBuiltinOrNull(context, "str"),
+            PyBytes => TryGetBuiltinOrNull(context, "bytes"),
+            byte[] => TryGetBuiltinOrNull(context, "bytes"),
+            BigInteger => TryGetBuiltinOrNull(context, "int"),
+            int => TryGetBuiltinOrNull(context, "int"),
+            double => TryGetBuiltinOrNull(context, "float"),
+            bool => TryGetBuiltinOrNull(context, "bool"),
+            PyDecimal => TryGetModuleMemberOrNull(context, "decimal", "Decimal"),
+            PyNone => PyType.NoneType,
+            PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             _ => null,
         };
 
-        if (typeName is null)
+        classValue = resolved;
+        return resolved is not null;
+    }
+
+    private static object? TryGetBuiltinOrNull(ExecutionContext context, string name)
+    {
+        return context.TryGetBuiltin(name, out var value) ? value : null;
+    }
+
+    private static object? TryGetModuleMemberOrNull(ExecutionContext context, string moduleName, string memberName)
+    {
+        if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||
+            !module.TryGetCachedMember(memberName, out var value) ||
+            value is null)
         {
-            classValue = null;
-            return false;
+            return null;
         }
 
-        var dot = typeName.LastIndexOf((char)46);
-        if (dot < 0)
-        {
-            return context.TryGetBuiltin(typeName, out classValue) && classValue is not null;
-        }
-
-        if (!context.State.ImportedModules.TryGetValue(typeName.Substring(0, dot), out var module) ||
-            !module.TryGetCachedMember(typeName.Substring(dot + 1), out classValue) ||
-            classValue is null)
-        {
-            classValue = null;
-            return false;
-        }
-
-        return true;
+        return value;
     }
 
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
