@@ -121,11 +121,29 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    // Object instance slots resolve through the run object type for any receiver
-    // missed by the flat member tables, like CPython where every object carries
-    // them. Class-bound slots (__new__, __init_subclass__) keep their own rules.
-    internal static bool TryResolveObjectInstanceSlot(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    // Object slots resolve through the run object type for any receiver missed
+    // by the flat member tables, like CPython where every object carries them.
+    // Instance slots bind the receiver; __init_subclass__ binds type(target).
+    // __new__ keeps its own rules (absent on instances).
+    internal static bool TryResolveObjectSlot(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (memberName is "__init_subclass__")
+        {
+            if (!context.TryGetBuiltin("object", out var subclassBase) ||
+                subclassBase is not PyType subclassObject ||
+                !subclassObject.TryLookupInMro(memberName, 0, out var subclassRaw, out _) ||
+                subclassRaw is not IPyBindableCallable subclassBindable ||
+                !LythonRuntime.TryGetValueClass(target, context, out var typeValue) ||
+                typeValue is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = subclassBindable.Bind(typeValue);
+            return true;
+        }
+
         if (memberName is not ("__init__" or "__getattribute__" or "__setattr__" or "__delattr__"))
         {
             value = PyNone.Instance;

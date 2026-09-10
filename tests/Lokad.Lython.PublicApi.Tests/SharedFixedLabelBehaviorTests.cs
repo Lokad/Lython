@@ -509,6 +509,43 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task SubclassSlotFallback()
+    {
+        // __init_subclass__ resolves through the run object type on any
+        // receiver and binds type(target) like CPython, so builtin values
+        // and engine callables behave like user instances; no-arg calls
+        // succeed while explicit arguments still fail.
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            e = E()
+            return [().__init_subclass__.__self__ is tuple,
+                "x".__init_subclass__.__self__ is str,
+                len.__init_subclass__.__self__ is type(len),
+                e.__init_subclass__.__self__ is E,
+                ().__init_subclass__() is None,
+                len.__init_subclass__() is None,
+                object.__init_subclass__() is None,
+                E.__init_subclass__() is None,
+                ().__init_subclass__.__qualname__,
+                ().__init_subclass__.__class__.__name__,
+                hasattr((), "__init_subclass__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true,
+            "object.__init_subclass__", "builtin_function_or_method", true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

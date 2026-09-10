@@ -336,14 +336,12 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not PyType)
+            // The bound receiver is always class-like at this point (user types
+            // arrive as PyType, builtin values as their type-denoting object);
+            // only the arity is enforced, like CPython.
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
-                throw new LythonRuntimeException("TypeError", "object.__init_subclass__(cls) expects a class receiver.", span);
-            }
-
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "object.__init_subclass__ does not accept keyword arguments in Lython.", span);
+                throw new LythonRuntimeException("TypeError", "object.__init_subclass__() takes no arguments.", span);
             }
 
             return PyNone.Instance;

@@ -459,7 +459,7 @@ internal static partial class StaticContracts
         // Object instance slots resolve through the runtime object fallback
         // on every receiver like CPython, so they are never statically
         // known missing either.
-        if (memberName is "__init__" or "__getattribute__" or "__setattr__" or "__delattr__")
+        if (memberName is "__init__" or "__getattribute__" or "__setattr__" or "__delattr__" or "__init_subclass__")
         {
             return false;
         }
