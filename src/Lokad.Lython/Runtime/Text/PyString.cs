@@ -15,6 +15,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private readonly LythonSourceSpan? _allocationSpan;
     private int _runeLength = -1;
     private int[]? _runeByteOffsets;
+    private PyString[]? _cachedRunes;
     private string? _decodedString;
     private int _hashCode;
     private bool _hashCodeComputed;
@@ -647,6 +648,55 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return offsets;
     }
 
+    /// <summary>
+    /// Returns the rune sequence, caching non-ASCII views alongside the
+    /// offset table. ASCII views stay transient like today: their elements
+    /// alias the shared table, so only a throwaway array exists either way.
+    /// Matchers read the sequence without retaining it, so caching never
+    /// changes an observable value.
+    /// </summary>
+    internal PyString[] GetRunes()
+    {
+        if (_cachedRunes is not null)
+        {
+            return _cachedRunes;
+        }
+
+        if (Length == _utf8.Length)
+        {
+            var ascii = new PyString[Length];
+            for (var i = 0; i < ascii.Length; i++)
+            {
+                ascii[i] = AsciiCharacters[_utf8[i]];
+            }
+
+            return ascii;
+        }
+
+        CommitCacheCharge(32L + (8L * Length));
+        var runes = new PyString[Length];
+        var runeIndex = 0;
+        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        {
+            var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+            if (runeLength == 1)
+            {
+                runes[runeIndex++] = AsciiCharacters[_utf8[byteIndex]];
+                byteIndex++;
+                continue;
+            }
+
+            var bytes = _memoryGovernor is null
+                ? new byte[runeLength]
+                : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
+            Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
+            runes[runeIndex++] = _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
+            byteIndex += runeLength;
+        }
+
+        _cachedRunes = runes;
+        return runes;
+    }
     private static PyString[] CreateAsciiCharacters()
     {
         var characters = new PyString[128];

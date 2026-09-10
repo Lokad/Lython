@@ -95,21 +95,9 @@ internal sealed partial class LythonRuntime
 
         internal static bool MatchSimple(PyString name, PyString pattern)
         {
-            var nameRunes = MaterializeRunes(name);
-            var patternRunes = MaterializeRunes(pattern);
-            return MatchSimple(nameRunes, patternRunes);
-        }
-
-        private static PyString[] MaterializeRunes(PyString value)
-        {
-            var runes = new PyString[value.Length];
-            var index = 0;
-            foreach (var rune in value.EnumerateRunes())
-            {
-                runes[index++] = rune;
-            }
-
-            return runes;
+            // Rune identity never escapes a match: only the boolean does, so the
+            // cached non-ASCII views (ASCII stays transient) are safe to share.
+            return MatchSimple(name.GetRunes(), pattern.GetRunes());
         }
 
         private static bool MatchSimple(
