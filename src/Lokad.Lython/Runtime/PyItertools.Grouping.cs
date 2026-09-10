@@ -23,6 +23,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _keyFunction = keyFunction;
         _memoryGovernor = memoryGovernor;
@@ -140,6 +141,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
         public PyGroupIterator(PyGroupByIterator parent, int id, object key, object firstItem)
         {
+            PyIteratorBase.ChargeIteratorValue(parent._memoryGovernor, parent._span);
             _parent = parent;
             _id = id;
             _key = key;

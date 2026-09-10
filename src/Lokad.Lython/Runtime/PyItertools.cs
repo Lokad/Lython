@@ -53,6 +53,7 @@ internal sealed class PyChainIterator : PyIteratorBase
 
     public PyChainIterator(IReadOnlyList<object> sources, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _sources = new PyIteration.Cursor[sources.Count];
         for (var i = 0; i < sources.Count; i++)
         {
@@ -65,6 +66,7 @@ internal sealed class PyChainIterator : PyIteratorBase
 
     public PyChainIterator(object outer, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _outer = PyIteration.Cursor.Create(outer, span, context);
         _context = context;
         _span = span;
@@ -175,6 +177,7 @@ internal sealed class PyIsliceIterator : PyIteratorBase
 
     public PyIsliceIterator(object source, long start, long? stop, long step, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _start = start;
         _stop = stop;

@@ -22,6 +22,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _function = function;
         _initial = initial;
@@ -113,6 +114,7 @@ internal sealed class PyCompressIterator : PyIteratorBase
 
     public PyCompressIterator(object data, object selectors, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _data = PyIteration.Cursor.Create(data, span, context);
         _selectors = PyIteration.Cursor.Create(selectors, span, context);
     }
@@ -182,6 +184,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _predicate = predicate;
         _source = PyIteration.Cursor.Create(source, span, context);
         _mode = mode;
@@ -317,6 +320,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
     public PyStarmapIterator(LythonRuntime.ICallable function, object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _function = function;
         _source = PyIteration.Cursor.Create(source, span, context);
         _context = context;
@@ -405,6 +409,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
 
     public PyPairwiseIterator(object source, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _memoryGovernor = memoryGovernor;
         _span = span;

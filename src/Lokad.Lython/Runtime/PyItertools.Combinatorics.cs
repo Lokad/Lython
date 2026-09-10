@@ -50,6 +50,7 @@ internal sealed class PyProductIterator : PyIteratorBase
 
     public PyProductIterator(IReadOnlyList<IReadOnlyList<object>> pools, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, allocationSpan);
         _pools = pools;
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, allocationSpan, pools.Count);
         _indices = new int[pools.Count];
@@ -126,6 +127,7 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
 
     public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, allocationSpan);
         _iterators = new PyIteration.Cursor[iterables.Count];
         for (var i = 0; i < iterables.Count; i++)
         {
@@ -221,6 +223,7 @@ internal sealed class PyCountIterator : PyIteratorBase
 
     public PyCountIterator(object start, object step, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _current = LythonRuntime.RuntimeValue(start);
         _step = LythonRuntime.RuntimeValue(step);
         _context = context;
@@ -290,6 +293,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
     public PyCycleIterator(object source, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _memoryGovernor = memoryGovernor;
         _context = context;
@@ -368,6 +372,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
 
     public PyCombinationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _indices = new int[r];
@@ -436,6 +441,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
 
     public PyCombinationsWithReplacementIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _indices = new int[r];
@@ -500,6 +506,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
 
     public PyPermutationsIterator(object[] pool, int r, MemoryGovernor memoryGovernor, LythonSourceSpan span)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, pool.Length);
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);

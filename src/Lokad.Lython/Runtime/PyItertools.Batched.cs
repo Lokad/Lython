@@ -13,6 +13,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
 
     public PyBatchedIterator(object source, int size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
         _size = size;
         _strict = strict;

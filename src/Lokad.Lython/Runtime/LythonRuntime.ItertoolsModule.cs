@@ -147,6 +147,7 @@ internal sealed partial class LythonRuntime
             times = count < 0 ? 0 : count;
         }
 
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         return new PyRepeatIterator(bound.Values[0], times);
     }
 
@@ -478,6 +479,10 @@ internal sealed partial class LythonRuntime
             ? ExpectItNonNegativeInt(positional[1], "n must be >= 0", span)
             : 2;
         var shared = new PyTeeSharedState(positional[0], count, context.MemoryGovernor, context, span);
+        // Each tee output is a separately retained iterator object.
+        var iteratorObjectsCharge = checked(128L * count);
+        context.MemoryGovernor.Reserve(iteratorObjectsCharge, span);
+        context.MemoryGovernor.Commit(iteratorObjectsCharge);
         var iterators = new object[count];
         for (var i = 0; i < count; i++)
         {
