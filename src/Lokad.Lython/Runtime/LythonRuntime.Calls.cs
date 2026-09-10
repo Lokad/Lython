@@ -953,12 +953,25 @@ internal sealed partial class LythonRuntime
 
     private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyBoundEngineMethod
     {
+        // The receiver threads in at member-resolution time (see
+        // TryResolveRuntimeMember), since every instance is fresh per
+        // access and closures alone cannot report it.
+        private object? _receiver;
+
+        internal void AttachReceiver(object receiver) => _receiver = receiver;
+
         // Bound engine methods expose CPython-style __name__/__module__ like
         // C-implemented methods: the short decorated name and None, since every
         // wrapper is engine-implemented (CPython reports the class module only
         // for Python-implemented methods such as Random.gauss).
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "__self__" && _receiver is not null)
+            {
+                value = _receiver;
+                return true;
+            }
+
             if (name == "__name__")
             {
                 value = PyString.FromString(ShortMethodName(Signature.Name));

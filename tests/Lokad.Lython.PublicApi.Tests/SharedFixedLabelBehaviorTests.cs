@@ -1182,6 +1182,47 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BoundMethodSelf()
+    {
+        // Bound engine methods report their receiver like CPython,
+        // including stored aliases that keep the original receiver.
+        var script = new LythonEngine().Compile("""
+            import hashlib
+            import re
+            import sys
+            h = hashlib.md5(b"x")
+            p = re.compile("x")
+            l1 = [1]
+            a = l1.append
+            class E:
+                pass
+            e = E()
+            e.append = a
+            return [[].append.__self__ == [],
+                "x".join.__self__ == "x",
+                {1: 2}.get.__self__ == {1: 2},
+                h.hexdigest.__self__ is h,
+                p.match.__self__ is p,
+                sys.stdout.write.__self__ is sys.stdout,
+                e.append.__self__ is l1,
+                a.__self__ is l1,
+                type([].append.__self__).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, "list",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

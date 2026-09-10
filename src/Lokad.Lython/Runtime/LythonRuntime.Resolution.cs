@@ -117,7 +117,27 @@ internal sealed partial class LythonRuntime
     }
 
     internal static bool TryResolveRuntimeMember(object target, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        => PyMemberAccess.TryResolve(target, memberName, context, span, out value);
+    {
+        if (!PyMemberAccess.TryResolve(target, memberName, context, span, out value))
+        {
+            return false;
+        }
+
+        // Bound engine methods report their receiver like CPython. Each
+        // instance is fresh per access, so threading here covers every
+        // member table at once; instances, types, supers and modules
+        // keep their own binding rules (or none).
+        if (value is BoundCallable unbound &&
+            target is not PyInstance &&
+            target is not PyType &&
+            target is not PySuper &&
+            target is not PyModule)
+        {
+            unbound.AttachReceiver(target);
+        }
+
+        return true;
+    }
 
     private static object EvaluateSubscript(SubscriptExpressionSyntax subscript, ExecutionContext context)
     {
