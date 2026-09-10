@@ -23,9 +23,13 @@ internal sealed partial class LythonRuntime
         // Wrapper attribute slots ride the same rate as instance attributes.
         private const long MetadataSlotBytes = 64;
 
+        // Object shell beside the bound-argument backing and metadata tables.
+        private const long PartialObjectBytes = 64;
+
         public PyPartial(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
-            var backingBytes = EstimateBoundArgumentsBytes(boundArguments.Length);
+            // The object shell is retained beside the bound-argument backing.
+            var backingBytes = checked(PartialObjectBytes + EstimateBoundArgumentsBytes(boundArguments.Length));
             governor.Reserve(backingBytes, allocationSpan);
             governor.Commit(backingBytes);
             _callable = callable;
@@ -270,6 +274,10 @@ internal sealed partial class LythonRuntime
 
         public PyPartialMethod(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
+            // Own the shell and the copied bound-argument array like partial objects.
+            var backingBytes = checked(64L + 32L + (32L * boundArguments.Length));
+            governor.Reserve(backingBytes, allocationSpan);
+            governor.Commit(backingBytes);
             _callable = callable;
             _boundArguments = boundArguments;
             _memoryGovernor = governor;

@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG14: partial bound-argument arrays, dispatch registrations and wrapper
+/// MG14/MG11: partial shells plus bound-argument arrays, dispatch registrations
 /// metadata commit exactly; replacement and overwrites stay balanced.
 /// </summary>
 public sealed class FunctoolsRegistryAccountingTests
@@ -53,7 +53,8 @@ public sealed class FunctoolsRegistryAccountingTests
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2), CallArgumentValue.Positional(3)],
             context,
             span);
-        Assert.Equal(32L + (32L * 3), context.MemoryGovernor.CurrentCommittedBytes);
+        // 64B object shell plus 32B + 32B per bound argument.
+        Assert.Equal(64L + 32L + (32L * 3), context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
