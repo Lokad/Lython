@@ -354,10 +354,24 @@ internal sealed partial class LythonRuntime
         IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
+        private readonly MemoryGovernor _governor;
+        private readonly LythonSourceSpan? _allocationSpan;
 
         public OpenPyxlTableCollection(OpenPyxlWorksheet worksheet)
+            : this(worksheet, governor: null, allocationSpan: null)
+        {
+        }
+
+        public OpenPyxlTableCollection(OpenPyxlWorksheet worksheet, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
         {
             _worksheet = worksheet;
+            _governor = governor;
+            _allocationSpan = allocationSpan;
+            if (governor is not null)
+            {
+                governor.Reserve(64L, allocationSpan);
+                governor.Commit(64L);
+            }
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -384,7 +398,9 @@ internal sealed partial class LythonRuntime
         }
 
         public IEnumerable<object> Iterate()
-            => _worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => (object)PyString.FromString(name));
+            => _worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => _governor is null
+                ? (object)PyString.FromString(name)
+                : PyString.FromString(name, _governor, _allocationSpan));
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 

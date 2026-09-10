@@ -211,6 +211,35 @@ internal sealed partial class LythonRuntime
 
         public bool HasPageMargins => _hasPageMargins;
 
+        public bool TryGetMember(
+            string name,
+            ExecutionContext context,
+            LythonSourceSpan span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            var governor = context.MemoryGovernor;
+            switch (name)
+            {
+                case "rows":
+                    value = RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, context, span);
+                    return true;
+                case "columns":
+                    value = ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, context, span);
+                    return true;
+                case "values":
+                    value = RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, context, span);
+                    return true;
+                case "tables":
+                    value = new OpenPyxlTableCollection(this, governor, span);
+                    return true;
+                case "conditional_formatting":
+                    value = new OpenPyxlConditionalFormattingCollection(this, governor, span);
+                    return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch

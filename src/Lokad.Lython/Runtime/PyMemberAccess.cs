@@ -60,6 +60,7 @@ internal static class PyMemberAccess
         if (target is not IPyContextualDynamicAttributes &&
             target is not PyPath &&
             target is not LythonPathStat &&
+            target is not LythonRuntime.OpenPyxlWorksheet &&
             target is not PySuper &&
             target is not PyInstance &&
             target is not PyType &&
@@ -80,6 +81,11 @@ internal static class PyMemberAccess
         }
 
         if (target is LythonPathStat stat && LythonRuntime.PathStatMembers.TryGetMember(stat, memberName, context, span, out value))
+        {
+            return true;
+        }
+
+        if (target is LythonRuntime.OpenPyxlWorksheet worksheet && worksheet.TryGetMember(memberName, context, span, out value))
         {
             return true;
         }

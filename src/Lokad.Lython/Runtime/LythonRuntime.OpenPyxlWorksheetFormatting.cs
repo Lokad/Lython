@@ -91,17 +91,33 @@ internal sealed partial class LythonRuntime
         IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
+        private readonly MemoryGovernor _governor;
+        private readonly LythonSourceSpan? _allocationSpan;
 
         public OpenPyxlConditionalFormattingCollection(OpenPyxlWorksheet worksheet)
+            : this(worksheet, governor: null, allocationSpan: null)
+        {
+        }
+
+        public OpenPyxlConditionalFormattingCollection(OpenPyxlWorksheet worksheet, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
         {
             _worksheet = worksheet;
+            _governor = governor;
+            _allocationSpan = allocationSpan;
+            if (governor is not null)
+            {
+                governor.Reserve(64L, allocationSpan);
+                governor.Commit(64L);
+            }
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "ranges" => new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref))),
+                "ranges" => _governor is null
+                    ? new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref)))
+                    : new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref, _governor, _allocationSpan)), _governor, _allocationSpan),
                 "items" => BoundCallable.Create(Items, "ConditionalFormattingList.items", []),
                 "add" => BoundCallable.Create(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
                 _ => MissingMemberValue.Instance,
@@ -114,13 +130,22 @@ internal sealed partial class LythonRuntime
         {
             var reference = NormalizeCellOrRangeReference(ExpectString(index, "Worksheet.conditional_formatting[...] key", span), span);
             var formatting = _worksheet.ConditionalFormattings.FirstOrDefault(item => string.Equals(item.Sqref, reference, StringComparison.Ordinal));
+            if (_governor is null)
+            {
+                return formatting is null
+                    ? new PyList(Array.Empty<object>())
+                    : new PyList(formatting.Rules.Cast<object>());
+            }
+
             return formatting is null
-                ? new PyList(Array.Empty<object>())
-                : new PyList(formatting.Rules.Cast<object>());
+                ? new PyList(Array.Empty<object>(), _governor, _allocationSpan)
+                : new PyList(formatting.Rules.Cast<object>(), _governor, _allocationSpan);
         }
 
         public IEnumerable<object> Iterate()
-            => _worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref));
+            => _worksheet.ConditionalFormattings.Select(formatting => _governor is null
+                ? (object)PyString.FromString(formatting.Sqref)
+                : PyString.FromString(formatting.Sqref, _governor, _allocationSpan));
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
