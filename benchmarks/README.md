@@ -11,6 +11,7 @@ The goal is not to benchmark every Python feature. It is to keep a small, explic
 - contained ZIP archive behavior and scaling (entry counts, compression ratios, appends)
 - SequenceMatcher similarity workloads and async collection materialization paths
 - gzip flush scaling and OpenPyXL persistence
+- six-column csv.DictReader retain-versus-early-break scaling at the default budget
 - integer magnitude-guard paths (shift/power operand sizing)
 
 ## Project

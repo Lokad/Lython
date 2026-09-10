@@ -116,6 +116,20 @@ member lookup or integer guard paths.
 at the same expanded size. Re-record on release runs before changing
 archive compression or staging paths.
 
+Six-column DictReader (`CsvReaderBenchmarks.cs`, 20,001-line seeded host file,
+960,018 bytes, default execution budget) from a full BenchmarkDotNet run (.NET 10,
+Windows 10.0.26200.9445 x64, 2026-09-10, 02059e8):
+
+| Benchmark | Mean | Allocated/op |
+| --- | --- | --- |
+| DictReader retain 20K six-column dicts | 61,857.1 us | 40251.81 KB |
+| DictReader break after first of 20K rows | 331.2 us | 37.96 KB |
+
+Notes: no outliers removed. Retaining every dictionary costs about 190x time
+and 1000x allocation versus stopping after the first row, all under the same
+default 1 GiB execution budget in an isolated process. Re-record on release
+runs before changing CSV record, dictionary, or file-line hot paths.
+
 Host traffic (deterministic single-run counts from a counting host; host
 call counts and byte totals do not depend on build configuration; asserted
 repeatably by `ZipHostTrafficTests`):
