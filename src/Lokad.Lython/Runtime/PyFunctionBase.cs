@@ -104,7 +104,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         value = name switch
         {
             "__name__" => _nameValue,
-            "__qualname__" => _nameValue,
+            "__qualname__" => OwnerType is not null
+                ? PyString.FromString(OwnerType.Name + "." + Name)
+                : _nameValue,
             "__module__" => TryGetModuleName(out var moduleName) ? moduleName : PyNone.Instance,
             _ => PyNone.Instance,
         };

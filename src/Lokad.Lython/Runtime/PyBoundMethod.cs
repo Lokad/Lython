@@ -26,6 +26,17 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     // (no __module__ there).
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        // __qualname__ prefixes the defining class like CPython (subclasses keep
+        // the defining owner since BindOwner is first-wins); otherwise it falls
+        // back to the plain name.
+        if (name == "__qualname__" &&
+            _function is PyFunctionBase qualified &&
+            qualified.OwnerType is { } owner)
+        {
+            value = PyString.FromString(owner.Name + "." + qualified.Name);
+            return true;
+        }
+
         if (name is "__name__" or "__qualname__")
         {
             var functionName = _function switch

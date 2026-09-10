@@ -450,9 +450,18 @@ internal sealed partial class LythonRuntime
         // for Python-implemented methods such as Random.gauss).
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (name is "__name__" or "__qualname__")
+            if (name == "__name__")
             {
                 value = PyString.FromString(ShortMethodName(Signature.Name));
+                return true;
+            }
+
+            // __qualname__ keeps the full dotted path like CPython bound
+            // methods (list.append), falling back to the short name for
+            // decorated display names (gzip file.read([size]) -> read).
+            if (name == "__qualname__")
+            {
+                value = PyString.FromString(QualMethodName(Signature.Name));
                 return true;
             }
 
@@ -472,6 +481,12 @@ internal sealed partial class LythonRuntime
             var tail = dot < 0 ? name : name.Substring(dot + 1);
             var cut = tail.IndexOfAny([' ', '(', '[']);
             return cut < 0 ? tail : tail.Substring(0, cut);
+        }
+
+        private static string QualMethodName(string name)
+        {
+            var cut = name.IndexOfAny([' ', '(', '[']);
+            return cut < 0 ? name : ShortMethodName(name);
         }
 
         private BoundCallable(
@@ -546,9 +561,18 @@ internal sealed partial class LythonRuntime
         // for Python-implemented methods such as Random.gauss).
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (name is "__name__" or "__qualname__")
+            if (name == "__name__")
             {
                 value = PyString.FromString(ShortMethodName(Name));
+                return true;
+            }
+
+            // __qualname__ keeps the full dotted path like CPython bound
+            // methods (list.append), falling back to the short name for
+            // decorated display names (gzip file.read([size]) -> read).
+            if (name == "__qualname__")
+            {
+                value = PyString.FromString(QualMethodName(Name));
                 return true;
             }
 
@@ -568,6 +592,12 @@ internal sealed partial class LythonRuntime
             var tail = dot < 0 ? name : name.Substring(dot + 1);
             var cut = tail.IndexOfAny([' ', '(', '[']);
             return cut < 0 ? tail : tail.Substring(0, cut);
+        }
+
+        private static string QualMethodName(string name)
+        {
+            var cut = name.IndexOfAny([' ', '(', '[']);
+            return cut < 0 ? name : ShortMethodName(name);
         }
 
         private readonly Func<TReceiver, LythonSourceSpan, ExecutionContext, object> _implementation;

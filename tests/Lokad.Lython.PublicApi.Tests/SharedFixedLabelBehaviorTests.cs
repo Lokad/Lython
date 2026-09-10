@@ -286,4 +286,36 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BoundMethodQualnames()
+    {
+        var script = new LythonEngine().Compile("""
+            import datetime
+            class C:
+                @staticmethod
+                def s():
+                    pass
+                def m(self):
+                    pass
+            class D(C):
+                pass
+            return [C().m.__qualname__, D().m.__qualname__, C.s.__qualname__,
+                C.m.__qualname__, [].append.__qualname__, "x".join.__qualname__,
+                datetime.timedelta(1).total_seconds.__qualname__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "C.m", "C.m", "C.s", "C.m",
+            "list.append", "str.join", "timedelta.total_seconds",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
