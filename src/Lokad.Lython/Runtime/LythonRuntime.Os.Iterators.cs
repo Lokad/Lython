@@ -91,12 +91,16 @@ internal sealed partial class LythonRuntime
     {
         private readonly string _name;
         private readonly string _path;
+        private readonly MemoryGovernor _governor;
+        private readonly LythonSourceSpan? _allocationSpan;
         private LythonPathStat? _stat;
 
-        public PyDirEntryObject(string name, string path)
+        public PyDirEntryObject(string name, string path, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
             _name = name;
             _path = path;
+            _governor = governor;
+            _allocationSpan = allocationSpan;
         }
 
         public string Path => _path;
@@ -105,8 +109,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "name" => PyString.FromString(_name),
-                "path" => PyString.FromString(_path),
+                "name" => PyString.FromString(_name, _governor, _allocationSpan),
+                "path" => PyString.FromString(_path, _governor, _allocationSpan),
                 "__fspath__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -114,7 +118,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "DirEntry.__fspath__() expects no arguments.", span);
                     }
 
-                    return PyString.FromString(_path);
+                    return PyString.FromString(_path, _governor, _allocationSpan);
                 }, "DirEntry.__fspath__", []),
                 "is_file" => BoundCallable.Create((arguments, span, context) =>
                 {

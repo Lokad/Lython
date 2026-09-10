@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
         var path = GetPathOrDefault(arguments, "os.listdir", span, context.Host.Cwd);
         context.RegisterHostCall(span);
         var result = new PyList(
-            context.HostListDir(path, span).Select<string, object>(item => PyString.FromString(item)),
+            context.HostListDir(path, span).Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(result.Count, span);
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         context.RegisterHostCall(span);
         var names = await context.HostListDirAsync(path, span).ConfigureAwait(false);
         var result = new PyList(
-            names.Select<string, object>(item => PyString.FromString(item)),
+            names.Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(result.Count, span);
@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.RegisterHostCall(span);
         var entries = context.HostListDir(normalized, span)
-            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
+            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name), context.MemoryGovernor, span))
             .ToArray();
         context.ObserveCollectionCount(entries.Length, span);
         // Own the iterator plus one entry object and array slot per entry.
@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
         context.RegisterHostCall(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
         var entries = names
-            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
+            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name), context.MemoryGovernor, span))
             .ToArray();
         context.ObserveCollectionCount(entries.Length, span);
         // Own the iterator plus one entry object and array slot per entry.

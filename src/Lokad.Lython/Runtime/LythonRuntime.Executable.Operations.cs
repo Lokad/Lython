@@ -105,7 +105,8 @@ internal sealed partial class LythonRuntime
                or StatisticsModule.PyNormalDist
                or PyDeque
                or PkgutilModuleInfoObject
-               or PkgutilLoaderObject);
+               or PkgutilLoaderObject
+               or PyDirEntryObject);
 
     // Bound callables close over their receiver, so sharing one per site is
     // always sound, even for mutable targets whose data arms must stay fresh.
