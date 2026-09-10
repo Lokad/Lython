@@ -47,6 +47,8 @@ internal sealed class LythonRuntimeException : Exception
 
     public object? Payload { get; }
 
+    public PyException? PythonCause { get; set; }
+
     public string? SourcePath { get; private set; }
 
     public List<LythonStackFrame> Frames { get; } = [];

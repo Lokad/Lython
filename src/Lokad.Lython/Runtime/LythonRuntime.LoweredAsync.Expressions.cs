@@ -401,7 +401,18 @@ internal sealed partial class LythonRuntime
         }
 
         var raised = await EvaluateLoweredExpressionAsync(statement.Expression, context).ConfigureAwait(false);
-        ThrowLoweredRaisedValue(raised, statement.Span);
+        if (raised is not PyException instance)
+        {
+            throw RuntimeErrors.RaiseExpectsException(statement.Span);
+        }
+
+        var thrown = new LythonRuntimeException(instance.Identity, instance.Message, statement.Span, null, instance.Value);
+        if (statement.CauseExpression is not null)
+        {
+            thrown.PythonCause = CoerceRaiseCause(await EvaluateLoweredExpressionAsync(statement.CauseExpression, context).ConfigureAwait(false), statement.Span, context);
+        }
+
+        throw thrown;
     }
 
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)

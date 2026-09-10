@@ -20,7 +20,10 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception)
-        => new(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance);
+        => new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
+        {
+            Cause = exception.PythonCause,
+        };
 
     private static bool MatchesCaughtException(
         IReadOnlyList<string>? caughtTypeNames,

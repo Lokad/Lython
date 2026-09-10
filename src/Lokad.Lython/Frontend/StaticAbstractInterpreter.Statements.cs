@@ -337,8 +337,9 @@ internal static partial class StaticAbstractInterpreter
                     AnalyzeExpression(returnStatement.Expression, diagnostics, bindings);
                     break;
 
-                case RaiseStatementSyntax { Expression: not null } raiseStatement:
-                    AnalyzeExpression(raiseStatement.Expression, diagnostics, bindings);
+                case RaiseStatementSyntax raiseStatement:
+                    if (raiseStatement.Expression is not null) AnalyzeExpression(raiseStatement.Expression, diagnostics, bindings);
+                    if (raiseStatement.CauseExpression is not null) AnalyzeExpression(raiseStatement.CauseExpression, diagnostics, bindings);
                     break;
             }
 

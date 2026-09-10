@@ -108,8 +108,9 @@ internal static class StatementSyntaxTraversal
                 yield return returnStatement.Expression;
                 break;
 
-            case RaiseStatementSyntax { Expression: not null } raiseStatement:
-                yield return raiseStatement.Expression;
+            case RaiseStatementSyntax raiseStatement:
+                if (raiseStatement.Expression is not null) yield return raiseStatement.Expression;
+                if (raiseStatement.CauseExpression is not null) yield return raiseStatement.CauseExpression;
                 break;
         }
 

@@ -483,6 +483,27 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
     }
 
+    private static PyException? CoerceRaiseCause(object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (value is PyNone)
+        {
+            return null;
+        }
+
+        if (value is PyException instance)
+        {
+            return instance;
+        }
+
+        if (value is ExceptionTypeValue typeValue &&
+            typeValue.Invoke([], span, context) is PyException constructed)
+        {
+            return constructed;
+        }
+
+        throw new LythonRuntimeException("TypeError", "Exception causes must derive from BaseException.", span);
+    }
+
     private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)
     {
         var current = context.Services.CurrentException;

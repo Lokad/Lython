@@ -28,7 +28,7 @@ internal sealed partial class Parser
         var raiseToken = ReadToken();
         if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End)
         {
-            return new RaiseStatementSyntax(null, SpanOf(raiseToken));
+            return new RaiseStatementSyntax(null, null, SpanOf(raiseToken));
         }
 
         var expression = ParseExpression();
@@ -38,7 +38,22 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new RaiseStatementSyntax(expression, Merge(SpanOf(raiseToken), expression.Span));
+        ExpressionSyntax? causeExpression = null;
+        var causeSpan = expression.Span;
+        if (CurrentToken == Token.From)
+        {
+            ReadToken();
+            causeExpression = ParseExpression();
+            if (causeExpression is null)
+            {
+                AddDiagnostic("LA1076", "Expected exception cause after 'from'.", raiseToken);
+                return null;
+            }
+
+            causeSpan = causeExpression.Span;
+        }
+
+        return new RaiseStatementSyntax(expression, causeExpression, Merge(SpanOf(raiseToken), causeSpan));
     }
 
     private StatementSyntax? ParseAssertStatement()

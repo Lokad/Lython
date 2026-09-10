@@ -55,6 +55,7 @@ internal sealed partial class LythonRuntime
                 "type" => PyString.FromString(exception.TypeName),
                 "message" => PyString.FromString(exception.Message),
                 "args" => CreateExceptionArgs(exception),
+                "__cause__" => (object?)exception.Cause ?? PyNone.Instance,
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
                 _ => MissingMemberValue.Instance,
             };

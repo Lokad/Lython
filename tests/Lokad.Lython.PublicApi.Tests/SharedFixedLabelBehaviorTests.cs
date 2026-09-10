@@ -1223,6 +1223,47 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task RaiseFromCause()
+    {
+        // An explicit raise cause travels with the exception like
+        // CPython, from instances and classes alike, while bad causes
+        // fail explicitly.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                raise ValueError("v") from KeyError("k")
+            except ValueError as e:
+                results.append((e.__cause__).message == "k")
+                results.append((e.__cause__).__class__ is KeyError)
+            try:
+                raise ValueError("v") from KeyError
+            except ValueError as e:
+                results.append((e.__cause__).__class__ is KeyError)
+            try:
+                raise ValueError("v") from None
+            except ValueError as e:
+                results.append(e.__cause__ is None)
+            try:
+                raise ValueError("v") from 42
+            except TypeError:
+                results.append("cause-type")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, "cause-type",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

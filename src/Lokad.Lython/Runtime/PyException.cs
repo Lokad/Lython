@@ -17,4 +17,8 @@ internal sealed record PyException(
     }
 
     public string TypeName => Identity.TypeName;
+
+    // Explicit raise causes ride alongside the value; handlers rewrap
+    // through the thrown CLR exception, which carries the same slot.
+    public PyException? Cause { get; init; }
 }

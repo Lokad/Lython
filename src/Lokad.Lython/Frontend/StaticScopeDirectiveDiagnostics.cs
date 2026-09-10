@@ -293,8 +293,9 @@ internal static class StaticScopeDirectiveDiagnostics
             case ReturnStatementSyntax { Expression: { } expression }:
                 CollectSeenNames(expression, names);
                 break;
-            case RaiseStatementSyntax { Expression: not null } raiseStatement:
-                CollectSeenNames(raiseStatement.Expression, names);
+            case RaiseStatementSyntax raiseStatement:
+                if (raiseStatement.Expression is not null) CollectSeenNames(raiseStatement.Expression, names);
+                if (raiseStatement.CauseExpression is not null) CollectSeenNames(raiseStatement.CauseExpression, names);
                 break;
             case TryStatementSyntax tryStatement:
                 AnalyzeNestedSeen(tryStatement.TryBody, names);

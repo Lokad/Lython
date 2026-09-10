@@ -312,6 +312,7 @@ internal sealed record ReturnStatementSyntax(
 
 internal sealed record RaiseStatementSyntax(
     ExpressionSyntax? Expression,
+    ExpressionSyntax? CauseExpression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal sealed record ExceptClauseSyntax(
