@@ -33,10 +33,12 @@ internal static partial class PyDateTimeOps
 
     // Constructed date/time values retain small fixed-size payloads; charge one
     // table slot per value once built (the expression evaluates first, so failed
-    // constructions leak nothing). Member projections stay uncharged.
+    // constructions leak nothing). Member and operator results use the same
+    // wrapper; transient scalar projections (ordinals, timestamps, counts)
+    // stay free.
     private const long DateTimeValueBytes = 64;
 
-    private static T OwnDateTimeValue<T>(T value, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+    internal static T OwnDateTimeValue<T>(T value, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         context.MemoryGovernor.Reserve(DateTimeValueBytes, span);
         context.MemoryGovernor.Commit(DateTimeValueBytes);
@@ -533,6 +535,20 @@ internal static partial class PyDateTimeOps
             ((int)date.DayOfWeek + 6) % 7 + 1);
     }
 
+    public static PyIsoCalendarDate IsoCalendar(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+    {
+        var dateTime = date.ToDateTime(TimeOnly.MinValue);
+        return OwnDateTimeValue(
+            new PyIsoCalendarDate(
+                ISOWeek.GetYear(dateTime),
+                ISOWeek.GetWeekOfYear(dateTime),
+                ((int)date.DayOfWeek + 6) % 7 + 1,
+                context.MemoryGovernor,
+                span),
+            context,
+            span);
+    }
+
     public static PyString CTime(DateOnly date)
         => CTime(date.ToDateTime(TimeOnly.MinValue));
 
@@ -551,6 +567,12 @@ internal static partial class PyDateTimeOps
 
     public static PyTuple TimeTuple(DateTime dateTime, int isDst)
         => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst);
+
+    public static PyTuple TimeTuple(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        => CreateTimeTuple(date, TimeOnly.MinValue, isDst: -1, context.MemoryGovernor, span);
+
+    public static PyTuple TimeTuple(DateTime dateTime, int isDst, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst, context.MemoryGovernor, span);
 
     public static double Timestamp(PyDateTime dateTime, TimeSpan localOffset, LythonSourceSpan span)
     {
@@ -580,76 +602,76 @@ internal static partial class PyDateTimeOps
         }
     }
 
-    public static object Add(object left, object right, LythonSourceSpan span)
+    public static object Add(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return (left, right) switch
         {
-            (PyTimedelta lhs, PyTimedelta rhs) => CreateTimedelta(lhs.TotalMicroseconds + rhs.TotalMicroseconds, span),
-            (PyDate date, PyTimedelta delta) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
-            (PyTimedelta delta, PyDate date) => new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))),
-            (PyDateTime dateTime, PyTimedelta delta) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold),
-            (PyTimedelta delta, PyDateTime dateTime) => new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold),
+            (PyTimedelta lhs, PyTimedelta rhs) => OwnDateTimeValue(CreateTimedelta(lhs.TotalMicroseconds + rhs.TotalMicroseconds, span), context, span),
+            (PyDate date, PyTimedelta delta) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
+            (PyTimedelta delta, PyDate date) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
+            (PyDateTime dateTime, PyTimedelta delta) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
+            (PyTimedelta delta, PyDateTime dateTime) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span)
         };
     }
 
-    public static object Subtract(object left, object right, LythonSourceSpan span)
+    public static object Subtract(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return (left, right) switch
         {
-            (PyTimedelta lhs, PyTimedelta rhs) => CreateTimedelta(lhs.TotalMicroseconds - rhs.TotalMicroseconds, span),
-            (PyDate lhs, PyTimedelta rhs) => new PyDate(lhs.Value.AddDays(-GetDateDeltaDays(rhs))),
-            (PyDate lhs, PyDate rhs) => new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)),
-            (PyDateTime lhs, PyTimedelta rhs) => new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold),
-            (PyDateTime lhs, PyDateTime rhs) => SubtractDateTimes(lhs, rhs, span),
+            (PyTimedelta lhs, PyTimedelta rhs) => OwnDateTimeValue(CreateTimedelta(lhs.TotalMicroseconds - rhs.TotalMicroseconds, span), context, span),
+            (PyDate lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDate(lhs.Value.AddDays(-GetDateDeltaDays(rhs))), context, span),
+            (PyDate lhs, PyDate rhs) => OwnDateTimeValue(new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)), context, span),
+            (PyDateTime lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold), context, span),
+            (PyDateTime lhs, PyDateTime rhs) => OwnDateTimeValue(SubtractDateTimes(lhs, rhs, span), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '-'.", span)
         };
     }
 
-    public static object Negate(object operand, LythonSourceSpan span)
+    public static object Negate(object operand, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return operand switch
         {
-            PyTimedelta delta => CreateTimedelta(-delta.TotalMicroseconds, span),
+            PyTimedelta delta => OwnDateTimeValue(CreateTimedelta(-delta.TotalMicroseconds, span), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span)
         };
     }
 
-    public static object Multiply(object left, object right, LythonSourceSpan span)
+    public static object Multiply(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return (left, right) switch
         {
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, scale, span),
-            (_, PyTimedelta delta) when TryGetScale(left, out var scale) => ScaleTimedelta(delta, scale, span),
+            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
+            (_, PyTimedelta delta) when TryGetScale(left, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '*'.", span)
         };
     }
 
-    public static object Divide(object left, object right, LythonSourceSpan span)
+    public static object Divide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => DivideTimedeltas(delta, other, span),
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true),
+            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '/'.", span)
         };
     }
 
-    public static object FloorDivide(object left, object right, LythonSourceSpan span)
+    public static object FloorDivide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => FloorDivideMicroseconds(delta.TotalMicroseconds, other.TotalMicroseconds, span),
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true),
+            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true), context, span),
             _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '//'.", span)
         };
     }
 
-    public static object Modulo(object left, object right, LythonSourceSpan span)
+    public static object Modulo(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (left is PyTimedelta delta && right is PyTimedelta other)
         {
-            return TimedeltaModulo(delta, other, span);
+            return OwnDateTimeValue(TimedeltaModulo(delta, other, span), context, span);
         }
 
         throw new LythonRuntimeException("TypeError", "Operands are not compatible with '%'.", span);
@@ -657,7 +679,7 @@ internal static partial class PyDateTimeOps
 
     public static PyTuple DivMod(PyTimedelta left, PyTimedelta right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var quotient = FloorDivide(left, right, span);
+        var quotient = FloorDivide(left, right, context, span);
         var remainder = TimedeltaModulo(left, right, span);
         return PyTuple.FromOwnedArray([quotient, remainder], context.MemoryGovernor, span);
     }

@@ -36,9 +36,9 @@ internal sealed partial class LythonRuntime
                 "day" => date.Day,
                 "weekday" => BoundCallable.CreateNoArguments(date, "date.weekday", static (receiver, _, _) => new BigInteger(receiver.Weekday())),
                 "isoweekday" => BoundCallable.CreateNoArguments(date, "date.isoweekday", static (receiver, _, _) => new BigInteger(receiver.IsoWeekday())),
-                "isocalendar" => BoundCallable.CreateNoArguments(date, "date.isocalendar", static (receiver, _, _) => PyDateTimeOps.IsoCalendar(receiver.Value)),
+                "isocalendar" => BoundCallable.CreateNoArguments(date, "date.isocalendar", static (receiver, span, context) => PyDateTimeOps.IsoCalendar(receiver.Value, context, span)),
                 "toordinal" => BoundCallable.CreateNoArguments(date, "date.toordinal", static (receiver, _, _) => receiver.ToOrdinal()),
-                "timetuple" => BoundCallable.CreateNoArguments(date, "date.timetuple", static (receiver, _, _) => PyDateTimeOps.TimeTuple(receiver.Value)),
+                "timetuple" => BoundCallable.CreateNoArguments(date, "date.timetuple", static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, context, span)),
                 "ctime" => BoundCallable.CreateNoArguments(date, "date.ctime", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.CTime(receiver.Value), context.MemoryGovernor, span)),
                 "isoformat" => BoundCallable.CreateNoArguments(date, "date.isoformat", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(receiver.IsoFormat(), context.MemoryGovernor, span)),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
@@ -59,12 +59,12 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(date.Value, format, span), context.MemoryGovernor, span);
                 }, "date.strftime", ["format"]),
-                "replace" => BoundCallable.Create((arguments, span, _) =>
+                "replace" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    return new PyDate(new DateOnly(
+                    return PyDateTimeOps.OwnDateTimeValue(new PyDate(new DateOnly(
                         ReplacementInt(arguments, 0, (int)date.Year, "date.replace", span),
                         ReplacementInt(arguments, 1, (int)date.Month, "date.replace", span),
-                        ReplacementInt(arguments, 2, (int)date.Day, "date.replace", span)));
+                        ReplacementInt(arguments, 2, (int)date.Day, "date.replace", span))), context, span);
                 }, "date.replace", ["year", "month", "day"], 0),
                 _ => MissingMemberValue.Instance
             };
@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
                 "utcoffset" => BoundCallable.CreateNoArguments(
                     time,
                     "time.utcoffset",
-                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : new PyTimedelta(receiver.TzInfo.Offset)),
+                    static (receiver, span, context) => receiver.TzInfo is null ? (object)PyNone.Instance : PyDateTimeOps.OwnDateTimeValue(new PyTimedelta(receiver.TzInfo.Offset), context, span)),
                 "tzname" => BoundCallable.CreateNoArguments(
                     time,
                     "time.tzname",
@@ -124,12 +124,11 @@ internal sealed partial class LythonRuntime
                 }, "time.strftime", ["format"]),
                 "replace" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    _ = context;
                     var microArg = ArgAt(arguments, 3);
                     var microsecond = microArg is null or PyNone ? (int)time.Microsecond : ToInt(microArg, "time.replace", span);
                     var foldArg = ArgAt(arguments, 5);
                     var fold = foldArg is null or PyNone ? time.Fold : ToFold(foldArg, "time.replace", span);
-                    return new PyTime(
+                    return PyDateTimeOps.OwnDateTimeValue(new PyTime(
                         new TimeOnly(
                             ReplacementInt(arguments, 0, (int)time.Hour, "time.replace", span),
                             ReplacementInt(arguments, 1, (int)time.Minute, "time.replace", span),
@@ -137,7 +136,7 @@ internal sealed partial class LythonRuntime
                             microsecond / 1000,
                             microsecond % 1000),
                         ReplacementTimezone(arguments, 4, time.TzInfo, "time.replace", span),
-                        fold);
+                        fold), context, span);
                 }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
             };
@@ -161,23 +160,23 @@ internal sealed partial class LythonRuntime
                 "microsecond" => dateTime.Microsecond,
                 "tzinfo" => dateTime.TzInfo is null ? PyNone.Instance : dateTime.TzInfo,
                 "fold" => new BigInteger(dateTime.Fold),
-                "date" => BoundCallable.CreateNoArguments(dateTime, "datetime.date", static (receiver, _, _) => receiver.DatePart()),
-                "time" => BoundCallable.CreateNoArguments(dateTime, "datetime.time", static (receiver, _, _) => receiver.NaiveTimePart()),
-                "timetz" => BoundCallable.CreateNoArguments(dateTime, "datetime.timetz", static (receiver, _, _) => receiver.TimePart()),
+                "date" => BoundCallable.CreateNoArguments(dateTime, "datetime.date", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeValue(receiver.DatePart(), context, span)),
+                "time" => BoundCallable.CreateNoArguments(dateTime, "datetime.time", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeValue(receiver.NaiveTimePart(), context, span)),
+                "timetz" => BoundCallable.CreateNoArguments(dateTime, "datetime.timetz", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeValue(receiver.TimePart(), context, span)),
                 "weekday" => BoundCallable.CreateNoArguments(dateTime, "datetime.weekday", static (receiver, _, _) => new BigInteger(receiver.DatePart().Weekday())),
                 "isoweekday" => BoundCallable.CreateNoArguments(dateTime, "datetime.isoweekday", static (receiver, _, _) => new BigInteger(receiver.DatePart().IsoWeekday())),
-                "isocalendar" => BoundCallable.CreateNoArguments(dateTime, "datetime.isocalendar", static (receiver, _, _) => PyDateTimeOps.IsoCalendar(receiver.DatePart().Value)),
+                "isocalendar" => BoundCallable.CreateNoArguments(dateTime, "datetime.isocalendar", static (receiver, span, context) => PyDateTimeOps.IsoCalendar(receiver.DatePart().Value, context, span)),
                 "toordinal" => BoundCallable.CreateNoArguments(dateTime, "datetime.toordinal", static (receiver, _, _) => receiver.ToOrdinal()),
                 "timetuple" => BoundCallable.CreateNoArguments(
                     dateTime,
                     "datetime.timetuple",
-                    static (receiver, _, _) => PyDateTimeOps.TimeTuple(receiver.Value, receiver.TzInfo is null ? -1 : 0)),
-                "utctimetuple" => BoundCallable.CreateNoArguments(dateTime, "datetime.utctimetuple", static (receiver, _, _) =>
+                    static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, receiver.TzInfo is null ? -1 : 0, context, span)),
+                "utctimetuple" => BoundCallable.CreateNoArguments(dateTime, "datetime.utctimetuple", static (receiver, span, context) =>
                 {
                     var utcValue = receiver.TzInfo is null
                         ? receiver.Value
                         : new DateTime(receiver.ToUtcTicks(), DateTimeKind.Unspecified);
-                    return PyDateTimeOps.TimeTuple(utcValue, 0);
+                    return PyDateTimeOps.TimeTuple(utcValue, 0, context, span);
                 }),
                 "ctime" => BoundCallable.CreateNoArguments(dateTime, "datetime.ctime", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.CTime(receiver.Value), context.MemoryGovernor, span)),
                 "timestamp" => BoundCallable.CreateNoArguments(dateTime, "datetime.timestamp", static (receiver, span, context) =>
@@ -194,7 +193,7 @@ internal sealed partial class LythonRuntime
                 "utcoffset" => BoundCallable.CreateNoArguments(
                     dateTime,
                     "datetime.utcoffset",
-                    static (receiver, _, _) => receiver.TzInfo is null ? PyNone.Instance : new PyTimedelta(receiver.TzInfo.Offset)),
+                    static (receiver, span, context) => receiver.TzInfo is null ? (object)PyNone.Instance : PyDateTimeOps.OwnDateTimeValue(new PyTimedelta(receiver.TzInfo.Offset), context, span)),
                 "tzname" => BoundCallable.CreateNoArguments(
                     dateTime,
                     "datetime.tzname",
@@ -215,7 +214,7 @@ internal sealed partial class LythonRuntime
                     };
 
                     context.RegisterHostCall(span);
-                    return PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span);
+                    return PyDateTimeOps.OwnDateTimeValue(PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span), context, span);
                 }, "datetime.astimezone", ["tz"], 0),
                 "isoformat" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -246,13 +245,13 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span), context.MemoryGovernor, span);
                 }, "datetime.strftime", ["format"]),
-                "replace" => BoundCallable.Create((arguments, span, _) =>
+                "replace" => BoundCallable.Create((arguments, span, context) =>
                 {
                     var microArg = ArgAt(arguments, 6);
                     var microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, "datetime.replace", span);
                     var foldArg = ArgAt(arguments, 8);
                     var fold = foldArg is null or PyNone ? dateTime.Fold : ToFold(foldArg, "datetime.replace", span);
-                    return new PyDateTime(
+                    return PyDateTimeOps.OwnDateTimeValue(new PyDateTime(
                         new DateTime(
                             ReplacementInt(arguments, 0, (int)dateTime.Year, "datetime.replace", span),
                             ReplacementInt(arguments, 1, (int)dateTime.Month, "datetime.replace", span),
@@ -263,7 +262,7 @@ internal sealed partial class LythonRuntime
                             microsecond / 1000,
                             DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
                         ReplacementTimezone(arguments, 7, dateTime.TzInfo, "datetime.replace", span),
-                        fold);
+                        fold), context, span);
                 }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
             };
@@ -279,14 +278,14 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "utcoffset" => BoundCallable.Create((arguments, span, _) =>
+                "utcoffset" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "timezone.utcoffset(dt) expects one argument.", span);
                     }
 
-                    return new PyTimedelta(timezone.Offset);
+                    return PyDateTimeOps.OwnDateTimeValue(new PyTimedelta(timezone.Offset), context, span);
                 }, "timezone.utcoffset", ["dt"]),
                 "tzname" => BoundCallable.Create((arguments, span, context) =>
                 {

@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
-            return PyDateTimeOps.Add(left, right, span);
+            return PyDateTimeOps.Add(left, right, context, span);
         }
 
         if (StatisticsModule.TryAddNormalDist(left, right, span, out var normalDistSum))
@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
-            return PyDateTimeOps.Subtract(left, right, span);
+            return PyDateTimeOps.Subtract(left, right, context, span);
         }
 
         if (StatisticsModule.TrySubtractNormalDist(left, right, span, out var normalDistDifference))
@@ -165,7 +165,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Multiply(left, right, span);
+            return PyDateTimeOps.Multiply(left, right, context, span);
         }
 
         if (StatisticsModule.TryMultiplyNormalDist(left, right, span, out var normalDistProduct))
@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Divide(left, right, span);
+            return PyDateTimeOps.Divide(left, right, context, span);
         }
 
         if (StatisticsModule.TryDivideNormalDist(left, right, span, out var normalDistQuotient))
@@ -252,7 +252,10 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.FloorDivide(left, right, span);
+            var floored = PyDateTimeOps.FloorDivide(left, right, context, span);
+            return floored is BigInteger flooredInteger
+                ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, span)
+                : floored;
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -284,7 +287,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Modulo(left, right, span);
+            return PyDateTimeOps.Modulo(left, right, context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))

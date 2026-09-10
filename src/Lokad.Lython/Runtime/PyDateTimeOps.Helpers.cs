@@ -24,6 +24,21 @@ internal static partial class PyDateTimeOps
         ]);
     }
 
+    private static PyTuple CreateTimeTuple(DateOnly date, TimeOnly time, int isDst, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        return PyTuple.FromOwnedArray([
+            new BigInteger(date.Year),
+            new BigInteger(date.Month),
+            new BigInteger(date.Day),
+            new BigInteger(time.Hour),
+            new BigInteger(time.Minute),
+            new BigInteger(time.Second),
+            new BigInteger(((int)date.DayOfWeek + 6) % 7),
+            new BigInteger(date.DayOfYear),
+            new BigInteger(isDst)
+        ], governor, span);
+    }
+
     private static DateOnly DateFromOrdinalValue(object value, string owner, LythonSourceSpan span)
     {
         if (!Numbers.PyNumberOps.TryAsInteger(value, out var ordinal))

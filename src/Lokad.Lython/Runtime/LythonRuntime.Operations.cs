@@ -234,7 +234,7 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyTimedelta)
         {
-            return PyDateTimeOps.Negate(operand, span);
+            return PyDateTimeOps.Negate(operand, context, span);
         }
 
         if (operand is PyDecimal decimalValue)

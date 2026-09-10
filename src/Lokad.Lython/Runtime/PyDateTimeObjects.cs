@@ -391,6 +391,14 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
         _items = PyTuple.FromOwnedArray([Year, Week, Weekday]);
     }
 
+    internal PyIsoCalendarDate(BigInteger year, BigInteger week, BigInteger weekday, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        Year = year;
+        Week = week;
+        Weekday = weekday;
+        _items = PyTuple.FromOwnedArray([Year, Week, Weekday], governor, span);
+    }
+
     public BigInteger Year { get; }
 
     public BigInteger Week { get; }
