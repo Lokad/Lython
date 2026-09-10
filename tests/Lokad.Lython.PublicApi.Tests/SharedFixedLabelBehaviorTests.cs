@@ -1842,6 +1842,33 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task StructTimeTypeInitSubclassBindsSelf()
+    {
+        // The struct_time type binds itself like CPython, matching the
+        // value route, which already binds the defining type object.
+        var script = new LythonEngine().Compile("""
+            import time
+            results = []
+            results.append(time.struct_time.__init_subclass__.__self__ is time.struct_time)
+            t = time.gmtime()
+            results.append(t.__init_subclass__.__self__ is time.struct_time)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

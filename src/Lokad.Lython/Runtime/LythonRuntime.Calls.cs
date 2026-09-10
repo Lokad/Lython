@@ -610,6 +610,7 @@ internal sealed partial class LythonRuntime
             ExceptionTypeValue => target,
             PathlibModule.PathlibPathType => target,
             PyBuiltinRuntimeType => target,
+            TimeStructTimeType => target,
             CollectionsCallable member when member.Name is "collections.namedtuple" => PyType.FunctionType,
             CollectionsCallable => target,
             PartialFactory => target,
