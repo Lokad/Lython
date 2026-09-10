@@ -434,6 +434,43 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task SlotOwnerIdentities()
+    {
+        // The owning object type threads into slot wrappers at class
+        // construction: __new__ reports it as __self__ and slot wrappers
+        // (bound or not) as __objclass__, like CPython. The other slot
+        // surfaces stay missing.
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            e = E()
+            return [object.__new__.__self__ is object,
+                e.__init__.__self__ is e,
+                object.__init_subclass__.__self__ is object,
+                E.__init_subclass__.__self__ is E,
+                object.__init__.__objclass__ is object,
+                e.__init__.__objclass__ is object,
+                e.__setattr__.__objclass__ is object,
+                hasattr(object.__init__, "__self__"),
+                hasattr(object.__new__, "__objclass__"),
+                hasattr(object.__init_subclass__, "__objclass__"),
+                hasattr(e.__init_subclass__, "__objclass__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true,
+            false, false, false, false,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

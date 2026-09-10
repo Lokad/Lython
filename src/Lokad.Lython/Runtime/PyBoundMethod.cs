@@ -24,13 +24,13 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     // method-wrapper and bound-builtin types like CPython.
     internal LythonRuntime.ICallable Function => _function;
 
-    // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__
+    // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__/__objclass__
     // like CPython (including user-assigned overrides), alongside the bound
     // __self__/__func__ pair; engine objects without member handling stay
     // missing, matching method-wrapper surface (no __module__ there).
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        if (name is "__name__" or "__qualname__" or "__module__" or "__doc__" &&
+        if (name is "__name__" or "__qualname__" or "__module__" or "__doc__" or "__objclass__" &&
             _function is IPyDynamicAttributes attributes &&
             attributes.TryGetMember(name, out value))
         {

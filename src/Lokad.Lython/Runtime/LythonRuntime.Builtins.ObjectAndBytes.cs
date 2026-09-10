@@ -188,10 +188,16 @@ internal sealed partial class LythonRuntime
         return new PyClassMethod(callable);
     }
 
-    private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes
+    private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes, IClassOwnedMember
     {
         // object.__new__ is a builtin method: CPython reports the short
         // __name__, the qualified __qualname__ and a None __module__.
+        // The owning type is threaded at class construction so __self__
+        // reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name is "__name__")
@@ -212,6 +218,12 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name is "__self__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
             value = PyNone.Instance;
             return false;
         }
@@ -229,9 +241,15 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
+    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
     {
         public string Name => "__init__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -247,6 +265,12 @@ internal sealed partial class LythonRuntime
             if (name is "__qualname__")
             {
                 value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
                 return true;
             }
 
@@ -323,9 +347,15 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
+    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
     {
         public string Name => "__setattr__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -341,6 +371,12 @@ internal sealed partial class LythonRuntime
             if (name is "__qualname__")
             {
                 value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
                 return true;
             }
 
@@ -377,9 +413,15 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
+    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
     {
         public string Name => "__delattr__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -395,6 +437,12 @@ internal sealed partial class LythonRuntime
             if (name is "__qualname__")
             {
                 value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
                 return true;
             }
 
@@ -434,9 +482,15 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
+    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
     {
         public string Name => "__getattribute__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -452,6 +506,12 @@ internal sealed partial class LythonRuntime
             if (name is "__qualname__")
             {
                 value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
                 return true;
             }
 
