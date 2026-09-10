@@ -238,6 +238,31 @@ internal static class PyAttributeLookup
                 return true;
             }
 
+            // Factory members reuse existing slots like CPython: the
+            // partialmethod factory shares object.__new__ while the
+            // namedtuple factory resolves the function slot.
+            if (target is LythonRuntime.PartialMethodFactory)
+            {
+                if (!context.TryGetBuiltin("object", out var factoryBase) ||
+                    factoryBase is not PyType factoryObject ||
+                    !factoryObject.TryLookupInMro(memberName, 0, out var factoryRaw, out _) ||
+                    factoryRaw is not IPyDescriptor factoryDescriptor)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                value = factoryDescriptor.Get(null, factoryObject, context, span);
+                return true;
+            }
+
+            if (target is LythonRuntime.CollectionsCallable namedtupleFactory &&
+                namedtupleFactory.Name is "collections.namedtuple" &&
+                LythonRuntime.TryGetTypeNewSlot(PyType.FunctionType, out value))
+            {
+                return true;
+            }
+
             // Collections members route by name, both directly and through
             // the class values of their instances.
             if (target is LythonRuntime.CollectionsCallable directMember &&

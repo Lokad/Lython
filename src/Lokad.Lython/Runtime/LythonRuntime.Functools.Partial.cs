@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class PartialMethodFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
+    internal sealed class PartialMethodFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly PartialMethodFactory Instance = new();
 

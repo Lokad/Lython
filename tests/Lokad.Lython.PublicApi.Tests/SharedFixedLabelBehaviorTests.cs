@@ -845,6 +845,40 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task FactoryNewSlots()
+    {
+        // Factory members reuse existing slots like CPython: partialmethod
+        // shares object.__new__ while the namedtuple factory resolves the
+        // shared function slot.
+        var script = new LythonEngine().Compile("""
+            import functools
+            import collections
+            def f():
+                pass
+            return [functools.partialmethod.__new__ is object.__new__,
+                collections.namedtuple.__new__.__qualname__,
+                collections.namedtuple.__new__ is collections.namedtuple.__new__,
+                collections.namedtuple.__new__ is object.__new__,
+                (collections.namedtuple.__new__).__self__ is type(f),
+                type(functools.partialmethod.__new__).__name__,
+                type(collections.namedtuple.__new__).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, "function.__new__", true, false, true,
+            "builtin_function_or_method", "builtin_function_or_method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
