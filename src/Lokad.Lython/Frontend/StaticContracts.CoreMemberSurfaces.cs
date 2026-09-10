@@ -212,6 +212,9 @@ internal static partial class StaticContracts
         "setdefault",
         "copy",
         "clear",
+        "update",
+        "pop",
+        "popitem",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)

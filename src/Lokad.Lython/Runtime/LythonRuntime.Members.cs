@@ -342,6 +342,47 @@ internal sealed partial class LythonRuntime
                     dict,
                     "defaultdict.items",
                     static (receiver, span, context) => BuildItemsList(receiver, context, span)),
+                "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)),
+                "pop" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length is < 1 or > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.pop(key[, default]) expects one key and an optional default.", span);
+                    }
+
+                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    if (!dict.TryGetValue(key, out var found))
+                    {
+                        if (arguments.Length == 2)
+                        {
+                            return arguments[1];
+                        }
+
+                        var renderedKey = key switch
+                        {
+                            PyString text => text.AsString(),
+                            _ => null
+                        };
+                        throw new LythonRuntimeException(
+                            "KeyError",
+                            renderedKey is null ? "Key was not found." : $"Key '{renderedKey}' was not found.",
+                            span,
+                            null,
+                            arguments[0]);
+                    }
+
+                    dict.Remove(key);
+                    return found;
+                }, "defaultdict.pop", ["key", "default"], 1),
+                "popitem" => BoundCallable.CreateNoArguments(dict, "defaultdict.popitem", static (receiver, span, context) =>
+                {
+                    if (!receiver.TryRemoveLast(out var key, out var value))
+                    {
+                        throw new LythonRuntimeException("KeyError", "popitem(): dictionary is empty", span, null, PyString.FromString("popitem(): dictionary is empty"));
+                    }
+
+                    return new PyTuple([key, value], context.MemoryGovernor, span);
+                }),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)

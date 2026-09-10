@@ -2515,6 +2515,67 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task DefaultDictPopFamily()
+    {
+        // defaultdict pop/update/popitem mirror the dict shapes like
+        // CPython (inherited semantics, bound to the instance), with
+        // key-carrying misses and the shared static surface.
+        var script = new LythonEngine().Compile("""
+            import collections
+            results = []
+            d = collections.defaultdict(int)
+            d["a"] = 1
+            d["b"] = 2
+            results.append(d.pop("a"))
+            results.append(len(d) == 1)
+            results.append(d.get("b"))
+            results.append(d.pop("zz", "dflt"))
+            try:
+                d.pop("zz")
+            except KeyError as k:
+                results.append(str(k))
+                results.append(k.args == ("zz",))
+            d.update({"c": 3})
+            results.append(d.get("c"))
+            results.append(len(d))
+            results.append(d.popitem())
+            results.append(len(d))
+            e = collections.defaultdict(int)
+            try:
+                e.popitem()
+            except KeyError as k:
+                results.append(str(k))
+                results.append(k.args == ("popitem(): dictionary is empty",))
+            results.append(d.pop == d.pop)
+            results.append(type(d.pop).__name__)
+            results.append(d.pop.__self__ is d)
+            results.append(d.popitem == d.popitem)
+            results.append(d.pop.__name__)
+            results.append(hasattr(d, "pop"))
+            results.append(hasattr(d, "update"))
+            results.append(hasattr(d, "popitem"))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(1), true, new BigInteger(2), "dflt",
+            "'zz'", true, new BigInteger(3), new BigInteger(2),
+            new List<object?> { "c", new BigInteger(3) }, new BigInteger(1),
+            "'popitem(): dictionary is empty'", true,
+            true, "builtin_function_or_method", true, true, "pop",
+            true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

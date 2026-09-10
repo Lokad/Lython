@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object UpdateDictionary(
+    internal static object UpdateDictionary(
         PyDict target,
         CallArgumentValue[] arguments,
         LythonSourceSpan span,

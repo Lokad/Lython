@@ -80,6 +80,12 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public bool Remove(object key) => _items.Remove(key);
 
+    public bool TryRemoveLast([MaybeNullWhen(false)] out object key, [MaybeNullWhen(false)] out object value)
+        => _items.TryRemoveLast(out key, out value);
+
+    public object UpdateFrom(CallArgumentValue[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => LythonRuntime.UpdateDictionary(_items, arguments, span, context);
+
     public void Clear() => _items.Clear();
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
