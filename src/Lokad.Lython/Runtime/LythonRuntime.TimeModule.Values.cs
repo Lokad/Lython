@@ -126,6 +126,9 @@ internal sealed partial class LythonRuntime
             MemoryGovernor governor,
             LythonSourceSpan span)
         {
+            // Own the shell beside the governed values tuple.
+            governor.Reserve(64L, span);
+            governor.Commit(64L);
             _values = new PyTuple(values, governor, span);
             if (_values.Count != 9)
             {

@@ -18,12 +18,17 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "zero-argument super() is only supported inside instance methods, classmethods, and property accessors in Lython.", span);
             }
 
-            return context.ImplicitSuperReceiver switch
+            var zeroResult = context.ImplicitSuperReceiver switch
             {
                 PyInstance instance => new PySuper(context.ImplicitSuperAnchorType, instance, instance.Type),
                 PyType type => new PySuper(context.ImplicitSuperAnchorType, type, type),
                 _ => throw new LythonRuntimeException("TypeError", "zero-argument super() could not resolve the current receiver.", span)
             };
+
+            // The anchor and receiver stay aliased; own the descriptor shell.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return zeroResult;
         }
 
         if (arguments.Length != 2)
@@ -36,7 +41,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "super(type, object) expects the first argument to be a class.", span);
         }
 
-        return arguments[1] switch
+        var result = arguments[1] switch
         {
             PyInstance instance when instance.Type.IsSubtypeOf(anchorType) => new PySuper(anchorType, instance, instance.Type),
             PyType type when type.IsSubtypeOf(anchorType) => new PySuper(anchorType, type, type),
@@ -44,6 +49,10 @@ internal sealed partial class LythonRuntime
             PyType => throw new LythonRuntimeException("TypeError", "super(type, object) expects the class argument to be a subclass of the given class.", span),
             _ => throw new LythonRuntimeException("TypeError", "super(type, object) expects the second argument to be an instance or class.", span)
         };
+
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
+        return result;
     }
 
     private static object List(object[] arguments, LythonSourceSpan span, ExecutionContext context)
