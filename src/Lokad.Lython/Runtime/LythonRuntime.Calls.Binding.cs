@@ -268,21 +268,43 @@ internal sealed partial class LythonRuntime
 
     private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
-        // Exception module labels form a fixed vocabulary, so every known module
-        // shares one constant forever and per-access __module__ reads alias
-        // stably like CPython; unknown module names keep building fresh labels.
+        // Builtin module labels form a fixed vocabulary (the exception modules
+        // plus every top-level module owning builtin callables), so every known
+        // module shares one constant forever and per-access __module__ reads alias
+        // stably like CPython; nested or unknown module names keep building
+        // fresh labels.
         private static readonly PyString BuiltinsModuleName = PyString.FromString("builtins");
         private static readonly PyString ArgparseModuleName = PyString.FromString("argparse");
         private static readonly PyString CopyModuleName = PyString.FromString("copy");
+        private static readonly PyString CollectionsModuleName = PyString.FromString("collections");
         private static readonly PyString CsvModuleName = PyString.FromString("csv");
         private static readonly PyString DataclassesModuleName = PyString.FromString("dataclasses");
+        private static readonly PyString DatetimeModuleName = PyString.FromString("datetime");
         private static readonly PyString DecimalModuleName = PyString.FromString("decimal");
+        private static readonly PyString DifflibModuleName = PyString.FromString("difflib");
+        private static readonly PyString FilecmpModuleName = PyString.FromString("filecmp");
+        private static readonly PyString FnmatchModuleName = PyString.FromString("fnmatch");
+        private static readonly PyString FunctoolsModuleName = PyString.FromString("functools");
+        private static readonly PyString GlobModuleName = PyString.FromString("glob");
         private static readonly PyString GzipModuleName = PyString.FromString("gzip");
+        private static readonly PyString HashlibModuleName = PyString.FromString("hashlib");
+        private static readonly PyString ImportlibModuleName = PyString.FromString("importlib");
+        private static readonly PyString ItertoolsModuleName = PyString.FromString("itertools");
         private static readonly PyString JsonModuleName = PyString.FromString("json");
+        private static readonly PyString MathModuleName = PyString.FromString("math");
         private static readonly PyString OpenPyxlExceptionsModuleName = PyString.FromString("openpyxl.utils.exceptions");
+        private static readonly PyString OperatorModuleName = PyString.FromString("operator");
+        private static readonly PyString OsModuleName = PyString.FromString("os");
+        private static readonly PyString PathlibModuleName = PyString.FromString("pathlib");
+        private static readonly PyString PkgutilModuleName = PyString.FromString("pkgutil");
+        private static readonly PyString RandomModuleName = PyString.FromString("random");
         private static readonly PyString ReModuleName = PyString.FromString("re");
+        private static readonly PyString ShlexModuleName = PyString.FromString("shlex");
         private static readonly PyString ShutilModuleName = PyString.FromString("shutil");
         private static readonly PyString StatisticsModuleName = PyString.FromString("statistics");
+        private static readonly PyString SysModuleName = PyString.FromString("sys");
+        private static readonly PyString TimeModuleName = PyString.FromString("time");
+        private static readonly PyString TypingModuleName = PyString.FromString("typing");
         private static readonly PyString SubprocessModuleName = PyString.FromString("subprocess");
         private static readonly PyString ZipfileModuleName = PyString.FromString("zipfile");
 
@@ -291,15 +313,35 @@ internal sealed partial class LythonRuntime
             "builtins" => BuiltinsModuleName,
             "argparse" => ArgparseModuleName,
             "copy" => CopyModuleName,
+            "collections" => CollectionsModuleName,
             "csv" => CsvModuleName,
             "dataclasses" => DataclassesModuleName,
+            "datetime" => DatetimeModuleName,
             "decimal" => DecimalModuleName,
+            "difflib" => DifflibModuleName,
+            "filecmp" => FilecmpModuleName,
+            "fnmatch" => FnmatchModuleName,
+            "functools" => FunctoolsModuleName,
+            "glob" => GlobModuleName,
             "gzip" => GzipModuleName,
+            "hashlib" => HashlibModuleName,
+            "importlib" => ImportlibModuleName,
+            "itertools" => ItertoolsModuleName,
             "json" => JsonModuleName,
+            "math" => MathModuleName,
             "openpyxl.utils.exceptions" => OpenPyxlExceptionsModuleName,
+            "operator" => OperatorModuleName,
+            "os" => OsModuleName,
+            "pathlib" => PathlibModuleName,
+            "pkgutil" => PkgutilModuleName,
+            "random" => RandomModuleName,
             "re" => ReModuleName,
+            "shlex" => ShlexModuleName,
             "shutil" => ShutilModuleName,
             "statistics" => StatisticsModuleName,
+            "sys" => SysModuleName,
+            "time" => TimeModuleName,
+            "typing" => TypingModuleName,
             "subprocess" => SubprocessModuleName,
             "zipfile" => ZipfileModuleName,
             _ => PyString.FromString(moduleName),

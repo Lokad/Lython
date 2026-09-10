@@ -409,20 +409,36 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (IsBuiltinTypeName(Name) && name is "__name__" or "__qualname__")
+            // Every builtin callable exposes CPython-style __name__/__module__:
+            // the short name and the dotted module part (shared builtins for
+            // top-level names). __name__ stays fresh per read like CPython;
+            // __module__ reuses the shared label catalog where it hits.
+            if (name is "__name__" or "__qualname__")
             {
-                value = PyString.FromString(Name);
+                value = PyString.FromString(ShortCallableName(Name));
                 return true;
             }
 
-            if (IsBuiltinTypeName(Name) && name == "__module__")
+            if (name == "__module__")
             {
-                value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                value = ExceptionTypeValue.SharedModuleLabel(CallableModuleName(Name));
                 return true;
             }
 
             value = PyNone.Instance;
             return false;
+        }
+
+        private static string ShortCallableName(string name)
+        {
+            var dot = name.LastIndexOf('.');
+            return dot < 0 ? name : name.Substring(dot + 1);
+        }
+
+        private static string CallableModuleName(string name)
+        {
+            var dot = name.LastIndexOf('.');
+            return dot < 0 ? "builtins" : name.Substring(0, dot);
         }
     }
 
