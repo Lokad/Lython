@@ -161,6 +161,7 @@ internal static partial class StaticContracts
     private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
     {
         "as_integer_ratio",
+        "bit_count",
         "bit_length",
         "conjugate",
         "denominator",

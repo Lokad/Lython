@@ -343,6 +343,27 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(BigInteger.Abs(integer.Value).GetBitLength());
                 }, "int.bit_length"),
+                "bit_count" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.bit_count() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    var remaining = BigInteger.Abs(integer.Value);
+                    var ones = 0;
+                    while (remaining != BigInteger.Zero)
+                    {
+                        if (!remaining.IsEven)
+                        {
+                            ones++;
+                        }
+
+                        remaining >>= 1;
+                    }
+
+                    return new BigInteger(ones);
+                }, "int.bit_count"),
                 "conjugate" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)

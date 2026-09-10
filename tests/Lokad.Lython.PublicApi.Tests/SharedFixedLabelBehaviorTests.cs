@@ -2725,8 +2725,8 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(int.bit_length).__name__)
             results.append(hasattr(int.bit_length, "__self__"))
             results.append(int.bit_length.__name__)
-            results.append(dir(5) == ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"])
-            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_length", "conjugate", "from_bytes", "is_integer", "to_bytes"])
+            results.append(dir(5) == ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"])
+            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_count", "bit_length", "conjugate", "from_bytes", "is_integer", "to_bytes"])
             for n in dir(int):
                 if not hasattr(int, n):
                     results.append(n)
@@ -3818,6 +3818,56 @@ public sealed class SharedFixedLabelBehaviorTests
             "bytes.hex([sep[, bytes_per_sep]]) expects bytes_per_sep to be an integer.",
             "argument for hex() given by name ('sep') and position (1)",
             "hex() got an unexpected keyword argument 'bogus'",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task IntBitCountMember()
+    {
+        // int.bit_count counts one-bits like CPython (bools ride along),
+        // with unbound descriptors and dir() lists beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((0).bit_count())
+            results.append((7).bit_count())
+            results.append((-7).bit_count())
+            results.append((255).bit_count())
+            results.append(((2 ** 100) - 1).bit_count())
+            results.append(True.bit_count())
+            results.append(False.bit_count())
+            results.append(int.bit_count(7))
+            results.append(int.bit_count == int.bit_count)
+            results.append(type(int.bit_count).__name__)
+            results.append(int.bit_count.__name__)
+            results.append(hasattr(int, "bit_count"))
+            results.append("bit_count" in dir(5))
+            results.append("bit_count" in dir(int))
+            try:
+                (1).bit_count(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.bit_count()
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(0), new BigInteger(3), new BigInteger(3),
+            new BigInteger(8), new BigInteger(100), new BigInteger(1),
+            new BigInteger(0), new BigInteger(3), true,
+            "method_descriptor", "bit_count", true, true, true,
+            "int.bit_count() takes no arguments (1 given)",
+            "unbound method int.bit_count() needs an argument",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
