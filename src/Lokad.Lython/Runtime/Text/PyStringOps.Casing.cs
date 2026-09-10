@@ -9,12 +9,44 @@ internal static partial class PyStringOps
 {
     public static bool IsLower(PyString value)
     {
-        return CheckCased(value, expectLower: true);
+        var foundCased = false;
+        foreach (var rune in value.AsString().EnumerateRunes())
+        {
+            switch (GetRuneCase(rune))
+            {
+                case RuneCase.Lower:
+                    foundCased = true;
+                    break;
+                case RuneCase.Upper:
+                case RuneCase.Title:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        return foundCased;
     }
 
     public static bool IsUpper(PyString value)
     {
-        return CheckCased(value, expectLower: false);
+        var foundCased = false;
+        foreach (var rune in value.AsString().EnumerateRunes())
+        {
+            switch (GetRuneCase(rune))
+            {
+                case RuneCase.Upper:
+                    foundCased = true;
+                    break;
+                case RuneCase.Lower:
+                case RuneCase.Title:
+                    return false;
+                default:
+                    break;
+            }
+        }
+
+        return foundCased;
     }
 
     public static PyString Lower(PyString value) => MapCase(value, CaseMapping.Lower);

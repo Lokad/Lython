@@ -64,34 +64,6 @@ internal static partial class PyStringOps
         return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
     }
 
-    private static bool CheckCased(PyString value, bool expectLower)
-    {
-        var sawCasedRune = false;
-        var source = value.Utf8Bytes.Span;
-        for (var byteIndex = 0; byteIndex < source.Length;)
-        {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            var text = rune.ToString();
-            var lower = MapCase(rune, CaseMapping.Lower);
-            var upper = MapCase(rune, CaseMapping.Upper);
-            if (lower == upper)
-            {
-                byteIndex += runeLength;
-                continue;
-            }
-
-            sawCasedRune = true;
-            if (expectLower ? text != lower : text != upper)
-            {
-                return false;
-            }
-
-            byteIndex += runeLength;
-        }
-
-        return sawCasedRune;
-    }
-
     private static PyString MapCase(PyString value, CaseMapping mapping)
     {
         var builder = CreateBuilder(value, value.Utf8Bytes.Length);

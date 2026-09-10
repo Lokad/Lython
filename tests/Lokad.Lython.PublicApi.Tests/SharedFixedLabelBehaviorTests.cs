@@ -3625,6 +3625,9 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append("".isidentifier())
             results.append("class".isidentifier())
             results.append("\u1885".isidentifier())
+            results.append("A\u2167".isupper())
+            results.append("\u00aa".islower())
+            results.append("A\u01c5".isupper())
             results.append("Hello World".istitle())
             results.append("Hello world".istitle())
             results.append("Don't".istitle())
@@ -3650,8 +3653,8 @@ public sealed class SharedFixedLabelBehaviorTests
         {
             true, false, true, false, true, false, false, true, true, true,
             true, true, false, true, true, false, false, true, true, true,
-            false, false, true, false, false, true, true, "method_descriptor",
-            "isdecimal", true, true, true,
+            true, false, true, false, false, true, false, false, true, true,
+            "method_descriptor", "isdecimal", true, true, true,
             "str.isdecimal() expects no arguments.",
         };
         var sync = script.Run(new MockLythonHost());

@@ -188,18 +188,33 @@ internal static partial class PyStringOps
         return false;
     }
 
-    private static bool IsUpperRune(Rune rune)
+    private enum RuneCase
     {
-        var category = Rune.GetUnicodeCategory(rune);
-        return category is UnicodeCategory.UppercaseLetter or UnicodeCategory.TitlecaseLetter
-            || InRanges(UpperExceptionRanges, rune.Value);
+        Uncased,
+        Upper,
+        Lower,
+        Title,
     }
 
-    private static bool IsLowerRune(Rune rune)
+    private static RuneCase GetRuneCase(Rune rune)
     {
         var category = Rune.GetUnicodeCategory(rune);
-        return category is UnicodeCategory.LowercaseLetter
-            || InRanges(LowerExceptionRanges, rune.Value);
+        if (category is UnicodeCategory.UppercaseLetter || InRanges(UpperExceptionRanges, rune.Value))
+        {
+            return RuneCase.Upper;
+        }
+
+        if (category is UnicodeCategory.LowercaseLetter || InRanges(LowerExceptionRanges, rune.Value))
+        {
+            return RuneCase.Lower;
+        }
+
+        if (category is UnicodeCategory.TitlecaseLetter)
+        {
+            return RuneCase.Title;
+        }
+
+        return RuneCase.Uncased;
     }
 
     public static bool IsAscii(PyString value)
@@ -301,29 +316,30 @@ internal static partial class PyStringOps
         var foundCased = false;
         foreach (var rune in value.AsString().EnumerateRunes())
         {
-            if (IsUpperRune(rune))
+            switch (GetRuneCase(rune))
             {
-                if (previousIsCased)
-                {
-                    return false;
-                }
+                case RuneCase.Upper:
+                case RuneCase.Title:
+                    if (previousIsCased)
+                    {
+                        return false;
+                    }
 
-                previousIsCased = true;
-                foundCased = true;
-            }
-            else if (IsLowerRune(rune))
-            {
-                if (!previousIsCased)
-                {
-                    return false;
-                }
+                    previousIsCased = true;
+                    foundCased = true;
+                    break;
+                case RuneCase.Lower:
+                    if (!previousIsCased)
+                    {
+                        return false;
+                    }
 
-                previousIsCased = true;
-                foundCased = true;
-            }
-            else
-            {
-                previousIsCased = false;
+                    previousIsCased = true;
+                    foundCased = true;
+                    break;
+                default:
+                    previousIsCased = false;
+                    break;
             }
         }
 
