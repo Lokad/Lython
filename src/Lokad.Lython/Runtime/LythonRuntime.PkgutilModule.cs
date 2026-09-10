@@ -542,7 +542,7 @@ internal sealed partial class LythonRuntime
             if (TryGetLocalModulePath(fullname, context, span, out var path, out var isPackage))
             {
                 ChargePkgutilValue(context.MemoryGovernor, span);
-                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), isPackage, path);
+                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), isPackage, PyString.FromString(path, context.MemoryGovernor, span));
                 return true;
             }
 

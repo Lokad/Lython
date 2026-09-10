@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
 
     internal sealed class PkgutilLoaderObject : IPyRenderableValue, IPyDynamicAttributes
     {
-        public PkgutilLoaderObject(PyString name, bool isPackage, string? sourcePath)
+        public PkgutilLoaderObject(PyString name, bool isPackage, PyString? sourcePath)
         {
             Name = name;
             IsPackage = isPackage;
@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
 
         public bool IsPackage { get; }
 
-        public string? SourcePath { get; }
+        public PyString? SourcePath { get; }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -269,7 +269,7 @@ internal sealed partial class LythonRuntime
 
                     return SourcePath is null
                         ? PyNone.Instance
-                        : ReadGovernedHostText(SourcePath, context, span);
+                        : ReadGovernedHostText(SourcePath.AsString(), context, span);
                 }, "loader.get_source", ["fullname"], requiredCount: 0),
                 _ => MissingMemberValue.Instance,
             };

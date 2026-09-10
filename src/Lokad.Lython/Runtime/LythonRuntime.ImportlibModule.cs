@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         PkgutilModule.ChargePkgutilValue(context.MemoryGovernor, span);
-        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName, context.MemoryGovernor, span), isPackage, path);
+        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName, context.MemoryGovernor, span), isPackage, PyString.FromString(path, context.MemoryGovernor, span));
         object locations = isPackage
             ? new PyList([PyString.FromString(PathOps.Parent(path), context.MemoryGovernor, span)], context.MemoryGovernor, span)
             : PyNone.Instance;
