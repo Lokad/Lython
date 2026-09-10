@@ -399,6 +399,20 @@ internal sealed partial class LythonRuntime
         return left.Concat(right, context.MemoryGovernor, span);
     }
 
+    // String methods build results from receiver storage, so a result derived
+    // from an unowned (shared-constant) receiver would escape accounting. Adopt
+    // fresh results here; aliases and the shared empty string stay free.
+    internal static PyString OwnMethodResult(PyString result, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is null || result.OwnerMemoryGovernor is not null ||
+            ReferenceEquals(result, receiver) || ReferenceEquals(result, PyString.Empty))
+        {
+            return result;
+        }
+
+        return PyString.FromString(result.AsString(), governor, span);
+    }
+
     private static PyString RepeatString(PyString text, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero)

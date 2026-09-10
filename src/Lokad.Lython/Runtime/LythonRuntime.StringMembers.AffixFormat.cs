@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "removeprefix" => BoundCallable.Create((arguments, span, _) =>
+                    "removeprefix" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var prefix))
                         {
@@ -22,10 +22,10 @@ internal sealed partial class LythonRuntime
                         }
 
                         return text.StartsWith(prefix)
-                            ? SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length)
+                            ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span)
                             : text;
                     }, "str.removeprefix", ["prefix"]),
-                    "removesuffix" => BoundCallable.Create((arguments, span, _) =>
+                    "removesuffix" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
                         {
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return suffix.Length != 0 && text.EndsWith(suffix)
-                            ? SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length)
+                            ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length), text, context.MemoryGovernor, span)
                             : text;
                     }, "str.removesuffix", ["suffix"]),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition),
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                                 }
                             }
 
-                            return PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context));
+                            return OwnMethodResult(PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context)), text, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                         {
                             var positional = Array.Empty<object>();
                             var keywords = PyStringOps.ExtractStringKeyDictionary(mapping);
-                            return PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context));
+                            return OwnMethodResult(PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context)), text, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {

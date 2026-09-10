@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                         var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
                         return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
                     }, LythonCallableSignature.Create("str.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1)),
-                    "expandtabs" => BoundCallable.Create((arguments, span, _) =>
+                    "expandtabs" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
                         {
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span) : 8;
-                        return PyStringOps.ExpandTabs(text, tabSize);
+                        return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize), text, context.MemoryGovernor, span);
                     }, "str.expandtabs", ["tabsize"], 0),
                     "strip" => CreateStripMethod(text, name, PyStringOps.Strip),
                     "lstrip" => CreateStripMethod(text, name, PyStringOps.LStrip),
@@ -101,29 +101,33 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
                 static BoundCallable CreateStripMethod(PyString target, string methodName, Func<PyString, PyString> whitespaceOperation)
-                    => BoundCallable.Create((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
                         {
                             throw new LythonRuntimeException("TypeError", $"str.{methodName}([chars]) expects zero or one string argument.", span);
                         }
 
+                        PyString result;
                         if (arguments.Length == 0 || ReferenceEquals(arguments[0], PyNone.Instance))
                         {
-                            return whitespaceOperation(target);
+                            result = whitespaceOperation(target);
                         }
-
-                        if (!PyStringOps.TryAsString(arguments[0], out var chars))
+                        else if (!PyStringOps.TryAsString(arguments[0], out var chars))
                         {
                             throw new LythonRuntimeException("TypeError", $"str.{methodName}([chars]) expects zero or one string argument.", span);
                         }
-
-                        return methodName switch
+                        else
                         {
-                            "strip" => PyStringOps.Strip(target, chars),
-                            "lstrip" => PyStringOps.LStrip(target, chars),
-                            _ => PyStringOps.RStrip(target, chars),
-                        };
+                            result = methodName switch
+                            {
+                                "strip" => PyStringOps.Strip(target, chars),
+                                "lstrip" => PyStringOps.LStrip(target, chars),
+                                _ => PyStringOps.RStrip(target, chars),
+                            };
+                        }
+
+                        return OwnMethodResult(result, target, context.MemoryGovernor, span);
                     }, $"str.{methodName}", ["chars"], 0);
             }
         }

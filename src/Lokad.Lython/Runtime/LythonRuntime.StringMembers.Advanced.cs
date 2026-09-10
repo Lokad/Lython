@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                     "center" => CreatePaddingMethod("center", PyStringOps.Center),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust),
                     "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust),
-                    "zfill" => BoundCallable.Create((arguments, span, _) =>
+                    "zfill" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span);
-                        return PyStringOps.ZFill(text, width);
+                        return OwnMethodResult(PyStringOps.ZFill(text, width), text, context.MemoryGovernor, span);
                     }, "str.zfill", ["width"]),
                     "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false),
                     "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true),
@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
                 BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, PyString> operation)
-                    => BoundCallable.Create((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(width[, fillchar])";
                         if (arguments.Length is < 1 or > 2)
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                         var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], signature, span) : null;
                         try
                         {
-                            return operation(text, width, fill);
+                            return OwnMethodResult(operation(text, width, fill), text, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {

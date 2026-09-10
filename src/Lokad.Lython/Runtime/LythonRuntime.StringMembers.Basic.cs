@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                             context,
                             span);
                     }, "str.encode", ["encoding", "errors"], 0),
-                    "replace" => BoundCallable.Create((arguments, span, _) =>
+                    "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 2 or > 3 ||
                             !PyStringOps.TryAsString(arguments[0], out var oldValue) ||
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span) : -1;
-                        return PyStringOps.Replace(text, oldValue, newValue, count);
+                        return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count), text, context.MemoryGovernor, span);
                     }, "str.replace", ["old", "new", "count"], 2),
                     "startswith" => BoundCallable.Create((arguments, span, _) =>
                     {
@@ -64,12 +64,12 @@ internal sealed partial class LythonRuntime
                         var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.endswith(suffix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
                     }, "str.endswith", ["suffix", "start", "end"], 1),
-                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, _, _) => receiver.ToLowerInvariant()),
-                    "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, _, _) => PyStringOps.Capitalize(receiver)),
+                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, span, context) => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span)),
+                    "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => OwnMethodResult(PyStringOps.Capitalize(receiver), receiver, context.MemoryGovernor, span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", static (receiver, _, _) => PyStringOps.IsLower(receiver)),
-                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, _, _) => receiver.ToUpperInvariant()),
-                    "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, _, _) => PyStringOps.SwapCase(receiver)),
-                    "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, _, _) => PyStringOps.Title(receiver)),
+                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, span, context) => OwnMethodResult(receiver.ToUpperInvariant(), receiver, context.MemoryGovernor, span)),
+                    "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, span, context) => OwnMethodResult(PyStringOps.SwapCase(receiver), receiver, context.MemoryGovernor, span)),
+                    "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, span, context) => OwnMethodResult(PyStringOps.Title(receiver), receiver, context.MemoryGovernor, span)),
                     "isupper" => BoundCallable.CreateNoArguments(text, "str.isupper", static (receiver, _, _) => PyStringOps.IsUpper(receiver)),
                     "isalpha" => BoundCallable.CreateNoArguments(text, "str.isalpha", static (receiver, _, _) => PyStringOps.IsAlpha(receiver)),
                     "isdigit" => BoundCallable.CreateNoArguments(text, "str.isdigit", static (receiver, _, _) => PyStringOps.IsDigit(receiver)),
