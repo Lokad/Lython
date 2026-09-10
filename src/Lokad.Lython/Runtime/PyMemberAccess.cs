@@ -163,6 +163,20 @@ internal static class PyMemberAccess
         return false;
     }
 
+    // Resolves members owned by the per-type instance tables only, so the
+    // unbound-descriptor choke never picks up dynamic attributes or dunders
+    // served through other shapes.
+    internal static bool TryResolveInstanceTableMember(object probe, string memberName, [MaybeNullWhen(false)] out object value)
+    {
+        value = PyNone.Instance;
+        if (!ExactResolvers.TryGetValue(probe.GetType(), out var resolver))
+        {
+            return false;
+        }
+
+        return resolver(probe, memberName, out value);
+    }
+
     public static bool TryAssign(object target, string memberName, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (target is PyModule module && module.TrySetMember(memberName, value))

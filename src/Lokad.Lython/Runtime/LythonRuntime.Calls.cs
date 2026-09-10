@@ -579,6 +579,7 @@ internal sealed partial class LythonRuntime
             OpenCallable => PyType.BuiltinFunctionType,
             PrintCallable => PyType.BuiltinFunctionType,
             PyDateTimeOps.TypeMemberCallable => PyType.BuiltinFunctionType,
+            UnboundTypeMethod => PyType.MethodDescriptorType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
             PyDataclass.DataclassReprMethod => PyType.FunctionType,
             PyDataclass.DataclassEqMethod => PyType.FunctionType,
@@ -642,6 +643,161 @@ internal sealed partial class LythonRuntime
         }
 
         return value;
+    }
+
+    // Unbound builtin type methods behave like CPython method descriptors:
+    // list.append takes its receiver as the first argument, validates it
+    // against the owning type, then delegates to the bound member path so
+    // call semantics stay identical. Wrappers cache per constructor beside
+    // the __new__ slots and carry no run state beyond the owning callable.
+    // There is deliberately no __self__ or __module__ (CPython raises
+    // AttributeError for both) and no __doc__ (the engine keeps no doc
+    // corpus); __get__ and __text_signature__ stay out for the same reason.
+    internal sealed class UnboundTypeMethod : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRenderableValue
+    {
+        private readonly object _owner;
+        private readonly string _ownerName;
+        private readonly string _memberName;
+        private readonly string _qualifiedName;
+
+        internal UnboundTypeMethod(object owner, string ownerName, string memberName)
+        {
+            _owner = owner;
+            _ownerName = ownerName;
+            _memberName = memberName;
+            _qualifiedName = ownerName + "." + memberName;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var receiverIndex = -1;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i].IsPositional)
+                {
+                    receiverIndex = i;
+                    break;
+                }
+            }
+
+            if (receiverIndex < 0)
+            {
+                throw new LythonRuntimeException("TypeError", "unbound method " + _qualifiedName + "() needs an argument", span);
+            }
+
+            var receiver = arguments[receiverIndex].Value;
+            if (receiver is null || !DoesObjectMatchBuiltinType(_ownerName, receiver))
+            {
+                throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + ReceiverTypeName(receiver, context) + "' object", span);
+            }
+
+            if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable boundCallable)
+            {
+                throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span);
+            }
+
+            var rest = new CallArgumentValue[arguments.Length - 1];
+            Array.Copy(arguments, 0, rest, 0, receiverIndex);
+            Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
+            return boundCallable.Invoke(rest, span, context);
+        }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__name__")
+            {
+                value = PyString.FromString(_memberName);
+                return true;
+            }
+
+            if (name == "__qualname__")
+            {
+                value = PyString.FromString(_qualifiedName);
+                return true;
+            }
+
+            if (name == "__objclass__")
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<method '" + _memberName + "' of '" + _ownerName + "' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_owner), StringComparer.Ordinal.GetHashCode(_memberName));
+
+        private static string ReceiverTypeName(object? receiver, ExecutionContext context)
+        {
+            // User instances report their class short name like CPython; every
+            // other shape resolves through the shared value-class helper.
+            if (receiver is PyInstance instance)
+            {
+                return instance.Type.Name;
+            }
+
+            if (receiver is not null &&
+                TryGetValueClass(receiver, context, out var classValue) &&
+                classValue is not null)
+            {
+                return classValue switch
+                {
+                    BuiltinCallable builtin => BuiltinCallable.ShortCallableName(builtin.Name),
+                    PyBuiltinRuntimeType runtimeType => BuiltinCallable.ShortCallableName(runtimeType.Name),
+                    PyType type => type.Name,
+                    INamedRuntimeCallable named => BuiltinCallable.ShortCallableName(named.Name),
+                    _ => "object",
+                };
+            }
+
+            return "object";
+        }
+    }
+
+    // Shared choke point for unbound builtin type methods: only constructors
+    // for types with instance member tables (list, str, bytes, dict, set)
+    // serve descriptors, and only for members their tables resolve to a
+    // callable on a probe receiver, so every other miss keeps the shared
+    // missing-member error.
+    private static bool TryGetUnboundTypeMethod(object owner, string ownerName, ref Dictionary<string, UnboundTypeMethod>? cache, string memberName, [MaybeNullWhen(false)] out object value)
+    {
+        value = PyNone.Instance;
+        var probe = ownerName switch
+        {
+            "list" => (object)new PyList(),
+            "str" => PyString.FromString(""),
+            "bytes" => new PyBytes([]),
+            "dict" => new PyDict(),
+            "set" => new PySet(),
+            _ => null,
+        };
+
+        if (probe is null ||
+            !PyMemberAccess.TryResolveInstanceTableMember(probe, memberName, out var resolved) ||
+            resolved is not ICallable)
+        {
+            return false;
+        }
+
+        cache ??= new Dictionary<string, UnboundTypeMethod>(StringComparer.Ordinal);
+        if (!cache.TryGetValue(memberName, out var method))
+        {
+            method = new UnboundTypeMethod(owner, ownerName, memberName);
+            cache[memberName] = method;
+        }
+
+        value = method;
+        return true;
     }
 
     // Marks bound engine-method wrappers (per-access or receiver-bound) so member
@@ -989,6 +1145,8 @@ internal sealed partial class LythonRuntime
 
         internal TypeNewMethod? NewSlot { get; set; }
 
+        private Dictionary<string, UnboundTypeMethod>? _unboundMethods;
+
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
@@ -1011,6 +1169,15 @@ internal sealed partial class LythonRuntime
             if (name == "__module__" && BuiltinTypeBaseNames.ContainsKey(Signature.Name))
             {
                 value = ExceptionTypeValue.SharedModuleLabel(CallableModuleName(Signature.Name));
+                return true;
+            }
+
+            // Type constructors expose their instance methods as unbound
+            // descriptors like CPython (list.append takes its receiver as
+            // the first argument); wrappers cache per constructor.
+            if (BuiltinTypeBaseNames.ContainsKey(Signature.Name) &&
+                TryGetUnboundTypeMethod(this, Signature.Name, ref _unboundMethods, name, out value))
+            {
                 return true;
             }
 
@@ -1414,12 +1581,21 @@ internal sealed partial class LythonRuntime
 
         internal TypeNewMethod? NewSlot { get; set; }
 
+        private Dictionary<string, UnboundTypeMethod>? _unboundMethods;
+
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
                 TryGetOwnedHierarchy("dict", this, context, span, ref _hierarchy, out var hierarchy))
             {
                 value = name == "__mro__" ? hierarchy.Mro : hierarchy.Bases;
+                return true;
+            }
+
+            // The dict constructor exposes its instance methods as unbound
+            // descriptors like CPython, sharing the builtin choke and cache.
+            if (TryGetUnboundTypeMethod(this, Name, ref _unboundMethods, name, out value))
+            {
                 return true;
             }
 

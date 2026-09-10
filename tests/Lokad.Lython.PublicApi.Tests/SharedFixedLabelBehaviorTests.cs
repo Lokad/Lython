@@ -2126,6 +2126,82 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task UnboundBuiltinTypeMethods()
+    {
+        // Type constructors expose their instance methods as unbound
+        // descriptors like CPython: reads share one cached wrapper per
+        // constructor with descriptor identity, and calls take the
+        // receiver first with exact descriptor failure texts.
+        var script = new LythonEngine().Compile("""
+            results = []
+            x = [1]
+            results.append(list.append == list.append)
+            results.append(list.append != list.append)
+            results.append(list.append == list.extend)
+            results.append(list.append == x.append)
+            results.append(type(list.append).__name__)
+            results.append(type(list.append) is type(str.upper))
+            results.append(list.append.__name__)
+            results.append(list.append.__qualname__)
+            results.append(list.append.__objclass__ is list)
+            results.append(str(list.append))
+            results.append(hasattr(list.append, "__self__"))
+            results.append(hasattr(list.append, "__module__"))
+            results.append(hasattr(list, "append"))
+            results.append(callable(list.append))
+            list.append(x, 2)
+            results.append(x == [1, 2])
+            m = list.append
+            m(x, 3)
+            results.append(x == [1, 2, 3])
+            results.append(str.upper("ab"))
+            results.append(str.join("-", ["a", "b"]))
+            d = {}
+            dict.update(d, {"k": 1})
+            results.append(dict.get(d, "k"))
+            s = {1}
+            set.add(s, 2)
+            results.append(s == {1, 2})
+            results.append(bytes.decode(b"ab"))
+            results.append(hash(list.append) == hash(list.append))
+            e = {}
+            e[list.append] = 7
+            results.append(e[list.append])
+            try:
+                list.append()
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.append(1, 2)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, false, false, false, "method_descriptor", true,
+            "append", "list.append", true, "<method 'append' of 'list' objects>",
+            false, false, true, true, true, true, "AB", "a-b",
+            new BigInteger(1), true, "ab", true, new BigInteger(7),
+            "unbound method list.append() needs an argument",
+            "descriptor 'append' for 'list' objects doesn't apply to a 'int' object",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
