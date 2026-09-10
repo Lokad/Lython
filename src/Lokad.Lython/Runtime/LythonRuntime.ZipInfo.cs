@@ -12,13 +12,15 @@ internal sealed partial class LythonRuntime
     /// current field values (header offset, sizes, flags), matching CPython,
     /// so cross-archive and manually constructed infos behave uniformly.
     /// </summary>
-    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyRenderableValue, IPyHashableValue
+    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
     {
         // Constructed infos retain the 12-field wrapper beside governed payloads;
         // charge the constructed-value unit at the guest factory. Directory-backed
         // infos ride the directory entry base charge instead (see ZipDirectoryReader).
         internal const long ZipInfoValueBytes = 128;
 
+        private readonly MemoryGovernor? _memoryGovernor;
+        private readonly LythonSourceSpan? _allocationSpan;
         private PyString _filename;
         private PyTuple _dateTime;
         private BigInteger _compressType;
@@ -32,8 +34,10 @@ internal sealed partial class LythonRuntime
         private BigInteger _headerOffset;
         private BigInteger _flags;
 
-        public PyZipInfo(PyString filename, PyTuple dateTime)
+        public PyZipInfo(PyString filename, PyTuple dateTime, MemoryGovernor? governor = null, LythonSourceSpan? allocationSpan = null)
         {
+            _memoryGovernor = governor;
+            _allocationSpan = allocationSpan;
             _filename = filename;
             _dateTime = dateTime;
             _compressType = BigInteger.Zero;
@@ -47,6 +51,10 @@ internal sealed partial class LythonRuntime
             _headerOffset = BigInteger.Zero;
             _flags = BigInteger.Zero;
         }
+
+        public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+        public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
         public string FileName => _filename.AsString();
 
@@ -119,7 +127,9 @@ internal sealed partial class LythonRuntime
                         new BigInteger(entry.DateSecond),
                     },
                     context.MemoryGovernor,
-                    span));
+                    span),
+                context.MemoryGovernor,
+                span);
             info._compressType = new BigInteger(entry.CompressionMethod);
             info._comment = CreateBytes(entry.Comment, context, span);
             info._extra = CreateBytes(entry.Extra, context, span);
@@ -250,7 +260,7 @@ internal sealed partial class LythonRuntime
                     _filename = RequireZipString(value, "ZipInfo filename", span);
                     break;
                 case "date_time":
-                    _dateTime = RequireZipDateTime(value, span);
+                    _dateTime = RequireZipDateTime(value, span, _memoryGovernor);
                     break;
                 case "compress_type":
                     _compressType = RequireZipInteger(value, "ZipInfo compress_type", span);
@@ -327,7 +337,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{owner} must be an integer.", span);
         }
 
-        internal static PyTuple RequireZipDateTime(object value, LythonSourceSpan? span, ExecutionContext? context = null)
+        internal static PyTuple RequireZipDateTime(object value, LythonSourceSpan? span, MemoryGovernor? governor = null)
         {
             var items = value switch
             {
@@ -360,9 +370,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "ZIP does not support timestamps before 1980", span);
             }
 
-            return context is null
+            return governor is null
                 ? new PyTuple(normalized)
-                : PyTuple.FromOwnedArray(normalized, context.MemoryGovernor, span);
+                : PyTuple.FromOwnedArray(normalized, governor, span);
         }
     }
 }

@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
                 ? PyZipInfo.RequireZipString(bound.Values[0], "ZipInfo filename", span)
                 : PyString.FromString("NoName", context.MemoryGovernor, span);
             var dateTime = bound.Assigned.Length > 1 && bound.Assigned[1]
-                ? PyZipInfo.RequireZipDateTime(bound.Values[1], span, context)
+                ? PyZipInfo.RequireZipDateTime(bound.Values[1], span, context.MemoryGovernor)
                 : new PyTuple(
                     new object[]
                     {
@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
                     span);
             context.MemoryGovernor.Reserve(PyZipInfo.ZipInfoValueBytes, span);
             context.MemoryGovernor.Commit(PyZipInfo.ZipInfoValueBytes);
-            return new PyZipInfo(filename, dateTime);
+            return new PyZipInfo(filename, dateTime, context.MemoryGovernor, span);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
