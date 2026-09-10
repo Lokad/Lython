@@ -590,6 +590,36 @@ internal sealed partial class LythonRuntime
         return context.TryGetBuiltin(name, out var value) ? value : null;
     }
 
+    // __init_subclass__ binds the type itself like CPython: user and builtin
+    // types, exception types and member factories that denote types bind their
+    // own object, while the function-shaped namedtuple factory binds function
+    // like its __new__ slot; every other value binds its value class.
+    internal static bool TryGetBoundSubclassTarget(object target, ExecutionContext context, [MaybeNullWhen(false)] out object typeValue)
+    {
+        typeValue = target switch
+        {
+            PyType => target,
+            BuiltinCallable ctor when BuiltinTypeBaseNames.ContainsKey(ctor.Name) => target,
+            DictCallable => target,
+            ZipCallable => target,
+            ExceptionTypeValue => target,
+            PathlibModule.PathlibPathType => target,
+            PyBuiltinRuntimeType => target,
+            CollectionsCallable member when member.Name is "collections.namedtuple" => PyType.FunctionType,
+            CollectionsCallable => target,
+            PartialFactory => target,
+            PartialMethodFactory => target,
+            _ => null,
+        };
+
+        if (typeValue is not null)
+        {
+            return true;
+        }
+
+        return TryGetValueClass(target, context, out typeValue) && typeValue is not null;
+    }
+
     private static object? TryGetModuleMemberOrNull(ExecutionContext context, string moduleName, string memberName)
     {
         if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||

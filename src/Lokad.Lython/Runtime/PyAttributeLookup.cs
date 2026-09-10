@@ -317,7 +317,7 @@ internal static class PyAttributeLookup
                 subclassBase is not PyType subclassObject ||
                 !subclassObject.TryLookupInMro(memberName, 0, out var subclassRaw, out _) ||
                 subclassRaw is not IPyBindableCallable subclassBindable ||
-                !LythonRuntime.TryGetValueClass(target, context, out var typeValue) ||
+                !LythonRuntime.TryGetBoundSubclassTarget(target, context, out var typeValue) ||
                 typeValue is null)
             {
                 value = PyNone.Instance;

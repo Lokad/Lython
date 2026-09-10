@@ -1603,6 +1603,44 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task InitSubclassBindsOwningType()
+    {
+        // __init_subclass__ binds the owning type like CPython: user and
+        // builtin types, exception types and type-denoting factories bind
+        // themselves, the function-shaped namedtuple factory binds function,
+        // and instances bind their value class.
+        var script = new LythonEngine().Compile("""
+            from collections import namedtuple, deque
+            from functools import partial, partialmethod
+            results = []
+            results.append(int.__init_subclass__.__self__ is int)
+            results.append(dict.__init_subclass__.__self__ is dict)
+            results.append(KeyError.__init_subclass__.__self__ is KeyError)
+            results.append(namedtuple.__init_subclass__.__self__ is type(namedtuple))
+            results.append(deque.__init_subclass__.__self__ is deque)
+            results.append(partial.__init_subclass__.__self__ is partial)
+            results.append(partialmethod.__init_subclass__.__self__ is partialmethod)
+            class C:
+                pass
+            results.append(C.__init_subclass__.__self__ is C)
+            results.append([].__init_subclass__.__self__ is type([]))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
