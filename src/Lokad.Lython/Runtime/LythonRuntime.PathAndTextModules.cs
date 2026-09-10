@@ -14,12 +14,12 @@ internal sealed partial class LythonRuntime
     private sealed class PathlibModule : PyModule
     {
         public static readonly PathlibModule Instance = new();
-        private static readonly PathlibPathType PathType = new("Path", isSupported: true);
-        private static readonly PathlibPathType PurePathType = new("PurePath", isSupported: true);
-        private static readonly PathlibPathType PurePosixPathType = new("PurePosixPath", isSupported: true);
-        private static readonly PathlibPathType PosixPathType = new("PosixPath", isSupported: true);
-        private static readonly PathlibPathType PureWindowsPathType = new("PureWindowsPath", isSupported: false);
-        private static readonly PathlibPathType WindowsPathType = new("WindowsPath", isSupported: false);
+        internal static readonly PathlibPathType PathType = new("Path", isSupported: true);
+        internal static readonly PathlibPathType PurePathType = new("PurePath", isSupported: true);
+        internal static readonly PathlibPathType PurePosixPathType = new("PurePosixPath", isSupported: true);
+        internal static readonly PathlibPathType PosixPathType = new("PosixPath", isSupported: true);
+        internal static readonly PathlibPathType PureWindowsPathType = new("PureWindowsPath", isSupported: false);
+        internal static readonly PathlibPathType WindowsPathType = new("WindowsPath", isSupported: false);
 
         private PathlibModule() : base("pathlib")
         {
@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
             return OwnPathResult(PathOps.NormalizeLexical(combined), combined, context.MemoryGovernor, span);
         }
 
-        private sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
+        internal sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
         {
             private readonly bool _isSupported;
             private readonly PyString _nameValue;
@@ -107,6 +107,61 @@ internal sealed partial class LythonRuntime
                 }
 
                 return CreatePath(values, span, context);
+            }
+
+            // Path types resolve __module__ through the shared label catalog and
+            // __bases__/__mro__ per read: bases mix sibling type singletons with the
+            // run builtins table, so tuples cannot be shared across runs.
+            public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            {
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("pathlib");
+                return true;
+            }
+
+            if (name == "__bases__" || name == "__mro__")
+            {
+                var bases = GetBaseObjects(ShortName, context);
+                if (bases is null)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                if (name == "__bases__")
+                {
+                    value = new PyTuple(bases, context.MemoryGovernor, span);
+                    return true;
+                }
+
+                var mro = new object[bases.Length + 1];
+                mro[0] = this;
+                Array.Copy(bases, 0, mro, 1, bases.Length);
+                value = new PyTuple(mro, context.MemoryGovernor, span);
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+            }
+
+            private static object[]? GetBaseObjects(string shortName, ExecutionContext context)
+            {
+            if (!context.TryGetBuiltin("object", out var obj) || obj is null)
+            {
+                return null;
+            }
+
+            return shortName switch
+            {
+                "PurePath" => [obj],
+                "Path" => [PathlibModule.PurePathType],
+                "PurePosixPath" => [PathlibModule.PurePathType],
+                "PosixPath" => [PathlibModule.PathType],
+                "PureWindowsPath" => [PathlibModule.PurePathType],
+                "WindowsPath" => [PathlibModule.PathType],
+                _ => [obj],
+            };
             }
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

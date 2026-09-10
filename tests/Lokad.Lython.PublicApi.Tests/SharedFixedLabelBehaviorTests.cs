@@ -468,4 +468,40 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task RuntimeTypeBases()
+    {
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import decimal
+            import pathlib
+            import random
+            import statistics
+            return [random.Random.__module__,
+                random.Random.__name__ is random.Random.__name__,
+                datetime.date.__bases__[0] is object,
+                datetime.datetime.__bases__[0] is datetime.date,
+                statistics.NormalDist.__module__,
+                decimal.Decimal.__bases__[0] is object,
+                pathlib.Path.__name__ is pathlib.Path.__name__,
+                pathlib.Path.__module__,
+                pathlib.PurePath.__bases__[0] is object,
+                pathlib.PosixPath.__bases__[0] is pathlib.Path,
+                range.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "random", true, true, true, "statistics", true,
+            true, "pathlib", true, true, "builtins",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

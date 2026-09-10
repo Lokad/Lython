@@ -357,12 +357,44 @@ internal sealed partial class LythonRuntime
             ["set"] = ["object"],
             ["str"] = ["object"],
             ["bytes"] = ["object"],
+            ["decimal.Decimal"] = ["object"],
             ["range"] = ["object"],
             ["slice"] = ["object"],
             ["zip"] = ["object"],
         };
 
     internal sealed record BuiltinTypeHierarchy(PyTuple Bases, PyTuple Mro);
+
+    // Module singletons (and their members) are shared across runs, so a cached
+    // hierarchy must be keyed by its owning run: base objects come from the run
+    // builtins table and go stale for any other run.
+    internal sealed record OwnedTypeHierarchy(ExecutionState Owner, BuiltinTypeHierarchy Hierarchy);
+
+    internal static bool TryGetOwnedHierarchy(
+        string name,
+        object self,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        ref OwnedTypeHierarchy? cache,
+        out BuiltinTypeHierarchy hierarchy)
+    {
+        if (cache is not null && ReferenceEquals(cache.Owner, context.State))
+        {
+            hierarchy = cache.Hierarchy;
+            return true;
+        }
+
+        var built = BuildBuiltinTypeHierarchy(name, self, context, span);
+        if (built is null)
+        {
+            hierarchy = null!;
+            return false;
+        }
+
+        cache = new OwnedTypeHierarchy(context.State, built);
+        hierarchy = built;
+        return true;
+    }
 
     internal static BuiltinTypeHierarchy? BuildBuiltinTypeHierarchy(
         string name,
@@ -459,14 +491,23 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
-        private BuiltinTypeHierarchy? _hierarchy;
+        private OwnedTypeHierarchy? _hierarchy;
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
-                (_hierarchy ??= BuildBuiltinTypeHierarchy(Signature.Name, this, context, span)) is not null)
+                TryGetOwnedHierarchy(Signature.Name, this, context, span, ref _hierarchy, out var hierarchy))
             {
-                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                value = name == "__mro__" ? hierarchy.Mro : hierarchy.Bases;
+                return true;
+            }
+
+            // Table members are type constructors even where the legacy gate does
+            // not cover them (range, slice, decimal.Decimal); they report the shared
+            // builtins or module label like CPython.
+            if (name == "__module__" && BuiltinTypeBaseNames.ContainsKey(Signature.Name))
+            {
+                value = ExceptionTypeValue.SharedModuleLabel(CallableModuleName(Signature.Name));
                 return true;
             }
 
@@ -765,14 +806,14 @@ internal sealed partial class LythonRuntime
     {
         public string Name => "zip";
 
-        private BuiltinTypeHierarchy? _hierarchy;
+        private OwnedTypeHierarchy? _hierarchy;
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
-                (_hierarchy ??= BuildBuiltinTypeHierarchy("zip", this, context, span)) is not null)
+                TryGetOwnedHierarchy("zip", this, context, span, ref _hierarchy, out var hierarchy))
             {
-                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                value = name == "__mro__" ? hierarchy.Mro : hierarchy.Bases;
                 return true;
             }
 
@@ -814,14 +855,14 @@ internal sealed partial class LythonRuntime
     {
         public string Name => "dict";
 
-        private BuiltinTypeHierarchy? _hierarchy;
+        private OwnedTypeHierarchy? _hierarchy;
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
-                (_hierarchy ??= BuildBuiltinTypeHierarchy("dict", this, context, span)) is not null)
+                TryGetOwnedHierarchy("dict", this, context, span, ref _hierarchy, out var hierarchy))
             {
-                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                value = name == "__mro__" ? hierarchy.Mro : hierarchy.Bases;
                 return true;
             }
 

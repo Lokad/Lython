@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
+    internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
         // Builtin module labels form a fixed vocabulary (the exception modules
         // plus every top-level module owning builtin callables), so every known
