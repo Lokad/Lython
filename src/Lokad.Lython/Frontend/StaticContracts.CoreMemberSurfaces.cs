@@ -14,6 +14,7 @@ internal static partial class StaticContracts
         "upper",
         "swapcase",
         "title",
+        "casefold",
         "isupper",
         "isalpha",
         "isdigit",

@@ -40,6 +40,7 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "upper", 0, 0, "str.upper() expects no arguments.");
             AddStringCallableContract(contracts, "swapcase", 0, 0, "str.swapcase() expects no arguments.");
             AddStringCallableContract(contracts, "title", 0, 0, "str.title() expects no arguments.");
+            AddStringCallableContract(contracts, "casefold", 0, 0, "str.casefold() expects no arguments.");
             AddStringCallableContract(contracts, "isupper", 0, 0, "str.isupper() expects no arguments.");
             AddStringCallableContract(contracts, "isalpha", 0, 0, "str.isalpha() expects no arguments.");
             AddStringCallableContract(contracts, "isdigit", 0, 0, "str.isdigit() expects no arguments.");

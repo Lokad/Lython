@@ -9,6 +9,7 @@ internal static partial class StaticContracts
         ("upper", StaticReturnShape.String),
         ("swapcase", StaticReturnShape.String),
         ("title", StaticReturnShape.String),
+        ("casefold", StaticReturnShape.String),
         ("strip", StaticReturnShape.String),
         ("lstrip", StaticReturnShape.String),
         ("rstrip", StaticReturnShape.String),

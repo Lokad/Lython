@@ -70,6 +70,7 @@ internal sealed partial class LythonRuntime
                     "upper" => BoundCallable.CreateNoArguments(text, "str.upper", static (receiver, span, context) => OwnMethodResult(receiver.ToUpperInvariant(), receiver, context.MemoryGovernor, span)),
                     "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, span, context) => OwnMethodResult(PyStringOps.SwapCase(receiver), receiver, context.MemoryGovernor, span)),
                     "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, span, context) => OwnMethodResult(PyStringOps.Title(receiver), receiver, context.MemoryGovernor, span)),
+                    "casefold" => BoundCallable.CreateNoArguments(text, "str.casefold", static (receiver, span, context) => OwnMethodResult(PyStringOps.CaseFold(receiver), receiver, context.MemoryGovernor, span)),
                     "isupper" => BoundCallable.CreateNoArguments(text, "str.isupper", static (receiver, _, _) => PyStringOps.IsUpper(receiver)),
                     "isalpha" => BoundCallable.CreateNoArguments(text, "str.isalpha", static (receiver, _, _) => PyStringOps.IsAlpha(receiver)),
                     "isdigit" => BoundCallable.CreateNoArguments(text, "str.isdigit", static (receiver, _, _) => PyStringOps.IsDigit(receiver)),
