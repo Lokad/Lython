@@ -127,8 +127,7 @@ internal sealed partial class LythonRuntime
 
         private static object ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            return PyString.FromString(ResolveImportlibName(arguments, "importlib.util.resolve_name", span));
+            return PyString.FromString(ResolveImportlibName(arguments, "importlib.util.resolve_name", span), context.MemoryGovernor, span);
         }
     }
 
@@ -229,11 +228,12 @@ internal sealed partial class LythonRuntime
     {
         var isPackage = EnumerateDiscoverableBuiltinModuleNames(context)
             .Any(candidate => candidate.StartsWith(moduleName + ".", StringComparison.Ordinal));
-        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName), isPackage, sourcePath: null);
+        PkgutilModule.ChargePkgutilValue(context.MemoryGovernor, span);
+        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName, context.MemoryGovernor, span), isPackage, sourcePath: null);
         object locations = isPackage
             ? new PyList([], context.MemoryGovernor, span)
             : PyNone.Instance;
-        return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString("built-in"), isPackage, locations);
+        return new ImportlibModuleSpecObject(moduleName, loader, BuiltInOrigin, isPackage, locations, context.MemoryGovernor, span);
     }
 
     private static ImportlibModuleSpecObject CreateLocalModuleSpec(
@@ -243,19 +243,29 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName), isPackage, path);
+        PkgutilModule.ChargePkgutilValue(context.MemoryGovernor, span);
+        var loader = new PkgutilLoaderObject(PyString.FromString(moduleName, context.MemoryGovernor, span), isPackage, path);
         object locations = isPackage
-            ? new PyList([PyString.FromString(PathOps.Parent(path))], context.MemoryGovernor, span)
+            ? new PyList([PyString.FromString(PathOps.Parent(path), context.MemoryGovernor, span)], context.MemoryGovernor, span)
             : PyNone.Instance;
-        return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString(path), isPackage, locations);
+        return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString(path, context.MemoryGovernor, span), isPackage, locations, context.MemoryGovernor, span);
     }
+
+    private static readonly PyString BuiltInOrigin = PyString.FromString("built-in");
 
     internal sealed class ImportlibModuleSpecObject : IPyMutableDynamicAttributes, IPyRenderableValue
     {
+        // Specs retain a fixed 11-member table beside governed payloads; charge the
+        // shell plus one attribute slot per member at construction. Reassignment
+        // overwrites fixed slots, so nothing is released.
+        internal const long SpecValueBytes = 64L + 11L * 64L;
+
         private readonly Dictionary<string, object> _members;
 
-        public ImportlibModuleSpecObject(string name, object loader, object origin, bool isPackage, object locations)
+        public ImportlibModuleSpecObject(string name, object loader, object origin, bool isPackage, object locations, MemoryGovernor governor, LythonSourceSpan? span)
         {
+            governor.Reserve(SpecValueBytes, span);
+            governor.Commit(SpecValueBytes);
             var parent = isPackage
                 ? name
                 : name.Contains('.', StringComparison.Ordinal)
@@ -263,12 +273,12 @@ internal sealed partial class LythonRuntime
                     : string.Empty;
             _members = new Dictionary<string, object>(StringComparer.Ordinal)
             {
-                ["name"] = PyString.FromString(name),
+                ["name"] = PyString.FromString(name, governor, span),
                 ["loader"] = loader,
                 ["origin"] = origin,
                 ["loader_state"] = PyNone.Instance,
                 ["submodule_search_locations"] = locations,
-                ["parent"] = PyString.FromString(parent),
+                ["parent"] = PyString.FromString(parent, governor, span),
                 ["has_location"] = origin is PyString originText && originText.AsString() != "built-in",
                 ["cached"] = PyNone.Instance,
                 ["_cached"] = PyNone.Instance,
