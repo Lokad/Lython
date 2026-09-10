@@ -1977,6 +1977,36 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TypingAliasNames()
+    {
+        // Typing aliases report their short name and defining module like
+        // CPython, including subscripted and special forms.
+        var script = new LythonEngine().Compile("""
+            import typing
+            results = []
+            results.append(typing.NamedTuple.__name__)
+            results.append(typing.NamedTuple.__module__)
+            results.append(typing.TypedDict.__name__)
+            results.append(typing.List.__name__)
+            results.append(typing.List.__module__)
+            results.append(typing.List[int].__name__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "NamedTuple", "typing", "TypedDict", "List", "typing", "List",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

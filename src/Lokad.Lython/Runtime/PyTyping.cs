@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue, LythonRuntime.ICallable
+internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
 {
     private readonly object[] _arguments;
 
@@ -34,6 +34,17 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
     {
         _ = span;
         return new PyTypingAlias(ShortName, Qualified, NormalizeSubscriptArguments(index));
+    }
+
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        value = name switch
+        {
+            "__name__" => PyString.FromString(ShortName),
+            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("typing"),
+            _ => MissingMemberValue.Instance,
+        };
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
