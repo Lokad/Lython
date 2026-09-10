@@ -63,13 +63,29 @@ internal sealed partial class ExecutableScript
 
                 // orderedBlocks is sorted and indexMap assigns its position as the
                 // normalized index, so a reachable original range remains contiguous.
+                int? suiteStart = null;
+                int? suiteEnd = null;
+                if (region.SuiteStartBlockIndex is int suiteStartOriginal &&
+                    region.SuiteEndBlockIndex is int suiteEndOriginal)
+                {
+                    var firstSuite = LowerBound(orderedBlocks, suiteStartOriginal);
+                    var afterLastSuite = UpperBound(orderedBlocks, suiteEndOriginal);
+                    if (firstSuite != afterLastSuite)
+                    {
+                        suiteStart = firstSuite;
+                        suiteEnd = afterLastSuite - 1;
+                    }
+                }
+
                 normalized.Add(new ExecutableExceptionRegion(
                     firstProtected,
                     afterLastProtected - 1,
                     region.ExceptionTypeNames,
                     region.ExceptionVariableName,
                     region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
-                    region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null));
+                    region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
+                    suiteStart,
+                    suiteEnd));
             }
 
             // Runtime unwinding consumes applicable regions from the narrowest

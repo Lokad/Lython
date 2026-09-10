@@ -413,9 +413,11 @@ internal sealed partial class LythonRuntime
         }
 
         var thrown = new LythonRuntimeException(instance.Identity, instance.Message, statement.Span, null, instance.Value);
+        AttachImplicitRaiseChain(thrown, instance, context);
         if (statement.CauseExpression is not null)
         {
             thrown.PythonCause = CoerceRaiseCause(await EvaluateLoweredExpressionAsync(statement.CauseExpression, context).ConfigureAwait(false), statement.Span, context);
+            thrown.SuppressPythonContext = true;
         }
 
         throw thrown;

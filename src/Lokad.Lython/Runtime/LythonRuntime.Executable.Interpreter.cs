@@ -18,6 +18,37 @@ internal sealed partial class LythonRuntime
         private readonly ExecutableValueStack _stack = new(Math.Max(8, codeObject.LocalNames.Count));
         private int _currentBlockIndex = codeObject.EntryBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
+        private readonly Stack<ActiveExceptionSave> _savedActiveExceptions = new();
+        private readonly PyException? _entryActiveException = context.Services.CurrentException;
+
+        private sealed record ActiveExceptionSave(
+            PyException? SavedException,
+            int? SuiteStartBlockIndex,
+            int? SuiteEndBlockIndex);
+
+        // Abandoning the frame drops its saved handler chain and restores the
+        // active exception from frame entry, like CPython deleting handler
+        // names and restoring the previous exception on frame exit.
+        private void AbandonFrame()
+        {
+            _savedActiveExceptions.Clear();
+            context.Services.SetCurrentException(_entryActiveException);
+        }
+
+        // Pops saves for suites this propagation abandoned: a handler stays
+        // live exactly while execution resumes inside its suite. Entries
+        // without a suite range are kept, erring toward a stale value rather
+        // than dropping a live save.
+        private void UnwindAbandonedHandlers(int targetBlockIndex)
+        {
+            while (_savedActiveExceptions.Count > 0 &&
+                _savedActiveExceptions.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
+                (targetBlockIndex < start || targetBlockIndex > end))
+            {
+                context.Services.SetCurrentException(_savedActiveExceptions.Pop().SavedException);
+            }
+        }
+
         private readonly ExecutableMemberCache?[] _memberCaches = new ExecutableMemberCache?[codeObject.MemberCacheCount];
         private readonly ExecutableCallCache?[] _callCaches = new ExecutableCallCache?[codeObject.CallCacheCount];
         private readonly int?[] _blockEntryStackDepths = new int?[codeObject.Blocks.Count];
@@ -204,6 +235,10 @@ internal sealed partial class LythonRuntime
                                 PyNone.Instance))
                         {
                             _pendingAbrupt = null;
+                            // Suppression completes the cleanup suite: restore
+                            // the active exception saved on entry.
+                            context.Services.SetCurrentException(
+                                _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
                         }
                     }
                     else
@@ -335,10 +370,19 @@ internal sealed partial class LythonRuntime
                     {
                         _ = DeleteName(codeObject.Names[instruction.ExceptionNameIndex], context, instruction.Span);
                     }
-                    context.Services.SetCurrentException(null);
+                    context.Services.SetCurrentException(
+                        _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
                     return false;
 
                 case ExecutableOpCode.EndFinally:
+                    if (_pendingAbrupt is PendingException)
+                    {
+                        // An exception-routed finally suite exits: restore the
+                        // active exception saved when the suite was entered.
+                        context.Services.SetCurrentException(
+                            _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
+                    }
+
                     if (_pendingAbrupt is not null)
                     {
                         PropagatePendingAbrupt(_pendingAbrupt);
@@ -439,8 +483,9 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ReturnSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
+                            AbandonFrame();
                             throw;
                         }
 
@@ -448,8 +493,9 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ControlSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingControl(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex))
+                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingControl(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
+                            AbandonFrame();
                             throw;
                         }
 
@@ -457,9 +503,33 @@ internal sealed partial class LythonRuntime
                     }
                     catch (LythonRuntimeException ex)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex))
+                        var previousActive = context.Services.CurrentException;
+                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
                         {
+                            AbandonFrame();
                             throw;
+                        }
+
+                        var routedToHandler = _pendingAbrupt is null;
+                        var routedToCleanup = !routedToHandler &&
+                            _pendingAbrupt is PendingException pending &&
+                            ReferenceEquals(pending.Exception, ex);
+                        if (routedToHandler || routedToCleanup)
+                        {
+                            // The except route already installed the handler
+                            // exception; hold it aside and reseed the displaced
+                            // live nesting while abandoned suites unwind
+                            // beneath it. The current block now targets the
+                            // handler or cleanup suite.
+                            var installed = routedToHandler ? context.Services.CurrentException : null;
+                            context.Services.SetCurrentException(previousActive);
+                            UnwindAbandonedHandlers(_currentBlockIndex);
+                            _savedActiveExceptions.Push(new ActiveExceptionSave(
+                                context.Services.CurrentException,
+                                matchedRegion?.SuiteStartBlockIndex,
+                                matchedRegion?.SuiteEndBlockIndex));
+                            context.Services.SetCurrentException(
+                                routedToHandler ? installed : CreatePythonExceptionInstance(ex));
                         }
 
                         jumped = true;

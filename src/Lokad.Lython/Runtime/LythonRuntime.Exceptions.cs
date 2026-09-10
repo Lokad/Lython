@@ -23,6 +23,8 @@ internal sealed partial class LythonRuntime
         => new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
         {
             Cause = exception.PythonCause,
+            Context = exception.PythonContext,
+            SuppressContext = exception.SuppressPythonContext,
         };
 
     private static bool MatchesCaughtException(

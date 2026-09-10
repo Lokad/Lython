@@ -22,6 +22,12 @@ internal sealed record PyException(
     // through the thrown CLR exception, which carries the same slot.
     public PyException? Cause { get; init; }
 
+    // Implicit chaining follows the active handler like CPython: the context
+    // is captured at raise time while suppression comes from `raise ... from`.
+    public PyException? Context { get; init; }
+
+    public bool SuppressContext { get; init; }
+
     // Notes accumulate through add_note and back the __notes__ list.
     public PyList? Notes { get; set; }
 }

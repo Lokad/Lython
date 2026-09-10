@@ -106,8 +106,10 @@ internal sealed partial class LythonRuntime
         PendingAbruptSignal abrupt,
         LythonSourceSpan span,
         ref PendingAbruptSignal? pendingAbrupt,
-        ref int nextBlockIndex)
+        ref int nextBlockIndex,
+        out ExecutableExceptionRegion? matchedRegion)
     {
+        matchedRegion = null;
         foreach (var region in codeObject.ExceptionRegions)
         {
             if (currentBlockIndex < region.ProtectedStartBlockIndex ||
@@ -122,6 +124,7 @@ internal sealed partial class LythonRuntime
             {
                 RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
                 pendingAbrupt = null;
+                matchedRegion = region;
                 var pyException = CreatePythonExceptionInstance(exception);
                 if (region.ExceptionVariableName is not null)
                 {
@@ -138,6 +141,7 @@ internal sealed partial class LythonRuntime
                 RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
                 pendingAbrupt = abrupt;
                 nextBlockIndex = finallyBlock;
+                matchedRegion = region;
                 return true;
             }
 

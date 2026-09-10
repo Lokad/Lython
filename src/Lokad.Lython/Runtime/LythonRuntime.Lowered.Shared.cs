@@ -290,28 +290,46 @@ internal sealed partial class LythonRuntime
         {
             if (statement.FinallyBody is not null)
             {
+                // A finally suite runs with the pending exception active like
+                // CPython, so raises inside it chain the in-flight exception.
+                var inFlightException = pendingException is null
+                    ? null
+                    : CreatePythonExceptionInstance(pendingException);
+                var previousActiveException = inFlightException is null
+                    ? null
+                    : context.Services.SetCurrentException(inFlightException);
                 try
                 {
-                    var finalSignal = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
-                    if (finalSignal is not null)
+                    try
                     {
-                        // Python's finally suite wins over every pending exit from try/except.
-                        pendingControl = finalSignal;
-                        pendingReturn = null;
+                        var finalSignal = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
+                        if (finalSignal is not null)
+                        {
+                            // Python's finally suite wins over every pending exit from try/except.
+                            pendingControl = finalSignal;
+                            pendingReturn = null;
+                            pendingException = null;
+                        }
+                    }
+                    catch (ReturnSignal signal)
+                    {
+                        pendingReturn = signal;
+                        pendingControl = null;
                         pendingException = null;
                     }
+                    catch (LythonRuntimeException ex)
+                    {
+                        pendingException = ex;
+                        pendingControl = null;
+                        pendingReturn = null;
+                    }
                 }
-                catch (ReturnSignal signal)
+                finally
                 {
-                    pendingReturn = signal;
-                    pendingControl = null;
-                    pendingException = null;
-                }
-                catch (LythonRuntimeException ex)
-                {
-                    pendingException = ex;
-                    pendingControl = null;
-                    pendingReturn = null;
+                    if (inFlightException is not null)
+                    {
+                        context.Services.SetCurrentException(previousActiveException);
+                    }
                 }
             }
         }
@@ -494,6 +512,18 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "Exception causes must derive from BaseException.", span);
     }
 
+    // An explicit raise chains the active handler exception as its context
+    // like CPython; re-raising the active instance itself leaves the link
+    // unchanged instead of building a self-cycle.
+    private static void AttachImplicitRaiseChain(
+        LythonRuntimeException thrown,
+        PyException instance,
+        ExecutionContext context)
+    {
+        var current = context.Services.CurrentException;
+        thrown.PythonContext = ReferenceEquals(instance, current) ? null : current;
+    }
+
     private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)
     {
         var current = context.Services.CurrentException;
@@ -502,7 +532,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime("No active exception to re-raise.", span);
         }
 
-        throw new LythonRuntimeException(current.Identity, current.Message, span, null, current.Value);
+        // A bare raise continues the active chain instead of starting a new
+        // one, so cause, context and suppression travel with the value.
+        throw new LythonRuntimeException(current.Identity, current.Message, span, null, current.Value)
+        {
+            PythonCause = current.Cause,
+            PythonContext = current.Context,
+            SuppressPythonContext = current.SuppressContext,
+        };
     }
 
     private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)

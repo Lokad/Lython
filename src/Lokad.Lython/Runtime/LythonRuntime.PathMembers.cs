@@ -61,6 +61,8 @@ internal sealed partial class LythonRuntime
                     "add_note",
                     ["note"]),
                 "__cause__" => (object?)exception.Cause ?? PyNone.Instance,
+                "__context__" => (object?)exception.Context ?? PyNone.Instance,
+                "__suppress_context__" => exception.SuppressContext,
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
                 _ => MissingMemberValue.Instance,
             };

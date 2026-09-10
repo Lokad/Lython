@@ -49,6 +49,12 @@ internal sealed class LythonRuntimeException : Exception
 
     public PyException? PythonCause { get; set; }
 
+    // Implicit raise context and explicit-cause suppression travel beside the
+    // cause so handler rewraps rebuild the same chain on the next catch.
+    public PyException? PythonContext { get; set; }
+
+    public bool SuppressPythonContext { get; set; }
+
     public string? SourcePath { get; private set; }
 
     public List<LythonStackFrame> Frames { get; } = [];

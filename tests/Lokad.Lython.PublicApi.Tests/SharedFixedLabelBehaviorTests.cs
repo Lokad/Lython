@@ -1138,6 +1138,112 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ExceptionImplicitContextChaining()
+    {
+        // Raises chain the active handler exception as __context__ like
+        // CPython; explicit `from` additionally suppresses the context while
+        // bare raises continue the active chain instead of starting a new one.
+        var script = new LythonEngine().Compile("""
+            results = []
+            plain = ValueError("plain")
+            results.append(plain.__context__ is None)
+            results.append(plain.__suppress_context__ == False)
+            try:
+                try:
+                    raise KeyError("inner")
+                except KeyError:
+                    raise ValueError("outer")
+            except ValueError as e:
+                results.append(e.__context__.__class__ is KeyError)
+                results.append(e.__context__.args == ("inner",))
+                results.append(e.__cause__ is None)
+                results.append(e.__suppress_context__ == False)
+            try:
+                try:
+                    raise KeyError("k2")
+                except KeyError:
+                    raise ValueError("v2") from TypeError("t")
+            except ValueError as e2:
+                results.append(e2.__cause__.args == ("t",))
+                results.append(e2.__context__.args == ("k2",))
+                results.append(e2.__suppress_context__ == True)
+            try:
+                try:
+                    raise KeyError("k3")
+                except KeyError:
+                    raise ValueError("v3") from None
+            except ValueError as e3:
+                results.append(e3.__cause__ is None)
+                results.append(e3.__context__.args == ("k3",))
+                results.append(e3.__suppress_context__ == True)
+            try:
+                try:
+                    raise KeyError("k4") from NameError("n4")
+                except KeyError:
+                    raise
+            except KeyError as e4:
+                results.append(e4.__cause__.args == ("n4",))
+                results.append(e4.__suppress_context__ == True)
+                results.append(e4.__context__ is None)
+            def nested():
+                try:
+                    raise KeyError("outer")
+                except KeyError:
+                    try:
+                        raise TypeError("inner")
+                    except TypeError:
+                        pass
+                    raise ValueError("after")
+            try:
+                nested()
+            except ValueError as e5:
+                results.append(e5.__context__.args == ("outer",))
+            def fled():
+                try:
+                    1 // 0
+                except ZeroDivisionError:
+                    raise KeyError("k")
+            try:
+                try:
+                    fled()
+                finally:
+                    raise ValueError("v")
+            except ValueError as e6:
+                results.append(e6.__context__.args == ("k",))
+            def selfreraise():
+                try:
+                    raise KeyError("s")
+                except KeyError as a:
+                    raise a
+            try:
+                selfreraise()
+            except KeyError as e7:
+                results.append(e7.__context__ is None)
+                results.append(e7.args == ("s",))
+            try:
+                raise ValueError("lonely")
+            except ValueError as e8:
+                results.append(e8.__context__ is None)
+                results.append(e8.__suppress_context__ == False)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, true, true, true, true,
+            true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

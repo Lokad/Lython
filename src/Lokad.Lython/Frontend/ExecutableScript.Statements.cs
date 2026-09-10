@@ -224,7 +224,9 @@ internal sealed partial class ExecutableScript
                     null,
                     null,
                     null,
-                    finallyBlock));
+                    finallyBlock,
+                    clause.StartBlock,
+                    clause.EndBlock));
             }
 
             var tryClause = CompileClause(statement.TryBody);
@@ -246,7 +248,9 @@ internal sealed partial class ExecutableScript
                     exceptClause.Syntax.ExceptionTypeNames,
                     exceptClause.Syntax.ExceptionVariableName,
                     handler.StartBlock,
-                    null));
+                    null,
+                    handler.StartBlock,
+                    handler.EndBlock));
 
                 if (finallyClause is { } handlerCleanup)
                 {
@@ -273,7 +277,9 @@ internal sealed partial class ExecutableScript
                     null,
                     null,
                     null,
-                    finallyRegion.StartBlock));
+                    finallyRegion.StartBlock,
+                    finallyRegion.StartBlock,
+                    finallyRegion.EndBlock));
             }
 
             if (tryClause.ExitBlock is int tryExit && !IsTerminated(tryExit))
@@ -353,7 +359,9 @@ internal sealed partial class ExecutableScript
                 null,
                 null,
                 null,
-                finallyBlock));
+                finallyBlock,
+                protectedStart,
+                protectedEnd));
 
             if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))
             {

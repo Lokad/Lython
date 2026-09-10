@@ -371,7 +371,9 @@ internal sealed record ExecutableExceptionRegion(
     IReadOnlyList<string>? ExceptionTypeNames,
     string? ExceptionVariableName,
     int? ExceptBlockIndex,
-    int? FinallyBlockIndex);
+    int? FinallyBlockIndex,
+    int? SuiteStartBlockIndex,
+    int? SuiteEndBlockIndex);
 
 internal sealed record ExecutableImportBinding(
     string ModuleName,
