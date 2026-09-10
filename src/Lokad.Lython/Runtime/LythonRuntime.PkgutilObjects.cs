@@ -21,11 +21,16 @@ internal sealed partial class LythonRuntime
         private static readonly PyString FieldsIsPackage = PyString.FromString("ispkg");
         private static readonly PyTuple FieldsTuple = PyTuple.FromOwnedArray([FieldsModuleFinder, FieldsName, FieldsIsPackage]);
 
-        public PkgutilModuleInfoObject(object moduleFinder, PyString name, bool isPackage)
+        private readonly MemoryGovernor? _governor;
+        private readonly LythonSourceSpan? _allocationSpan;
+
+        public PkgutilModuleInfoObject(object moduleFinder, PyString name, bool isPackage, MemoryGovernor? governor = null, LythonSourceSpan? allocationSpan = null)
         {
             ModuleFinder = moduleFinder;
             Name = name;
             IsPackage = isPackage;
+            _governor = governor;
+            _allocationSpan = allocationSpan;
         }
 
         public object ModuleFinder { get; }
@@ -49,12 +54,13 @@ internal sealed partial class LythonRuntime
                 _ => throw new ArgumentOutOfRangeException(nameof(index))
             };
 
-        public object CreateSlice(IEnumerable<object> items) => new PyTuple(items);
+        public object CreateSlice(IEnumerable<object> items)
+            => _governor is null ? new PyTuple(items) : new PyTuple(items, _governor, _allocationSpan);
 
         public object GetIndex(int index) => GetItem(index);
 
         public object GetSlice(IEnumerable<int> indices)
-            => new PyTuple(indices.Select(GetItem));
+            => _governor is null ? new PyTuple(indices.Select(GetItem)) : new PyTuple(indices.Select(GetItem), _governor, _allocationSpan);
 
         public IEnumerator<object> GetEnumerator()
         {
@@ -104,7 +110,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     PkgutilModule.ChargePkgutilValue(context.MemoryGovernor, span);
-                    return new PkgutilModuleInfoObject(moduleFinder, replacementName, IsTruthy(isPackageValue));
+                    return new PkgutilModuleInfoObject(moduleFinder, replacementName, IsTruthy(isPackageValue), context.MemoryGovernor, span);
                 }, "ModuleInfo._replace", ["module_finder", "name", "ispkg"], requiredCount: 0),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {

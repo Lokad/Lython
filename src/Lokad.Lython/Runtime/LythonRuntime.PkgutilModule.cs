@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             }
 
             ChargePkgutilValue(context.MemoryGovernor, span);
-            return new PkgutilModuleInfoObject(arguments[0], name, IsTruthy(arguments[2]));
+            return new PkgutilModuleInfoObject(arguments[0], name, IsTruthy(arguments[2]), context.MemoryGovernor, span);
         }
 
         private static object IterModules(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -639,7 +639,9 @@ internal sealed partial class LythonRuntime
                 return new PkgutilModuleInfoObject(
                     PyNone.Instance,
                     PyString.FromString(visibleName, governor, span),
-                    IsPackage);
+                    IsPackage,
+                    governor,
+                    span);
             }
         }
     }
