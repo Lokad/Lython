@@ -268,10 +268,42 @@ internal sealed partial class LythonRuntime
 
     private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
-        // Builtin exceptions share one module label forever, so per-access
-        // __module__ reads alias stably like CPython; module-qualified
-        // identities keep building fresh labels.
+        // Exception module labels form a fixed vocabulary, so every known module
+        // shares one constant forever and per-access __module__ reads alias
+        // stably like CPython; unknown module names keep building fresh labels.
         private static readonly PyString BuiltinsModuleName = PyString.FromString("builtins");
+        private static readonly PyString ArgparseModuleName = PyString.FromString("argparse");
+        private static readonly PyString CopyModuleName = PyString.FromString("copy");
+        private static readonly PyString CsvModuleName = PyString.FromString("csv");
+        private static readonly PyString DataclassesModuleName = PyString.FromString("dataclasses");
+        private static readonly PyString DecimalModuleName = PyString.FromString("decimal");
+        private static readonly PyString GzipModuleName = PyString.FromString("gzip");
+        private static readonly PyString JsonModuleName = PyString.FromString("json");
+        private static readonly PyString OpenPyxlExceptionsModuleName = PyString.FromString("openpyxl.utils.exceptions");
+        private static readonly PyString ReModuleName = PyString.FromString("re");
+        private static readonly PyString ShutilModuleName = PyString.FromString("shutil");
+        private static readonly PyString StatisticsModuleName = PyString.FromString("statistics");
+        private static readonly PyString SubprocessModuleName = PyString.FromString("subprocess");
+        private static readonly PyString ZipfileModuleName = PyString.FromString("zipfile");
+
+        private static PyString SharedModuleLabel(string moduleName) => moduleName switch
+        {
+            "builtins" => BuiltinsModuleName,
+            "argparse" => ArgparseModuleName,
+            "copy" => CopyModuleName,
+            "csv" => CsvModuleName,
+            "dataclasses" => DataclassesModuleName,
+            "decimal" => DecimalModuleName,
+            "gzip" => GzipModuleName,
+            "json" => JsonModuleName,
+            "openpyxl.utils.exceptions" => OpenPyxlExceptionsModuleName,
+            "re" => ReModuleName,
+            "shutil" => ShutilModuleName,
+            "statistics" => StatisticsModuleName,
+            "subprocess" => SubprocessModuleName,
+            "zipfile" => ZipfileModuleName,
+            _ => PyString.FromString(moduleName),
+        };
 
         public ExceptionTypeValue(string typeName)
             : this(PythonExceptionIdentity.Builtin(typeName))
@@ -292,7 +324,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__name__" => PyString.FromString(TypeName),
-                "__module__" => ExceptionIdentity.IsBuiltin ? BuiltinsModuleName : PyString.FromString(ExceptionIdentity.ModuleName),
+                "__module__" => SharedModuleLabel(ExceptionIdentity.ModuleName),
                 "type" => PyString.FromString(TypeName),
                 _ => MissingMemberValue.Instance
             };
