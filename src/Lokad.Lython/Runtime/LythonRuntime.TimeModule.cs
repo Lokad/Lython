@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
                 "timezone" or "altzone" => secondsWest,
                 "daylight" => BigInteger.Zero,
                 "tzname" => new PyTuple(
-                    [PyString.FromString(zoneName), PyString.FromString(zoneName)],
+                    [PyString.FromString(zoneName, context.MemoryGovernor, span), PyString.FromString(zoneName, context.MemoryGovernor, span)],
                     context.MemoryGovernor,
                     span),
                 _ => MissingMemberValue.Instance,
@@ -232,6 +232,10 @@ internal sealed partial class LythonRuntime
                     $"{signature.Name}() is unsupported because Lython has no host {capability} capability.",
                     span));
 
+        // gmtime is always GMT: share the zone label forever like the
+        // built-in origin instead of charging a fresh copy per call.
+        private static readonly PyString GmtZoneName = PyString.FromString("GMT");
+
         private static object Gmtime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             DateTime utc;
@@ -248,7 +252,7 @@ internal sealed partial class LythonRuntime
             return TimeStructTimeValue.FromDateTime(
                 DateTime.SpecifyKind(utc, DateTimeKind.Unspecified),
                 isDst: 0,
-                PyString.FromString("GMT"),
+                GmtZoneName,
                 BigInteger.Zero,
                 context,
                 span);
@@ -274,7 +278,7 @@ internal sealed partial class LythonRuntime
             return TimeStructTimeValue.FromDateTime(
                 DateTime.SpecifyKind(local.DateTime, DateTimeKind.Unspecified),
                 isDst: 0,
-                PyString.FromString(FixedZoneName(offset)),
+                PyString.FromString(FixedZoneName(offset), context.MemoryGovernor, span),
                 new BigInteger((long)offset.TotalSeconds),
                 context,
                 span);
@@ -361,7 +365,7 @@ internal sealed partial class LythonRuntime
             {
                 var parsed = PyDateTimeOps.ParseStrptime(text.AsString(), format, span);
                 object zone = parsed.TzInfo is not null && format.Contains("%Z", StringComparison.Ordinal)
-                    ? PyString.FromString(parsed.TzInfo.Name)
+                    ? PyString.FromString(parsed.TzInfo.Name, context.MemoryGovernor, span)
                     : PyNone.Instance;
                 object offset = parsed.TzInfo is null
                     ? PyNone.Instance
