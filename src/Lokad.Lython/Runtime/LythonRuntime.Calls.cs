@@ -659,6 +659,20 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        if (classValue is DictCallable dictCallable && BuiltinTypeBaseNames.ContainsKey(dictCallable.Name))
+        {
+            dictCallable.NewSlot ??= new TypeNewMethod(dictCallable, dictCallable.Name);
+            value = dictCallable.NewSlot;
+            return true;
+        }
+
+        if (classValue is ZipCallable zipCallable && BuiltinTypeBaseNames.ContainsKey(zipCallable.Name))
+        {
+            zipCallable.NewSlot ??= new TypeNewMethod(zipCallable, zipCallable.Name);
+            value = zipCallable.NewSlot;
+            return true;
+        }
+
         if (ReferenceEquals(classValue, PyType.FunctionType))
         {
             _functionTypeNewSlot ??= new TypeNewMethod(classValue, PyType.FunctionType.Name);
@@ -1115,6 +1129,8 @@ internal sealed partial class LythonRuntime
 
         private OwnedTypeHierarchy? _hierarchy;
 
+        internal TypeNewMethod? NewSlot { get; set; }
+
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
@@ -1143,6 +1159,11 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__new__" && LythonRuntime.TryGetTypeNewSlot(this, out value))
+            {
+                return true;
+            }
+
             value = PyNone.Instance;
             return false;
         }
@@ -1163,6 +1184,8 @@ internal sealed partial class LythonRuntime
         public string Name => "dict";
 
         private OwnedTypeHierarchy? _hierarchy;
+
+        internal TypeNewMethod? NewSlot { get; set; }
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
@@ -1189,6 +1212,11 @@ internal sealed partial class LythonRuntime
             if (name == "__module__")
             {
                 value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                return true;
+            }
+
+            if (name == "__new__" && LythonRuntime.TryGetTypeNewSlot(this, out value))
+            {
                 return true;
             }
 

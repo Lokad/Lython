@@ -394,6 +394,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task SlotMethodClassIdentities()
     {
@@ -433,6 +434,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task SlotOwnerIdentities()
     {
@@ -470,6 +472,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task InstanceSlotFallback()
     {
@@ -508,6 +511,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task SubclassSlotFallback()
     {
@@ -545,6 +549,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task NewSlotIdentities()
     {
@@ -582,6 +587,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task NewSlotOwnerIdentities()
     {
@@ -604,14 +610,16 @@ public sealed class SharedFixedLabelBehaviorTests
                 None.__new__.__qualname__,
                 None.__new__.__self__ is type(None),
                 os.__class__ is type(os),
-                type(f.__new__).__name__]
+                type(f.__new__).__name__,
+                dict.__new__.__qualname__,
+                {}.__new__ is dict.__new__]
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
             "function.__new__", true, true, "method.__new__", true,
             "module.__new__", true, true, "NoneType.__new__", true, true,
-            "builtin_function_or_method",
+            "builtin_function_or_method", "dict.__new__", true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -621,6 +629,7 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
     [Fact]
     public async Task GeneratedMethodModule()
     {
