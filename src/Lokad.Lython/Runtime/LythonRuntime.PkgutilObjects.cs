@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                     dict.SetItem(PyString.FromString("ispkg"), IsPackage);
                     return dict;
                 }, "ModuleInfo._asdict", []),
-                "_replace" => BoundCallable.Create((arguments, span, _) =>
+                "_replace" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 3)
                     {
@@ -99,6 +99,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "ModuleInfo._replace(..., name=...) expects a string.", span);
                     }
 
+                    PkgutilModule.ChargePkgutilValue(context.MemoryGovernor, span);
                     return new PkgutilModuleInfoObject(moduleFinder, replacementName, IsTruthy(isPackageValue));
                 }, "ModuleInfo._replace", ["module_finder", "name", "ispkg"], requiredCount: 0),
                 "count" => BoundCallable.Create((arguments, span, _) =>

@@ -48,15 +48,25 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
+        // Discovered infos and loaders retain a small fixed payload beside governed
+        // names; charge one table slot per fresh value once built.
+        private const long PkgutilValueBytes = 64;
+
+        internal static void ChargePkgutilValue(MemoryGovernor governor, LythonSourceSpan? span)
+        {
+            governor.Reserve(PkgutilValueBytes, span);
+            governor.Commit(PkgutilValueBytes);
+        }
+
         private static object ModuleInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 3 ||
                 !PyStringOps.TryAsString(arguments[1], out var name))
             {
                 throw new LythonRuntimeException("TypeError", "pkgutil.ModuleInfo(module_finder, name, ispkg) expects finder, string name, and bool ispkg.", span);
             }
 
+            ChargePkgutilValue(context.MemoryGovernor, span);
             return new PkgutilModuleInfoObject(arguments[0], name, IsTruthy(arguments[2]));
         }
 
@@ -253,20 +263,20 @@ internal sealed partial class LythonRuntime
             {
                 if (!descriptor.Name.Contains('.'))
                 {
-                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
+                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
                     activePackagePrefix = recursive && descriptor.IsPackage ? descriptor.Name + "." : null;
                     continue;
                 }
 
                 if (activePackagePrefix is not null && descriptor.Name.StartsWith(activePackagePrefix, StringComparison.Ordinal))
                 {
-                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
+                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
                 }
             }
 
             foreach (var descriptor in EnumerateDiscoverableLocalModuleDescriptors(context, span))
             {
-                yield return descriptor.ToModuleInfo(prefixText + descriptor.Name);
+                yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
             }
         }
 
@@ -285,7 +295,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (yielded.Add(descriptor.Name))
                     {
-                        yield return descriptor.ToModuleInfo(descriptor.Name);
+                        yield return descriptor.ToModuleInfo(descriptor.Name, context.MemoryGovernor, span);
                     }
                 }
             }
@@ -524,13 +534,15 @@ internal sealed partial class LythonRuntime
             var builtins = GetBuiltinDescriptorLookup(context);
             if (builtins.TryGetValue(fullname, out var builtin))
             {
-                loader = new PkgutilLoaderObject(PyString.FromString(fullname), builtin.IsPackage, sourcePath: null);
+                ChargePkgutilValue(context.MemoryGovernor, span);
+                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), builtin.IsPackage, sourcePath: null);
                 return true;
             }
 
             if (TryGetLocalModulePath(fullname, context, span, out var path, out var isPackage))
             {
-                loader = new PkgutilLoaderObject(PyString.FromString(fullname), isPackage, path);
+                ChargePkgutilValue(context.MemoryGovernor, span);
+                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), isPackage, path);
                 return true;
             }
 
@@ -621,11 +633,14 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct DiscoveredModule(string Name, bool IsPackage, string? SourcePath)
         {
-            public object ToModuleInfo(string visibleName)
-                => new PkgutilModuleInfoObject(
+            public object ToModuleInfo(string visibleName, MemoryGovernor governor, LythonSourceSpan span)
+            {
+                ChargePkgutilValue(governor, span);
+                return new PkgutilModuleInfoObject(
                     PyNone.Instance,
-                    PyString.FromString(visibleName),
+                    PyString.FromString(visibleName, governor, span),
                     IsPackage);
+            }
         }
     }
 
