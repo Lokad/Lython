@@ -104,6 +104,17 @@ internal sealed partial class LythonRuntime
             public object Seek(LythonSourceSpan span)
                 => throw new LythonRuntimeException("NotImplementedError", "file.seek(...) is not supported by Lython text handles.", span);
 
+            // Open handles retain a small shell beside governed buffers; charge one table
+            // slot at every construction site. Paths alias shared literals, governed
+            // computed strings, or guest-owned arguments, so they need no second charge.
+            private const long FileHandleValueBytes = 64;
+
+            private static void ChargeFileHandleValue(MemoryGovernor governor, LythonSourceSpan? span)
+            {
+                governor.Reserve(FileHandleValueBytes, span);
+                governor.Commit(FileHandleValueBytes);
+            }
+
             public static TextFileHandle ForRead(
                 string path,
                 ExecutionContext context,
@@ -127,6 +138,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.ObserveString(text, null);
+                ChargeFileHandleValue(context.MemoryGovernor, null);
                 return new TextFileHandle(path, new TextFileReadState(text, newline), context, encoding, errors);
             }
 
@@ -153,6 +165,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.ObserveString(text, null);
+                ChargeFileHandleValue(context.MemoryGovernor, null);
                 return new TextFileHandle(path, new TextFileReadState(text, newline), context, encoding, errors);
             }
 
@@ -165,12 +178,15 @@ internal sealed partial class LythonRuntime
                 TextEncodingMode encoding,
                 TextErrorMode errors,
                 TextNewlineMode newline)
-                => new(
+            {
+                ChargeFileHandleValue(context.MemoryGovernor, null);
+                return new(
                     path,
                     new TextFileWriteState(path, TextFileWriteMode.Write, context, encoding, errors, newline, BigInteger.Zero),
                     context,
                     encoding,
                     errors);
+            }
 
             public static TextFileHandle ForAppend(
                 string path,
@@ -342,12 +358,15 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline,
                 BigInteger appendBasePosition)
-                => new(
+            {
+                ChargeFileHandleValue(context.MemoryGovernor, null);
+                return new(
                     path,
                     new TextFileWriteState(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition),
                     context,
                     encoding,
                     errors);
+            }
 
             private TextFileReadState RequireReader()
                 => _state as TextFileReadState
