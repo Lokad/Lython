@@ -278,6 +278,10 @@ internal sealed partial class LythonRuntime
                     MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context),
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
+            if (function is PyFunctionBase defined)
+            {
+                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
+            }
             ChargeClosureRetention(
                 context.FunctionClosureContext,
                 functionBinding.CodeObject?.ClosureNames.Count ?? context.FunctionClosureContext.Variables.Count,

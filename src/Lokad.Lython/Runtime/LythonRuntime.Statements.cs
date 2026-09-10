@@ -207,15 +207,17 @@ internal sealed partial class LythonRuntime
                 parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
                 parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
             .ToArray();
+        var loweredBody = LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements;
         var function = new PyFunction(
             statement.Name,
             loweredParameters,
-            LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements,
+            loweredBody,
             context.FunctionClosureContext,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
             ScopeDirectiveFactsCollector.ForFunction(statement));
         ChargeFunctionValue(context, statement.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.FunctionClosureContext.Variables.Count, context.MemoryGovernor, statement.Span);
+        PyFunctionBase.CaptureFunctionDocstring(function, loweredBody, context, statement.Span);
         StoreName(
             statement.Name,
             ApplyDecorators(function, statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), statement.Span, context),
