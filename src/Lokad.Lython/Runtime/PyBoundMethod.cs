@@ -26,7 +26,7 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     // missing, matching method-wrapper surface (no __module__ there).
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        if (name is "__name__" or "__qualname__" or "__module__" &&
+        if (name is "__name__" or "__qualname__" or "__module__" or "__doc__" &&
             _function is IPyDynamicAttributes attributes &&
             attributes.TryGetMember(name, out value))
         {

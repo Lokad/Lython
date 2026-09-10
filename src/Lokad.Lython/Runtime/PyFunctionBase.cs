@@ -101,6 +101,13 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             return true;
         }
 
+        // Absent docstrings report None like CPython (doc texts are not stored).
+        if (name == "__doc__")
+        {
+            value = PyNone.Instance;
+            return true;
+        }
+
         value = name switch
         {
             "__name__" => _nameValue,

@@ -541,4 +541,35 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task AbsentDocstringsAreNone()
+    {
+        // Partial objects expose no __name__ like CPython; their __module__
+        // aliases shared functools. Doc texts are not stored anywhere.
+        var script = new LythonEngine().Compile("""
+            import functools
+            def f():
+                pass
+            class C:
+                def m(self):
+                    pass
+            p = functools.partial(int)
+            return [f.__doc__, C().m.__doc__, C.__doc__,
+                hasattr(p, "__name__"), hasattr(p, "__qualname__"),
+                p.__module__, p.__doc__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            null, null, null, false, false, "functools", null,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

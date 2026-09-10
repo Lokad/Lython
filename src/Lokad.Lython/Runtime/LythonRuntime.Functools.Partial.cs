@@ -102,14 +102,22 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            // Absent docstrings report None like CPython (doc texts are not stored).
+            if (name == "__doc__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
             value = name switch
             {
                 "func" => _callable,
                 "args" => BuildArgs(),
                 "keywords" => BuildKeywords(),
                 "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
-                "__name__" => PyString.FromString("partial"),
-                "__qualname__" => PyString.FromString("partial"),
+                // Partial objects expose no __name__/__qualname__ like CPython;
+                // __module__ aliases shared functools (__doc__ is handled above).
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("functools"),
                 _ => PyNone.Instance
             };
             return !ReferenceEquals(value, PyNone.Instance);
@@ -122,14 +130,22 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            // Absent docstrings report None like CPython (doc texts are not stored).
+            if (name == "__doc__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
             value = name switch
             {
                 "func" => _callable,
                 "args" => BuildArgs(context.MemoryGovernor, span),
                 "keywords" => BuildKeywords(context, span),
                 "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
-                "__name__" => PyString.FromString("partial"),
-                "__qualname__" => PyString.FromString("partial"),
+                // Partial objects expose no __name__/__qualname__ like CPython;
+                // __module__ aliases shared functools (__doc__ is handled above).
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("functools"),
                 _ => PyNone.Instance
             };
             return !ReferenceEquals(value, PyNone.Instance);

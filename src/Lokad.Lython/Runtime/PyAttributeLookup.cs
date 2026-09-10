@@ -237,6 +237,13 @@ internal static class PyAttributeLookup
 
     private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, [MaybeNullWhen(false)] out object value)
     {
+        // Absent docstrings report None like CPython (doc texts are not stored).
+        if (memberName == "__doc__")
+        {
+            value = PyNone.Instance;
+            return true;
+        }
+
         value = memberName switch
         {
             "__name__" => type.NameValue,
@@ -245,6 +252,7 @@ internal static class PyAttributeLookup
             "__bases__" => type.BasesTuple,
             "__mro__" => type.MroTuple,
             "__class__" => (object?)type.MetaType ?? PyNone.Instance,
+            // Absent docstrings report None like CPython (doc texts are not stored).
             _ => PyNone.Instance
         };
         return !ReferenceEquals(value, PyNone.Instance);
@@ -252,6 +260,13 @@ internal static class PyAttributeLookup
 
     private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        // Absent docstrings report None like CPython (doc texts are not stored).
+        if (memberName == "__doc__")
+        {
+            value = PyNone.Instance;
+            return true;
+        }
+
         value = memberName switch
         {
             "__name__" => type.NameValue,
@@ -260,6 +275,7 @@ internal static class PyAttributeLookup
             "__bases__" => type.BasesTuple,
             "__mro__" => type.MroTuple,
             "__class__" => (object?)type.MetaType ?? PyNone.Instance,
+            // Absent docstrings report None like CPython (doc texts are not stored).
             _ => PyNone.Instance
         };
         return !ReferenceEquals(value, PyNone.Instance);

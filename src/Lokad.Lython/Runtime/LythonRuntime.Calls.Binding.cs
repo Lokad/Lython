@@ -231,6 +231,13 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            // Lambdas never carry docstrings, so __doc__ reports None like CPython.
+            if (name == "__doc__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
             if (name == "__module__" && PyFunctionBase.TryGetModuleName(_closure, out var moduleName))
             {
                 value = moduleName;
