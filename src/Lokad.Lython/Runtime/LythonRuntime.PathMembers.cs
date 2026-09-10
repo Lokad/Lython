@@ -88,6 +88,19 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            // Module exceptions resolve through the run import registry, so identity
+            // matches the imported type object (and its aliases); unimported modules
+            // stay missing like any other unregistered member.
+            if (name == "__class__" &&
+                !exception.Identity.IsBuiltin &&
+                context.State.ImportedModules.TryGetValue(exception.Identity.ModuleName, out var module) &&
+                module.TryGetCachedMember(exception.Identity.TypeName, out var moduleTypeValue) &&
+                moduleTypeValue is not null)
+            {
+                value = moduleTypeValue;
+                return true;
+            }
+
             value = PyNone.Instance;
             return false;
         }
