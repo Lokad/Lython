@@ -44,11 +44,16 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
+            // The key is scratch until a miss retains it: measure exactly what
+            // its construction commits so dropped keys release nothing net.
+            var keyBytesBefore = context.MemoryGovernor.CurrentCommittedBytes;
             var key = BuildCacheKey(arguments, _keyMode, context, span);
+            var keyBytes = context.MemoryGovernor.CurrentCommittedBytes - keyBytesBefore;
             if (_maxSize != 0 && _cache.TryGetValue(key, out var cached))
             {
                 _hits++;
                 Touch(cached);
+                context.MemoryGovernor.Release(keyBytes);
                 return cached.Value;
             }
 
@@ -57,6 +62,10 @@ internal sealed partial class LythonRuntime
             if (_maxSize != 0)
             {
                 Store(key, result, span);
+            }
+            else
+            {
+                context.MemoryGovernor.Release(keyBytes);
             }
 
             return result;
@@ -606,7 +615,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 parts.Add(CacheKeyMarker.Keyword);
-                parts.Add(PyString.FromString(argument.KeywordName));
+                parts.Add(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span));
                 parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
             }
 
@@ -615,7 +624,7 @@ internal sealed partial class LythonRuntime
                 parts.Add(CacheKeyMarker.Typed);
                 foreach (var argument in arguments)
                 {
-                    parts.Add(PyString.FromString(GetCacheTypeToken(argument.Value, context, span)));
+                    parts.Add(PyString.FromString(GetCacheTypeToken(argument.Value, context, span), context.MemoryGovernor, span));
                 }
             }
 
