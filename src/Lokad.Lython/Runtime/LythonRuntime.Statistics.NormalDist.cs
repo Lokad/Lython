@@ -9,6 +9,17 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class StatisticsModule : PyModule
     {
+        // Constructed NormalDist values retain two doubles (free 64-bit payloads
+        // by design); charge one table slot per fresh value once built.
+        private const long NormalDistValueBytes = 64;
+
+        internal static object OwnNormalDist(object value, ExecutionContext context, LythonSourceSpan span)
+        {
+            context.MemoryGovernor.Reserve(NormalDistValueBytes, span);
+            context.MemoryGovernor.Commit(NormalDistValueBytes);
+            return value;
+        }
+
         private static object CreateNormalDist(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var bound = CallBinder.BindNamedArguments(
@@ -27,8 +38,7 @@ internal sealed partial class LythonRuntime
                 throw StatisticsError("sigma must be non-negative", span);
             }
 
-            _ = context;
-            return new PyNormalDist(mean, stdev);
+            return OwnNormalDist(new PyNormalDist(mean, stdev), context, span);
         }
 
         private static object NormalDistFromSamples(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -41,7 +51,7 @@ internal sealed partial class LythonRuntime
 
             var mean = values.Average();
             var sum = values.Sum(value => Math.Pow(value - mean, 2));
-            return new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1)));
+            return OwnNormalDist(new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1))), context, span);
         }
 
         public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)

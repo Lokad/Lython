@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateUnaryPlus(object operand, LythonSourceSpan span)
+    private static object EvaluateUnaryPlus(object operand, ExecutionContext context, LythonSourceSpan span)
     {
         if (operand is PyCounter positiveCounter)
         {
@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, out var positiveNormalDist))
         {
-            return positiveNormalDist;
+            return StatisticsModule.OwnNormalDist(positiveNormalDist, context, span);
         }
 
         if (!PyNumberOps.TryAsNumber(operand, out _))
@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
         {
-            return negativeNormalDist;
+            return StatisticsModule.OwnNormalDist(negativeNormalDist, context, span);
         }
 
         if (!PyNumberOps.TryAsNumber(operand, out var numeric))

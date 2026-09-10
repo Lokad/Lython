@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
         => op switch
         {
             UnaryOperatorSyntax.Not => !IsTruthy(operand, context, span),
-            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, span),
+            UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, context, span),
             UnaryOperatorSyntax.Minus => EvaluateUnaryMinus(operand, context, span),
             UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, context, span),
             _ => throw new InvalidOperationException($"Unknown unary operator: {op}"),

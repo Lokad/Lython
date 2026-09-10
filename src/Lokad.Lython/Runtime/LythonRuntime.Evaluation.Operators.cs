@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TryAddNormalDist(left, right, span, out var normalDistSum))
         {
-            return normalDistSum;
+            return StatisticsModule.OwnNormalDist(normalDistSum, context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TrySubtractNormalDist(left, right, span, out var normalDistDifference))
         {
-            return normalDistDifference;
+            return StatisticsModule.OwnNormalDist(normalDistDifference, context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TryMultiplyNormalDist(left, right, span, out var normalDistProduct))
         {
-            return normalDistProduct;
+            return StatisticsModule.OwnNormalDist(normalDistProduct, context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
 
         if (StatisticsModule.TryDivideNormalDist(left, right, span, out var normalDistQuotient))
         {
-            return normalDistQuotient;
+            return StatisticsModule.OwnNormalDist(normalDistQuotient, context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))

@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
                 "is_not" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
                 "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateAbsolute(value, context, innerSpan))),
                 "neg" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNeg, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryMinus(value, context, innerSpan))),
-                "pos" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPos, (arguments, span, _) => Unary(arguments, span, EvaluateUnaryPlus)),
+                "pos" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPos, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateUnaryPlus(value, context, innerSpan))),
                 "invert" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorInvert, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateBitwiseNot(value, context, innerSpan))),
                 "index" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndex, (arguments, span, context) => Unary(arguments, span, (value, innerSpan) => EvaluateIndex(value, context, innerSpan))),
                 "add" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
