@@ -190,13 +190,25 @@ internal sealed partial class LythonRuntime
 
     private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes
     {
-        // object.__new__ is a slot wrapper: CPython exposes __name__ but no
-        // __module__ there, matching method-wrapper surface.
+        // object.__new__ is a builtin method: CPython reports the short
+        // __name__, the qualified __qualname__ and a None __module__.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (name is "__name__" or "__qualname__")
+            if (name is "__name__")
             {
                 value = PyString.FromString("__new__");
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object.__new__");
+                return true;
+            }
+
+            if (name is "__module__")
+            {
+                value = PyNone.Instance;
                 return true;
             }
 
@@ -217,9 +229,30 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__init__";
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -238,9 +271,35 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitSubclassMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class ObjectInitSubclassMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__init_subclass__";
+
+        // __init_subclass__ surfaces as a bound builtin method: CPython
+        // reports the qualified __qualname__ and a None __module__.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -264,9 +323,30 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__setattr__";
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -297,9 +377,30 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__delattr__";
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -333,9 +434,30 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__getattribute__";
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 

@@ -355,6 +355,46 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task SlotMethodQualnamesAndModules()
+    {
+        // Object slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; the __new__ builtin and the bound
+        // __init_subclass__ report a None __module__ while other slot
+        // wrappers leave __module__ missing.
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            return [object.__init__.__name__, object.__setattr__.__name__,
+                object.__getattribute__.__name__, object.__delattr__.__name__,
+                object.__init_subclass__.__name__,
+                object.__init__.__qualname__, object.__new__.__qualname__,
+                object.__init_subclass__.__qualname__,
+                E().__init__.__qualname__, E().__setattr__.__qualname__,
+                object.__new__.__module__ is None,
+                object.__init_subclass__.__module__ is None,
+                E().__init_subclass__.__module__ is None,
+                hasattr(object.__init__, "__module__"),
+                hasattr(object.__setattr__, "__module__"),
+                hasattr(E().__init__, "__module__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "__init__", "__setattr__", "__getattribute__", "__delattr__",
+            "__init_subclass__",
+            "object.__init__", "object.__new__", "object.__init_subclass__",
+            "object.__init__", "object.__setattr__",
+            true, true, true, false, false, false,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
