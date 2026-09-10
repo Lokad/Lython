@@ -495,6 +495,17 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         [MaybeNullWhen(false)] out object classValue)
     {
+        // Type-denoting objects report the type builtin itself.
+        if (value is BuiltinCallable { Name: var ctorName } && BuiltinTypeBaseNames.ContainsKey(ctorName) ||
+            value is DictCallable or ZipCallable ||
+            value is ReModule.RegexFlagFactory or ZipInfoCallable or ZipFileCallable ||
+            value is PathlibModule.PathlibPathType or PyBuiltinRuntimeType ||
+            value is ExceptionTypeValue)
+        {
+            classValue = TryGetBuiltinOrNull(context, "type");
+            return classValue is not null;
+        }
+
         object? resolved = value switch
         {
             PyList => TryGetBuiltinOrNull(context, "list"),
@@ -521,6 +532,23 @@ internal sealed partial class LythonRuntime
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
+            PyFunctionBase => PyType.FunctionType,
+            LambdaFunction => PyType.FunctionType,
+            PyBoundMethod => PyType.MethodType,
+            BuiltinCallable => PyType.BuiltinFunctionType,
+            BoundCallable => PyType.BuiltinFunctionType,
+            MinMaxCallable => PyType.BuiltinFunctionType,
+            OpenCallable => PyType.BuiltinFunctionType,
+            PrintCallable => PyType.BuiltinFunctionType,
+            PyDateTimeOps.TypeMemberCallable => PyType.BuiltinFunctionType,
+            PyDataclass.DataclassInitMethod => PyType.FunctionType,
+            PyDataclass.DataclassReprMethod => PyType.FunctionType,
+            PyDataclass.DataclassEqMethod => PyType.FunctionType,
+            PyDataclass.DataclassOrderMethod => PyType.FunctionType,
+            PyDataclass.DataclassHashMethod => PyType.FunctionType,
+            PyDataclass.DataclassFrozenSetAttrMethod => PyType.FunctionType,
+            PyDataclass.DataclassFrozenDelAttrMethod => PyType.FunctionType,
+            TotalOrderingMethod => PyType.FunctionType,
             _ => null,
         };
 
@@ -797,6 +825,12 @@ internal sealed partial class LythonRuntime
             if (name == "__self__")
             {
                 value = _receiver;
+                return true;
+            }
+
+            if (name == "__class__")
+            {
+                value = PyType.BuiltinFunctionType;
                 return true;
             }
 

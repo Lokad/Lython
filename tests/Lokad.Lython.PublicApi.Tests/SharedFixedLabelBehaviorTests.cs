@@ -763,4 +763,45 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CallableClassIdentities()
+    {
+        var script = new LythonEngine().Compile("""
+            import datetime
+            from dataclasses import dataclass
+            def f():
+                pass
+            class C:
+                def m(self):
+                    pass
+            @dataclass
+            class P:
+                x: int = 0
+            d = datetime.date(2024, 1, 1)
+            return [f.__class__ is type(f),
+                len.__class__ is type(len),
+                [].append.__class__ is type([].append),
+                C().m.__class__ is type(C().m),
+                print.__class__ is type(print),
+                d.weekday.__class__.__name__,
+                P.__init__.__class__ is type(P.__init__),
+                dict.__class__ is type, int.__class__ is type,
+                type(f).__name__, type(C().m).__name__, type(len).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true,
+            "builtin_function_or_method", true, true, true,
+            "function", "method", "builtin_function_or_method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

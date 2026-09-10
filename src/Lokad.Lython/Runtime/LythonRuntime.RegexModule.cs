@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
             FullMatch,
         }
 
-        private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
+        internal sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
         {
             private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "re.RegexFlag",

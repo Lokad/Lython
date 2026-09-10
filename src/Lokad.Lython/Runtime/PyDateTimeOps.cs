@@ -71,7 +71,7 @@ internal static partial class PyDateTimeOps
         @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?)?$",
         RegexOptions.CultureInvariant);
 
-    private sealed class TypeMemberCallable : LythonRuntime.ICallable
+    internal sealed class TypeMemberCallable : LythonRuntime.ICallable
     {
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
         private readonly LythonCallableSignature _signature;

@@ -10,6 +10,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     private static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     private static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
+    internal static readonly PyBuiltinRuntimeType FunctionType = CreateOpaqueRuntimeType("function");
+    internal static readonly PyBuiltinRuntimeType MethodType = CreateOpaqueRuntimeType("method");
+    internal static readonly PyBuiltinRuntimeType BuiltinFunctionType = CreateOpaqueRuntimeType("builtin_function_or_method");
     internal static readonly PyBuiltinRuntimeType NoneType = CreateOpaqueRuntimeType("NoneType");
 
     private readonly Dictionary<string, object> _members;
@@ -319,6 +322,14 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     private static object GetRuntimeTypeObject(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        // Callable and value classes resolve through the shared helper so
+        // x.__class__ is type(x) everywhere both exist; the switch below keeps
+        // instance, named-tuple and import-independent paths.
+        if (LythonRuntime.TryGetValueClass(value, context, out var classValue))
+        {
+            return classValue;
+        }
+
         return value switch
         {
             PyInstance instance => instance.Type,

@@ -16,7 +16,7 @@ internal static partial class PyDataclass
     private static readonly IReadOnlyDictionary<string, object> EmptyDefaultValues =
         new Dictionary<string, object>(StringComparer.Ordinal);
 
-    private sealed class DataclassInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public string Name => "__init__";
 
@@ -173,7 +173,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassReprMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassReprMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
 
@@ -237,7 +237,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassEqMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
 
@@ -302,7 +302,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private enum DataclassOrderOperation
+    internal enum DataclassOrderOperation
     {
         Less,
         LessEqual,
@@ -310,7 +310,7 @@ internal static partial class PyDataclass
         GreaterEqual
     }
 
-    private sealed class DataclassOrderMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassOrderMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName;
 
@@ -397,7 +397,7 @@ internal static partial class PyDataclass
 
     }
 
-    private sealed class DataclassHashMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassHashMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
 
@@ -444,7 +444,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassFrozenSetAttrMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassFrozenSetAttrMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
 
@@ -487,7 +487,7 @@ internal static partial class PyDataclass
         }
     }
 
-    private sealed class DataclassFrozenDelAttrMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassFrozenDelAttrMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
 
