@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class TimeStructTimeType : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
+    internal sealed class TimeStructTimeType : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public static readonly TimeStructTimeType Instance = new();
 
@@ -46,6 +46,10 @@ internal sealed partial class LythonRuntime
         }
 
         public string Name => "time.struct_time";
+
+        // The struct_time name is fixed on the global singleton, so reads alias
+        // stably like CPython instead of rebuilding per read.
+        private readonly PyString _nameValue = PyString.FromString("struct_time");
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -78,7 +82,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "__name__" => PyString.FromString("struct_time"),
+                "__name__" => _nameValue,
+                "__qualname__" => _nameValue,
                 "n_fields" => new BigInteger(11),
                 "n_sequence_fields" => new BigInteger(9),
                 "n_unnamed_fields" => BigInteger.Zero,
@@ -86,6 +91,47 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
+        // struct_time resolves __module__ through the shared label catalog and
+        // __bases__/__mro__ per read: the tuple base comes from the run builtins
+        // table, so tuples cannot be shared across runs.
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("time");
+                return true;
+            }
+
+            if (name == "__bases__" || name == "__mro__")
+            {
+                if (!context.TryGetBuiltin("tuple", out var tupleType) || tupleType is null)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                var bases = new object[] { tupleType };
+                if (name == "__bases__")
+                {
+                    value = new PyTuple(bases, context.MemoryGovernor, span);
+                    return true;
+                }
+
+                // __mro__ always terminates at object like CPython.
+                if (!context.TryGetBuiltin("object", out var objectBase) || objectBase is null)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                var mro = new object[] { this, tupleType, objectBase };
+                value = new PyTuple(mro, context.MemoryGovernor, span);
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;

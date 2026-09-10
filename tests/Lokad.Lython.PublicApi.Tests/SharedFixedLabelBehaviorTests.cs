@@ -504,4 +504,41 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task RemainingTypeDunders()
+    {
+        var script = new LythonEngine().Compile("""
+            import decimal
+            import random
+            import re
+            import time
+            import zipfile
+            return [time.struct_time.__name__ is time.struct_time.__name__,
+                time.struct_time.__qualname__, time.struct_time.__module__,
+                time.struct_time.__bases__[0] is tuple,
+                len(time.struct_time.__mro__),
+                decimal.DecimalTuple.__bases__[0] is tuple,
+                decimal.DecimalTuple.__module__,
+                zipfile.ZipInfo.__name__, zipfile.ZipInfo.__module__,
+                zipfile.ZipInfo.__bases__[0] is object,
+                zipfile.ZipFile.__bases__[0] is object,
+                re.RegexFlag.__name__, re.RegexFlag.__module__,
+                random.Random.__mro__[0] is random.Random, random.Random.__mro__[1] is object]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, "struct_time", "time", true, new BigInteger(3),
+            true, "decimal", "ZipInfo", "zipfile", true, true,
+            "RegexFlag", "re", true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

@@ -358,6 +358,8 @@ internal sealed partial class LythonRuntime
             ["str"] = ["object"],
             ["bytes"] = ["object"],
             ["decimal.Decimal"] = ["object"],
+            ["decimal.DecimalTuple"] = ["tuple"],
+            ["decimal.Context"] = ["object"],
             ["range"] = ["object"],
             ["slice"] = ["object"],
             ["zip"] = ["object"],
@@ -418,12 +420,55 @@ internal sealed partial class LythonRuntime
             bases[i] = baseValue;
         }
 
-        var mro = new object[bases.Length + 1];
+        // __mro__ always terminates at object like CPython.
+        if (!context.TryGetBuiltin("object", out var objectBase) || objectBase is null)
+        {
+            return null;
+        }
+
+        var mroLength = bases.Length + 1;
+        if (bases.Length == 0 || !ReferenceEquals(bases[bases.Length - 1], objectBase))
+        {
+            mroLength++;
+        }
+
+        var mro = new object[mroLength];
         mro[0] = self;
         Array.Copy(bases, 0, mro, 1, bases.Length);
+        if (mroLength > bases.Length + 1)
+        {
+            mro[mroLength - 1] = objectBase;
+        }
+
         return new BuiltinTypeHierarchy(
             new PyTuple(bases, context.MemoryGovernor, span),
             new PyTuple(mro, context.MemoryGovernor, span));
+    }
+
+    // Singleton types deriving object resolve __bases__/__mro__ per read: the
+    // object base comes from the run builtins table, so tuples cannot be shared
+    // across runs.
+    internal static bool TryGetObjectBases(
+        object self,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        string member,
+        [MaybeNullWhen(false)] out object value)
+    {
+        if (!context.TryGetBuiltin("object", out var obj) || obj is null)
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        if (member == "__bases__")
+        {
+            value = new PyTuple([obj], context.MemoryGovernor, span);
+            return true;
+        }
+
+        value = new PyTuple([self, obj], context.MemoryGovernor, span);
+        return true;
     }
 
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes

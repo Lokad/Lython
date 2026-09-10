@@ -135,9 +135,27 @@ internal sealed partial class LythonRuntime
                     return true;
                 }
 
-                var mro = new object[bases.Length + 1];
+                // __mro__ always terminates at object like CPython.
+                if (!context.TryGetBuiltin("object", out var objectBase) || objectBase is null)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                var mroLength = bases.Length + 1;
+                if (!ReferenceEquals(bases[bases.Length - 1], objectBase))
+                {
+                    mroLength++;
+                }
+
+                var mro = new object[mroLength];
                 mro[0] = this;
                 Array.Copy(bases, 0, mro, 1, bases.Length);
+                if (mroLength > bases.Length + 1)
+                {
+                    mro[mroLength - 1] = objectBase;
+                }
+
                 value = new PyTuple(mro, context.MemoryGovernor, span);
                 return true;
             }

@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class ZipInfoCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class ZipInfoCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyHashableValue
     {
         public static readonly ZipInfoCallable Instance = new();
 
@@ -136,6 +136,38 @@ internal sealed partial class LythonRuntime
         }
 
         public string Name => "zipfile.ZipInfo";
+
+        private readonly PyString _nameValue = PyString.FromString("ZipInfo");
+
+        // Zip type constructors report shared names and per-read hierarchies
+        // like the other singleton types (object bases cannot be shared).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = _nameValue;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("zipfile");
+                return true;
+            }
+
+            if (name == "__bases__" || name == "__mro__")
+            {
+                return TryGetObjectBases(this, context, span, name, out value);
+                }
+
+            return TryGetMember(name, out value);
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -174,7 +206,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class ZipFileCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class ZipFileCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyHashableValue
     {
         public static readonly ZipFileCallable Instance = new();
 
@@ -183,6 +215,38 @@ internal sealed partial class LythonRuntime
         }
 
         public string Name => "zipfile.ZipFile";
+
+        private readonly PyString _nameValue = PyString.FromString("ZipFile");
+
+        // Zip type constructors report shared names and per-read hierarchies
+        // like the other singleton types (object bases cannot be shared).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = _nameValue;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("zipfile");
+                return true;
+            }
+
+            if (name == "__bases__" || name == "__mro__")
+            {
+                return TryGetObjectBases(this, context, span, name, out value);
+                }
+
+            return TryGetMember(name, out value);
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

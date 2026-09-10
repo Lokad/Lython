@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
             FullMatch,
         }
 
-        private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
+        private sealed class RegexFlagFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
         {
             private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "re.RegexFlag",
@@ -265,6 +265,29 @@ internal sealed partial class LythonRuntime
                 requiredCount: 0);
 
             public string Name => "re.RegexFlag";
+
+            // The flag name is fixed vocabulary shared across factory instances, so
+            // reads alias stably; there is no Flag base model, so __bases__ stays
+            // missing (CPython reports int/Flag there).
+            private static readonly PyString RegexFlagName = PyString.FromString("RegexFlag");
+
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            {
+                if (name is "__name__" or "__qualname__")
+                {
+                    value = RegexFlagName;
+                    return true;
+                }
+
+                if (name == "__module__")
+                {
+                    value = ExceptionTypeValue.SharedModuleLabel("re");
+                    return true;
+                }
+
+                value = PyNone.Instance;
+                return false;
+            }
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
