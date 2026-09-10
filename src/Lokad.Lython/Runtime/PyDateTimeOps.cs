@@ -645,11 +645,11 @@ internal static partial class PyDateTimeOps
     public static PyTuple TimeTuple(DateTime dateTime, int isDst)
         => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst);
 
-    public static PyTuple TimeTuple(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
-        => CreateTimeTuple(date, TimeOnly.MinValue, isDst: -1, context.MemoryGovernor, span);
+    public static LythonRuntime.TimeStructTimeValue TimeTuple(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        => LythonRuntime.TimeStructTimeValue.FromDateTime(date.ToDateTime(TimeOnly.MinValue), -1, PyNone.Instance, PyNone.Instance, context, span);
 
-    public static PyTuple TimeTuple(DateTime dateTime, int isDst, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
-        => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst, context.MemoryGovernor, span);
+    public static LythonRuntime.TimeStructTimeValue TimeTuple(DateTime dateTime, int isDst, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        => LythonRuntime.TimeStructTimeValue.FromDateTime(dateTime, isDst, PyNone.Instance, PyNone.Instance, context, span);
 
     public static double Timestamp(PyDateTime dateTime, TimeSpan localOffset, LythonSourceSpan span)
     {

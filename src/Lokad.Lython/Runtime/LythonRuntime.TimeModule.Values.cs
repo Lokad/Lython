@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
             object zone,
             object gmtOffset,
             MemoryGovernor governor,
-            LythonSourceSpan span)
+            LythonSourceSpan? span)
         {
             // Own the shell beside the governed values tuple.
             governor.Reserve(64L, span);
@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
             object zone,
             object gmtOffset,
             ExecutionContext context,
-            LythonSourceSpan span)
+            LythonSourceSpan? span)
             => new(
                 [
                     new BigInteger(value.Year),

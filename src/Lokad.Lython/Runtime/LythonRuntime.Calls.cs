@@ -531,7 +531,10 @@ internal sealed partial class LythonRuntime
             PyTimedelta => TryGetModuleMemberOrNull(context, "datetime", "timedelta"),
             PyTimezone => TryGetModuleMemberOrNull(context, "datetime", "timezone"),
             PyPath => TryGetModuleMemberOrNull(context, "pathlib", "Path"),
-            TimeStructTimeValue => TryGetModuleMemberOrNull(context, "time", "struct_time"),
+            // Struct-time values resolve through the dedicated singleton rather
+            // than the import registry, so they keep their class without an
+            // import; the registry holds the same object, preserving identity.
+            TimeStructTimeValue => TimeStructTimeType.Instance,
             LythonRuntime.StatisticsModule.PyNormalDist => TryGetModuleMemberOrNull(context, "statistics", "NormalDist"),
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,

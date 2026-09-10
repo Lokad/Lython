@@ -40,7 +40,7 @@ public sealed class DateTimeValueResultTests
 
         Assert.Equal(64, InvokeDelta(context, span, date, "replace"));
         Assert.Equal(144, InvokeDelta(context, span, date, "isocalendar"));
-        Assert.Equal(176, InvokeDelta(context, span, date, "timetuple"));
+        Assert.Equal(240, InvokeDelta(context, span, date, "timetuple"));
         Assert.Equal(64, InvokeDelta(context, span, time, "replace"));
         Assert.Equal(0, InvokeDelta(context, span, time, "utcoffset"));
         Assert.Equal(64, InvokeDelta(context, span, awareTime, "utcoffset"));
@@ -48,8 +48,8 @@ public sealed class DateTimeValueResultTests
         Assert.Equal(64, InvokeDelta(context, span, dateTime, "time"));
         Assert.Equal(64, InvokeDelta(context, span, dateTime, "timetz"));
         Assert.Equal(144, InvokeDelta(context, span, dateTime, "isocalendar"));
-        Assert.Equal(176, InvokeDelta(context, span, dateTime, "timetuple"));
-        Assert.Equal(176, InvokeDelta(context, span, dateTime, "utctimetuple"));
+        Assert.Equal(240, InvokeDelta(context, span, dateTime, "timetuple"));
+        Assert.Equal(240, InvokeDelta(context, span, dateTime, "utctimetuple"));
         Assert.Equal(0, InvokeDelta(context, span, dateTime, "utcoffset"));
         Assert.Equal(64, InvokeDelta(context, span, awareDateTime, "utcoffset"));
         Assert.Equal(64, InvokeDelta(context, span, dateTime, "astimezone"));
@@ -93,7 +93,8 @@ public sealed class DateTimeValueResultTests
         var date = new PyDate(new DateOnly(2020, 1, 2));
         Assert.True(PyMemberAccess.TryResolve(date, "timetuple", context, span, out var value));
         var bound = Assert.IsAssignableFrom<LythonRuntime.ICallable>(value);
-        var result = Assert.IsType<PyTuple>(bound.Invoke([], span, context));
-        Assert.NotNull(result.OwnerMemoryGovernor);
+        var result = Assert.IsType<LythonRuntime.TimeStructTimeValue>(bound.Invoke([], span, context));
+        Assert.Same(PyNone.Instance, result.Zone);
+        Assert.Same(PyNone.Instance, result.GmtOffset);
     }
 }

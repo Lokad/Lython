@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
                 "timetuple" => BoundCallable.CreateNoArguments(
                     dateTime,
                     "datetime.timetuple",
-                    static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, receiver.TzInfo is null ? -1 : 0, context, span)),
+                    static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, -1, context, span)),
                 "utctimetuple" => BoundCallable.CreateNoArguments(dateTime, "datetime.utctimetuple", static (receiver, span, context) =>
                 {
                     var utcValue = receiver.TzInfo is null

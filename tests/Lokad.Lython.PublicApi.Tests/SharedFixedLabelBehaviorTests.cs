@@ -1771,6 +1771,46 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TimetupleReturnsStructTime()
+    {
+        // date/datetime timetuple paths return struct_time values like
+        // CPython (fields, indexing, zones, class identity without needing
+        // the time import); aware timetuples report unknown DST.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import time
+            results = []
+            t = datetime.date(2024, 1, 2).timetuple()
+            results.append(type(t) is time.struct_time)
+            results.append(t.__class__ is time.struct_time)
+            results.append(t.tm_year)
+            results.append(t[7])
+            results.append(t.tm_zone is None)
+            results.append(t.tm_gmtoff is None)
+            results.append(isinstance(t, tuple))
+            u = datetime.datetime(2024, 1, 2, 3, 4, 5, 6).utctimetuple()
+            results.append(u.tm_hour)
+            results.append(u.tm_isdst)
+            a = datetime.datetime(2024, 1, 2, tzinfo=datetime.timezone.utc).timetuple()
+            results.append(a.tm_isdst)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, new BigInteger(2024), new BigInteger(2), true, true,
+            true, new BigInteger(3), new BigInteger(0), new BigInteger(-1),
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
