@@ -36,6 +36,7 @@ internal sealed partial class LythonRuntime
                         : TextErrorMode.Strict;
                     return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, "bytes.decode", ["encoding", "errors"], 0),
+                "hex" => new RawBoundCallable((arguments, span, context) => HexEncode(bytes, arguments, span, context)) { BoundName = "bytes.hex", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -123,6 +124,172 @@ internal sealed partial class LythonRuntime
 
         return CreateBytes([.. result], context, span);
     }
+
+    private static object HexEncode(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? sep = null;
+        object? group = null;
+        var hasSepPositional = false;
+        var hasGroupPositional = false;
+        var positionals = 0;
+        var keywords = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                keywords++;
+                continue;
+            }
+            positionals++;
+            if (positionals == 1)
+            {
+                sep = argument.Value;
+                hasSepPositional = true;
+            }
+            else if (positionals == 2)
+            {
+                group = argument.Value;
+                hasGroupPositional = true;
+            }
+        }
+        if (positionals + keywords > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "hex() takes at most 2 arguments (" + (positionals + keywords) + " given)", span);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (!argument.IsKeyword)
+            {
+                continue;
+            }
+            if (argument.KeywordName == "sep")
+            {
+                if (hasSepPositional)
+                {
+                    throw new LythonRuntimeException("TypeError", "argument for hex() given by name ('sep') and position (1)", span);
+                }
+
+                sep = argument.Value;
+            }
+            else if (argument.KeywordName == "bytes_per_sep")
+            {
+                if (hasGroupPositional)
+                {
+                    throw new LythonRuntimeException("TypeError", "argument for hex() given by name ('bytes_per_sep') and position (2)", span);
+                }
+
+                group = argument.Value;
+            }
+            else
+            {
+                throw new LythonRuntimeException("TypeError", "hex() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+            }
+        }
+
+        byte? separator = null;
+        if (sep is not null)
+        {
+            separator = ParseHexSeparator(sep, span);
+        }
+
+        var perSep = 1;
+        if (group is not null)
+        {
+            perSep = RuntimeArgumentValidation.ParseInt32(group, "bytes_per_sep", "bytes.hex([sep[, bytes_per_sep]])", span);
+        }
+
+        if (perSep < 0)
+        {
+            perSep = perSep == int.MinValue ? int.MaxValue : -perSep;
+        }
+
+        return CreateString(RenderHex(value.ToArray(), separator, perSep), context, span);
+    }
+
+    private static byte ParseHexSeparator(object sep, LythonSourceSpan span)
+    {
+        if (sep is PyString sepText)
+        {
+            var count = 0;
+            var code = 0;
+            foreach (var rune in sepText.AsString().EnumerateRunes())
+            {
+                count++;
+                code = rune.Value;
+            }
+
+            if (count != 1)
+            {
+                throw new LythonRuntimeException("ValueError", "sep must be length 1.", span);
+            }
+
+            if (code > 127)
+            {
+                throw new LythonRuntimeException("ValueError", "sep must be ASCII.", span);
+            }
+
+            return (byte)code;
+        }
+
+        if (sep is PyBytes sepBytes)
+        {
+            if (sepBytes.Length != 1)
+            {
+                throw new LythonRuntimeException("ValueError", "sep must be length 1.", span);
+            }
+
+            var octet = sepBytes.Bytes[0];
+            if (octet > 127)
+            {
+                throw new LythonRuntimeException("ValueError", "sep must be ASCII.", span);
+            }
+
+            return octet;
+        }
+
+        throw new LythonRuntimeException("TypeError", "hex() expects sep to be str or bytes.", span);
+    }
+
+    private static string RenderHex(byte[] source, byte? separator, int perSep)
+    {
+        const string Digits = "0123456789abcdef";
+        var first = source.Length;
+        if (separator is not null && perSep > 0 && source.Length > 0)
+        {
+            var head = source.Length % perSep;
+            first = head == 0 ? Math.Min(perSep, source.Length) : head;
+        }
+
+        var groups = 1;
+        if (first < source.Length)
+        {
+            groups += (source.Length - first + perSep - 1) / perSep;
+        }
+
+        var sepChar = (char)separator.GetValueOrDefault();
+        var text = new char[2 * source.Length + groups - 1];
+        var at = 0;
+        var index = 0;
+        for (var g = 0; g < groups; g++)
+        {
+            if (g > 0)
+            {
+                text[at++] = sepChar;
+            }
+
+            var end = g == 0 ? first : Math.Min(index + perSep, source.Length);
+            while (index < end)
+            {
+                var octet = source[index++];
+                text[at++] = Digits[octet >> 4];
+                text[at++] = Digits[octet & 15];
+            }
+        }
+
+        return new string(text);
+    }
+
 
     private sealed class RawBoundCallable(
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable

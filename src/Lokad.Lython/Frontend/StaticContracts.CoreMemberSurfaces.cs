@@ -57,6 +57,7 @@ internal static partial class StaticContracts
     {
         "decode",
         "fromhex",
+        "hex",
         "maketrans",
         "translate",
     };

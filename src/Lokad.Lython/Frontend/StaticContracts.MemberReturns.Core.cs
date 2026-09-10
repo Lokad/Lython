@@ -45,6 +45,8 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Path, "owner", StaticReturnShape.String),
         new(AbstractValueKind.Path, "group", StaticReturnShape.String),
         new(AbstractValueKind.Bytes, "decode", StaticReturnShape.String),
+        new(AbstractValueKind.Bytes, "hex", StaticReturnShape.String),
+        new(AbstractValueKind.BytesType, "hex", StaticReturnShape.String),
         new(AbstractValueKind.BytesType, "decode", StaticReturnShape.String),
         new(AbstractValueKind.TextFileHandle, "close", StaticReturnShape.None),
         new(AbstractValueKind.TextFileHandle, "readable", StaticReturnShape.Boolean),

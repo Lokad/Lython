@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "decode", "fromhex", "maketrans", "translate"])
+            results.append(dir(bytes) == ["__new__", "decode", "fromhex", "hex", "maketrans", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["decode", "fromhex", "maketrans", "translate"])
+            results.append(dir(b"") == ["decode", "fromhex", "hex", "maketrans", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -3736,6 +3736,88 @@ public sealed class SharedFixedLabelBehaviorTests
         {
             true, true, "abc..", true, true, "beta",
             true, true, "abc  ", true, true, "1",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesHexMember()
+    {
+        // bytes.hex renders lowercase hex like CPython, with right-grouped
+        // separators and the usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"".hex())
+            results.append(b"\xff\x00\xab".hex())
+            results.append(b"abcdef".hex(":"))
+            results.append(b"abcdef".hex(":", 2))
+            results.append(b"abcde".hex(":", 2))
+            results.append(b"abcd".hex(":", 0))
+            results.append(b"abcd".hex(":", -2))
+            results.append(b"abcdef".hex(bytes_per_sep=2))
+            results.append(b"abcdef".hex(sep="-"))
+            results.append(b"abcdef".hex(b"-", 2))
+            results.append(bytes.hex(b"ab"))
+            results.append(bytes.hex(b"abcdef", ":", 2))
+            results.append(type(b"ab".hex).__name__)
+            results.append(type(bytes.hex).__name__)
+            results.append(bytes.hex.__name__)
+            h = b"ab"
+            results.append(h.hex == h.hex)
+            results.append(bytes.hex == bytes.hex)
+            results.append(hasattr(bytes, "hex"))
+            results.append("hex" in dir(b"ab"))
+            results.append("hex" in dir(bytes))
+            try:
+                b"ab".hex(":", 1, 2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex("::")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex("\u00e9")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex(":", "x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex(":", sep=";")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".hex(bogus=1)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "", "ff00ab", "61:62:63:64:65:66", "6162:6364:6566", "61:6263:6465",
+            "61626364", "6162:6364", "616263646566", "61-62-63-64-65-66", "6162-6364-6566",
+            "6162", "6162:6364:6566", "builtin_function_or_method", "method_descriptor", "hex",
+            true, true, true, true, true,
+            "hex() takes at most 2 arguments (3 given)",
+            "hex() expects sep to be str or bytes.",
+            "sep must be length 1.",
+            "sep must be ASCII.",
+            "bytes.hex([sep[, bytes_per_sep]]) expects bytes_per_sep to be an integer.",
+            "argument for hex() given by name ('sep') and position (1)",
+            "hex() got an unexpected keyword argument 'bogus'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
