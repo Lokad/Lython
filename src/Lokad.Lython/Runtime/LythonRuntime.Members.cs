@@ -201,6 +201,15 @@ internal sealed partial class LythonRuntime
     internal static class TupleMembers
     {
         public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(name, tuple.Count, index => tuple[index], out value);
+
+        public static bool TryGetMember(PyNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(name, namedTuple.Count, namedTuple.GetItem, out value);
+
+        public static bool TryGetMember(PyTypingNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(name, namedTuple.Count, namedTuple.GetItem, out value);
+
+        private static bool TryGetMember(string name, int count, Func<int, object> getItem, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -211,11 +220,11 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, tuple.Count, 0, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, tuple.Count, tuple.Count, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
                     for (var i = start; i < stop; i++)
                     {
-                        if (AreEqual(tuple[i], arguments[0]))
+                        if (AreEqual(getItem(i), arguments[0]))
                         {
                             return new BigInteger(i);
                         }
@@ -230,16 +239,16 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "tuple.count(value) expects one argument.", span);
                     }
 
-                    var count = 0;
-                    for (var i = 0; i < tuple.Count; i++)
+                    var itemCount = 0;
+                    for (var i = 0; i < count; i++)
                     {
-                        if (AreEqual(tuple[i], arguments[0]))
+                        if (AreEqual(getItem(i), arguments[0]))
                         {
-                            count++;
+                            itemCount++;
                         }
                     }
 
-                    return new BigInteger(count);
+                    return new BigInteger(itemCount);
                 }, "tuple.count", ["value"]),
                 _ => MissingMemberValue.Instance,
             };

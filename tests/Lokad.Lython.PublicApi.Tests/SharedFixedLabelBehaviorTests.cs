@@ -2639,6 +2639,62 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NamedTupleSequenceMembers()
+    {
+        // Namedtuple values serve the tuple index/count shapes like CPython
+        // through the shared member core, on both namedtuple flavors.
+        var script = new LythonEngine().Compile("""
+            import collections
+            import typing
+            results = []
+            P = collections.namedtuple("P", ["x", "y"])
+            p = P(1, 2)
+            results.append(p.index(2))
+            results.append(p.index(2, 1))
+            results.append(p.count(1))
+            results.append(p.count(9))
+            results.append(p.index == p.index)
+            results.append(type(p.index).__name__)
+            results.append(p.index.__self__ is p)
+            results.append(tuple.index(p, 1))
+            T = typing.NamedTuple("T", [("x", int), ("y", int)])
+            t = T(3, 4)
+            results.append(t.index(4))
+            results.append(t.count(3))
+            results.append(t.index == t.index)
+            results.append(tuple.index(t, 3))
+            try:
+                p.index(9)
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                p.count()
+            except TypeError as e:
+                results.append(str(e))
+            results.append(p.x)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(1), new BigInteger(1), new BigInteger(1),
+            new BigInteger(0), true, "builtin_function_or_method", true,
+            new BigInteger(0), new BigInteger(1), new BigInteger(1), true,
+            new BigInteger(0),
+            "tuple.index(value): value is not in tuple",
+            "Method 'tuple.count' is missing argument 'value'.",
+            new BigInteger(1),
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
