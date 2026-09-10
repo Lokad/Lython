@@ -1404,6 +1404,73 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ZeroDivisionMessagesDistinguishIntAndFloat()
+    {
+        // Division-by-zero messages name the operation and operand kind like
+        // CPython across int and float division, floor division, modulo and
+        // divmod, while funded divisions keep their values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                x = 1 % 0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = 1.0 % 0.0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = 1 // 0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = 1.0 // 0.0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = 1 / 0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = 1.0 / 0.0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = divmod(1, 0)
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            try:
+                x = divmod(1.5, 0.0)
+            except ZeroDivisionError as e:
+                results.append(str(e))
+            results.append(divmod(7, 3) == (2, 1))
+            results.append(7.5 % 2 == 1.5)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "integer modulo by zero",
+            "float modulo by zero",
+            "integer division or modulo by zero",
+            "float floor division by zero",
+            "division by zero",
+            "float division by zero",
+            "integer division or modulo by zero",
+            "float divmod()",
+            true,
+            true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

@@ -101,13 +101,21 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.DivMod(leftDelta, rightDelta, context, span);
         }
 
-        return new PyTuple(
-            [
-                EvaluateFloorDivide(arguments[0], arguments[1], context, span),
-                EvaluateModulo(arguments[0], arguments[1], context, span)
-            ],
-            context.MemoryGovernor,
-            span);
+        try
+        {
+            return new PyTuple(
+                [
+                    EvaluateFloorDivide(arguments[0], arguments[1], context, span),
+                    EvaluateModulo(arguments[0], arguments[1], context, span)
+                ],
+                context.MemoryGovernor,
+                span);
+        }
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "ZeroDivisionError" &&
+            (arguments[0] is double || arguments[1] is double))
+        {
+            throw new LythonRuntimeException("ZeroDivisionError", "float divmod()", span);
+        }
     }
 
     // Range bounds are inline values; charge one table slot for the object itself.

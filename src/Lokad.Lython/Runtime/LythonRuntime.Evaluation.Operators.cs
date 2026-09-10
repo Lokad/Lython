@@ -240,7 +240,10 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ZeroDivisionError", "division by zero", span);
+            throw new LythonRuntimeException(
+                "ZeroDivisionError",
+                left is double || right is double ? "float division by zero" : "division by zero",
+                span);
         }
         catch (OverflowException ex)
         {
@@ -269,7 +272,10 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
+            throw new LythonRuntimeException(
+                "ZeroDivisionError",
+                left is double || right is double ? "float floor division by zero" : "integer division or modulo by zero",
+                span);
         }
     }
 
@@ -301,7 +307,10 @@ internal sealed partial class LythonRuntime
         }
         catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
+            throw new LythonRuntimeException(
+                "ZeroDivisionError",
+                left is double || right is double ? "float modulo by zero" : "integer modulo by zero",
+                span);
         }
     }
 
