@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
             _modules ??= CreateModulesSnapshot(_context);
             foreach (var pair in _context.State.ImportedModules)
             {
-                _modules.SetItem(PyString.FromString(pair.Key), pair.Value);
+                _modules.SetItem(PyString.FromString(pair.Key, _context.MemoryGovernor), pair.Value);
             }
 
             return _modules;
@@ -208,13 +208,13 @@ internal sealed partial class LythonRuntime
                 var module = ResolveBuiltinModule(name, context);
                 if (module is not null)
                 {
-                    modules.SetItem(PyString.FromString(name), module);
+                    modules.SetItem(PyString.FromString(name, context.MemoryGovernor), module);
                 }
             }
 
             foreach (var pair in context.State.ImportedModules.OrderBy(pair => pair.Key, StringComparer.Ordinal))
             {
-                modules.SetItem(PyString.FromString(pair.Key), pair.Value);
+                modules.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor), pair.Value);
             }
 
             return modules;
