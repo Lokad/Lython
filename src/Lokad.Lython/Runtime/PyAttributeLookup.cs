@@ -239,11 +239,11 @@ internal static class PyAttributeLookup
     {
         value = memberName switch
         {
-            "__name__" => PyString.FromString(type.Name),
-            "__qualname__" => PyString.FromString(type.Name),
+            "__name__" => type.NameValue,
+            "__qualname__" => type.NameValue,
             "__base__" => (object?)type.Bases.FirstOrDefault() ?? PyNone.Instance,
-            "__bases__" => CreateTypeTuple(type.Bases),
-            "__mro__" => CreateTypeTuple(type.Mro),
+            "__bases__" => type.BasesTuple,
+            "__mro__" => type.MroTuple,
             "__class__" => (object?)type.MetaType ?? PyNone.Instance,
             _ => PyNone.Instance
         };
@@ -254,36 +254,15 @@ internal static class PyAttributeLookup
     {
         value = memberName switch
         {
-            "__name__" => PyString.FromString(type.Name),
-            "__qualname__" => PyString.FromString(type.Name),
+            "__name__" => type.NameValue,
+            "__qualname__" => type.NameValue,
             "__base__" => (object?)type.Bases.FirstOrDefault() ?? PyNone.Instance,
-            "__bases__" => CreateTypeTuple(type.Bases, context.MemoryGovernor, span),
-            "__mro__" => CreateTypeTuple(type.Mro, context.MemoryGovernor, span),
+            "__bases__" => type.BasesTuple,
+            "__mro__" => type.MroTuple,
             "__class__" => (object?)type.MetaType ?? PyNone.Instance,
             _ => PyNone.Instance
         };
         return !ReferenceEquals(value, PyNone.Instance);
     }
 
-    private static PyTuple CreateTypeTuple(IReadOnlyList<PyType> values)
-    {
-        var items = new object[values.Count];
-        for (var i = 0; i < values.Count; i++)
-        {
-            items[i] = values[i];
-        }
-
-        return PyTuple.FromOwnedArray(items);
-    }
-
-    private static PyTuple CreateTypeTuple(IReadOnlyList<PyType> values, MemoryGovernor governor, LythonSourceSpan span)
-    {
-        var items = new object[values.Count];
-        for (var i = 0; i < values.Count; i++)
-        {
-            items[i] = values[i];
-        }
-
-        return PyTuple.FromOwnedArray(items, governor, span);
-    }
 }

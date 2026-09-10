@@ -13,6 +13,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // Functions have no attribute delete path, so nothing is released.
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
+    private readonly PyString _nameValue;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
     private readonly ScopeDirectiveFacts _scopeFacts;
 
@@ -26,6 +27,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         Name = name;
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
+        _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
         _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
@@ -101,8 +103,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
         value = name switch
         {
-            "__name__" => PyString.FromString(Name),
-            "__qualname__" => PyString.FromString(Name),
+            "__name__" => _nameValue,
+            "__qualname__" => _nameValue,
             _ => PyNone.Instance,
         };
         return !ReferenceEquals(value, PyNone.Instance);

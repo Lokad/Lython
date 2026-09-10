@@ -364,7 +364,7 @@ internal static partial class PyDataclass
             PyType type;
             try
             {
-                type = new PyType(name, bases, members);
+                type = new PyType(name, bases, members, context.MemoryGovernor, span);
             }
             catch (InvalidOperationException ex)
             {

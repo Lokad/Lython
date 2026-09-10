@@ -13,13 +13,27 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     private readonly Dictionary<string, object> _members;
 
-    public PyType(string name, IReadOnlyList<PyType> bases, Dictionary<string, object> members)
+    public PyType(string name, IReadOnlyList<PyType> bases, Dictionary<string, object> members, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
     {
         Name = name;
         Bases = bases;
         _members = members;
         Mro = BuildMro(this, bases);
+        NameValue = governor is null ? PyString.FromString(name) : PyString.FromString(name, governor, span);
+        BasesTuple = OwnTypeTuple(Bases, governor, span);
+        MroTuple = OwnTypeTuple(Mro, governor, span);
         BindOwnedMembers();
+    }
+
+    private static PyTuple OwnTypeTuple(IReadOnlyList<PyType> values, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        var items = new object[values.Count];
+        for (var i = 0; i < values.Count; i++)
+        {
+            items[i] = values[i];
+        }
+
+        return governor is null ? PyTuple.FromOwnedArray(items) : PyTuple.FromOwnedArray(items, governor, span);
     }
 
     public string Name { get; }
@@ -27,6 +41,12 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     public IReadOnlyList<PyType> Bases { get; }
 
     public IReadOnlyList<PyType> Mro { get; }
+
+    public PyString NameValue { get; }
+
+    public PyTuple BasesTuple { get; }
+
+    public PyTuple MroTuple { get; }
 
     public IReadOnlyList<DataclassFieldSpec>? DataclassFields { get; private set; }
 

@@ -370,7 +370,9 @@ internal sealed partial class LythonRuntime
             type = new PyType(
                 classDefinition.Syntax.Name,
                 resolvedBases,
-                new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal));
+                new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal),
+                definingContext.MemoryGovernor,
+                classDefinition.Span);
         }
         catch (InvalidOperationException ex)
         {
