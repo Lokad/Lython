@@ -31,6 +31,14 @@ internal sealed partial class LythonRuntime
 
         public static bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
         {
+            // maketrans is a staticmethod shape (no receiver), so it rides
+            // the shared singleton instead of a text-bound provider.
+            if (name == "maketrans")
+            {
+                value = BuiltinTypeMethod.StrMaketrans;
+                return true;
+            }
+
             foreach (var provider in Providers)
             {
                 if (provider.TryGetMember(text, name, out value))

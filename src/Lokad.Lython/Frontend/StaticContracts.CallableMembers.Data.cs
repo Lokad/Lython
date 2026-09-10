@@ -17,6 +17,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Dict, "copy", 0, 0, "LA3132", "dict.copy() expects no arguments."),
         new(AbstractValueKind.Dict, "clear", 0, 0, "LA3133", "dict.clear() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Dict, "setdefault", 1, 2, "LA3134", "dict.setdefault(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, ["key", "default"]),
+        new(AbstractValueKind.Dict, "fromkeys", 1, 2, "LA3165", "dict.fromkeys(iterable[, value]) expects one iterable and an optional default."),
         new(AbstractValueKind.Set, "add", 1, 1, "LA3135", "set.add(value) expects one positional argument.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Set, "discard", 1, 1, "LA3136", "set.discard(value) expects one positional argument.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Set, "remove", 1, 1, "LA3137", "set.remove(value) expects one positional argument.", StaticMutationKind.MutatesReceiver),

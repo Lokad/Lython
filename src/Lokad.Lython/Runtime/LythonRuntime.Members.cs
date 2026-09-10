@@ -275,6 +275,7 @@ internal sealed partial class LythonRuntime
                     receiver.Clear();
                     return PyNone.Instance;
                 }),
+                "fromkeys" => new BuiltinTypeMethod("dict", "fromkeys", bindsOwner: true, DictFromKeys),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)

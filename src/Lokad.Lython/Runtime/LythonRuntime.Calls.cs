@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -579,6 +580,7 @@ internal sealed partial class LythonRuntime
             OpenCallable => PyType.BuiltinFunctionType,
             PrintCallable => PyType.BuiltinFunctionType,
             PyDateTimeOps.TypeMemberCallable => PyType.BuiltinFunctionType,
+            BuiltinTypeMethod => PyType.BuiltinFunctionType,
             UnboundTypeMethod => PyType.MethodDescriptorType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
             PyDataclass.DataclassReprMethod => PyType.FunctionType,
@@ -699,7 +701,7 @@ internal sealed partial class LythonRuntime
         {
             if (receiver is null || !DoesObjectMatchBuiltinType(_ownerName, receiver))
             {
-                throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + ReceiverTypeName(receiver, context) + "' object", span);
+                throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + PythonTypeName(receiver, context) + "' object", span);
             }
 
             if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable)
@@ -750,7 +752,7 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_owner), StringComparer.Ordinal.GetHashCode(_memberName));
 
-        private static string ReceiverTypeName(object? receiver, ExecutionContext context)
+        internal static string PythonTypeName(object? receiver, ExecutionContext context)
         {
             // User instances report their class short name like CPython; every
             // other shape resolves through the shared value-class helper.
@@ -861,6 +863,337 @@ internal sealed partial class LythonRuntime
             // member construction stay in one place.
             return descriptor.BindReceiver(arguments[1].Value, span, context);
         }
+    }
+
+    // Builtin classmethods (dict.fromkeys, bytes.fromhex) and staticmethods
+    // (str.maketrans) behave like CPython bound-to-type builtins: the short
+    // __name__, the qualified __qualname__, a None __module__, and the owning
+    // type as __self__ for classmethods (staticmethods expose none), with
+    // value equality by owner and member. Classmethods stay fresh per read
+    // like CPython (identity never holds); the staticmethod shape is one
+    // shared object. There is deliberately no __doc__ like the other engine
+    // shapes (the engine keeps no doc corpus). Keyword arguments always fail
+    // with the qualified wrapper text; arity and value validation live in
+    // each implementation with the exact CPython texts.
+    internal sealed class BuiltinTypeMethod : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyHashableValue
+    {
+        private readonly string _ownerName;
+        private readonly string _memberName;
+        private readonly bool _bindsOwner;
+        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly string _qualifiedName;
+
+        // str.maketrans carries no run state (names plus static
+        // implementation), so one process-wide object serves every read like
+        // CPython, where the static shape is identical everywhere.
+        internal static readonly BuiltinTypeMethod StrMaketrans = new("str", "maketrans", bindsOwner: false, StrMaketransImpl);
+
+        internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
+        {
+            _ownerName = ownerName;
+            _memberName = memberName;
+            _bindsOwner = bindsOwner;
+            _implementation = implementation;
+            _qualifiedName = ownerName + "." + memberName;
+        }
+
+        internal string OwnerName => _ownerName;
+
+        internal string MemberName => _memberName;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            foreach (var argument in arguments)
+            {
+                if (argument.IsKeyword)
+                {
+                    throw new LythonRuntimeException("TypeError", _qualifiedName + "() takes no keyword arguments", span);
+                }
+            }
+
+            var positional = new object[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                positional[i] = arguments[i].Value;
+            }
+
+            return _implementation(positional, span, context);
+        }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__name__")
+            {
+                value = PyString.FromString(_memberName);
+                return true;
+            }
+
+            if (name == "__qualname__")
+            {
+                value = PyString.FromString(_qualifiedName);
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            // Staticmethod shapes report a None __self__ like CPython
+            // instead of missing.
+            if (name == "__self__" && !_bindsOwner)
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__self__" && _bindsOwner &&
+                context.TryGetBuiltin(_ownerName, out var owner) && owner is not null)
+            {
+                value = owner;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
+        public int GetPyHashCode() => HashCode.Combine(StringComparer.Ordinal.GetHashCode(_ownerName), StringComparer.Ordinal.GetHashCode(_memberName));
+    }
+
+    // Shared choke point for builtin classmethods and staticmethods: only the
+    // modeled (owner, member) pairs serve wrappers, so every other miss keeps
+    // the shared missing-member error.
+    private static bool TryGetBuiltinTypeMethod(object owner, string ownerName, string memberName, [MaybeNullWhen(false)] out object value)
+    {
+        _ = owner;
+        value = (ownerName, memberName) switch
+        {
+            ("dict", "fromkeys") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, DictFromKeys),
+            ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
+            ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
+            _ => null,
+        };
+
+        if (value is null)
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        return true;
+    }
+
+    private static object DictFromKeys(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length < 1)
+        {
+            throw new LythonRuntimeException("TypeError", "fromkeys expected at least 1 argument, got 0", span);
+        }
+
+        if (arguments.Length > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "fromkeys expected at most 2 arguments, got " + arguments.Length, span);
+        }
+
+        var value = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+        var result = new PyDict(context.MemoryGovernor, span);
+        foreach (var key in ToSequence(arguments[0], span, context))
+        {
+            result.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), value);
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
+    private static object BytesFromHex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bytes.fromhex() takes exactly one argument (" + arguments.Length + " given)", span);
+        }
+
+        if (arguments[0] is not PyString text)
+        {
+            throw new LythonRuntimeException("TypeError", "fromhex() argument must be str, not " + UnboundTypeMethod.PythonTypeName(arguments[0], context), span);
+        }
+
+        // Positions count in the original string (spaces included): a space
+        // directly inside a pair is invalid, while a lone trailing nibble
+        // reports one past the end like CPython.
+        var source = text.AsString();
+        var bytes = new List<byte>();
+        var index = 0;
+        while (true)
+        {
+            while (index < source.Length && IsHexSpace(source[index]))
+            {
+                index++;
+            }
+
+            if (index >= source.Length)
+            {
+                break;
+            }
+
+            var high = HexValue(source[index]);
+            if (high < 0)
+            {
+                throw InvalidHex(index);
+            }
+
+            index++;
+            if (index >= source.Length)
+            {
+                throw InvalidHex(source.Length);
+            }
+
+            var low = HexValue(source[index]);
+            if (low < 0)
+            {
+                throw InvalidHex(index);
+            }
+
+            index++;
+            bytes.Add((byte)((high << 4) | low));
+        }
+
+        return CreateBytes([.. bytes], context, span);
+
+        LythonRuntimeException InvalidHex(int position) => new("ValueError", "non-hexadecimal number found in fromhex() arg at position " + position, span);
+    }
+
+    private static bool IsHexSpace(char value)
+        => value is ' ' or '\t' or '\n' or '\v' or '\f' or '\r';
+
+    private static int HexValue(char value)
+    {
+        if (value >= '0' && value <= '9')
+        {
+            return value - '0';
+        }
+
+        if (value >= 'a' && value <= 'f')
+        {
+            return value - 'a' + 10;
+        }
+
+        if (value >= 'A' && value <= 'F')
+        {
+            return value - 'A' + 10;
+        }
+
+        return -1;
+    }
+
+    private static object StrMaketransImpl(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length < 1)
+        {
+            throw new LythonRuntimeException("TypeError", "maketrans expected at least 1 argument, got 0", span);
+        }
+
+        if (arguments.Length > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "maketrans expected at most 3 arguments, got " + arguments.Length, span);
+        }
+
+        var result = new PyDict(context.MemoryGovernor, span);
+        if (arguments.Length == 1)
+        {
+            if (arguments[0] is not PyDict table)
+            {
+                throw new LythonRuntimeException("TypeError", "if you give only one argument to maketrans it must be a dict", span);
+            }
+
+            foreach (var pair in table)
+            {
+                result.SetItem(MaketransKey(pair.Key, span), pair.Value);
+            }
+
+            context.ObserveCollectionCount(result.Count, span);
+            return result;
+        }
+
+        if (arguments[0] is not PyString from)
+        {
+            throw new LythonRuntimeException("TypeError", "first maketrans argument must be a string if there is a second argument", span);
+        }
+
+        if (arguments[1] is not PyString to)
+        {
+            throw new LythonRuntimeException("TypeError", "maketrans() argument 2 must be str, not " + UnboundTypeMethod.PythonTypeName(arguments[1], context), span);
+        }
+
+        var fromRunes = ToRunes(from);
+        var toRunes = ToRunes(to);
+        if (fromRunes.Count != toRunes.Count)
+        {
+            throw new LythonRuntimeException("ValueError", "the first two maketrans arguments must have equal length", span);
+        }
+
+        for (var i = 0; i < fromRunes.Count; i++)
+        {
+            result.SetItem(new BigInteger(fromRunes[i].Value), new BigInteger(toRunes[i].Value));
+        }
+
+        if (arguments.Length == 3)
+        {
+            if (arguments[2] is not PyString deletions)
+            {
+                throw new LythonRuntimeException("TypeError", "maketrans() argument 3 must be str, not " + UnboundTypeMethod.PythonTypeName(arguments[2], context), span);
+            }
+
+            foreach (var rune in ToRunes(deletions))
+            {
+                result.SetItem(new BigInteger(rune.Value), PyNone.Instance);
+            }
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        return result;
+    }
+
+    private static List<Rune> ToRunes(PyString text)
+    {
+        var runes = new List<Rune>();
+        foreach (var rune in text.AsString().EnumerateRunes())
+        {
+            runes.Add(rune);
+        }
+
+        return runes;
+    }
+
+    // Translate-table keys are single code points or integers; values ride
+    // through unvalidated like CPython (translate() rejects them instead).
+    private static object MaketransKey(object key, LythonSourceSpan span)
+    {
+        if (key is PyString text)
+        {
+            var runes = ToRunes(text);
+            if (runes.Count != 1)
+            {
+                throw new LythonRuntimeException("ValueError", "string keys in translate table must be of length 1", span);
+            }
+
+            return new BigInteger(runes[0].Value);
+        }
+
+        if (key is BigInteger or int or bool)
+        {
+            return key;
+        }
+
+        throw new LythonRuntimeException("TypeError", "keys in translate table must be strings or integers", span);
     }
 
     // Shared choke point for unbound builtin type methods: only constructors
@@ -1268,6 +1601,15 @@ internal sealed partial class LythonRuntime
             if (name == "__module__" && BuiltinTypeBaseNames.ContainsKey(Signature.Name))
             {
                 value = ExceptionTypeValue.SharedModuleLabel(CallableModuleName(Signature.Name));
+                return true;
+            }
+
+            // Builtin constructors expose classmethods (dict.fromkeys,
+            // bytes.fromhex) and staticmethods (str.maketrans) like CPython
+            // through one shared choke. It runs before the unbound
+            // descriptors because the instance tables serve both shapes.
+            if (TryGetBuiltinTypeMethod(this, Signature.Name, name, out value))
+            {
                 return true;
             }
 
@@ -1688,6 +2030,14 @@ internal sealed partial class LythonRuntime
                 TryGetOwnedHierarchy("dict", this, context, span, ref _hierarchy, out var hierarchy))
             {
                 value = name == "__mro__" ? hierarchy.Mro : hierarchy.Bases;
+                return true;
+            }
+
+            // dict.fromkeys rides the shared classmethod choke like the
+            // builtin constructors above. It runs before the unbound
+            // descriptors because the instance table serves both shapes.
+            if (TryGetBuiltinTypeMethod(this, Name, name, out value))
+            {
                 return true;
             }
 

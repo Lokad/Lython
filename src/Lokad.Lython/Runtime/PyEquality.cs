@@ -188,6 +188,15 @@ internal static class PyEquality
             return BoundMethodsEqual(left, right);
         }
 
+        // Builtin classmethods and staticmethods compare by owner and member
+        // like CPython (fresh per read, so identity never holds for the
+        // classmethod shape); hashes combine the same pair, keeping dict
+        // keys coherent.
+        if (left is LythonRuntime.BuiltinTypeMethod && right is LythonRuntime.BuiltinTypeMethod)
+        {
+            return BuiltinTypeMethodsEqual(left, right);
+        }
+
         return Equals(left, right);
     }
 
@@ -214,6 +223,14 @@ internal static class PyEquality
             leftName is PyString leftText &&
             rightName is PyString rightText &&
             string.Equals(leftText.AsString(), rightText.AsString(), StringComparison.Ordinal);
+    }
+
+    private static bool BuiltinTypeMethodsEqual(object left, object right)
+    {
+        return left is LythonRuntime.BuiltinTypeMethod leftMethod &&
+            right is LythonRuntime.BuiltinTypeMethod rightMethod &&
+            string.Equals(leftMethod.OwnerName, rightMethod.OwnerName, StringComparison.Ordinal) &&
+            string.Equals(leftMethod.MemberName, rightMethod.MemberName, StringComparison.Ordinal);
     }
 
 }

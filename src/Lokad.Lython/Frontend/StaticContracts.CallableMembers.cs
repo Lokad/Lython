@@ -70,9 +70,12 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "rpartition", 1, 1, "str.rpartition(sep) expects one argument.", "sep");
             AddStringCallableContract(contracts, "join", 1, 1, "str.join(iterable) expects one argument.", "iterable");
             AddStringCallableContract(contracts, "format_map", 1, 1, "str.format_map(mapping) expects one argument.", "mapping");
+            AddStringCallableContract(contracts, "maketrans", 1, 3, "str.maketrans(x[, y[, z]]) expects one to three arguments.");
             AddStringCallableContract(contracts, "encode", 0, 2, "str.encode([encoding][, errors]) expects zero to two arguments.", "encoding", "errors");
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "fromhex", 1, 1, "LA3166", "bytes.fromhex(string) expects one argument."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "fromhex", 1, 1, "LA3166", "bytes.fromhex(string) expects one argument."));
         }
 
         static void AddStringCallableContract(

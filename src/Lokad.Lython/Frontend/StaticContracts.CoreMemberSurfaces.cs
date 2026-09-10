@@ -42,11 +42,13 @@ internal static partial class StaticContracts
         "rpartition",
         "format",
         "format_map",
+        "maketrans",
     };
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
     {
         "decode",
+        "fromhex",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -155,6 +157,7 @@ internal static partial class StaticContracts
         "copy",
         "clear",
         "setdefault",
+        "fromkeys",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)

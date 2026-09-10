@@ -2272,6 +2272,148 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BuiltinTypeClassMethods()
+    {
+        // Builtin classmethods (dict.fromkeys, bytes.fromhex) and the
+        // str.maketrans staticmethod behave like CPython: type and instance
+        // reads share bound-to-type callables with builtin identity, and
+        // calls validate with the exact wrapper texts.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(dict.fromkeys(["a", "b"]) == {"a": None, "b": None})
+            results.append(dict.fromkeys(["a", "b"], 0) == {"a": 0, "b": 0})
+            results.append(dict.fromkeys("ab") == {"a": None, "b": None})
+            results.append({}.fromkeys([1], []) == {1: []})
+            results.append(bytes.fromhex("41 42").decode() == "AB")
+            results.append(bytes.fromhex("41").decode() == "A")
+            results.append(str.maketrans("ab", "cd") == {97: 99, 98: 100})
+            results.append(str.maketrans("ab", "cd", "e") == {97: 99, 98: 100, 101: None})
+            results.append(str.maketrans({"a": "b"}) == {97: "b"})
+            results.append(str.maketrans({97: 98}) == {97: 98})
+            results.append(type(dict.fromkeys).__name__)
+            results.append(dict.fromkeys.__self__ is dict)
+            results.append(dict.fromkeys.__name__)
+            results.append(dict.fromkeys.__qualname__)
+            results.append(dict.fromkeys.__module__ is None)
+            results.append(str.maketrans.__self__ is None)
+            results.append(str.maketrans.__module__ is None)
+            results.append(dict.fromkeys == dict.fromkeys)
+            results.append(dict.fromkeys is dict.fromkeys)
+            results.append({}.fromkeys == dict.fromkeys)
+            results.append(str.maketrans is str.maketrans)
+            results.append("x".maketrans == str.maketrans)
+            results.append(hash(dict.fromkeys) == hash(dict.fromkeys))
+            results.append(callable(bytes.fromhex))
+            results.append(hasattr(dict, "fromkeys"))
+            try:
+                dict.fromkeys()
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                dict.fromkeys("a", 1, 2)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                bytes.fromhex()
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                bytes.fromhex("41", "42")
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                bytes.fromhex(65)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                bytes.fromhex("zz")
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                bytes.fromhex("414")
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                str.maketrans()
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans("a")
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans("ab", "c")
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                str.maketrans("a", 1)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans(1, "b")
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans("a", "b", 1)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans(["a"])
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans({1.5: "b"})
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                str.maketrans({"ab": "c"})
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                dict.fromkeys(value=1)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                dict.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            "builtin_function_or_method", true, "fromkeys", "dict.fromkeys",
+            true, true, true, true, false, true, true, true, true, true, true,
+            "fromkeys expected at least 1 argument, got 0",
+            "fromkeys expected at most 2 arguments, got 3",
+            "bytes.fromhex() takes exactly one argument (0 given)",
+            "bytes.fromhex() takes exactly one argument (2 given)",
+            "fromhex() argument must be str, not int",
+            "non-hexadecimal number found in fromhex() arg at position 0",
+            "non-hexadecimal number found in fromhex() arg at position 3",
+            "maketrans expected at least 1 argument, got 0",
+            "if you give only one argument to maketrans it must be a dict",
+            "the first two maketrans arguments must have equal length",
+            "maketrans() argument 2 must be str, not int",
+            "first maketrans argument must be a string if there is a second argument",
+            "maketrans() argument 3 must be str, not int",
+            "if you give only one argument to maketrans it must be a dict",
+            "keys in translate table must be strings or integers",
+            "string keys in translate table must be of length 1",
+            "dict.fromkeys() takes no keyword arguments",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

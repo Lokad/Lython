@@ -17,6 +17,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "fromhex" => new BuiltinTypeMethod("bytes", "fromhex", bindsOwner: true, BytesFromHex),
                 "decode" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 2)
