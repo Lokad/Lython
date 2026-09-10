@@ -14,6 +14,11 @@ internal sealed partial class LythonRuntime
     /// </summary>
     private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyRenderableValue, IPyHashableValue
     {
+        // Constructed infos retain the 12-field wrapper beside governed payloads;
+        // charge the constructed-value unit at the guest factory. Directory-backed
+        // infos ride the directory entry base charge instead (see ZipDirectoryReader).
+        internal const long ZipInfoValueBytes = 128;
+
         private PyString _filename;
         private PyTuple _dateTime;
         private BigInteger _compressType;
@@ -322,7 +327,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{owner} must be an integer.", span);
         }
 
-        internal static PyTuple RequireZipDateTime(object value, LythonSourceSpan? span)
+        internal static PyTuple RequireZipDateTime(object value, LythonSourceSpan? span, ExecutionContext? context = null)
         {
             var items = value switch
             {
@@ -355,7 +360,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "ZIP does not support timestamps before 1980", span);
             }
 
-            return new PyTuple(normalized);
+            return context is null
+                ? new PyTuple(normalized)
+                : PyTuple.FromOwnedArray(normalized, context.MemoryGovernor, span);
         }
     }
 }

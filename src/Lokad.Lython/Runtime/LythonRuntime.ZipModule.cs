@@ -144,9 +144,9 @@ internal sealed partial class LythonRuntime
                 arguments, span, LythonKnownCallableSignatures.ZipInfo, PythonCallableKind.Builtin);
             var filename = bound.Assigned.Length > 0 && bound.Assigned[0]
                 ? PyZipInfo.RequireZipString(bound.Values[0], "ZipInfo filename", span)
-                : PyString.FromString("NoName");
+                : PyString.FromString("NoName", context.MemoryGovernor, span);
             var dateTime = bound.Assigned.Length > 1 && bound.Assigned[1]
-                ? PyZipInfo.RequireZipDateTime(bound.Values[1], span)
+                ? PyZipInfo.RequireZipDateTime(bound.Values[1], span, context)
                 : new PyTuple(
                     new object[]
                     {
@@ -155,6 +155,8 @@ internal sealed partial class LythonRuntime
                     },
                     context.MemoryGovernor,
                     span);
+            context.MemoryGovernor.Reserve(PyZipInfo.ZipInfoValueBytes, span);
+            context.MemoryGovernor.Commit(PyZipInfo.ZipInfoValueBytes);
             return new PyZipInfo(filename, dateTime);
         }
 
