@@ -327,7 +327,8 @@ internal sealed partial class LythonRuntime
 
         private static CsvReadResult ParseCsvRecords(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
         {
-            var parser = new CsvRecordParser(options, context, span);
+            using var fieldScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var parser = new CsvRecordParser(options, context, span, fieldScratch);
             var physicalLineCount = 0;
             foreach (var item in ToSequence(source, span, context))
             {
@@ -357,16 +358,19 @@ internal sealed partial class LythonRuntime
             private readonly string? _escapeCharacter;
             private readonly List<object> _row = new();
             private readonly StringBuilder _field = new();
+            private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
+            private long _chargedFieldCapacity;
             private bool _inQuotes;
             private bool _fieldStarted;
             private bool _afterQuote;
             private bool _recordStarted;
 
-            public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span)
+            public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation fieldScratch)
             {
                 _options = options;
                 _context = context;
                 _span = span;
+                _fieldScratch = fieldScratch;
                 _delimiter = options.Delimiter.AsString();
                 _quoteCharacter = options.QuoteChar?.AsString();
                 _escapeCharacter = options.EscapeChar?.AsString();
@@ -377,6 +381,7 @@ internal sealed partial class LythonRuntime
 
             public void Feed(string text)
             {
+                NoteFieldCapacity();
                 for (var i = 0; i < text.Length; i++)
                 {
                     var c = text[i];
@@ -518,8 +523,22 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            private void NoteFieldCapacity()
+            {
+                // StringBuilder doubles geometrically; cover the live peak
+                // incrementally. Checked at Feed and FinishField boundaries so
+                // growth between checks stays within one physical line, which
+                // the line stage already bounds.
+                if (_field.Capacity > _chargedFieldCapacity)
+                {
+                    _fieldScratch.Grow(checked(2L * (_field.Capacity - _chargedFieldCapacity)), _span);
+                    _chargedFieldCapacity = _field.Capacity;
+                }
+            }
+
             private void FinishField()
             {
+                NoteFieldCapacity();
                 // Decoded fields are retained in every row, so own their
                 // payload here; row and table backing is charged separately
                 // by the governed row containers.
