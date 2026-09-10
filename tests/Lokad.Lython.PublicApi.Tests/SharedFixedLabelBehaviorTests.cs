@@ -879,6 +879,49 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NewSlotConstruction()
+    {
+        // Construction routes through the owning slot like CPython, with
+        // explicit failures for owner mismatches and missing receivers.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import collections
+            import functools
+            results = []
+            results.append(int.__new__(int, 5) == 5)
+            results.append(str.__new__(str) == "")
+            results.append((collections.deque.__new__(collections.deque, [1])).__class__ is collections.deque)
+            results.append(len(collections.deque.__new__(collections.deque, [1, 2])) == 2)
+            results.append((datetime.timedelta.__new__(datetime.timedelta, 1)).days == 1)
+            results.append((functools.partial.__new__(functools.partial, len)).__class__ is functools.partial)
+            results.append((ValueError.__new__(ValueError, "bad")).__class__ is ValueError)
+            results.append((KeyError.__new__(KeyError, "k")).__class__ is KeyError)
+            try:
+                int.__new__(str, "5")
+            except TypeError:
+                results.append("mismatch")
+            try:
+                int.__new__()
+            except TypeError:
+                results.append("arity")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true,
+            "mismatch", "arity",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

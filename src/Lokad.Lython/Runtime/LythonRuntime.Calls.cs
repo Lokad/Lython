@@ -647,9 +647,28 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
-            _ = arguments;
-            throw new LythonRuntimeException("TypeError", "type.__new__ construction is unsupported in Lython; call type(...) instead.", span);
+            // Construction routes to the owning type like CPython
+            // (int.__new__(int, value) builds int(value)); exception slots
+            // forward to the receiving subclass instead. Anything else
+            // fails explicitly since cls-threading is unsupported.
+            if (arguments.Length == 0 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
+            }
+
+            if (ReferenceEquals(arguments[0].Value, _owner) &&
+                _owner is LythonRuntime.ICallable ownerCallable)
+            {
+                return ownerCallable.Invoke(arguments[1..], span, context);
+            }
+
+            if (_owner is LythonRuntime.ExceptionTypeValue &&
+                arguments[0].Value is LythonRuntime.ExceptionTypeValue subclassCtor)
+            {
+                return subclassCtor.Invoke(arguments[1..], span, context);
+            }
+
+            throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
         }
     }
 
