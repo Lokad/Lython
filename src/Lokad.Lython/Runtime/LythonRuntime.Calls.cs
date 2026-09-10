@@ -417,7 +417,7 @@ internal sealed partial class LythonRuntime
 
             if (IsBuiltinTypeName(Name) && name == "__module__")
             {
-                value = PyString.FromString("builtins");
+                value = ExceptionTypeValue.SharedModuleLabel("builtins");
                 return true;
             }
 

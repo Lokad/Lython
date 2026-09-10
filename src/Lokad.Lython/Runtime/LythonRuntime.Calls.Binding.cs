@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
         private static readonly PyString SubprocessModuleName = PyString.FromString("subprocess");
         private static readonly PyString ZipfileModuleName = PyString.FromString("zipfile");
 
-        private static PyString SharedModuleLabel(string moduleName) => moduleName switch
+        internal static PyString SharedModuleLabel(string moduleName) => moduleName switch
         {
             "builtins" => BuiltinsModuleName,
             "argparse" => ArgparseModuleName,

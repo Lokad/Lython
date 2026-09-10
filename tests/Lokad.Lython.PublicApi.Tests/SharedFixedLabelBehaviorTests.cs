@@ -100,4 +100,25 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BuiltinTypeModuleIsShared()
+    {
+        var script = new LythonEngine().Compile("""
+            i1 = int.__module__
+            i2 = int.__module__
+            s1 = str.__module__
+            s2 = str.__module__
+            return [i1 is i2, i1, s1 is s2, s1, list.__module__ is list.__module__, list.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { true, "builtins", true, "builtins", true, "builtins" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
