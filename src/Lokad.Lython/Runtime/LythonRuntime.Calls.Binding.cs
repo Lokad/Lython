@@ -198,6 +198,10 @@ internal sealed partial class LythonRuntime
 
     private sealed class LambdaFunction : ICallable, IPyDynamicAttributes
     {
+        // The lambda name is fixed vocabulary shared across all instances,
+        // so reads alias stably like CPython instead of rebuilding per read.
+        private static readonly PyString LambdaName = PyString.FromString("<lambda>");
+
         private readonly LoweredExpression _body;
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly ExecutionContext _closure;
@@ -215,7 +219,7 @@ internal sealed partial class LythonRuntime
         {
             if (name == "__name__")
             {
-                value = PyString.FromString("<lambda>");
+                value = LambdaName;
                 return true;
             }
 
@@ -223,7 +227,7 @@ internal sealed partial class LythonRuntime
             {
                 value = PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
                     ? PyString.FromString(path + ".<locals>.<lambda>")
-                    : PyString.FromString("<lambda>");
+                    : LambdaName;
                 return true;
             }
 

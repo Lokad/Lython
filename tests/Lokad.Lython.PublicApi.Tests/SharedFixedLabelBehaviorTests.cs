@@ -420,4 +420,24 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task LambdaNamesAreShared()
+    {
+        var script = new LythonEngine().Compile("""
+            l = lambda: 0
+            m = lambda: 1
+            return [l.__name__ is l.__name__, l.__name__,
+                l.__qualname__ is l.__qualname__, l.__name__ is m.__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { true, "<lambda>", true, true };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
