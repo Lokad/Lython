@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
             _ = span;
             if (name == "environ")
             {
-                value = new PyEnvironmentMapping(context.State.Environment);
+                value = new PyEnvironmentMapping(context.State.Environment, context.MemoryGovernor, span);
                 return true;
             }
 

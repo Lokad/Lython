@@ -132,11 +132,19 @@ internal sealed partial class LythonRuntime
         IEnumerable<object>
     {
         private readonly Dictionary<string, string> _items;
+        private readonly MemoryGovernor _governor;
+        private readonly LythonSourceSpan? _allocationSpan;
 
-        public PyEnvironmentMapping(Dictionary<string, string> items)
+        public PyEnvironmentMapping(Dictionary<string, string> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
             _items = items;
+            _governor = governor;
+            _allocationSpan = allocationSpan;
         }
+
+        // Host-owned table strings convert on read through the stored governor,
+        // so retained copies accumulate while the table itself stays host-owned.
+        private PyString EnvString(string text) => PyString.FromString(text, _governor, _allocationSpan);
 
         public bool TryGetString(string key, [MaybeNullWhen(false)] out string value) => _items.TryGetValue(key, out value);
 
@@ -148,7 +156,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span);
             }
 
-            return PyString.FromString(value);
+            return EnvString(value);
         }
 
         public void SetSubscript(object index, object value, LythonSourceSpan span)
@@ -168,7 +176,7 @@ internal sealed partial class LythonRuntime
 
         public bool IsTruthy() => _items.Count != 0;
 
-        public IEnumerable<object> Iterate() => _items.Keys.Select<string, object>(PyString.FromString);
+        public IEnumerable<object> Iterate() => _items.Keys.Select<string, object>(EnvString);
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
@@ -187,7 +195,7 @@ internal sealed partial class LythonRuntime
 
                     var key = GetEnvironmentKey(arguments[0], "os.environ.get", span);
                     return _items.TryGetValue(key, out var found)
-                        ? PyString.FromString(found)
+                        ? EnvString(found)
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "os.environ.get", ["key", "default"], 1),
                 "keys" => BoundCallable.Create((arguments, span, context) =>
@@ -197,7 +205,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "os.environ.keys() expects no arguments.", span);
                     }
 
-                    var result = new PyList(_items.Keys.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
+                    var result = new PyList(_items.Keys.Select<string, object>(EnvString), context.MemoryGovernor, span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.keys", []),
@@ -208,7 +216,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "os.environ.values() expects no arguments.", span);
                     }
 
-                    var result = new PyList(_items.Values.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
+                    var result = new PyList(_items.Values.Select<string, object>(EnvString), context.MemoryGovernor, span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
                 }, "os.environ.values", []),
@@ -221,7 +229,7 @@ internal sealed partial class LythonRuntime
 
                     var result = new PyList(
                         _items.Select(pair => (object)new PyTuple(
-                            [PyString.FromString(pair.Key), PyString.FromString(pair.Value)],
+                            [EnvString(pair.Key), EnvString(pair.Value)],
                             context.MemoryGovernor,
                             span)),
                         context.MemoryGovernor,
@@ -279,7 +287,7 @@ internal sealed partial class LythonRuntime
             var result = new PyDict(context.MemoryGovernor, span);
             foreach (var pair in _items)
             {
-                result.SetItem(PyString.FromString(pair.Key), PyString.FromString(pair.Value));
+                result.SetItem(EnvString(pair.Key), EnvString(pair.Value));
             }
 
             return result;
