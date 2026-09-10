@@ -69,6 +69,29 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
+        // Builtin exception instances report their run type object like CPython;
+        // module exceptions stay missing until their type objects are interned.
+        public static bool TryGetMember(
+            PyException exception,
+            string name,
+            ExecutionContext context,
+            LythonSourceSpan span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            _ = span;
+            if (name == "__class__" &&
+                exception.Identity.IsBuiltin &&
+                context.TryGetBuiltin(exception.Identity.TypeName, out var typeValue) &&
+                typeValue is not null)
+            {
+                value = typeValue;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
         private static PyTuple CreateExceptionArgs(PyException exception)
         {
             if (exception.ExplicitArgs is not null)

@@ -635,4 +635,31 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ExceptionInstanceClass()
+    {
+        // Module exceptions stay missing until their type objects are interned.
+        var script = new LythonEngine().Compile("""
+            import csv
+            e = ValueError("x")
+            k = KeyError("k")
+            c = csv.Error("y")
+            return [e.__class__ is ValueError, k.__class__ is KeyError,
+                e.__class__ is k.__class__, e.__class__.__name__,
+                hasattr(c, "__class__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, false, "ValueError", false,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

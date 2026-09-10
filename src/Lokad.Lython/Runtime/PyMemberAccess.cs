@@ -105,6 +105,12 @@ internal static class PyMemberAccess
             return true;
         }
 
+        if (target is PyException exception &&
+            LythonRuntime.ExceptionInstanceMembers.TryGetMember(exception, memberName, context, span, out value))
+        {
+            return true;
+        }
+
         return TryResolveNonContextual(target, memberName, out value);
     }
 
