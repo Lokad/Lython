@@ -674,6 +674,8 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
         _allocationSpan = allocationSpan;
     }
 
+    internal IReadOnlyList<string> FieldNames => _fieldNames;
+
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;

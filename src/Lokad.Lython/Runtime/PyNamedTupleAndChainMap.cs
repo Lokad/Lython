@@ -299,6 +299,11 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             return true;
         }
 
+        if ((name == "_field_defaults" || name == "_make") && _type.TryGetMember(name, out value))
+        {
+            return true;
+        }
+
         value = name switch
         {
             "__class__" => _type,

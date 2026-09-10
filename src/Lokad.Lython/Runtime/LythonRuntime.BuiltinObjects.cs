@@ -751,6 +751,32 @@ internal sealed partial class LythonRuntime
                 names.AddRange(TupleDirNames);
                 return names;
 
+            case PyNamedTupleObject namedTuple:
+                foreach (var field in namedTuple.Type.FieldNames)
+                {
+                    names.Add(field);
+                }
+
+                names.AddRange(NamedTupleDirNames);
+                return names;
+
+            case PyTypingNamedTupleObject typingTuple:
+                foreach (var field in typingTuple.FieldNames)
+                {
+                    names.Add(field);
+                }
+
+                names.AddRange(TypingNamedTupleDirNames);
+                return names;
+
+            case PyNamedTupleType:
+                names.AddRange(NamedTupleTypeDirNames);
+                return names;
+
+            case PyTypingConstructedType constructed when constructed.Kind == PyTypingConstructedKind.NamedTuple:
+                names.AddRange(TupleDirNames);
+                return names;
+
             case BigInteger or int or bool:
                 names.AddRange(IntDirNames);
                 return names;

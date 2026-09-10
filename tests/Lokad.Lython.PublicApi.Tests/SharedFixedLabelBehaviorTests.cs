@@ -3141,6 +3141,54 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NamedTupleDirLists()
+    {
+        // dir() on namedtuple values and types lists fields plus their
+        // served members like CPython, and every listed name resolves.
+        var script = new LythonEngine().Compile("""
+            import collections
+            import typing
+            results = []
+            P = collections.namedtuple("P", ["x", "y"])
+            p = P(1, 2)
+            results.append(dir(p) == ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index", "x", "y"])
+            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index"])
+            results.append(p._make([3, 4]) == P(3, 4))
+            results.append(p._field_defaults == {})
+            T = typing.NamedTuple("T", [("x", int), ("y", int)])
+            t = T(1, 2)
+            results.append(dir(t) == ["_fields", "_replace", "count", "index", "x", "y"])
+            results.append(dir(T) == ["count", "index"])
+            for n in dir(p):
+                if not hasattr(p, n):
+                    results.append(n)
+            for n in dir(P):
+                if not hasattr(P, n):
+                    results.append(n)
+            for n in dir(t):
+                if not hasattr(t, n):
+                    results.append(n)
+            for n in dir(T):
+                if not hasattr(T, n):
+                    results.append(n)
+            results.append("truthful")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, "truthful",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

@@ -87,6 +87,9 @@ internal sealed partial class LythonRuntime
     private static readonly string[] BytesDirNames = ["decode", "fromhex"];
     private static readonly string[] ListDirNames = ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"];
     private static readonly string[] TupleDirNames = ["count", "index"];
+    private static readonly string[] NamedTupleDirNames = ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index"];
+    private static readonly string[] TypingNamedTupleDirNames = ["_fields", "_replace", "count", "index"];
+    private static readonly string[] NamedTupleTypeDirNames = ["_fields", "_field_defaults", "_make", "__new__", "count", "index"];
     private static readonly string[] FloatDirNames = ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"];
     private static readonly string[] FloatMethodDirNames = ["as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"];
     private static readonly string[] IntDirNames = ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"];
