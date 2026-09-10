@@ -72,7 +72,7 @@ internal sealed partial class LythonRuntime
 
             return new PyTuple(
                 [
-                    PyString.FromString(StateTag),
+                    SharedStateTag,
                     new BigInteger(state.Snapshot())
                 ],
                 context.MemoryGovernor,

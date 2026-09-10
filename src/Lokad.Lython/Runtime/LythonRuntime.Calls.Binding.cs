@@ -268,6 +268,11 @@ internal sealed partial class LythonRuntime
 
     private sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
+        // Builtin exceptions share one module label forever, so per-access
+        // __module__ reads alias stably like CPython; module-qualified
+        // identities keep building fresh labels.
+        private static readonly PyString BuiltinsModuleName = PyString.FromString("builtins");
+
         public ExceptionTypeValue(string typeName)
             : this(PythonExceptionIdentity.Builtin(typeName))
         {
@@ -287,7 +292,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__name__" => PyString.FromString(TypeName),
-                "__module__" => PyString.FromString(ExceptionIdentity.ModuleName),
+                "__module__" => ExceptionIdentity.IsBuiltin ? BuiltinsModuleName : PyString.FromString(ExceptionIdentity.ModuleName),
                 "type" => PyString.FromString(TypeName),
                 _ => MissingMemberValue.Instance
             };

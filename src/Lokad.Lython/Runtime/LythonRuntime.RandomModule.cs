@@ -11,6 +11,9 @@ internal sealed partial class LythonRuntime
     {
         private const double TwoPi = Math.PI * 2.0;
         private const string StateTag = "lython.random.state";
+        // Fixed getstate tag: share one constant forever so per-call state
+        // tags alias stably instead of allocating a fresh string per call.
+        private static readonly PyString SharedStateTag = PyString.FromString(StateTag);
         private static readonly BigInteger MaxUInt64 = new(ulong.MaxValue);
 
         public static readonly PyBuiltinRuntimeType RandomType = new("random.Random", CreateRandom);
