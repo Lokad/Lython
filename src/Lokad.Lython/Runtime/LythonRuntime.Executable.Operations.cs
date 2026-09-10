@@ -101,7 +101,23 @@ internal sealed partial class LythonRuntime
                or ReMatchObject
                or PyPath
                or PyModule
-               or HashlibHashObject);
+               or HashlibHashObject
+               or StatisticsModule.PyNormalDist
+               or PyDeque
+               or PkgutilModuleInfoObject
+               or PkgutilLoaderObject);
+
+    // Bound callables close over their receiver, so sharing one per site is
+    // always sound, even for mutable targets whose data arms must stay fresh.
+    // Instances, types and super objects keep their existing behavior: user-level
+    // rebinding and descriptors must resolve anew on every access.
+    private static bool CanCacheRuntimeMemberValue(object target, object value)
+        => CanCacheRuntimeMemberTarget(target) ||
+           (value is ICallable &&
+            target is not PyInstance &&
+            target is not PyType &&
+            target is not PySuper &&
+            target is not IPyContextualDynamicAttributes);
 
     private static object Pop(ExecutableValueStack stack, LythonSourceSpan span)
     {

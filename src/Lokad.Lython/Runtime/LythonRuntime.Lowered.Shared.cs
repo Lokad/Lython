@@ -430,7 +430,7 @@ internal sealed partial class LythonRuntime
             throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span);
         }
 
-        if (CanCacheRuntimeMemberTarget(target))
+        if (CanCacheRuntimeMemberValue(target, value))
         {
             context.State.WriteRuntimeMemberCache(member, target, value);
         }

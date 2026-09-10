@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         memberValue = resolvedMember;
-                        _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberTarget(target)
+                        _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, memberValue)
                             ? new ExecutableMemberCache(target, memberValue)
                             : null;
                     }
