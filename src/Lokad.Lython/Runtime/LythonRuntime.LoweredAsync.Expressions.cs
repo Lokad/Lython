@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
         var start = slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false);
         var end = slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false);
         var step = slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false);
-        return PyIndexing.ReadSlice(target, start, end, step, slice.Span);
+        return PyIndexing.ReadSlice(target, start, end, step, slice.Span, context);
     }
 
     private static async ValueTask<object> ResolveLoweredMemberAsync(LoweredMemberExpression member, ExecutionContext context)

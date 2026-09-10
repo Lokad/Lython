@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
         var start = slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context);
         var end = slice.End is null ? null : EvaluateLoweredExpression(slice.End, context);
         var step = slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context);
-        return PyIndexing.ReadSlice(target, start, end, step, slice.Span);
+        return PyIndexing.ReadSlice(target, start, end, step, slice.Span, context);
     }
 
     private static object ResolveLoweredMember(LoweredMemberExpression member, ExecutionContext context)

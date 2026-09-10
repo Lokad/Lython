@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
         }
 
         var target = Pop(stack, span);
-        return PyIndexing.ReadSlice(target, start, end, step, span);
+        return PyIndexing.ReadSlice(target, start, end, step, span, context);
     }
 
     private static bool CanCacheRuntimeMemberTarget(object target)

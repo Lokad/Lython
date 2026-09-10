@@ -360,7 +360,7 @@ internal sealed partial class LythonRuntime
                 var start = slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context);
                 var end = slice.End is null ? null : EvaluateLoweredExpression(slice.End, context);
                 var step = slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context);
-                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span);
+                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     sliceValue,
                     value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));

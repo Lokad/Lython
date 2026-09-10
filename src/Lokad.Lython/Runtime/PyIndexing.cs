@@ -58,15 +58,23 @@ internal static class PyIndexing
         };
     }
 
-    public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span)
+    public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
-        return target switch
+        var result = target switch
         {
             IPySliceableValue value => value.GetSlice(start, end, step, span),
             IPyIndexableValue value => value.GetSlice(SliceIndices(value.Length, start, end, step, span)),
             _ when PyStringOps.TryAsString(target, out var text) => text.Slice(NormalizeSliceBounds(text.Length, start, end, step, span)),
             _ => throw RuntimeErrors.NotSliceable(span)
         };
+
+        // String slices built from unowned receivers would escape accounting.
+        if (context is not null && result is PyString textResult && target is PyString receiver)
+        {
+            return LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span);
+        }
+
+        return result;
     }
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)

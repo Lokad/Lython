@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
         var end = slice.End is null ? null : EvaluateExpression(slice.End, context);
         var step = slice.Step is null ? null : EvaluateExpression(slice.Step, context);
 
-        return PyIndexing.ReadSlice(target, start, end, step, slice.Span);
+        return PyIndexing.ReadSlice(target, start, end, step, slice.Span, context);
     }
 
     internal static bool IsTruthy(object value) => PyTruthiness.IsTruthy(value);
