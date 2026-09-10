@@ -88,6 +88,16 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "maketrans", 2, 2, "LA3172", "bytes.maketrans(from, to) expects two arguments.", parameterNames: ["from", "to"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "translate", 1, 2, "LA3172", "bytes.translate(table[, delete]) expects one or two arguments.", parameterNames: ["table", "delete"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "translate", 1, 2, "LA3172", "bytes.translate(table[, delete]) expects one or two arguments.", parameterNames: ["table", "delete"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "count", 1, 3, "LA3174", "bytes.count(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "count", 1, 3, "LA3174", "bytes.count(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "find", 1, 3, "LA3174", "bytes.find(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "find", 1, 3, "LA3174", "bytes.find(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "index", 1, 3, "LA3174", "bytes.index(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "index", 1, 3, "LA3174", "bytes.index(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rfind", 1, 3, "LA3174", "bytes.rfind(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rfind", 1, 3, "LA3174", "bytes.rfind(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rindex", 1, 3, "LA3174", "bytes.rindex(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rindex", 1, 3, "LA3174", "bytes.rindex(sub[, start[, end]]) expects one to three arguments.", parameterNames: ["sub", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "hex", 0, 2, "LA3173", "bytes.hex([sep[, bytes_per_sep]]) expects zero to two arguments.", parameterNames: ["sep", "bytes_per_sep"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "hex", 0, 2, "LA3173", "bytes.hex([sep[, bytes_per_sep]]) expects zero to two arguments.", parameterNames: ["sep", "bytes_per_sep"]));
         }

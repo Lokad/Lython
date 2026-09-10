@@ -37,6 +37,11 @@ internal sealed partial class LythonRuntime
                     return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, "bytes.decode", ["encoding", "errors"], 0),
                 "hex" => new RawBoundCallable((arguments, span, context) => HexEncode(bytes, arguments, span, context)) { BoundName = "bytes.hex", BoundReceiver = bytes },
+                "count" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "count", arguments, span, context)) { BoundName = "bytes.count", BoundReceiver = bytes },
+                "find" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "find", arguments, span, context)) { BoundName = "bytes.find", BoundReceiver = bytes },
+                "index" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "index", arguments, span, context)) { BoundName = "bytes.index", BoundReceiver = bytes },
+                "rfind" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rfind", arguments, span, context)) { BoundName = "bytes.rfind", BoundReceiver = bytes },
+                "rindex" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rindex", arguments, span, context)) { BoundName = "bytes.rindex", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -290,6 +295,225 @@ internal sealed partial class LythonRuntime
         return new string(text);
     }
 
+    private static object SearchBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? needle = null;
+        object? startArgument = null;
+        object? endArgument = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                needle = argument.Value;
+            }
+            else if (positionals == 2)
+            {
+                startArgument = argument.Value;
+            }
+            else if (positionals == 3)
+            {
+                endArgument = argument.Value;
+            }
+        }
+
+        if (positionals < 1)
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " expected at least 1 argument, got 0", span);
+        }
+
+        if (positionals > 3)
+        {
+            throw new LythonRuntimeException("TypeError", methodName + " expected at most 3 arguments, got " + positionals, span);
+        }
+
+        var source = value.Bytes;
+        int start;
+        int end;
+        try
+        {
+            start = NormalizeBytesBound(startArgument, source.Length, 0);
+            end = NormalizeBytesBound(endArgument, source.Length, source.Length);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new LythonRuntimeException("TypeError", "slice indices must be integers or None or have an __index__ method", span);
+        }
+
+        if (end < start)
+        {
+            end = start;
+        }
+
+        var needleBytes = ParseSearchNeedle(needle, span, context);
+
+        if (methodName == "count")
+        {
+            return new BigInteger(CountBytes(source, needleBytes, start, end));
+        }
+
+        var found = methodName is "rfind" or "rindex"
+            ? FindLastByte(source, needleBytes, start, end)
+            : FindFirstByte(source, needleBytes, start, end);
+
+        if (found < 0 && methodName is "index" or "rindex")
+        {
+            throw new LythonRuntimeException("ValueError", "subsection not found", span);
+        }
+
+        return new BigInteger(found);
+    }
+
+    private static byte[] ParseSearchNeedle(object? needle, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (needle is PyBytes needleBytes)
+        {
+            return needleBytes.ToArray();
+        }
+
+        if (needle is bool flag)
+        {
+            return [(byte)(flag ? 1 : 0)];
+        }
+
+        if (needle is int small)
+        {
+            if (small < 0 || small > 255)
+            {
+                throw new LythonRuntimeException("ValueError", "byte must be in range(0, 256)", span);
+            }
+
+            return [(byte)small];
+        }
+
+        if (needle is BigInteger big)
+        {
+            if (big < 0 || big > 255)
+            {
+                throw new LythonRuntimeException("ValueError", "byte must be in range(0, 256)", span);
+            }
+
+            return [(byte)big];
+        }
+
+        throw new LythonRuntimeException("TypeError", "argument should be integer or bytes-like object, not '" + UnboundTypeMethod.PythonTypeName(needle, context) + "'", span);
+    }
+
+    private static int NormalizeBytesBound(object? bound, int length, int defaultValue)
+    {
+        if (bound is null || ReferenceEquals(bound, PyNone.Instance))
+        {
+            return defaultValue;
+        }
+
+        BigInteger integer;
+        if (bound is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (bound is int small)
+        {
+            integer = new BigInteger(small);
+        }
+        else if (bound is not BigInteger big)
+        {
+            throw new InvalidOperationException("slice bounds must be integers or None");
+        }
+        else
+        {
+            integer = big;
+        }
+
+        if (integer < int.MinValue)
+        {
+            return 0;
+        }
+
+        if (integer > int.MaxValue)
+        {
+            return length;
+        }
+
+        var value = (int)integer;
+        if (value < 0)
+        {
+            value += length;
+        }
+
+        if (value < 0)
+        {
+            return 0;
+        }
+
+        return value > length ? length : value;
+    }
+
+    private static int FindFirstByte(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
+    {
+        if (needle.IsEmpty)
+        {
+            return start;
+        }
+
+        for (var i = start; i <= end - needle.Length; i++)
+        {
+            if (source.Slice(i, needle.Length).SequenceEqual(needle))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static int FindLastByte(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
+    {
+        if (needle.IsEmpty)
+        {
+            return end;
+        }
+
+        for (var i = end - needle.Length; i >= start; i--)
+        {
+            if (source.Slice(i, needle.Length).SequenceEqual(needle))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static int CountBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
+    {
+        if (needle.IsEmpty)
+        {
+            return end - start + 1;
+        }
+
+        var count = 0;
+        var index = start;
+        while (index <= end - needle.Length)
+        {
+            if (source.Slice(index, needle.Length).SequenceEqual(needle))
+            {
+                count++;
+                index += needle.Length;
+            }
+            else
+            {
+                index++;
+            }
+        }
+
+        return count;
+    }
 
     private sealed class RawBoundCallable(
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable

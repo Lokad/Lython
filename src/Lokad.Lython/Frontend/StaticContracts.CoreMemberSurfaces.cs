@@ -55,10 +55,15 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
     {
+        "count",
         "decode",
+        "find",
         "fromhex",
         "hex",
+        "index",
         "maketrans",
+        "rfind",
+        "rindex",
         "translate",
     };
 

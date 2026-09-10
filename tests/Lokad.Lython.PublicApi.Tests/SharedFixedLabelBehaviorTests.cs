@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "decode", "fromhex", "hex", "maketrans", "translate"])
+            results.append(dir(bytes) == ["__new__", "count", "decode", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["decode", "fromhex", "hex", "maketrans", "translate"])
+            results.append(dir(b"") == ["count", "decode", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4049,6 +4049,91 @@ public sealed class SharedFixedLabelBehaviorTests
         {
             new BigInteger(65), true, false, "builtin_function_or_method", true,
             true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesSearchMembers()
+    {
+        // bytes search like CPython: int or bytes needles with bounds,
+        // find misses against index misses, and the descriptor surface.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"abcab".count(98))
+            results.append(b"abcab".count(b"b"))
+            results.append(b"abcab".count(b"b", 2))
+            results.append(b"abcab".count(b"b", 2, 4))
+            results.append(b"abcab".find(99))
+            results.append(b"abcab".find(b"d"))
+            results.append(b"abcab".find(b"b", 3))
+            results.append(b"abcab".index(b"c"))
+            results.append(b"abcab".rfind(b"b"))
+            results.append(b"abcab".rindex(b"b"))
+            results.append(b"abcab".rfind(b"b", 0, 3))
+            results.append(b"".count(b""))
+            results.append(bytes.index(b"abcab", b"b"))
+            results.append(bytes.count(b"abcab", 98))
+            results.append(type(b"ab".find).__name__)
+            results.append(type(bytes.find).__name__)
+            results.append(bytes.find.__name__)
+            h = b"ab"
+            results.append(h.find == h.find)
+            results.append(bytes.find == bytes.find)
+            results.append(hasattr(bytes, "rindex"))
+            results.append("count" in dir(b"ab"))
+            results.append("rfind" in dir(bytes))
+            try:
+                b"ab".find()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".find(b"a", 1, 2, 3)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".find(sub=b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".find(1.5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".find(300)
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                b"ab".find(b"a", "x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".index(b"z")
+            except ValueError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(2), new BigInteger(2), new BigInteger(1), new BigInteger(0),
+            new BigInteger(2), new BigInteger(-1), new BigInteger(4), new BigInteger(2),
+            new BigInteger(4), new BigInteger(4), new BigInteger(1), new BigInteger(1),
+            new BigInteger(1), new BigInteger(2), "builtin_function_or_method",
+            "method_descriptor", "find", true, true, true, true, true,
+            "find expected at least 1 argument, got 0",
+            "find expected at most 3 arguments, got 4",
+            "bytes.find() takes no keyword arguments",
+            "argument should be integer or bytes-like object, not 'float'",
+            "byte must be in range(0, 256)",
+            "slice indices must be integers or None or have an __index__ method",
+            "subsection not found",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
