@@ -142,6 +142,48 @@ internal static class PyAttributeLookup
             ["SystemExit"] = "BaseException",
         };
 
+    // Collections members route by name like CPython: deque owns its slot,
+    // the dict subclasses inherit dict slot, and ChainMap shares the object
+    // slot. Anything else (namedtuple factory, User* stubs) stays missing.
+    private static bool TryResolveCollectionsNewSlot(LythonRuntime.CollectionsCallable member, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
+        if (member.Name is "collections.deque")
+        {
+            return LythonRuntime.TryGetTypeNewSlot(member, out value);
+        }
+
+        if (member.Name is "collections.Counter" or "collections.defaultdict" or "collections.OrderedDict")
+        {
+            if (context.TryGetBuiltin("dict", out var dictBase) &&
+                dictBase is not null &&
+                LythonRuntime.TryGetTypeNewSlot(dictBase, out value))
+            {
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        if (member.Name is "collections.ChainMap")
+        {
+            if (!context.TryGetBuiltin("object", out var objectBase) ||
+                objectBase is not PyType objectType ||
+                !objectType.TryLookupInMro("__new__", 0, out var sharedRaw, out _) ||
+                sharedRaw is not IPyDescriptor sharedDescriptor)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = sharedDescriptor.Get(null, objectType, context, span);
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
     private static bool TryResolveExceptionNewSlot(object target, LythonRuntime.ExecutionContext context, [MaybeNullWhen(false)] out object value)
     {
         string? typeName = target switch
@@ -184,6 +226,21 @@ internal static class PyAttributeLookup
             // Exception types own or inherit their slot along the builtin
             // hierarchy like CPython; module exceptions stay missing.
             if (TryResolveExceptionNewSlot(target, context, out value))
+            {
+                return true;
+            }
+
+            // Collections members route by name, both directly and through
+            // the class values of their instances.
+            if (target is LythonRuntime.CollectionsCallable directMember &&
+                TryResolveCollectionsNewSlot(directMember, context, span, out value))
+            {
+                return true;
+            }
+
+            if (LythonRuntime.TryGetValueClass(target, context, out var collectionsClass) &&
+                collectionsClass is LythonRuntime.CollectionsCallable memberClass &&
+                TryResolveCollectionsNewSlot(memberClass, context, span, out value))
             {
                 return true;
             }

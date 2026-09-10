@@ -536,6 +536,10 @@ internal sealed partial class LythonRuntime
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
             PyModule => PyType.ModuleType,
+            PyCounter => TryGetModuleMemberOrNull(context, "collections", "Counter"),
+            PyDefaultDict => TryGetModuleMemberOrNull(context, "collections", "defaultdict"),
+            PyDeque => TryGetModuleMemberOrNull(context, "collections", "deque"),
+            PyChainMap => TryGetModuleMemberOrNull(context, "collections", "ChainMap"),
             LythonRuntime.RePatternObject => PyType.RegexPatternType,
             LythonRuntime.ReMatchObject => PyType.RegexMatchType,
             PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),
@@ -722,6 +726,15 @@ internal sealed partial class LythonRuntime
             }
 
             value = datetimeSlot;
+            return true;
+        }
+
+        // deque owns its slot through its stable collections member, like
+        // the builtin constructors above.
+        if (classValue is CollectionsCallable dequeCallable && dequeCallable.Name is "collections.deque")
+        {
+            dequeCallable.NewSlot ??= new TypeNewMethod(dequeCallable, "deque");
+            value = dequeCallable.NewSlot;
             return true;
         }
 

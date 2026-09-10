@@ -84,9 +84,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
+    internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
     {
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+
+        internal LythonRuntime.TypeNewMethod? NewSlot { get; set; }
 
         public CollectionsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
         {

@@ -772,6 +772,46 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task CollectionNewSlots()
+    {
+        // Collections members route by name like CPython: deque owns its
+        // slot, the dict subclasses inherit dict slot, and ChainMap shares
+        // the object slot.
+        var script = new LythonEngine().Compile("""
+            import collections
+            d = collections.deque()
+            c = collections.Counter()
+            o = collections.OrderedDict()
+            return [collections.deque.__new__.__qualname__,
+                d.__new__ is collections.deque.__new__,
+                (d.__new__).__self__ is collections.deque,
+                collections.Counter.__new__ is dict.__new__,
+                c.__new__ is dict.__new__,
+                collections.defaultdict.__new__ is dict.__new__,
+                o.__new__ is dict.__new__,
+                collections.OrderedDict.__new__ is dict.__new__,
+                collections.ChainMap.__new__ is object.__new__,
+                type(collections.deque.__new__).__name__,
+                d.__class__ is collections.deque,
+                c.__class__ is collections.Counter,
+                type(d) is collections.deque]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "deque.__new__", true, true, true, true, true, true, true,
+            true, "builtin_function_or_method", true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
