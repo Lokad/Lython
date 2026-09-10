@@ -583,6 +583,45 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task NewSlotOwnerIdentities()
+    {
+        // Core runtime types own their __new__ slot like CPython (bound to
+        // the type object itself), and modules resolve their run type for
+        // both __new__ and __class__.
+        var script = new LythonEngine().Compile("""
+            import os
+            def f():
+                pass
+            class E:
+                def m(self):
+                    pass
+            return [f.__new__.__qualname__, f.__new__ is f.__new__,
+                f.__new__.__self__ is type(f),
+                E().m.__new__.__qualname__,
+                E().m.__new__.__self__ is type(E().m),
+                os.__new__.__qualname__, os.__new__.__self__ is type(os),
+                os.__new__ is os.__new__,
+                None.__new__.__qualname__,
+                None.__new__.__self__ is type(None),
+                os.__class__ is type(os),
+                type(f.__new__).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "function.__new__", true, true, "method.__new__", true,
+            "module.__new__", true, true, "NoneType.__new__", true, true,
+            "builtin_function_or_method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

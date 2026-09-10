@@ -456,17 +456,10 @@ internal static partial class StaticContracts
             return false;
         }
 
-        // Object instance slots resolve through the runtime object fallback
-        // on every receiver like CPython, so they are never statically
-        // known missing either.
-        if (memberName is "__init__" or "__getattribute__" or "__setattr__" or "__delattr__" or "__init_subclass__")
-        {
-            return false;
-        }
-
-        // __new__ resolves through the target type own slot at runtime,
-        // except on modules, which keep their member-table verdict.
-        if (memberName == "__new__" && value.Kind != AbstractValueKind.Module)
+        // Object slots resolve through the runtime object fallback on every
+        // receiver like CPython (__new__ through the target type own slot),
+        // so they are never statically known missing.
+        if (memberName is "__init__" or "__getattribute__" or "__setattr__" or "__delattr__" or "__init_subclass__" or "__new__")
         {
             return false;
         }

@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
-    private static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
+    internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
     private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     private static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     private static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
