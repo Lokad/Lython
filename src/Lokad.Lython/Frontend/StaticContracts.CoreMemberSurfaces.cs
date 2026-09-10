@@ -63,6 +63,7 @@ internal static partial class StaticContracts
         "hex",
         "index",
         "maketrans",
+        "replace",
         "rfind",
         "rindex",
         "startswith",

@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "replace", "rfind", "rindex", "startswith", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "maketrans", "replace", "rfind", "rindex", "startswith", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4220,6 +4220,82 @@ public sealed class SharedFixedLabelBehaviorTests
             "startswith first arg must be bytes or a tuple of bytes, not int",
             "a bytes-like object is required, not 'int'",
             "slice indices must be integers or None or have an __index__ method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesReplaceMembers()
+    {
+        // bytes.replace rewrites like CPython, with count limits and the
+        // descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"aaa".replace(b"aa", b"x") == b"xa")
+            results.append(b"aaa".replace(b"a", b"x", 1) == b"xaa")
+            results.append(b"aaa".replace(b"a", b"x", 0) == b"aaa")
+            results.append(b"aaa".replace(b"a", b"x", -1) == b"xxx")
+            results.append(b"".replace(b"", b"x") == b"x")
+            results.append(b"ab".replace(b"", b"x") == b"xaxbx")
+            results.append(b"ab".replace(b"", b"x", 1) == b"xab")
+            results.append(b"ab".replace(b"a", b"") == b"b")
+            results.append(b"ab".replace(b"z", b"x") == b"ab")
+            results.append(b"ab".replace(b"ab", b"abcd") == b"abcd")
+            results.append(bytes.replace(b"ab", b"a", b"x") == b"xb")
+            results.append(bytes.replace(b"ab", b"a", b"x", 1) == b"xb")
+            results.append(type(b"ab".replace).__name__)
+            results.append(type(bytes.replace).__name__)
+            results.append(bytes.replace.__name__)
+            results.append(hasattr(bytes, "replace"))
+            results.append("replace" in dir(b"ab"))
+            results.append("replace" in dir(bytes))
+            h = b"ab"
+            results.append(h.replace == h.replace)
+            results.append(bytes.replace == bytes.replace)
+            try:
+                b"ab".replace(b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".replace(b"a", b"x", 1, 2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".replace(old=b"a", new=b"x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".replace("a", b"x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".replace(b"a", 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".replace(b"a", b"x", "1")
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, "builtin_function_or_method", "method_descriptor", "replace",
+            true, true, true, true, true,
+            "replace expected at least 2 arguments, got 1",
+            "replace expected at most 3 arguments, got 4",
+            "bytes.replace() takes no keyword arguments",
+            "a bytes-like object is required, not 'str'",
+            "a bytes-like object is required, not 'int'",
+            "bytes.replace(old, new[, count]) expects count to be an integer.",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

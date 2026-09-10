@@ -104,6 +104,8 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "startswith", 1, 3, "LA3175", "bytes.startswith(prefix[, start[, end]]) expects one to three arguments.", parameterNames: ["prefix", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
         }
 
         static void AddStringCallableContract(

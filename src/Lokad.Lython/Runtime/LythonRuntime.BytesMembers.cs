@@ -44,6 +44,7 @@ internal sealed partial class LythonRuntime
                 "rindex" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rindex", arguments, span, context)) { BoundName = "bytes.rindex", BoundReceiver = bytes },
                 "startswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "startswith", arguments, span, context, isStart: true)) { BoundName = "bytes.startswith", BoundReceiver = bytes },
                 "endswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "endswith", arguments, span, context, isStart: false)) { BoundName = "bytes.endswith", BoundReceiver = bytes },
+                "replace" => new RawBoundCallable((arguments, span, context) => ReplaceBytes(bytes, arguments, span, context)) { BoundName = "bytes.replace", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -623,6 +624,114 @@ internal sealed partial class LythonRuntime
     private static bool EndsWithBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> suffix, int start, int end)
     {
         return end - start >= suffix.Length && source.Slice(end - suffix.Length, suffix.Length).SequenceEqual(suffix);
+    }
+
+    private static object ReplaceBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object? oldValue = null;
+        object? newValue = null;
+        object? countArgument = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes.replace() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                oldValue = argument.Value;
+            }
+            else if (positionals == 2)
+            {
+                newValue = argument.Value;
+            }
+            else if (positionals == 3)
+            {
+                countArgument = argument.Value;
+            }
+        }
+
+        if (positionals < 2)
+        {
+            throw new LythonRuntimeException("TypeError", "replace expected at least 2 arguments, got " + positionals, span);
+        }
+
+        if (positionals > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "replace expected at most 3 arguments, got " + positionals, span);
+        }
+
+        if (oldValue is not PyBytes oldBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(oldValue, context) + "'", span);
+        }
+
+        if (newValue is not PyBytes newBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(newValue, context) + "'", span);
+        }
+
+        var count = -1;
+        if (countArgument is not null)
+        {
+            count = RuntimeArgumentValidation.ParseInt32(countArgument, "count", "bytes.replace(old, new[, count])", span);
+        }
+
+        if (count == 0)
+        {
+            return value;
+        }
+
+        var source = value.Bytes;
+        var oldSpan = oldBytes.Bytes;
+        var newSpan = newBytes.Bytes;
+        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
+            ? new GovernedByteBuilder(source.Length)
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, source.Length);
+
+        if (oldSpan.IsEmpty)
+        {
+            var insertions = 0;
+            if (count < 0 || insertions < count)
+            {
+                builder.Append(newSpan);
+                insertions++;
+            }
+
+            foreach (var octet in source)
+            {
+                builder.Append(octet);
+                if (count < 0 || insertions < count)
+                {
+                    builder.Append(newSpan);
+                    insertions++;
+                }
+            }
+
+            return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        }
+
+        var offset = 0;
+        var replaced = 0;
+        while (offset < source.Length && (count < 0 || replaced < count))
+        {
+            var found = PyString.IndexOfBytes(source[offset..], oldSpan);
+            if (found < 0)
+            {
+                break;
+            }
+
+            builder.Append(source.Slice(offset, found));
+            builder.Append(newSpan);
+            offset += found + oldSpan.Length;
+            replaced++;
+        }
+
+        builder.Append(source[offset..]);
+        return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
 
     private sealed class RawBoundCallable(

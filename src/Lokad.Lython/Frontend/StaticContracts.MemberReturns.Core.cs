@@ -58,6 +58,8 @@ internal static partial class StaticContracts
         new(AbstractValueKind.BytesType, "rfind", StaticReturnShape.Integer),
         new(AbstractValueKind.Bytes, "rindex", StaticReturnShape.Integer),
         new(AbstractValueKind.BytesType, "rindex", StaticReturnShape.Integer),
+        new(AbstractValueKind.Bytes, "replace", StaticReturnShape.Bytes),
+        new(AbstractValueKind.BytesType, "replace", StaticReturnShape.Bytes),
         new(AbstractValueKind.Bytes, "startswith", StaticReturnShape.Boolean),
         new(AbstractValueKind.BytesType, "startswith", StaticReturnShape.Boolean),
         new(AbstractValueKind.Bytes, "endswith", StaticReturnShape.Boolean),
