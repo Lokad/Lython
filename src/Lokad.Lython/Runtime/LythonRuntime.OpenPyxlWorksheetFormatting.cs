@@ -134,19 +134,20 @@ internal sealed partial class LythonRuntime
 
         private object Items(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ConditionalFormattingList.items() expects no arguments.", span);
             }
 
             return new PyList(_worksheet.ConditionalFormattings
-                .Select(formatting => (object)new PyTuple(new object[]
-                {
-                    PyString.FromString(formatting.Sqref),
-                    new PyList(formatting.Rules.Cast<object>()),
-                }))
-                .ToArray());
+                .Select(formatting => (object)PyTuple.FromOwnedArray(
+                    [
+                        PyString.FromString(formatting.Sqref, context.MemoryGovernor, span),
+                        new PyList(formatting.Rules.Cast<object>(), context.MemoryGovernor, span),
+                    ],
+                    context.MemoryGovernor,
+                    span))
+                .ToArray(), context.MemoryGovernor, span);
         }
 
         private static object Add(object[] arguments, LythonSourceSpan span, ExecutionContext context)

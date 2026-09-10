@@ -398,32 +398,26 @@ internal sealed partial class LythonRuntime
 
         private object Keys(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = span;
-            _ = context;
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "TableList.keys() expects no arguments.", span);
             }
 
-            return new PyList(_worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => (object)PyString.FromString(name)));
+            return new PyList(_worksheet.Tables.Keys.Order(StringComparer.Ordinal).Select(name => (object)PyString.FromString(name, context.MemoryGovernor, span)), context.MemoryGovernor, span);
         }
 
         private object Values(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = span;
-            _ = context;
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "TableList.values() expects no arguments.", span);
             }
 
-            return new PyList(_worksheet.Tables.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => (object)pair.Value));
+            return new PyList(_worksheet.Tables.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => (object)pair.Value), context.MemoryGovernor, span);
         }
 
         private object Items(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = span;
-            _ = context;
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "TableList.items() expects no arguments.", span);
@@ -431,8 +425,8 @@ internal sealed partial class LythonRuntime
 
             return new PyList(_worksheet.Tables
                 .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                .Select(pair => (object)new PyTuple(new object[] { PyString.FromString(pair.Key), pair.Value }))
-                .ToArray());
+                .Select(pair => (object)PyTuple.FromOwnedArray([PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value], context.MemoryGovernor, span))
+                .ToArray(), context.MemoryGovernor, span);
         }
     }
 
