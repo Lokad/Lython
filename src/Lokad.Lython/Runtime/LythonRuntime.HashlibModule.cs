@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
                 "digest" => BoundCallable.Create(Digest, $"{AlgorithmName}.digest", []),
                 "hexdigest" => BoundCallable.Create(HexDigest, $"{AlgorithmName}.hexdigest", []),
                 "copy" => BoundCallable.Create(Copy, $"{AlgorithmName}.copy", []),
-                "name" => PyString.FromString(AlgorithmName),
+                "name" => PyString.FromString(AlgorithmName, _governor),
                 "digest_size" => new BigInteger(DigestSize),
                 "block_size" => new BigInteger(BlockSize),
                 _ => MissingMemberValue.Instance,

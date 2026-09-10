@@ -100,7 +100,8 @@ internal sealed partial class LythonRuntime
                or RePatternObject
                or ReMatchObject
                or PyPath
-               or PyModule);
+               or PyModule
+               or HashlibHashObject);
 
     private static object Pop(ExecutableValueStack stack, LythonSourceSpan span)
     {
