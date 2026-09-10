@@ -583,7 +583,7 @@ internal sealed partial class LythonRuntime
             IPyRawBoundCallable => PyType.BuiltinFunctionType,
             BuiltinTypeMethod => PyType.BuiltinFunctionType,
             UnboundTypeMethod => PyType.MethodDescriptorType,
-            BuiltinDataDescriptor => PyType.GetSetDescriptorType,
+            BuiltinDataDescriptor dataDescriptor => dataDescriptor.Kind == DataDescriptorKind.Member ? PyType.MemberDescriptorType : PyType.GetSetDescriptorType,
             PyRange => TryGetBuiltinOrNull(context, "range"),
             TupleGetter => PyType.TupleGetterType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
@@ -875,26 +875,38 @@ internal sealed partial class LythonRuntime
     // __get__/__set__/__delete__ slots. Descriptors are not callable;
     // binding resolves through the instance member tables. Wrappers cache
     // per constructor, so identity holds like CPython.
+    // Getset descriptors carry documentation and writable-shaped errors;
+    // member descriptors report None docs and read-only errors.
+    internal enum DataDescriptorKind
+    {
+        GetSet,
+        Member,
+    }
+
     internal sealed class BuiltinDataDescriptor : IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue
     {
         private readonly object _owner;
         private readonly string _ownerName;
         private readonly string _memberName;
         private readonly string _qualifiedName;
-        private readonly string _documentation;
+        private readonly string? _documentation;
+        private readonly DataDescriptorKind _kind;
 
-        internal BuiltinDataDescriptor(object owner, string ownerName, string memberName, string documentation)
+        internal BuiltinDataDescriptor(object owner, string ownerName, string memberName, string? documentation, DataDescriptorKind kind)
         {
             _owner = owner;
             _ownerName = ownerName;
             _memberName = memberName;
             _qualifiedName = ownerName + "." + memberName;
             _documentation = documentation;
+            _kind = kind;
         }
 
         internal string OwnerName => _ownerName;
 
         internal string MemberName => _memberName;
+
+        internal DataDescriptorKind Kind => _kind;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -918,25 +930,25 @@ internal sealed partial class LythonRuntime
 
             if (name == "__doc__")
             {
-                value = PyString.FromString(_documentation);
+                value = _documentation is null ? PyNone.Instance : PyString.FromString(_documentation);
                 return true;
             }
 
             if (name == "__get__")
             {
-                value = new PyBoundMethod(this, DataGetMethod.Instance);
+                value = new PyBoundMethod(this, _kind == DataDescriptorKind.Member ? DataGetMethod.Member : DataGetMethod.GetSet);
                 return true;
             }
 
             if (name == "__set__")
             {
-                value = new PyBoundMethod(this, DataSetMethod.Instance);
+                value = new PyBoundMethod(this, _kind == DataDescriptorKind.Member ? DataSetMethod.Member : DataSetMethod.GetSet);
                 return true;
             }
 
             if (name == "__delete__")
             {
-                value = new PyBoundMethod(this, DataDeleteMethod.Instance);
+                value = new PyBoundMethod(this, _kind == DataDescriptorKind.Member ? DataDeleteMethod.Member : DataDeleteMethod.GetSet);
                 return true;
             }
 
@@ -947,7 +959,8 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("<attribute '" + _memberName + "' of '" + _ownerName + "' objects>");
+            var kindName = _kind == DataDescriptorKind.Member ? "member" : "attribute";
+            return PyString.FromString("<" + kindName + " '" + _memberName + "' of '" + _ownerName + "' objects>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -962,10 +975,15 @@ internal sealed partial class LythonRuntime
     // serves every descriptor like the method-descriptor slot.
     internal sealed class DataGetMethod : ICallable, IPyDynamicAttributes, IPySlotWrapper
     {
-        internal static readonly DataGetMethod Instance = new();
+        internal static readonly DataGetMethod GetSet = new(DataDescriptorKind.GetSet);
 
-        private DataGetMethod()
+        internal static readonly DataGetMethod Member = new(DataDescriptorKind.Member);
+
+        private readonly DataDescriptorKind _kind;
+
+        private DataGetMethod(DataDescriptorKind kind)
         {
+            _kind = kind;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -978,13 +996,13 @@ internal sealed partial class LythonRuntime
 
             if (name == "__qualname__")
             {
-                value = PyString.FromString("getset_descriptor.__get__");
+                value = PyString.FromString((_kind == DataDescriptorKind.Member ? "member_descriptor" : "getset_descriptor") + ".__get__");
                 return true;
             }
 
             if (name == "__objclass__")
             {
-                value = PyType.GetSetDescriptorType;
+                value = _kind == DataDescriptorKind.Member ? PyType.MemberDescriptorType : PyType.GetSetDescriptorType;
                 return true;
             }
 
@@ -1050,10 +1068,15 @@ internal sealed partial class LythonRuntime
     // every descriptor; the bound descriptor names the attribute.
     internal sealed class DataSetMethod : ICallable, IPyDynamicAttributes, IPySlotWrapper
     {
-        internal static readonly DataSetMethod Instance = new();
+        internal static readonly DataSetMethod GetSet = new(DataDescriptorKind.GetSet);
 
-        private DataSetMethod()
+        internal static readonly DataSetMethod Member = new(DataDescriptorKind.Member);
+
+        private readonly DataDescriptorKind _kind;
+
+        private DataSetMethod(DataDescriptorKind kind)
         {
+            _kind = kind;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -1066,13 +1089,13 @@ internal sealed partial class LythonRuntime
 
             if (name == "__qualname__")
             {
-                value = PyString.FromString("getset_descriptor.__set__");
+                value = PyString.FromString((_kind == DataDescriptorKind.Member ? "member_descriptor" : "getset_descriptor") + ".__set__");
                 return true;
             }
 
             if (name == "__objclass__")
             {
-                value = PyType.GetSetDescriptorType;
+                value = _kind == DataDescriptorKind.Member ? PyType.MemberDescriptorType : PyType.GetSetDescriptorType;
                 return true;
             }
 
@@ -1101,6 +1124,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "__set__(None, None) is invalid", span);
             }
 
+            if (_kind == DataDescriptorKind.Member)
+            {
+                throw new LythonRuntimeException("AttributeError", "readonly attribute", span);
+            }
+
             throw new LythonRuntimeException("AttributeError", "attribute '" + descriptor.MemberName + "' of '" + descriptor.OwnerName + "' objects is not writable", span);
         }
     }
@@ -1109,10 +1137,15 @@ internal sealed partial class LythonRuntime
     // be deleted either. Separate singleton so __name__ reports correctly.
     internal sealed class DataDeleteMethod : ICallable, IPyDynamicAttributes, IPySlotWrapper
     {
-        internal static readonly DataDeleteMethod Instance = new();
+        internal static readonly DataDeleteMethod GetSet = new(DataDescriptorKind.GetSet);
 
-        private DataDeleteMethod()
+        internal static readonly DataDeleteMethod Member = new(DataDescriptorKind.Member);
+
+        private readonly DataDescriptorKind _kind;
+
+        private DataDeleteMethod(DataDescriptorKind kind)
         {
+            _kind = kind;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -1125,13 +1158,13 @@ internal sealed partial class LythonRuntime
 
             if (name == "__qualname__")
             {
-                value = PyString.FromString("getset_descriptor.__delete__");
+                value = PyString.FromString((_kind == DataDescriptorKind.Member ? "member_descriptor" : "getset_descriptor") + ".__delete__");
                 return true;
             }
 
             if (name == "__objclass__")
             {
-                value = PyType.GetSetDescriptorType;
+                value = _kind == DataDescriptorKind.Member ? PyType.MemberDescriptorType : PyType.GetSetDescriptorType;
                 return true;
             }
 
@@ -1158,6 +1191,11 @@ internal sealed partial class LythonRuntime
             if (arguments[0].Value is not BuiltinDataDescriptor descriptor)
             {
                 throw new LythonRuntimeException("TypeError", "__delete__(None, None) is invalid", span);
+            }
+
+            if (_kind == DataDescriptorKind.Member)
+            {
+                throw new LythonRuntimeException("AttributeError", "readonly attribute", span);
             }
 
             throw new LythonRuntimeException("AttributeError", "attribute '" + descriptor.MemberName + "' of '" + descriptor.OwnerName + "' objects is not writable", span);
@@ -1878,18 +1916,21 @@ internal sealed partial class LythonRuntime
     private static bool TryGetUnboundDataDescriptor(object owner, string ownerName, ref Dictionary<string, BuiltinDataDescriptor>? cache, string memberName, [MaybeNullWhen(false)] out object value)
     {
         value = PyNone.Instance;
-        var documentation = (ownerName, memberName) switch
+        (string? documentation, DataDescriptorKind? kind) = (ownerName, memberName) switch
         {
-            ("int", "real") => "the real part of a complex number",
-            ("int", "imag") => "the imaginary part of a complex number",
-            ("int", "numerator") => "the numerator of a rational number in lowest terms",
-            ("int", "denominator") => "the denominator of a rational number in lowest terms",
-            ("float", "real") => "the real part of a complex number",
-            ("float", "imag") => "the imaginary part of a complex number",
-            _ => null,
+            ("int", "real") => ("the real part of a complex number", DataDescriptorKind.GetSet),
+            ("int", "imag") => ("the imaginary part of a complex number", DataDescriptorKind.GetSet),
+            ("int", "numerator") => ("the numerator of a rational number in lowest terms", DataDescriptorKind.GetSet),
+            ("int", "denominator") => ("the denominator of a rational number in lowest terms", DataDescriptorKind.GetSet),
+            ("float", "real") => ("the real part of a complex number", DataDescriptorKind.GetSet),
+            ("float", "imag") => ("the imaginary part of a complex number", DataDescriptorKind.GetSet),
+            ("range", "start") => ((string?)null, DataDescriptorKind.Member),
+            ("range", "stop") => ((string?)null, DataDescriptorKind.Member),
+            ("range", "step") => ((string?)null, DataDescriptorKind.Member),
+            _ => ((string?)null, (DataDescriptorKind?)null),
         };
 
-        if (documentation is null)
+        if (kind is null)
         {
             return false;
         }
@@ -1898,6 +1939,7 @@ internal sealed partial class LythonRuntime
         {
             "int" => (object)BigInteger.Zero,
             "float" => (object)0.0,
+            "range" => (object)new PyRange(BigInteger.Zero, BigInteger.Zero, BigInteger.One),
             _ => null,
         };
 
@@ -1911,7 +1953,7 @@ internal sealed partial class LythonRuntime
         cache ??= new Dictionary<string, BuiltinDataDescriptor>(StringComparer.Ordinal);
         if (!cache.TryGetValue(memberName, out var descriptor))
         {
-            descriptor = new BuiltinDataDescriptor(owner, ownerName, memberName, documentation);
+            descriptor = new BuiltinDataDescriptor(owner, ownerName, memberName, documentation, kind.Value);
             cache[memberName] = descriptor;
         }
 
@@ -2323,7 +2365,7 @@ internal sealed partial class LythonRuntime
             // Builtin numeric types expose their scalar data attributes as
             // getset descriptors like CPython (int.real binds through the
             // shared data slots); wrappers cache per constructor.
-            if ((Signature.Name is "int" or "float") &&
+            if ((Signature.Name is "int" or "float" or "range") &&
                 TryGetUnboundDataDescriptor(this, Signature.Name, ref _unboundDataDescriptors, name, out value))
             {
                 return true;

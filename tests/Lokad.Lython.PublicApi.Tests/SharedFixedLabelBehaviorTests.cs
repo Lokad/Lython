@@ -3546,7 +3546,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(r.index.__self__ is r)
             results.append(hasattr(range.index, "__self__"))
             results.append(dir(r) == ["count", "index", "start", "step", "stop"])
-            results.append(dir(range) == ["__new__", "count", "index"])
+            results.append(dir(range) == ["__new__", "count", "index", "start", "step", "stop"])
             for n in dir(r):
                 if not hasattr(r, n):
                     results.append(n)
@@ -3950,6 +3950,68 @@ public sealed class SharedFixedLabelBehaviorTests
             " expected at least 1 argument, got 0",
             "Object is not callable.",
             "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RangeMemberDescriptors()
+    {
+        // range exposes start/stop/step as member descriptors like CPython,
+        // sharing the getset machinery with read-only errors and None docs.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(repr(range.start))
+            results.append(type(range.start).__name__)
+            results.append(range.start.__doc__ is None)
+            results.append(range.start.__name__)
+            results.append(range.start.__qualname__)
+            results.append(range.start.__objclass__ is range)
+            results.append(range.start.__get__(range(2, 9, 3)))
+            results.append(range.stop.__get__(range(2, 9, 3)))
+            results.append(range.step.__get__(range(2, 9, 3)))
+            results.append(range.start is range.start)
+            results.append(range.start.__get__(None, range) is range.start)
+            results.append(hasattr(range, "step"))
+            results.append("stop" in dir(range))
+            results.append("start" in dir(range(5)))
+            try:
+                range.start.__set__(range(5), 1)
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                range.stop.__delete__(range(5))
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                range.start.__get__(5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                range.start(5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                range.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "<member 'start' of 'range' objects>", "member_descriptor", true,
+            "start", "range.start", true, new BigInteger(2), new BigInteger(9),
+            new BigInteger(3), true, true, true, true, true,
+            "readonly attribute", "readonly attribute",
+            "descriptor 'start' for 'range' objects doesn't apply to a 'int' object",
+            "Object is not callable.", "missing",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
