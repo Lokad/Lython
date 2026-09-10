@@ -257,6 +257,73 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static class IntMembers
+    {
+        public static bool TryGetMember(object receiver, string name, [MaybeNullWhen(false)] out object value)
+        {
+            var integer = receiver switch
+            {
+                BigInteger big => big,
+                int small => new BigInteger(small),
+                bool flag => flag ? BigInteger.One : BigInteger.Zero,
+                _ => (BigInteger?)null,
+            };
+
+            if (integer is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = name switch
+            {
+                "bit_length" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.bit_length() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return new BigInteger(BigInteger.Abs(integer.Value).GetBitLength());
+                }, "int.bit_length"),
+                "conjugate" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.conjugate() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return integer.Value;
+                }, "int.conjugate"),
+                "as_integer_ratio" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.as_integer_ratio() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return new PyTuple([integer.Value, BigInteger.One], context.MemoryGovernor, span);
+                }, "int.as_integer_ratio"),
+                "is_integer" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.is_integer() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return true;
+                }, "int.is_integer"),
+                "numerator" => integer.Value,
+                "denominator" => BigInteger.One,
+                "real" => integer.Value,
+                "imag" => BigInteger.Zero,
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+    }
+
     internal static class DictMembers
     {
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)

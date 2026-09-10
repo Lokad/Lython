@@ -87,6 +87,8 @@ internal sealed partial class LythonRuntime
     private static readonly string[] BytesDirNames = ["decode", "fromhex"];
     private static readonly string[] ListDirNames = ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"];
     private static readonly string[] TupleDirNames = ["count", "index"];
+    private static readonly string[] IntDirNames = ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real"];
+    private static readonly string[] IntMethodDirNames = ["as_integer_ratio", "bit_length", "conjugate", "is_integer"];
     private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
     private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
 

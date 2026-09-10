@@ -2695,6 +2695,83 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task IntScalarMembers()
+    {
+        // Integer values (bools ride along) serve the scalar method and
+        // property shapes like CPython, with unbound descriptors on the
+        // constructor, static coverage, and dir() lists.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((0).bit_length())
+            results.append((-7).bit_length())
+            results.append((255).bit_length())
+            results.append((2**100).bit_length())
+            results.append(True.bit_length())
+            results.append((5).conjugate())
+            results.append((-3).conjugate())
+            results.append((5).as_integer_ratio() == (5, 1))
+            results.append((-4).as_integer_ratio() == (-4, 1))
+            results.append((5).is_integer())
+            results.append((5).numerator)
+            results.append((5).denominator)
+            results.append(True.denominator)
+            results.append((5).real)
+            results.append((-5).imag)
+            results.append(int.bit_length(7))
+            b = 7
+            results.append(b.bit_length == b.bit_length)
+            results.append(int.bit_length == int.bit_length)
+            results.append(int.bit_length == (7).bit_length)
+            results.append(type(int.bit_length).__name__)
+            results.append(hasattr(int.bit_length, "__self__"))
+            results.append(int.bit_length.__name__)
+            results.append(dir(5) == ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real"])
+            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_length", "conjugate", "is_integer"])
+            for n in dir(int):
+                if not hasattr(int, n):
+                    results.append(n)
+            for n in dir(5):
+                if not hasattr(5, n):
+                    results.append(n)
+            results.append("truthful")
+            try:
+                (1).bit_length(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.bit_length()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(0), new BigInteger(3), new BigInteger(8),
+            new BigInteger(101), new BigInteger(1),
+            new BigInteger(5), new BigInteger(-3), true, true, true,
+            new BigInteger(5), new BigInteger(1), new BigInteger(1),
+            new BigInteger(5), new BigInteger(0), new BigInteger(3),
+            true, true, false, "method_descriptor", false, "bit_length",
+            true, true, "truthful",
+            "int.bit_length() takes no arguments (1 given)",
+            "unbound method int.bit_length() needs an argument",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

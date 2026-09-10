@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -10,6 +11,9 @@ internal static class PyMemberAccess
         new Dictionary<Type, ExactMemberResolver>
         {
             [typeof(PyString)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.StringMembers.TryGetMember((PyString)target, memberName, out value),
+            [typeof(BigInteger)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
+            [typeof(int)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
+            [typeof(bool)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
             [typeof(PyBytes)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
             [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
             [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),

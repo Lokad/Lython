@@ -137,6 +137,18 @@ internal static partial class StaticContracts
         "count",
     };
 
+    private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
+    {
+        "as_integer_ratio",
+        "bit_length",
+        "conjugate",
+        "denominator",
+        "imag",
+        "is_integer",
+        "numerator",
+        "real",
+    };
+
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
     {
         "append",
@@ -494,10 +506,10 @@ internal static partial class StaticContracts
             AbstractValueKind.Bytes or AbstractValueKind.BytesType => BytesMembers.Contains(memberName),
             AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
+            AbstractValueKind.Boolean or
+            AbstractValueKind.BooleanType => IntMembers.Contains(memberName),
             AbstractValueKind.Float or
             AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or
-            AbstractValueKind.BooleanType or
             AbstractValueKind.None => false,
             AbstractValueKind.Ellipsis => false,
             AbstractValueKind.Path => PathMembers.Contains(memberName),

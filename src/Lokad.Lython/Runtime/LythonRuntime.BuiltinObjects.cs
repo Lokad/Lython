@@ -751,17 +751,22 @@ internal sealed partial class LythonRuntime
                 names.AddRange(TupleDirNames);
                 return names;
 
+            case BigInteger or int or bool:
+                names.AddRange(IntDirNames);
+                return names;
+
             case PySet:
                 names.AddRange(SetDirNames);
                 return names;
 
-            case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set" or "tuple":
+            case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set" or "tuple" or "int":
                 names.AddRange(builtin.Name switch
                 {
                     "list" => ListDirNames,
                     "str" => StringDirNames,
                     "bytes" => BytesDirNames,
                     "tuple" => TupleDirNames,
+                    "int" => IntMethodDirNames,
                     _ => SetDirNames,
                 });
                 names.Add("__new__");
