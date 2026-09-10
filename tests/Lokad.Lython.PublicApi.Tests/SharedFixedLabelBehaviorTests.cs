@@ -804,4 +804,33 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DescriptorClassIdentities()
+    {
+        var script = new LythonEngine().Compile("""
+            import datetime
+            def f():
+                pass
+            sm = staticmethod(f)
+            d = datetime.date(2024, 1, 1)
+            return [type(d.weekday).__name__,
+                sm.__class__ is staticmethod,
+                staticmethod.__class__ is type,
+                staticmethod.__bases__[0] is object,
+                property.__class__ is type]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "builtin_function_or_method", true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

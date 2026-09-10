@@ -365,6 +365,10 @@ internal sealed partial class LythonRuntime
             ["range"] = ["object"],
             ["slice"] = ["object"],
             ["zip"] = ["object"],
+            ["staticmethod"] = ["object"],
+            ["classmethod"] = ["object"],
+            ["property"] = ["object"],
+            ["super"] = ["object"],
         };
 
     internal sealed record BuiltinTypeHierarchy(PyTuple Bases, PyTuple Mro);
@@ -531,12 +535,14 @@ internal sealed partial class LythonRuntime
             LythonRuntime.StatisticsModule.PyNormalDist => TryGetModuleMemberOrNull(context, "statistics", "NormalDist"),
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
+            PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),
+            PyClassMethod => TryGetBuiltinOrNull(context, "classmethod"),
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             PyFunctionBase => PyType.FunctionType,
             LambdaFunction => PyType.FunctionType,
             PyBoundMethod => PyType.MethodType,
             BuiltinCallable => PyType.BuiltinFunctionType,
-            BoundCallable => PyType.BuiltinFunctionType,
+            IPyBoundEngineMethod => PyType.BuiltinFunctionType,
             MinMaxCallable => PyType.BuiltinFunctionType,
             OpenCallable => PyType.BuiltinFunctionType,
             PrintCallable => PyType.BuiltinFunctionType,
@@ -571,6 +577,12 @@ internal sealed partial class LythonRuntime
         }
 
         return value;
+    }
+
+    // Marks bound engine-method wrappers (per-access or receiver-bound) so member
+    // resolution treats them uniformly without naming generic instantiations.
+    internal interface IPyBoundEngineMethod
+    {
     }
 
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
@@ -703,7 +715,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes
+    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyBoundEngineMethod
     {
         // Bound engine methods expose CPython-style __name__/__module__ like
         // C-implemented methods: the short decorated name and None, since every
@@ -814,7 +826,7 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes
+    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
     {
         // Bound engine methods expose CPython-style __name__/__module__ like
         // C-implemented methods: the short decorated name and None, since every
