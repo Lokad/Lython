@@ -1002,6 +1002,23 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public void MisplacedBareExceptIsRejected()
+    {
+        // A default except clause before the last one is rejected like
+        // CPython instead of silently shadowing later handlers.
+        var script = new LythonEngine().Compile("""
+            try:
+                pass
+            except:
+                pass
+            except ValueError:
+                pass
+            """);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, d => d.Code == "LA1075");
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

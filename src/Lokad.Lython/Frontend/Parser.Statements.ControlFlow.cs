@@ -230,6 +230,15 @@ internal sealed partial class Parser
             span = Merge(span, body[^1].Span);
         }
 
+        for (var clauseIndex = 0; clauseIndex + 1 < exceptClauses.Count; clauseIndex++)
+        {
+            if (exceptClauses[clauseIndex].ExceptionTypeNames is null)
+            {
+                AddDiagnostic("LA1075", "Default 'except:' must be last.", exceptClauses[clauseIndex].Span);
+                return null;
+            }
+        }
+
         if (CurrentToken == Token.Else)
         {
             elseBody = ParseTrailingSuite(
