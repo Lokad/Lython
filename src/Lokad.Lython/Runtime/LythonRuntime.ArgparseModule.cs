@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
                     members[argument.KeywordName] = argument.Value;
                 }
 
-                return new ArgparseNamespaceObject(members);
+                return new ArgparseNamespaceObject(members, context.MemoryGovernor, span);
             }
         }
     }
@@ -337,11 +337,20 @@ internal sealed partial class LythonRuntime
     internal sealed class ArgparseNamespaceObject
         : IPyMutableDynamicAttributes, IPyRenderableValue
     {
-        private readonly Dictionary<string, object> _members;
+        // Each member entry is retained in the namespace table; keys and values
+        // stay caller-owned. Overwrites stay free like instance attributes.
+        private const long MemberSlotBytes = 64;
 
-        public ArgparseNamespaceObject(Dictionary<string, object> members)
+        private readonly Dictionary<string, object> _members;
+        private readonly MemoryGovernor? _governor;
+        private readonly LythonSourceSpan? _span;
+
+        public ArgparseNamespaceObject(Dictionary<string, object> members, MemoryGovernor? governor, LythonSourceSpan? span)
         {
             _members = members;
+            _governor = governor;
+            _span = span;
+            ChargeSlots(members.Count + 1);
         }
 
         public IReadOnlyDictionary<string, object> Members => _members;
@@ -350,17 +359,44 @@ internal sealed partial class LythonRuntime
 
         public bool TrySetMember(string name, object value)
         {
+            if (!_members.ContainsKey(name))
+            {
+                ChargeSlots(1);
+            }
+
             _members[name] = value;
             return true;
         }
 
         public void ReplaceMembers(Dictionary<string, object> members)
         {
+            var growth = 0;
+            foreach (var key in members.Keys)
+            {
+                if (!_members.ContainsKey(key))
+                {
+                    growth++;
+                }
+            }
+
+            ChargeSlots(growth);
             _members.Clear();
             foreach (var pair in members)
             {
                 _members[pair.Key] = pair.Value;
             }
+        }
+
+        private void ChargeSlots(int count)
+        {
+            if (_governor is null || count <= 0)
+            {
+                return;
+            }
+
+            var bytes = checked(MemberSlotBytes * count);
+            _governor.Reserve(bytes, _span);
+            _governor.Commit(bytes);
         }
 
         public PyString RenderPython(PyRenderingContext context)

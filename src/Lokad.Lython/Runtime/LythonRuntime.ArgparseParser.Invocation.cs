@@ -169,7 +169,7 @@ internal sealed partial class LythonRuntime
             }
             ValidateRequiredArguments(seenSpecs, values, span);
             ValidateMutuallyExclusiveGroups(seenSpecs, span);
-            var resultNamespace = namespaceObject ?? new ArgparseNamespaceObject(new Dictionary<string, object>(StringComparer.Ordinal));
+            var resultNamespace = namespaceObject ?? new ArgparseNamespaceObject(new Dictionary<string, object>(StringComparer.Ordinal), context.MemoryGovernor, span);
             resultNamespace.ReplaceMembers(values);
             return new ParseResult(resultNamespace, unknown);
         }
