@@ -396,21 +396,33 @@ internal sealed partial class LythonRuntime
                 arguments[0].IsKeyword ||
                 arguments[1].IsKeyword ||
                 arguments[2].IsKeyword ||
-                arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {
                 throw new LythonRuntimeException("TypeError", "object.__setattr__(self, name, value) expects an instance, a string name, and a value.", span);
             }
 
-            if (instance.Type.TryLookupInMro(name.AsString(), 0, out var rawValue, out _) &&
-                PyAttributeLookup.TrySetDescriptorValue(rawValue, instance, arguments[2].Value, context, span))
+            if (arguments[0].Value is PyInstance instance)
+            {
+                if (instance.Type.TryLookupInMro(name.AsString(), 0, out var rawValue, out _) &&
+                    PyAttributeLookup.TrySetDescriptorValue(rawValue, instance, arguments[2].Value, context, span))
+                {
+                    return PyNone.Instance;
+                }
+
+                instance.AttachMemoryGovernor(context.MemoryGovernor, span);
+                instance.SetAttribute(name.AsString(), arguments[2].Value);
+                return PyNone.Instance;
+            }
+
+            // Other receivers follow statement assignment: writable modules,
+            // types and mutable members accept; anything else has no
+            // attribute table to write.
+            if (PyMemberAccess.TryAssign(arguments[0].Value, name.AsString(), arguments[2].Value, context, span))
             {
                 return PyNone.Instance;
             }
 
-            instance.AttachMemoryGovernor(context.MemoryGovernor, span);
-            instance.SetAttribute(name.AsString(), arguments[2].Value);
-            return PyNone.Instance;
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, name.AsString(), span);
         }
     }
 
@@ -461,25 +473,36 @@ internal sealed partial class LythonRuntime
             if (arguments.Length != 2 ||
                 arguments[0].IsKeyword ||
                 arguments[1].IsKeyword ||
-                arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {
                 throw new LythonRuntimeException("TypeError", "object.__delattr__(self, name) expects an instance and a string name.", span);
             }
 
             var memberName = name.AsString();
-            if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
-                PyAttributeLookup.TryDeleteDescriptorValue(rawValue, instance, context, span))
+            if (arguments[0].Value is PyInstance instance)
+            {
+                if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
+                    PyAttributeLookup.TryDeleteDescriptorValue(rawValue, instance, context, span))
+                {
+                    return PyNone.Instance;
+                }
+
+                if (!instance.RemoveAttribute(memberName))
+                {
+                    throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
+                }
+
+                return PyNone.Instance;
+            }
+
+            // Other receivers follow statement deletion; anything else has no
+            // attribute table to delete from.
+            if (PyMemberAccess.TryDelete(arguments[0].Value, memberName, context, span))
             {
                 return PyNone.Instance;
             }
 
-            if (!instance.RemoveAttribute(memberName))
-            {
-                throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
-            }
-
-            return PyNone.Instance;
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span);
         }
     }
 
@@ -530,19 +553,31 @@ internal sealed partial class LythonRuntime
             if (arguments.Length != 2 ||
                 arguments[0].IsKeyword ||
                 arguments[1].IsKeyword ||
-                arguments[0].Value is not PyInstance instance ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
             {
                 throw new LythonRuntimeException("TypeError", "object.__getattribute__(self, name) expects an instance and a string name.", span);
             }
 
             var memberName = name.AsString();
-            if (PyAttributeLookup.TryResolveInstanceMemberWithoutGetAttrFallback(instance, memberName, context, span, out var value))
+            if (arguments[0].Value is PyInstance instance)
             {
-                return value;
+                if (PyAttributeLookup.TryResolveInstanceMemberWithoutGetAttrFallback(instance, memberName, context, span, out var value))
+                {
+                    return value;
+                }
+
+                throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
             }
 
-            throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
+            // Other receivers resolve through the same choke as ordinary
+            // member reads, including bound-method receivers, since reads
+            // never route back through this slot.
+            if (TryResolveRuntimeMember(arguments[0].Value, memberName, context, span, out var resolved))
+            {
+                return resolved;
+            }
+
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span);
         }
     }
 

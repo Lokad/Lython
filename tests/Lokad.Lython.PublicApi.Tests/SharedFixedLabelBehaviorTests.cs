@@ -1550,6 +1550,59 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ObjectSlotCallSemanticsOnBuiltinValues()
+    {
+        // The object attribute slots accept builtin receivers like CPython:
+        // setattr routes writable members (namespaces) through statement
+        // assignment, getattribute resolves through the member choke with
+        // receivers attached, and anything without an attribute table fails
+        // with AttributeError; instances keep their terminal behavior.
+        var script = new LythonEngine().Compile("""
+            import argparse
+            results = []
+            ns = argparse.Namespace()
+            ns.__setattr__("y", 2)
+            results.append(ns.y)
+            x = [1, 2]
+            results.append(x.__getattribute__("append").__self__ is x)
+            results.append(x.__getattribute__("append").__name__)
+            class C:
+                pass
+            c = C()
+            c.__setattr__("v", 10)
+            results.append(c.v)
+            c.__delattr__("v")
+            results.append(hasattr(c, "v"))
+            try:
+                (1).__setattr__("x", 1)
+            except AttributeError:
+                results.append("setattr-attr")
+            try:
+                (1).__delattr__("x")
+            except AttributeError:
+                results.append("delattr-attr")
+            try:
+                x.__getattribute__("bogus")
+            except AttributeError:
+                results.append("getattr-attr")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(2), true, "append", new BigInteger(10), false,
+            "setattr-attr", "delattr-attr", "getattr-attr",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
