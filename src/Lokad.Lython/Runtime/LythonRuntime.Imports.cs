@@ -377,6 +377,7 @@ internal sealed partial class LythonRuntime
 
         ChargeImportedModule(context, null);
         context.State.ImportedModules[moduleName] = module;
+        context.ObserveCollectionCount(context.State.ImportedModules.Count, null);
         return true;
     }
 
@@ -424,6 +425,7 @@ internal sealed partial class LythonRuntime
         var loaded = new ScriptPyModule(moduleName, exported);
         ChargeImportedModule(context, span);
         context.State.ImportedModules[moduleName] = loaded;
+        context.ObserveCollectionCount(context.State.ImportedModules.Count, span);
         return loaded;
     }
 
