@@ -3520,6 +3520,86 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task RangeMembers()
+    {
+        // Ranges serve attributes plus arithmetic index/count/contains
+        // like CPython, with unbound descriptors and dir() lists.
+        var script = new LythonEngine().Compile("""
+            results = []
+            r = range(1, 10, 2)
+            results.append(r.start)
+            results.append(r.stop)
+            results.append(r.step)
+            results.append(r.index(5))
+            results.append(r.count(5))
+            results.append(r.count(6))
+            results.append(5 in r)
+            results.append(6 in r)
+            results.append(5.0 in r)
+            results.append("a" in r)
+            results.append(range.index(r, 5))
+            results.append(r.index == r.index)
+            results.append(range.index == range.index)
+            results.append(range.index == r.index)
+            results.append(type(range.index).__name__)
+            results.append(type(r).__name__)
+            results.append(r.index.__self__ is r)
+            results.append(hasattr(range.index, "__self__"))
+            results.append(dir(r) == ["count", "index", "start", "step", "stop"])
+            results.append(dir(range) == ["__new__", "count", "index"])
+            for n in dir(r):
+                if not hasattr(r, n):
+                    results.append(n)
+            for n in dir(range):
+                if not hasattr(range, n):
+                    results.append(n)
+            results.append("truthful")
+            try:
+                r.index(6)
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                r.index()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                r.index(5, 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                range.index("a", 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                range.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(1), new BigInteger(10), new BigInteger(2),
+            new BigInteger(2), new BigInteger(1), new BigInteger(0),
+            true, false, true, false, new BigInteger(2),
+            true, true, false, "method_descriptor", "range", true, false,
+            true, true, "truthful",
+            "6 is not in range",
+            "Method 'range.index' is missing argument 'value'.",
+            "Method 'range.index' received too many positional arguments.",
+            "descriptor 'index' for 'range' objects doesn't apply to a 'str' object",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

@@ -198,6 +198,63 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Range membership is arithmetic (never enumerated): integer-likes by
+    // value plus integral doubles by truncation, everything else absent.
+    internal static bool TryRangeIndex(PyRange range, BigInteger candidate, out BigInteger position)
+    {
+        position = BigInteger.Zero;
+        var step = BigInteger.Abs(range.Step);
+        if (step.IsZero)
+        {
+            return false;
+        }
+
+        if (range.Step > 0)
+        {
+            if (candidate < range.Start || candidate >= range.Stop)
+            {
+                return false;
+            }
+        }
+        else if (candidate > range.Start || candidate <= range.Stop)
+        {
+            return false;
+        }
+
+        var offset = range.Step > 0 ? candidate - range.Start : range.Start - candidate;
+        if (offset % step != BigInteger.Zero)
+        {
+            return false;
+        }
+
+        position = offset / step;
+        return true;
+    }
+
+    internal static bool RangeContains(PyRange range, object candidate)
+    {
+        BigInteger number;
+        switch (candidate)
+        {
+            case BigInteger big:
+                number = big;
+                break;
+            case int small:
+                number = new BigInteger(small);
+                break;
+            case bool flag:
+                number = flag ? BigInteger.One : BigInteger.Zero;
+                break;
+            case double floating when floating == Math.Truncate(floating) && !double.IsInfinity(floating):
+                number = new BigInteger(floating);
+                break;
+            default:
+                return false;
+        }
+
+        return TryRangeIndex(range, number, out _);
+    }
+
     internal static class TupleMembers
     {
         public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
@@ -672,6 +729,58 @@ internal sealed partial class LythonRuntime
         }
 
         return BitConverter.Int64BitsToDouble(bits);
+    }
+
+    internal static class RangeMembers
+    {
+        public static bool TryGetMember(PyRange range, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "start" => range.Start,
+                "stop" => range.Stop,
+                "step" => range.Step,
+                "index" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.index() takes exactly one argument (" + arguments.Length + " given)", span);
+                    }
+
+                    if (arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool)
+                    {
+                        throw new LythonRuntimeException("ValueError", "sequence.index(x): x not in sequence", span);
+                    }
+
+                    var candidate = arguments[0] switch
+                    {
+                        BigInteger big => big,
+                        int small => new BigInteger(small),
+                        _ => BigInteger.One,
+                    };
+
+                    if (!TryRangeIndex(range, candidate, out var position))
+                    {
+                        var rendered = arguments[0] is bool flag ? (flag ? "True" : "False") : candidate.ToString();
+                        throw new LythonRuntimeException("ValueError", rendered + " is not in range", span);
+                    }
+
+                    return position;
+                }, "range.index", ["value"]),
+                "count" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.count() takes exactly one argument (" + arguments.Length + " given)", span);
+                    }
+
+                    return RangeContains(range, arguments[0]) ? BigInteger.One : BigInteger.Zero;
+                }, "range.count", ["value"]),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
     }
 
     internal static class DictMembers

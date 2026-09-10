@@ -583,6 +583,7 @@ internal sealed partial class LythonRuntime
             IPyRawBoundCallable => PyType.BuiltinFunctionType,
             BuiltinTypeMethod => PyType.BuiltinFunctionType,
             UnboundTypeMethod => PyType.MethodDescriptorType,
+            PyRange => TryGetBuiltinOrNull(context, "range"),
             TupleGetter => PyType.TupleGetterType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
             PyDataclass.DataclassReprMethod => PyType.FunctionType,
@@ -1550,6 +1551,7 @@ internal sealed partial class LythonRuntime
             "tuple" => new PyTuple(Array.Empty<object>()),
             "int" => BigInteger.Zero,
             "float" => 0.0,
+            "range" => new PyRange(BigInteger.Zero, BigInteger.Zero, BigInteger.One),
             "set" => new PySet(),
             _ => null,
         };

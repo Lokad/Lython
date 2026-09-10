@@ -8,6 +8,7 @@ internal static class PyContainment
     {
         return container switch
         {
+            PyRange range => LythonRuntime.RangeContains(range, candidate),
             IPyContainsValue contains => contains.Contains(candidate, span),
             PyString text when PyStringOps.TryAsString(candidate, out var part) => text.Contains(part),
             PyDict dict => dict.ContainsKey(LythonRuntime.ValidateDictionaryKey(candidate, span)),

@@ -492,6 +492,7 @@ internal sealed partial class LythonRuntime
             "set" => value is PySet,
             "str" => value is PyString,
             "bytes" => value is PyBytes,
+            "range" => value is PyRange,
             "pathlib.Path" or "pathlib.PurePath" or "pathlib.PurePosixPath" or "pathlib.PosixPath" => value is PyPath,
             "datetime.timedelta" => value is PyTimedelta,
             "datetime.date" => value is PyDate,
@@ -761,6 +762,10 @@ internal sealed partial class LythonRuntime
                 names.AddRange(TupleDirNames);
                 return names;
 
+            case PyRange:
+                names.AddRange(RangeDirNames);
+                return names;
+
             case PyNamedTupleObject namedTuple:
                 foreach (var field in namedTuple.Type.FieldNames)
                 {
@@ -809,7 +814,7 @@ internal sealed partial class LythonRuntime
                 names.AddRange(SetDirNames);
                 return names;
 
-            case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set" or "tuple" or "int" or "float" or "bool":
+            case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set" or "tuple" or "int" or "float" or "bool" or "range":
                 names.AddRange(builtin.Name switch
                 {
                     "list" => ListDirNames,
@@ -818,6 +823,7 @@ internal sealed partial class LythonRuntime
                     "tuple" => TupleDirNames,
                     "int" => IntMethodDirNames,
                     "bool" => IntMethodDirNames,
+                    "range" => RangeMethodDirNames,
                     "float" => FloatMethodDirNames,
                     _ => SetDirNames,
                 });

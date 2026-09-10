@@ -19,6 +19,7 @@ internal static class PyMemberAccess
             [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
             [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),
             [typeof(PyTuple)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyTuple)target, memberName, out value),
+            [typeof(PyRange)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.RangeMembers.TryGetMember((PyRange)target, memberName, out value),
             [typeof(PyNamedTupleObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyNamedTupleObject)target, memberName, out value),
             [typeof(PyTypingNamedTupleObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyTypingNamedTupleObject)target, memberName, out value),
             [typeof(PySet)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.SetMembers.TryGetMember((PySet)target, memberName, out value),
