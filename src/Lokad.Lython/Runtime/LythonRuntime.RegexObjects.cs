@@ -57,6 +57,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("re"),
                 "re" => match.Pattern,
                 "string" => match.String,
                 "pos" => match.Pos,

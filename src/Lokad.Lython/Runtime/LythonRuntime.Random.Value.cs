@@ -22,6 +22,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
+                    "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("random"),
                     "seed" => BoundCallable.Create((arguments, span, context) => Seed(_state, arguments, span, context), LythonKnownCallableSignatures.RandomSeed),
                     "random" => BoundCallable.Create((arguments, span, context) => Random(_state, arguments, span, context), LythonKnownCallableSignatures.RandomRandom),
                     "getstate" => BoundCallable.Create((arguments, span, context) => GetState(_state, arguments, span, context), LythonKnownCallableSignatures.RandomGetState),

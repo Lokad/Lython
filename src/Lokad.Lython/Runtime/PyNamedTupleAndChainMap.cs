@@ -447,6 +447,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     {
         value = name switch
         {
+            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
             "maps" => OwnedMapsList(),
             "parents" => CreateParents(),
             "get" => new BoundChainMapGet(this),

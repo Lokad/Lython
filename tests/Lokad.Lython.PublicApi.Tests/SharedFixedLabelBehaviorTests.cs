@@ -1723,6 +1723,54 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ValueModuleReportsDefiningModule()
+    {
+        // Values report their defining module like CPython where it exists;
+        // path uses the model label instead of the platform concrete one,
+        // and static shapes without one keep their rejection below.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import decimal
+            import random
+            import statistics
+            import re
+            import os
+            import time
+            from collections import Counter, deque, ChainMap, defaultdict
+            from pathlib import Path
+            results = []
+            results.append(decimal.Decimal("1").__module__)
+            p = Path("a")
+            results.append(p.__module__)
+            results.append(p.__module__ is Path.__module__)
+            results.append(time.gmtime().__module__)
+            results.append(Counter("ab").__module__)
+            results.append(deque([1]).__module__)
+            results.append(ChainMap({"a": 1}).__module__)
+            results.append(defaultdict(int).__module__)
+            results.append(random.Random().__module__)
+            results.append(statistics.NormalDist().__module__)
+            m = re.match("a", "a")
+            results.append(m.__module__)
+            results.append(os.stat(".").__module__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "decimal", "pathlib", true, "time", "collections", "collections",
+            "collections", "collections", "random", "statistics", "re", "os",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

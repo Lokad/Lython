@@ -306,6 +306,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
                 "default_factory" => dict.DefaultFactory ?? PyNone.Instance,
                 "get" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -379,6 +380,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
                 "get" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)

@@ -20,6 +20,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> RegexMatchMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "re",
         "string",
         "pos",

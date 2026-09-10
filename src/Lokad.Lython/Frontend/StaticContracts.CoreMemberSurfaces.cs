@@ -51,6 +51,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "name",
         "suffix",
         "suffixes",
@@ -198,6 +199,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CollectionsDefaultDictMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "default_factory",
         "get",
         "keys",
@@ -210,6 +212,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "get",
         "update",
         "subtract",
@@ -225,6 +228,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "maxlen",
         "append",
         "appendleft",
@@ -244,6 +248,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "maps",
         "parents",
         "get",
@@ -256,6 +261,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "quantize",
         "normalize",
         "sqrt",
@@ -406,6 +412,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> StatisticsNormalDistMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "mean",
         "median",
         "mode",
@@ -422,6 +429,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> RandomMembers = new(StringComparer.Ordinal)
     {
+        "__module__",
         "seed",
         "random",
         "getstate",

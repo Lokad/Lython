@@ -227,6 +227,7 @@ internal sealed partial class LythonRuntime
 
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("time"),
                 "tm_zone" => Zone,
                 "tm_gmtoff" => GmtOffset,
                 "n_fields" => new BigInteger(11),

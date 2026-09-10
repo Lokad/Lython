@@ -12,6 +12,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
                 "maxlen" => deque.MaxLength is int maxLength ? new BigInteger(maxLength) : PyNone.Instance,
                 "append" => BoundCallable.Create((arguments, span, context) =>
                 {

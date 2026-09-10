@@ -240,6 +240,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
+                    "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("statistics"),
                     "mean" => Mean,
                     "median" => Mean,
                     "mode" => Mean,

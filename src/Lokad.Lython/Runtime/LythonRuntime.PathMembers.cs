@@ -28,6 +28,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("os"),
                 "exists" => stat.Exists,
                 "is_file" => stat.IsFile,
                 "is_dir" => stat.IsDir,
@@ -210,6 +211,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("decimal"),
                 "quantize" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3 || arguments[0] is not PyDecimal exponent)
@@ -329,6 +331,7 @@ internal sealed partial class LythonRuntime
             var governor = context.MemoryGovernor;
             value = name switch
             {
+                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("pathlib"),
                 "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())), path.Value, governor, span),
                 "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())), path.Value, governor, span),
                 "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())), path.Value, governor, span),
