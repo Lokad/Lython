@@ -51,28 +51,26 @@ internal sealed partial class LythonRuntime
     {
         var path = GetSinglePath(arguments, "os.path.split", span);
         var (head, tail) = SplitPath(path);
-        return PyTuple.FromOwnedArray([PyString.FromString(head), PyString.FromString(tail)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.FromString(head, context.MemoryGovernor, span), PyString.FromString(tail, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitExt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.splitext", span);
         var (root, extension) = SplitExt(path);
-        return PyTuple.FromOwnedArray([PyString.FromString(root), PyString.FromString(extension)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.FromString(root, context.MemoryGovernor, span), PyString.FromString(extension, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathBaseName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var path = GetSinglePath(arguments, "os.path.basename", span);
-        return PyString.FromString(SplitPath(path).Tail);
+        return PyString.FromString(SplitPath(path).Tail, context.MemoryGovernor, span);
     }
 
     private static object OsPathDirName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var path = GetSinglePath(arguments, "os.path.dirname", span);
-        return PyString.FromString(SplitPath(path).Head);
+        return PyString.FromString(SplitPath(path).Head, context.MemoryGovernor, span);
     }
 
     private static object OsPathIsAbs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -84,22 +82,20 @@ internal sealed partial class LythonRuntime
 
     private static object OsPathNormPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var path = GetSinglePath(arguments, "os.path.normpath", span);
-        return PyString.FromString(path.Length == 0 ? "." : PathOps.Normalize(path));
+        return PyString.FromString(path.Length == 0 ? "." : PathOps.Normalize(path), context.MemoryGovernor, span);
     }
 
     private static object OsPathNormCase(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var path = GetSinglePath(arguments, "os.path.normcase", span);
-        return PyString.FromString(path);
+        return PyString.FromString(path, context.MemoryGovernor, span);
     }
 
     private static object OsPathAbsPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.abspath", span);
-        return PyString.FromString(PathOps.Normalize(path, context.Host.Cwd));
+        return PyString.FromString(PathOps.Normalize(path, context.Host.Cwd), context.MemoryGovernor, span);
     }
 
     private static object OsPathRelPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -111,7 +107,7 @@ internal sealed partial class LythonRuntime
 
         var path = GetPath(arguments[0], "os.path.relpath", span);
         var start = arguments.Length == 2 ? GetPath(arguments[1], "os.path.relpath", span) : context.Host.Cwd;
-        return PyString.FromString(RelPath(path, start, context.Host.Cwd));
+        return PyString.FromString(RelPath(path, start, context.Host.Cwd), context.MemoryGovernor, span);
     }
 
     private static object OsPathCommonPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -138,7 +134,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "os.path.commonpath() arg is an empty sequence", span);
         }
 
-        return PyString.FromString(CommonPath(paths));
+        return PyString.FromString(CommonPath(paths), context.MemoryGovernor, span);
     }
 
     private static object OsPathCommonPrefix(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -173,7 +169,7 @@ internal sealed partial class LythonRuntime
             prefix = prefix[..index];
         }
 
-        return PyString.FromString(prefix);
+        return PyString.FromString(prefix, context.MemoryGovernor, span);
     }
 
     private static object OsPathExists(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -259,7 +255,7 @@ internal sealed partial class LythonRuntime
     private static object OsPathRealPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.realpath", span);
-        return PyString.FromString(PathOps.Normalize(path, context.Host.Cwd));
+        return PyString.FromString(PathOps.Normalize(path, context.Host.Cwd), context.MemoryGovernor, span);
     }
 
     private static object OsPathExpandVars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -271,7 +267,7 @@ internal sealed partial class LythonRuntime
     private static object OsPathSplitDrive(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.path.splitdrive", span);
-        return PyTuple.FromOwnedArray([PyString.Empty, PyString.FromString(path)], context.MemoryGovernor, span);
+        return PyTuple.FromOwnedArray([PyString.Empty, PyString.FromString(path, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitRoot(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -298,7 +294,7 @@ internal sealed partial class LythonRuntime
         }
 
         return new PyTuple(
-            [PyString.Empty, PyString.FromString(root), PyString.FromString(tail)],
+            [PyString.Empty, PyString.FromString(root, context.MemoryGovernor, span), PyString.FromString(tail, context.MemoryGovernor, span)],
             context.MemoryGovernor,
             span);
     }
