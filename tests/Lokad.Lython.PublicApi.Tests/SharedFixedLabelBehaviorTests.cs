@@ -689,8 +689,20 @@ public sealed class SharedFixedLabelBehaviorTests
         var script = new LythonEngine().Compile("""
             class C:
                 pass
+            import datetime
+            import decimal
+            import pathlib
+            import random
+            import statistics
+            import time
             return [[].__class__ is list, {}.__class__ is dict,
-                (1,).__class__ is tuple, {1}.__class__ is set,
+                decimal.Decimal("1.5").__class__ is decimal.Decimal,
+                datetime.date(2024, 1, 1).__class__ is datetime.date,
+                datetime.timedelta(1).__class__ is datetime.timedelta,
+                pathlib.Path("/x").__class__ is pathlib.Path,
+                time.struct_time((2024, 1, 1, 0, 0, 0, 0, 1, -1)).__class__ is time.struct_time,
+                random.Random(1).__class__ is random.Random,
+                statistics.NormalDist(0, 1).__class__ is statistics.NormalDist,
                 "s".__class__ is str,
                 (1).__class__ is int, (1.5).__class__ is float,
                 True.__class__ is bool, None.__class__ is type(None),
@@ -700,7 +712,7 @@ public sealed class SharedFixedLabelBehaviorTests
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true,
-            true, true, true,
+            true, true, true, true, true, true, true, true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
