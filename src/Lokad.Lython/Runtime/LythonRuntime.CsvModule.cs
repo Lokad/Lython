@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
             }
 
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return new CsvWriterObject(options, file);
+            return new CsvWriterObject(options, file, context.MemoryGovernor, span);
         }
 
         private object DictWriter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -131,7 +131,10 @@ internal sealed partial class LythonRuntime
             var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var extrasAction = GetExtrasAction(arguments, 3, span);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
-            return new CsvDictWriterObject(new CsvWriterObject(options, file), fieldNames, restVal, extrasAction);
+            // Own the dictionary-writer shell beside the governed writer and field names.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new CsvDictWriterObject(new CsvWriterObject(options, file, context.MemoryGovernor, span), fieldNames, restVal, extrasAction);
         }
 
         private static CsvOptions GetOptions(

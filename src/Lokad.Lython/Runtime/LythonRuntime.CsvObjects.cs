@@ -245,8 +245,11 @@ internal sealed partial class LythonRuntime
 
     internal sealed class CsvWriterObject
     {
-        public CsvWriterObject(CsvOptions options, ExecutionContext.TextFileHandle? file)
+        public CsvWriterObject(CsvOptions options, ExecutionContext.TextFileHandle? file, MemoryGovernor governor, LythonSourceSpan span)
         {
+            // Own the shell beside the governed row history.
+            governor.Reserve(128L, span);
+            governor.Commit(128L);
             Options = options;
             File = file;
         }
