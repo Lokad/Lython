@@ -14,6 +14,13 @@ internal sealed partial class LythonRuntime
         IPyHashableValue,
         IEquatable<PkgutilModuleInfoObject>
     {
+        // Fixed labels are class-level constants like namedtuple _fields: shared
+        // forever, so per-access reads cost nothing and alias stably.
+        private static readonly PyString FieldsModuleFinder = PyString.FromString("module_finder");
+        private static readonly PyString FieldsName = PyString.FromString("name");
+        private static readonly PyString FieldsIsPackage = PyString.FromString("ispkg");
+        private static readonly PyTuple FieldsTuple = PyTuple.FromOwnedArray([FieldsModuleFinder, FieldsName, FieldsIsPackage]);
+
         public PkgutilModuleInfoObject(object moduleFinder, PyString name, bool isPackage)
         {
             ModuleFinder = moduleFinder;
@@ -67,10 +74,7 @@ internal sealed partial class LythonRuntime
                 "module_finder" => ModuleFinder,
                 "name" => Name,
                 "ispkg" => IsPackage,
-                "_fields" => PyTuple.FromOwnedArray([
-                    PyString.FromString("module_finder"),
-                    PyString.FromString("name"),
-                    PyString.FromString("ispkg")]),
+                "_fields" => FieldsTuple,
                 "_asdict" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -79,9 +83,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     var dict = new PyDict(context.MemoryGovernor, span);
-                    dict.SetItem(PyString.FromString("module_finder"), ModuleFinder);
-                    dict.SetItem(PyString.FromString("name"), Name);
-                    dict.SetItem(PyString.FromString("ispkg"), IsPackage);
+                    dict.SetItem(FieldsModuleFinder, ModuleFinder);
+                    dict.SetItem(FieldsName, Name);
+                    dict.SetItem(FieldsIsPackage, IsPackage);
                     return dict;
                 }, "ModuleInfo._asdict", []),
                 "_replace" => BoundCallable.Create((arguments, span, context) =>
