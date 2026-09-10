@@ -190,10 +190,11 @@ internal sealed partial class LythonRuntime
 
         public string QualifiedName => OpenPyxlStyleQualifiedName(Kind);
 
-        internal OpenPyxlStyleValue Copy(CopyDepth depth)
+        internal OpenPyxlStyleValue Copy(CopyDepth depth, ExecutionContext? context, LythonSourceSpan? span)
         {
             if (depth == CopyDepth.Shallow)
             {
+                ChargeStyleValue(context, span);
                 return new OpenPyxlStyleValue(Payload);
             }
 
@@ -208,18 +209,19 @@ internal sealed partial class LythonRuntime
                 },
                 OpenPyxlNamedStylePayload named => named with
                 {
-                    Font = named.Font?.Copy(CopyDepth.Deep),
-                    Fill = named.Fill?.Copy(CopyDepth.Deep),
-                    Border = named.Border?.Copy(CopyDepth.Deep),
-                    Alignment = named.Alignment?.Copy(CopyDepth.Deep),
-                    Protection = named.Protection?.Copy(CopyDepth.Deep),
+                    Font = named.Font?.Copy(CopyDepth.Deep, context, span),
+                    Fill = named.Fill?.Copy(CopyDepth.Deep, context, span),
+                    Border = named.Border?.Copy(CopyDepth.Deep, context, span),
+                    Alignment = named.Alignment?.Copy(CopyDepth.Deep, context, span),
+                    Protection = named.Protection?.Copy(CopyDepth.Deep, context, span),
                 },
                 _ => Payload,
             };
+            ChargeStyleValue(context, span);
             return new OpenPyxlStyleValue(copied);
 
-            static object CopyMember(object value)
-                => value is OpenPyxlStyleValue style ? style.Copy(CopyDepth.Deep) : value;
+            object CopyMember(object value)
+                => value is OpenPyxlStyleValue style ? style.Copy(CopyDepth.Deep, context, span) : value;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

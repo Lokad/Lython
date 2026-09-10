@@ -333,7 +333,7 @@ internal sealed partial class LythonRuntime
             PyCounter counter => CopyCounter(counter, depth, context, span, memo, graphDepth),
             PyDeque deque => CopyDeque(deque, depth, context, span, memo, graphDepth),
             PyTuple tuple when depth == CopyDepth.Deep => CopyTuple(tuple, context, span, memo, graphDepth),
-            OpenPyxlStyleValue style => style.Copy(depth),
+            OpenPyxlStyleValue style => style.Copy(depth, context, span),
             _ => value
         };
     }
