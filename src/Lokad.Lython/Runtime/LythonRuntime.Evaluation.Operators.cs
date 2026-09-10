@@ -210,12 +210,12 @@ internal sealed partial class LythonRuntime
         {
             if (right is PyPath rightPath)
             {
-                return new PyPath(PathOps.Join(leftPath.Value, rightPath.Value));
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value), leftPath.Value, context.MemoryGovernor, span);
             }
 
             if (PyStringOps.TryAsString(right, out var rightText))
             {
-                return new PyPath(PathOps.Join(leftPath.Value, rightText));
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightText), leftPath.Value, context.MemoryGovernor, span);
             }
         }
 

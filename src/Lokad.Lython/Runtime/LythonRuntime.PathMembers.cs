@@ -222,14 +222,36 @@ internal sealed partial class LythonRuntime
         }
         public static bool TryGetMember(PyPath path, string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
+            var governor = context.MemoryGovernor;
             value = name switch
             {
+                "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())), path.Value, governor, span),
+                "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())), path.Value, governor, span),
+                "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())), path.Value, governor, span),
+                "parent" => OwnPathResult(PathOps.Parent(path.Value), path.Value, governor, span),
+                "suffixes" => GovernedSuffixes(path.Value, governor, span),
                 "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span),
                 "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        private static PyList GovernedSuffixes(PyString path, MemoryGovernor governor, LythonSourceSpan span)
+        {
+            var name = PathOps.BaseName(path.AsString());
+            var values = new List<object>();
+            var dot = name.IndexOf('.', name.StartsWith(".", StringComparison.Ordinal) ? 1 : 0);
+            while (dot >= 0 && dot < name.Length - 1)
+            {
+                var next = name.IndexOf('.', dot + 1);
+                var suffix = next < 0 ? name[dot..] : name[dot..next];
+                values.Add(OwnMethodResult(PyString.FromString(suffix), path, governor, span));
+                dot = next;
+            }
+
+            return new PyList(values, governor, span);
         }
     }
 }

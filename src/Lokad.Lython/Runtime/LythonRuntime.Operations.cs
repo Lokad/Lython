@@ -413,6 +413,21 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(result.AsString(), governor, span);
     }
 
+    // Path values wrap a governed string payload; the wrapper itself retains a
+    // small object header beside that payload, so own both together.
+    internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is null)
+        {
+            return new PyPath(raw);
+        }
+
+        var owned = OwnMethodResult(raw, receiver, governor, span);
+        governor.Reserve(64L, span);
+        governor.Commit(64L);
+        return new PyPath(owned);
+    }
+
     private static PyString RepeatString(PyString text, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero)
