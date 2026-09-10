@@ -544,9 +544,8 @@ internal sealed partial class LythonRuntime
                 return counter.Items;
             case PyChainMap chainMap:
             {
-                // The merged list plus dedup set peak beside the governed destination,
-                // like the keys()/values()/items() views; hold the same transient estimate.
-                using var scratch = context.MemoryGovernor.ReserveTemporary(chainMap.EstimateMergeScratchBytes(), span);
+                // The merged-list build below rides Iterate's own transient
+                // estimate; the governed destination is charged as it fills.
                 return chainMap.Iterate().Select(key =>
                     new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
             }

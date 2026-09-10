@@ -369,7 +369,15 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     public bool IsTruthy() => _maps.Any(map => map.Count != 0);
 
-    public IEnumerable<object> Iterate() => BuildMergedKeys();
+    // Generic for-loop/list()/any() iteration builds the same merged list as
+    // the key views beside no governed copy of its own; hold the merge
+    // estimate over the eager build (released before streaming, so slow
+    // consumers retain a documented residual while nothing new allocates).
+    public IEnumerable<object> Iterate()
+    {
+        using var scratch = _maps[0].OwnerMemoryGovernor?.ReserveTemporary(EstimateMergeScratchBytes(), null);
+        return BuildMergedKeys();
+    }
 
     public object GetSubscript(object index, LythonSourceSpan span)
     {
