@@ -508,7 +508,7 @@ internal enum PyTypingConstructedKind
     TypedDict
 }
 
-internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, INamedRuntimeCallable
+internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, INamedRuntimeCallable
 {
     private readonly IReadOnlyList<string> _fieldNames;
 
@@ -529,6 +529,22 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         return Kind == PyTypingConstructedKind.TypedDict
             ? CreateTypedDict(arguments, span, context)
             : CreateNamedTuple(arguments, span, context);
+    }
+
+    public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
+        // Tuple sequence members live on the run tuple constructor, so
+        // reads alias its cached descriptors like CPython.
+        if (Kind == PyTypingConstructedKind.NamedTuple &&
+            (name == "index" || name == "count") &&
+            context.TryGetBuiltin("tuple", out var tupleType) &&
+            tupleType is IPyContextualDynamicAttributes tupleAttributes &&
+            tupleAttributes.TryGetMember(name, context, span, out value))
+        {
+            return true;
+        }
+
+        return TryGetMember(name, out value);
     }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

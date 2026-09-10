@@ -3103,6 +3103,44 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NamedTupleTypeMembers()
+    {
+        // Namedtuple types share tuple's descriptors like CPython (identical
+        // objects from the run constructor cache), on both flavors.
+        var script = new LythonEngine().Compile("""
+            import collections
+            import typing
+            results = []
+            P = collections.namedtuple("P", ["x", "y"])
+            results.append(P.index is tuple.index)
+            results.append(P.count is tuple.count)
+            results.append(P.index(P(1, 2), 1))
+            results.append(P.count(P(2, 2), 2))
+            results.append(P.index == tuple.index)
+            T = typing.NamedTuple("T", [("x", int)])
+            results.append(T.index is tuple.index)
+            results.append(T.count is tuple.count)
+            results.append(T.index(T(3), 3))
+            results.append(hasattr(P, "index"))
+            results.append(P.__name__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, new BigInteger(0), new BigInteger(2), true,
+            true, true, new BigInteger(0), true, "P",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

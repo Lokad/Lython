@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, INamedRuntimeCallable
+internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, INamedRuntimeCallable
 {
     private readonly string _typeName;
     private readonly string[] _fieldNames;
@@ -117,6 +117,21 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         return governor is null
             ? new PyNamedTupleObject(this, materialized)
             : new PyNamedTupleObject(this, materialized, governor, span);
+    }
+
+    public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
+        // Tuple sequence members live on the run tuple constructor, so
+        // reads alias its cached descriptors like CPython.
+        if ((name == "index" || name == "count") &&
+            context.TryGetBuiltin("tuple", out var tupleType) &&
+            tupleType is IPyContextualDynamicAttributes tupleAttributes &&
+            tupleAttributes.TryGetMember(name, context, span, out value))
+        {
+            return true;
+        }
+
+        return TryGetMember(name, out value);
     }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
