@@ -1811,6 +1811,37 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task IsoCalendarDateIdentity()
+    {
+        // isocalendar results share one opaque type object like the other
+        // runtime types, with fields, module and subclass binding intact.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            results = []
+            ic = datetime.date(2024, 1, 2).isocalendar()
+            results.append(type(ic).__name__)
+            results.append(ic.__class__ is type(ic))
+            results.append(ic.__init_subclass__.__self__ is type(ic))
+            results.append(ic.__module__)
+            results.append((ic.year, ic.week, ic.weekday))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "IsoCalendarDate", true, true, "datetime",
+            new List<object?> { new BigInteger(2024), new BigInteger(1), new BigInteger(2) },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

@@ -255,6 +255,13 @@ internal static partial class PyDateTimeOps
             _ => null
         });
 
+    // isocalendar results share one opaque type object like the other
+    // runtime types; construction stays unsupported, matching the opaque
+    // family, since guests only ever receive these values.
+    public static readonly PyBuiltinRuntimeType IsoCalendarDateType = new(
+        "datetime.IsoCalendarDate",
+        static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Runtime type objects cannot be constructed directly in Lython.", span));
+
     public static object CreateTimedelta(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var bound = CallBinder.BindNamedArguments(arguments, span, TimedeltaCallSignature, PythonCallableKind.Builtin);

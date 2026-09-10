@@ -528,6 +528,7 @@ internal sealed partial class LythonRuntime
             PyDate => TryGetModuleMemberOrNull(context, "datetime", "date"),
             PyTime => TryGetModuleMemberOrNull(context, "datetime", "time"),
             PyDateTime => TryGetModuleMemberOrNull(context, "datetime", "datetime"),
+            PyIsoCalendarDate => PyDateTimeOps.IsoCalendarDateType,
             PyTimedelta => TryGetModuleMemberOrNull(context, "datetime", "timedelta"),
             PyTimezone => TryGetModuleMemberOrNull(context, "datetime", "timezone"),
             PyPath => TryGetModuleMemberOrNull(context, "pathlib", "Path"),

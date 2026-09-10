@@ -434,6 +434,7 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
             "year" => Year,
             "week" => Week,
             "weekday" => Weekday,
+            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("datetime"),
             _ => MissingMemberValue.Instance,
         };
 
