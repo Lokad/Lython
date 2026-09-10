@@ -880,7 +880,7 @@ internal sealed partial class LythonRuntime
         private readonly string _ownerName;
         private readonly string _memberName;
         private readonly bool _bindsOwner;
-        private readonly Func<object[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly string _qualifiedName;
 
         // str.maketrans carries no run state (names plus static
@@ -888,7 +888,7 @@ internal sealed partial class LythonRuntime
         // CPython, where the static shape is identical everywhere.
         internal static readonly BuiltinTypeMethod StrMaketrans = new("str", "maketrans", bindsOwner: false, StrMaketransImpl);
 
-        internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<object[], LythonSourceSpan, ExecutionContext, object> implementation)
+        internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
         {
             _ownerName = ownerName;
             _memberName = memberName;
@@ -904,21 +904,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            foreach (var argument in arguments)
-            {
-                if (argument.IsKeyword)
-                {
-                    throw new LythonRuntimeException("TypeError", _qualifiedName + "() takes no keyword arguments", span);
-                }
-            }
-
-            var positional = new object[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                positional[i] = arguments[i].Value;
-            }
-
-            return _implementation(positional, span, context);
+            return _implementation(arguments, span, context);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -979,6 +965,7 @@ internal sealed partial class LythonRuntime
             ("dict", "fromkeys") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, DictFromKeys),
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
+            ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes),
             _ => null,
         };
 
@@ -991,7 +978,35 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static object DictFromKeys(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    internal static void RejectKeywordArguments(string qualifiedName, CallArgumentValue[] arguments, LythonSourceSpan span)
+    {
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", qualifiedName + "() takes no keyword arguments", span);
+            }
+        }
+    }
+
+    private static object[] PositionalArguments(CallArgumentValue[] arguments)
+    {
+        var positional = new object[arguments.Length];
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            positional[i] = arguments[i].Value;
+        }
+
+        return positional;
+    }
+
+    private static object DictFromKeys(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        RejectKeywordArguments("dict.fromkeys", arguments, span);
+        return DictFromKeysPositional(PositionalArguments(arguments), span, context);
+    }
+
+    private static object DictFromKeysPositional(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length < 1)
         {
@@ -1014,7 +1029,13 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object BytesFromHex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object BytesFromHex(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        RejectKeywordArguments("bytes.fromhex", arguments, span);
+        return BytesFromHexPositional(PositionalArguments(arguments), span, context);
+    }
+
+    private static object BytesFromHexPositional(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
         {
@@ -1094,7 +1115,13 @@ internal sealed partial class LythonRuntime
         return -1;
     }
 
-    private static object StrMaketransImpl(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object StrMaketransImpl(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        RejectKeywordArguments("str.maketrans", arguments, span);
+        return StrMaketransPositional(PositionalArguments(arguments), span, context);
+    }
+
+    private static object StrMaketransPositional(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length < 1)
         {
@@ -1194,6 +1221,247 @@ internal sealed partial class LythonRuntime
         }
 
         throw new LythonRuntimeException("TypeError", "keys in translate table must be strings or integers", span);
+    }
+
+    // int.to_bytes and int.from_bytes share the (first, byteorder, signed)
+    // shape: the first two ride positionally or by keyword, signed is
+    // keyword-only, with the exact CPython diagnostics.
+    private static void ParseByteOrderArguments(string method, string firstName, CallArgumentValue[] arguments, LythonSourceSpan span, out object? first, out object? byteorder, out object? signed)
+    {
+        first = null;
+        byteorder = null;
+        signed = null;
+        var haveFirst = false;
+        var haveOrder = false;
+        var totalPositionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsPositional)
+            {
+                totalPositionals++;
+            }
+        }
+
+        var positionalIndex = 0;
+        foreach (var argument in arguments)
+        {
+            if (!argument.IsKeyword)
+            {
+                positionalIndex++;
+                if (positionalIndex == 1)
+                {
+                    first = argument.Value;
+                    haveFirst = true;
+                }
+                else if (positionalIndex == 2)
+                {
+                    byteorder = argument.Value;
+                    haveOrder = true;
+                }
+                else
+                {
+                    throw new LythonRuntimeException("TypeError", method + "() takes at most 2 positional arguments (" + totalPositionals + " given)", span);
+                }
+
+                continue;
+            }
+
+            if (argument.KeywordName == firstName)
+            {
+                if (haveFirst)
+                {
+                    throw new LythonRuntimeException("TypeError", "argument for " + method + "() given by name ('" + firstName + "') and position (1)", span);
+                }
+
+                first = argument.Value;
+                haveFirst = true;
+            }
+            else if (argument.KeywordName == "byteorder")
+            {
+                if (haveOrder)
+                {
+                    throw new LythonRuntimeException("TypeError", "argument for " + method + "() given by name ('byteorder') and position (2)", span);
+                }
+
+                byteorder = argument.Value;
+                haveOrder = true;
+            }
+            else if (argument.KeywordName == "signed")
+            {
+                signed = argument.Value;
+            }
+            else
+            {
+                throw new LythonRuntimeException("TypeError", method + "() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+            }
+        }
+    }
+
+    private static bool ParseByteOrder(object? byteorder, string method, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (byteorder is null)
+        {
+            return true;
+        }
+
+        if (byteorder is not PyString text)
+        {
+            throw new LythonRuntimeException("TypeError", method + "() argument 'byteorder' must be str, not " + UnboundTypeMethod.PythonTypeName(byteorder, context), span);
+        }
+
+        var order = text.AsString();
+        if (string.Equals(order, "little", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (string.Equals(order, "big", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        throw new LythonRuntimeException("ValueError", "byteorder must be either 'little' or 'big'", span);
+    }
+
+    // __index__-style operands (including user slots through the shared
+    // protocol) with the exact CPython rejection text.
+    private static BigInteger InterpretByteInteger(object? value, ExecutionContext context, LythonSourceSpan span)
+    {
+        var coerced = CoerceIndexProtocol(value, context, span);
+        return coerced switch
+        {
+            BigInteger big => big,
+            int small => new BigInteger(small),
+            bool flag => flag ? BigInteger.One : BigInteger.Zero,
+            _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span),
+        };
+    }
+
+    private static object IntToBytes(BigInteger value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        ParseByteOrderArguments("to_bytes", "length", arguments, span, out var lengthValue, out var orderValue, out var signedValue);
+        var length = lengthValue is null ? BigInteger.One : InterpretByteInteger(lengthValue, context, span);
+        if (length < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "length argument must be non-negative", span);
+        }
+
+        if (length > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "bytes object is too large", span);
+        }
+
+        var littleEndian = ParseByteOrder(orderValue, "to_bytes", context, span);
+        var signed = signedValue is not null && IsTruthy(signedValue);
+        var requiredBits = value.Sign < 0
+            ? value == BigInteger.MinusOne ? 1 : BigInteger.Subtract(BigInteger.Abs(value), BigInteger.One).GetBitLength() + 1
+            : value.GetBitLength() + 1;
+        if (value.Sign >= 0 && !signed)
+        {
+            requiredBits = value.GetBitLength();
+        }
+
+        if (value.Sign < 0 && !signed)
+        {
+            throw new LythonRuntimeException("OverflowError", "can't convert negative int to unsigned", span);
+        }
+
+        if (BigInteger.Multiply(8, length) < requiredBits)
+        {
+            throw new LythonRuntimeException("OverflowError", "int too big to convert", span);
+        }
+
+        var size = (int)length;
+        var raw = new byte[size];
+        var remaining = value;
+        var count = 0;
+        while (count < size && !remaining.IsZero && remaining != BigInteger.MinusOne)
+        {
+            raw[count] = (byte)(remaining & 0xFF);
+            remaining >>= 8;
+            count++;
+        }
+
+        if (!remaining.IsZero && remaining != BigInteger.MinusOne)
+        {
+            throw new LythonRuntimeException("OverflowError", "int too big to convert", span);
+        }
+
+        if (value.Sign < 0)
+        {
+            Array.Fill(raw, (byte)0xFF, count, size - count);
+        }
+
+        if (!littleEndian)
+        {
+            Array.Reverse(raw);
+        }
+
+        return CreateBytes(raw, context, span);
+    }
+
+    private static object IntFromBytes(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        ParseByteOrderArguments("from_bytes", "bytes", arguments, span, out var source, out var orderValue, out var signedValue);
+        if (source is null)
+        {
+            throw new LythonRuntimeException("TypeError", "from_bytes() missing required argument 'bytes' (pos 1)", span);
+        }
+
+        var littleEndian = ParseByteOrder(orderValue, "from_bytes", context, span);
+        var signed = signedValue is not null && IsTruthy(signedValue);
+        var raw = source switch
+        {
+            PyBytes bytes => bytes.ToArray(),
+            PyString => throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span),
+            _ => FromBytesOperands(source, context, span),
+        };
+
+        if (!littleEndian)
+        {
+            Array.Reverse(raw);
+        }
+
+        var magnitude = BigInteger.Zero;
+        var shift = 0;
+        foreach (var octet in raw)
+        {
+            magnitude |= ((BigInteger)octet) << shift;
+            shift += 8;
+        }
+
+        if (signed && raw.Length > 0 && (raw[raw.Length - 1] & 0x80) != 0)
+        {
+            magnitude -= BigInteger.One << (8 * raw.Length);
+        }
+
+        return magnitude;
+    }
+
+    private static byte[] FromBytesOperands(object source, ExecutionContext context, LythonSourceSpan span)
+    {
+        var octets = new List<byte>();
+        try
+        {
+            foreach (var item in ToSequence(source, span, context))
+            {
+                var number = InterpretByteInteger(item, context, span);
+                if (number < 0 || number > 255)
+                {
+                    throw new LythonRuntimeException("ValueError", "bytes must be in range(0, 256)", span);
+                }
+
+                octets.Add((byte)number);
+            }
+        }
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" &&
+            (ex.Message == "Object is not iterable." ||
+                (source is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable")))
+        {
+            throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
+        }
+
+        return [.. octets];
     }
 
     // Shared choke point for unbound builtin type methods: only constructors

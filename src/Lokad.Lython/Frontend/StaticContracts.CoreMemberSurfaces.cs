@@ -156,6 +156,7 @@ internal static partial class StaticContracts
         "is_integer",
         "numerator",
         "real",
+        "to_bytes",
     };
 
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)

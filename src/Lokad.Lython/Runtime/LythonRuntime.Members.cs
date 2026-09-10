@@ -317,6 +317,7 @@ internal sealed partial class LythonRuntime
                 "denominator" => BigInteger.One,
                 "real" => integer.Value,
                 "imag" => BigInteger.Zero,
+                "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

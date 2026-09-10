@@ -2725,8 +2725,8 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(int.bit_length).__name__)
             results.append(hasattr(int.bit_length, "__self__"))
             results.append(int.bit_length.__name__)
-            results.append(dir(5) == ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real"])
-            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_length", "conjugate", "is_integer"])
+            results.append(dir(5) == ["as_integer_ratio", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"])
+            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_length", "conjugate", "from_bytes", "is_integer", "to_bytes"])
             for n in dir(int):
                 if not hasattr(int, n):
                     results.append(n)
@@ -2839,6 +2839,121 @@ public sealed class SharedFixedLabelBehaviorTests
             "float.as_integer_ratio() takes no arguments (1 given)",
             "cannot convert Infinity to integer ratio",
             "cannot convert NaN to integer ratio",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task IntByteConversions()
+    {
+        // int.to_bytes and int.from_bytes convert like CPython across
+        // orders, signs, defaults and keyword shapes, with the exact
+        // argument diagnostics.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((1024).to_bytes(2, "big") == b"\x04\x00")
+            results.append((1024).to_bytes(2, "little") == b"\x00\x04")
+            results.append((-1).to_bytes(1, "big", signed=True) == b"\xff")
+            results.append((-129).to_bytes(2, "big", signed=True) == b"\xff\x7f")
+            results.append((256).to_bytes(2, "big", signed=True) == b"\x01\x00")
+            results.append((0).to_bytes(0, "big") == b"")
+            results.append((1).to_bytes() == b"\x01")
+            results.append((2**100).to_bytes(13, "big") == b"\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+            results.append(int.from_bytes(b"\x04\x00", "big") == 1024)
+            results.append(int.from_bytes(b"\x00\x04", "little") == 1024)
+            results.append(int.from_bytes(b"\xff", "big", signed=True) == -1)
+            results.append(int.from_bytes([65]) == 65)
+            results.append(int.from_bytes((65,), "big") == 65)
+            results.append(int.from_bytes(range(65, 67), "big") == 16706)
+            results.append(int.from_bytes(b"AB", byteorder="big", signed=True) == 16706)
+            results.append(type(int.from_bytes).__name__)
+            results.append(int.from_bytes.__self__ is int)
+            results.append(int.from_bytes == int.from_bytes)
+            results.append(int.from_bytes.__name__)
+            try:
+                (256).to_bytes(1, "big")
+            except OverflowError as e:
+                results.append(str(e))
+            try:
+                (-1).to_bytes(1, "big")
+            except OverflowError as e:
+                results.append(str(e))
+            try:
+                (1).to_bytes(2, "middle")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                (1).to_bytes("2", "big")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                (1).to_bytes(2, "big", "yes")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                (1).to_bytes(-1, "big")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes("AB", "big")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes([256], "big")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes(b"A", "middle")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes(b"A", 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.from_bytes(b"A", "big", True)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                (1).to_bytes(1, "big", length=2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, "builtin_function_or_method", true,
+            true, "from_bytes",
+            "int too big to convert",
+            "can't convert negative int to unsigned",
+            "byteorder must be either 'little' or 'big'",
+            "'str' object cannot be interpreted as an integer",
+            "to_bytes() takes at most 2 positional arguments (3 given)",
+            "length argument must be non-negative",
+            "cannot convert 'str' object to bytes",
+            "bytes must be in range(0, 256)",
+            "byteorder must be either 'little' or 'big'",
+            "from_bytes() argument 'byteorder' must be str, not int",
+            "from_bytes() missing required argument 'bytes' (pos 1)",
+            "from_bytes() takes at most 2 positional arguments (3 given)",
+            "argument for to_bytes() given by name ('length') and position (1)",
             "missing",
         };
         var sync = script.Run(new MockLythonHost());
