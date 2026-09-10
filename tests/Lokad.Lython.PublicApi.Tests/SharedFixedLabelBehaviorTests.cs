@@ -1019,6 +1019,37 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TypeMemberCallableIdentity()
+    {
+        // Datetime type members expose CPython-style identity like
+        // C-implemented methods, with the defining type as __self__.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            return [datetime.date.today.__name__,
+                datetime.date.today.__qualname__,
+                datetime.date.today.__module__ is None,
+                datetime.date.today.__self__ is datetime.date,
+                datetime.date.fromordinal.__qualname__,
+                datetime.date.fromordinal.__self__ is datetime.date,
+                datetime.datetime.now.__self__ is datetime.datetime,
+                type(datetime.date.today).__name__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "today", "date.today", true, true, "date.fromordinal", true,
+            true, "builtin_function_or_method",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

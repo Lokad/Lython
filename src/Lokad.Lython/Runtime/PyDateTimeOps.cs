@@ -71,10 +71,87 @@ internal static partial class PyDateTimeOps
         @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?)?$",
         RegexOptions.CultureInvariant);
 
-    internal sealed class TypeMemberCallable : LythonRuntime.ICallable
+    internal sealed class TypeMemberCallable : LythonRuntime.ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
         private readonly LythonCallableSignature _signature;
+
+        // Type members expose CPython-style identity like C-implemented
+        // methods: the short __name__, the module-less __qualname__, a None
+        // __module__, and the defining type as __self__ resolved through
+        // the run import registry.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(ShortMemberName(_signature.Name));
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString(QualMemberName(_signature.Name));
+                return true;
+            }
+
+            if (name is "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__self__" &&
+                TryResolveOwnerType(context, out var owner) &&
+                owner is not null)
+            {
+                value = owner;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
+        private static string ShortMemberName(string name)
+        {
+            var dot = name.LastIndexOf((char)46);
+            return dot < 0 ? name : name.Substring(dot + 1);
+        }
+
+        private static string QualMemberName(string name)
+        {
+            var dot = name.IndexOf((char)46);
+            return dot < 0 ? name : name.Substring(dot + 1);
+        }
+
+        private bool TryResolveOwnerType(LythonRuntime.ExecutionContext context, [MaybeNullWhen(false)] out object value)
+        {
+            value = PyNone.Instance;
+            var dot = _signature.Name.IndexOf((char)46);
+            if (dot < 0)
+            {
+                return false;
+            }
+
+            var moduleName = _signature.Name.Substring(0, dot);
+            var rest = _signature.Name.Substring(dot + 1);
+            var typeDot = rest.IndexOf((char)46);
+            var typeName = typeDot < 0 ? rest : rest.Substring(0, typeDot);
+            if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||
+                !module.TryGetCachedMember(typeName, out value) ||
+                value is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            return true;
+        }
 
         public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation)
             : this(implementation, LythonCallableSignature.Create(name))
