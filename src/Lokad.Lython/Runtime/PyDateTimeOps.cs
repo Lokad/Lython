@@ -43,6 +43,19 @@ internal static partial class PyDateTimeOps
         return value;
     }
 
+    // Rendered date/time text allocates fresh strings on every access; adopt them
+    // into the caller governor like converted scalar renders. Shared empties and
+    // already-owned values pass through untouched.
+    internal static object OwnDateTimeText(object result, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (result is not PyString text || governor is null || text.OwnerMemoryGovernor is not null || ReferenceEquals(text, PyString.Empty))
+        {
+            return result;
+        }
+
+        return PyString.FromString(text.AsString(), governor, span);
+    }
+
     private static readonly Regex OffsetTextRegex = new(
         @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
         RegexOptions.CultureInvariant);
