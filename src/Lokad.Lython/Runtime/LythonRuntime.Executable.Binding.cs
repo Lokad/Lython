@@ -278,6 +278,11 @@ internal sealed partial class LythonRuntime
                     MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context),
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
+            ChargeClosureRetention(
+                context.FunctionClosureContext,
+                functionBinding.CodeObject?.ClosureNames.Count ?? context.FunctionClosureContext.Variables.Count,
+                context.MemoryGovernor,
+                functionBinding.Function.Span);
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }

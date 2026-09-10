@@ -144,6 +144,26 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
+    // A function value retains its defining context for the run: the context,
+    // frame and variable tables plus one slot per captured entry. Module-level
+    // definitions share the run-rooted module frame, so only nested definitions
+    // pay. The function CLR wrapper itself stays MG04-owned; shared frames may
+    // pay once per definition.
+    private const long ClosureContextBaseBytes = 512;
+    private const long ClosureCellSlotBytes = 32;
+
+    internal static void ChargeClosureRetention(ExecutionContext? closure, int capturedCount, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (closure is null || governor is null || closure.Frame.Parent is null)
+        {
+            return;
+        }
+
+        var bytes = checked(ClosureContextBaseBytes + ClosureCellSlotBytes * (long)Math.Max(capturedCount, 0));
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+    }
+
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
         IReadOnlyList<LoweredFunctionParameter> parameters,
         Func<LoweredExpression, object> evaluate)

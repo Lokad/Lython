@@ -215,6 +215,7 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
             ScopeDirectiveFactsCollector.ForFunction(statement));
         ChargeFunctionValue(context, statement.Span);
+        ChargeClosureRetention(context.FunctionClosureContext, context.FunctionClosureContext.Variables.Count, context.MemoryGovernor, statement.Span);
         StoreName(
             statement.Name,
             ApplyDecorators(function, statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), statement.Span, context),
