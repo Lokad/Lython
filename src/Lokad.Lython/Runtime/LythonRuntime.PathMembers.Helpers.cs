@@ -510,7 +510,7 @@ internal sealed partial class LythonRuntime
             foreach (var name in context.HostListDir(root.AsString(), span))
             {
                 context.CheckExecutionBudget(span);
-                var child = new PyPath(PathOps.Join(root, PyString.FromString(name)));
+                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span);
                 context.RegisterHostCall(span);
                 var stat = context.HostStat(child.Value.AsString(), span);
                 if (stat.IsDir)
@@ -537,7 +537,7 @@ internal sealed partial class LythonRuntime
             foreach (var name in names)
             {
                 context.CheckExecutionBudget(span);
-                var child = new PyPath(PathOps.Join(root, PyString.FromString(name)));
+                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span);
                 context.RegisterHostCall(span);
                 var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
                 if (stat.IsDir)
