@@ -202,16 +202,27 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // os.stat results escape to the guest as fresh heap records on every call;
+    // charge one box unit per call. Entry stats instead ride entry counts, and
+    // internal HostStat uses stay transient and uncharged.
+    private const long StatValueBytes = 64;
+
     private static object OsStat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.stat", span);
-        return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span);
+        var stat = HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span);
+        context.MemoryGovernor.Reserve(StatValueBytes, span);
+        context.MemoryGovernor.Commit(StatValueBytes);
+        return stat;
     }
 
     private static async ValueTask<object> OsStatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var path = GetSinglePath(arguments, "os.stat", span);
-        return await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
+        var stat = await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
+        context.MemoryGovernor.Reserve(StatValueBytes, span);
+        context.MemoryGovernor.Commit(StatValueBytes);
+        return stat;
     }
 
     private static object OsScandir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
