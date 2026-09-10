@@ -34,6 +34,28 @@ public sealed class RegexCompilationAccountingScenarioTests
     }
 
     [Fact]
+    public async Task EmptyMatchesAndExpandingSubstitutionsProject()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import re
+            empties = re.findall("x*", "ab")
+            expanded = re.sub("(a)(b)", "\\2-\\1!", "ab")
+            return [empties, expanded]
+            """
+            );
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { new List<object?> { "", "", "" }, "b-a!" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task CompiledPatternSearchStillProjects()
     {
         var script = new LythonEngine().Compile(
