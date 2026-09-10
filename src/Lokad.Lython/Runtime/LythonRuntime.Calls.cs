@@ -118,6 +118,8 @@ internal sealed partial class LythonRuntime
         {
             [BuiltinException("Exception")] = [BuiltinException("BaseException")],
             [BuiltinException("SystemExit")] = [BuiltinException("BaseException")],
+            [BuiltinException("GeneratorExit")] = [BuiltinException("BaseException")],
+            [BuiltinException("KeyboardInterrupt")] = [BuiltinException("BaseException")],
             [BuiltinException("ArithmeticError")] = [BuiltinException("Exception")],
             [BuiltinException("AssertionError")] = [BuiltinException("Exception")],
             [BuiltinException("AttributeError")] = [BuiltinException("Exception")],

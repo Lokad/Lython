@@ -17,6 +17,7 @@ internal sealed class ExecutionState
         "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
         "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",
         "UnicodeEncodeError", "UnicodeDecodeError", "UnicodeTranslateError", "OverflowError", "SystemExit",
+        "GeneratorExit", "KeyboardInterrupt",
         "bool", "int", "float", "bytes",
         "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
         "getattr", "hasattr", "setattr", "delattr", "dir", "vars",

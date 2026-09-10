@@ -722,4 +722,45 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BaseExceptionsBypassException()
+    {
+        // GeneratorExit/KeyboardInterrupt derive BaseException directly: except
+        // Exception must not catch them, except BaseException must.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                raise KeyboardInterrupt("stop")
+            except KeyboardInterrupt:
+                results.append("ki")
+            try:
+                raise GeneratorExit()
+            except GeneratorExit:
+                results.append("ge")
+            try:
+                try:
+                    raise KeyboardInterrupt("x")
+                except Exception:
+                    results.append("wrong")
+            except BaseException:
+                results.append("base")
+            k = KeyboardInterrupt("y")
+            results.append(k.__class__ is KeyboardInterrupt)
+            results.append(KeyboardInterrupt.__module__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "ki", "ge", "base", true, "builtins",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

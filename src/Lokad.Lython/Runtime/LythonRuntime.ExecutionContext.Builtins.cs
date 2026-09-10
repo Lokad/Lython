@@ -96,6 +96,8 @@ internal sealed partial class LythonRuntime
                 ["UnicodeTranslateError"] = new ExceptionTypeValue("UnicodeTranslateError"),
                 ["OverflowError"] = new ExceptionTypeValue("OverflowError"),
                 ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
+                ["GeneratorExit"] = new ExceptionTypeValue("GeneratorExit"),
+                ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
                 ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool),
                 ["int"] = BuiltinCallable.Create(LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Int),
                 ["float"] = BuiltinCallable.Create(LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Float),
