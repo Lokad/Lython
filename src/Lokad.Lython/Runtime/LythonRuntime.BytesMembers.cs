@@ -348,7 +348,17 @@ internal sealed partial class LythonRuntime
 
         if (end < start)
         {
-            end = start;
+            if (methodName == "count")
+            {
+                return BigInteger.Zero;
+            }
+
+            if (methodName is "index" or "rindex")
+            {
+                throw new LythonRuntimeException("ValueError", "subsection not found", span);
+            }
+
+            return new BigInteger(-1);
         }
 
         var needleBytes = ParseSearchNeedle(needle, span, context);

@@ -4113,8 +4113,15 @@ public sealed class SharedFixedLabelBehaviorTests
                 b"ab".find(b"a", "x")
             except TypeError as e:
                 results.append(str(e))
+            results.append(b"abc".find(b"", 2, 1))
+            results.append(b"abc".count(b"", 2, 1))
+            results.append(b"abc".rfind(b"", 2, 1))
             try:
                 b"ab".index(b"z")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                b"abc".index(b"b", 2, 1)
             except ValueError as e:
                 results.append(str(e))
             return results
@@ -4133,6 +4140,8 @@ public sealed class SharedFixedLabelBehaviorTests
             "argument should be integer or bytes-like object, not 'float'",
             "byte must be in range(0, 256)",
             "slice indices must be integers or None or have an __index__ method",
+            new BigInteger(-1), new BigInteger(0), new BigInteger(-1),
+            "subsection not found",
             "subsection not found",
         };
         var sync = script.Run(new MockLythonHost());

@@ -94,6 +94,21 @@ internal sealed partial class LythonRuntime
                         }
 
                         var (start, end, _) = ParseStringBounds(text.Length, arguments, span, signature);
+                        if (end < start)
+                        {
+                            if (methodName == "count")
+                            {
+                                return BigInteger.Zero;
+                            }
+
+                            if (throwWhenMissing)
+                            {
+                                throw new LythonRuntimeException("ValueError", "substring not found", span);
+                            }
+
+                            return new BigInteger(-1);
+                        }
+
                         var result = operation(text, needle, start, end);
                         if (throwWhenMissing && result < 0)
                         {

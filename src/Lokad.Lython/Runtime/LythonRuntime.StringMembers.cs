@@ -88,6 +88,11 @@ internal sealed partial class LythonRuntime
             bool isStart,
             LythonSourceSpan span)
         {
+            if (end < start)
+            {
+                return false;
+            }
+
             if (PyStringOps.TryAsString(prefixOrTuple, out var single))
             {
                 return !startBeyondLength &&

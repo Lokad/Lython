@@ -70,6 +70,12 @@ public sealed class StringMethodCompatibilityTests
     [InlineData("str(\"\\t\\n\".isspace())", "True")]
     [InlineData("str(\"\".isalpha())", "False")]
     [InlineData("str(\"42\".isupper())", "False")]
+    [InlineData("str(\"abc\".find(\"\", 2, 1))", "-1")]
+    [InlineData("str(\"abc\".count(\"\", 2, 1))", "0")]
+    [InlineData("str(\"abc\".rfind(\"\", 2, 1))", "-1")]
+    [InlineData("str(\"abc\".find(\"b\", 2, 1))", "-1")]
+    [InlineData("str(\"abc\".startswith(\"\", 2, 1))", "False")]
+    [InlineData("str(\"abc\".endswith(\"\", 2, 1))", "False")]
     public void StringMethods_ExposeRepresentativePythonShapedBehavior(string expression, string expected)
     {
         Assert.Equal(expected, EvaluateToString(expression));

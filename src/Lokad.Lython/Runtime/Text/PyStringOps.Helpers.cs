@@ -13,11 +13,8 @@ internal static partial class PyStringOps
     {
         var normalizedStart = NormalizeBound(start, length, defaultValue: 0);
         var normalizedEnd = NormalizeBound(end, length, defaultValue: length);
-        if (normalizedEnd < normalizedStart)
-        {
-            normalizedEnd = normalizedStart;
-        }
 
+        // Empty ranges stay empty: callers treat end below start as a miss.
         return new NormalizedStringRange(normalizedStart, normalizedEnd);
     }
 
