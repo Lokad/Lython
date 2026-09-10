@@ -5,11 +5,6 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
-    private sealed record ParsedExceptClause(
-        IReadOnlyList<string>? ExceptionTypes,
-        string? ExceptionVariable,
-        IReadOnlyList<StatementSyntax> Body);
-
     private StatementSyntax? ParseReturnStatement()
     {
         var returnToken = ReadToken();
@@ -150,14 +145,14 @@ internal sealed partial class Parser
             return null;
         }
 
-        ParsedExceptClause? exceptClause = null;
+        var exceptClauses = new List<ExceptClauseSyntax>();
         IReadOnlyList<StatementSyntax>? elseBody = null;
         IReadOnlyList<StatementSyntax>? finallyBody = null;
         var span = Merge(SpanOf(tryToken), tryBody[^1].Span);
 
-        if (CurrentToken == Token.Except)
+        while (CurrentToken == Token.Except)
         {
-            ReadToken();
+            var exceptToken = ReadToken();
             IReadOnlyList<string>? exceptionTypes = null;
             string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)
@@ -230,7 +225,8 @@ internal sealed partial class Parser
                 return null;
             }
 
-            exceptClause = new ParsedExceptClause(exceptionTypes, exceptionVariable, body);
+            var clauseSpan = Merge(SpanOf(exceptToken), body[^1].Span);
+            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan));
             span = Merge(span, body[^1].Span);
         }
 
@@ -264,7 +260,7 @@ internal sealed partial class Parser
             span = Merge(span, finallyBody[^1].Span);
         }
 
-        if (exceptClause is null && finallyBody is null)
+        if (exceptClauses.Count == 0 && finallyBody is null)
         {
             AddDiagnostic("LA1050", "Expected 'except' or 'finally' after 'try'.", tryToken);
             return null;
@@ -272,9 +268,7 @@ internal sealed partial class Parser
 
         return new TryStatementSyntax(
             tryBody,
-            exceptClause?.ExceptionTypes,
-            exceptClause?.ExceptionVariable,
-            exceptClause?.Body,
+            exceptClauses,
             elseBody,
             finallyBody,
             span);

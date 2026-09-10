@@ -144,7 +144,7 @@ internal sealed class LoweredScript
             TryStatementSyntax tryStatement => new LoweredTryStatement(
                 tryStatement,
                 LowerStatements(tryStatement.TryBody),
-                tryStatement.ExceptBody is null ? null : LowerStatements(tryStatement.ExceptBody),
+                tryStatement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LowerStatements(clause.Body))).ToArray(),
                 tryStatement.ElseBody is null ? null : LowerStatements(tryStatement.ElseBody),
                 tryStatement.FinallyBody is null ? null : LowerStatements(tryStatement.FinallyBody)),
             PassStatementSyntax passStatement => new LoweredPassStatement(passStatement),

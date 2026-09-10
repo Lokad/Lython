@@ -922,6 +922,86 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task MultipleExceptClauses()
+    {
+        // Multiple except clauses match in order like CPython, with
+        // per-clause binding, else/finally interplay, bare fallthrough,
+        // and propagation of unmatched exceptions.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                raise ValueError("v")
+            except ValueError:
+                results.append("value")
+            except TypeError:
+                results.append("type")
+            try:
+                raise TypeError("t")
+            except ValueError:
+                results.append("value")
+            except TypeError:
+                results.append("type")
+            try:
+                raise KeyError("k")
+            except ValueError:
+                results.append("value")
+            except KeyError as e:
+                results.append("key")
+            try:
+                pass
+            except ValueError:
+                results.append("value")
+            except TypeError:
+                results.append("type")
+            else:
+                results.append("else")
+            try:
+                raise ValueError("v")
+            except TypeError:
+                results.append("type")
+            except:
+                results.append("bare")
+            try:
+                raise ValueError("v")
+            except ValueError:
+                results.append("value")
+            except TypeError:
+                results.append("type")
+            finally:
+                results.append("finally")
+            try:
+                try:
+                    raise KeyError("k")
+                except ValueError:
+                    results.append("wrong")
+                except TypeError:
+                    results.append("wrong")
+            except KeyError:
+                results.append("propagated")
+            try:
+                raise ValueError("v")
+            except Exception:
+                results.append("exception")
+            except ValueError:
+                results.append("value")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "value", "type", "key", "else", "bare", "value", "finally",
+            "propagated", "exception",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

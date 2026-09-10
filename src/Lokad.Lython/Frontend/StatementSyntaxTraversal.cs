@@ -169,7 +169,7 @@ internal static class StatementSyntaxTraversal
 
             case TryStatementSyntax tryStatement:
                 yield return tryStatement.TryBody;
-                if (tryStatement.ExceptBody is not null) yield return tryStatement.ExceptBody;
+                foreach (var exceptClause in tryStatement.ExceptClauses) yield return exceptClause.Body;
                 if (tryStatement.ElseBody is not null) yield return tryStatement.ElseBody;
                 if (tryStatement.FinallyBody is not null) yield return tryStatement.FinallyBody;
                 break;

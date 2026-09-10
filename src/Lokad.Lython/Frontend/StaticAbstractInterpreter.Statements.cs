@@ -221,7 +221,7 @@ internal static partial class StaticAbstractInterpreter
             {
                 var tryBindings = bindings.Clone();
                 AbstractState? exceptBindings = null;
-                if (tryStatement.ExceptBody is null)
+                if (tryStatement.ExceptClauses.Count == 0)
                 {
                     AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings);
                 }
@@ -232,8 +232,14 @@ internal static partial class StaticAbstractInterpreter
                     // but do not turn the catchable failure into a compilation failure.
                     AnalyzeStatements(tryStatement.TryBody, [], tryBindings);
 
-                    exceptBindings = bindings.Clone();
-                    AnalyzeStatements(tryStatement.ExceptBody, diagnostics, exceptBindings);
+                    foreach (var exceptClause in tryStatement.ExceptClauses)
+                    {
+                        var clauseBindings = bindings.Clone();
+                        AnalyzeStatements(exceptClause.Body, diagnostics, clauseBindings);
+                        exceptBindings = exceptBindings is null
+                            ? clauseBindings
+                            : AbstractState.Merge(exceptBindings, clauseBindings);
+                    }
                 }
 
                 if (tryStatement.ElseBody is not null)

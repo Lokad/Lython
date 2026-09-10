@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
             new LoweredTryStatement(
                 statement,
                 LoweredScript.Lower(new ScriptSyntax(statement.TryBody)).Statements,
-                statement.ExceptBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.ExceptBody)).Statements,
+                statement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LoweredScript.Lower(new ScriptSyntax(clause.Body)).Statements)).ToArray(),
                 statement.ElseBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.ElseBody)).Statements,
                 statement.FinallyBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.FinallyBody)).Statements),
             context);

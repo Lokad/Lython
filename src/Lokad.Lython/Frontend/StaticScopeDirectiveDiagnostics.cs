@@ -94,7 +94,7 @@ internal static class StaticScopeDirectiveDiagnostics
 
                 case TryStatementSyntax tryStatement:
                     AnalyzeStatements(tryStatement.TryBody, context, enclosingFunctions, inClassBody);
-                    if (tryStatement.ExceptBody is not null) AnalyzeStatements(tryStatement.ExceptBody, context, enclosingFunctions, inClassBody);
+                    foreach (var exceptClause in tryStatement.ExceptClauses) AnalyzeStatements(exceptClause.Body, context, enclosingFunctions, inClassBody);
                     if (tryStatement.ElseBody is not null) AnalyzeStatements(tryStatement.ElseBody, context, enclosingFunctions, inClassBody);
                     if (tryStatement.FinallyBody is not null) AnalyzeStatements(tryStatement.FinallyBody, context, enclosingFunctions, inClassBody);
                     break;
@@ -298,8 +298,11 @@ internal static class StaticScopeDirectiveDiagnostics
                 break;
             case TryStatementSyntax tryStatement:
                 AnalyzeNestedSeen(tryStatement.TryBody, names);
-                if (tryStatement.ExceptionVariableName is not null) names.Add(tryStatement.ExceptionVariableName);
-                if (tryStatement.ExceptBody is not null) AnalyzeNestedSeen(tryStatement.ExceptBody, names);
+                foreach (var exceptClause in tryStatement.ExceptClauses)
+                {
+                    if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
+                    AnalyzeNestedSeen(exceptClause.Body, names);
+                }
                 if (tryStatement.ElseBody is not null) AnalyzeNestedSeen(tryStatement.ElseBody, names);
                 if (tryStatement.FinallyBody is not null) AnalyzeNestedSeen(tryStatement.FinallyBody, names);
                 break;

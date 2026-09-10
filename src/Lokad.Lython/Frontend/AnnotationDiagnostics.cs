@@ -166,10 +166,10 @@ internal static class AnnotationDiagnostics
                     AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation);
                     merged = AbstractState.Merge(merged, tryBindings);
 
-                    if (tryStatement.ExceptBody is not null)
+                    foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptBindings = bindings.Clone();
-                        AnalyzeStatements(tryStatement.ExceptBody, diagnostics, exceptBindings, returnAnnotation);
+                        AnalyzeStatements(exceptClause.Body, diagnostics, exceptBindings, returnAnnotation);
                         merged = AbstractState.Merge(merged, exceptBindings);
                     }
 

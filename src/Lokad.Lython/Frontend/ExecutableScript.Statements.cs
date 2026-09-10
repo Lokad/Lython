@@ -230,33 +230,28 @@ internal sealed partial class ExecutableScript
             var tryClause = CompileClause(statement.TryBody);
             AddInstruction(currentBlock, ExecutableInstruction.Jump(tryClause.StartBlock, statement.Span));
 
-            var exceptClause = CompileOptionalClause(statement.ExceptBody);
             var elseClause = CompileOptionalClause(statement.ElseBody);
             var finallyClause = CompileOptionalClause(statement.FinallyBody);
 
             var afterBlock = CreateBlock();
 
-            _regions.Add(new ExecutableExceptionRegion(
-                tryClause.StartBlock,
-                tryClause.EndBlock,
-                statement.Syntax.ExceptionTypeNames,
-                statement.Syntax.ExceptionVariableName,
-                exceptClause?.StartBlock,
-                finallyClause?.StartBlock));
-
-            if (tryClause.ExitBlock is int tryExit && !IsTerminated(tryExit))
+            // Each handler guards the same range in order; a separate
+            // finally-only region propagates uncaught abrupt completions.
+            foreach (var exceptClause in statement.ExceptClauses)
             {
-                AddInstruction(tryExit, ExecutableInstruction.Jump(
-                    elseClause?.StartBlock ?? finallyClause?.StartBlock ?? afterBlock,
-                    statement.Span));
-            }
+                var handler = CompileClause(exceptClause.Body);
+                _regions.Add(new ExecutableExceptionRegion(
+                    tryClause.StartBlock,
+                    tryClause.EndBlock,
+                    exceptClause.Syntax.ExceptionTypeNames,
+                    exceptClause.Syntax.ExceptionVariableName,
+                    handler.StartBlock,
+                    null));
 
-            if (exceptClause is { } handler)
-            {
-                if (finallyClause is { } cleanup)
+                if (finallyClause is { } handlerCleanup)
                 {
                     // Exceptions raised by a handler still execute the surrounding finally clause.
-                    ProtectWithFinally(handler, cleanup.StartBlock);
+                    ProtectWithFinally(handler, handlerCleanup.StartBlock);
                 }
 
                 if (handler.ExitBlock is int handlerExit && !IsTerminated(handlerExit))
@@ -264,10 +259,28 @@ internal sealed partial class ExecutableScript
                     AddInstruction(
                         handlerExit,
                         ExecutableInstruction.ClearException(
-                            statement.Syntax.ExceptionVariableName is null ? -1 : InternName(statement.Syntax.ExceptionVariableName),
+                            exceptClause.Syntax.ExceptionVariableName is null ? -1 : InternName(exceptClause.Syntax.ExceptionVariableName),
                             statement.Span));
                     AddInstruction(handlerExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
                 }
+            }
+
+            if (finallyClause is { } finallyRegion)
+            {
+                _regions.Add(new ExecutableExceptionRegion(
+                    tryClause.StartBlock,
+                    tryClause.EndBlock,
+                    null,
+                    null,
+                    null,
+                    finallyRegion.StartBlock));
+            }
+
+            if (tryClause.ExitBlock is int tryExit && !IsTerminated(tryExit))
+            {
+                AddInstruction(tryExit, ExecutableInstruction.Jump(
+                    elseClause?.StartBlock ?? finallyClause?.StartBlock ?? afterBlock,
+                    statement.Span));
             }
 
             if (elseClause is { } success)

@@ -185,7 +185,10 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case TryStatementSyntax tryStatement:
-                    if (tryStatement.ExceptionVariableName is not null) names.Add(tryStatement.ExceptionVariableName);
+                    foreach (var exceptClause in tryStatement.ExceptClauses)
+                    {
+                        if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
+                    }
                     break;
 
                 case MatchStatementSyntax matchStatement:

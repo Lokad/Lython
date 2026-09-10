@@ -181,10 +181,14 @@ internal sealed record LoweredWithStatement(
     public override LoweredStatementKind Kind => LoweredStatementKind.ControlFlow;
 }
 
+internal sealed record LoweredExceptClause(
+    ExceptClauseSyntax Syntax,
+    IReadOnlyList<LoweredStatement> Body);
+
 internal sealed record LoweredTryStatement(
     TryStatementSyntax Syntax,
     IReadOnlyList<LoweredStatement> TryBody,
-    IReadOnlyList<LoweredStatement>? ExceptBody,
+    IReadOnlyList<LoweredExceptClause> ExceptClauses,
     IReadOnlyList<LoweredStatement>? ElseBody,
     IReadOnlyList<LoweredStatement>? FinallyBody) : LoweredStatement(Syntax.Span)
 {

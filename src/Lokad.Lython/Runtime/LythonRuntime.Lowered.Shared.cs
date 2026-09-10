@@ -250,20 +250,29 @@ internal sealed partial class LythonRuntime
         }
         catch (LythonRuntimeException ex)
         {
-            if (statement.ExceptBody is not null &&
-                MatchesCaughtException(statement.Syntax.ExceptionTypeNames, ex, context, statement.Span))
+            LoweredExceptClause? matchedClause = null;
+            foreach (var candidate in statement.ExceptClauses)
+            {
+                if (MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, ex, context, statement.Span))
+                {
+                    matchedClause = candidate;
+                    break;
+                }
+            }
+
+            if (matchedClause is not null)
             {
                 var exceptContext = new ExecutionContext(context);
                 var pyException = CreatePythonExceptionInstance(ex);
-                if (statement.Syntax.ExceptionVariableName is not null)
+                if (matchedClause.Syntax.ExceptionVariableName is not null)
                 {
-                    StoreName(statement.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);
+                    StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);
                 }
 
                 var previousException = context.Services.SetCurrentException(pyException);
                 try
                 {
-                    pendingControl = await executeStatements(statement.ExceptBody, exceptContext).ConfigureAwait(false);
+                    pendingControl = await executeStatements(matchedClause.Body, exceptContext).ConfigureAwait(false);
                 }
                 finally
                 {

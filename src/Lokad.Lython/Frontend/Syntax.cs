@@ -314,11 +314,15 @@ internal sealed record RaiseStatementSyntax(
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
-internal sealed record TryStatementSyntax(
-    IReadOnlyList<StatementSyntax> TryBody,
+internal sealed record ExceptClauseSyntax(
     IReadOnlyList<string>? ExceptionTypeNames,
     string? ExceptionVariableName,
-    IReadOnlyList<StatementSyntax>? ExceptBody,
+    IReadOnlyList<StatementSyntax> Body,
+    LythonSourceSpan Span);
+
+internal sealed record TryStatementSyntax(
+    IReadOnlyList<StatementSyntax> TryBody,
+    IReadOnlyList<ExceptClauseSyntax> ExceptClauses,
     IReadOnlyList<StatementSyntax>? ElseBody,
     IReadOnlyList<StatementSyntax>? FinallyBody,
     LythonSourceSpan Span) : StatementSyntax(Span);

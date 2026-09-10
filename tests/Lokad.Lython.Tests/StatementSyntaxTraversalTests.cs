@@ -21,7 +21,8 @@ public sealed class StatementSyntaxTraversalTests
         AssertBodies(new ForStatementSyntax(new LoopNameTargetSyntax("item"), Condition, second, first, Span), first, second);
         AssertBodies(new WhileStatementSyntax(Condition, second, first, Span), first, second);
         AssertBodies(new WithStatementSyntax(Condition, null, first, Span), first);
-        AssertBodies(new TryStatementSyntax(first, ["Exception"], null, second, third, fourth, Span), first, second, third, fourth);
+        AssertBodies(new TryStatementSyntax(first, [new ExceptClauseSyntax(["Exception"], null, second, Span), new ExceptClauseSyntax(null, "e", third, Span)], fourth, fourth, Span), first, second, third, fourth, fourth);
+        AssertBodies(new TryStatementSyntax(first, [], fourth, fourth, Span), first, fourth, fourth);
         AssertBodies(
             new MatchStatementSyntax(
                 Condition,

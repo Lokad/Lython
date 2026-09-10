@@ -54,7 +54,7 @@ for item in [1]:
         Assert.IsType<LoweredCallExpression>(withStatement.ContextExpression);
         var tryStatement = Assert.IsType<LoweredTryStatement>(Assert.Single(withStatement.Body));
         Assert.Single(tryStatement.TryBody);
-        Assert.Single(tryStatement.ExceptBody.RequireNotNull());
+        Assert.Single(Assert.Single(tryStatement.ExceptClauses).Body);
     }
 
     [Fact]
@@ -1037,9 +1037,9 @@ return helper(payload["items"]) + "|" + text
                         yield return nested;
                     }
 
-                    if (tryStatement.ExceptBody is not null)
+                    foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
-                        foreach (var nested in FlattenStatements(tryStatement.ExceptBody))
+                        foreach (var nested in FlattenStatements(exceptClause.Body))
                         {
                             yield return nested;
                         }

@@ -212,10 +212,10 @@ internal static class StaticNameBindingDiagnostics
                     var tryAssigned = Clone(maybeAssigned);
                     AnalyzeStatements(tryStatement.TryBody, context, localNames, tryAssigned);
                     maybeAssigned.UnionWith(tryAssigned);
-                    if (tryStatement.ExceptBody is not null)
+                    foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptAssigned = Clone(maybeAssigned);
-                        AnalyzeStatements(tryStatement.ExceptBody, context, localNames, exceptAssigned);
+                        AnalyzeStatements(exceptClause.Body, context, localNames, exceptAssigned);
                         maybeAssigned.UnionWith(exceptAssigned);
                     }
                     if (tryStatement.ElseBody is not null)
