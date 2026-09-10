@@ -11,14 +11,40 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Fixed sys vocabulary and identity-stable singletons: share every
+    // constant forever like the pkgutil labels, so per-access reads alias
+    // stably instead of allocating fresh objects on every access.
+    private static readonly PyString DisplayVersionText = PyString.FromString(LythonPythonVersion.DisplayVersion);
+    private static readonly PyString LythonNameText = PyString.FromString("lython");
+    private static readonly PyString LittleEndianText = PyString.FromString("little");
+    private static readonly PyString Utf8EncodingText = PyString.FromString("utf-8");
+    private static readonly PyString ReleaseLevelText = PyString.FromString(LythonPythonVersion.ReleaseLevel);
+    private static readonly PyString CacheTagText = PyString.FromString(LythonPythonVersion.CacheTag);
+
     private sealed class SysModule : PyModule, IPyContextualDynamicAttributes
     {
         private static readonly PyNamedTupleType VersionInfoType = new(
             "sys.version_info",
             ["major", "minor", "micro", "releaselevel", "serial"]);
 
+        private static readonly PyNamedTupleObject SharedVersionInfo = VersionInfoType.CreateFromValues(
+            [
+                new BigInteger(LythonPythonVersion.Major),
+                new BigInteger(LythonPythonVersion.Minor),
+                new BigInteger(LythonPythonVersion.Micro),
+                ReleaseLevelText,
+                new BigInteger(LythonPythonVersion.Serial)
+            ],
+            span: null);
+        private static readonly SysImplementationObject SharedImplementation = new(SharedVersionInfo, new BigInteger(LythonPythonVersion.HexVersion));
+
         private readonly ExecutionContext _context;
         private readonly PyList _argv;
+        private readonly PyString _prefix;
+        private readonly PyString _basePrefix;
+        private readonly PyList _path;
+        private readonly PyTuple _builtinModuleNames;
+        private readonly PySet _stdlibModuleNames;
         private readonly HostTextInputHandle _stdin;
         private readonly HostTextOutputHandle _stdout;
         private readonly HostTextOutputHandle _stderr;
@@ -35,6 +61,12 @@ internal sealed partial class LythonRuntime
             }
 
             _argv = new PyList(args, state.MemoryGovernor, null);
+            _prefix = PyString.FromString(context.Host.Cwd, state.MemoryGovernor, null);
+            _basePrefix = PyString.FromString(context.Host.Cwd, state.MemoryGovernor, null);
+            _path = new PyList([PyString.FromString(ContainedImportBaseDirectory(context), state.MemoryGovernor, null)], state.MemoryGovernor, null);
+            var builtinNames = EnumerateDiscoverableBuiltinModuleNames(context).Order(StringComparer.Ordinal).ToArray();
+            _builtinModuleNames = new PyTuple(builtinNames.Select(name => PyString.FromString(name, state.MemoryGovernor, null)).ToArray(), state.MemoryGovernor, null);
+            _stdlibModuleNames = new PySet(builtinNames.Select(name => PyString.FromString(name, state.MemoryGovernor, null)), state.MemoryGovernor);
             _stdin = state.Stdin;
             _stdout = state.Stdout;
             _stderr = state.Stderr;
@@ -48,20 +80,20 @@ internal sealed partial class LythonRuntime
                 "stdin" => _stdin,
                 "stdout" => _stdout,
                 "stderr" => _stderr,
-                "version" => PyString.FromString(LythonPythonVersion.DisplayVersion),
-                "version_info" => VersionInfo(_context),
+                "version" => DisplayVersionText,
+                "version_info" => SharedVersionInfo,
                 "hexversion" => new BigInteger(LythonPythonVersion.HexVersion),
-                "implementation" => new SysImplementationObject(VersionInfo(_context), new BigInteger(LythonPythonVersion.HexVersion)),
-                "platform" => PyString.FromString("lython"),
+                "implementation" => SharedImplementation,
+                "platform" => LythonNameText,
                 "maxsize" => new BigInteger(long.MaxValue),
-                "byteorder" => PyString.FromString("little"),
-                "prefix" => PyString.FromString(_context.Host.Cwd),
-                "base_prefix" => PyString.FromString(_context.Host.Cwd),
-                "executable" => PyString.FromString("lython"),
-                "path" => new PyList([PyString.FromString(ContainedImportBaseDirectory(_context))], _context.MemoryGovernor),
+                "byteorder" => LittleEndianText,
+                "prefix" => _prefix,
+                "base_prefix" => _basePrefix,
+                "executable" => LythonNameText,
+                "path" => _path,
                 "modules" => GetModules(),
-                "builtin_module_names" => new PyTuple(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString).ToArray(), _context.MemoryGovernor),
-                "stdlib_module_names" => new PySet(EnumerateDiscoverableBuiltinModuleNames(_context).Order(StringComparer.Ordinal).Select(PyString.FromString), _context.MemoryGovernor),
+                "builtin_module_names" => _builtinModuleNames,
+                "stdlib_module_names" => _stdlibModuleNames,
                 "exit" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExit, Exit),
                 "getdefaultencoding" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysGetDefaultEncoding, GetDefaultEncoding),
                 "exc_info" => BuiltinCallable.Create(LythonKnownCallableSignatures.SysExcInfo, ExcInfo),
@@ -111,17 +143,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, innerException: null, payload: value);
         }
 
-        private static PyNamedTupleObject VersionInfo(ExecutionContext context)
-            => VersionInfoType.CreateFromValues(
-                [
-                    new BigInteger(LythonPythonVersion.Major),
-                    new BigInteger(LythonPythonVersion.Minor),
-                    new BigInteger(LythonPythonVersion.Micro),
-                    PyString.FromString(LythonPythonVersion.ReleaseLevel),
-                    new BigInteger(LythonPythonVersion.Serial)
-                ],
-                span: null);
-
         private static object GetDefaultEncoding(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
@@ -130,7 +151,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "sys.getdefaultencoding() expects no arguments.", span);
             }
 
-            return PyString.FromString("utf-8");
+            return Utf8EncodingText;
         }
 
         private static object ExcInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -236,10 +257,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "name" => PyString.FromString("lython"),
+                "name" => LythonNameText,
                 "version" => _version,
                 "hexversion" => _hexversion,
-                "cache_tag" => PyString.FromString(LythonPythonVersion.CacheTag),
+                "cache_tag" => CacheTagText,
                 _ => MissingMemberValue.Instance
             };
 

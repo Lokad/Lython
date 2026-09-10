@@ -11,6 +11,16 @@ internal sealed partial class LythonRuntime
     private sealed class OsModule : PyModule, IPyContextualDynamicAttributes
     {
         public static readonly OsModule Instance = new();
+
+        // Fixed os vocabulary: share every constant forever like the slash
+        // and dot literals, so per-access reads alias stably instead of
+        // allocating fresh strings on every access.
+        private static readonly PyString PosixName = PyString.FromString("posix");
+        private static readonly PyString ParentDirName = PyString.FromString("..");
+        private static readonly PyString LinesepName = PyString.FromString("\n");
+        private static readonly PyString PathsepName = PyString.FromString(":");
+        private static readonly PyString ExtsepName = PyString.FromString(".");
+        private static readonly PyString DevnullName = PyString.FromString("/dev/null");
         private static readonly string[] Names =
         [
             "path",
@@ -82,15 +92,15 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "path" => OsPathModule.Instance,
-                "name" => PyString.FromString("posix"),
+                "name" => PosixName,
                 "sep" => PyStringOps.SlashLiteral,
                 "curdir" => PyStringOps.DotLiteral,
-                "pardir" => PyString.FromString(".."),
-                "linesep" => PyString.FromString("\n"),
-                "pathsep" => PyString.FromString(":"),
+                "pardir" => ParentDirName,
+                "linesep" => LinesepName,
+                "pathsep" => PathsepName,
                 "altsep" => PyNone.Instance,
-                "extsep" => PyString.FromString("."),
-                "devnull" => PyString.FromString("/dev/null"),
+                "extsep" => ExtsepName,
+                "devnull" => DevnullName,
                 "F_OK" => BigInteger.Zero,
                 "R_OK" => new BigInteger(4),
                 "W_OK" => new BigInteger(2),
