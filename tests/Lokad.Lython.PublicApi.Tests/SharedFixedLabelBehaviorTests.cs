@@ -2422,13 +2422,13 @@ public sealed class SharedFixedLabelBehaviorTests
         var script = new LythonEngine().Compile("""
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
-            results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
+            results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(bytes) == ["__new__", "decode", "fromhex", "maketrans", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
-            results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
+            results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(b"") == ["decode", "fromhex", "maketrans", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
@@ -3589,6 +3589,70 @@ public sealed class SharedFixedLabelBehaviorTests
             "Method 'range.index' received too many positional arguments.",
             "descriptor 'index' for 'range' objects doesn't apply to a 'str' object",
             "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StringClassificationMembers()
+    {
+        // The Unicode classification members behave like CPython across
+        // scripts and edge cases, with decimal tightening fixed as well.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append("abc123".isascii())
+            results.append("caf\u00e9".isascii())
+            results.append("123".isdecimal())
+            results.append("\u00b2".isdecimal())
+            results.append("\u00b2".isdigit())
+            results.append("\u00bd".isdigit())
+            results.append("\u2167".isdigit())
+            results.append("\u00b2".isnumeric())
+            results.append("\u00bd".isnumeric())
+            results.append("\u2167".isnumeric())
+            results.append("".isprintable())
+            results.append("a b".isprintable())
+            results.append("\u00a0".isprintable())
+            results.append("caf\u00e9".isidentifier())
+            results.append("_x".isidentifier())
+            results.append("1a".isidentifier())
+            results.append("".isidentifier())
+            results.append("class".isidentifier())
+            results.append("\u1885".isidentifier())
+            results.append("Hello World".istitle())
+            results.append("Hello world".istitle())
+            results.append("Don't".istitle())
+            results.append("A1B".istitle())
+            results.append("AB".istitle())
+            results.append("".istitle())
+            results.append(str.isdecimal == str.isdecimal)
+            s = "abc"
+            results.append(s.isdecimal == s.isdecimal)
+            results.append(type(str.isdecimal).__name__)
+            results.append(str.isdecimal.__name__)
+            results.append(hasattr(str, "isdecimal"))
+            results.append("isdecimal" in dir("abc"))
+            results.append("istitle" in dir(str))
+            try:
+                getattr("abc", "isdecimal")(1)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, false, true, false, true, false, false, true, true, true,
+            true, true, false, true, true, false, false, true, true, true,
+            false, false, true, false, false, true, true, "method_descriptor",
+            "isdecimal", true, true, true,
+            "str.isdecimal() expects no arguments.",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

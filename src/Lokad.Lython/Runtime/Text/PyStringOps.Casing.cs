@@ -26,17 +26,6 @@ internal static partial class PyStringOps
         return CheckAllRunes(value, static rune => Rune.IsLetter(rune));
     }
 
-    public static bool IsDigit(PyString value)
-    {
-        return CheckAllRunes(value, static rune =>
-        {
-            var category = Rune.GetUnicodeCategory(rune);
-            return category is UnicodeCategory.DecimalDigitNumber
-                or UnicodeCategory.LetterNumber
-                or UnicodeCategory.OtherNumber;
-        });
-    }
-
     public static bool IsAlnum(PyString value)
     {
         return CheckAllRunes(value, static rune =>

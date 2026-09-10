@@ -70,6 +70,12 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "rpartition", 1, 1, "str.rpartition(sep) expects one argument.", "sep");
             AddStringCallableContract(contracts, "join", 1, 1, "str.join(iterable) expects one argument.", "iterable");
             AddStringCallableContract(contracts, "format_map", 1, 1, "str.format_map(mapping) expects one argument.", "mapping");
+            AddStringCallableContract(contracts, "isascii", 0, 0, "str.isascii() expects no arguments.");
+            AddStringCallableContract(contracts, "isdecimal", 0, 0, "str.isdecimal() expects no arguments.");
+            AddStringCallableContract(contracts, "isidentifier", 0, 0, "str.isidentifier() expects no arguments.");
+            AddStringCallableContract(contracts, "isnumeric", 0, 0, "str.isnumeric() expects no arguments.");
+            AddStringCallableContract(contracts, "isprintable", 0, 0, "str.isprintable() expects no arguments.");
+            AddStringCallableContract(contracts, "istitle", 0, 0, "str.istitle() expects no arguments.");
             AddStringCallableContract(contracts, "translate", 1, 1, "str.translate(table) expects one argument.", "table");
             AddStringCallableContract(contracts, "maketrans", 1, 3, "str.maketrans(x[, y[, z]]) expects one to three arguments.");
             AddStringCallableContract(contracts, "encode", 0, 2, "str.encode([encoding][, errors]) expects zero to two arguments.", "encoding", "errors");

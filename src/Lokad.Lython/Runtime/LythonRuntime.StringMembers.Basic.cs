@@ -74,6 +74,12 @@ internal sealed partial class LythonRuntime
                     "isalpha" => BoundCallable.CreateNoArguments(text, "str.isalpha", static (receiver, _, _) => PyStringOps.IsAlpha(receiver)),
                     "isdigit" => BoundCallable.CreateNoArguments(text, "str.isdigit", static (receiver, _, _) => PyStringOps.IsDigit(receiver)),
                     "isalnum" => BoundCallable.CreateNoArguments(text, "str.isalnum", static (receiver, _, _) => PyStringOps.IsAlnum(receiver)),
+                    "isascii" => BoundCallable.CreateNoArguments(text, "str.isascii", static (receiver, _, _) => PyStringOps.IsAscii(receiver)),
+                    "isdecimal" => BoundCallable.CreateNoArguments(text, "str.isdecimal", static (receiver, _, _) => PyStringOps.IsDecimal(receiver)),
+                    "isidentifier" => BoundCallable.CreateNoArguments(text, "str.isidentifier", static (receiver, _, _) => PyStringOps.IsIdentifier(receiver)),
+                    "isnumeric" => BoundCallable.CreateNoArguments(text, "str.isnumeric", static (receiver, _, _) => PyStringOps.IsNumeric(receiver)),
+                    "isprintable" => BoundCallable.CreateNoArguments(text, "str.isprintable", static (receiver, _, _) => PyStringOps.IsPrintable(receiver)),
+                    "istitle" => BoundCallable.CreateNoArguments(text, "str.istitle", static (receiver, _, _) => PyStringOps.IsTitle(receiver)),
                     "isspace" => BoundCallable.CreateNoArguments(text, "str.isspace", static (receiver, _, _) => PyStringOps.IsSpace(receiver)),
                     _ => MissingMemberValue.Instance,
                 };
