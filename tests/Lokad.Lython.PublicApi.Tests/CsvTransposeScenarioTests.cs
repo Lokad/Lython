@@ -27,13 +27,15 @@ public sealed class CsvTransposeScenarioTests
         }
     }
 
+    // Malformed input surfaces when records are pulled, matching CPython;
+    // construction alone accepts the source and reports line_num 0.
     [Fact]
     public void InvalidQuotedRow_FailsWithCsvError()
     {
         var result = new LythonEngine().Run(
             """
 import csv
-rows = csv.reader(["\"broken"])
+rows = list(csv.reader(["\"broken"]))
 """,
             new MockLythonHost());
 

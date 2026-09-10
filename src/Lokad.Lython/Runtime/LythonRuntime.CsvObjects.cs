@@ -14,10 +14,9 @@ internal sealed partial class LythonRuntime
 {
     internal sealed class CsvReaderObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
     {
-        public CsvReaderObject(PyList rows, int lineNum, MemoryGovernor governor, LythonSourceSpan span)
+        public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
         {
-            Rows = rows;
-            LineNum = lineNum;
+            Records = records;
             _governor = governor;
             _span = span;
         }
@@ -25,33 +24,77 @@ internal sealed partial class LythonRuntime
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan _span;
 
-        public PyList Rows { get; }
+        public CsvRecordSource Records { get; }
 
-        public int LineNum { get; }
+        public int LineNum => Records.PhysicalLineCount;
 
-        public int Count => Rows.Count;
+        public int Count
+        {
+            get
+            {
+                Records.EnsureAll();
+                return Records.ParsedRows.Count;
+            }
+        }
 
-        public int Length => Rows.Length;
+        public int Length => Count;
 
-        public object this[int index] => Rows[index];
+        public object this[int index] => GetItem(index);
 
-        public object GetItem(int index) => Rows.GetItem(index);
+        public object GetItem(int index)
+        {
+            if (index >= 0)
+            {
+                Records.EnsureUpTo(index);
+            }
+
+            return Records.ParsedRows.GetItem(index);
+        }
 
         public object CreateSlice(IEnumerable<object> items) => new PyList(items, _governor, _span);
 
-        public object GetIndex(int index) => Rows.GetIndex(index);
+        public object GetIndex(int index) => GetItem(index);
 
-        public object GetSlice(IEnumerable<int> indices) => Rows.GetSlice(indices);
+        public object GetSlice(IEnumerable<int> indices)
+        {
+            Records.EnsureAll();
+            return Records.ParsedRows.GetSlice(indices);
+        }
 
-        public bool IsTruthy() => Rows.IsTruthy();
+        public bool IsTruthy()
+        {
+            Records.EnsureUpTo(0);
+            return Records.ParsedRows.IsTruthy();
+        }
 
-        public IEnumerable<object> Iterate() => Rows;
+        public IEnumerable<object> Iterate()
+        {
+            var index = 0;
+            while (true)
+            {
+                if (Records.EnsureUpTo(index) <= index)
+                {
+                    yield break;
+                }
 
-        public PyString RenderPython(PyRenderingContext context) => Rows.RenderPython(context);
+                yield return Records.ParsedRows[index];
+                index++;
+            }
+        }
 
-        public PyString RenderInterpolated(PyRenderingContext context) => Rows.RenderInterpolated(context);
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            Records.EnsureAll();
+            return Records.ParsedRows.RenderPython(context);
+        }
 
-        public IEnumerator<object> GetEnumerator() => Rows.GetEnumerator();
+        public PyString RenderInterpolated(PyRenderingContext context)
+        {
+            Records.EnsureAll();
+            return Records.ParsedRows.RenderInterpolated(context);
+        }
+
+        public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
@@ -59,12 +102,11 @@ internal sealed partial class LythonRuntime
     internal sealed class CsvDictReaderObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
     {
         public CsvDictReaderObject(
-            PyList rowLists,
+            CsvRecordSource rowLists,
             PyString[]? fieldNames,
             int firstDataRow,
             object restKey,
             object restValue,
-            int lineNum,
             MemoryGovernor governor,
             LythonSourceSpan span)
         {
@@ -73,7 +115,6 @@ internal sealed partial class LythonRuntime
             _firstDataRow = firstDataRow;
             _restKey = restKey;
             _restValue = restValue;
-            LineNum = lineNum;
             _governor = governor;
             _span = span;
         }
@@ -84,13 +125,20 @@ internal sealed partial class LythonRuntime
         private readonly object _restKey;
         private readonly object _restValue;
 
-        public PyList Rows { get; }
+        public CsvRecordSource Rows { get; }
 
         public PyString[]? FieldNames { get; }
 
-        public int LineNum { get; }
+        public int LineNum => Rows.PhysicalLineCount;
 
-        public int Count => Math.Max(Rows.Count - _firstDataRow, 0);
+        public int Count
+        {
+            get
+            {
+                Rows.EnsureAll();
+                return Math.Max(Rows.ParsedRows.Count - _firstDataRow, 0);
+            }
+        }
 
         public int Length => Count;
 
@@ -117,9 +165,16 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<object> Iterate()
         {
-            for (var index = 0; index < Count; index++)
+            var index = 0;
+            while (true)
             {
+                if (Rows.EnsureUpTo(index + _firstDataRow) <= index + _firstDataRow)
+                {
+                    yield break;
+                }
+
                 yield return ConvertRow(index);
+                index++;
             }
         }
 
@@ -140,7 +195,12 @@ internal sealed partial class LythonRuntime
                 throw new InvalidOperationException("CsvDictReaderObject has no field names.");
             }
 
-            return CreateDictReaderRow((PyList)Rows[index + _firstDataRow], FieldNames, _restKey, _restValue, _governor, _span);
+            if (index >= 0)
+            {
+                Rows.EnsureUpTo(index + _firstDataRow);
+            }
+
+            return CreateDictReaderRow((PyList)Rows.ParsedRows[index + _firstDataRow], FieldNames, _restKey, _restValue, _governor, _span);
         }
 
         private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, MemoryGovernor governor, LythonSourceSpan span)
