@@ -2849,4 +2849,34 @@ print(random.choices([1, 2], k=True))
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3141");
     }
+
+    [Fact]
+    public async Task OrderedDictSubscript_AcceptsStoredKeysAtCompileTime()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import collections
+            o = collections.OrderedDict(a=1)
+            m = collections.OrderedDict({"b": 2})
+            vals = []
+            vals.append(str(o["a"]))
+            vals.append(str(m["b"]))
+            vals.append(str(len(m)))
+            vals.append("|".join(list(o.keys())))
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write("|".join(vals))
+            __lython_file.close()
+            """);
+        Assert.True(script.IsValid);
+        Assert.DoesNotContain(script.Diagnostics, d => d.Code == "LA3157");
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1|2|1|a", syncHost.ReadText("/out.txt"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1|2|1|a", asyncHost.ReadText("/out.txt"));
+    }
 }

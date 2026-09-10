@@ -33,7 +33,9 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.CollectionsCounter, "LA3151", "collections.Counter([iterable], **kwargs) expects supported arguments.", StaticReturnShape.CollectionsCounter),
         new(LythonKnownCallableSignatures.CollectionsDeque, "LA3151", "collections.deque([iterable][, maxlen]) expects supported arguments.", StaticReturnShape.CollectionsDeque),
         new(LythonKnownCallableSignatures.CollectionsNamedTuple, "LA3151", "collections.namedtuple(typename, field_names[, rename][, defaults][, module]) expects supported arguments."),
-        new(LythonKnownCallableSignatures.CollectionsOrderedDict, "LA3151", "collections.OrderedDict([mapping], **kwargs) expects supported arguments.", StaticReturnShape.Dict),
+        // OrderedDict results stay unchecked like dict() calls: modeling them as
+        // a precisely-empty dict wrongly rejects literal subscripts of stored keys.
+        new(LythonKnownCallableSignatures.CollectionsOrderedDict, "LA3151", "collections.OrderedDict([mapping], **kwargs) expects supported arguments.", StaticReturnShape.Unknown),
         new(LythonKnownCallableSignatures.CollectionsChainMap, "LA3151", "collections.ChainMap(*maps) expects positional mapping arguments.", StaticReturnShape.CollectionsChainMap),
         new(LythonKnownCallableSignatures.CollectionsUserDict, "LA3151", "collections.UserDict is explicitly unsupported by Lython."),
         new(LythonKnownCallableSignatures.CollectionsUserList, "LA3151", "collections.UserList is explicitly unsupported by Lython."),
