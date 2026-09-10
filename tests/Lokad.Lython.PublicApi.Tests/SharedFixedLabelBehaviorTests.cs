@@ -1264,6 +1264,41 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task RaiseBareClass()
+    {
+        // Raising an exception class instantiates it like CPython, while
+        // non-exceptions still fail explicitly.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                raise ValueError
+            except ValueError as e:
+                results.append(len(e.args) == 0)
+            try:
+                raise KeyError
+            except KeyError as e:
+                results.append(e.__class__ is KeyError)
+            try:
+                raise 42
+            except TypeError:
+                results.append("non-exception")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, "non-exception",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

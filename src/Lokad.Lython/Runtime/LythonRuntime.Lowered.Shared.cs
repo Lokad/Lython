@@ -473,16 +473,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
         => EvaluateUnaryOperator(unary.Unary.Operator, operand, context, unary.Span);
 
-    private static void ThrowLoweredRaisedValue(object raised, LythonSourceSpan span)
-    {
-        if (raised is not PyException instance)
-        {
-            throw RuntimeErrors.RaiseExpectsException(span);
-        }
-
-        throw new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
-    }
-
     private static PyException? CoerceRaiseCause(object value, LythonSourceSpan span, ExecutionContext context)
     {
         if (value is PyNone)
