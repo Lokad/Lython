@@ -160,19 +160,27 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // Docstrings are the leading string constant of the lowered body, stored as
     // governed metadata so reads report the text like CPython; absent stays None.
     // Only plain string literals count (f-strings and bytes do not document).
+    internal static string? LeadingDocstring(IReadOnlyList<LoweredStatement> body)
+    {
+        if (body.Count == 0 ||
+            body[0] is not LoweredExpressionStatement { Expression: LoweredStringLiteralExpression doc })
+        {
+            return null;
+        }
+
+        return doc.Literal.Value;
+    }
+
     internal static void CaptureFunctionDocstring(
         PyFunctionBase function,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (body.Count == 0 ||
-            body[0] is not LoweredExpressionStatement { Expression: LoweredStringLiteralExpression doc })
+        if (LeadingDocstring(body) is { } text)
         {
-            return;
+            function.TrySetMember("__doc__", PyString.FromString(text, context.MemoryGovernor, span));
         }
-
-        function.TrySetMember("__doc__", PyString.FromString(doc.Literal.Value, context.MemoryGovernor, span));
     }
 
     public bool TrySetMember(string name, object value)

@@ -345,6 +345,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext classContext,
         ExecutionContext definingContext)
     {
+        // Class docstrings follow the function rule; an explicit __doc__ assignment
+        // in the body wins since it already ran. The entry rides the member charge.
+        if (PyFunctionBase.LeadingDocstring(classDefinition.Body) is { } docText &&
+            !classContext.Variables.ContainsKey("__doc__"))
+        {
+            classContext.Variables["__doc__"] = PyString.FromString(docText, definingContext.MemoryGovernor, classDefinition.Span);
+        }
+
         static void StoreAnnotations(
             ClassDefinitionStatementSyntax syntax,
             Dictionary<string, object> members,

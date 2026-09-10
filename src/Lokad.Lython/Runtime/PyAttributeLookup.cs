@@ -6,6 +6,14 @@ internal static class PyAttributeLookup
 {
     public static bool TryResolveTypeMember(PyType type, string memberName, [MaybeNullWhen(false)] out object value)
     {
+        // Own-dict docstrings (stored at creation or assigned later) win over the
+        // absent None; subclasses do not inherit like CPython.
+        if (memberName == "__doc__" && type.TryGetOwnMember("__doc__", out var doc))
+        {
+            value = doc;
+            return true;
+        }
+
         if (TryResolveBuiltinTypeMember(type, memberName, out value))
         {
             return true;
@@ -23,6 +31,12 @@ internal static class PyAttributeLookup
 
     public static bool TryResolveTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (memberName == "__doc__" && type.TryGetOwnMember("__doc__", out var doc))
+        {
+            value = doc;
+            return true;
+        }
+
         if (TryResolveBuiltinTypeMember(type, memberName, context, span, out value))
         {
             return true;

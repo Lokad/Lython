@@ -604,4 +604,35 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ClassDocstringsAreStored()
+    {
+        var script = new LythonEngine().Compile("""
+            class C:
+                "cdoc"
+                pass
+            class D(C):
+                pass
+            class E:
+                pass
+            class F:
+                "ignored"
+                __doc__ = "custom"
+            E.__doc__ = "post"
+            return [C.__doc__, D.__doc__, E.__doc__, F.__doc__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "cdoc", null, "post", "custom",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
