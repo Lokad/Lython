@@ -1057,8 +1057,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyBoundEngineMethod
+    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
     {
+        public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_receiver), StringComparer.Ordinal.GetHashCode(ShortMethodName(Signature.Name)));
+
         // The receiver threads in at member-resolution time (see
         // TryResolveRuntimeMember), since every instance is fresh per
         // access and closures alone cannot report it.
@@ -1181,8 +1183,10 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
+    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
     {
+        public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_receiver), StringComparer.Ordinal.GetHashCode(ShortMethodName(Name)));
+
         // Bound engine methods expose CPython-style __name__/__module__ like
         // C-implemented methods: the short decorated name and None, since every
         // wrapper is engine-implemented (CPython reports the class module only

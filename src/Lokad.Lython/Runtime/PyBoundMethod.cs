@@ -1,9 +1,10 @@
 using Lokad.Lython.Runtime.Calls;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
+internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes, IPyHashableValue
 {
     private readonly object _self;
     private readonly LythonRuntime.ICallable _function;
@@ -23,6 +24,8 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     // Exposes the wrapped callable so class resolution can report slot
     // method-wrapper and bound-builtin types like CPython.
     internal LythonRuntime.ICallable Function => _function;
+
+    public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_self), RuntimeHelpers.GetHashCode(_function));
 
     // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__/__objclass__
     // like CPython (including user-assigned overrides), alongside the bound

@@ -178,7 +178,42 @@ internal static class PyEquality
             }
         }
 
+        // Bound methods compare by receiver and function like CPython:
+        // plain-function identity rides __func__ while engine methods, which
+        // expose no __func__, compare their short names. Both sides must be
+        // method-shaped; receivers compare by identity, never by value.
+        if ((left is LythonRuntime.IPyBoundEngineMethod || left is PyBoundMethod) &&
+            (right is LythonRuntime.IPyBoundEngineMethod || right is PyBoundMethod))
+        {
+            return BoundMethodsEqual(left, right);
+        }
+
         return Equals(left, right);
+    }
+
+    private static bool BoundMethodsEqual(object left, object right)
+    {
+        if (left is not IPyDynamicAttributes leftAttributes ||
+            right is not IPyDynamicAttributes rightAttributes ||
+            !leftAttributes.TryGetMember("__self__", out var leftSelf) || leftSelf is null ||
+            !rightAttributes.TryGetMember("__self__", out var rightSelf) || rightSelf is null ||
+            !ReferenceEquals(leftSelf, rightSelf))
+        {
+            return false;
+        }
+
+        var leftHasFunc = leftAttributes.TryGetMember("__func__", out var leftFunc);
+        var rightHasFunc = rightAttributes.TryGetMember("__func__", out var rightFunc);
+        if (leftHasFunc || rightHasFunc)
+        {
+            return leftHasFunc && rightHasFunc && ReferenceEquals(leftFunc, rightFunc);
+        }
+
+        return leftAttributes.TryGetMember("__name__", out var leftName) &&
+            rightAttributes.TryGetMember("__name__", out var rightName) &&
+            leftName is PyString leftText &&
+            rightName is PyString rightText &&
+            string.Equals(leftText.AsString(), rightText.AsString(), StringComparison.Ordinal);
     }
 
 }

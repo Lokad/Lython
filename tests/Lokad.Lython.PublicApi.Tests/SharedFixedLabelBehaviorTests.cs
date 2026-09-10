@@ -2080,6 +2080,52 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BoundMethodValueEquality()
+    {
+        // Bound methods compare by receiver and function like CPython
+        // across engine methods, user methods and slot wrappers, with
+        // matching hashes so they round-trip as dictionary keys.
+        var script = new LythonEngine().Compile("""
+            results = []
+            x = [1, 2]
+            results.append(x.append == x.append)
+            results.append(x.append != x.append)
+            m = x.append
+            results.append(m == x.append)
+            results.append(x.append == x.extend)
+            y = [1, 2]
+            results.append(x.append == y.append)
+            class C:
+                def meth(self):
+                    pass
+            c = C()
+            results.append(c.meth == c.meth)
+            class E:
+                pass
+            e = E()
+            results.append(e.__init__ == e.__init__)
+            results.append(hash(x.append) == hash(x.append))
+            d = {}
+            d[x.append] = 1
+            results.append(d[x.append])
+            results.append(len == len)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, false, true, false, false, true, true, true, new BigInteger(1), true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
