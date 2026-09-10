@@ -44,11 +44,11 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static object CreatePath(IReadOnlyList<object> arguments, LythonSourceSpan span)
+        private static object CreatePath(IReadOnlyList<object> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Count == 0)
             {
-                return new PyPath(PyStringOps.DotLiteral);
+                return OwnPathResult(PyStringOps.DotLiteral, PyStringOps.DotLiteral, context.MemoryGovernor, span);
             }
 
             PyString? path = null;
@@ -67,7 +67,8 @@ internal sealed partial class LythonRuntime
                 path = path is null ? segment : PathOps.Join(path, segment);
             }
 
-            return new PyPath(PathOps.NormalizeLexical(path.RequireNotNull()));
+            var combined = path.RequireNotNull();
+            return OwnPathResult(PathOps.NormalizeLexical(combined), combined, context.MemoryGovernor, span);
         }
 
         private sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
@@ -103,7 +104,7 @@ internal sealed partial class LythonRuntime
                     values[i] = arguments[i].Value;
                 }
 
-                return CreatePath(values, span);
+                return CreatePath(values, span, context);
             }
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -118,7 +119,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.RegisterHostCall(span);
-                        return new PyPath(PyString.FromString(PathOps.Normalize(context.Host.Cwd)));
+                        return OwnPathResult(PyString.FromString(PathOps.Normalize(context.Host.Cwd)), PyString.Empty, context.MemoryGovernor, span);
                     }, $"{Name}.cwd", []),
                     "home" when _isSupported => BoundCallable.Create((arguments, span, _) =>
                     {

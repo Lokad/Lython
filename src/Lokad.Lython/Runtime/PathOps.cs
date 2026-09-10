@@ -312,7 +312,7 @@ internal static class PathOps
 
         while (true)
         {
-            values.Add(new PyPath(current));
+            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current, path, governor, span));
             if (current.Equals(PyStringOps.SlashLiteral) || current.Equals(PyStringOps.DotLiteral))
             {
                 break;
@@ -349,7 +349,7 @@ internal static class PathOps
         {
             foreach (var part in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
             {
-                values.Add(PyString.FromString(part));
+                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part), path, governor, span));
             }
         }
 
