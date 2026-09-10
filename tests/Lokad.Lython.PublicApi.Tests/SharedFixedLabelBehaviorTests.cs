@@ -1244,6 +1244,47 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task KeyErrorSingleArgumentStrUsesRepr()
+    {
+        // A single KeyError argument renders through repr like CPython
+        // instead of str; every other arity and type keeps str rendering.
+        var script = new LythonEngine().Compile("""
+            results = []
+            key = KeyError("k")
+            results.append(str(key))
+            results.append(repr(key))
+            results.append(key.args == ("k",))
+            results.append(key.message)
+            results.append(str(KeyError(42)))
+            results.append(str(KeyError()))
+            results.append(str(KeyError("a", "b")))
+            results.append(str(ValueError("x")))
+            results.append(str(ValueError()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "'k'",
+            "KeyError('k')",
+            true,
+            "'k'",
+            "42",
+            string.Empty,
+            "('a', 'b')",
+            "x",
+            string.Empty,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
@@ -1383,7 +1424,7 @@ public sealed class SharedFixedLabelBehaviorTests
             try:
                 raise ValueError("v") from KeyError("k")
             except ValueError as e:
-                results.append((e.__cause__).message == "k")
+                results.append((e.__cause__).message == "'k'")
                 results.append((e.__cause__).__class__ is KeyError)
             try:
                 raise ValueError("v") from KeyError

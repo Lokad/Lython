@@ -456,6 +456,10 @@ internal sealed partial class LythonRuntime
             var message = values.Length switch
             {
                 0 => string.Empty,
+                // Like CPython, a single KeyError argument renders through
+                // repr instead of str; every other single argument uses str.
+                1 when ExceptionIdentity.IsBuiltin && string.Equals(TypeName, "KeyError", StringComparison.Ordinal) =>
+                    PyRendering.ToReprPyString(values[0], new PyRenderingContext(context)).AsString(),
                 1 => PyRendering.ToInterpolatedString(values[0], new PyRenderingContext(context)),
                 _ => PyRendering.ToReprPyString(args, new PyRenderingContext(context)).AsString(),
             };
