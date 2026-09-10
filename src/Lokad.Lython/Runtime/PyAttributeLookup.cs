@@ -200,7 +200,9 @@ internal static class PyAttributeLookup
 
             if (ReferenceEquals(classValue, PyType.BuiltinFunctionType) ||
                 ReferenceEquals(classValue, PyType.MethodWrapperType) ||
-                ReferenceEquals(classValue, PyType.WrapperDescriptorType))
+                ReferenceEquals(classValue, PyType.WrapperDescriptorType) ||
+                ReferenceEquals(classValue, PyType.RegexPatternType) ||
+                ReferenceEquals(classValue, PyType.RegexMatchType))
             {
                 if (!context.TryGetBuiltin("object", out var sharedBase) ||
                     sharedBase is not PyType sharedType ||

@@ -1072,6 +1072,7 @@ public sealed class SharedFixedLabelBehaviorTests
             import decimal
             import pathlib
             import random
+            import re
             import statistics
             import time
             return [[].__class__ is list, {}.__class__ is dict,
@@ -1085,13 +1086,20 @@ public sealed class SharedFixedLabelBehaviorTests
                 "s".__class__ is str,
                 (1).__class__ is int, (1.5).__class__ is float,
                 True.__class__ is bool, None.__class__ is type(None),
-                C.__class__ is type, type(C) is type]
+                C.__class__ is type, type(C) is type,
+                re.compile("x").__class__ is type(re.compile("x")),
+                re.compile("(x)").match("x").__class__ is type(re.compile("(x)").match("x")),
+                re.compile("x").__new__ is object.__new__,
+                re.compile("(x)").match("x").__new__ is object.__new__,
+                re.compile("x").__class__.__name__,
+                re.compile("(x)").match("x").__class__.__name__]
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true,
             true, true, true, true, true, true, true, true,
+            true, true, true, true, "Pattern", "Match",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

@@ -536,6 +536,8 @@ internal sealed partial class LythonRuntime
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
             PyModule => PyType.ModuleType,
+            LythonRuntime.RePatternObject => PyType.RegexPatternType,
+            LythonRuntime.ReMatchObject => PyType.RegexMatchType,
             PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),
             PyClassMethod => TryGetBuiltinOrNull(context, "classmethod"),
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
