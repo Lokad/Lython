@@ -701,6 +701,26 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        // Datetime runtime types own their slot too, qualified by the short
+        // type name like CPython (timedelta.__new__).
+        if (classValue is PyBuiltinRuntimeType datetimeType &&
+            (ReferenceEquals(datetimeType, PyDateTimeOps.TimedeltaType) ||
+             ReferenceEquals(datetimeType, PyDateTimeOps.DateType) ||
+             ReferenceEquals(datetimeType, PyDateTimeOps.TimeType) ||
+             ReferenceEquals(datetimeType, PyDateTimeOps.DateTimeType) ||
+             ReferenceEquals(datetimeType, PyDateTimeOps.TimezoneType)))
+        {
+            _datetimeTypeNewSlots ??= new Dictionary<PyBuiltinRuntimeType, TypeNewMethod>(ReferenceEqualityComparer.Instance);
+            if (!_datetimeTypeNewSlots.TryGetValue(datetimeType, out var datetimeSlot))
+            {
+                datetimeSlot = new TypeNewMethod(datetimeType, BuiltinCallable.ShortCallableName(datetimeType.Name));
+                _datetimeTypeNewSlots[datetimeType] = datetimeSlot;
+            }
+
+            value = datetimeSlot;
+            return true;
+        }
+
         value = PyNone.Instance;
         return false;
     }
@@ -709,6 +729,7 @@ internal sealed partial class LythonRuntime
     private static TypeNewMethod? _methodTypeNewSlot;
     private static TypeNewMethod? _moduleTypeNewSlot;
     private static TypeNewMethod? _noneTypeNewSlot;
+    private static Dictionary<PyBuiltinRuntimeType, TypeNewMethod>? _datetimeTypeNewSlots;
 
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {

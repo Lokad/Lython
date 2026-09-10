@@ -102,6 +102,13 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
 
     public bool TryGetMember(string memberName, [MaybeNullWhen(false)] out object value)
     {
+        // Datetime runtime types expose their own __new__ slot like CPython;
+        // every other opaque keeps its own rules through the choke point.
+        if (memberName == "__new__" && LythonRuntime.TryGetTypeNewSlot(this, out value))
+        {
+            return true;
+        }
+
         if (memberName == "__name__")
         {
             value = _shortName;

@@ -661,6 +661,43 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task DatetimeNewSlots()
+    {
+        // Datetime runtime types own their __new__ slot like CPython, on
+        // the type and on values alike.
+        var script = new LythonEngine().Compile("""
+            import datetime
+            d = datetime.timedelta(1)
+            t = datetime.time(1)
+            return [datetime.timedelta.__new__.__qualname__,
+                datetime.timedelta.__new__ is datetime.timedelta.__new__,
+                d.__new__ is datetime.timedelta.__new__,
+                (d.__new__).__self__ is datetime.timedelta,
+                t.__new__ is datetime.time.__new__,
+                datetime.date.__new__.__qualname__,
+                datetime.datetime.__new__.__qualname__,
+                datetime.timezone.__new__.__qualname__,
+                datetime.timedelta.__new__.__module__ is None,
+                type(datetime.timedelta.__new__).__name__,
+                hasattr(d, "__new__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "timedelta.__new__", true, true, true, true,
+            "date.__new__", "datetime.__new__", "timezone.__new__", true,
+            "builtin_function_or_method", true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
