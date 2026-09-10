@@ -1641,6 +1641,40 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NamedTupleTypeIdentity()
+    {
+        // Created namedtuple types report the type builtin like CPython
+        // while instances share their defining type object; per-type own
+        // __new__ slots stay missing until the construction epic lands.
+        var script = new LythonEngine().Compile("""
+            from collections import namedtuple
+            NT = namedtuple("NT", ["x"])
+            v = NT("a")
+            results = []
+            results.append(type(NT) is type)
+            results.append(NT.__class__ is type)
+            results.append(v.__class__ is NT)
+            results.append(type(v) is NT)
+            results.append(NT.__init_subclass__.__self__ is NT)
+            results.append(v.__init_subclass__.__self__ is NT)
+            results.append(hasattr(NT, "__new__"))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, false,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

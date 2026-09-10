@@ -609,6 +609,8 @@ internal sealed partial class LythonRuntime
             CollectionsCallable => target,
             PartialFactory => target,
             PartialMethodFactory => target,
+            PyNamedTupleType => target,
+            PyNamedTupleObject namedTuple => namedTuple.Type,
             _ => null,
         };
 

@@ -338,6 +338,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         {
             PyInstance instance => instance.Type,
             PyType type => type.MetaType ?? GetBuiltinTypeObject(context, "type", span),
+            PyNamedTupleType => GetBuiltinTypeObject(context, "type", span),
             PyNone => NoneType,
             bool => GetBuiltinTypeObject(context, "bool", span),
             BigInteger or int => GetBuiltinTypeObject(context, "int", span),

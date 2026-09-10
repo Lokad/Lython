@@ -106,7 +106,8 @@ internal static class PyMemberAccess
         }
 
         if (memberName == "__class__" &&
-            LythonRuntime.TryGetValueClass(target, context, out value))
+            ((target is PyNamedTupleType && context.TryGetBuiltin("type", out value) && value is not null) ||
+             LythonRuntime.TryGetValueClass(target, context, out value)))
         {
             return true;
         }

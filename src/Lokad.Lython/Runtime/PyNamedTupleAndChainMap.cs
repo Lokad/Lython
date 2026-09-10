@@ -263,6 +263,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
         value = name switch
         {
+            "__class__" => _type,
             "_fields" => new PyTuple(_type.FieldNames.Select(PyString.FromString).Cast<object>()),
             "_field_defaults" => _type.TryGetMember("_field_defaults", out var fieldDefaults)
                 ? fieldDefaults
