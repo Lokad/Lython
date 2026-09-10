@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
     }
 
 
-    private sealed class PyEnvironmentMapping :
+    internal sealed class PyEnvironmentMapping :
         IMutablePySubscriptableValue,
         IDeletablePySubscriptableValue,
         IPyTruthyValue,

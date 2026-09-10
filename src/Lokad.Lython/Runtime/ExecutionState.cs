@@ -111,6 +111,10 @@ internal sealed class ExecutionState
 
     public Dictionary<string, string> Environment { get; }
 
+    // os.environ reads share one mapping per run over the live table above,
+    // so identity holds like CPython while contents stay current.
+    public LythonRuntime.PyEnvironmentMapping? OsEnvironMapping { get; set; }
+
     public Dictionary<string, PyModule> ImportedModules { get; }
 
     public Dictionary<string, object> BuiltinVariables { get; }

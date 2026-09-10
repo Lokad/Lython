@@ -157,7 +157,16 @@ internal sealed partial class LythonRuntime
             _ = span;
             if (name == "environ")
             {
-                value = new PyEnvironmentMapping(context.State.Environment, context.MemoryGovernor, span);
+                // One mapping per run over the live host table: identity holds
+                // across reads like CPython with no per-read wrapper heap, while
+                // contents stay current and values still convert per read.
+                if (context.State.OsEnvironMapping is not { } mapping)
+                {
+                    mapping = new PyEnvironmentMapping(context.State.Environment, context.MemoryGovernor, span);
+                    context.State.OsEnvironMapping = mapping;
+                }
+
+                value = mapping;
                 return true;
             }
 

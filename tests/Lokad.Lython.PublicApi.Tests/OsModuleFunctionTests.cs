@@ -625,4 +625,29 @@ list(os.walk("/repo", onerror="boom"))
         Assert.Null(result.Failure);
         Assert.Contains(result.Diagnostics, d => d.Message.Contains(messageFragment, StringComparison.Ordinal));
     }
+
+    [Fact]
+    public async Task OsModule_Environ_IsSharedSingleton()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            a = os.environ
+            b = os.environ
+            a["IS"] = "shared"
+            return [a is b, b["IS"], os.environ["IS"], a.get("SEEDED")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { true, "shared", "shared", "yes" };
+        var options = new LythonRunOptions
+        {
+            Environment = new System.Collections.Generic.Dictionary<string, string> { ["SEEDED"] = "yes" },
+        };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
