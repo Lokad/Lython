@@ -150,7 +150,6 @@ internal sealed partial class LythonRuntime
 
     private static object Property(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length > 3)
         {
             throw new LythonRuntimeException("TypeError", "property([fget][, fset][, fdel]) expects zero to three callable arguments.", span);
@@ -159,28 +158,33 @@ internal sealed partial class LythonRuntime
         var getter = arguments.Length >= 1 ? ParsePropertyCallable(arguments[0], "fget", span) : null;
         var setter = arguments.Length >= 2 ? ParsePropertyCallable(arguments[1], "fset", span) : null;
         var deleter = arguments.Length >= 3 ? ParsePropertyCallable(arguments[2], "fdel", span) : null;
+        // The retained callables stay aliased; own the descriptor shell.
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
         return new PyProperty(getter, setter, deleter);
     }
 
     private static object StaticMethod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1 || arguments[0] is not ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", "staticmethod(func) expects one callable argument.", span);
         }
 
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
         return new PyStaticMethod(callable);
     }
 
     private static object ClassMethod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1 || arguments[0] is not ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", "classmethod(func) expects one callable argument.", span);
         }
 
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
         return new PyClassMethod(callable);
     }
 

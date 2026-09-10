@@ -214,6 +214,9 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
                     span);
             }
 
+            // Each derivation retains a fresh descriptor shell.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
             return kind switch
             {
                 PropertyAccessorKind.Getter => property.WithGetter(callable),
