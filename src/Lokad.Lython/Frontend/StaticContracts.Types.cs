@@ -46,6 +46,7 @@ internal enum StaticReturnShape
     DateTimeDateTime,
     DateTimeTimezone,
     StatisticsLinearRegression,
+    LinearRegressionAsDict,
     StatisticsNormalDist,
     Random,
     DifflibDiffer,

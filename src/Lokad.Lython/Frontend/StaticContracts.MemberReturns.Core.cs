@@ -169,7 +169,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.DateTimeTimezone, "utcoffset", StaticReturnShape.DateTimeTimedelta),
         new(AbstractValueKind.DateTimeTimezone, "tzname", StaticReturnShape.String),
         new(AbstractValueKind.DateTimeTimezone, "dst", StaticReturnShape.None),
-        new(AbstractValueKind.StatisticsLinearRegression, "_asdict", StaticReturnShape.Dict),
+        new(AbstractValueKind.StatisticsLinearRegression, "_asdict", StaticReturnShape.LinearRegressionAsDict),
         new(AbstractValueKind.StatisticsLinearRegression, "_replace", StaticReturnShape.StatisticsLinearRegression),
         new(AbstractValueKind.StatisticsLinearRegression, "count", StaticReturnShape.Integer),
         new(AbstractValueKind.StatisticsLinearRegression, "index", StaticReturnShape.Integer),

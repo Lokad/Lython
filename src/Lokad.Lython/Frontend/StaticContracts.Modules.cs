@@ -639,7 +639,7 @@ internal static partial class StaticContracts
             ("os", "extsep") => AbstractValue.String(".", span),
             ("os", "devnull") => AbstractValue.String("/dev/null", span),
             ("os", "F_OK") or ("os", "R_OK") or ("os", "W_OK") or ("os", "X_OK") => AbstractValue.IntegerType(span),
-            ("os", "environ") => AbstractValue.Dict([], span),
+            ("os", "environ") => AbstractValue.Unknown(span),
             ("os.path", "supports_unicode_filenames") => AbstractValue.Boolean(true, span),
             ("math", "pi") or ("math", "e") or ("math", "tau") or ("math", "inf") or ("math", "nan") => AbstractValue.FloatType(span),
             ("random", "BPF") => AbstractValue.IntegerType(span),

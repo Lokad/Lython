@@ -27,6 +27,12 @@ internal static partial class StaticContracts
                 AbstractValue.FloatType(span),
                 AbstractValue.IntegerType(span),
             }, span),
+            StaticReturnShape.LinearRegressionAsDict => AbstractValue.Dict(
+                [
+                    new KeyValuePair<AbstractValue, AbstractValue>(AbstractValue.String("slope", span), AbstractValue.FloatType(span)),
+                    new KeyValuePair<AbstractValue, AbstractValue>(AbstractValue.String("intercept", span), AbstractValue.FloatType(span)),
+                ],
+                span),
             StaticReturnShape.TupleFloatFloat => AbstractValue.Tuple(new[]
             {
                 AbstractValue.FloatType(span),

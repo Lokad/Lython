@@ -2879,4 +2879,50 @@ print(random.choices([1, 2], k=True))
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("1|2|1|a", asyncHost.ReadText("/out.txt"));
     }
+
+    [Fact]
+    public async Task FixedAndDynamicDictShapes_AcceptStoredKeysAtCompileTime()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import decimal
+            import os
+            import statistics
+            r = statistics.linear_regression([1, 2], [3, 4])
+            d = r._asdict()
+            vals = []
+            vals.append(str(d["slope"]))
+            vals.append(str(d["intercept"]))
+            vals.append(str(os.environ["K"]))
+            vals.append(str(len(decimal.getcontext().flags)))
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write("|".join(vals))
+            __lython_file.close()
+            """);
+        Assert.True(script.IsValid);
+        Assert.DoesNotContain(script.Diagnostics, d => d.Code == "LA3157");
+        var options = new LythonRunOptions { Environment = new System.Collections.Generic.Dictionary<string, string> { ["K"] = "v" } };
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost, options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1.0|2.0|v|0", syncHost.ReadText("/out.txt"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost, options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1.0|2.0|v|0", asyncHost.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void AsDict_StillRejectsUnknownKeysAtCompileTime()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+            import statistics
+            r = statistics.linear_regression([1, 2], [3, 4])
+            r._asdict()["bogus"]
+            """);
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3157");
+    }
 }
