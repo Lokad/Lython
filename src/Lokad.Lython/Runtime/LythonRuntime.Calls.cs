@@ -1212,6 +1212,7 @@ internal sealed partial class LythonRuntime
             "dict" => new PyDict(),
             "tuple" => new PyTuple(Array.Empty<object>()),
             "int" => BigInteger.Zero,
+            "float" => 0.0,
             "set" => new PySet(),
             _ => null,
         };

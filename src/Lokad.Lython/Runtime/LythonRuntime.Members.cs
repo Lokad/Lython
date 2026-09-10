@@ -324,6 +324,102 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static class FloatMembers
+    {
+        public static bool TryGetMember(double number, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "conjugate" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.conjugate() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return number;
+                }, "float.conjugate"),
+                "as_integer_ratio" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.as_integer_ratio() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return FloatAsIntegerRatio(number, span);
+                }, "float.as_integer_ratio"),
+                "is_integer" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.is_integer() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return !double.IsInfinity(number) && !double.IsNaN(number) && number == Math.Truncate(number);
+                }, "float.is_integer"),
+                "real" => number,
+                "imag" => 0.0,
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        // Exact binary ratio like CPython (lowest terms, since the
+        // denominator starts as a power of two).
+        private static object FloatAsIntegerRatio(double value, LythonSourceSpan span)
+        {
+            if (double.IsInfinity(value))
+            {
+                throw new LythonRuntimeException("OverflowError", "cannot convert Infinity to integer ratio", span);
+            }
+
+            if (double.IsNaN(value))
+            {
+                throw new LythonRuntimeException("ValueError", "cannot convert NaN to integer ratio", span);
+            }
+
+            var bits = BitConverter.DoubleToInt64Bits(value);
+            var rawExponent = (int)((bits >> 52) & 0x7FFL);
+            var mantissa = (ulong)(bits & 0xFFFFFFFFFFFFFL);
+            BigInteger numerator;
+            BigInteger denominator;
+            if (rawExponent == 0)
+            {
+                numerator = mantissa;
+                denominator = BigInteger.One << 1074;
+            }
+            else
+            {
+                var exponent = rawExponent - 1075;
+                mantissa |= 1UL << 52;
+                if (exponent >= 0)
+                {
+                    numerator = (BigInteger)mantissa << exponent;
+                    denominator = BigInteger.One;
+                }
+                else
+                {
+                    numerator = mantissa;
+                    denominator = BigInteger.One << -exponent;
+                }
+            }
+
+            if (bits < 0)
+            {
+                numerator = BigInteger.Negate(numerator);
+            }
+
+            while (numerator.IsEven && denominator.IsEven)
+            {
+                numerator >>= 1;
+                denominator >>= 1;
+            }
+
+            return new PyTuple([numerator, denominator]);
+        }
+    }
+
     internal static class DictMembers
     {
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)

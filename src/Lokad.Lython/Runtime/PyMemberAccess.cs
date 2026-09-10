@@ -14,6 +14,7 @@ internal static class PyMemberAccess
             [typeof(BigInteger)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
             [typeof(int)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
             [typeof(bool)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.IntMembers.TryGetMember(target, memberName, out value),
+            [typeof(double)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.FloatMembers.TryGetMember((double)target, memberName, out value),
             [typeof(PyBytes)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.BytesMembers.TryGetMember((PyBytes)target, memberName, out value),
             [typeof(PyList)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember((PyList)target, memberName, out value),
             [typeof(PyDict)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictMembers.TryGetMember((PyDict)target, memberName, out value),

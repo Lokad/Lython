@@ -137,6 +137,15 @@ internal static partial class StaticContracts
         "count",
     };
 
+    private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
+    {
+        "as_integer_ratio",
+        "conjugate",
+        "imag",
+        "is_integer",
+        "real",
+    };
+
     private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
     {
         "as_integer_ratio",
@@ -509,7 +518,7 @@ internal static partial class StaticContracts
             AbstractValueKind.Boolean or
             AbstractValueKind.BooleanType => IntMembers.Contains(memberName),
             AbstractValueKind.Float or
-            AbstractValueKind.FloatType or
+            AbstractValueKind.FloatType => FloatMembers.Contains(memberName),
             AbstractValueKind.None => false,
             AbstractValueKind.Ellipsis => false,
             AbstractValueKind.Path => PathMembers.Contains(memberName),

@@ -2772,6 +2772,85 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task FloatScalarMembers()
+    {
+        // Float values serve the scalar method and property shapes like
+        // CPython, with unbound descriptors on the constructor, static
+        // coverage, and dir() lists.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((1.5).conjugate() == 1.5)
+            results.append((-2.0).conjugate() == -2.0)
+            results.append((1.5).real == 1.5)
+            results.append((1.5).imag == 0.0)
+            results.append((2.0).is_integer())
+            results.append((2.5).is_integer())
+            results.append((1.5).as_integer_ratio() == (3, 2))
+            results.append((0.5).as_integer_ratio() == (1, 2))
+            results.append((-0.5).as_integer_ratio() == (-1, 2))
+            results.append((2.0).as_integer_ratio() == (2, 1))
+            results.append((0.1).as_integer_ratio() == (3602879701896397, 36028797018963968))
+            results.append(float.conjugate(1.5) == 1.5)
+            f = 2.5
+            results.append(f.is_integer == f.is_integer)
+            results.append(float.conjugate == float.conjugate)
+            results.append(float.conjugate == (1.5).conjugate)
+            results.append(type(float.conjugate).__name__)
+            results.append(hasattr(float.conjugate, "__self__"))
+            results.append(float.conjugate.__name__)
+            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "imag", "is_integer", "real"])
+            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "is_integer"])
+            for n in dir(float):
+                if not hasattr(float, n):
+                    results.append(n)
+            for n in dir(1.5):
+                if not hasattr(1.5, n):
+                    results.append(n)
+            results.append("truthful")
+            try:
+                (1.5).conjugate(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                (0.5).as_integer_ratio(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float("inf").as_integer_ratio()
+            except OverflowError as e:
+                results.append(str(e))
+            try:
+                float("nan").as_integer_ratio()
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                float.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, false, true, true, true, true,
+            true, true, true, true, false, "method_descriptor", false,
+            "conjugate", true, true, "truthful",
+            "float.conjugate() takes no arguments (1 given)",
+            "float.as_integer_ratio() takes no arguments (1 given)",
+            "cannot convert Infinity to integer ratio",
+            "cannot convert NaN to integer ratio",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
