@@ -380,13 +380,19 @@ internal sealed partial class LythonRuntime
 
     private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
+        if (arguments.Length is < 1 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "slice(stop) or slice(start, stop[, step]) expects one to three arguments.", span);
+        }
+
+        // Slice syntax never materializes an object; only explicit calls retain one.
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
         return arguments.Length switch
         {
             1 => new PySlice(PyNone.Instance, arguments[0], PyNone.Instance),
             2 => new PySlice(arguments[0], arguments[1], PyNone.Instance),
-            3 => new PySlice(arguments[0], arguments[1], arguments[2]),
-            _ => throw new LythonRuntimeException("TypeError", "slice(stop) or slice(start, stop[, step]) expects one to three arguments.", span)
+            _ => new PySlice(arguments[0], arguments[1], arguments[2]),
         };
     }
 
