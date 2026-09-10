@@ -216,9 +216,24 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "dict.get", ["key", "default"], 1),
-                "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, _, _) => new DictKeysView(receiver)),
-                "values" => BoundCallable.CreateNoArguments(dict, "dict.values", static (receiver, _, _) => new DictValuesView(receiver)),
-                "items" => BoundCallable.CreateNoArguments(dict, "dict.items", static (receiver, _, _) => new DictItemsView(receiver)),
+                "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictKeysView(receiver);
+                }),
+                "values" => BoundCallable.CreateNoArguments(dict, "dict.values", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictValuesView(receiver);
+                }),
+                "items" => BoundCallable.CreateNoArguments(dict, "dict.items", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictItemsView(receiver);
+                }),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)),
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -340,6 +355,8 @@ internal sealed partial class LythonRuntime
                         copy.SetItem(pair.Key, pair.Value);
                     }
 
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
                     return new PyDefaultDict(receiver.DefaultFactory, copy);
                 }),
                 "clear" => BoundCallable.CreateNoArguments(dict, "defaultdict.clear", static (receiver, _, _) =>

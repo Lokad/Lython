@@ -19,6 +19,9 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public PyDefaultDict(object defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
+        // Own the shell beside the governed inner dict.
+        governor.Reserve(64L, allocationSpan);
+        governor.Commit(64L);
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
         _items = new PyDict(governor, allocationSpan);
     }

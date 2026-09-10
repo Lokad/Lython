@@ -405,6 +405,8 @@ internal sealed partial class LythonRuntime
     private static object CopyDefaultDict(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var items = new PyDict(context.MemoryGovernor, span);
+        context.MemoryGovernor.Reserve(64L, span);
+        context.MemoryGovernor.Commit(64L);
         var clone = new PyDefaultDict(dict.DefaultFactory, items);
         memo.Remember(dict, clone);
         foreach (var pair in dict.Items)
