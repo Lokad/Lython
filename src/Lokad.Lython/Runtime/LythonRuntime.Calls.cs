@@ -540,7 +540,14 @@ internal sealed partial class LythonRuntime
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             PyFunctionBase => PyType.FunctionType,
             LambdaFunction => PyType.FunctionType,
-            PyBoundMethod => PyType.MethodType,
+            IPySlotWrapper => PyType.WrapperDescriptorType,
+            ObjectNewMethod => PyType.BuiltinFunctionType,
+            PyBoundMethod method => method.Function switch
+            {
+                IPySlotWrapper => PyType.MethodWrapperType,
+                IPyBoundEngineMethod => PyType.BuiltinFunctionType,
+                _ => PyType.MethodType,
+            },
             BuiltinCallable => PyType.BuiltinFunctionType,
             IPyBoundEngineMethod => PyType.BuiltinFunctionType,
             MinMaxCallable => PyType.BuiltinFunctionType,

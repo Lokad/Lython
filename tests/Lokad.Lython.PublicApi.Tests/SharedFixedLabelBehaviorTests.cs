@@ -395,6 +395,45 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task SlotMethodClassIdentities()
+    {
+        // Object slot wrappers report the wrapper_descriptor runtime type,
+        // their bound forms the method-wrapper type, and the __new__ builtin
+        // plus the bound __init_subclass__ the builtin_function_or_method
+        // type, like CPython (neither wrapper type is a builtin name).
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            return [type(object.__init__).__name__,
+                type(E().__init__).__name__,
+                type(object.__new__).__name__,
+                type(object.__init_subclass__).__name__,
+                type(E().__init_subclass__).__name__,
+                object.__init__.__class__ is type(object.__init__),
+                E().__init__.__class__ is type(E().__init__),
+                object.__new__.__class__ is type(object.__new__),
+                type(object.__init__).__module__,
+                type(E().__init__).__module__,
+                type(object.__init__).__bases__[0] is object,
+                type(E().__init__).__bases__[0] is object]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "wrapper_descriptor", "method-wrapper",
+            "builtin_function_or_method", "builtin_function_or_method",
+            "builtin_function_or_method",
+            true, true, true, "builtins", "builtins", true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

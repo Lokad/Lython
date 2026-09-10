@@ -20,6 +20,10 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         };
     }
 
+    // Exposes the wrapped callable so class resolution can report slot
+    // method-wrapper and bound-builtin types like CPython.
+    internal LythonRuntime.ICallable Function => _function;
+
     // Bound methods mirror the wrapped callable.__name__/__qualname__/__module__
     // like CPython (including user-assigned overrides), alongside the bound
     // __self__/__func__ pair; engine objects without member handling stay

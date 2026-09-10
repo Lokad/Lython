@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
     {
         public string Name => "__init__";
 
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitSubclassMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    private sealed class ObjectInitSubclassMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPyBoundEngineMethod
     {
         public string Name => "__init_subclass__";
 
@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
     {
         public string Name => "__setattr__";
 
@@ -377,7 +377,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
     {
         public string Name => "__delattr__";
 
@@ -434,7 +434,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper
     {
         public string Name => "__getattribute__";
 
