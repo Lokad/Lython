@@ -60,6 +60,9 @@ internal sealed partial class LythonRuntime
                     (arguments, span, context) => AddExceptionNote(exception, arguments, span, context),
                     "add_note",
                     ["note"]),
+                "with_traceback" => BoundCallable.Create(
+                    (arguments, span, _) => WithTraceback(exception, arguments, span),
+                    "with_traceback"),
                 "__cause__" => (object?)exception.Cause ?? PyNone.Instance,
                 "__context__" => (object?)exception.Context ?? PyNone.Instance,
                 "__suppress_context__" => exception.SuppressContext,
@@ -131,6 +134,27 @@ internal sealed partial class LythonRuntime
             exception.Notes.Add(note);
             context.ObserveCollectionCount(exception.Notes.Count, span);
             return PyNone.Instance;
+        }
+
+        // Lython has no traceback values: clearing with None is a no-op returning
+        // the exception itself like CPython, while anything else fails explicitly
+        // since no guest value can satisfy the traceback check.
+        private static object WithTraceback(PyException exception, object[] arguments, LythonSourceSpan span)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException(
+                    "TypeError",
+                    $"BaseException.with_traceback() takes exactly one argument ({arguments.Length} given)",
+                    span);
+            }
+
+            if (arguments[0] is not PyNone)
+            {
+                throw new LythonRuntimeException("TypeError", "__traceback__ must be a traceback or None", span);
+            }
+
+            return exception;
         }
 
         private static PyTuple CreateExceptionArgs(PyException exception)

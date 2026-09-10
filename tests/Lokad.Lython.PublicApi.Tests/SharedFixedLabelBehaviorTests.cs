@@ -1471,6 +1471,50 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ExceptionWithTracebackNone()
+    {
+        // With no traceback model, clearing with None returns the exception
+        // itself like CPython, while arities and other values fail with the
+        // CPython error texts; the returned exception raises normally.
+        var script = new LythonEngine().Compile("""
+            results = []
+            e = ValueError("x")
+            results.append(e.with_traceback(None) is e)
+            results.append(e.with_traceback(None).args == ("x",))
+            try:
+                e.with_traceback()
+            except TypeError as t:
+                results.append(str(t) == "BaseException.with_traceback() takes exactly one argument (0 given)")
+            try:
+                e.with_traceback(None, None)
+            except TypeError as t:
+                results.append(str(t) == "BaseException.with_traceback() takes exactly one argument (2 given)")
+            try:
+                e.with_traceback(42)
+            except TypeError as t:
+                results.append(str(t) == "__traceback__ must be a traceback or None")
+            try:
+                raise e.with_traceback(None)
+            except ValueError as caught:
+                results.append(caught.args == ("x",))
+                results.append(str(caught) == "x")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
