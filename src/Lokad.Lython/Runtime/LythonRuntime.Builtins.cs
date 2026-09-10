@@ -395,20 +395,17 @@ internal sealed partial class LythonRuntime
 
     private static object Bin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span);
+        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span, context.MemoryGovernor);
     }
 
     private static object Oct(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span);
+        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span, context.MemoryGovernor);
     }
 
     private static object Hex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
-        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span);
+        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span, context.MemoryGovernor);
     }
 
     private static object Chr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -508,7 +505,7 @@ internal sealed partial class LythonRuntime
         return (int)value;
     }
 
-    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span)
+    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span, MemoryGovernor governor)
     {
         if (arguments.Length != 1)
         {
@@ -518,7 +515,7 @@ internal sealed partial class LythonRuntime
         var integer = RuntimeArgumentValidation.ExpectInteger(arguments[0], message, span);
         var sign = integer < BigInteger.Zero ? "-" : string.Empty;
         var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);
-        return PyString.FromString(sign + prefix + digits);
+        return PyString.FromString(sign + prefix + digits, governor, span);
     }
 
     private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span)
