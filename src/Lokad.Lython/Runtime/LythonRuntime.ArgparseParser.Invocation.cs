@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             return new PyTuple(
                 [
                     result.Namespace,
-            new PyList(result.Unknown.Select(static item => (object)PyString.FromString(item)), context.MemoryGovernor, span)
+            new PyList(result.Unknown.Select(item => (object)PyString.FromString(item, context.MemoryGovernor, span)), context.MemoryGovernor, span)
                 ],
                 context.MemoryGovernor,
                 span);
