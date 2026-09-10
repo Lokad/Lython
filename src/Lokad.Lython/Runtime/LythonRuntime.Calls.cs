@@ -580,6 +580,7 @@ internal sealed partial class LythonRuntime
             OpenCallable => PyType.BuiltinFunctionType,
             PrintCallable => PyType.BuiltinFunctionType,
             PyDateTimeOps.TypeMemberCallable => PyType.BuiltinFunctionType,
+            IPyRawBoundCallable => PyType.BuiltinFunctionType,
             BuiltinTypeMethod => PyType.BuiltinFunctionType,
             UnboundTypeMethod => PyType.MethodDescriptorType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,

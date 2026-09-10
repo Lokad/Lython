@@ -22,6 +22,7 @@ internal static partial class StaticContracts
         "split",
         "rsplit",
         "splitlines",
+        "translate",
         "expandtabs",
         "strip",
         "lstrip",

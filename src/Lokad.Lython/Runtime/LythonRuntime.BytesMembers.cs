@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
     }
 
     private sealed class RawBoundCallable(
-        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyHashableValue, IPyRawBoundCallable
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable
     {
         public string? BoundName { get; init; }
 
@@ -135,6 +135,48 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             return implementation(arguments, span, context);
+        }
+
+        // Named shapes expose CPython-style identity like bound builtins:
+        // the short __name__, the qualified __qualname__, a None __module__
+        // and the bound receiver (anonymous callables stay missing).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (BoundName is not null)
+            {
+                if (name == "__name__")
+                {
+                    value = PyString.FromString(ShortMethodName(BoundName));
+                    return true;
+                }
+
+                if (name == "__qualname__")
+                {
+                    value = PyString.FromString(BoundName);
+                    return true;
+                }
+
+                if (name == "__module__")
+                {
+                    value = PyNone.Instance;
+                    return true;
+                }
+
+                if (name == "__self__" && BoundReceiver is not null)
+                {
+                    value = BoundReceiver;
+                    return true;
+                }
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        private static string ShortMethodName(string name)
+        {
+            var dot = name.LastIndexOf('.');
+            return dot < 0 ? name : name.Substring(dot + 1);
         }
 
         public int GetPyHashCode() => BoundName is null || BoundReceiver is null

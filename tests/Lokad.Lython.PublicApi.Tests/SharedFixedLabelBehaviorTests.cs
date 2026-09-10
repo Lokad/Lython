@@ -2422,13 +2422,13 @@ public sealed class SharedFixedLabelBehaviorTests
         var script = new LythonEngine().Compile("""
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
-            results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
+            results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(bytes) == ["__new__", "decode", "fromhex", "maketrans", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
-            results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
+            results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(b"") == ["decode", "fromhex", "maketrans", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
@@ -3263,6 +3263,78 @@ public sealed class SharedFixedLabelBehaviorTests
             "translate() takes at least 1 positional argument (0 given)",
             "translate() takes at most 2 arguments (3 given)",
             "translate() got an unexpected keyword argument 'bogus'",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StringTranslate()
+    {
+        // str.translate rewrites through mapping tables like CPython
+        // (None deletes, integers splice as characters, misses are kept),
+        // with the exact argument diagnostics.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append("abc".translate({97: 98}))
+            results.append("abc".translate({97: None}))
+            results.append("abc".translate(str.maketrans("a", "b")))
+            results.append("abc".translate({}))
+            results.append("abc".translate({97: "XYZ"}))
+            results.append("abc".translate([1]))
+            results.append(type("abc".translate).__name__)
+            s = "abc"
+            results.append(s.translate == s.translate)
+            results.append(str.translate == str.translate)
+            results.append("abc".translate.__name__)
+            results.append("abc".translate.__qualname__)
+            results.append("abc".translate.__self__)
+            results.append("abc".translate.__module__ is None)
+            results.append("translate" in dir("abc"))
+            results.append("translate" in dir(str))
+            try:
+                "abc".translate()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                "abc".translate({}, {})
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                "abc".translate(table={})
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                "abc".translate(42)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                "abc".translate({97: 5.5})
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                "abc".translate({97: 1114112})
+            except ValueError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "bbc", "bc", "bbc", "abc", "XYZbc", "abc",
+            "builtin_function_or_method", true, true, "translate",
+            "str.translate", "abc", true, true, true,
+            "str.translate() takes exactly one argument (0 given)",
+            "str.translate() takes exactly one argument (2 given)",
+            "str.translate() takes no keyword arguments",
+            "'int' object is not subscriptable",
+            "character mapping must return integer, None or str",
+            "character mapping must be in range(0x110000)",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

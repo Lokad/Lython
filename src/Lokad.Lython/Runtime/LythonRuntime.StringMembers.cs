@@ -21,6 +21,7 @@ internal sealed partial class LythonRuntime
             StringSegmentationMemberProvider.Instance,
             StringLayoutSearchMemberProvider.Instance,
             StringAffixFormatMemberProvider.Instance,
+            StringTranslateMemberProvider.Instance,
         ];
 
         private interface IStringMemberProvider
