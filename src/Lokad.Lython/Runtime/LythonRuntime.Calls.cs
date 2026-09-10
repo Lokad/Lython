@@ -562,9 +562,28 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
     {
         public string Name => operation == ExtremumOperation.Minimum ? "min" : "max";
+        // Singleton builtins expose CPython-style __name__/__module__ like
+        // BuiltinCallable: the fixed name and the shared builtins label.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -586,9 +605,28 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class ZipCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class ZipCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
     {
         public string Name => "zip";
+        // Singleton builtins expose CPython-style __name__/__module__ like
+        // BuiltinCallable: the fixed name and the shared builtins label.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -601,9 +639,28 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class DictCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class DictCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
     {
         public string Name => "dict";
+        // Singleton builtins expose CPython-style __name__/__module__ like
+        // BuiltinCallable: the fixed name and the shared builtins label.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -616,7 +673,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
+    private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
     {
         private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
             "open",
@@ -624,6 +681,25 @@ internal sealed partial class LythonRuntime
             requiredCount: 1);
 
         public string Name => "open";
+        // Singleton builtins expose CPython-style __name__/__module__ like
+        // BuiltinCallable: the fixed name and the shared builtins label.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = ExceptionTypeValue.SharedModuleLabel("builtins");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public PyString RenderPython(PyRenderingContext context)
         {

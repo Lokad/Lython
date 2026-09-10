@@ -154,4 +154,34 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task SingletonCallableNames()
+    {
+        // open.__module__ is builtins in Lython (CPython says io, which has no
+        // Lython counterpart); everything else matches CPython exactly.
+        var script = new LythonEngine().Compile("""
+            p1 = print.__name__
+            p2 = print.__module__
+            return [p1, p2, p2 is print.__module__,
+                min.__name__, min.__module__, max.__name__, max.__module__,
+                zip.__name__, zip.__module__, dict.__name__, dict.__module__,
+                open.__name__, open.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "print", "builtins", true,
+            "min", "builtins", "max", "builtins",
+            "zip", "builtins", "dict", "builtins",
+            "open", "builtins",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
