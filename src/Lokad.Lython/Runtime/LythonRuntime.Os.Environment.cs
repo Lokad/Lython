@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
             var key = GetEnvironmentKey(index, "os.environ.__getitem__", span);
             if (!_items.TryGetValue(key, out var value))
             {
-                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span);
+                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span, null, PyString.FromString(key, _governor, span));
             }
 
             return EnvString(value);
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
             var key = GetEnvironmentKey(index, "os.environ.__delitem__", span);
             if (!_items.Remove(key))
             {
-                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span);
+                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span, null, PyString.FromString(key, _governor, span));
             }
         }
 

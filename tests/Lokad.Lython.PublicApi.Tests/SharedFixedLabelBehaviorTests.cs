@@ -2007,6 +2007,41 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task EnvironMissingKeyCarriesKey()
+    {
+        // os.environ misses carry their key like CPython, so str renders
+        // the key through repr and args holds it; hits still read through.
+        var script = new LythonEngine().Compile("""
+            import os
+            results = []
+            try:
+                os.environ["lython_missing_key_xyz"]
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("lython_missing_key_xyz",))
+            try:
+                del os.environ["lython_missing_key_xyz"]
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("lython_missing_key_xyz",))
+            results.append(os.environ.get("lython_missing_key_xyz") is None)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "'lython_missing_key_xyz'", true, "'lython_missing_key_xyz'", true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
