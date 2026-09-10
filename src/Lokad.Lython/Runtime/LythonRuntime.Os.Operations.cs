@@ -223,6 +223,10 @@ internal sealed partial class LythonRuntime
             .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
             .ToArray();
         context.ObserveCollectionCount(entries.Length, span);
+        // Own the iterator plus one entry object and array slot per entry.
+        var scandirBytes = checked(160L + 80L * entries.Length);
+        context.MemoryGovernor.Reserve(scandirBytes, span);
+        context.MemoryGovernor.Commit(scandirBytes);
         return new PyScandirIterator(entries);
     }
 
@@ -236,6 +240,10 @@ internal sealed partial class LythonRuntime
             .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name)))
             .ToArray();
         context.ObserveCollectionCount(entries.Length, span);
+        // Own the iterator plus one entry object and array slot per entry.
+        var scandirBytes = checked(160L + 80L * entries.Length);
+        context.MemoryGovernor.Reserve(scandirBytes, span);
+        context.MemoryGovernor.Commit(scandirBytes);
         return new PyScandirIterator(entries);
     }
 

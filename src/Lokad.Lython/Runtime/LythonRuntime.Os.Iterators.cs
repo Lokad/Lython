@@ -225,6 +225,7 @@ internal sealed partial class LythonRuntime
 
         public PyWalkIterator(string root, bool topdown, ICallable? onerror, ExecutionContext context, LythonSourceSpan? span)
         {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             _topdown = topdown;
             _onerror = onerror;
             _context = context;
