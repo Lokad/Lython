@@ -471,6 +471,19 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
+    // Builtin functions report their host module like CPython (len -> builtins,
+    // math.sqrt -> math), resolving through the run import registry so identity
+    // matches the imported module object (registering on first touch like import).
+    internal static bool TryGetCallableModule(
+        string callableName,
+        ExecutionContext context,
+        [MaybeNullWhen(false)] out PyModule module)
+    {
+        var dot = callableName.LastIndexOf((char)46);
+        var moduleName = dot < 0 ? "builtins" : callableName.Substring(0, dot);
+        return TryResolveKnownImportedModule(moduleName, context, out module);
+    }
+
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private BuiltinCallable(
@@ -550,6 +563,13 @@ internal sealed partial class LythonRuntime
             // Table members are type constructors even where the legacy gate does
             // not cover them (range, slice, decimal.Decimal); they report the shared
             // builtins or module label like CPython.
+            if (name == "__self__" && !BuiltinTypeBaseNames.ContainsKey(Signature.Name) &&
+                TryGetCallableModule(Signature.Name, context, out var selfModule))
+            {
+                value = selfModule;
+                return true;
+            }
+
             if (name == "__module__" && BuiltinTypeBaseNames.ContainsKey(Signature.Name))
             {
                 value = ExceptionTypeValue.SharedModuleLabel(CallableModuleName(Signature.Name));
@@ -713,6 +733,12 @@ internal sealed partial class LythonRuntime
         // for Python-implemented methods such as Random.gauss).
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "__self__")
+            {
+                value = _receiver;
+                return true;
+            }
+
             if (name == "__name__")
             {
                 value = PyString.FromString(ShortMethodName(Name));
@@ -804,9 +830,20 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private sealed class MinMaxCallable(ExtremumOperation operation) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => operation == ExtremumOperation.Minimum ? "min" : "max";
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__self__" && TryGetCallableModule(Name, context, out var module))
+            {
+                value = module;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
         // Singleton builtins expose CPython-style __name__/__module__ like
         // BuiltinCallable: the fixed name and the shared builtins label.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -945,7 +982,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private sealed class OpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
             "open",
@@ -953,6 +990,17 @@ internal sealed partial class LythonRuntime
             requiredCount: 1);
 
         public string Name => "open";
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__self__" && TryGetCallableModule(Name, context, out var module))
+            {
+                value = module;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
         // Singleton builtins expose CPython-style __name__/__module__ like
         // BuiltinCallable: the fixed name and the shared builtins label.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

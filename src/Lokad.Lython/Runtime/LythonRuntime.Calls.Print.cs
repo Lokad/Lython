@@ -5,9 +5,20 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class PrintCallable : ICallable, IPyDynamicAttributes
+    private sealed class PrintCallable : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => "print";
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__self__" && TryGetCallableModule(Name, context, out var module))
+            {
+                value = module;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
 
         // print exposes CPython-style __name__/__module__ like the other
         // singleton builtins: the fixed name and the shared builtins label.

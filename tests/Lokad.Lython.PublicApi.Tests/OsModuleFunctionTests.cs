@@ -650,4 +650,27 @@ list(os.walk("/repo", onerror="boom"))
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BuiltinCallableSelf()
+    {
+        var script = new LythonEngine().Compile("""
+            import builtins
+            import math
+            import datetime
+            d = datetime.date(2024, 1, 1)
+            return [len.__self__ is builtins, math.sqrt.__self__ is math,
+                print.__self__ is builtins, min.__self__ is builtins,
+                open.__self__ is builtins, d.weekday.__self__ is d]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { true, true, true, true, true, true };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
