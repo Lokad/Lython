@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable
+internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
 {
     private readonly object _self;
     private readonly LythonRuntime.ICallable _function;
@@ -18,6 +18,47 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
             PyFunction pyFunction => pyFunction.Name,
             _ => function.ToString() ?? "<callable>"
         };
+    }
+
+    // Bound methods expose the wrapped function.__name__/__module__ like
+    // CPython bound methods; engine method objects without names stay
+    // missing, matching method-wrapper surface (no __module__ there).
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        if (name is "__name__" or "__qualname__")
+        {
+            var functionName = _function switch
+            {
+                PyFunctionBase function => function.Name,
+                INamedRuntimeCallable named => named.Name,
+                _ => null,
+            };
+
+            if (functionName is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = PyString.FromString(functionName);
+            return true;
+        }
+
+        if (name == "__module__")
+        {
+            if (_function is PyFunctionBase function &&
+                function.TryGetModuleName(out var moduleName))
+            {
+                value = moduleName;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        value = PyNone.Instance;
+        return false;
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

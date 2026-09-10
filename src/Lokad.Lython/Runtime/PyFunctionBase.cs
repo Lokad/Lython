@@ -105,9 +105,31 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             "__name__" => _nameValue,
             "__qualname__" => _nameValue,
+            "__module__" => TryGetModuleName(out var moduleName) ? moduleName : PyNone.Instance,
             _ => PyNone.Instance,
         };
         return !ReferenceEquals(value, PyNone.Instance);
+    }
+
+    // The defining module is resolved per read by walking the closure frame
+    // chain to its module root and aliasing that frame.__name__ string, so
+    // reads cost no retained storage and alias stably like CPython.
+    internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
+    {
+        var frame = _closure.Frame;
+        while (frame.Parent is not null)
+        {
+            frame = frame.Parent;
+        }
+
+        if (frame.Variables.TryGetValue("__name__", out var name) && name is PyString module)
+        {
+            moduleName = module;
+            return true;
+        }
+
+        moduleName = null;
+        return false;
     }
 
     public bool TrySetMember(string name, object value)

@@ -217,4 +217,41 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task UserFunctionAndBoundMethodModule()
+    {
+        var script = new LythonEngine().Compile("""
+            def top():
+                pass
+            def outer():
+                def inner():
+                    pass
+                return inner
+            class C:
+                def m(self):
+                    pass
+            t = top.__module__
+            f = outer()
+            a = f.__module__
+            b = f.__module__
+            c = C()
+            d = c.m
+            return [top.__name__, t, f.__name__, a, a is b,
+                d.__name__, d.__module__, c.m.__module__ is d.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "top", "__main__", "inner", "__main__", true,
+            "m", "__main__", true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
