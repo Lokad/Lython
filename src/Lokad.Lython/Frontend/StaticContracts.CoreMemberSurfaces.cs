@@ -456,6 +456,14 @@ internal static partial class StaticContracts
             return false;
         }
 
+        // Object instance slots resolve through the runtime object fallback
+        // on every receiver like CPython, so they are never statically
+        // known missing either.
+        if (memberName is "__init__" or "__getattribute__" or "__setattr__" or "__delattr__")
+        {
+            return false;
+        }
+
         bool? hasMember = value.Kind switch
         {
             AbstractValueKind.Module => IsKnownBuiltinModule(value.RequireText())

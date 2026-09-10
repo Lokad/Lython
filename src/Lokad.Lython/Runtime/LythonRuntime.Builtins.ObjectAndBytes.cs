@@ -286,7 +286,10 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance)
+            // Any single receiver initializes to None like CPython; only the
+            // arity is enforced here (attribute support is resolved by the
+            // receiver type, not by this slot).
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "object.__init__(self) does not accept additional arguments.", span);
             }

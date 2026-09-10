@@ -121,6 +121,35 @@ internal static class PyAttributeLookup
         return false;
     }
 
+    // Object instance slots resolve through the run object type for any receiver
+    // missed by the flat member tables, like CPython where every object carries
+    // them. Class-bound slots (__new__, __init_subclass__) keep their own rules.
+    internal static bool TryResolveObjectInstanceSlot(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
+        if (memberName is not ("__init__" or "__getattribute__" or "__setattr__" or "__delattr__"))
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        if (!context.TryGetBuiltin("object", out var objectBase) ||
+            objectBase is not PyType objectType ||
+            !objectType.TryLookupInMro(memberName, 0, out var rawValue, out _))
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        if (rawValue is IPyDescriptor descriptor)
+        {
+            value = descriptor.Get(target, objectType, context, span);
+            return true;
+        }
+
+        value = rawValue;
+        return true;
+    }
+
     public static bool TryResolveSuperMember(PySuper superObject, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         if (!superObject.BoundType.TryGetSuccessorMroIndex(superObject.AnchorType, out var startIndex))

@@ -117,6 +117,11 @@ internal static class PyMemberAccess
             return true;
         }
 
+        if (PyAttributeLookup.TryResolveObjectInstanceSlot(target, memberName, context, span, out value))
+        {
+            return true;
+        }
+
         return TryResolveNonContextual(target, memberName, out value);
     }
 

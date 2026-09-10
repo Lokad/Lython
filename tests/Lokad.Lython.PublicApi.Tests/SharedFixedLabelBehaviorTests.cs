@@ -471,6 +471,44 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task InstanceSlotFallback()
+    {
+        // Object instance slots resolve through the run object type on any
+        // receiver like CPython, so member reads, identity and no-arg calls
+        // behave uniformly on builtin values, engine callables and instances.
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            e = E()
+            s = "x"
+            return [s.__init__.__qualname__, ().__init__.__qualname__,
+                (1).__init__.__qualname__, [].__init__.__qualname__,
+                {}.__init__.__qualname__, len.__init__.__qualname__,
+                s.__init__.__class__.__name__,
+                ().__init__() is None, s.__init__() is None,
+                e.__init__() is None,
+                s.__setattr__.__qualname__, s.__getattribute__.__qualname__,
+                s.__delattr__.__qualname__,
+                hasattr(s, "__init__"), hasattr((), "__init__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "object.__init__", "object.__init__", "object.__init__",
+            "object.__init__", "object.__init__", "object.__init__",
+            "method-wrapper", true, true, true,
+            "object.__setattr__", "object.__getattribute__",
+            "object.__delattr__", true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
