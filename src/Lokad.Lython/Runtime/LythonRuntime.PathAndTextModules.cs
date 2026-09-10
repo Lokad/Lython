@@ -74,11 +74,13 @@ internal sealed partial class LythonRuntime
         private sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
         {
             private readonly bool _isSupported;
+            private readonly PyString _nameValue;
 
             public PathlibPathType(string shortName, bool isSupported)
             {
                 ShortName = shortName;
                 _isSupported = isSupported;
+                _nameValue = PyString.FromString(shortName);
             }
 
             public string ShortName { get; }
@@ -130,7 +132,7 @@ internal sealed partial class LythonRuntime
 
                         throw new LythonRuntimeException("NotImplementedError", $"{Name}.home() is not supported by Lython; the host does not expose an ambient user home directory.", span);
                     }, $"{Name}.home", []),
-                    "__name__" => PyString.FromString(ShortName),
+                    "__name__" => _nameValue,
                     _ => MissingMemberValue.Instance
                 };
 

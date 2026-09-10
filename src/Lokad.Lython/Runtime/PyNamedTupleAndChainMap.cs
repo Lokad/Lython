@@ -10,14 +10,30 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private readonly string _typeName;
     private readonly string[] _fieldNames;
     private readonly object[] _defaults;
+    private readonly MemoryGovernor? _governor;
+    private readonly LythonSourceSpan? _allocationSpan;
+    private readonly PyString _nameValue;
+    private readonly PyTuple _fieldsTuple;
+    private PyDict? _fieldDefaults;
 
     public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames) : this(typeName, fieldNames, null) { }
 
     public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults)
+        : this(typeName, fieldNames, defaults, null, null)
+    {
+    }
+
+    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         _typeName = typeName;
         _fieldNames = fieldNames.ToArray();
         _defaults = defaults?.ToArray() ?? [];
+        _governor = governor;
+        _allocationSpan = span;
+        _nameValue = governor is null ? PyString.FromString(typeName) : PyString.FromString(typeName, governor, span);
+        _fieldsTuple = governor is null
+            ? PyTuple.FromOwnedArray(_fieldNames.Select(PyString.FromString).Cast<object>().ToArray())
+            : PyTuple.FromOwnedArray(_fieldNames.Select(name => PyString.FromString(name, governor, span)).Cast<object>().ToArray(), governor, span);
     }
 
     public string Name => _typeName;
@@ -101,9 +117,9 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     {
         value = name switch
         {
-            "__name__" => PyString.FromString(_typeName),
-            "_fields" => new PyTuple(_fieldNames.Select(PyString.FromString).Cast<object>()),
-            "_field_defaults" => BuildFieldDefaults(),
+            "__name__" => _nameValue,
+            "_fields" => _fieldsTuple,
+            "_field_defaults" => GetFieldDefaults(),
             "_make" => new BoundNamedTupleMake(this),
             _ => PyNone.Instance
         };
@@ -131,15 +147,23 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         return -1;
     }
 
-    private PyDict BuildFieldDefaults()
+    private PyDict GetFieldDefaults()
     {
-        var dict = new PyDict();
+        if (_fieldDefaults is not null)
+        {
+            return _fieldDefaults;
+        }
+
+        var dict = _governor is null ? new PyDict() : new PyDict(_governor, _allocationSpan);
         var start = _fieldNames.Length - _defaults.Length;
         for (var i = 0; i < _defaults.Length; i++)
         {
-            dict.SetItem(PyString.FromString(_fieldNames[start + i]), _defaults[i]);
+            dict.SetItem(
+                _governor is null ? PyString.FromString(_fieldNames[start + i]) : PyString.FromString(_fieldNames[start + i], _governor, _allocationSpan),
+                _defaults[i]);
         }
 
+        _fieldDefaults = dict;
         return dict;
     }
 

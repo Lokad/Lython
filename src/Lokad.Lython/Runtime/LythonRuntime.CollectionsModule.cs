@@ -430,7 +430,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
         }
 
-        return new PyNamedTupleType(typeName.AsString(), fields, defaults);
+        return new PyNamedTupleType(typeName.AsString(), fields, defaults, context.MemoryGovernor, span);
     }
 
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
