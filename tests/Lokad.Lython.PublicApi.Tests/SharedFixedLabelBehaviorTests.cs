@@ -2725,7 +2725,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(int.bit_length).__name__)
             results.append(hasattr(int.bit_length, "__self__"))
             results.append(int.bit_length.__name__)
-            results.append(dir(5) == ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"])
+            results.append(dir(5) == ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"])
             results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"])
             for n in dir(int):
                 if not hasattr(int, n):
@@ -2798,7 +2798,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(float.conjugate).__name__)
             results.append(hasattr(float.conjugate, "__self__"))
             results.append(float.conjugate.__name__)
-            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
+            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             for n in dir(float):
                 if not hasattr(float, n):
@@ -2992,7 +2992,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(float.fromhex.__self__ is float)
             results.append(float.fromhex == float.fromhex)
             results.append(float.fromhex.__name__)
-            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
+            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             try:
                 (1.5).hex(1)
@@ -4012,6 +4012,43 @@ public sealed class SharedFixedLabelBehaviorTests
             "readonly attribute", "readonly attribute",
             "descriptor 'start' for 'range' objects doesn't apply to a 'int' object",
             "Object is not callable.", "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FromBytesFromHexOnValues()
+    {
+        // int.from_bytes and float.fromhex bind through values like CPython
+        // (bools convert through the bool flavor), with dir() lists beside.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((5).from_bytes(b"A", "big"))
+            results.append((5).from_bytes == int.from_bytes)
+            results.append((5).from_bytes is int.from_bytes)
+            results.append(type((5).from_bytes).__name__)
+            results.append((5).from_bytes.__self__ is int)
+            results.append((2.5).fromhex("0x1.8p+1") == 3.0)
+            results.append((2.5).fromhex == float.fromhex)
+            results.append(True.from_bytes(b"A", "big"))
+            results.append(True.from_bytes == bool.from_bytes)
+            results.append(True.from_bytes.__self__ is bool)
+            results.append(hasattr(5, "from_bytes"))
+            results.append("from_bytes" in dir(5))
+            results.append("fromhex" in dir(2.5))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(65), true, false, "builtin_function_or_method", true,
+            true, true, true, true, true, true, true, true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

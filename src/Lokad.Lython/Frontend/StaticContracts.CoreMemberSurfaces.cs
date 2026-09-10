@@ -152,6 +152,7 @@ internal static partial class StaticContracts
     {
         "as_integer_ratio",
         "conjugate",
+        "fromhex",
         "hex",
         "imag",
         "is_integer",
@@ -165,6 +166,7 @@ internal static partial class StaticContracts
         "bit_length",
         "conjugate",
         "denominator",
+        "from_bytes",
         "imag",
         "is_integer",
         "numerator",

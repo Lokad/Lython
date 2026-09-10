@@ -396,6 +396,9 @@ internal sealed partial class LythonRuntime
                 "real" => integer.Value,
                 "imag" => BigInteger.Zero,
                 "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
+                "from_bytes" => receiver is bool
+                    ? new BuiltinTypeMethod("bool", "from_bytes", bindsOwner: true, BoolFromBytes)
+                    : new BuiltinTypeMethod("int", "from_bytes", bindsOwner: true, IntFromBytes),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -447,6 +450,7 @@ internal sealed partial class LythonRuntime
 
                     return PyString.FromString(FloatToHex(number));
                 }, "float.hex"),
+                "fromhex" => new BuiltinTypeMethod("float", "fromhex", bindsOwner: true, FloatFromHex),
                 _ => MissingMemberValue.Instance,
             };
 
