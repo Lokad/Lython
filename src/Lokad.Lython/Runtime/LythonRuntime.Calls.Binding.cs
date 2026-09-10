@@ -400,6 +400,8 @@ internal sealed partial class LythonRuntime
 
         public string TypeName => ExceptionIdentity.TypeName;
 
+        internal TypeNewMethod? NewSlot { get; set; }
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch

@@ -597,7 +597,7 @@ internal sealed partial class LythonRuntime
     // is int.__new__, qualified by the type, bound to it). Construction
     // through the slot is unsupported; type(...) builds values. Wrappers
     // are cached as fixed type metadata, beside their owning type object.
-    private sealed class TypeNewMethod : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
+    internal sealed class TypeNewMethod : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
     {
         private readonly object _owner;
         private readonly string _shortName;
@@ -723,6 +723,16 @@ internal sealed partial class LythonRuntime
 
         value = PyNone.Instance;
         return false;
+    }
+
+    // Shared choke point for builtin exception __new__ slots: the caller
+    // resolves the defining type along the builtin hierarchy; the wrapper
+    // is cached on that type object like constructor slots.
+    internal static bool TryGetExceptionNewSlot(ExceptionTypeValue typeValue, string shortName, [MaybeNullWhen(false)] out object value)
+    {
+        typeValue.NewSlot ??= new TypeNewMethod(typeValue, shortName);
+        value = typeValue.NewSlot;
+        return true;
     }
 
     private static TypeNewMethod? _functionTypeNewSlot;

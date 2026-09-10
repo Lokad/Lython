@@ -698,6 +698,42 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ExceptionNewSlots()
+    {
+        // Builtin exception types own or inherit their __new__ slot along
+        // the builtin hierarchy like CPython; module exceptions stay
+        // missing and unrelated types keep their own slots.
+        var script = new LythonEngine().Compile("""
+            import csv
+            return [ValueError.__new__.__qualname__,
+                ValueError.__new__ is ValueError.__new__,
+                ValueError("bad").__new__ is ValueError.__new__,
+                (ValueError("bad").__new__).__self__ is ValueError,
+                KeyError.__new__ is LookupError.__new__,
+                (KeyError("k").__new__).__qualname__,
+                FileNotFoundError.__new__ is OSError.__new__,
+                TypeError.__new__ is Exception.__new__,
+                type(ValueError.__new__).__name__,
+                hasattr(ValueError("bad"), "__new__"),
+                hasattr(csv.Error, "__new__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "ValueError.__new__", true, true, true, true,
+            "LookupError.__new__", true, false,
+            "builtin_function_or_method", true, false,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

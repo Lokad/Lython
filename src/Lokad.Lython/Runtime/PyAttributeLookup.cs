@@ -121,6 +121,58 @@ internal static class PyAttributeLookup
         return false;
     }
 
+    // Builtin exception __new__ slots live on the defining type like CPython:
+    // most builtins own theirs; the mapped ones inherit the ancestor slot.
+    private static readonly IReadOnlyDictionary<string, string> InheritedExceptionNewSlots =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["KeyError"] = "LookupError",
+            ["ImportError"] = "Exception",
+            ["ModuleNotFoundError"] = "Exception",
+            ["NameError"] = "Exception",
+            ["AttributeError"] = "Exception",
+            ["SyntaxError"] = "Exception",
+            ["StopIteration"] = "Exception",
+            ["FileNotFoundError"] = "OSError",
+            ["FileExistsError"] = "OSError",
+            ["IsADirectoryError"] = "OSError",
+            ["NotADirectoryError"] = "OSError",
+            ["PermissionError"] = "OSError",
+            ["TimeoutError"] = "OSError",
+            ["SystemExit"] = "BaseException",
+        };
+
+    private static bool TryResolveExceptionNewSlot(object target, LythonRuntime.ExecutionContext context, [MaybeNullWhen(false)] out object value)
+    {
+        string? typeName = target switch
+        {
+            LythonRuntime.ExceptionTypeValue typeValue => typeValue.ExceptionIdentity.ModuleName is "builtins" ? typeValue.TypeName : null,
+            PyException exception when exception.Identity.IsBuiltin => exception.Identity.TypeName,
+            _ => null,
+        };
+
+        if (typeName is null)
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        var definingName = typeName;
+        while (InheritedExceptionNewSlots.TryGetValue(definingName, out var baseName))
+        {
+            definingName = baseName;
+        }
+
+        if (!context.TryGetBuiltin(definingName, out var definingBase) ||
+            definingBase is not LythonRuntime.ExceptionTypeValue definingType)
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        return LythonRuntime.TryGetExceptionNewSlot(definingType, definingName, out value);
+    }
+
     // Object slots resolve through the run object type for any receiver missed
     // by the flat member tables, like CPython where every object carries them.
     // Instance slots bind the receiver; __init_subclass__ binds type(target);
@@ -129,6 +181,13 @@ internal static class PyAttributeLookup
     {
         if (memberName is "__new__")
         {
+            // Exception types own or inherit their slot along the builtin
+            // hierarchy like CPython; module exceptions stay missing.
+            if (TryResolveExceptionNewSlot(target, context, out value))
+            {
+                return true;
+            }
+
             // Instances never carry __new__ (it lives on the type): builtin
             // values resolve their type own slot, engine callables share
             // object.__new__, and anything else stays missing.
