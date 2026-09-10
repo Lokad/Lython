@@ -540,6 +540,8 @@ internal sealed partial class LythonRuntime
             PyModule => PyType.ModuleType,
             PyPartial => TryGetModuleMemberOrNull(context, "functools", "partial"),
             PyCounter => TryGetModuleMemberOrNull(context, "collections", "Counter"),
+            PyException exception when exception.Identity.IsBuiltin => TryGetBuiltinOrNull(context, exception.Identity.TypeName),
+            PyException exception => TryGetModuleMemberOrNull(context, exception.Identity.ModuleName, exception.Identity.TypeName),
             PyDefaultDict => TryGetModuleMemberOrNull(context, "collections", "defaultdict"),
             PyDeque => TryGetModuleMemberOrNull(context, "collections", "deque"),
             PyChainMap => TryGetModuleMemberOrNull(context, "collections", "ChainMap"),

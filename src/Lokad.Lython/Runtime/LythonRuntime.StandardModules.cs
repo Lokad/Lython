@@ -164,7 +164,9 @@ internal sealed partial class LythonRuntime
             return context.Services.CurrentException is { } exception
                 ? new PyTuple(
                     [
-                        new ExceptionTypeValue(exception.Identity),
+                        TryGetValueClass(exception, context, out var exceptionType) && exceptionType is not null
+                            ? exceptionType
+                            : new ExceptionTypeValue(exception.Identity),
                         exception,
                         PyNone.Instance
                     ],

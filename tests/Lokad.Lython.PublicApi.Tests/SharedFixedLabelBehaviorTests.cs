@@ -1362,6 +1362,48 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ExceptionInstanceClassIdentity()
+    {
+        // Exception instances report their run type object like CPython, so
+        // type(e), e.__class__ and sys.exc_info()[0] all alias the same
+        // object the class name resolves to, for builtin and module types.
+        var script = new LythonEngine().Compile("""
+            import sys
+            results = []
+            try:
+                raise KeyError("a")
+            except KeyError as e:
+                results.append(type(e) is KeyError)
+                results.append(e.__class__ is type(e))
+                results.append(e.__new__ is type(e).__new__)
+                results.append(e.__init_subclass__.__self__ is KeyError)
+                info = sys.exc_info()
+                results.append(info[0] is KeyError)
+                results.append(info[1] is e)
+                results.append(info[0] is type(e))
+            import csv
+            try:
+                raise csv.Error("x")
+            except csv.Error as ce:
+                results.append(type(ce) is csv.Error)
+                results.append(ce.__class__ is type(ce))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
