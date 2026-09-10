@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
@@ -18,6 +19,8 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "fromhex" => new BuiltinTypeMethod("bytes", "fromhex", bindsOwner: true, BytesFromHex),
+                "maketrans" => BuiltinTypeMethod.BytesMaketrans,
+                "translate" => new RawBoundCallable((arguments, span, context) => TranslateBytes(bytes, arguments, span, context)) { BoundName = "bytes.translate", BoundReceiver = bytes },
                 "decode" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 2)
@@ -40,13 +43,102 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class RawBoundCallable(
-        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable
+    private static object TranslateBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        object? table = null;
+        object? delete = null;
+        var positionals = 0;
+        var keywords = 0;
+        foreach (var argument in arguments)
+        {
+            if (!argument.IsKeyword)
+            {
+                positionals++;
+                if (positionals == 1)
+                {
+                    table = argument.Value;
+                }
+                else if (positionals == 2)
+                {
+                    delete = argument.Value;
+                }
+
+                continue;
+            }
+
+            keywords++;
+            if (argument.KeywordName == "delete")
+            {
+                delete = argument.Value;
+            }
+        }
+
+        if (positionals == 0)
+        {
+            throw new LythonRuntimeException("TypeError", "translate() takes at least 1 positional argument (0 given)", span);
+        }
+
+        if (positionals + keywords > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "translate() takes at most 2 arguments (" + (positionals + keywords) + " given)", span);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword && argument.KeywordName != "delete")
+            {
+                throw new LythonRuntimeException("TypeError", "translate() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+            }
+        }
+
+        if (table is not PyBytes tableBytes || tableBytes.Length != 256)
+        {
+            throw new LythonRuntimeException("ValueError", "translation table must be 256 characters long", span);
+        }
+
+        var mapping = tableBytes.ToArray();
+        var discarded = new bool[256];
+        if (delete is not null)
+        {
+            if (delete is not PyBytes deleteBytes)
+            {
+                throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(delete, context) + "'", span);
+            }
+
+            foreach (var octet in deleteBytes.ToArray())
+            {
+                discarded[octet] = true;
+            }
+        }
+
+        var source = value.ToArray();
+        var result = new List<byte>(source.Length);
+        foreach (var octet in source)
+        {
+            if (!discarded[octet])
+            {
+                result.Add(mapping[octet]);
+            }
+        }
+
+        return CreateBytes([.. result], context, span);
+    }
+
+    private sealed class RawBoundCallable(
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyHashableValue, IPyRawBoundCallable
+    {
+        public string? BoundName { get; init; }
+
+        public object? BoundReceiver { get; init; }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             return implementation(arguments, span, context);
         }
+
+        public int GetPyHashCode() => BoundName is null || BoundReceiver is null
+            ? RuntimeHelpers.GetHashCode(this)
+            : HashCode.Combine(string.GetHashCode(BoundName, StringComparison.Ordinal), RuntimeHelpers.GetHashCode(BoundReceiver));
     }
 }

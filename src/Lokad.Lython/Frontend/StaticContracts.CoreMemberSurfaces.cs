@@ -49,6 +49,8 @@ internal static partial class StaticContracts
     {
         "decode",
         "fromhex",
+        "maketrans",
+        "translate",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)

@@ -197,6 +197,11 @@ internal static class PyEquality
             return BuiltinTypeMethodsEqual(left, right);
         }
 
+        if (left is LythonRuntime.IPyRawBoundCallable && right is LythonRuntime.IPyRawBoundCallable)
+        {
+            return RawBoundCallablesEqual(left, right);
+        }
+
         return Equals(left, right);
     }
 
@@ -223,6 +228,15 @@ internal static class PyEquality
             leftName is PyString leftText &&
             rightName is PyString rightText &&
             string.Equals(leftText.AsString(), rightText.AsString(), StringComparison.Ordinal);
+    }
+
+    private static bool RawBoundCallablesEqual(object left, object right)
+    {
+        return left is LythonRuntime.IPyRawBoundCallable leftCallable &&
+            right is LythonRuntime.IPyRawBoundCallable rightCallable &&
+            leftCallable.BoundName is not null &&
+            string.Equals(leftCallable.BoundName, rightCallable.BoundName, StringComparison.Ordinal) &&
+            ReferenceEquals(leftCallable.BoundReceiver, rightCallable.BoundReceiver);
     }
 
     private static bool BuiltinTypeMethodsEqual(object left, object right)

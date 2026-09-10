@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "decode", "fromhex"])
+            results.append(dir(bytes) == ["__new__", "decode", "fromhex", "maketrans", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
-            results.append(dir(b"") == ["decode", "fromhex"])
+            results.append(dir(b"") == ["decode", "fromhex", "maketrans", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -3178,6 +3178,91 @@ public sealed class SharedFixedLabelBehaviorTests
         var expected = new List<object?>
         {
             true, true, true, true, true, true, "truthful",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesTranslateMaketrans()
+    {
+        // bytes.maketrans builds the 256-table like CPython and bytes
+        // translate applies it with an optional delete set; raw bound
+        // shapes compare by name and receiver with coherent hashes.
+        var script = new LythonEngine().Compile("""
+            results = []
+            t = bytes.maketrans(b"ab", b"cd")
+            results.append(len(t))
+            results.append(t[97:100] == b"cdc")
+            results.append(b"aabbcc".translate(t) == b"ccddcc")
+            results.append(b"aabbcc".translate(t, b"b") == b"cccc")
+            results.append(b"aabbcc".translate(t, delete=b"b") == b"cccc")
+            results.append(type(bytes.maketrans).__name__)
+            results.append(bytes.maketrans.__self__ is None)
+            results.append(bytes.maketrans.__name__)
+            results.append(bytes.maketrans.__qualname__)
+            results.append(bytes.maketrans.__module__ is None)
+            x = b"xx"
+            results.append(x.translate == x.translate)
+            results.append(hash(x.translate) == hash(x.translate))
+            results.append(bytes.translate == bytes.translate)
+            results.append(bytes.maketrans is bytes.maketrans)
+            results.append(b"".maketrans is bytes.maketrans)
+            results.append(bytes.translate(b"ab", t) == b"cd")
+            results.append("maketrans" in dir(bytes))
+            results.append("translate" in dir(b""))
+            d = {"a": 1}
+            results.append(d.update == d.update)
+            n = 5
+            results.append(n.to_bytes == n.to_bytes)
+            try:
+                bytes.maketrans(b"a", b"cd")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                bytes.maketrans("a", "b")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                bytes.maketrans(b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".translate(b"cd")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                b"ab".translate()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".translate(t, t, t)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".translate(t, bogus=1)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(256), true, true, true, true,
+            "builtin_function_or_method", true, "maketrans", "bytes.maketrans", true,
+            true, true, true, true, true, true, true, true, true, true,
+            "maketrans arguments must have same length",
+            "a bytes-like object is required, not 'str'",
+            "maketrans expected 2 arguments, got 1",
+            "translation table must be 256 characters long",
+            "translate() takes at least 1 positional argument (0 given)",
+            "translate() takes at most 2 arguments (3 given)",
+            "translate() got an unexpected keyword argument 'bogus'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

@@ -76,6 +76,10 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "decode", 0, 2, "LA3147", "bytes.decode([encoding][, errors]) expects zero to two arguments.", parameterNames: ["encoding", "errors"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "fromhex", 1, 1, "LA3166", "bytes.fromhex(string) expects one argument."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "fromhex", 1, 1, "LA3166", "bytes.fromhex(string) expects one argument."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "maketrans", 2, 2, "LA3172", "bytes.maketrans(from, to) expects two arguments.", parameterNames: ["from", "to"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "maketrans", 2, 2, "LA3172", "bytes.maketrans(from, to) expects two arguments.", parameterNames: ["from", "to"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "translate", 1, 2, "LA3172", "bytes.translate(table[, delete]) expects one or two arguments.", parameterNames: ["table", "delete"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "translate", 1, 2, "LA3172", "bytes.translate(table[, delete]) expects one or two arguments.", parameterNames: ["table", "delete"]));
         }
 
         static void AddStringCallableContract(

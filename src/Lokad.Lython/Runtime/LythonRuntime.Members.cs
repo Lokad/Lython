@@ -317,7 +317,7 @@ internal sealed partial class LythonRuntime
                 "denominator" => BigInteger.One,
                 "real" => integer.Value,
                 "imag" => BigInteger.Zero,
-                "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)),
+                "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
                 _ => MissingMemberValue.Instance,
             };
 
@@ -710,7 +710,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver);
                 }),
-                "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)),
+                "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)) { BoundName = "dict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)
@@ -818,7 +818,7 @@ internal sealed partial class LythonRuntime
                     dict,
                     "defaultdict.items",
                     static (receiver, span, context) => BuildItemsList(receiver, context, span)),
-                "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)),
+                "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)) { BoundName = "defaultdict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 2)

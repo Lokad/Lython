@@ -888,6 +888,8 @@ internal sealed partial class LythonRuntime
         // CPython, where the static shape is identical everywhere.
         internal static readonly BuiltinTypeMethod StrMaketrans = new("str", "maketrans", bindsOwner: false, StrMaketransImpl);
 
+        internal static readonly BuiltinTypeMethod BytesMaketrans = new("bytes", "maketrans", bindsOwner: false, BytesMaketransImpl);
+
         internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
         {
             _ownerName = ownerName;
@@ -965,6 +967,7 @@ internal sealed partial class LythonRuntime
             ("dict", "fromkeys") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, DictFromKeys),
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
+            ("bytes", "maketrans") => BuiltinTypeMethod.BytesMaketrans,
             ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes),
             ("bool", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BoolFromBytes),
             ("float", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, FloatFromHex),
@@ -1491,6 +1494,43 @@ internal sealed partial class LythonRuntime
         return !number.IsZero;
     }
 
+    private static object BytesMaketransImpl(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        RejectKeywordArguments("bytes.maketrans", arguments, span);
+        var positional = PositionalArguments(arguments);
+        if (positional.Length != 2)
+        {
+            throw new LythonRuntimeException("TypeError", "maketrans expected 2 arguments, got " + positional.Length, span);
+        }
+
+        if (positional[0] is not PyBytes from || positional[1] is not PyBytes to)
+        {
+            var offender = positional[0] is not PyBytes ? positional[0] : positional[1];
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(offender, context) + "'", span);
+        }
+
+        var source = from.ToArray();
+        var target = to.ToArray();
+        if (source.Length != target.Length)
+        {
+            throw new LythonRuntimeException("ValueError", "maketrans arguments must have same length", span);
+        }
+
+        var table = new byte[256];
+        for (var i = 0; i < 256; i++)
+        {
+            table[i] = (byte)i;
+        }
+
+        for (var i = 0; i < source.Length; i++)
+        {
+            table[source[i]] = target[i];
+        }
+
+        return CreateBytes(table, context, span);
+    }
+
     // Shared choke point for unbound builtin type methods: only constructors
     // for types with instance member tables (list, str, bytes, dict, set)
     // serve descriptors, and only for members their tables resolve to a
@@ -1534,6 +1574,16 @@ internal sealed partial class LythonRuntime
     // resolution treats them uniformly without naming generic instantiations.
     internal interface IPyBoundEngineMethod
     {
+    }
+
+    // Marks raw bound callables carrying names (dict/defaultdict update,
+    // bytes translate, int to_bytes) so equality treats them uniformly
+    // without naming the private wrapper.
+    internal interface IPyRawBoundCallable
+    {
+        string? BoundName { get; }
+
+        object? BoundReceiver { get; }
     }
 
     // Types expose their own stable __new__ slot like CPython (int.__new__
