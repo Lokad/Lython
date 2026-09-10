@@ -56,12 +56,14 @@ internal sealed partial class LythonRuntime
             return pattern;
         }
 
-        private static PyPath RequirePath(object value, string signature, LythonSourceSpan span)
+        private static PyPath RequirePath(object value, string signature, LythonSourceSpan span, ExecutionContext? context = null)
         {
             return value switch
             {
                 PyPath path => path,
-                _ when PyStringOps.TryAsString(value, out var text) => new PyPath(PathOps.NormalizeLexical(text)),
+                _ when PyStringOps.TryAsString(value, out var text) => context is null
+                    ? new PyPath(PathOps.NormalizeLexical(text))
+                    : OwnPathResult(PathOps.NormalizeLexical(text), text, context.MemoryGovernor, span),
                 _ => throw new LythonRuntimeException("TypeError", $"{signature} expects a Path or string argument.", span)
             };
         }

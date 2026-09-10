@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.rename(target) expects one argument.", span);
                         }
 
-                        var target = RequirePath(arguments[0], "Path.rename(target)", span);
+                        var target = RequirePath(arguments[0], "Path.rename(target)", span, context);
                         context.RegisterHostCall(span);
                         context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.rename(target) expects one argument.", span);
                         }
 
-                        var target = RequirePath(arguments[0], "Path.rename(target)", span);
+                        var target = RequirePath(arguments[0], "Path.rename(target)", span, context);
                         context.RegisterHostCall(span);
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
@@ -235,7 +235,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
                         }
 
-                        var target = RequirePath(arguments[0], "Path.replace(target)", span);
+                        var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
                         context.RegisterHostCall(span);
                         if (context.HostStat(target.Value.AsString(), span).Exists)
                         {
@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
                         }
 
-                        var target = RequirePath(arguments[0], "Path.replace(target)", span);
+                        var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
                         context.RegisterHostCall(span);
                         if ((await context.HostStatAsync(target.Value.AsString(), span).ConfigureAwait(false)).Exists)
                         {
