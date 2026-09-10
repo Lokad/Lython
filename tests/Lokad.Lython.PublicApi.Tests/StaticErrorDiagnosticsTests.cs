@@ -2925,4 +2925,32 @@ print(random.choices([1, 2], k=True))
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3157");
     }
+
+    [Fact]
+    public async Task MatchGroups_AcceptsStoredIndexesAtCompileTime()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import re
+            m = re.search("(a)(b)", "cab")
+            vals = []
+            vals.append(m.groups()[1])
+            vals.append(str(len(m.groups())))
+            vals.append("|".join(list(m.groups())))
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write("|".join(vals))
+            __lython_file.close()
+            """);
+        Assert.True(script.IsValid);
+        Assert.DoesNotContain(script.Diagnostics, d => d.Code == "LA3117");
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("b|2|a|b", syncHost.ReadText("/out.txt"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("b|2|a|b", asyncHost.ReadText("/out.txt"));
+    }
 }

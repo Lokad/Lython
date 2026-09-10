@@ -102,7 +102,9 @@ internal static class StaticRegexReturnResolver
         {
             "group" when arguments.Positional.Count == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
             "group" => AbstractValue.Unknown(call.Span),
-            "groups" => AbstractValue.Tuple([], call.Span),
+            // Group arity is pattern-dependent: an empty-tuple shape wrongly rejects
+            // literal indexes into stored groups, mirroring groupdict.
+            "groups" => AbstractValue.Unknown(call.Span),
             "groupdict" => AbstractValue.Unknown(call.Span),
             "expand" => AbstractValue.StringType(call.Span),
             "start" or "end" => AbstractValue.IntegerType(call.Span),
