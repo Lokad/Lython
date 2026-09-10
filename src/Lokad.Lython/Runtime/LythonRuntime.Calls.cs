@@ -556,6 +556,7 @@ internal sealed partial class LythonRuntime
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             PyFunctionBase => PyType.FunctionType,
             LambdaFunction => PyType.FunctionType,
+            FunctionNewMethod => PyType.FunctionType,
             IPySlotWrapper => PyType.WrapperDescriptorType,
             ObjectNewMethod => PyType.BuiltinFunctionType,
             PyBoundMethod method => method.Function switch
@@ -706,6 +707,64 @@ internal sealed partial class LythonRuntime
                 arguments[0].Value is LythonRuntime.ExceptionTypeValue subclassCtor)
             {
                 return subclassCtor.Invoke(arguments[1..], span, context);
+            }
+
+            throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
+        }
+    }
+
+    // Pure-Python-modeled types expose their __new__ slot as a plain function
+    // like CPython (no __self__, function identity); wrappers are cached on
+    // the owning type object beside it.
+    internal sealed class FunctionNewMethod : ICallable, IPyDynamicAttributes
+    {
+        private readonly object _owner;
+        private readonly string _shortName;
+
+        internal FunctionNewMethod(object owner, string shortName)
+        {
+            _owner = owner;
+            _shortName = shortName;
+        }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString("__new__");
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString(_shortName + ".__new__");
+                return true;
+            }
+
+            if (name is "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Construction routes to the owning type like CPython
+            // (NT.__new__(NT, value) builds NT(value)); anything else fails
+            // explicitly since cls-threading is unsupported.
+            if (arguments.Length == 0 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
+            }
+
+            if (ReferenceEquals(arguments[0].Value, _owner) &&
+                _owner is LythonRuntime.ICallable ownerCallable)
+            {
+                return ownerCallable.Invoke(arguments[1..], span, context);
             }
 
             throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);

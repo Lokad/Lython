@@ -38,6 +38,10 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public string Name => _typeName;
 
+    internal LythonRuntime.FunctionNewMethod GetNewSlot() => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, _typeName);
+
+    internal LythonRuntime.FunctionNewMethod? NewSlot { get; set; }
+
     public IReadOnlyList<string> FieldNames => _fieldNames;
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -118,6 +122,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         value = name switch
         {
             "__name__" => _nameValue,
+            "__new__" => GetNewSlot(),
             "_fields" => _fieldsTuple,
             "_field_defaults" => GetFieldDefaults(),
             "_make" => new BoundNamedTupleMake(this),
@@ -258,6 +263,11 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         if (fieldIndex >= 0)
         {
             value = _values[fieldIndex];
+            return true;
+        }
+
+        if (name == "__new__" && _type.TryGetMember(name, out value))
+        {
             return true;
         }
 

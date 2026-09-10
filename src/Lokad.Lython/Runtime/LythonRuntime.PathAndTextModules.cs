@@ -87,6 +87,10 @@ internal sealed partial class LythonRuntime
 
             public string Name => $"pathlib.{ShortName}";
 
+            internal LythonRuntime.FunctionNewMethod? NewSlot { get; set; }
+
+            internal LythonRuntime.FunctionNewMethod GetNewSlot() => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, ShortName);
+
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
@@ -206,6 +210,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("NotImplementedError", $"{Name}.home() is not supported by Lython; the host does not expose an ambient user home directory.", span);
                     }, $"{Name}.home", []),
                     "__name__" => _nameValue,
+                    "__new__" => GetNewSlot(),
                     _ => MissingMemberValue.Instance
                 };
 

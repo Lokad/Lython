@@ -1644,8 +1644,8 @@ public sealed class SharedFixedLabelBehaviorTests
     public async Task NamedTupleTypeIdentity()
     {
         // Created namedtuple types report the type builtin like CPython
-        // while instances share their defining type object; per-type own
-        // __new__ slots stay missing until the construction epic lands.
+        // while instances share their defining type object (own __new__
+        // slots live in FunctionShapedNewSlots).
         var script = new LythonEngine().Compile("""
             from collections import namedtuple
             NT = namedtuple("NT", ["x"])
@@ -1657,13 +1657,61 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(v) is NT)
             results.append(NT.__init_subclass__.__self__ is NT)
             results.append(v.__init_subclass__.__self__ is NT)
-            results.append(hasattr(NT, "__new__"))
             return results
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
-            true, true, true, true, true, true, false,
+            true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FunctionShapedNewSlots()
+    {
+        // Pure-Python-modeled types own a plain-function __new__ slot like
+        // CPython: per-type identity shared with instances, function class,
+        // qualified names, exact-owner construction, and explicit failure
+        // otherwise; the module stays None like the other slot wrappers.
+        var script = new LythonEngine().Compile("""
+            from collections import namedtuple
+            NT = namedtuple("NT", ["x"])
+            NT2 = namedtuple("NT2", ["x"])
+            v = NT("a")
+            results = []
+            results.append(NT.__new__ is object.__new__)
+            results.append(v.__new__ is NT.__new__)
+            results.append(NT.__new__ is NT2.__new__)
+            results.append(type(NT.__new__) is type(lambda: 0))
+            results.append(NT.__new__.__qualname__)
+            results.append(NT.__new__.__module__ is None)
+            results.append(NT.__new__(NT, "b").x)
+            try:
+                NT.__new__(NT2, "b")
+            except TypeError:
+                results.append("mismatch-typeerror")
+            from pathlib import Path
+            p = Path("a")
+            results.append(Path.__new__ is object.__new__)
+            results.append(p.__new__ is Path.__new__)
+            results.append(type(Path.__new__) is type(lambda: 0))
+            results.append(Path.__new__.__qualname__)
+            results.append(str(Path.__new__(Path, "b")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            false, true, false, true, "NT.__new__", true, "b",
+            "mismatch-typeerror",
+            false, true, true, "Path.__new__", "b",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

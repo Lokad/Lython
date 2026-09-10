@@ -336,6 +336,7 @@ internal sealed partial class LythonRuntime
                 "suffixes" => GovernedSuffixes(path.Value, governor, span),
                 "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span),
                 "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span),
+                "__new__" => PathlibModule.PathType.GetNewSlot(),
                 _ => MissingMemberValue.Instance
             };
 
