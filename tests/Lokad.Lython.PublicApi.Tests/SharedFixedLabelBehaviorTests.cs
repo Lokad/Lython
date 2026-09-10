@@ -2202,6 +2202,76 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task UnboundDescriptorGetProtocol()
+    {
+        // The __get__ slot of unbound descriptors binds like a CPython
+        // method-wrapper: receivers resolve to their bound member, None
+        // against an explicit type returns the descriptor itself, and
+        // arity, keyword and receiver failures use the wrapper texts.
+        var script = new LythonEngine().Compile("""
+            results = []
+            x = [1, 2]
+            g = list.append.__get__
+            results.append(type(g).__name__)
+            results.append(g.__name__)
+            results.append(g.__qualname__)
+            results.append(g.__self__ is list.append)
+            results.append(g.__objclass__ is type(list.append))
+            results.append(g == list.append.__get__)
+            results.append(hash(g) == hash(list.append.__get__))
+            results.append(callable(g))
+            b = list.append.__get__(x, list)
+            results.append(b == x.append)
+            results.append(type(b).__name__)
+            results.append(b.__self__ is x)
+            b(3)
+            results.append(x == [1, 2, 3])
+            results.append(list.append.__get__(None, list) is list.append)
+            try:
+                list.append.__get__(None)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.append.__get__()
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.append.__get__(x, list, 1)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.append.__get__(obj=x)
+            except TypeError as t:
+                results.append(str(t))
+            try:
+                list.append.__get__(1, list)
+            except TypeError as t:
+                results.append(str(t))
+            results.append(hasattr(list.append, "__get__"))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "method-wrapper", "__get__", "method_descriptor.__get__", true, true,
+            true, true, true, true, "builtin_function_or_method", true, true,
+            true, "__get__(None, None) is invalid",
+            " expected at least 1 argument, got 0",
+            " expected at most 2 arguments, got 3",
+            "wrapper __get__() takes no keyword arguments",
+            "descriptor 'append' for 'list' objects doesn't apply to a 'int' object",
+            true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

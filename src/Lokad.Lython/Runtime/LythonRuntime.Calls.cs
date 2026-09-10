@@ -687,20 +687,27 @@ internal sealed partial class LythonRuntime
             }
 
             var receiver = arguments[receiverIndex].Value;
-            if (receiver is null || !DoesObjectMatchBuiltinType(_ownerName, receiver))
-            {
-                throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + ReceiverTypeName(receiver, context) + "' object", span);
-            }
-
-            if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable boundCallable)
-            {
-                throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span);
-            }
+            var boundCallable = (ICallable)BindReceiver(receiver, span, context);
 
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
             return boundCallable.Invoke(rest, span, context);
+        }
+
+        internal object BindReceiver(object? receiver, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (receiver is null || !DoesObjectMatchBuiltinType(_ownerName, receiver))
+            {
+                throw new LythonRuntimeException("TypeError", "descriptor '" + _memberName + "' for '" + _ownerName + "' objects doesn't apply to a '" + ReceiverTypeName(receiver, context) + "' object", span);
+            }
+
+            if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable)
+            {
+                throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span);
+            }
+
+            return bound;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -720,6 +727,12 @@ internal sealed partial class LythonRuntime
             if (name == "__objclass__")
             {
                 value = _owner;
+                return true;
+            }
+
+            if (name == "__get__")
+            {
+                value = new PyBoundMethod(this, UnboundGetMethod.Instance);
                 return true;
             }
 
@@ -761,6 +774,92 @@ internal sealed partial class LythonRuntime
             }
 
             return "object";
+        }
+    }
+
+    // The __get__ slot of unbound descriptors behaves like CPython method
+    // wrappers: binding a receiver returns its bound member, binding None
+    // against an explicit type returns the descriptor itself, and arity,
+    // keyword and receiver failures use the exact wrapper texts. One shared
+    // instance serves every descriptor: all member reads are constant and
+    // calls delegate to the descriptor riding in as the bound self. There is
+    // deliberately no __module__ or __doc__ like the other engine slot
+    // wrappers (the engine keeps no doc corpus).
+    internal sealed class UnboundGetMethod : ICallable, IPyDynamicAttributes, IPySlotWrapper
+    {
+        internal static readonly UnboundGetMethod Instance = new();
+
+        private UnboundGetMethod()
+        {
+        }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__name__")
+            {
+                value = PyString.FromString("__get__");
+                return true;
+            }
+
+            if (name == "__qualname__")
+            {
+                value = PyString.FromString("method_descriptor.__get__");
+                return true;
+            }
+
+            if (name == "__objclass__")
+            {
+                value = PyType.MethodDescriptorType;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            foreach (var argument in arguments)
+            {
+                if (argument.IsKeyword)
+                {
+                    throw new LythonRuntimeException("TypeError", "wrapper __get__() takes no keyword arguments", span);
+                }
+            }
+
+            // arguments[0] is the descriptor the bound method prepended.
+            var positionals = arguments.Length - 1;
+            if (positionals < 1)
+            {
+                throw new LythonRuntimeException("TypeError", " expected at least 1 argument, got 0", span);
+            }
+
+            if (positionals > 2)
+            {
+                throw new LythonRuntimeException("TypeError", " expected at most 2 arguments, got " + positionals + "", span);
+            }
+
+            if (arguments[0].Value is not UnboundTypeMethod descriptor)
+            {
+                throw new LythonRuntimeException("TypeError", "__get__(None, None) is invalid", span);
+            }
+
+            var target = arguments[1].Value;
+            if (target is PyNone)
+            {
+                if (positionals == 2 && arguments[2].Value is not PyNone)
+                {
+                    return descriptor;
+                }
+
+                throw new LythonRuntimeException("TypeError", "__get__(None, None) is invalid", span);
+            }
+
+            // Binding drops the owner argument like CPython and resolves
+            // through the shared helper, so receiver validation and bound
+            // member construction stay in one place.
+            return descriptor.BindReceiver(arguments[1].Value, span, context);
         }
     }
 
