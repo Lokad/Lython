@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
             {
                 PyDict dict => dict.TryGetValue(runtimeKey, out var value)
                     ? value
-                    : throw new LythonRuntimeException("KeyError", key, _span),
+                    : throw new LythonRuntimeException("KeyError", key, _span, null, runtimeKey),
                 PyDefaultDict defaultDict => defaultDict.GetOrCreate(runtimeKey, _context, _span),
                 PyCounter counter => counter.GetCount(runtimeKey),
                 IPySubscriptableValue mapping => mapping.GetSubscript(runtimeKey, _span),

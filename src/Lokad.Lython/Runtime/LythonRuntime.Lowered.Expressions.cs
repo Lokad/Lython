@@ -358,14 +358,14 @@ internal sealed partial class LythonRuntime
             case PyDict dict:
                 if (!dict.Remove(ValidateDictionaryKey(index, span)))
                 {
-                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                    throw RuntimeErrors.MissingKey(index, span);
                 }
 
                 return;
             case PyDefaultDict defaultDict:
                 if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
                 {
-                    throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+                    throw RuntimeErrors.MissingKey(index, span);
                 }
 
                 return;

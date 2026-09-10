@@ -32,8 +32,10 @@ internal static class RuntimeErrors
     public static LythonRuntimeException Host(string operation, Exception exception, LythonSourceSpan? span)
         => new("RuntimeError", $"Host {operation} failed.", span, exception);
 
-    public static LythonRuntimeException Key(string message, LythonSourceSpan? span)
-        => new("KeyError", message, span);
+    // Mapping misses carry their key as the payload so str/args render like
+    // CPython; the fixed text stays for the message member and failure paths.
+    public static LythonRuntimeException MissingKey(object key, LythonSourceSpan? span)
+        => new("KeyError", "Key was not found.", span, null, key);
 
     public static LythonRuntimeException NotCallable(LythonSourceSpan span)
         => Type("Object is not callable.", span);

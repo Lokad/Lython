@@ -1285,6 +1285,83 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task KeyErrorMissingKeyCarriesKey()
+    {
+        // Mapping misses carry their key like CPython, so str renders the
+        // key through repr and args holds it; reads, deletes, ChainMap
+        // lookups, defaultdict misses, pop and percent formatting agree.
+        var script = new LythonEngine().Compile("""
+            results = []
+            d = {"a": 1}
+            for k in ["b"]:
+                try:
+                    d[k]
+                except KeyError as e:
+                    results.append(str(e))
+                    results.append(e.args == ("b",))
+                    results.append(repr(e))
+            for k in ["c"]:
+                try:
+                    del d[k]
+                except KeyError as e:
+                    results.append(str(e))
+                    results.append(e.args == ("c",))
+            from collections import ChainMap
+            cm = ChainMap({"a": 1})
+            try:
+                cm["z"]
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("z",))
+            from collections import defaultdict
+            dd = defaultdict(None)
+            try:
+                dd["k"]
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("k",))
+            try:
+                d.pop("q")
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("q",))
+            try:
+                x = "%(x)s" % {}
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ("x",))
+            try:
+                d[(1, 2)]
+            except KeyError as e:
+                results.append(str(e))
+            try:
+                d[99]
+            except KeyError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "'b'", true, "KeyError('b')",
+            "'c'", true,
+            "'z'", true,
+            "'k'", true,
+            "'q'", true,
+            "'x'", true,
+            "(1, 2)",
+            "99",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

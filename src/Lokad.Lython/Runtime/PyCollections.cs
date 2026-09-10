@@ -60,7 +60,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
         var created = DefaultFactory switch
         {
-            PyNone => throw new LythonRuntimeException("KeyError", "Key was not found.", span),
+            PyNone => throw RuntimeErrors.MissingKey(key, span),
             LythonRuntime.ICallable callable => LythonRuntime.RuntimeValue(callable.Invoke([], span, context)),
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", span)
         };

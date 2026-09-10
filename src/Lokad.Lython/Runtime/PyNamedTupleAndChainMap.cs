@@ -414,7 +414,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             }
         }
 
-        throw new LythonRuntimeException("KeyError", "Key was not found.", span);
+        throw RuntimeErrors.MissingKey(index, span);
     }
 
     public void SetSubscript(object index, object value, LythonSourceSpan span)

@@ -258,7 +258,9 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException(
                             "KeyError",
                             renderedKey is null ? "Key was not found." : $"Key '{renderedKey}' was not found.",
-                            span);
+                            span,
+                            null,
+                            arguments[0]);
                     }
 
                     dict.Remove(key);

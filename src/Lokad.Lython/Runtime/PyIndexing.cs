@@ -139,7 +139,7 @@ internal static class PyIndexing
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
         if (!dict.TryGetValue(key, out var value))
         {
-            throw RuntimeErrors.Key("Key was not found.", span);
+            throw RuntimeErrors.MissingKey(index, span);
         }
 
         return value;

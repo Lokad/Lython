@@ -14,6 +14,22 @@ internal static class PyRendering
     private static readonly PyString FileLiteral = PyString.FromString("<file>");
     private static readonly PyString ObjectLiteral = PyString.FromString("<object>");
 
+    // Mapping misses carry their key as the payload; like CPython, the key
+    // renders through repr. Constructed values and domain errors without a
+    // payload keep the stored message.
+    private static PyString RenderExceptionMessage(PyException exception, PyRenderingContext context)
+    {
+        if (string.Equals(exception.TypeName, "KeyError", StringComparison.Ordinal) &&
+            exception.Identity.IsBuiltin &&
+            exception.ExplicitArgs is null &&
+            !ReferenceEquals(exception.Value, PyNone.Instance))
+        {
+            return ToReprPyString(exception.Value, context);
+        }
+
+        return PyString.FromString(exception.Message, context.Context.MemoryGovernor);
+    }
+
     public static PyString ToInterpolatedPyString(object value, PyRenderingContext context)
     {
         context.Context.EnterInterpreterFrame(null);
@@ -33,7 +49,7 @@ internal static class PyRendering
                 LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: true),
                 LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: true),
                 LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: true),
-                PyException exception => PyString.FromString(exception.Message, context.Context.MemoryGovernor),
+                PyException exception => RenderExceptionMessage(exception, context),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
@@ -64,7 +80,7 @@ internal static class PyRendering
                 LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: false),
                 LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: false),
                 LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: false),
-                PyException exception => PyString.FromString(exception.Message, context.Context.MemoryGovernor),
+                PyException exception => RenderExceptionMessage(exception, context),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
