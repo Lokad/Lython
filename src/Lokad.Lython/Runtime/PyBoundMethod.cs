@@ -20,9 +20,10 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         };
     }
 
-    // Bound methods expose the wrapped function.__name__/__module__ like
-    // CPython bound methods; engine method objects without names stay
-    // missing, matching method-wrapper surface (no __module__ there).
+    // Bound methods expose the wrapped __self__/__func__ plus
+    // function.__name__/__module__ like CPython bound methods; engine method
+    // objects without names stay missing, matching method-wrapper surface
+    // (no __module__ there).
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         if (name is "__name__" or "__qualname__")
@@ -41,6 +42,18 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
             }
 
             value = PyString.FromString(functionName);
+            return true;
+        }
+
+        if (name == "__self__")
+        {
+            value = _self;
+            return true;
+        }
+
+        if (name == "__func__")
+        {
+            value = _function;
             return true;
         }
 
