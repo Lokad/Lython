@@ -546,6 +546,43 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
     [Fact]
+    public async Task NewSlotIdentities()
+    {
+        // Type constructors expose their own stable __new__ slot like
+        // CPython, and builtin values resolve their type own slot while
+        // engine callables share object.__new__. Construction through the
+        // slot stays unsupported; other shapes stay missing.
+        var script = new LythonEngine().Compile("""
+            return [int.__new__.__qualname__, str.__new__.__qualname__,
+                int.__new__ is int.__new__,
+                (1).__new__ is int.__new__,
+                "x".__new__ is str.__new__,
+                [].__new__ is list.__new__,
+                (1).__new__.__self__ is int,
+                int.__new__.__module__ is None,
+                len.__new__ is object.__new__,
+                type(int.__new__).__name__,
+                int.__new__.__class__ is type(int.__new__),
+                object.__new__.__qualname__,
+                hasattr((), "__new__"), hasattr(1, "__new__"),
+                hasattr(len, "__new__"), hasattr(str, "__new__")]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "int.__new__", "str.__new__", true, true, true, true, true,
+            true, true, "builtin_function_or_method", true,
+            "object.__new__", true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

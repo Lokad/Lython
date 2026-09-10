@@ -464,6 +464,13 @@ internal static partial class StaticContracts
             return false;
         }
 
+        // __new__ resolves through the target type own slot at runtime,
+        // except on modules, which keep their member-table verdict.
+        if (memberName == "__new__" && value.Kind != AbstractValueKind.Module)
+        {
+            return false;
+        }
+
         bool? hasMember = value.Kind switch
         {
             AbstractValueKind.Module => IsKnownBuiltinModule(value.RequireText())

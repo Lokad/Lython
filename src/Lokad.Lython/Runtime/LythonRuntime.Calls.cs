@@ -592,6 +592,69 @@ internal sealed partial class LythonRuntime
     {
     }
 
+    // Type constructors expose their own stable __new__ slot like CPython
+    // (int.__new__ is int.__new__, qualified by the constructor, bound to
+    // it). Construction through the slot is unsupported; type(...) builds
+    // values. One wrapper per constructor is cached as fixed type metadata.
+    private sealed class CtorNewMethod : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
+    {
+        private readonly BuiltinCallable _owner;
+
+        internal CtorNewMethod(BuiltinCallable owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString("__new__");
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString(BuiltinCallable.ShortCallableName(_owner.Name) + ".__new__");
+                return true;
+            }
+
+            if (name is "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            if (name is "__self__")
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            _ = arguments;
+            throw new LythonRuntimeException("TypeError", "type.__new__ construction is unsupported in Lython; call type(...) instead.", span);
+        }
+    }
+
+    // Shared choke point for constructor __new__ slots: only entries of the
+    // builtin type table denote types with their own slot in Lython.
+    internal static bool TryGetTypeNewSlot(object classValue, [MaybeNullWhen(false)] out object value)
+    {
+        if (classValue is BuiltinCallable ctor && BuiltinTypeBaseNames.ContainsKey(ctor.Name))
+        {
+            ctor.NewSlot ??= new CtorNewMethod(ctor);
+            value = ctor.NewSlot;
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private BuiltinCallable(
@@ -659,6 +722,8 @@ internal sealed partial class LythonRuntime
 
         private OwnedTypeHierarchy? _hierarchy;
 
+        internal CtorNewMethod? NewSlot { get; set; }
+
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if ((name == "__bases__" || name == "__mro__") &&
@@ -705,11 +770,16 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__new__" && LythonRuntime.TryGetTypeNewSlot(this, out value))
+            {
+                return true;
+            }
+
             value = PyNone.Instance;
             return false;
         }
 
-        private static string ShortCallableName(string name)
+        internal static string ShortCallableName(string name)
         {
             var dot = name.LastIndexOf('.');
             return dot < 0 ? name : name.Substring(dot + 1);

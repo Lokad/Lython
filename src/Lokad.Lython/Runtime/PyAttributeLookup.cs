@@ -123,10 +123,42 @@ internal static class PyAttributeLookup
 
     // Object slots resolve through the run object type for any receiver missed
     // by the flat member tables, like CPython where every object carries them.
-    // Instance slots bind the receiver; __init_subclass__ binds type(target).
-    // __new__ keeps its own rules (absent on instances).
+    // Instance slots bind the receiver; __init_subclass__ binds type(target);
+    // __new__ resolves through the target type own slot.
     internal static bool TryResolveObjectSlot(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (memberName is "__new__")
+        {
+            // Instances never carry __new__ (it lives on the type): builtin
+            // values resolve their type own slot, engine callables share
+            // object.__new__, and anything else stays missing.
+            if (!LythonRuntime.TryGetValueClass(target, context, out var classValue) ||
+                classValue is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            if (ReferenceEquals(classValue, PyType.BuiltinFunctionType) ||
+                ReferenceEquals(classValue, PyType.MethodWrapperType) ||
+                ReferenceEquals(classValue, PyType.WrapperDescriptorType))
+            {
+                if (!context.TryGetBuiltin("object", out var sharedBase) ||
+                    sharedBase is not PyType sharedType ||
+                    !sharedType.TryLookupInMro(memberName, 0, out var sharedRaw, out _) ||
+                    sharedRaw is not IPyDescriptor sharedDescriptor)
+                {
+                    value = PyNone.Instance;
+                    return false;
+                }
+
+                value = sharedDescriptor.Get(null, sharedType, context, span);
+                return true;
+            }
+
+            return LythonRuntime.TryGetTypeNewSlot(classValue, out value);
+        }
+
         if (memberName is "__init_subclass__")
         {
             if (!context.TryGetBuiltin("object", out var subclassBase) ||
