@@ -352,4 +352,38 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task GeneratedMethodModule()
+    {
+        // Dataclass methods report the defining module; total_ordering methods
+        // report functools, where CPython synthesizes them.
+        var script = new LythonEngine().Compile("""
+            import functools
+            from dataclasses import dataclass
+            @dataclass
+            class P:
+                x: int = 0
+            @functools.total_ordering
+            class C:
+                def __eq__(self, o):
+                    return True
+                def __lt__(self, o):
+                    return False
+            return [P.__init__.__module__, P.__eq__.__module__, P.__repr__.__module__,
+                C.__gt__.__module__, C().__gt__.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "__main__", "__main__", "__main__", "functools", "functools",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

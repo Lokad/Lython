@@ -3,6 +3,12 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+/// <summary>Exposes a fixed __module__ label for generated method objects.</summary>
+internal interface IPyMethodModule
+{
+    PyString? ModuleName { get; }
+}
+
 internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
 {
     private readonly object _self;
@@ -74,6 +80,12 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
                 function.TryGetModuleName(out var moduleName))
             {
                 value = moduleName;
+                return true;
+            }
+
+            if (_function is IPyMethodModule generated && generated.ModuleName is not null)
+            {
+                value = generated.ModuleName;
                 return true;
             }
 

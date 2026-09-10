@@ -66,8 +66,30 @@ internal sealed partial class LythonRuntime
         Ge,
     }
 
-    private sealed class TotalOrderingMethod : IPyBindableCallable, INamedRuntimeCallable
+    private sealed class TotalOrderingMethod : IPyBindableCallable, INamedRuntimeCallable, IPyMethodModule, IPyDynamicAttributes
     {
+        // Generated ordering methods live in functools like their CPython
+        // counterparts, which functools.total_ordering synthesizes.
+        public PyString? ModuleName => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("functools");
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name == "__module__" && ModuleName is not null)
+            {
+                value = ModuleName;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
         public string Name => _generatedMethod switch
         {
             OrderingMethod.Lt => "__lt__",

@@ -117,8 +117,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // chain to its module root and aliasing that frame.__name__ string, so
     // reads cost no retained storage and alias stably like CPython.
     internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
+        => TryGetModuleName(_closure, out moduleName);
+
+    internal static bool TryGetModuleName(LythonRuntime.ExecutionContext context, [MaybeNullWhen(false)] out PyString moduleName)
     {
-        var frame = _closure.Frame;
+        var frame = context.Frame;
         while (frame.Parent is not null)
         {
             frame = frame.Parent;

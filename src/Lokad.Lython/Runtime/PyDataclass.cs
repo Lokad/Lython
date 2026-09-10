@@ -42,42 +42,47 @@ internal static partial class PyDataclass
     {
         ValidateDataclassOptions(type, decorator, span);
 
+        // Generated methods report the defining module like CPython; when the
+        // module cannot be resolved they leave __module__ missing instead of
+        // reporting a wrong value.
+        PyFunctionBase.TryGetModuleName(context, out var moduleName);
+
         type.SetDataclassMetadata(fields, decorator.Repr, decorator.Eq, decorator.Order, DetermineHashMode(type, decorator));
         type.TrySetMember("__dataclass_params__", new PyDataclassParamsObject(decorator));
         type.TrySetMember("__dataclass_fields__", BuildFieldMap(fields, context, span));
 
         if (decorator.Init && !type.TryGetOwnMember("__init__", out _))
         {
-            type.TrySetMember("__init__", new DataclassInitMethod(type.Name, fields));
+            type.TrySetMember("__init__", new DataclassInitMethod(type.Name, fields, moduleName));
         }
 
         if (decorator.Repr && !type.TryGetOwnMember("__repr__", out _))
         {
-            type.TrySetMember("__repr__", new DataclassReprMethod(type.Name, type.DataclassReprFields.RequireNotNull()));
+            type.TrySetMember("__repr__", new DataclassReprMethod(type.Name, type.DataclassReprFields.RequireNotNull(), moduleName));
         }
 
         if (decorator.Eq && !type.TryGetOwnMember("__eq__", out _))
         {
-            type.TrySetMember("__eq__", new DataclassEqMethod(type.Name, type.DataclassComparableFields.RequireNotNull()));
+            type.TrySetMember("__eq__", new DataclassEqMethod(type.Name, type.DataclassComparableFields.RequireNotNull(), moduleName));
         }
 
         if (decorator.Order)
         {
-            type.TrySetMember("__lt__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.Less));
-            type.TrySetMember("__le__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.LessEqual));
-            type.TrySetMember("__gt__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.Greater));
-            type.TrySetMember("__ge__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.GreaterEqual));
+            type.TrySetMember("__lt__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.Less, moduleName));
+            type.TrySetMember("__le__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.LessEqual, moduleName));
+            type.TrySetMember("__gt__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.Greater, moduleName));
+            type.TrySetMember("__ge__", new DataclassOrderMethod(type.Name, DataclassOrderOperation.GreaterEqual, moduleName));
         }
 
         if (decorator.Frozen)
         {
-            type.TrySetMember("__setattr__", new DataclassFrozenSetAttrMethod(type.Name));
-            type.TrySetMember("__delattr__", new DataclassFrozenDelAttrMethod(type.Name));
+            type.TrySetMember("__setattr__", new DataclassFrozenSetAttrMethod(type.Name, moduleName));
+            type.TrySetMember("__delattr__", new DataclassFrozenDelAttrMethod(type.Name, moduleName));
         }
 
         if (type.DataclassHashMode == DataclassHashMode.Generated && !type.TryGetOwnMember("__hash__", out _))
         {
-            type.TrySetMember("__hash__", new DataclassHashMethod(type.Name));
+            type.TrySetMember("__hash__", new DataclassHashMethod(type.Name, moduleName));
         }
 
         if (decorator.MatchArgs && !type.TryGetOwnMember("__match_args__", out _))
