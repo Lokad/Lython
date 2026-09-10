@@ -1210,6 +1210,7 @@ internal sealed partial class LythonRuntime
             "str" => PyString.FromString(""),
             "bytes" => new PyBytes([]),
             "dict" => new PyDict(),
+            "tuple" => new PyTuple(Array.Empty<object>()),
             "set" => new PySet(),
             _ => null,
         };

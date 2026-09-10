@@ -198,6 +198,56 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static class TupleMembers
+    {
+        public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "index" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length is < 1 or > 3)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
+                    }
+
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, tuple.Count, 0, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, tuple.Count, tuple.Count, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    for (var i = start; i < stop; i++)
+                    {
+                        if (AreEqual(tuple[i], arguments[0]))
+                        {
+                            return new BigInteger(i);
+                        }
+                    }
+
+                    throw new LythonRuntimeException("ValueError", "tuple.index(value): value is not in tuple", span);
+                }, "tuple.index", ["value", "start", "stop"], 1),
+                "count" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.count(value) expects one argument.", span);
+                    }
+
+                    var count = 0;
+                    for (var i = 0; i < tuple.Count; i++)
+                    {
+                        if (AreEqual(tuple[i], arguments[0]))
+                        {
+                            count++;
+                        }
+                    }
+
+                    return new BigInteger(count);
+                }, "tuple.count", ["value"]),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+    }
+
     internal static class DictMembers
     {
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)

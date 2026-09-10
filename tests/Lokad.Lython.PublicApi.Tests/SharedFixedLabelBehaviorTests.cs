@@ -2576,6 +2576,69 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TupleIndexCount()
+    {
+        // Plain tuples serve index/count like CPython (mirroring the list
+        // shapes), with unbound descriptors on the constructor, static
+        // coverage, and dir() lists.
+        var script = new LythonEngine().Compile("""
+            results = []
+            t = (1, 2, 2)
+            results.append(t.index(2))
+            results.append(t.index(2, 2))
+            results.append(t.count(2))
+            results.append(t.count(9))
+            results.append(tuple.index((1, 2), 2))
+            results.append(t.index == t.index)
+            results.append(tuple.index == tuple.index)
+            results.append(tuple.index == t.index)
+            results.append(type(tuple.index).__name__)
+            results.append(type(t.index).__name__)
+            results.append(t.index.__self__ is t)
+            results.append(hasattr(tuple.index, "__self__"))
+            results.append(dir(t) == ["count", "index"])
+            results.append(dir(tuple) == ["__new__", "count", "index"])
+            results.append("index" in dir(tuple))
+            try:
+                (1,).index(9)
+            except ValueError as v:
+                results.append(str(v))
+            try:
+                (1,).index()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                tuple.index(1, 2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                tuple.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(1), new BigInteger(2), new BigInteger(2),
+            new BigInteger(0), new BigInteger(1),
+            true, true, false, "method_descriptor", "builtin_function_or_method",
+            true, false, true, true, true,
+            "tuple.index(value): value is not in tuple",
+            "Method 'tuple.index' is missing argument 'value'.",
+            "descriptor 'index' for 'tuple' objects doesn't apply to a 'int' object",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

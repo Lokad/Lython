@@ -131,6 +131,12 @@ internal static partial class StaticContracts
         "flush",
     };
 
+    private static readonly HashSet<string> TupleMembers = new(StringComparer.Ordinal)
+    {
+        "index",
+        "count",
+    };
+
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
     {
         "append",
@@ -497,7 +503,7 @@ internal static partial class StaticContracts
             AbstractValueKind.Path => PathMembers.Contains(memberName),
             AbstractValueKind.TextFileHandle => TextFileHandleMembers.Contains(memberName),
             AbstractValueKind.List or AbstractValueKind.ListType => ListMembers.Contains(memberName),
-            AbstractValueKind.Tuple => false,
+            AbstractValueKind.Tuple => TupleMembers.Contains(memberName),
             AbstractValueKind.Dict => DictMembers.Contains(memberName),
             AbstractValueKind.Set or AbstractValueKind.SetType => SetMembers.Contains(memberName),
             AbstractValueKind.CollectionsDefaultDict => CollectionsDefaultDictMembers.Contains(memberName),
