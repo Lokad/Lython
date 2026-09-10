@@ -21,6 +21,10 @@ internal sealed partial class LythonRuntime
             var typeType = new PyType("type", [objectType], new Dictionary<string, object>(StringComparer.Ordinal));
             objectType.SetMetaType(typeType);
             typeType.SetMetaType(typeType);
+            // The type metatype carries its own __new__ slot like CPython
+            // (type.__new__ is not object.__new__); user classes keep sharing
+            // the object slot through their MRO.
+            typeType.TrySetMember("__new__", new TypeNewMethod(typeType, "type"));
 
             var osErrorType = new ExceptionTypeValue("OSError");
 

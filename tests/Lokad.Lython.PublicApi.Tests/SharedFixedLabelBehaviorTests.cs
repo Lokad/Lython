@@ -631,6 +631,36 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task MetatypeNewSlot()
+    {
+        // The type metatype carries its own __new__ slot like CPython
+        // while user classes keep sharing object.__new__.
+        var script = new LythonEngine().Compile("""
+            class E:
+                pass
+            return [type.__new__ is object.__new__,
+                type.__new__.__qualname__,
+                type.__new__.__self__ is type,
+                type.__new__.__module__ is None,
+                type(type.__new__).__name__,
+                E.__new__ is object.__new__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            false, "type.__new__", true, true, "builtin_function_or_method",
+            true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
