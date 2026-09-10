@@ -80,12 +80,26 @@ internal abstract class PyModule : IPyRenderableValue
 
 internal sealed class ScriptPyModule : PyModule
 {
-    private readonly Dictionary<string, object> _members;
+    // Each exported entry retains one CLR dictionary slot for the run, matching
+    // the PyDict slot rate; keys and values stay aliased to existing owners.
+    private const long ExportedEntryBytes = 32;
 
-    public ScriptPyModule(string name, Dictionary<string, object> members)
+    private readonly Dictionary<string, object> _members;
+    private readonly MemoryGovernor? _governor;
+    private readonly LythonSourceSpan? _span;
+
+    public ScriptPyModule(string name, Dictionary<string, object> members, MemoryGovernor? governor, LythonSourceSpan? span)
         : base(name)
     {
         _members = members;
+        _governor = governor;
+        _span = span;
+        if (governor is not null && members.Count > 0)
+        {
+            var charge = checked(ExportedEntryBytes * members.Count);
+            governor.Reserve(charge, span);
+            governor.Commit(charge);
+        }
     }
 
     public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
@@ -97,6 +111,12 @@ internal sealed class ScriptPyModule : PyModule
 
     public override bool TrySetMember(string name, object value)
     {
+        if (_governor is not null && !_members.ContainsKey(name))
+        {
+            _governor.Reserve(ExportedEntryBytes, _span);
+            _governor.Commit(ExportedEntryBytes);
+        }
+
         _members[name] = value;
         UpdateCachedMember(name, value);
         return true;

@@ -348,9 +348,10 @@ internal sealed partial class LythonRuntime
     }
 
     // Each newly registered module retains a registry slot plus handle wrapper,
-    // name strings, and exported-table infrastructure for the run. Per-variable
-    // exported entries stay open (module-table ownership belongs to the
-    // frontend/import envelope); re-imports hit the registry and pay nothing.
+    // name strings, and exported-table infrastructure for the run. Each exported
+    // entry additionally owns its retained dictionary slot; keys and values stay
+    // aliased. Frontend compilation transients stay outside the execution
+    // governor by envelope policy; re-imports hit the registry and pay nothing.
     private const long ImportedModuleBytes = 512;
 
     private static void ChargeImportedModule(ExecutionContext context, LythonSourceSpan? span)
@@ -422,7 +423,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var loaded = new ScriptPyModule(moduleName, exported);
+        var loaded = new ScriptPyModule(moduleName, exported, context.MemoryGovernor, span);
         ChargeImportedModule(context, span);
         context.State.ImportedModules[moduleName] = loaded;
         context.ObserveCollectionCount(context.State.ImportedModules.Count, span);
