@@ -105,6 +105,12 @@ internal static class PyMemberAccess
             return true;
         }
 
+        if (memberName == "__class__" &&
+            LythonRuntime.TryGetValueClass(target, context, out value))
+        {
+            return true;
+        }
+
         if (target is PyException exception &&
             LythonRuntime.ExceptionInstanceMembers.TryGetMember(exception, memberName, context, span, out value))
         {

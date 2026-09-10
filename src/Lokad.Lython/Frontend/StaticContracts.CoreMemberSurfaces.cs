@@ -449,6 +449,13 @@ internal static partial class StaticContracts
 
     public static bool IsKnownMissingMember(AbstractValue value, string memberName)
     {
+        // Every object reports its class like CPython, so __class__ is never
+        // a statically known missing member on any receiver.
+        if (memberName == "__class__")
+        {
+            return false;
+        }
+
         bool? hasMember = value.Kind switch
         {
             AbstractValueKind.Module => IsKnownBuiltinModule(value.RequireText())

@@ -484,6 +484,54 @@ internal sealed partial class LythonRuntime
         return TryResolveKnownImportedModule(moduleName, context, out module);
     }
 
+    // Core values report their run type object like CPython: plain names resolve
+    // through builtins, dotted names through the defining module registry.
+    internal static bool TryGetValueClass(
+        object value,
+        ExecutionContext context,
+        [MaybeNullWhen(false)] out object classValue)
+    {
+        string? typeName = value switch
+        {
+            PyList => "list",
+            PyDict => "dict",
+            PyTuple => "tuple",
+            PySet => "set",
+            PyString => "str",
+            string => "str",
+            PyBytes => "bytes",
+            byte[] => "bytes",
+            BigInteger => "int",
+            int => "int",
+            double => "float",
+            bool => "bool",
+            PyDecimal => "decimal.Decimal",
+            _ => null,
+        };
+
+        if (typeName is null)
+        {
+            classValue = null;
+            return false;
+        }
+
+        var dot = typeName.LastIndexOf((char)46);
+        if (dot < 0)
+        {
+            return context.TryGetBuiltin(typeName, out classValue) && classValue is not null;
+        }
+
+        if (!context.State.ImportedModules.TryGetValue(typeName.Substring(0, dot), out var module) ||
+            !module.TryGetCachedMember(typeName.Substring(dot + 1), out classValue) ||
+            classValue is null)
+        {
+            classValue = null;
+            return false;
+        }
+
+        return true;
+    }
+
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private BuiltinCallable(
