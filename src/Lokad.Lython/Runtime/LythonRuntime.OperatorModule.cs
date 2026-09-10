@@ -534,7 +534,6 @@ internal sealed partial class LythonRuntime
 
     private static object CreateItemGetter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             throw new LythonRuntimeException("TypeError", "operator.itemgetter(item[, ...]) expects one or more positional arguments.", span);
@@ -551,18 +550,22 @@ internal sealed partial class LythonRuntime
             items[i] = RuntimeValue(arguments[i].Value);
         }
 
+        // The items array is retained with aliased values; own the object and backing.
+        var ownedItems = checked(160L + 16L * items.Length);
+        context.MemoryGovernor.Reserve(ownedItems, span);
+        context.MemoryGovernor.Commit(ownedItems);
         return new PyItemGetter(items);
     }
 
     private static object CreateAttrGetter(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0)
         {
             throw new LythonRuntimeException("TypeError", "operator.attrgetter(attr[, ...]) expects one or more positional string arguments.", span);
         }
 
         var paths = new string[arguments.Length][];
+        var totalParts = 0;
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
@@ -583,19 +586,28 @@ internal sealed partial class LythonRuntime
             }
 
             paths[i] = parts;
+            totalParts += parts.Length;
         }
 
+        // Path strings derive from already-owned argument payloads; own the
+        // object, the outer array and one backing slot per part.
+        var ownedPaths = checked(160L + 48L * paths.Length + 16L * totalParts);
+        context.MemoryGovernor.Reserve(ownedPaths, span);
+        context.MemoryGovernor.Commit(ownedPaths);
         return new PyAttrGetter(paths);
     }
 
     private static object CreateMethodCaller(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 0 || arguments[0].IsKeyword || !PyStringOps.TryAsString(arguments[0].Value, out var name))
         {
             throw new LythonRuntimeException("TypeError", "operator.methodcaller(name, ...) expects the first argument to be a method name string.", span);
         }
 
+        // The name and argument values stay aliased; own the object and the copied argument array.
+        var ownedCall = checked(160L + 16L * (arguments.Length - 1));
+        context.MemoryGovernor.Reserve(ownedCall, span);
+        context.MemoryGovernor.Commit(ownedCall);
         return new PyMethodCaller(name.AsString(), arguments[1..]);
     }
 }
