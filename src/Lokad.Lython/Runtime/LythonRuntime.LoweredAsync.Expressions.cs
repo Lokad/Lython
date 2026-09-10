@@ -394,6 +394,12 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask ExecuteLoweredRaiseStatementAsync(LoweredRaiseStatement statement, ExecutionContext context)
     {
+        if (statement.Expression is null)
+        {
+            ThrowReraisedException(statement.Span, context);
+            return;
+        }
+
         var raised = await EvaluateLoweredExpressionAsync(statement.Expression, context).ConfigureAwait(false);
         ThrowLoweredRaisedValue(raised, statement.Span);
     }

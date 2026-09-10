@@ -386,6 +386,12 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteLoweredRaiseStatement(LoweredRaiseStatement statement, ExecutionContext context)
     {
+        if (statement.Expression is null)
+        {
+            ThrowReraisedException(statement.Span, context);
+            return;
+        }
+
         var raised = EvaluateLoweredExpression(statement.Expression, context);
         ThrowLoweredRaisedValue(raised, statement.Span);
     }

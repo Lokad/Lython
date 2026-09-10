@@ -110,7 +110,7 @@ internal static class StaticHostRequirementDiagnostics
                 AnalyzeHostExecutableExpression(returnStatement.Expression, context, host);
                 break;
 
-            case RaiseStatementSyntax raiseStatement:
+            case RaiseStatementSyntax { Expression: not null } raiseStatement:
                 AnalyzeHostExecutableExpression(raiseStatement.Expression, context, host);
                 break;
         }

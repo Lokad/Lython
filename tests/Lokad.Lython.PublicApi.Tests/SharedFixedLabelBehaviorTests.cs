@@ -1050,6 +1050,50 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BareRaiseReraises()
+    {
+        // A bare raise re-raises the active exception like CPython, and
+        // fails explicitly outside a handler.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                try:
+                    raise ValueError("inner")
+                except ValueError:
+                    raise
+            except ValueError as e:
+                results.append("reraised")
+            try:
+                raise
+            except RuntimeError:
+                results.append("no-active")
+            try:
+                try:
+                    raise KeyError("k")
+                except KeyError:
+                    raise
+                results.append("unreached")
+            except KeyError:
+                results.append("key")
+            finally:
+                results.append("finally")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "reraised", "no-active", "key", "finally",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

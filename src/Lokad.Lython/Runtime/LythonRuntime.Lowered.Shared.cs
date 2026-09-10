@@ -481,6 +481,17 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
     }
 
+    private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)
+    {
+        var current = context.Services.CurrentException;
+        if (current is null)
+        {
+            throw RuntimeErrors.Runtime("No active exception to re-raise.", span);
+        }
+
+        throw new LythonRuntimeException(current.Identity, current.Message, span, null, current.Value);
+    }
+
     private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)
         => lambda.Lambda.Parameters
             .Select(parameter => new LoweredFunctionParameter(

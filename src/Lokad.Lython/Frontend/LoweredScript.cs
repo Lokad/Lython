@@ -162,7 +162,7 @@ internal sealed class LoweredScript
                 returnStatement.Expression is null ? null : LowerExpression(returnStatement.Expression)),
             RaiseStatementSyntax raiseStatement => new LoweredRaiseStatement(
                 raiseStatement,
-                LowerExpression(raiseStatement.Expression)),
+                raiseStatement.Expression is null ? null : LowerExpression(raiseStatement.Expression)),
             _ => new LoweredOtherStatement(statement)
         };
     }

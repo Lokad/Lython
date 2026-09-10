@@ -237,7 +237,7 @@ internal sealed record LoweredReturnStatement(
 
 internal sealed record LoweredRaiseStatement(
     RaiseStatementSyntax Syntax,
-    LoweredExpression Expression) : LoweredStatement(Syntax.Span)
+    LoweredExpression? Expression) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.Other;
 }

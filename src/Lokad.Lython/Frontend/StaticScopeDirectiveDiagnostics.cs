@@ -293,7 +293,7 @@ internal static class StaticScopeDirectiveDiagnostics
             case ReturnStatementSyntax { Expression: { } expression }:
                 CollectSeenNames(expression, names);
                 break;
-            case RaiseStatementSyntax raiseStatement:
+            case RaiseStatementSyntax { Expression: not null } raiseStatement:
                 CollectSeenNames(raiseStatement.Expression, names);
                 break;
             case TryStatementSyntax tryStatement:

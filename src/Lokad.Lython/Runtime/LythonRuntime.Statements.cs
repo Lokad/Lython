@@ -240,6 +240,12 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteRaiseStatement(RaiseStatementSyntax statement, ExecutionContext context)
     {
+        if (statement.Expression is null)
+        {
+            ThrowReraisedException(statement.Span, context);
+            return;
+        }
+
         var raised = EvaluateExpression(statement.Expression, context);
         if (raised is not PyException instance)
         {

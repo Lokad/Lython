@@ -26,6 +26,11 @@ internal sealed partial class Parser
     private StatementSyntax? ParseRaiseStatement()
     {
         var raiseToken = ReadToken();
+        if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End)
+        {
+            return new RaiseStatementSyntax(null, SpanOf(raiseToken));
+        }
+
         var expression = ParseExpression();
         if (expression is null)
         {

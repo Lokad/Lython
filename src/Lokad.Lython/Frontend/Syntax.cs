@@ -311,7 +311,7 @@ internal sealed record ReturnStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal sealed record RaiseStatementSyntax(
-    ExpressionSyntax Expression,
+    ExpressionSyntax? Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal sealed record ExceptClauseSyntax(
