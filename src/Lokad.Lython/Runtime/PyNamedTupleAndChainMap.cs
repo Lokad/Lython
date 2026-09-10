@@ -38,6 +38,8 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public string Name => _typeName;
 
+    internal object? ModuleName { get; set; }
+
     internal LythonRuntime.FunctionNewMethod GetNewSlot() => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, _typeName);
 
     internal LythonRuntime.FunctionNewMethod? NewSlot { get; set; }
@@ -119,6 +121,12 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        if (name == "__module__" && ModuleName is not null)
+        {
+            value = ModuleName;
+            return true;
+        }
+
         value = name switch
         {
             "__name__" => _nameValue,
@@ -267,6 +275,11 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         }
 
         if (name == "__new__" && _type.TryGetMember(name, out value))
+        {
+            return true;
+        }
+
+        if (name == "__module__" && _type.TryGetMember(name, out value))
         {
             return true;
         }

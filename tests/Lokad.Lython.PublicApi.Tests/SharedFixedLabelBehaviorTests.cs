@@ -1942,6 +1942,41 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NamedTupleTypeModule()
+    {
+        // Created namedtuple types report their defining module like
+        // CPython: an explicit module value is stored as-is while a missing
+        // or None module aliases the caller module, and instances inherit it.
+        var script = new LythonEngine().Compile("""
+            from collections import namedtuple
+            NT = namedtuple("NT", ["x"])
+            results = []
+            results.append(NT.__module__)
+            def f():
+                return namedtuple("In", ["y"]).__module__
+            results.append(f())
+            N2 = namedtuple("N2", ["x"], module="custom.mod")
+            results.append(N2.__module__)
+            N3 = namedtuple("N3", ["x"], module=None)
+            results.append(N3.__module__)
+            results.append(NT("a").__module__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "__main__", "__main__", "custom.mod", "__main__", "__main__",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

@@ -432,7 +432,26 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
         }
 
-        return new PyNamedTupleType(typeName.AsString(), fields, defaults, context.MemoryGovernor, span);
+        // Like CPython, an explicit module value is stored as-is while a
+        // missing or None module resolves to the caller module by aliasing
+        // its frame string, so reads cost no retained storage.
+        object? moduleName = null;
+        if (TryGetArgument(arguments, 4, "module", span, out var moduleValue) && moduleValue is not PyNone)
+        {
+            moduleName = moduleValue;
+        }
+        else if (PyFunctionBase.TryGetModuleName(context, out var callerModule))
+        {
+            moduleName = callerModule;
+        }
+        else
+        {
+            moduleName = PyNone.Instance;
+        }
+
+        var created = new PyNamedTupleType(typeName.AsString(), fields, defaults, context.MemoryGovernor, span);
+        created.ModuleName = moduleName;
+        return created;
     }
 
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
