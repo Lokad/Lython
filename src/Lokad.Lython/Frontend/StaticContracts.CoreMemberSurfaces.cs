@@ -154,6 +154,7 @@ internal static partial class StaticContracts
         "items",
         "update",
         "pop",
+        "popitem",
         "copy",
         "clear",
         "setdefault",

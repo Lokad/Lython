@@ -2424,10 +2424,10 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
             results.append(dir(bytes) == ["__new__", "decode", "fromhex"])
-            results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "setdefault", "update", "values"])
+            results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
-            results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "setdefault", "update", "values"])
+            results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "index", "isalnum", "isalpha", "isdigit", "islower", "isspace", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "upper", "zfill"])
             results.append(dir(b"") == ["decode", "fromhex"])
             for n in dir(list):
@@ -2452,6 +2452,58 @@ public sealed class SharedFixedLabelBehaviorTests
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true, true, "truthful",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DictPopitem()
+    {
+        // dict.popitem removes the last pair like CPython (last-enumerated,
+        // matching every other enumeration-based path), with a key-carrying
+        // KeyError on empty dictionaries and unbound access on the type.
+        var script = new LythonEngine().Compile("""
+            results = []
+            d = {"a": 1, "b": 2}
+            results.append(d.popitem() == ("b", 2))
+            results.append(d == {"a": 1})
+            results.append(dict.popitem(d) == ("a", 1))
+            results.append(d == {})
+            results.append(d.popitem == d.popitem)
+            results.append(dict.popitem == dict.popitem)
+            results.append(type(dict.popitem).__name__)
+            results.append(type(d.popitem).__name__)
+            results.append(dict.popitem.__name__)
+            results.append(d.popitem.__self__ is d)
+            results.append(hasattr(dict.popitem, "__self__"))
+            results.append("popitem" in dir(dict))
+            results.append("popitem" in dir({}))
+            e = {}
+            try:
+                e.popitem()
+            except KeyError as k:
+                results.append(str(k))
+                results.append(k.args == ("popitem(): dictionary is empty",))
+            try:
+                dict.popitem(d, 1)
+            except TypeError as t:
+                results.append(str(t))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true,
+            true, true, "method_descriptor", "builtin_function_or_method",
+            "popitem", true, false, true, true,
+            "'popitem(): dictionary is empty'", true,
+            "dict.popitem() expects no arguments.",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

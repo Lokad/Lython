@@ -139,6 +139,27 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         return true;
     }
 
+    public bool TryRemoveLast([MaybeNullWhen(false)] out object key, [MaybeNullWhen(false)] out object value)
+    {
+        key = PyNone.Instance;
+        value = PyNone.Instance;
+        var found = false;
+        foreach (var pair in this)
+        {
+            key = pair.Key;
+            value = pair.Value;
+            found = true;
+        }
+
+        if (!found)
+        {
+            return false;
+        }
+
+        _ = Remove(key);
+        return true;
+    }
+
     public void Clear()
     {
         if (Count == 0)

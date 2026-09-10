@@ -266,6 +266,15 @@ internal sealed partial class LythonRuntime
                     dict.Remove(key);
                     return found;
                 }, "dict.pop", ["key", "default"], 1),
+                "popitem" => BoundCallable.CreateNoArguments(dict, "dict.popitem", static (receiver, span, context) =>
+                {
+                    if (!receiver.TryRemoveLast(out var key, out var value))
+                    {
+                        throw new LythonRuntimeException("KeyError", "popitem(): dictionary is empty", span, null, PyString.FromString("popitem(): dictionary is empty"));
+                    }
+
+                    return new PyTuple([key, value], context.MemoryGovernor, span);
+                }),
                 "copy" => BoundCallable.CreateNoArguments(
                     dict,
                     "dict.copy",

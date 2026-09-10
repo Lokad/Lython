@@ -14,6 +14,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Dict, "items", 0, 0, "LA3129", "dict.items() expects no arguments."),
         new(AbstractValueKind.Dict, "update", 1, 1, "LA3130", "dict.update(mapping) expects one dictionary argument.", StaticMutationKind.MutatesReceiver, ["mapping"]),
         new(AbstractValueKind.Dict, "pop", 1, 1, "LA3131", "dict.pop(key) expects one key.", StaticMutationKind.MutatesReceiver, ["key"]),
+        new(AbstractValueKind.Dict, "popitem", 0, 0, "LA3168", "dict.popitem() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Dict, "copy", 0, 0, "LA3132", "dict.copy() expects no arguments."),
         new(AbstractValueKind.Dict, "clear", 0, 0, "LA3133", "dict.clear() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Dict, "setdefault", 1, 2, "LA3134", "dict.setdefault(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, ["key", "default"]),
