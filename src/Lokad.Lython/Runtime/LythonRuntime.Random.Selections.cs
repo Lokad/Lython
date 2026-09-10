@@ -18,7 +18,9 @@ internal sealed partial class LythonRuntime
                 state.Seed(ParseSeed(bound[0], span));
             }
 
-            _ = context;
+            // Own the generator shell beside the tiny counter state.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
             return new PyRandom(state);
         }
 
