@@ -1124,6 +1124,64 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task MultipleExceptControlFlow()
+    {
+        // Control-flow exits through multi-clause handlers behave like
+        // CPython on both engines (return, reraised failures with
+        // finally, and loop control with else).
+        var script = new LythonEngine().Compile("""
+            results = []
+            def f():
+                try:
+                    raise ValueError("v")
+                except ValueError:
+                    return "handled"
+                except TypeError:
+                    return "wrong"
+                finally:
+                    pass
+                return "fell-through"
+            results.append(f())
+            def g():
+                try:
+                    raise TypeError("t")
+                except ValueError:
+                    return "wrong"
+                except TypeError:
+                    raise KeyError("k")
+                finally:
+                    results.append("fin")
+            try:
+                g()
+            except KeyError:
+                results.append("key")
+            for i in [1, 2, 3]:
+                try:
+                    if i == 2:
+                        raise ValueError("v")
+                except ValueError:
+                    continue
+                except TypeError:
+                    results.append("wrong")
+                else:
+                    results.append(str(i))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "handled", "fin", "key", "1", "3",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods
