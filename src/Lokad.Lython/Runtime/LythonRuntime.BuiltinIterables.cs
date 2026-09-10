@@ -93,9 +93,9 @@ internal sealed partial class LythonRuntime
     private static readonly string[] TypingNamedTupleDirNames = ["_fields", "_replace", "count", "index"];
     private static readonly string[] NamedTupleTypeDirNames = ["_fields", "_field_defaults", "_make", "__new__", "count", "index"];
     private static readonly string[] FloatDirNames = ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"];
-    private static readonly string[] FloatMethodDirNames = ["as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"];
+    private static readonly string[] FloatMethodDirNames = ["as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"];
     private static readonly string[] IntDirNames = ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"];
-    private static readonly string[] IntMethodDirNames = ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "from_bytes", "is_integer", "to_bytes"];
+    private static readonly string[] IntMethodDirNames = ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"];
     private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
     private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
 

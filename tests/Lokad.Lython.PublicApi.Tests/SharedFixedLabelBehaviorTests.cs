@@ -2726,7 +2726,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(hasattr(int.bit_length, "__self__"))
             results.append(int.bit_length.__name__)
             results.append(dir(5) == ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "imag", "is_integer", "numerator", "real", "to_bytes"])
-            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_count", "bit_length", "conjugate", "from_bytes", "is_integer", "to_bytes"])
+            results.append(dir(int) == ["__new__", "as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"])
             for n in dir(int):
                 if not hasattr(int, n):
                     results.append(n)
@@ -2799,7 +2799,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(hasattr(float.conjugate, "__self__"))
             results.append(float.conjugate.__name__)
             results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
-            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"])
+            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             for n in dir(float):
                 if not hasattr(float, n):
                     results.append(n)
@@ -2993,7 +2993,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(float.fromhex == float.fromhex)
             results.append(float.fromhex.__name__)
             results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
-            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"])
+            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"])
             try:
                 (1.5).hex(1)
             except TypeError as e:
@@ -3868,6 +3868,88 @@ public sealed class SharedFixedLabelBehaviorTests
             "method_descriptor", "bit_count", true, true, true,
             "int.bit_count() takes no arguments (1 given)",
             "unbound method int.bit_count() needs an argument",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BuiltinDataDescriptors()
+    {
+        // int and float expose their scalar data attributes as getset
+        // descriptors like CPython (bool shares int's cache), with documented
+        // slots, binding reads, read-only writes, and dir() lists.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(repr(int.real))
+            results.append(str(float.imag))
+            results.append(type(int.real).__name__)
+            results.append(type(float.imag).__name__)
+            results.append(int.real.__name__)
+            results.append(int.real.__qualname__)
+            results.append(int.real.__objclass__ is int)
+            results.append(int.real.__doc__)
+            results.append(int.numerator.__doc__)
+            results.append(float.imag.__doc__)
+            results.append(int.real is int.real)
+            results.append(bool.real is int.real)
+            results.append(int.real.__get__(7))
+            results.append(int.real.__get__(True))
+            results.append(float.real.__get__(2.5) == 2.5)
+            results.append(int.real.__get__(None, int) is int.real)
+            results.append(hasattr(int, "real"))
+            results.append("imag" in dir(int))
+            results.append("real" in dir(float))
+            results.append(hasattr(float.imag, "__set__"))
+            results.append(hasattr(int.real, "__delete__"))
+            try:
+                int.real.__set__(5, 1)
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                float.imag.__delete__(2.5)
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                int.real.__get__(1.5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.real.__get__()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.real(5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "<attribute 'real' of 'int' objects>",
+            "<attribute 'imag' of 'float' objects>",
+            "getset_descriptor", "getset_descriptor", "real", "int.real",
+            true, "the real part of a complex number",
+            "the numerator of a rational number in lowest terms",
+            "the imaginary part of a complex number",
+            true, true, new BigInteger(7), new BigInteger(1), true, true,
+            true, true, true, true, true,
+            "attribute 'real' of 'int' objects is not writable",
+            "attribute 'imag' of 'float' objects is not writable",
+            "descriptor 'real' for 'int' objects doesn't apply to a 'float' object",
+            " expected at least 1 argument, got 0",
+            "Object is not callable.",
+            "missing",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
