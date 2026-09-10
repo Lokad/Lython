@@ -536,6 +536,7 @@ internal sealed partial class LythonRuntime
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
             PyModule => PyType.ModuleType,
+            PyPartial => TryGetModuleMemberOrNull(context, "functools", "partial"),
             PyCounter => TryGetModuleMemberOrNull(context, "collections", "Counter"),
             PyDefaultDict => TryGetModuleMemberOrNull(context, "collections", "defaultdict"),
             PyDeque => TryGetModuleMemberOrNull(context, "collections", "deque"),
@@ -735,6 +736,15 @@ internal sealed partial class LythonRuntime
         {
             dequeCallable.NewSlot ??= new TypeNewMethod(dequeCallable, "deque");
             value = dequeCallable.NewSlot;
+            return true;
+        }
+
+        // The partial factory owns its slot through its global singleton,
+        // like the builtin constructors above.
+        if (classValue is PartialFactory partialFactory)
+        {
+            partialFactory.NewSlot ??= new TypeNewMethod(partialFactory, "partial");
+            value = partialFactory.NewSlot;
             return true;
         }
 

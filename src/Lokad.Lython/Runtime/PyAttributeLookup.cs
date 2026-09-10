@@ -230,6 +230,14 @@ internal static class PyAttributeLookup
                 return true;
             }
 
+            // The partial factory owns its slot directly, like the
+            // collections members below.
+            if (target is LythonRuntime.PartialFactory directPartial &&
+                LythonRuntime.TryGetTypeNewSlot(directPartial, out value))
+            {
+                return true;
+            }
+
             // Collections members route by name, both directly and through
             // the class values of their instances.
             if (target is LythonRuntime.CollectionsCallable directMember &&

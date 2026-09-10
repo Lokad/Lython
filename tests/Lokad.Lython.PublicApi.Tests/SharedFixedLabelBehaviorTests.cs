@@ -812,6 +812,39 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task PartialNewSlots()
+    {
+        // The partial factory owns its __new__ slot like CPython, on the
+        // factory and on partial values alike (which also fixes their
+        // class identity).
+        var script = new LythonEngine().Compile("""
+            import functools
+            def f(a):
+                return a
+            p = functools.partial(f, 1)
+            return [functools.partial.__new__.__qualname__,
+                p.__new__ is functools.partial.__new__,
+                (p.__new__).__self__ is functools.partial,
+                type(p.__new__).__name__,
+                p.__class__ is functools.partial,
+                type(p) is functools.partial]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "partial.__new__", true, true, "builtin_function_or_method",
+            true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

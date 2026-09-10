@@ -254,11 +254,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class PartialFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
+    internal sealed class PartialFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly PartialFactory Instance = new();
 
         public string Name => "functools.partial";
+
+        internal LythonRuntime.TypeNewMethod? NewSlot { get; set; }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
