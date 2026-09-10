@@ -442,8 +442,38 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : DelegateBoundArgumentsCallable
+    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes
     {
+        // Bound engine methods expose CPython-style __name__/__module__ like
+        // C-implemented methods: the short decorated name and None, since every
+        // wrapper is engine-implemented (CPython reports the class module only
+        // for Python-implemented methods such as Random.gauss).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(ShortMethodName(Signature.Name));
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        private static string ShortMethodName(string name)
+        {
+            var dot = name.LastIndexOf('.');
+            var tail = dot < 0 ? name : name.Substring(dot + 1);
+            var cut = tail.IndexOfAny([' ', '(', '[']);
+            return cut < 0 ? tail : tail.Substring(0, cut);
+        }
+
         private BoundCallable(
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
@@ -508,8 +538,38 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable
+    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes
     {
+        // Bound engine methods expose CPython-style __name__/__module__ like
+        // C-implemented methods: the short decorated name and None, since every
+        // wrapper is engine-implemented (CPython reports the class module only
+        // for Python-implemented methods such as Random.gauss).
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__" or "__qualname__")
+            {
+                value = PyString.FromString(ShortMethodName(Name));
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = PyNone.Instance;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        private static string ShortMethodName(string name)
+        {
+            var dot = name.LastIndexOf('.');
+            var tail = dot < 0 ? name : name.Substring(dot + 1);
+            var cut = tail.IndexOfAny([' ', '(', '[']);
+            return cut < 0 ? tail : tail.Substring(0, cut);
+        }
+
         private readonly Func<TReceiver, LythonSourceSpan, ExecutionContext, object> _implementation;
         private readonly Func<TReceiver, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
         private readonly TReceiver _receiver;

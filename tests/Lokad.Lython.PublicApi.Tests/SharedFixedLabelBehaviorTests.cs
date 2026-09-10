@@ -184,4 +184,37 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BoundMethodNames()
+    {
+        // Bound engine methods report __module__ None like CPython C methods.
+        // random.Random.gauss diverges (CPython reports random since its gauss
+        // is Python-implemented; Lython models it as engine code like the rest).
+        var script = new LythonEngine().Compile("""
+            import datetime
+            import random
+            import re
+            a = [].append
+            m = re.compile("a").match
+            d = datetime.date(2024, 1, 1).weekday
+            g = random.Random(1).gauss
+            return [a.__name__, a.__module__, m.__name__, m.__module__,
+                d.__name__, d.__module__, g.__name__, g.__module__,
+                a.__module__ is a.__module__]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "append", null, "match", null,
+            "weekday", null, "gauss", null, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
