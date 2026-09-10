@@ -2798,8 +2798,8 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(type(float.conjugate).__name__)
             results.append(hasattr(float.conjugate, "__self__"))
             results.append(float.conjugate.__name__)
-            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "imag", "is_integer", "real"])
-            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "is_integer"])
+            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
+            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"])
             for n in dir(float):
                 if not hasattr(float, n):
                     results.append(n)
@@ -2954,6 +2954,99 @@ public sealed class SharedFixedLabelBehaviorTests
             "from_bytes() missing required argument 'bytes' (pos 1)",
             "from_bytes() takes at most 2 positional arguments (3 given)",
             "argument for to_bytes() given by name ('length') and position (1)",
+            "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FloatHexConversions()
+    {
+        // float.hex and float.fromhex round-trip exactly like CPython,
+        // including subnormal edges, overflow, and the full grammar.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((1.5).hex())
+            results.append((0.0).hex())
+            results.append((-0.0).hex())
+            results.append((0.1).hex())
+            results.append(float("inf").hex())
+            results.append(float("nan").hex())
+            results.append(float.fromhex("0x1.8000000000000p+0") == 1.5)
+            results.append(float.fromhex("1.5") == 1.3125)
+            results.append(float.fromhex("inf") == float("inf"))
+            results.append(float.fromhex("-Infinity") == float("-inf"))
+            results.append(float.fromhex("  0x10p0 ") == 16.0)
+            results.append(float.fromhex("0x1p1023") == 8.98846567431158e+307)
+            results.append(float.fromhex("0x1.fffffffffffff8p0") == 2.0)
+            results.append(float.fromhex("0x1p-1074") == 5e-324)
+            results.append(float.fromhex("0x3p-1075") == 1e-323)
+            results.append(float.fromhex("0x1p-1075") == 0.0)
+            results.append(type(float.fromhex).__name__)
+            results.append(float.fromhex.__self__ is float)
+            results.append(float.fromhex == float.fromhex)
+            results.append(float.fromhex.__name__)
+            results.append(dir(1.5) == ["as_integer_ratio", "conjugate", "hex", "imag", "is_integer", "real"])
+            results.append(dir(float) == ["__new__", "as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"])
+            try:
+                (1.5).hex(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float.fromhex()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float.fromhex("a", "b")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float.fromhex(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float.fromhex("zz")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                float.fromhex("0x1p")
+            except ValueError as e:
+                results.append(str(e))
+            try:
+                float.fromhex("0x1p+9999999999")
+            except OverflowError as e:
+                results.append(str(e))
+            try:
+                float.fromhex(string="0x1p0")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                float.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "0x1.8000000000000p+0", "0x0.0p+0", "-0x0.0p+0",
+            "0x1.999999999999ap-4", "inf", "nan",
+            true, true, true, true, true, true, true, true, true, true,
+            "builtin_function_or_method", true, true, "fromhex", true, true,
+            "float.hex() takes no arguments (1 given)",
+            "float.fromhex() takes exactly one argument (0 given)",
+            "float.fromhex() takes exactly one argument (2 given)",
+            "bad argument type for built-in operation",
+            "invalid hexadecimal floating-point string",
+            "invalid hexadecimal floating-point string",
+            "hexadecimal value too large to represent as a float",
+            "float.fromhex() takes no keyword arguments",
             "missing",
         };
         var sync = script.Run(new MockLythonHost());

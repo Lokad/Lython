@@ -966,6 +966,7 @@ internal sealed partial class LythonRuntime
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
             ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes),
+            ("float", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, FloatFromHex),
             _ => null,
         };
 
@@ -1462,6 +1463,24 @@ internal sealed partial class LythonRuntime
         }
 
         return [.. octets];
+    }
+
+    private static object FloatFromHex(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        _ = context;
+        RejectKeywordArguments("float.fromhex", arguments, span);
+        var positional = PositionalArguments(arguments);
+        if (positional.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "float.fromhex() takes exactly one argument (" + positional.Length + " given)", span);
+        }
+
+        if (positional[0] is not PyString text)
+        {
+            throw new LythonRuntimeException("TypeError", "bad argument type for built-in operation", span);
+        }
+
+        return FloatFromHex(text.AsString(), span);
     }
 
     // Shared choke point for unbound builtin type methods: only constructors

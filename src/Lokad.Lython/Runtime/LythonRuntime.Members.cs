@@ -360,6 +360,15 @@ internal sealed partial class LythonRuntime
                 }, "float.is_integer"),
                 "real" => number,
                 "imag" => 0.0,
+                "hex" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.hex() takes no arguments (" + arguments.Length + " given)", span);
+                    }
+
+                    return PyString.FromString(FloatToHex(number));
+                }, "float.hex"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -419,6 +428,250 @@ internal sealed partial class LythonRuntime
 
             return new PyTuple([numerator, denominator]);
         }
+    }
+
+    // Exact CPython round-trip formatting (13 lowercase digits, signed
+    // decimal exponent, short zero form, plain infinities and nan).
+    internal static string FloatToHex(double number)
+    {
+        if (double.IsNaN(number))
+        {
+            return "nan";
+        }
+
+        if (double.IsPositiveInfinity(number))
+        {
+            return "inf";
+        }
+
+        if (double.IsNegativeInfinity(number))
+        {
+            return "-inf";
+        }
+
+        var bits = BitConverter.DoubleToInt64Bits(number);
+        var negative = bits < 0;
+        var exponent = (int)((bits >> 52) & 0x7FFL);
+        var fraction = (ulong)(bits & 0xFFFFFFFFFFFFFL);
+        string body;
+        if (exponent == 0)
+        {
+            body = fraction == 0
+                ? "0x0.0p+0"
+                : "0x0." + fraction.ToString("x13") + "p-1022";
+        }
+        else
+        {
+            var unbiased = exponent - 1023;
+            body = "0x1." + fraction.ToString("x13") + "p" + (unbiased >= 0 ? "+" : "") + unbiased;
+        }
+
+        return negative ? "-" + body : body;
+    }
+
+    // Parses the CPython hexadecimal float grammar (optional sign and 0x,
+    // int/frac hex runs with at least one digit total, optional binary
+    // exponent, case-insensitive inf/infinity/nan, ASCII-space padding).
+    // Arbitrary digit runs stay exact: the exponent rides a BigInteger so no
+    // magnitude can overflow the parser itself.
+    internal static double FloatFromHex(string text, LythonSourceSpan span)
+    {
+        var index = 0;
+        while (index < text.Length && IsHexFloatSpace(text[index]))
+        {
+            index++;
+        }
+
+        var negative = false;
+        if (index < text.Length && (text[index] == '+' || text[index] == '-'))
+        {
+            negative = text[index] == '-';
+            index++;
+        }
+
+        var rest = text.Substring(index).TrimEnd(HexFloatSpaces);
+        var lowered = rest.ToLowerInvariant();
+        if (lowered is "inf" or "infinity")
+        {
+            return negative ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+        if (lowered is "nan")
+        {
+            return double.NaN;
+        }
+
+        var mantissa = BigInteger.Zero;
+        var digits = 0;
+        if (index + 1 < text.Length && text[index] == '0' && (text[index + 1] == 'x' || text[index + 1] == 'X'))
+        {
+            index += 2;
+        }
+
+        while (index < text.Length && IsHexDigit(text[index]))
+        {
+            mantissa = (mantissa << 4) | HexValue(text[index]);
+            digits++;
+            index++;
+        }
+
+        var fractionDigits = 0;
+        if (index < text.Length && text[index] == '.')
+        {
+            index++;
+            while (index < text.Length && IsHexDigit(text[index]))
+            {
+                mantissa = (mantissa << 4) | HexValue(text[index]);
+                digits++;
+                fractionDigits++;
+                index++;
+            }
+        }
+
+        if (digits == 0)
+        {
+            throw InvalidHexFloat(span);
+        }
+
+        var exponent = BigInteger.Zero;
+        if (index < text.Length && (text[index] == 'p' || text[index] == 'P'))
+        {
+            index++;
+            var exponentNegative = false;
+            if (index < text.Length && (text[index] == '+' || text[index] == '-'))
+            {
+                exponentNegative = text[index] == '-';
+                index++;
+            }
+
+            var exponentDigits = 0;
+            while (index < text.Length && text[index] >= '0' && text[index] <= '9')
+            {
+                exponent = exponent * 10 + (text[index] - '0');
+                exponentDigits++;
+                index++;
+            }
+
+            if (exponentDigits == 0)
+            {
+                throw InvalidHexFloat(span);
+            }
+
+            if (exponentNegative)
+            {
+                exponent = BigInteger.Negate(exponent);
+            }
+        }
+
+        while (index < text.Length && IsHexFloatSpace(text[index]))
+        {
+            index++;
+        }
+
+        if (index != text.Length)
+        {
+            throw InvalidHexFloat(span);
+        }
+
+        var scaled = DoubleFromExact(negative ? -1 : 1, mantissa, exponent - 4 * fractionDigits);
+        if (double.IsInfinity(scaled))
+        {
+            throw new LythonRuntimeException("OverflowError", "hexadecimal value too large to represent as a float", span);
+        }
+
+        return scaled;
+    }
+
+    private static readonly char[] HexFloatSpaces = [' ', '\t', '\n', '\v', '\f', '\r'];
+
+    private static bool IsHexFloatSpace(char value) => value is ' ' or '\t' or '\n' or '\v' or '\f' or '\r';
+
+    private static bool IsHexDigit(char value)
+        => (value >= '0' && value <= '9') || (value >= 'a' && value <= 'f') || (value >= 'A' && value <= 'F');
+
+    private static LythonRuntimeException InvalidHexFloat(LythonSourceSpan span)
+        => new("ValueError", "invalid hexadecimal floating-point string", span);
+
+    // Rounds an exact binary rational (sign * mantissa * 2^exponent) to
+    // double, half-even; unrepresentable magnitudes exit before any shift,
+    // so every shift below stays bounded by the input size.
+    internal static double DoubleFromExact(int sign, BigInteger mantissa, BigInteger exponent)
+    {
+        if (mantissa.IsZero)
+        {
+            return sign < 0 ? -0.0 : 0.0;
+        }
+
+        var top = (long)mantissa.GetBitLength() - 1;
+        if (exponent > 1023)
+        {
+            return sign < 0 ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+        if (exponent < -1076 - top)
+        {
+            return sign < 0 ? -0.0 : 0.0;
+        }
+
+        var magnitude = top + (long)exponent;
+        if (magnitude > 1023)
+        {
+            return sign < 0 ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+        if (magnitude < -1076)
+        {
+            return sign < 0 ? -0.0 : 0.0;
+        }
+
+        var normal = magnitude >= -1022;
+        var target = normal ? magnitude - 52 : -1074;
+        var shift = (long)exponent - target;
+        BigInteger significand;
+        var roundUp = false;
+        if (shift >= 0)
+        {
+            significand = mantissa << (int)shift;
+        }
+        else if (-shift > int.MaxValue)
+        {
+            significand = BigInteger.Zero;
+        }
+        else
+        {
+            var drop = (int)(-shift);
+            significand = mantissa >> drop;
+            var remainder = mantissa & ((BigInteger.One << drop) - 1);
+            var half = BigInteger.One << (drop - 1);
+            var compare = remainder.CompareTo(half);
+            roundUp = compare > 0 || (compare == 0 && !significand.IsEven);
+        }
+
+        if (roundUp)
+        {
+            significand += BigInteger.One;
+        }
+
+        long result = normal ? magnitude : -1074;
+        if (normal && significand == (BigInteger.One << 53))
+        {
+            significand = BigInteger.One << 52;
+            result++;
+            if (result > 1023)
+            {
+                return sign < 0 ? double.NegativeInfinity : double.PositiveInfinity;
+            }
+        }
+
+        long bits = normal
+            ? ((result + 1023) << 52) | (long)(significand - (BigInteger.One << 52))
+            : (long)significand;
+        if (sign < 0)
+        {
+            bits |= long.MinValue;
+        }
+
+        return BitConverter.Int64BitsToDouble(bits);
     }
 
     internal static class DictMembers

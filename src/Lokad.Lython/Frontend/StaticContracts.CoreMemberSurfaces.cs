@@ -141,6 +141,7 @@ internal static partial class StaticContracts
     {
         "as_integer_ratio",
         "conjugate",
+        "hex",
         "imag",
         "is_integer",
         "real",

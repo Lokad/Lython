@@ -46,6 +46,8 @@ internal static partial class StaticContracts
         new(AbstractValueKind.FloatType, "as_integer_ratio", 0, 0, "LA3171", "float.as_integer_ratio() takes no arguments."),
         new(AbstractValueKind.Float, "is_integer", 0, 0, "LA3171", "float.is_integer() takes no arguments."),
         new(AbstractValueKind.FloatType, "is_integer", 0, 0, "LA3171", "float.is_integer() takes no arguments."),
+        new(AbstractValueKind.Float, "hex", 0, 0, "LA3171", "float.hex() takes no arguments."),
+        new(AbstractValueKind.FloatType, "hex", 0, 0, "LA3171", "float.hex() takes no arguments."),
         new(AbstractValueKind.Dict, "fromkeys", 1, 2, "LA3165", "dict.fromkeys(iterable[, value]) expects one iterable and an optional default."),
         new(AbstractValueKind.Set, "add", 1, 1, "LA3135", "set.add(value) expects one positional argument.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Set, "discard", 1, 1, "LA3136", "set.discard(value) expects one positional argument.", StaticMutationKind.MutatesReceiver),
