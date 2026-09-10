@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
         }
 
         context.RegisterHostCall(span);
-        return PyString.FromString(context.Host.Cwd);
+        return PyString.FromString(context.Host.Cwd, context.MemoryGovernor, span);
     }
 
     private static object OsFspath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
 
         var key = GetEnvironmentKey(arguments[0], "os.getenv", span);
         return context.State.Environment.TryGetValue(key, out var value)
-            ? PyString.FromString(value)
+            ? PyString.FromString(value, context.MemoryGovernor, span)
             : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
     }
 
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
 
         var items = path is null
             ? Array.Empty<object>()
-            : path.Split(':').Select<string, object>(PyString.FromString);
+            : path.Split(':').Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span));
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         return result;
