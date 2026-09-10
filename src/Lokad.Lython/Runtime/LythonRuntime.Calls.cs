@@ -342,7 +342,59 @@ internal sealed partial class LythonRuntime
                 : _asyncImplementation(arguments, span, context);
     }
 
-    private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    // Builtin type constructors expose CPython-style __bases__/__mro__ resolved
+    // through the run builtins table (bool derives int, the rest derive object).
+    // Hierarchy tuples build once per callable and alias stably like CPython.
+    private static readonly IReadOnlyDictionary<string, string[]> BuiltinTypeBaseNames =
+        new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["bool"] = ["int"],
+            ["int"] = ["object"],
+            ["float"] = ["object"],
+            ["list"] = ["object"],
+            ["tuple"] = ["object"],
+            ["dict"] = ["object"],
+            ["set"] = ["object"],
+            ["str"] = ["object"],
+            ["bytes"] = ["object"],
+            ["range"] = ["object"],
+            ["slice"] = ["object"],
+            ["zip"] = ["object"],
+        };
+
+    internal sealed record BuiltinTypeHierarchy(PyTuple Bases, PyTuple Mro);
+
+    internal static BuiltinTypeHierarchy? BuildBuiltinTypeHierarchy(
+        string name,
+        object self,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (!BuiltinTypeBaseNames.TryGetValue(name, out var baseNames))
+        {
+            return null;
+        }
+
+        var bases = new object[baseNames.Length];
+        for (var i = 0; i < baseNames.Length; i++)
+        {
+            if (!context.TryGetBuiltin(baseNames[i], out var baseValue) || baseValue is null)
+            {
+                return null;
+            }
+
+            bases[i] = baseValue;
+        }
+
+        var mro = new object[bases.Length + 1];
+        mro[0] = self;
+        Array.Copy(bases, 0, mro, 1, bases.Length);
+        return new BuiltinTypeHierarchy(
+            new PyTuple(bases, context.MemoryGovernor, span),
+            new PyTuple(mro, context.MemoryGovernor, span));
+    }
+
+    private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private BuiltinCallable(
             LythonCallableSignature signature,
@@ -406,6 +458,20 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+
+        private BuiltinTypeHierarchy? _hierarchy;
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if ((name == "__bases__" || name == "__mro__") &&
+                (_hierarchy ??= BuildBuiltinTypeHierarchy(Signature.Name, this, context, span)) is not null)
+            {
+                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -695,9 +761,24 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class ZipCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private sealed class ZipCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => "zip";
+
+        private BuiltinTypeHierarchy? _hierarchy;
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if ((name == "__bases__" || name == "__mro__") &&
+                (_hierarchy ??= BuildBuiltinTypeHierarchy("zip", this, context, span)) is not null)
+            {
+                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
         // Singleton builtins expose CPython-style __name__/__module__ like
         // BuiltinCallable: the fixed name and the shared builtins label.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -729,9 +810,24 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed class DictCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes
+    private sealed class DictCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => "dict";
+
+        private BuiltinTypeHierarchy? _hierarchy;
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if ((name == "__bases__" || name == "__mro__") &&
+                (_hierarchy ??= BuildBuiltinTypeHierarchy("dict", this, context, span)) is not null)
+            {
+                value = name == "__mro__" ? _hierarchy.Mro : _hierarchy.Bases;
+                return true;
+            }
+
+            return TryGetMember(name, out value);
+        }
+
         // Singleton builtins expose CPython-style __name__/__module__ like
         // BuiltinCallable: the fixed name and the shared builtins label.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)

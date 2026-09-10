@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -432,6 +433,33 @@ public sealed class SharedFixedLabelBehaviorTests
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?> { true, "<lambda>", true, true };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BuiltinTypeBases()
+    {
+        var script = new LythonEngine().Compile("""
+            b1 = int.__bases__
+            b2 = int.__bases__
+            m1 = int.__mro__
+            return [b1 is b2, len(b1), b1[0] is object, bool.__bases__[0] is int,
+                m1 is int.__mro__, len(m1), m1[0] is int, m1[1] is object,
+                list.__bases__[0] is object, dict.__bases__[0] is object,
+                zip.__bases__[0] is object, range.__bases__[0] is object]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, new BigInteger(1), true, true, true, new BigInteger(2),
+            true, true, true, true, true, true,
+        };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
