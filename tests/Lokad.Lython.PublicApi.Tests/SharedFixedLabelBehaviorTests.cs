@@ -3059,6 +3059,50 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task BoolTypeDelegation()
+    {
+        // bool shares int's method surface like CPython (identical
+        // wrappers from int's cache), while its own dunders, bool.from_bytes
+        // conversion, and dir() stay bool-shaped.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(bool.bit_length is int.bit_length)
+            results.append(bool.conjugate is int.conjugate)
+            results.append(bool.to_bytes is int.to_bytes)
+            results.append(bool.from_bytes is int.from_bytes)
+            results.append(bool.__new__ is int.__new__)
+            results.append(bool.bit_length(True))
+            results.append(bool.from_bytes(b"A", "big"))
+            results.append(True.bit_length())
+            results.append((True).to_bytes(1, "big") == b"\x01")
+            results.append(bool.__name__)
+            results.append(bool.from_bytes.__qualname__)
+            results.append(bool.from_bytes.__self__ is bool)
+            results.append(dir(bool) == dir(int))
+            results.append(hasattr(bool, "bogus"))
+            try:
+                bool.bogus
+            except AttributeError:
+                results.append("missing")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, false, false, new BigInteger(1), true,
+            new BigInteger(1), true, "bool", "bool.from_bytes", true, true,
+            false, "missing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

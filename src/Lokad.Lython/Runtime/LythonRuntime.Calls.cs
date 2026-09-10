@@ -966,6 +966,7 @@ internal sealed partial class LythonRuntime
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
             ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes),
+            ("bool", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BoolFromBytes),
             ("float", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, FloatFromHex),
             _ => null,
         };
@@ -1483,6 +1484,13 @@ internal sealed partial class LythonRuntime
         return FloatFromHex(text.AsString(), span);
     }
 
+    private static object BoolFromBytes(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // IntFromBytes always returns the BigInteger magnitude.
+        var number = (BigInteger)IntFromBytes(arguments, span, context);
+        return !number.IsZero;
+    }
+
     // Shared choke point for unbound builtin type methods: only constructors
     // for types with instance member tables (list, str, bytes, dict, set)
     // serve descriptors, and only for members their tables resolve to a
@@ -1908,6 +1916,19 @@ internal sealed partial class LythonRuntime
             // the first argument); wrappers cache per constructor.
             if (BuiltinTypeBaseNames.ContainsKey(Signature.Name) &&
                 TryGetUnboundTypeMethod(this, Signature.Name, ref _unboundMethods, name, out value))
+            {
+                return true;
+            }
+
+            // bool shares int's method surface like CPython
+            // (bool.bit_length is int.bit_length): own dunders resolved
+            // above and bool.from_bytes in the choke above, so whatever
+            // remains delegates to the int constructor's cache.
+            if (Signature.Name == "bool" &&
+                !TryGetMember(name, out value) &&
+                context.TryGetBuiltin("int", out var intType) &&
+                intType is BuiltinCallable intCallable &&
+                intCallable.TryGetMember(name, context, span, out value))
             {
                 return true;
             }
