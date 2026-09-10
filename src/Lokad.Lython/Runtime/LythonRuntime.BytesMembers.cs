@@ -45,6 +45,14 @@ internal sealed partial class LythonRuntime
                 "startswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "startswith", arguments, span, context, isStart: true)) { BoundName = "bytes.startswith", BoundReceiver = bytes },
                 "endswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "endswith", arguments, span, context, isStart: false)) { BoundName = "bytes.endswith", BoundReceiver = bytes },
                 "replace" => new RawBoundCallable((arguments, span, context) => ReplaceBytes(bytes, arguments, span, context)) { BoundName = "bytes.replace", BoundReceiver = bytes },
+                "isalnum" => BoundCallable.CreateNoArguments(bytes, "bytes.isalnum", static (receiver, _, _) => IsAsciiAlnum(receiver)),
+                "isalpha" => BoundCallable.CreateNoArguments(bytes, "bytes.isalpha", static (receiver, _, _) => IsAsciiAlpha(receiver)),
+                "isascii" => BoundCallable.CreateNoArguments(bytes, "bytes.isascii", static (receiver, _, _) => IsAscii(receiver)),
+                "isdigit" => BoundCallable.CreateNoArguments(bytes, "bytes.isdigit", static (receiver, _, _) => IsAsciiDigit(receiver)),
+                "islower" => BoundCallable.CreateNoArguments(bytes, "bytes.islower", static (receiver, _, _) => IsAsciiLower(receiver)),
+                "isspace" => BoundCallable.CreateNoArguments(bytes, "bytes.isspace", static (receiver, _, _) => IsAsciiSpace(receiver)),
+                "istitle" => BoundCallable.CreateNoArguments(bytes, "bytes.istitle", static (receiver, _, _) => IsAsciiTitle(receiver)),
+                "isupper" => BoundCallable.CreateNoArguments(bytes, "bytes.isupper", static (receiver, _, _) => IsAsciiUpper(receiver)),
                 _ => MissingMemberValue.Instance
             };
 
@@ -732,6 +740,182 @@ internal sealed partial class LythonRuntime
 
         builder.Append(source[offset..]);
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
+    }
+
+    private static bool IsAsciiLetter(byte octet)
+    {
+        return (octet >= 65 && octet <= 90) || (octet >= 97 && octet <= 122);
+    }
+
+    private static bool IsAsciiDigit(byte octet)
+    {
+        return octet >= 48 && octet <= 57;
+    }
+
+    private static bool IsAsciiSpace(byte octet)
+    {
+        return octet == 32 || (octet >= 9 && octet <= 13);
+    }
+
+    private static bool IsAsciiAlnum(PyBytes value)
+    {
+        var source = value.Bytes;
+        if (source.IsEmpty)
+        {
+            return false;
+        }
+
+        foreach (var octet in source)
+        {
+            if (!IsAsciiLetter(octet) && !IsAsciiDigit(octet))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAsciiAlpha(PyBytes value)
+    {
+        var source = value.Bytes;
+        if (source.IsEmpty)
+        {
+            return false;
+        }
+        foreach (var octet in source)
+        {
+            if (!IsAsciiLetter(octet))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAscii(PyBytes value)
+    {
+        foreach (var octet in value.Bytes)
+        {
+            if (octet > 127)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAsciiDigit(PyBytes value)
+    {
+        var source = value.Bytes;
+        if (source.IsEmpty)
+        {
+            return false;
+        }
+
+        foreach (var octet in source)
+        {
+            if (!IsAsciiDigit(octet))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAsciiLower(PyBytes value)
+    {
+        var foundLower = false;
+        foreach (var octet in value.Bytes)
+        {
+            if (octet >= 97 && octet <= 122)
+            {
+                foundLower = true;
+            }
+            else if (octet >= 65 && octet <= 90)
+            {
+                return false;
+            }
+        }
+
+        return foundLower;
+    }
+
+    private static bool IsAsciiUpper(PyBytes value)
+    {
+        var foundUpper = false;
+        foreach (var octet in value.Bytes)
+        {
+            if (octet >= 65 && octet <= 90)
+            {
+                foundUpper = true;
+            }
+            else if (octet >= 97 && octet <= 122)
+            {
+                return false;
+            }
+        }
+
+        return foundUpper;
+    }
+
+    private static bool IsAsciiSpace(PyBytes value)
+    {
+        var source = value.Bytes;
+        if (source.IsEmpty)
+        {
+            return false;
+        }
+
+        foreach (var octet in source)
+        {
+            if (!IsAsciiSpace(octet))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAsciiTitle(PyBytes value)
+    {
+        var foundCased = false;
+        var previousIsCased = false;
+        foreach (var octet in value.Bytes)
+        {
+            var isUpper = octet >= 65 && octet <= 90;
+            var isLower = octet >= 97 && octet <= 122;
+            if (isUpper)
+            {
+                if (previousIsCased)
+                {
+                    return false;
+                }
+
+                previousIsCased = true;
+                foundCased = true;
+            }
+            else if (isLower)
+            {
+                if (!previousIsCased)
+                {
+                    return false;
+                }
+
+                previousIsCased = true;
+                foundCased = true;
+            }
+            else
+            {
+                previousIsCased = false;
+            }
+        }
+
+        return foundCased;
     }
 
     private sealed class RawBoundCallable(

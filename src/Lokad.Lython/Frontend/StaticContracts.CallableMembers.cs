@@ -106,6 +106,22 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isalnum", 0, 0, "LA3177", "bytes.isalnum() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isalnum", 0, 0, "LA3177", "bytes.isalnum() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isalpha", 0, 0, "LA3177", "bytes.isalpha() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isalpha", 0, 0, "LA3177", "bytes.isalpha() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isascii", 0, 0, "LA3177", "bytes.isascii() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isascii", 0, 0, "LA3177", "bytes.isascii() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isdigit", 0, 0, "LA3177", "bytes.isdigit() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isdigit", 0, 0, "LA3177", "bytes.isdigit() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "islower", 0, 0, "LA3177", "bytes.islower() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "islower", 0, 0, "LA3177", "bytes.islower() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isspace", 0, 0, "LA3177", "bytes.isspace() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isspace", 0, 0, "LA3177", "bytes.isspace() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
         }
 
         static void AddStringCallableContract(
