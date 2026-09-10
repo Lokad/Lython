@@ -556,6 +556,7 @@ internal sealed partial class LythonRuntime
             PyTypingAlias alias when alias.ShortName is "NamedTuple" or "TypedDict" => PyType.FunctionType,
             INamedRuntimeCallable callable when callable.Name is "typing.TypeVar" or "typing.NewType" => TryGetBuiltinOrNull(context, "type"),
             INamedRuntimeCallable callable when callable.Name is "typing.cast" or "typing.get_origin" or "typing.get_args" => PyType.FunctionType,
+            PyTyping.NewTypeIdentityCallable => PyTyping.NewTypeType,
             LythonRuntime.RePatternObject => PyType.RegexPatternType,
             LythonRuntime.ReMatchObject => PyType.RegexMatchType,
             PyStaticMethod => TryGetBuiltinOrNull(context, "staticmethod"),

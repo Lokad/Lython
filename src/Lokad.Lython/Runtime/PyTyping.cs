@@ -170,6 +170,12 @@ internal static class PyTyping
         return new PyTypingAlias(name.AsString(), qualified: false);
     }
 
+    // NewType results share one opaque type object like the other runtime
+    // types; construction stays unsupported since guests only receive them.
+    internal static readonly PyBuiltinRuntimeType NewTypeType = new(
+        "typing.NewType",
+        static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Runtime type objects cannot be constructed directly in Lython.", span));
+
     public static object NewType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
@@ -180,7 +186,11 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.NewType(name, tp) expects a string name and a base type.", span);
         }
 
-        return new NewTypeIdentityCallable(name.AsString());
+        var created = new NewTypeIdentityCallable(name.AsString());
+        created.ModuleName = PyFunctionBase.TryGetModuleName(context, out var callerModule)
+            ? callerModule
+            : PyNone.Instance;
+        return created;
     }
 
     public static object Cast(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -355,9 +365,24 @@ internal static class PyTyping
     private static int CountEffectiveArguments(CallArgumentValue[] arguments)
         => arguments.Length;
 
-    private sealed class TypeVarCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    internal static bool TryGetCallableName(string shortName, string memberName, [MaybeNullWhen(false)] out object value)
+    {
+        value = memberName switch
+        {
+            "__name__" => PyString.FromString(shortName),
+            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("typing"),
+            _ => MissingMemberValue.Instance,
+        };
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
+    }
+
+    private sealed class TypeVarCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public static readonly TypeVarCallable Instance = new();
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetCallableName("TypeVar", name, out value);
+
 
         public string Name => "typing.TypeVar";
 
@@ -369,8 +394,11 @@ internal static class PyTyping
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class NewTypeCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    private sealed class NewTypeCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetCallableName("NewType", name, out value);
+
         public static readonly NewTypeCallable Instance = new();
 
         public string Name => "typing.NewType";
@@ -383,8 +411,11 @@ internal static class PyTyping
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class CastCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    private sealed class CastCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetCallableName("cast", name, out value);
+
         public static readonly CastCallable Instance = new();
 
         public string Name => "typing.cast";
@@ -397,8 +428,11 @@ internal static class PyTyping
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class GetOriginCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    private sealed class GetOriginCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetCallableName("get_origin", name, out value);
+
         public static readonly GetOriginCallable Instance = new();
 
         public string Name => "typing.get_origin";
@@ -411,8 +445,11 @@ internal static class PyTyping
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class GetArgsCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    private sealed class GetArgsCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetCallableName("get_args", name, out value);
+
         public static readonly GetArgsCallable Instance = new();
 
         public string Name => "typing.get_args";
@@ -425,7 +462,7 @@ internal static class PyTyping
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class NewTypeIdentityCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable
+    internal sealed class NewTypeIdentityCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public NewTypeIdentityCallable(string name)
         {
@@ -433,6 +470,19 @@ internal static class PyTyping
         }
 
         public string Name { get; }
+
+        internal object? ModuleName { get; set; }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__module__" && ModuleName is not null)
+            {
+                value = ModuleName;
+                return true;
+            }
+
+            return TryGetCallableName(Name, name, out value);
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {

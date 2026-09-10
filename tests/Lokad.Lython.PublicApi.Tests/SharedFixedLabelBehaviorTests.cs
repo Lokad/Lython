@@ -2042,6 +2042,44 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task NewTypeResultIdentity()
+    {
+        // NewType results share one opaque type object with their name and
+        // defining module intact, and factory callables report their own
+        // short names, all like CPython.
+        var script = new LythonEngine().Compile("""
+            import typing
+            results = []
+            U = typing.NewType("U", int)
+            results.append(type(U).__name__)
+            results.append(U.__class__ is type(U))
+            results.append(U.__name__)
+            results.append(U.__module__)
+            results.append(U(5))
+            results.append(U.__init_subclass__.__self__ is type(U))
+            results.append(typing.TypeVar.__name__)
+            results.append(typing.NewType.__name__)
+            results.append(typing.cast.__module__)
+            results.append(typing.get_origin.__name__)
+            results.append(typing.get_args.__module__)
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "NewType", true, "U", "__main__", new BigInteger(5), true,
+            "TypeVar", "NewType", "typing", "get_origin", "typing",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
