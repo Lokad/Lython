@@ -56,6 +56,16 @@ internal sealed partial class Parser
             return new NoneLiteralExpressionSyntax(SpanOf(tokenIndex));
         }
 
+        // An ellipsis is three dots with no lexer support of its own;
+        // member access still starts from a parsed target expression.
+        if (CurrentToken == Token.Dot && PeekToken(1) == Token.Dot && PeekToken(2) == Token.Dot)
+        {
+            var firstDot = ReadToken();
+            ReadToken();
+            var lastDot = ReadToken();
+            return new EllipsisLiteralExpressionSyntax(Merge(SpanOf(firstDot), SpanOf(lastDot)));
+        }
+
         if (IsNameToken(CurrentToken))
         {
             if (PeekToken(1) == Token.String)

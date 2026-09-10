@@ -134,6 +134,9 @@ internal static partial class StaticAbstractValueResolver
             case NoneLiteralExpressionSyntax none:
                 value = AbstractValue.None(none.Span);
                 return true;
+            case EllipsisLiteralExpressionSyntax ellipsis:
+                value = AbstractValue.Ellipsis(ellipsis.Span);
+                return true;
             case IdentifierExpressionSyntax identifier when bindings.TryGet(identifier.Name, out value):
                 return true;
             case CallExpressionSyntax call when IsLikelyPathConstructor(call):

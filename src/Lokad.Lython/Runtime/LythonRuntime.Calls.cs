@@ -535,6 +535,8 @@ internal sealed partial class LythonRuntime
             LythonRuntime.StatisticsModule.PyNormalDist => TryGetModuleMemberOrNull(context, "statistics", "NormalDist"),
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyNone => PyType.NoneType,
+            PyEllipsis => PyType.EllipsisType,
+            PyNotImplemented => PyType.NotImplementedType,
             PyModule => PyType.ModuleType,
             PyPartial => TryGetModuleMemberOrNull(context, "functools", "partial"),
             PyCounter => TryGetModuleMemberOrNull(context, "collections", "Counter"),
@@ -727,6 +729,20 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        if (ReferenceEquals(classValue, PyType.EllipsisType))
+        {
+            _ellipsisTypeNewSlot ??= new TypeNewMethod(classValue, PyType.EllipsisType.Name);
+            value = _ellipsisTypeNewSlot;
+            return true;
+        }
+
+        if (ReferenceEquals(classValue, PyType.NotImplementedType))
+        {
+            _notImplementedTypeNewSlot ??= new TypeNewMethod(classValue, PyType.NotImplementedType.Name);
+            value = _notImplementedTypeNewSlot;
+            return true;
+        }
+
         // Datetime, random and tzinfo runtime types own their slot too,
         // qualified by the short type name like CPython.
         if (classValue is PyBuiltinRuntimeType datetimeType &&
@@ -794,6 +810,8 @@ internal sealed partial class LythonRuntime
     private static TypeNewMethod? _methodTypeNewSlot;
     private static TypeNewMethod? _moduleTypeNewSlot;
     private static TypeNewMethod? _noneTypeNewSlot;
+    private static TypeNewMethod? _ellipsisTypeNewSlot;
+    private static TypeNewMethod? _notImplementedTypeNewSlot;
     private static Dictionary<PyBuiltinRuntimeType, TypeNewMethod>? _datetimeTypeNewSlots;
 
     private sealed class BuiltinCallable : DelegateBoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes

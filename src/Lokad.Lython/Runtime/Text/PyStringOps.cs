@@ -13,6 +13,8 @@ internal interface IPyStringCoercibleValue
 internal static partial class PyStringOps
 {
     public static readonly PyString NoneLiteral = PyString.FromOwnedUtf8([(byte)'N', (byte)'o', (byte)'n', (byte)'e']);
+    public static readonly PyString EllipsisLiteral = PyString.FromString("Ellipsis");
+    public static readonly PyString NotImplementedLiteral = PyString.FromString("NotImplemented");
     public static readonly PyString SlashLiteral = PyString.FromOwnedUtf8([(byte)'/']);
     public static readonly PyString DotLiteral = PyString.FromOwnedUtf8([(byte)'.']);
     public static readonly PyString CommaLiteral = PyString.FromOwnedUtf8([(byte)',']);

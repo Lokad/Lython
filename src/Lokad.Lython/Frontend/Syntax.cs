@@ -357,6 +357,9 @@ internal sealed record BooleanLiteralExpressionSyntax(
 internal sealed record NoneLiteralExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
+internal sealed record EllipsisLiteralExpressionSyntax(
+    LythonSourceSpan Span) : ExpressionSyntax(Span);
+
 internal abstract record FormattedStringPartSyntax;
 
 internal sealed record FormattedStringTextPartSyntax(

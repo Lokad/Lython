@@ -15,6 +15,7 @@ internal enum AbstractValueKind
     Boolean,
     BooleanType,
     None,
+    Ellipsis,
     MaybeNone,
     List,
     ListType,
@@ -220,6 +221,7 @@ internal readonly record struct AbstractValue
     public static AbstractValue Boolean(bool value, LythonSourceSpan span) => new(AbstractValueKind.Boolean, new BooleanPayload(value), span);
     public static AbstractValue BooleanType(LythonSourceSpan span) => Marker(AbstractValueKind.BooleanType, span);
     public static AbstractValue None(LythonSourceSpan span) => Marker(AbstractValueKind.None, span);
+    public static AbstractValue Ellipsis(LythonSourceSpan span) => Marker(AbstractValueKind.Ellipsis, span);
     public static AbstractValue MaybeNone(AbstractValue nonNoneValue, LythonSourceSpan span)
         => nonNoneValue.Kind switch
         {

@@ -21,6 +21,8 @@ public sealed class ExecutionStateSubsystemTests
         Assert.Contains("bytes", ExecutionState.BuiltinNames);
         Assert.Contains("divmod", ExecutionState.BuiltinNames);
         Assert.Contains("TypeError", ExecutionState.BuiltinNames);
+        Assert.Contains("Ellipsis", ExecutionState.BuiltinNames);
+        Assert.Contains("NotImplemented", ExecutionState.BuiltinNames);
     }
 
     [Fact]

@@ -50,6 +50,12 @@ internal sealed record LoweredNoneLiteralExpression(
     public override ExpressionSyntax Syntax => Literal;
 }
 
+internal sealed record LoweredEllipsisLiteralExpression(
+    EllipsisLiteralExpressionSyntax Literal) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Literal;
+}
+
 internal abstract record LoweredFormattedStringPart;
 
 internal sealed record LoweredFormattedStringTextPart(

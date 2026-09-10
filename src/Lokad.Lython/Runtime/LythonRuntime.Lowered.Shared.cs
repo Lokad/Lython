@@ -105,6 +105,8 @@ internal sealed partial class LythonRuntime
                 return boolean.Literal.Value;
             case LoweredNoneLiteralExpression:
                 return PyNone.Instance;
+            case LoweredEllipsisLiteralExpression:
+                return PyEllipsis.Instance;
             case LoweredFormattedStringExpression formatted:
                 return await execution.EvaluateFormattedAsync(formatted, context).ConfigureAwait(false);
             case LoweredParenthesizedExpression parenthesized:

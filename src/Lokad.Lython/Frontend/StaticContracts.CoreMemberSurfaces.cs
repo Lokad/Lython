@@ -478,6 +478,7 @@ internal static partial class StaticContracts
             AbstractValueKind.Boolean or
             AbstractValueKind.BooleanType or
             AbstractValueKind.None => false,
+            AbstractValueKind.Ellipsis => false,
             AbstractValueKind.Path => PathMembers.Contains(memberName),
             AbstractValueKind.TextFileHandle => TextFileHandleMembers.Contains(memberName),
             AbstractValueKind.List or AbstractValueKind.ListType => ListMembers.Contains(memberName),

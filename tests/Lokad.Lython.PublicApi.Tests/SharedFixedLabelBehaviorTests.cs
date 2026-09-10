@@ -1094,6 +1094,36 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task EllipsisAndNotImplemented()
+    {
+        // The Ellipsis literal and the NotImplemented singleton behave
+        // like CPython values with their own runtime types.
+        var script = new LythonEngine().Compile("""
+            return [... is ..., ... is Ellipsis, NotImplemented is NotImplemented,
+                (...).__class__ is type(...),
+                NotImplemented.__class__ is type(NotImplemented),
+                type(...).__name__, type(NotImplemented).__name__,
+                str(...), repr(NotImplemented), bool(...), bool(NotImplemented),
+                (...).__new__ is type(...).__new__,
+                {...: 1}[...] == 1, hash(...) == hash(...)]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, "ellipsis",
+            "NotImplementedType", "Ellipsis", "NotImplemented", true, true,
+            true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task GeneratedMethodModule()
     {
         // Dataclass methods report the defining module; total_ordering methods

@@ -198,6 +198,7 @@ internal sealed class LoweredScript
             FloatLiteralExpressionSyntax floating => new LoweredFloatLiteralExpression(floating),
             BooleanLiteralExpressionSyntax boolean => new LoweredBooleanLiteralExpression(boolean),
             NoneLiteralExpressionSyntax none => new LoweredNoneLiteralExpression(none),
+            EllipsisLiteralExpressionSyntax ellipsis => new LoweredEllipsisLiteralExpression(ellipsis),
             FormattedStringExpressionSyntax formatted => new LoweredFormattedStringExpression(
                 formatted,
                 formatted.Parts.Select(LowerFormattedStringPart).ToArray()),

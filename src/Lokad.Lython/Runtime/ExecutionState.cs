@@ -21,7 +21,7 @@ internal sealed class ExecutionState
         "bool", "int", "float", "bytes",
         "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
         "getattr", "hasattr", "setattr", "delattr", "dir", "vars",
-        "list", "tuple", "dict", "set"
+        "list", "tuple", "dict", "set", "Ellipsis", "NotImplemented"
     ];
 
     public ExecutionState(ILythonHost host, LythonRunOptions? options)

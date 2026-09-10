@@ -59,6 +59,7 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.Boolean or
             AbstractValueKind.BooleanType or
             AbstractValueKind.None or
+            AbstractValueKind.Ellipsis or
             AbstractValueKind.Path or
             AbstractValueKind.Module or
             AbstractValueKind.RegexPattern or

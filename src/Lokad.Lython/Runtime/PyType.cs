@@ -16,6 +16,8 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal static readonly PyBuiltinRuntimeType WrapperDescriptorType = CreateOpaqueRuntimeType("wrapper_descriptor");
     internal static readonly PyBuiltinRuntimeType MethodWrapperType = CreateOpaqueRuntimeType("method-wrapper");
     internal static readonly PyBuiltinRuntimeType NoneType = CreateOpaqueRuntimeType("NoneType");
+    internal static readonly PyBuiltinRuntimeType EllipsisType = CreateOpaqueRuntimeType("ellipsis");
+    internal static readonly PyBuiltinRuntimeType NotImplementedType = CreateOpaqueRuntimeType("NotImplementedType");
 
     private readonly Dictionary<string, object> _members;
 

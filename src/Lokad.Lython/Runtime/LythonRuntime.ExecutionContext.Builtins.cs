@@ -124,6 +124,8 @@ internal sealed partial class LythonRuntime
                 ["tuple"] = BuiltinCallable.Create(LythonCallableSignature.Create("tuple", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Tuple, TupleAsync),
                 ["dict"] = new DictCallable(),
                 ["set"] = BuiltinCallable.Create(LythonCallableSignature.Create("set", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Set, SetAsync),
+                ["Ellipsis"] = PyEllipsis.Instance,
+                ["NotImplemented"] = PyNotImplemented.Instance,
             };
 
             return builtins;

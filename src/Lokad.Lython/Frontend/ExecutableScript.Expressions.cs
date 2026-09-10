@@ -42,6 +42,10 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), none.Span));
                     return;
 
+                case LoweredEllipsisLiteralExpression ellipsis:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyEllipsis.Instance), ellipsis.Span));
+                    return;
+
                 case LoweredIdentifierExpression identifier:
                     CompileLoadIdentifier(identifier.Identifier.Name, identifier.Span, currentBlock);
                     return;
