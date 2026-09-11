@@ -250,7 +250,7 @@ internal static partial class PyStringOps
         {
             PadMode.Left => 0,
             PadMode.Right => padding,
-            PadMode.Center => padding / 2,
+            PadMode.Center => padding / 2 + ((padding & width & 1) == 1 ? 1 : 0),
             _ => 0
         };
 

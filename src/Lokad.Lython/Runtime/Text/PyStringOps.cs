@@ -402,17 +402,12 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("empty separator");
         }
 
-        if (maxSplit < 0)
-        {
-            return Split(value, separator, governor, span);
-        }
-
         var source = value.Utf8Bytes.Span;
         var needle = separator.Utf8Bytes.Span;
         var parts = new List<PyString>();
         var end = source.Length;
         var splits = 0;
-        while (splits < maxSplit)
+        while (maxSplit < 0 || splits < maxSplit)
         {
             var found = LastIndexOfBytes(source[..end], needle);
             if (found < 0)
