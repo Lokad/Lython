@@ -120,7 +120,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("list.index(value): value is not in list|list.remove(value): value is not in list|pop from empty list|pop index out of range", host.ReadText("/out.txt"));
+        Assert.Equal("2 is not in list|list.remove(value): value is not in list|pop from empty list|pop index out of range", host.ReadText("/out.txt"));
     }
 
     [Fact]

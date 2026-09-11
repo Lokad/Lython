@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
                     var index = deque.IndexOf(arguments[0], start, stop);
                     if (index < 0)
                     {
-                        throw new LythonRuntimeException("ValueError", "deque.index(value): value is not in deque", span);
+                        throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
                     }
 
                     return new BigInteger(index);

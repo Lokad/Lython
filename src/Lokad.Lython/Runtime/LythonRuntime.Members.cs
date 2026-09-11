@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    throw new LythonRuntimeException("ValueError", "list.index(value): value is not in list", span);
+                    throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in list", span);
                 }, "list.index", ["value", "start", "stop"], 1),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    throw new LythonRuntimeException("ValueError", "tuple.index(value): value is not in tuple", span);
+                    throw new LythonRuntimeException("ValueError", "tuple.index(x): x not in tuple", span);
                 }, "tuple.index", ["value", "start", "stop"], 1),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {

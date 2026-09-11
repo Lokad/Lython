@@ -5446,6 +5446,47 @@ __lython_file.close()
     }
 
     [Fact]
+    public void IndexMissValue_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+def lim(v):
+    return [10, 20].index(v)
+def dim(v):
+    return deque([10, 20]).index(v)
+def tim(v):
+    return (10, 20).index(v)
+
+parts = []
+for v in [99, "x", (1, 2), None, True, 1.5, ""]:
+    try:
+        parts.append(str(lim(v)))
+    except ValueError as e:
+        parts.append(str(e))
+for v in [99, (1, 2), None]:
+    try:
+        parts.append(str(dim(v)))
+    except ValueError as e:
+        parts.append(str(e))
+for v in [99, "x"]:
+    try:
+        parts.append(str(tim(v)))
+    except ValueError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"99 is not in list|'x' is not in list|(1, 2) is not in list|None is not in list|True is not in list|1.5 is not in list|'' is not in list|99 is not in deque|(1, 2) is not in deque|None is not in deque|tuple.index(x): x not in tuple|tuple.index(x): x not in tuple", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

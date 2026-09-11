@@ -2680,7 +2680,7 @@ public sealed class SharedFixedLabelBehaviorTests
             new BigInteger(0), new BigInteger(1),
             true, true, false, "method_descriptor", "builtin_function_or_method",
             true, false, true, true, true,
-            "tuple.index(value): value is not in tuple",
+            "tuple.index(x): x not in tuple",
             "Method 'tuple.index' is missing argument 'value'.",
             "descriptor 'index' for 'tuple' objects doesn't apply to a 'int' object",
             "missing",
@@ -2807,7 +2807,7 @@ public sealed class SharedFixedLabelBehaviorTests
             new BigInteger(0), true, "builtin_function_or_method", true,
             new BigInteger(0), new BigInteger(1), new BigInteger(1), true,
             new BigInteger(0),
-            "tuple.index(value): value is not in tuple",
+            "tuple.index(x): x not in tuple",
             "Method 'tuple.count' is missing argument 'value'.",
             new BigInteger(1),
         };
