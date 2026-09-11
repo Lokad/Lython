@@ -5727,6 +5727,69 @@ __lython_file.close()
     }
 
     [Fact]
+    public void IsliceBounds_MatchCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import itertools
+
+class J:
+    def __index__(self):
+        return 2
+class Jbad:
+    def __index__(self):
+        return "x"
+class C: pass
+class NIndex:
+    __index__ = 5
+class RVal:
+    def __index__(self):
+        raise ValueError("inner-value")
+class RType:
+    def __index__(self):
+        raise TypeError("inner-type")
+
+def sl2(a):
+    return list(itertools.islice("abcdef", a))
+def sl3(a, b):
+    return list(itertools.islice("abcdef", a, b))
+def sl4(a, b, c):
+    return list(itertools.islice("abcdef", a, b, c))
+
+parts = []
+parts.append(str(sl2(J())))
+parts.append(str(sl3(J(), 5)))
+parts.append(str(sl4(0, 5, J())))
+parts.append(str(sl2(True)))
+parts.append(str(sl2(None)))
+parts.append(str(sl4(0, 5, None)))
+for v in [Jbad(), "a", 2.0, C(), NIndex(), RVal(), RType(), -1, 10**100]:
+    try:
+        parts.append(str(sl2(v)))
+    except ValueError as e:
+        parts.append(str(e))
+for v in [Jbad(), "a", -3, 10**100]:
+    try:
+        parts.append(str(sl3(v, 5)))
+    except ValueError as e:
+        parts.append(str(e))
+for v in [Jbad(), "a", 0, -1, 10**100]:
+    try:
+        parts.append(str(sl4(0, 5, v)))
+    except ValueError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"['a', 'b']|['c', 'd', 'e']|['a', 'c', 'e']|['a']|['a', 'b', 'c', 'd', 'e', 'f']|['a', 'b', 'c', 'd', 'e']|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.|Step for islice() must be a positive integer or None.|Step for islice() must be a positive integer or None.|Step for islice() must be a positive integer or None.|Step for islice() must be a positive integer or None.|Step for islice() must be a positive integer or None.", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

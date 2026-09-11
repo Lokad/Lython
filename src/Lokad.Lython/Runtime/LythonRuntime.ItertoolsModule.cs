@@ -232,25 +232,64 @@ internal sealed partial class LythonRuntime
         if (positional.Length == 2)
         {
             start = 0;
-            stop = ReferenceEquals(positional[1], PyNone.Instance)
-                ? null
-                : ExpectNonNegativeLong(positional[1], "itertools.islice() stop must be a non-negative integer or None.", span);
+            stop = CoerceIsliceStop(positional[1], context, span);
             step = 1;
         }
         else
         {
-            start = ReferenceEquals(positional[1], PyNone.Instance)
-                ? 0
-                : ExpectNonNegativeLong(positional[1], "itertools.islice() start must be a non-negative integer or None.", span);
-            stop = ReferenceEquals(positional[2], PyNone.Instance)
-                ? null
-                : ExpectNonNegativeLong(positional[2], "itertools.islice() stop must be a non-negative integer or None.", span);
-            step = positional.Length == 4 && !ReferenceEquals(positional[3], PyNone.Instance)
-                ? ExpectPositiveLong(positional[3], "itertools.islice() step must be a positive integer or None.", span)
-                : 1;
+            start = CoerceIsliceStart(positional[1], context, span) ?? 0;
+            stop = CoerceIsliceStop(positional[2], context, span);
+            step = CoerceIsliceStep(positional.Length == 4 ? positional[3] : null, context, span) ?? 1;
         }
 
         return new PyIsliceIterator(positional[0], start, stop, step, span, context);
+    }
+
+    // islice() maps every bound failure (bad __index__, inner hook errors,
+    // non-integers, negatives, huge magnitudes) to its per-position
+    // ValueError like CPython.
+    private static long? CoerceIsliceStop(object? value, ExecutionContext context, LythonSourceSpan span)
+        => CoerceIsliceBound(value, "Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span);
+
+    private static long? CoerceIsliceStart(object? value, ExecutionContext context, LythonSourceSpan span)
+        => CoerceIsliceBound(value, "Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span);
+
+    private static long? CoerceIsliceStep(object? value, ExecutionContext context, LythonSourceSpan span)
+        => CoerceIsliceBound(value, "Step for islice() must be a positive integer or None.", BigInteger.One, context, span);
+
+    private static long? CoerceIsliceBound(object? value, string message, BigInteger minimum, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is null || ReferenceEquals(value, PyNone.Instance))
+        {
+            return null;
+        }
+
+        try
+        {
+            return ClampIsliceBound(CoerceIndexProtocol(value, context, span), minimum, span);
+        }
+        catch (LythonRuntimeException)
+        {
+            throw new LythonRuntimeException("ValueError", message, span);
+        }
+    }
+
+    private static long ClampIsliceBound(object coerced, BigInteger minimum, LythonSourceSpan span)
+    {
+        BigInteger integer = coerced switch
+        {
+            BigInteger big => big,
+            int small => new BigInteger(small),
+            bool flag => flag ? BigInteger.One : BigInteger.Zero,
+            _ => throw new LythonRuntimeException("TypeError", "islice bound is not an integer.", span),
+        };
+
+        if (integer < minimum || integer > long.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "islice bound is out of range.", span);
+        }
+
+        return (long)integer;
     }
 
     private static object Product(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

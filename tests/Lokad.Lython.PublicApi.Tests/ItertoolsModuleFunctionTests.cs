@@ -222,8 +222,8 @@ __lython_file.close()
 import itertools
 itertools.islice([1, 2], -1)
 """,
-        "TypeError",
-        "non-negative integer")]
+        "ValueError",
+        "Stop argument for islice()")]
     [InlineData(
         """
 import itertools
