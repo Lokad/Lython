@@ -4930,6 +4930,129 @@ __lython_file.close()
     }
 
     [Fact]
+    public void BytesConstructor_CoercesIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 3
+class J65:
+    def __index__(self):
+        return 65
+class Bad:
+    def __index__(self):
+        return "x"
+class BothBad:
+    def __index__(self):
+        return "x"
+    def __iter__(self):
+        return iter([65])
+class Huge:
+    def __index__(self):
+        return 10**100
+class Raiser:
+    def __index__(self):
+        raise ValueError("boom")
+class C: pass
+
+def make_bytes(v):
+    return bytes(v)
+
+parts = []
+parts.append(str(bytes(J())))
+parts.append(str(bytes([J65()])))
+parts.append(str(bytes(BothBad())))
+parts.append(str(bytes([1, 2, 3])))
+parts.append(str(bytes(True)))
+for v in [Bad(), 1.5, None, C()]:
+    try:
+        parts.append(str(make_bytes(v)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [[300], [-1]]:
+    try:
+        parts.append(str(make_bytes(v)))
+    except ValueError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(bytes(["a"])))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(bytes(Huge())))
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(bytes(10**100)))
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(bytes(-1)))
+except ValueError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(bytes(Raiser())))
+except ValueError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"b'\x00\x00\x00'|b'A'|b'A'|b'\x01\x02\x03'|b'\x00'|cannot convert 'Bad' object to bytes|cannot convert 'float' object to bytes|cannot convert 'NoneType' object to bytes|cannot convert 'C' object to bytes|bytes must be in range(0, 256)|bytes must be in range(0, 256)|'str' object cannot be interpreted as an integer|cannot fit 'Huge' into an index-sized integer|cannot fit 'int' into an index-sized integer|negative count|boom", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ListPopInsert_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 1
+class Bad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def do_pop(x):
+    return [10, 20, 30].pop(x)
+def do_insert(x):
+    l = [1, 2, 3]
+    l.insert(x, 99)
+    return l
+
+parts = []
+parts.append(str(do_pop(J())))
+parts.append(str(do_insert(J())))
+parts.append(str(do_pop(True)))
+parts.append(str(do_insert(True)))
+for v in [Bad(), "a", 1.5, None, C()]:
+    try:
+        parts.append(str(do_pop(v)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a", 1.5, None, C()]:
+    try:
+        parts.append(str(do_insert(v)))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"20|[1, 99, 2, 3]|20|[1, 99, 2, 3]|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

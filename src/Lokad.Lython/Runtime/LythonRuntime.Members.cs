@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "list.insert(index, value) expects two arguments.", span);
                     }
 
-                    var index = ExpectListInsertIndex(arguments[0], span);
+                    var index = ExpectListInsertIndex(arguments[0], context, span);
                     list.AttachMemoryGovernor(context.MemoryGovernor, span);
                     list.Insert(index, arguments[1]);
                     context.ObserveCollectionCount(list.Count, span);
@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
 
                     throw new LythonRuntimeException("ValueError", "list.remove(value): value is not in list", span);
                 }, "list.remove", ["value"]),
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
 
                     var index = arguments.Length == 0
                         ? list.Count - 1
-                        : PyIndexing.NormalizePopIndex(arguments[0], list.Count, span);
+                        : PyIndexing.NormalizePopIndex(CoerceIndexProtocol(arguments[0], context, span), list.Count, span);
                     var item = list[index];
                     list.RemoveAt(index);
                     return item;
@@ -181,9 +181,16 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static int ExpectListInsertIndex(object value, LythonSourceSpan span)
+        private static int ExpectListInsertIndex(object value, ExecutionContext context, LythonSourceSpan span)
         {
-            var integer = ExpectInteger(value, "list.insert(index, value) expects an integer index.", span);
+            // The index coerces through __index__ like CPython; failures name the
+            // type instead of the builtin signature.
+            var coerced = CoerceIndexProtocol(value, context, span);
+            if (!PyNumberOps.TryAsInteger(coerced, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            }
+
             if (integer < int.MinValue)
             {
                 return int.MinValue;

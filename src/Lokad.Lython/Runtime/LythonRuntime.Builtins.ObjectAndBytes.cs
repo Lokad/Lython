@@ -156,11 +156,60 @@ internal sealed partial class LythonRuntime
             PyBytes bytes => CreateBytes(bytes.ToArray(), context, span),
             PyString => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
             string => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
-            BigInteger size => CreateZeroBytes(size, context, span),
-            int size => CreateZeroBytes(new BigInteger(size), context, span),
+            BigInteger size => CreateSizedBytes(size, "int", context, span),
+            int size => CreateSizedBytes(new BigInteger(size), "int", context, span),
             bool size => CreateZeroBytes(size ? BigInteger.One : BigInteger.Zero, context, span),
-            _ => CreateBytes(ToByteArray(arguments[0], span, context), context, span)
+            PyInstance indexable => CreateBytesFromIndexable(indexable, context, span),
+            _ => CreateBytes(FromBytesOperands(arguments[0], context, span), context, span)
         };
+    }
+
+    // CPython sizes bytes() through __index__ when present; a TypeError from
+    // the index attempt (bad return or inner TypeError) falls back to the
+    // iterable path, while other failures propagate. The iterable path and
+    // its cannot-convert mapping ride the shared operand helper.
+    private static PyBytes CreateBytesFromIndexable(PyInstance value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value.TryGetAttribute("__index__", context, span, out var member) && member is ICallable callable)
+        {
+            BigInteger size;
+            try
+            {
+                var converted = callable.Invoke([], span, context);
+                if (converted is int small)
+                {
+                    size = new BigInteger(small);
+                }
+                else if (converted is long wide)
+                {
+                    size = new BigInteger(wide);
+                }
+                else if (!PyNumberOps.TryAsInteger(converted, out size))
+                {
+                    throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+                }
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError")
+            {
+                return CreateBytes(FromBytesOperands(value, context, span), context, span);
+            }
+
+            return CreateSizedBytes(size, value.Type.Name, context, span);
+        }
+
+        return CreateBytes(FromBytesOperands(value, context, span), context, span);
+    }
+
+    private static PyBytes CreateSizedBytes(BigInteger size, string typeName, ExecutionContext context, LythonSourceSpan span)
+    {
+        // Out-of-ssize sizes name the source type like CPython; smaller
+        // negatives report negative count and CLR-limited sizes stay too-large.
+        if (size > long.MaxValue || size < long.MinValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "cannot fit '" + typeName + "' into an index-sized integer", span);
+        }
+
+        return CreateZeroBytes(size, context, span);
     }
 
     private static PyBytes CreateZeroBytes(BigInteger size, ExecutionContext context, LythonSourceSpan span)
@@ -176,32 +225,6 @@ internal sealed partial class LythonRuntime
         }
 
         return CreateBytes(new byte[(int)size], context, span);
-    }
-
-    private static byte[] ToByteArray(object value, LythonSourceSpan span, ExecutionContext context)
-    {
-        var bytes = new List<byte>();
-        foreach (var item in ToSequence(value, span, context))
-        {
-            bytes.Add(ToByte(item, span));
-        }
-
-        return [.. bytes];
-
-        static byte ToByte(object value, LythonSourceSpan span)
-        {
-            if (!PyNumberOps.TryAsInteger(value, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "bytes(iterable) expects integers between 0 and 255.", span);
-            }
-
-            if (integer < byte.MinValue || integer > byte.MaxValue)
-            {
-                throw new LythonRuntimeException("ValueError", "bytes(iterable) expects integers between 0 and 255.", span);
-            }
-
-            return (byte)integer;
-        }
     }
 
     private static object Property(object[] arguments, LythonSourceSpan span, ExecutionContext context)
