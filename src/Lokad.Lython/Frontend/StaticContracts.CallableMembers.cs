@@ -126,6 +126,16 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "capitalize", 0, 0, "LA3179", "bytes.capitalize() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "capitalize", 0, 0, "LA3179", "bytes.capitalize() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "lower", 0, 0, "LA3179", "bytes.lower() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "lower", 0, 0, "LA3179", "bytes.lower() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "swapcase", 0, 0, "LA3179", "bytes.swapcase() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "swapcase", 0, 0, "LA3179", "bytes.swapcase() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "title", 0, 0, "LA3179", "bytes.title() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "title", 0, 0, "LA3179", "bytes.title() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "upper", 0, 0, "LA3179", "bytes.upper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "upper", 0, 0, "LA3179", "bytes.upper() expects no arguments."));
         }
 
         static void AddStringCallableContract(

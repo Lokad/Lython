@@ -55,6 +55,11 @@ internal sealed partial class LythonRuntime
                 "isupper" => BoundCallable.CreateNoArguments(bytes, "bytes.isupper", static (receiver, _, _) => IsAsciiUpper(receiver)),
                 "removeprefix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removeprefix", arguments, span, context, isPrefix: true)) { BoundName = "bytes.removeprefix", BoundReceiver = bytes },
                 "removesuffix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removesuffix", arguments, span, context, isPrefix: false)) { BoundName = "bytes.removesuffix", BoundReceiver = bytes },
+                "capitalize" => BoundCallable.CreateNoArguments(bytes, "bytes.capitalize", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Capitalize, span, context)),
+                "lower" => BoundCallable.CreateNoArguments(bytes, "bytes.lower", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Lower, span, context)),
+                "swapcase" => BoundCallable.CreateNoArguments(bytes, "bytes.swapcase", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.SwapCase, span, context)),
+                "title" => BoundCallable.CreateNoArguments(bytes, "bytes.title", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Title, span, context)),
+                "upper" => BoundCallable.CreateNoArguments(bytes, "bytes.upper", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Upper, span, context)),
                 _ => MissingMemberValue.Instance
             };
 
@@ -966,6 +971,64 @@ internal sealed partial class LythonRuntime
 
         var stripped = isPrefix ? source[affixSpan.Length..].ToArray() : source[..^affixSpan.Length].ToArray();
         return CreateBytes(stripped, context, span);
+    }
+
+    private enum BytesCaseMode
+    {
+        Lower,
+        Upper,
+        SwapCase,
+        Capitalize,
+        Title,
+    }
+
+    private static object MapBytesCase(PyBytes value, BytesCaseMode mode, LythonSourceSpan span, ExecutionContext context)
+    {
+        var source = value.Bytes;
+        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
+            ? new GovernedByteBuilder(source.Length)
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, source.Length);
+
+        var previousIsCased = false;
+        var isFirst = true;
+        foreach (var octet in source)
+        {
+            var isUpper = octet >= 65 && octet <= 90;
+            var isLower = octet >= 97 && octet <= 122;
+            byte mapped;
+            switch (mode)
+            {
+                case BytesCaseMode.Lower:
+                    mapped = isUpper ? (byte)(octet + 32) : octet;
+                    break;
+                case BytesCaseMode.Upper:
+                    mapped = isLower ? (byte)(octet - 32) : octet;
+                    break;
+                case BytesCaseMode.SwapCase:
+                    mapped = isUpper ? (byte)(octet + 32) : isLower ? (byte)(octet - 32) : octet;
+                    break;
+                case BytesCaseMode.Capitalize:
+                    mapped = isFirst ? (isLower ? (byte)(octet - 32) : octet) : (isUpper ? (byte)(octet + 32) : octet);
+                    break;
+                default:
+                    if (isUpper || isLower)
+                    {
+                        mapped = previousIsCased ? (isUpper ? (byte)(octet + 32) : octet) : (isLower ? (byte)(octet - 32) : octet);
+                        previousIsCased = true;
+                    }
+                    else
+                    {
+                        mapped = octet;
+                        previousIsCased = false;
+                    }
+                    break;
+            }
+
+            builder.Append(mapped);
+            isFirst = false;
+        }
+
+        return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
 
     private sealed class RawBoundCallable(

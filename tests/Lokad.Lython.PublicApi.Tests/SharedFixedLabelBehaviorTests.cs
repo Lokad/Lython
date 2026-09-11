@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "swapcase", "title", "translate", "upper"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "swapcase", "title", "translate", "upper"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4361,6 +4361,59 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
+    [Fact]
+    public async Task BytesCaseMembers()
+    {
+        // bytes case maps follow CPython ASCII rules, with the usual
+        // descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"AbC xYz! 123".lower() == b"abc xyz! 123")
+            results.append(b"AbC xYz! 123".upper() == b"ABC XYZ! 123")
+            results.append(b"AbC xYz! 123".swapcase() == b"aBc XyZ! 123")
+            results.append(b"AbC xYz! 123".capitalize() == b"Abc xyz! 123")
+            results.append(b"AbC xYz! 123".title() == b"Abc Xyz! 123")
+            results.append(b"a1b 2c".title() == b"A1B 2C")
+            results.append(b"ABC".capitalize() == b"Abc")
+            results.append(b"abc".lower() == b"abc")
+            results.append(b"".upper() == b"")
+            results.append(b"a".capitalize() == b"A")
+            results.append(bytes.lower(b"AbC") == b"abc")
+            results.append(bytes.title(b"hello world") == b"Hello World")
+            results.append(type(bytes.lower).__name__)
+            results.append(bytes.lower.__name__)
+            results.append(hasattr(bytes, "swapcase"))
+            results.append("title" in dir(b"abc"))
+            results.append("upper" in dir(bytes))
+            s = b"abc"
+            results.append(s.lower == s.lower)
+            results.append(bytes.upper == bytes.upper)
+            try:
+                getattr(b"abc", "lower")(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"abc", "upper")(x=1)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, "method_descriptor", "lower", true, true, true, true, true,
+            "bytes.lower() expects no arguments.",
+            "bytes.upper() expects no arguments.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {
