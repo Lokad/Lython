@@ -4933,6 +4933,61 @@ __lython_file.close()
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
     }
 
+    [Fact]
+    public void ObjectEqualitySlots_CompareByIdentity()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+parts = []
+parts.append(str(object.__eq__))
+parts.append(str(object.__ne__))
+parts.append(str(c == c))
+parts.append(str(C() == C()))
+parts.append(str(c != c))
+parts.append(str(c.__eq__(c)))
+parts.append(str(c.__ne__(c)))
+parts.append(str(c.__eq__(C())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<slot wrapper '__eq__' of 'object' objects>|<slot wrapper '__ne__' of 'object' objects>|True|False|False|True|False|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DataclassExplicitEq_KeepsFieldComparison()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass
+
+@dataclass
+class P:
+    x: int
+
+vals = []
+vals.append(str(getattr(P(1), "__eq__")(P(1))))
+vals.append(str(getattr(P(1), "__eq__")(P(2))))
+vals.append(str(P(1) != P(2)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|False|True", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]

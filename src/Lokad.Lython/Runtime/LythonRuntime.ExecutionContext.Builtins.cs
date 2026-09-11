@@ -15,7 +15,9 @@ internal sealed partial class LythonRuntime
                 ["__init_subclass__"] = new PyClassMethod(new ObjectInitSubclassMethod()),
                 ["__getattribute__"] = new ObjectGetAttrMethod(),
                 ["__setattr__"] = new ObjectSetAttrMethod(),
-                ["__delattr__"] = new ObjectDelAttrMethod()
+                ["__delattr__"] = new ObjectDelAttrMethod(),
+                ["__eq__"] = new ObjectEqMethod(),
+                ["__ne__"] = new ObjectNeMethod()
             };
             var objectType = new PyType("object", Array.Empty<PyType>(), objectMembers);
             var typeType = new PyType("type", [objectType], new Dictionary<string, object>(StringComparer.Ordinal));

@@ -631,6 +631,137 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private sealed class ObjectEqMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__eq__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__eq__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default equality is pure object identity like CPython (value and dataclass comparisons keep their own paths);
+            // only the arity is enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__eq__(self, other) expects exactly two arguments.", span);
+            }
+
+            return ReferenceEquals(arguments[0].Value, arguments[1].Value);
+        }
+    }
+
+    private sealed class ObjectNeMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__ne__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__ne__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default inequality negates identity like CPython (value and dataclass comparisons keep their own paths);
+            // only the arity is enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__ne__(self, other) expects exactly two arguments.", span);
+            }
+
+            return !ReferenceEquals(arguments[0].Value, arguments[1].Value);
+        }
+    }
     private static ICallable? ParsePropertyCallable(object value, string parameterName, LythonSourceSpan span)
     {
         return value switch
