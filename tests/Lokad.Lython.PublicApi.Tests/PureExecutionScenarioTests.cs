@@ -4847,6 +4847,50 @@ __lython_file.close()
     }
 
     [Fact]
+    public void UnaryProtocol_NonCallableRaisesNotCallable()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class N:
+    __neg__ = 5
+class P:
+    __pos__ = 5
+class I:
+    __invert__ = 5
+class A:
+    __abs__ = 5
+
+parts = []
+try:
+    parts.append(str(-N()))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(+P()))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(~I()))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(abs(A())))
+except TypeError as e:
+    parts.append(str(e))
+parts.append(str(-5))
+parts.append(str(abs(-5)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("'int' object is not callable|'int' object is not callable|'int' object is not callable|'int' object is not callable|-5|5", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

@@ -287,13 +287,21 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (!TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
+        // A resolved non-callable member raises not-callable like CPython
+        // instead of reading as missing (see the sync twin below).
+        if (target is PyInstance unaryInstance &&
+            unaryInstance.TryGetAttribute(method, context, span, out var unaryMember))
         {
-            return SpecialMethodInvocation.Missing;
+            if (unaryMember is not ICallable unaryCallable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);
+            }
+
+            var value = await unaryCallable.InvokeAsync([], span, context).ConfigureAwait(false);
+            return SpecialMethodInvocation.Invoked(value);
         }
 
-        var value = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
-        return SpecialMethodInvocation.Invoked(value);
+        return SpecialMethodInvocation.Missing;
     }
 
     private static bool TryResolveSpecialMethodCallable(
@@ -337,9 +345,17 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         out object result)
     {
-        if (TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
+        // A resolved non-callable member raises not-callable like CPython
+        // instead of reading as missing (round/pow builtins do the same).
+        if (target is PyInstance unaryInstance &&
+            unaryInstance.TryGetAttribute(method, context, span, out var unaryMember))
         {
-            result = callable.Invoke([], span, context);
+            if (unaryMember is not ICallable unaryCallable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);
+            }
+
+            result = unaryCallable.Invoke([], span, context);
             return true;
         }
 
