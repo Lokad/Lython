@@ -5673,6 +5673,60 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ItertoolsRepeat_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import itertools
+import operator
+
+class J:
+    def __index__(self):
+        return 3
+class Jbad:
+    def __index__(self):
+        return "x"
+class Jbig:
+    def __index__(self):
+        return 10**100
+class C: pass
+
+def partial():
+    it = itertools.repeat("x", J())
+    next(it)
+    return operator.length_hint(it)
+
+parts = []
+parts.append(str(list(itertools.repeat("x", J()))))
+parts.append(str(list(itertools.repeat("x", True))))
+parts.append(str(list(itertools.repeat("x", -2))))
+parts.append(str(operator.length_hint(itertools.repeat("x", J()))))
+parts.append(str(operator.length_hint(itertools.repeat("x", 5))))
+parts.append(str(partial()))
+parts.append(str(operator.length_hint(itertools.repeat("x"))))
+parts.append(str(operator.length_hint(itertools.repeat("x"), 9)))
+for v in [Jbad(), "a", None, 1.5, C()]:
+    try:
+        parts.append(str(list(itertools.repeat("x", v))))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [10**100, -10**100, Jbig()]:
+    try:
+        parts.append(str(operator.length_hint(itertools.repeat("x", v))))
+    except OverflowError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"['x', 'x', 'x']|['x']|[]|3|5|2|0|9|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|Python int too large to convert to C ssize_t|Python int too large to convert to C ssize_t|Python int too large to convert to C ssize_t", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

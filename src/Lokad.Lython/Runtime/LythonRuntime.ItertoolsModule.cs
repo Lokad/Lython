@@ -163,17 +163,48 @@ internal sealed partial class LythonRuntime
 
     private static object Repeat(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsRepeat, span);
         long? times = null;
         if (bound.Assigned[1])
         {
-            var count = ExpectLong(bound.Values[1], "itertools.repeat(..., times=...) expects an integer.", span);
+            var count = ExpectRepeatCount(bound.Values[1], context, span);
             times = count < 0 ? 0 : count;
         }
 
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         return new PyRepeatIterator(bound.Values[0], times);
+    }
+
+    // Repeat counts coerce through __index__ like CPython; bad __index__
+    // results propagate, out-of-range magnitudes report the ssize_t
+    // overflow, and plain non-integers name the type.
+    private static long ExpectRepeatCount(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        var coerced = CoerceIndexProtocol(value, context, span);
+        BigInteger integer;
+        if (coerced is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (coerced is int small)
+        {
+            integer = new BigInteger(small);
+        }
+        else if (coerced is not BigInteger big)
+        {
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        }
+        else
+        {
+            integer = big;
+        }
+
+        if (integer > long.MaxValue || integer < long.MinValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        }
+
+        return (long)integer;
     }
 
     private static object Cycle(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

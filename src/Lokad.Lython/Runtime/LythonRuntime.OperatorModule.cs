@@ -467,6 +467,13 @@ internal sealed partial class LythonRuntime
             return length;
         }
 
+        // Bounded repeat iterators know their remaining count like CPython;
+        // unbounded repeats fall through to the default below.
+        if (arguments[0] is PyRepeatIterator repeat && repeat.RemainingHint is { } remaining)
+        {
+            return new BigInteger(remaining);
+        }
+
         if (arguments.Length == 1)
         {
             return BigInteger.Zero;

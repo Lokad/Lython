@@ -259,6 +259,10 @@ internal sealed class PyRepeatIterator : PyIteratorBase
         _remaining = times;
     }
 
+    // Bounded repeats know their remaining count like CPython; unbounded
+    // repeats report no hint so callers fall back to their default.
+    public long? RemainingHint => _remaining;
+
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         if (_remaining is { } remaining)
