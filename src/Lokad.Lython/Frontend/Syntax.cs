@@ -118,9 +118,47 @@ internal sealed record AugmentedAssignmentStatementSyntax(
     ExpressionSyntax Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
-internal sealed record UnpackingTargetSyntax(
+internal abstract record UnpackingTargetSyntax(LythonSourceSpan Span)
+{
+    public abstract bool IsStarred { get; }
+}
+
+internal sealed record UnpackingNameTargetSyntax(
     string Name,
-    bool IsStarred);
+    bool Starred,
+    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
+{
+    public override bool IsStarred => Starred;
+}
+
+internal sealed record UnpackingSubscriptTargetSyntax(
+    ExpressionSyntax Target,
+    ExpressionSyntax Index,
+    bool Starred,
+    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
+{
+    public override bool IsStarred => Starred;
+}
+
+internal sealed record UnpackingSliceTargetSyntax(
+    ExpressionSyntax Target,
+    ExpressionSyntax? Start,
+    ExpressionSyntax? End,
+    ExpressionSyntax? Step,
+    bool Starred,
+    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
+{
+    public override bool IsStarred => Starred;
+}
+
+internal sealed record UnpackingMemberTargetSyntax(
+    ExpressionSyntax Target,
+    string MemberName,
+    bool Starred,
+    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
+{
+    public override bool IsStarred => Starred;
+}
 
 internal readonly struct UnpackingLayout
 {

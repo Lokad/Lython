@@ -85,7 +85,7 @@ internal static partial class StaticBindingEngine
                 {
                     foreach (var target in unpacking.Targets)
                     {
-                        bindings.Remove(target.Name);
+                        RemoveUnpackingTargetBinding(target, bindings);
                     }
                 }
                 break;
@@ -401,9 +401,9 @@ internal static partial class StaticBindingEngine
         ExpressionSyntax expression,
         AbstractState bindings)
     {
-        if (targets.Count == 1 && !targets[0].IsStarred)
+        if (targets.Count == 1 && targets[0] is UnpackingNameTargetSyntax singleName && !singleName.IsStarred)
         {
-            UpdateBinding(targets[0].Name, expression, bindings);
+            UpdateBinding(singleName.Name, expression, bindings);
             return true;
         }
 
@@ -422,7 +422,7 @@ internal static partial class StaticBindingEngine
         {
             for (var i = 0; i < targets.Count; i++)
             {
-                bindings.Set(targets[i].Name, items[i].WithSpan(expression.Span));
+                BindUnpackingTarget(targets[i], items[i].WithSpan(expression.Span), bindings);
             }
 
             return true;
@@ -430,7 +430,7 @@ internal static partial class StaticBindingEngine
 
         for (var i = 0; i < layout.StarredTargetIndex; i++)
         {
-            bindings.Set(targets[i].Name, items[i].WithSpan(expression.Span));
+            BindUnpackingTarget(targets[i], items[i].WithSpan(expression.Span), bindings);
         }
 
         var starredValueCount = layout.StarredValueCount(items.Count);
@@ -440,15 +440,48 @@ internal static partial class StaticBindingEngine
             rest.Add(items[layout.StarredTargetIndex + i].WithSpan(expression.Span));
         }
 
-        bindings.Set(targets[layout.StarredTargetIndex].Name, AbstractValue.List(rest, expression.Span));
+        BindUnpackingTarget(targets[layout.StarredTargetIndex], AbstractValue.List(rest, expression.Span), bindings);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
             var offset = layout.SourceIndexForTrailingTarget(i, items.Count);
-            bindings.Set(targets[i].Name, items[offset].WithSpan(expression.Span));
+            BindUnpackingTarget(targets[i], items[offset].WithSpan(expression.Span), bindings);
         }
 
         return true;
+    }
+
+    private static void BindUnpackingTarget(UnpackingTargetSyntax target, AbstractValue value, AbstractState bindings)
+    {
+        if (target is UnpackingNameTargetSyntax name)
+        {
+            bindings.Set(name.Name, value);
+            return;
+        }
+
+        RemoveUnpackingTargetBinding(target, bindings);
+    }
+
+    private static void RemoveUnpackingTargetBinding(UnpackingTargetSyntax target, AbstractState bindings)
+    {
+        switch (target)
+        {
+            case UnpackingNameTargetSyntax name:
+                bindings.Remove(name.Name);
+                break;
+
+            case UnpackingSubscriptTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
+                bindings.Remove(subscriptIdentifier.Name);
+                break;
+
+            case UnpackingSliceTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
+                bindings.Remove(sliceIdentifier.Name);
+                break;
+
+            case UnpackingMemberTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
+                bindings.Remove(memberIdentifier.Name);
+                break;
+        }
     }
 
     private static void BindLoopTargetValue(LoopTargetSyntax target, AbstractValue value, AbstractState bindings)

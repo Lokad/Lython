@@ -48,8 +48,12 @@ internal static partial class StaticAbstractInterpreter
     {
         switch (target)
         {
-            case NameAssignmentTargetSyntax or UnpackingAssignmentTargetGroupSyntax:
-                // These targets contain names only; StaticBindingEngine owns their binding effects.
+            case NameAssignmentTargetSyntax:
+                // StaticBindingEngine owns its binding effect.
+                break;
+
+            case UnpackingAssignmentTargetGroupSyntax unpacking:
+                AnalyzeUnpackingTargetGroup(unpacking, diagnostics, bindings);
                 break;
 
             case SubscriptAssignmentTargetSyntax subscript:
@@ -70,7 +74,38 @@ internal static partial class StaticAbstractInterpreter
         }
     }
 
+    private static void AnalyzeUnpackingTargetGroup(
+        UnpackingAssignmentTargetGroupSyntax unpacking,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        // Names bind through StaticBindingEngine; every other item reads like
+        // the matching single-target assignment.
+        foreach (var target in unpacking.Targets)
+        {
+            switch (target)
+            {
+                case UnpackingSubscriptTargetSyntax subscript:
+                    AnalyzeExpression(subscript.Target, diagnostics, bindings);
+                    AnalyzeExpression(subscript.Index, diagnostics, bindings);
+                    break;
+
+                case UnpackingSliceTargetSyntax slice:
+                    AnalyzeExpression(slice.Target, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                    break;
+
+                case UnpackingMemberTargetSyntax member:
+                    AnalyzeExpression(member.Target, diagnostics, bindings);
+                    break;
+            }
+        }
+    }
+
     private static void AnalyzeExpressionIfPresent(
+
         ExpressionSyntax? expression,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)

@@ -253,7 +253,7 @@ internal sealed partial class Parser
                 return null;
             }
 
-            targets.Add(new UnpackingTargetSyntax(IdentifierText(nameToken), isStarred));
+            targets.Add(new UnpackingNameTargetSyntax(IdentifierText(nameToken), isStarred, SpanOf(nameToken)));
             if (CurrentToken != Token.Comma)
             {
                 break;
@@ -441,26 +441,56 @@ internal sealed partial class Parser
         IReadOnlyList<CollectionDisplayItemSyntax> items,
         out IReadOnlyList<UnpackingTargetSyntax> targets)
     {
-        if (items.Count == 0)
-        {
-            targets = Array.Empty<UnpackingTargetSyntax>();
-            return false;
-        }
-
         var converted = new UnpackingTargetSyntax[items.Count];
         for (var i = 0; i < items.Count; i++)
         {
-            if (items[i].Expression is not IdentifierExpressionSyntax identifier)
+            if (!TryConvertUnpackingItem(items[i], out var convertedItem))
             {
                 targets = Array.Empty<UnpackingTargetSyntax>();
                 return false;
             }
 
-            converted[i] = new UnpackingTargetSyntax(identifier.Name, items[i].IsUnpacking);
+            converted[i] = convertedItem.RequireNotNull();
         }
 
         targets = converted;
         return true;
+    }
+
+    // Parentheses never change the target like CPython; nested displays stay
+    // unsupported.
+    private static bool TryConvertUnpackingItem(
+        CollectionDisplayItemSyntax item,
+        out UnpackingTargetSyntax? target)
+    {
+        var expression = UnwrapParenthesizedTarget(item.Expression);
+        target = expression switch
+        {
+            IdentifierExpressionSyntax identifier => new UnpackingNameTargetSyntax(
+                identifier.Name,
+                item.IsUnpacking,
+                identifier.Span),
+            SubscriptExpressionSyntax subscript => new UnpackingSubscriptTargetSyntax(
+                subscript.Target,
+                subscript.Index,
+                item.IsUnpacking,
+                subscript.Span),
+            SliceExpressionSyntax slice => new UnpackingSliceTargetSyntax(
+                slice.Target,
+                slice.Start,
+                slice.End,
+                slice.Step,
+                item.IsUnpacking,
+                slice.Span),
+            MemberExpressionSyntax member => new UnpackingMemberTargetSyntax(
+                member.Target,
+                member.MemberName,
+                item.IsUnpacking,
+                member.Span),
+            _ => null,
+        };
+
+        return target is not null;
     }
 
     private StatementSyntax? TryParseAugmentedAssignmentStatement()

@@ -527,7 +527,7 @@ internal sealed partial class LythonRuntime
         {
             for (var i = 0; i < targets.Count; i++)
             {
-                StoreName(targets[i].Name, values[i], context, span);
+                StoreUnpackingTarget(targets[i], values[i], context, span);
             }
 
             return;
@@ -535,18 +535,56 @@ internal sealed partial class LythonRuntime
 
         for (var i = 0; i < layout.StarredTargetIndex; i++)
         {
-            StoreName(targets[i].Name, values[i], context, span);
+            StoreUnpackingTarget(targets[i], values[i], context, span);
         }
 
         var starredCount = layout.StarredValueCount(values.Length);
         var starredItems = new object[starredCount];
         Array.Copy(values, layout.StarredTargetIndex, starredItems, 0, starredCount);
-        StoreName(targets[layout.StarredTargetIndex].Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
+        StoreUnpackingTarget(targets[layout.StarredTargetIndex], new PyList(starredItems, context.MemoryGovernor, span), context, span);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
             var offset = layout.SourceIndexForTrailingTarget(i, values.Length);
-            StoreName(targets[i].Name, values[offset], context, span);
+            StoreUnpackingTarget(targets[i], values[offset], context, span);
+        }
+    }
+
+    private static void StoreUnpackingTarget(
+        UnpackingTargetSyntax target,
+        object value,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        switch (target)
+        {
+            case UnpackingNameTargetSyntax name:
+                StoreName(name.Name, value, context, span);
+                return;
+
+            case UnpackingSubscriptTargetSyntax subscript:
+                AssignSubscriptTarget(
+                    new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
+                    value,
+                    context);
+                return;
+
+            case UnpackingSliceTargetSyntax slice:
+                AssignSliceTarget(
+                    new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
+                    value,
+                    context);
+                return;
+
+            case UnpackingMemberTargetSyntax member:
+                AssignMemberTarget(
+                    new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
+                    value,
+                    context);
+                return;
+
+            default:
+                throw new InvalidOperationException($"Unsupported unpacking target syntax: {target.GetType().Name}");
         }
     }
 

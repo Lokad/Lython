@@ -225,7 +225,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(augmented.Expression, names);
                 break;
             case UnpackingAssignmentStatementSyntax unpacking:
-                foreach (var target in unpacking.Targets) names.Add(target.Name);
+                foreach (var target in unpacking.Targets) { if (target is UnpackingNameTargetSyntax name) names.Add(name.Name); }
                 CollectSeenNames(unpacking.Expression, names);
                 break;
             case SubscriptAssignmentStatementSyntax subscript:
@@ -329,7 +329,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 names.Add(name.Name);
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:
-                foreach (var nested in group.Targets) names.Add(nested.Name);
+                foreach (var nested in group.Targets) { if (nested is UnpackingNameTargetSyntax nestedName) names.Add(nestedName.Name); }
                 break;
             case SubscriptAssignmentTargetSyntax subscript:
                 CollectSeenNames(subscript.Target, names);

@@ -128,7 +128,10 @@ internal static class StaticNameBindingDiagnostics
             case UnpackingAssignmentStatementSyntax unpacking:
                 foreach (var target in unpacking.Targets)
                 {
-                    maybeAssigned.Add(target.Name);
+                    if (target is UnpackingNameTargetSyntax name)
+                    {
+                        maybeAssigned.Add(name.Name);
+                    }
                 }
                 break;
 
@@ -270,7 +273,10 @@ internal static class StaticNameBindingDiagnostics
                 case UnpackingAssignmentTargetGroupSyntax unpacking:
                     foreach (var nested in unpacking.Targets)
                     {
-                        maybeAssigned.Add(nested.Name);
+                        if (nested is UnpackingNameTargetSyntax nestedName)
+                        {
+                            maybeAssigned.Add(nestedName.Name);
+                        }
                     }
                     break;
             }

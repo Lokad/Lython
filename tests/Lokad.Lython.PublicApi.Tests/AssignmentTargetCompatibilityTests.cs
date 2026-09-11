@@ -527,6 +527,72 @@ __lython_file.close()
         Assert.Equal("a|b|c|d|e|f|solo|t1|other|g|[2]|False:False|7|6", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void MixedDisplayUnpackingTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+a = 0
+slots = [0, 0]
+(a, slots[0]) = (1, 2)
+
+class Box:
+    pass
+
+box = Box()
+box.v = 0
+row = {}
+(box.v, row["k"]) = (7, 8)
+
+items = [1, 2, 3]
+rest = 0
+(items[0:2], rest) = ([9], 7)
+
+p = 0
+holders = [0]
+((p), holders[0]) = (3, 4)
+
+star = [0]
+tail = 0
+(*star[0], tail) = (5, 6)
+
+first = 0
+cells = [0]
+whole = (first, cells[0]) = (7, 8)
+
+u = 0
+vslots = [0]
+[u, vslots[0]] = [9, 10]
+
+def run():
+    w = 0
+    wslots = [0]
+    (w, wslots[0]) = (11, 12)
+    return w + wslots[0]
+
+values = [
+    str(a) + ":" + str(slots[0]),
+    str(box.v + row["k"]),
+    str(items) + ":" + str(rest),
+    str(p + holders[0]),
+    str(star[0]) + ":" + str(tail),
+    str(whole) + ":" + str(first + cells[0]),
+    str(u + vslots[0]),
+    str(run()),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("1:2|15|[9, 3]:7|7|[5]:6|(7, 8):15|19|23", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }
