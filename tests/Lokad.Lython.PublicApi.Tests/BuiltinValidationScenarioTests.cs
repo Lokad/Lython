@@ -168,6 +168,24 @@ return str(sorted(d.items()))
         Assert.Equal("[('f', 6), ('g', 7)]", result.ReturnValue);
     }
 
+    [Theory]
+    [InlineData("def get(k):\n    return {}[k]\nget(\"x\")\n", "'x'")]
+    [InlineData("def pop(k):\n    return {}.pop(k)\npop(\"x\")\n", "'x'")]
+    [InlineData("def delete(k):\n    d = {}\n    del d[k]\ndelete(\"x\")\n", "'x'")]
+    [InlineData("def get(k):\n    return {1: 2}[k]\nget(3)\n", "3")]
+    [InlineData("def get(k):\n    return {(1, \"a\"): 2}[k]\nget((1, \"b\"))\n", "(1, 'b')")]
+    [InlineData("from collections import ChainMap\ndef get(k):\n    return ChainMap({})[k]\nget(\"x\")\n", "'x'")]
+    [InlineData("print({}.popitem())\n", "'popitem(): dictionary is empty'")]
+    [InlineData("print({1}.remove(2))\n", "2")]
+    public void UncaughtKeyErrors_ProjectQuotedKeys(string source, string message)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("KeyError", result.Failure?.ExceptionType);
+        Assert.Equal(message, result.Failure?.Message);
+    }
+
     [Fact]
     public void PythonKeywordSpellings_AreAcceptedForSupportedBuiltinsAndMethods()
     {

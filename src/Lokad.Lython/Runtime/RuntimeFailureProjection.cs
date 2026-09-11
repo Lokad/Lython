@@ -7,7 +7,7 @@ internal static class RuntimeFailureProjection
     // length is exact.
     internal const string TruncatedMessageMarker = "...[truncated to fit the projection budget]";
 
-    public static LythonRuntimeFailure ToPublicFailure(LythonRuntimeException exception, ProjectionBudget? budget)
+    public static LythonRuntimeFailure ToPublicFailure(LythonRuntimeException exception, ProjectionBudget? budget, LythonRuntime.ExecutionContext? context = null)
     {
         LythonStackFrame[] frames;
         if (exception.Frames.Count == 0)
@@ -28,13 +28,37 @@ internal static class RuntimeFailureProjection
         // pushes the reported peak past the budget; the caller's minimal
         // fallback then keeps the original type with empty details.
         ReserveOrThrow(budget, checked(32L + (16L * frames.Length)));
-        var message = FitMessage(exception.Message, budget);
+        var message = FitMessage(RenderFailureMessage(exception, context), budget);
         return new LythonRuntimeFailure(
             exception.ExceptionType,
             message,
             exception.Span,
             frames,
             exception.SourcePath);
+    }
+
+    // Mapping misses carry their key as the payload; like CPython and the
+    // caught str() path, the projected message renders the key through repr.
+    // Anything payload-free (or unrenderable, which must never mask the
+    // original failure) keeps the stored message.
+    private static string RenderFailureMessage(LythonRuntimeException exception, LythonRuntime.ExecutionContext? context)
+    {
+        if (context is null ||
+            !string.Equals(exception.ExceptionType, "KeyError", StringComparison.Ordinal) ||
+            exception.Payload is null ||
+            ReferenceEquals(exception.Payload, PyNone.Instance))
+        {
+            return exception.Message;
+        }
+
+        try
+        {
+            return PyRendering.ToReprPyString(exception.Payload, new PyRenderingContext(context)).AsString();
+        }
+        catch (Exception)
+        {
+            return exception.Message;
+        }
     }
 
     private static string FitMessage(string message, ProjectionBudget? budget)

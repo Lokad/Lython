@@ -324,7 +324,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeFailure failure;
         try
         {
-            failure = RuntimeFailureProjection.ToPublicFailure(exception, budget);
+            failure = RuntimeFailureProjection.ToPublicFailure(exception, budget, context);
         }
         catch (ProjectionException)
         {
