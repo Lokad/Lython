@@ -247,13 +247,22 @@ internal sealed partial class Parser
                 }
             }
 
-            if (!TryReadNameToken(out var nameToken))
+            var itemExpression = ParsePostfixExpression();
+            if (itemExpression is null)
             {
-                AddDiagnostic("LA1032", "Expected assignment target.", firstToken);
                 return null;
             }
 
-            targets.Add(new UnpackingNameTargetSyntax(IdentifierText(nameToken), isStarred, SpanOf(nameToken)));
+            CollectionDisplayItemSyntax item = isStarred
+                ? new CollectionUnpackingItemSyntax(itemExpression, itemExpression.Span)
+                : new CollectionValueItemSyntax(itemExpression);
+            if (!TryConvertUnpackingItem(item, out var unpackingTarget) || unpackingTarget is null)
+            {
+                AddDiagnostic("LA1068", "Unsupported assignment target.", itemExpression.Span);
+                return null;
+            }
+
+            targets.Add(unpackingTarget);
             if (CurrentToken != Token.Comma)
             {
                 break;
@@ -281,36 +290,99 @@ internal sealed partial class Parser
     private bool IsUnpackingAssignmentStart()
     {
         var offset = 0;
-        if (!IsNameToken(PeekToken(offset)))
-        {
-            return false;
-        }
-
-        offset++;
         var sawComma = false;
-        while (PeekToken(offset) == Token.Comma)
+        while (true)
         {
+            if (PeekToken(offset) == Token.Star)
+            {
+                offset++;
+            }
+
+            offset = SkipUnpackingTargetItem(offset);
+            if (offset < 0)
+            {
+                return false;
+            }
+
+            if (PeekToken(offset) != Token.Comma)
+            {
+                break;
+            }
+
             sawComma = true;
             offset++;
             if (PeekToken(offset) == Token.Assign)
             {
                 return true;
             }
+        }
 
-            if (PeekToken(offset) == Token.Star)
+        return sawComma && PeekToken(offset) == Token.Assign;
+    }
+
+    // Returns the offset just past one unpacking target item, or -1 when the
+    // tokens cannot start one. Bracketed groups are skipped balanced so inner
+    // commas never split the target list.
+    private int SkipUnpackingTargetItem(int offset)
+    {
+        if (PeekToken(offset) == Token.OpenParen)
+        {
+            return SkipBalancedTokens(offset);
+        }
+
+        if (!IsNameToken(PeekToken(offset)))
+        {
+            return -1;
+        }
+
+        offset++;
+        while (true)
+        {
+            if (PeekToken(offset) == Token.OpenBracket)
             {
-                offset++;
+                offset = SkipBalancedTokens(offset);
+                if (offset < 0)
+                {
+                    return -1;
+                }
+            }
+            else if (PeekToken(offset) == Token.Dot && IsNameToken(PeekToken(offset + 1)))
+            {
+                offset += 2;
+            }
+            else
+            {
+                return offset;
+            }
+        }
+    }
+
+    private int SkipBalancedTokens(int offset)
+    {
+        var depth = 0;
+        while (true)
+        {
+            var token = PeekToken(offset);
+            if (token is Token.End || token == Token.Assign)
+            {
+                return -1;
             }
 
-            if (!IsNameToken(PeekToken(offset)))
+            if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace)
             {
-                return false;
+                depth++;
+            }
+            else if (token is Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    return offset + 1;
+                }
             }
 
             offset++;
         }
-
-        return sawComma && PeekToken(offset) == Token.Assign;
     }
 
     private StatementSyntax? ParseAssignmentAfterFirstTarget(AssignmentTargetSyntax firstTarget, int startToken)
