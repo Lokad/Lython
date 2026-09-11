@@ -5058,6 +5058,69 @@ hash(P(1))
     }
 
     [Theory]
+    [InlineData("return str(object.__format__)", "<method '__format__' of 'object' objects>")]
+    [InlineData("class C: pass\nreturn str(C.__format__)", "<method '__format__' of 'object' objects>")]
+    [InlineData("return repr(object.__format__)", "<method '__format__' of 'object' objects>")]
+    [InlineData("return str(type(object.__format__))", "<class 'method_descriptor'>")]
+    [InlineData("return str(list.append)", "<method 'append' of 'list' objects>")]
+    public void ObjectFormatSlot_RenderMethodDescriptorForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Fact]
+    public void ObjectFormatSlot_FormatsLikeBuiltin()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+
+class D:
+    def __format__(self, spec):
+        return "D:" + spec
+d = D()
+
+parts = []
+parts.append(str(c.__format__("")))
+parts.append(str(format(C(), "")))
+parts.append(str(object.__format__(c, "")))
+parts.append(str(d.__format__("x")))
+parts.append(str(c.__format__))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<C object>|<C object>|<C object>|D:x|<built-in method __format__ of C object>", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ObjectFormatSlot_RejectsNonEmptySpec()
+    {
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+
+c.__format__("x")
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Contains("unsupported format string passed to C.__format__", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

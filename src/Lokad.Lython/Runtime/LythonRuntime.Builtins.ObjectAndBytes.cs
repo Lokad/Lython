@@ -976,6 +976,107 @@ internal sealed partial class LythonRuntime
             return new BigInteger(RuntimeHelpers.GetHashCode(arguments[0].Value));
         }
     }
+    // object.__format__ behaves like CPython method descriptors: the unbound
+    // shape renders like one, calls forward through a bound engine method,
+    // and binding reports the receiver type through the shared helper.
+    private sealed class ObjectFormatMethod : ICallable, IPyBindableCallable, IPyDynamicAttributes, IPyHashableValue, IPyRenderableValue, IClassOwnedMember
+    {
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<method '__format__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => HashCode.Combine(StringComparer.Ordinal.GetHashCode("object"), StringComparer.Ordinal.GetHashCode("__format__"));
+
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString("__format__");
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object.__format__");
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self)
+        {
+            var bound = BoundCallable.Create(
+                (arguments, span, context) => FormatImpl(self, arguments, span, context),
+                "object.__format__",
+                ["spec"],
+                1);
+            bound.AttachReceiver(self);
+            return bound;
+        }
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var receiverIndex = -1;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i].IsPositional)
+                {
+                    receiverIndex = i;
+                    break;
+                }
+            }
+
+            if (receiverIndex < 0)
+            {
+                throw new LythonRuntimeException("TypeError", "unbound method object.__format__() needs an argument", span);
+            }
+
+            var receiver = arguments[receiverIndex].Value;
+            var bound = (ICallable)Bind(receiver);
+            var rest = new CallArgumentValue[arguments.Length - 1];
+            Array.Copy(arguments, 0, rest, 0, receiverIndex);
+            Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
+            return bound.Invoke(rest, span, context);
+        }
+
+        private static object FormatImpl(object receiver, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (!PyStringOps.TryAsString(arguments[0], out var spec))
+            {
+                throw new LythonRuntimeException("TypeError", "object.__format__(self, spec) expects the format specification to be a string.", span);
+            }
+
+            // Only the empty spec formats through str() like CPython; any
+            // other spec on the default implementation reports TypeError
+            // naming the receiver type, mirroring the format builtin.
+            if (spec.AsString().Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", $"unsupported format string passed to {RuntimeErrors.OperandTypeName(receiver)}.__format__", span);
+            }
+
+            return ToInterpolatedPyString(receiver, context);
+        }
+    }
     private static ICallable? ParsePropertyCallable(object value, string parameterName, LythonSourceSpan span)
     {
         return value switch

@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
                 ["__getattribute__"] = new ObjectGetAttrMethod(),
                 ["__setattr__"] = new ObjectSetAttrMethod(),
                 ["__delattr__"] = new ObjectDelAttrMethod(),
+                ["__format__"] = new ObjectFormatMethod(),
                 ["__eq__"] = new ObjectEqMethod(),
                 ["__ne__"] = new ObjectNeMethod(),
                 ["__str__"] = new ObjectStrMethod(),
