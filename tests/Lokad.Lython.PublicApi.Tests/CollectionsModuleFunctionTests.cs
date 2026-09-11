@@ -118,6 +118,41 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_CounterAndDefaultDict_ViewsAreLive()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, defaultdict
+
+c = Counter("aab")
+live_keys = c.keys()
+c.update("c")
+
+d = defaultdict(int, {"a": 1})
+live_default_keys = d.keys()
+d["b"] = 2
+
+vals = []
+vals.append(str(sorted(live_keys)))
+vals.append(str(c.keys().isdisjoint(["x"])))
+vals.append(str(c.keys().isdisjoint(["a"])))
+vals.append(str(sorted(c.keys() & {"a", "b"})))
+vals.append(str(c.items().isdisjoint([("a", 2)])))
+vals.append(str(sorted(live_default_keys)))
+vals.append(str(d.keys().isdisjoint(["x"])))
+vals.append(str(d.items().isdisjoint([("a", 1)])))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['a', 'b', 'c']|True|False|['a', 'b']|False|['a', 'b']|True|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_CounterLengthCountsStoredDistinctKeys()
     {
         var result = new LythonEngine().Run(
@@ -517,6 +552,27 @@ Counter().update(1)
 """,
         "TypeError",
         "iterable or mapping")]
+    [InlineData(
+        """
+from collections import Counter
+Counter("aab").keys().isdisjoint(1)
+""",
+        "TypeError",
+        "not iterable")]
+    [InlineData(
+        """
+from collections import Counter
+Counter("aab").keys().isdisjoint([[]])
+""",
+        "TypeError",
+        "hashable")]
+    [InlineData(
+        """
+from collections import defaultdict
+defaultdict(int, {"a": 1}).items().isdisjoint(5)
+""",
+        "TypeError",
+        "not iterable")]
     [InlineData(
         """
 from collections import deque

@@ -48,6 +48,8 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public IEnumerable<KeyValuePair<object, object>> Items => _items;
 
+    internal PyDict InnerDict => _items;
+
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
     public object GetOrCreate(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -188,6 +190,8 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     public IEnumerable<object> Values => _items.Values;
 
     public IEnumerable<KeyValuePair<object, object>> Items => _items;
+
+    internal PyDict InnerDict => _items;
 
     public object GetCount(object key) => _items.TryGetValue(key, out var value) ? value : BigInteger.Zero;
 

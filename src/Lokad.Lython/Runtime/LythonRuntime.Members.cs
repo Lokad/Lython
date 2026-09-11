@@ -992,18 +992,24 @@ internal sealed partial class LythonRuntime
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                 }, "defaultdict.get", ["key", "default"], 1),
-                "keys" => BoundCallable.CreateNoArguments(
-                    dict,
-                    "defaultdict.keys",
-                    static (receiver, span, context) => new PyList(receiver.Keys, context.MemoryGovernor, span)),
-                "values" => BoundCallable.CreateNoArguments(
-                    dict,
-                    "defaultdict.values",
-                    static (receiver, span, context) => new PyList(receiver.Values, context.MemoryGovernor, span)),
-                "items" => BoundCallable.CreateNoArguments(
-                    dict,
-                    "defaultdict.items",
-                    static (receiver, span, context) => BuildItemsList(receiver, context, span)),
+                "keys" => BoundCallable.CreateNoArguments(dict, "defaultdict.keys", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictKeysView(receiver.InnerDict);
+                }),
+                "values" => BoundCallable.CreateNoArguments(dict, "defaultdict.values", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictValuesView(receiver.InnerDict);
+                }),
+                "items" => BoundCallable.CreateNoArguments(dict, "defaultdict.items", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictItemsView(receiver.InnerDict);
+                }),
                 "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)) { BoundName = "defaultdict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1188,18 +1194,24 @@ internal sealed partial class LythonRuntime
                     receiver.Clear();
                     return PyNone.Instance;
                 }),
-                "keys" => BoundCallable.CreateNoArguments(
-                    counter,
-                    "Counter.keys",
-                    static (receiver, span, context) => new PyList(receiver.Keys, context.MemoryGovernor, span)),
-                "values" => BoundCallable.CreateNoArguments(
-                    counter,
-                    "Counter.values",
-                    static (receiver, span, context) => new PyList(receiver.Values, context.MemoryGovernor, span)),
-                "items" => BoundCallable.CreateNoArguments(
-                    counter,
-                    "Counter.items",
-                    static (receiver, span, context) => BuildItemsList(receiver, context, span)),
+                "keys" => BoundCallable.CreateNoArguments(counter, "Counter.keys", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictKeysView(receiver.InnerDict);
+                }),
+                "values" => BoundCallable.CreateNoArguments(counter, "Counter.values", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictValuesView(receiver.InnerDict);
+                }),
+                "items" => BoundCallable.CreateNoArguments(counter, "Counter.items", static (receiver, span, context) =>
+                {
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    return new DictItemsView(receiver.InnerDict);
+                }),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1282,28 +1294,4 @@ internal sealed partial class LythonRuntime
             private string Name => _subtract ? "subtract" : "update";
         }
     }
-
-    private static PyList BuildItemsList(IEnumerable<KeyValuePair<object, object>> pairs, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (pairs is IReadOnlyCollection<KeyValuePair<object, object>> collection)
-        {
-            var items = new object[collection.Count];
-            var index = 0;
-            foreach (var pair in pairs)
-            {
-                items[index++] = PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span);
-            }
-
-            return new PyList(items, context.MemoryGovernor, span);
-        }
-
-        var list = new List<object>();
-        foreach (var pair in pairs)
-        {
-            list.Add(PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span));
-        }
-
-        return new PyList(list, context.MemoryGovernor, span);
-    }
-
 }
