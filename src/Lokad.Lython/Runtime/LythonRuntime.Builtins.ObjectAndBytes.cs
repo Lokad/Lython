@@ -188,7 +188,7 @@ internal sealed partial class LythonRuntime
         return new PyClassMethod(callable);
     }
 
-    private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes, IClassOwnedMember
+    private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes, IClassOwnedMember, IPyRenderableValue
     {
         // object.__new__ is a builtin method: CPython reports the short
         // __name__, the qualified __qualname__ and a None __module__.
@@ -227,6 +227,16 @@ internal sealed partial class LythonRuntime
             value = PyNone.Instance;
             return false;
         }
+
+        // object.__new__ renders like CPython builtin methods bound to the
+        // type, minus the address suffix (like the other new slots).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<built-in method __new__ of type object>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

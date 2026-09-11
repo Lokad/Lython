@@ -4863,6 +4863,19 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("return str(object.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("return repr(object.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("class C: pass\nreturn str(C.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("return str(type.__new__)", "<built-in method __new__ of type object>")]
+    public void ObjectNewSlot_RenderBuiltinMethodForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
