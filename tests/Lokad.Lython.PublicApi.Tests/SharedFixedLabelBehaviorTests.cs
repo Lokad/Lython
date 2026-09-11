@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "center", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(b"") == ["capitalize", "center", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4714,6 +4714,118 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BytesPaddingMembers()
+    {
+        // bytes padding follows CPython widths, fill bytes and sign-aware
+        // zeros, with the usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"ab".center(5) == b"  ab ")
+            results.append(b"ab".ljust(5) == b"ab   ")
+            results.append(b"ab".rjust(5) == b"   ab")
+            results.append(b"ab".zfill(5) == b"000ab")
+            results.append(b"ab".center(6) == b"  ab  ")
+            results.append(b"abc".center(2) == b"abc")
+            results.append(b"".center(3) == b"   ")
+            results.append(b"ab".center(5, b"*") == b"**ab*")
+            results.append(b"-42".zfill(5) == b"-0042")
+            results.append(b"+42".zfill(5) == b"+0042")
+            results.append(b"42".zfill(5) == b"00042")
+            results.append(b"".zfill(3) == b"000")
+            results.append(b"+".zfill(2) == b"+0")
+            results.append(bytes.center(b"ab", 4) == b" ab ")
+            results.append(bytes.zfill(b"42", 4) == b"0042")
+            results.append(type(bytes.center).__name__)
+            results.append(bytes.center.__name__)
+            results.append(hasattr(bytes, "zfill"))
+            results.append("ljust" in dir(b"ab"))
+            results.append("rjust" in dir(bytes))
+            c = b"abc"
+            results.append(c.center(2) is c)
+            results.append(c.ljust(3) is c)
+            results.append(c.zfill(3) is c)
+            results.append(c.center(5) is c)
+            results.append(c.zfill(1) is c)
+            try:
+                getattr(b"ab", "center")()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "center")(5, b"*", b"x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "center")(width=5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "center")(5, b"")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "center")(5, b"**")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "ljust")(5, " ")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "ljust")(5, 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "center")("5")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "zfill")()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "zfill")(1, 2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "zfill")("5")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"ab", "zfill")(width=3)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, "method_descriptor", "center", true, true, true, true, true,
+            true, false, true,
+            "bytes.center(width[, fillchar]) expects one or two arguments.",
+            "bytes.center(width[, fillchar]) expects one or two arguments.",
+            "bytes.center() takes no keyword arguments",
+            "The fill character must be exactly one byte long",
+            "The fill character must be exactly one byte long",
+            "bytes.ljust(width[, fillchar]) expects fillchar to be a bytes-like object.",
+            "bytes.ljust(width[, fillchar]) expects fillchar to be a bytes-like object.",
+            "bytes.center(width[, fillchar]) expects width to be an integer.",
+            "bytes.zfill() takes exactly one argument (0 given)",
+            "bytes.zfill() takes exactly one argument (2 given)",
+            "bytes.zfill(width) expects width to be an integer.",
+            "bytes.zfill() takes no keyword arguments",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {

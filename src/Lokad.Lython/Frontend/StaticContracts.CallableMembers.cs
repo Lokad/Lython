@@ -126,6 +126,14 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "center", 1, 2, "LA3184", "bytes.center(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "center", 1, 2, "LA3184", "bytes.center(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "ljust", 1, 2, "LA3184", "bytes.ljust(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "ljust", 1, 2, "LA3184", "bytes.ljust(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rjust", 1, 2, "LA3184", "bytes.rjust(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rjust", 1, 2, "LA3184", "bytes.rjust(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "zfill", 1, 1, "LA3184", "bytes.zfill(width) expects one argument.", parameterNames: ["width"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "zfill", 1, 1, "LA3184", "bytes.zfill(width) expects one argument.", parameterNames: ["width"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "join", 1, 1, "LA3183", "bytes.join(iterable) expects one argument.", parameterNames: ["iterable"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "join", 1, 1, "LA3183", "bytes.join(iterable) expects one argument.", parameterNames: ["iterable"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "partition", 1, 1, "LA3182", "bytes.partition(sep) expects one argument.", parameterNames: ["sep"]));

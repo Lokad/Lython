@@ -56,6 +56,7 @@ internal static partial class StaticContracts
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
     {
         "capitalize",
+        "center",
         "count",
         "decode",
         "endswith",
@@ -72,6 +73,7 @@ internal static partial class StaticContracts
         "istitle",
         "isupper",
         "join",
+        "ljust",
         "lower",
         "lstrip",
         "maketrans",
@@ -81,6 +83,7 @@ internal static partial class StaticContracts
         "replace",
         "rfind",
         "rindex",
+        "rjust",
         "rpartition",
         "rsplit",
         "rstrip",
@@ -92,6 +95,7 @@ internal static partial class StaticContracts
         "title",
         "translate",
         "upper",
+        "zfill",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)

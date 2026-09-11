@@ -66,6 +66,10 @@ internal sealed partial class LythonRuntime
                 "partition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "partition", arguments, span, context, isFirst: true)) { BoundName = "bytes.partition", BoundReceiver = bytes },
                 "rpartition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "rpartition", arguments, span, context, isFirst: false)) { BoundName = "bytes.rpartition", BoundReceiver = bytes },
                 "join" => new RawBoundCallable((arguments, span, context) => JoinBytes(bytes, arguments, span, context)) { BoundName = "bytes.join", BoundReceiver = bytes },
+                "center" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "center", arguments, span, context, BytesPadMode.Center)) { BoundName = "bytes.center", BoundReceiver = bytes },
+                "ljust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "ljust", arguments, span, context, BytesPadMode.LJust)) { BoundName = "bytes.ljust", BoundReceiver = bytes },
+                "rjust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "rjust", arguments, span, context, BytesPadMode.RJust)) { BoundName = "bytes.rjust", BoundReceiver = bytes },
+                "zfill" => new RawBoundCallable((arguments, span, context) => ZFillBytes(bytes, arguments, span, context)) { BoundName = "bytes.zfill", BoundReceiver = bytes },
                 "split" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
@@ -1536,6 +1540,116 @@ internal sealed partial class LythonRuntime
             first = false;
         }
 
+        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+    }
+    private enum BytesPadMode
+    {
+        LJust,
+        RJust,
+        Center,
+    }
+
+    private static object PadBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, BytesPadMode mode)
+    {
+        var signature = "bytes." + methodName + "(width[, fillchar])";
+        object widthArgument = PyNone.Instance;
+        object? fillArgument = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                widthArgument = argument.Value;
+            }
+            else if (positionals == 2)
+            {
+                fillArgument = argument.Value;
+            }
+        }
+
+        if (positionals is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", signature + " expects one or two arguments.", span);
+        }
+
+        var width = RuntimeArgumentValidation.ParseInt32(widthArgument, "width", signature, span);
+        var fill = (byte)' ';
+        if (fillArgument is not null)
+        {
+            if (fillArgument is not PyBytes fillBytes || fillBytes.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", fillArgument is not PyBytes ? signature + " expects fillchar to be a bytes-like object." : "The fill character must be exactly one byte long", span);
+            }
+
+            fill = fillBytes.Bytes[0];
+        }
+
+        var source = value.Bytes;
+        var padding = width - source.Length;
+        if (padding <= 0)
+        {
+            return value;
+        }
+
+        var left = mode switch
+        {
+            BytesPadMode.LJust => 0,
+            BytesPadMode.RJust => padding,
+            _ => padding / 2 + ((padding & width & 1) == 1 ? 1 : 0),
+        };
+        var right = padding - left;
+        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
+            ? new GovernedByteBuilder()
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
+        builder.AppendRepeated(fill, left);
+        builder.Append(source);
+        builder.AppendRepeated(fill, right);
+        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+    }
+
+    private static object ZFillBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        object widthArgument = PyNone.Instance;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes.zfill() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                widthArgument = argument.Value;
+            }
+        }
+
+        if (positionals != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bytes.zfill() takes exactly one argument (" + positionals + " given)", span);
+        }
+
+        var width = RuntimeArgumentValidation.ParseInt32(widthArgument, "width", "bytes.zfill(width)", span);
+        var source = value.Bytes;
+        if (width <= source.Length)
+        {
+            return value;
+        }
+
+        var prefixLength = source.Length > 0 && (source[0] == (byte)'+' || source[0] == (byte)'-') ? 1 : 0;
+        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
+            ? new GovernedByteBuilder()
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
+        builder.Append(source[..prefixLength]);
+        builder.AppendRepeated((byte)'0', width - source.Length);
+        builder.Append(source[prefixLength..]);
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
     private sealed class RawBoundCallable(
