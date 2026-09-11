@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }, "deque.insert", ["index", "value"]),
-                "remove" => BoundCallable.Create((arguments, span, _) =>
+                "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
 
                     if (!deque.RemoveValue(arguments[0]))
                     {
-                        throw new LythonRuntimeException("ValueError", "deque.remove(value): value is not in deque", span);
+                        throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
                     }
 
                     return PyNone.Instance;

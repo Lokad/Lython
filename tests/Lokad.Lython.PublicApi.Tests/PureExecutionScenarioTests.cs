@@ -5487,6 +5487,44 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RemoveMissValue_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+def lr(v):
+    l = [10, 20]
+    l.remove(v)
+    return l
+def dr(v):
+    d = deque([10, 20])
+    d.remove(v)
+    return list(d)
+
+parts = []
+for v in [99, "x", (1, 2), None]:
+    try:
+        parts.append(str(lr(v)))
+    except ValueError as e:
+        parts.append(str(e))
+for v in [99, "x", (1, 2), None]:
+    try:
+        parts.append(str(dr(v)))
+    except ValueError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"list.remove(x): x not in list|list.remove(x): x not in list|list.remove(x): x not in list|list.remove(x): x not in list|99 is not in deque|'x' is not in deque|(1, 2) is not in deque|None is not in deque", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

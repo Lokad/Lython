@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    throw new LythonRuntimeException("ValueError", "list.remove(value): value is not in list", span);
+                    throw new LythonRuntimeException("ValueError", "list.remove(x): x not in list", span);
                 }, "list.remove", ["value"]),
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
