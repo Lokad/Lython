@@ -4754,6 +4754,22 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(list.append.__get__)", "<method-wrapper '__get__' of method_descriptor object>")]
+    [InlineData("repr(list.append.__get__)", "<method-wrapper '__get__' of method_descriptor object>")]
+    [InlineData("str(int.real.__get__)", "<method-wrapper '__get__' of getset_descriptor object>")]
+    [InlineData("str(int.real.__set__)", "<method-wrapper '__set__' of getset_descriptor object>")]
+    [InlineData("str(int.real.__delete__)", "<method-wrapper '__delete__' of getset_descriptor object>")]
+    [InlineData("str(range.start.__get__)", "<method-wrapper '__get__' of member_descriptor object>")]
+    [InlineData("str(range.start.__set__)", "<method-wrapper '__set__' of member_descriptor object>")]
+    public void SlotWrapperMethods_RenderMethodWrapperForm(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
