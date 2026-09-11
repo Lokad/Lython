@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
         var converted = callable.Invoke([], span, context);
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
+            throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
         }
 
         return integer;

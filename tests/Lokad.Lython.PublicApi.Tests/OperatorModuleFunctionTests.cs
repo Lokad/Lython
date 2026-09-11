@@ -60,6 +60,43 @@ print(operator.index(7))
         Assert.Equal("'str' object cannot be interpreted as an integer\n'float' object cannot be interpreted as an integer\n'NoneType' object cannot be interpreted as an integer\n'list' object cannot be interpreted as an integer\n'I' object cannot be interpreted as an integer\n1\n7\n", result.StandardOutput);
     }
 
+    [Fact]
+    public void OperatorModule_IndexReturnType_NamesTypeLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+import operator
+
+class StrIndex:
+    def __index__(self):
+        return "x"
+
+class FloatIndex:
+    def __index__(self):
+        return 1.5
+
+class NoneIndex:
+    def __index__(self):
+        return None
+
+for v in [StrIndex(), FloatIndex(), NoneIndex()]:
+    try:
+        operator.index(v)
+        print("no-error")
+    except TypeError as e:
+        print(str(e))
+try:
+    print([10, 20][StrIndex()])
+except TypeError as e:
+    print(str(e))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("__index__ returned non-int (type str)\n__index__ returned non-int (type float)\n__index__ returned non-int (type NoneType)\n__index__ returned non-int (type str)\n", result.StandardOutput);
+    }
+
+
 
     [Fact]
     public void OperatorModule_Functions_HaveDirectCoverage()
