@@ -107,6 +107,35 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DecimalModule_OutOfRangeValuesStayShaped()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal
+vals = []
+vals.append(str(Decimal("1E-29")))
+vals.append(str(Decimal("1E-29").as_tuple()))
+vals.append(str(Decimal("0E+29")))
+vals.append(str(Decimal("0E+29").as_tuple()))
+vals.append(str(Decimal("0.12345678901234567890123456789")))
+vals.append(str(Decimal("1E+20")))
+vals.append(str(Decimal("1.50")))
+vals.append(str(Decimal("0.1")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            "0E-29|DecimalTuple(sign=0, digits=(0,), exponent=-29)|0E+29|DecimalTuple(sign=0, digits=(0,), exponent=29)|0.1234567890123456789012345679|1E+20|1.50|0.1",
+            host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DecimalModule_ActiveContextControlsRoundingOperations()
     {
         var host = new MockLythonHost();
@@ -292,6 +321,90 @@ DecimalTuple(0, (1, 12), -1)
 """,
         "ValueError",
         "digits")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal(10 ** 30)
+""",
+        "InvalidOperation",
+        "outside Lython\'s fixed-precision Decimal range")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal(-(10 ** 30))
+""",
+        "InvalidOperation",
+        "outside Lython\'s fixed-precision Decimal range")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal(1e30)
+""",
+        "InvalidOperation",
+        "outside Lython\'s fixed-precision Decimal range")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal(float("inf"))
+""",
+        "InvalidOperation",
+        "not supported by Lython")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("1E+30")
+""",
+        "InvalidOperation",
+        "outside Lython\'s fixed-precision Decimal range")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("0E+9999999999")
+""",
+        "InvalidOperation",
+        "fixed-precision scale")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("abc")
+""",
+        "TypeError",
+        "decimal-compatible")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("7.9e28") * 10
+""",
+        "Overflow",
+        "overflowed")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("7.9e28") + Decimal("7.9e28")
+""",
+        "Overflow",
+        "overflowed")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("7.9e28") / Decimal("0.01")
+""",
+        "Overflow",
+        "overflowed")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("1E+10") ** 3
+""",
+        "Overflow",
+        "overflowed")]
+    [InlineData(
+        """
+from decimal import Decimal
+Decimal("1.5").quantize(Decimal("1E-29"))
+""",
+        "InvalidOperation",
+        "fixed-precision scale")]
     public void DecimalModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

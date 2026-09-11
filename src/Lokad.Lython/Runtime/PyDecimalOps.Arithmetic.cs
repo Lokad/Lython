@@ -8,6 +8,9 @@ internal static partial class PyDecimalOps
     internal static LythonRuntimeException InvalidOperation(string message, LythonSourceSpan span)
         => new(LythonRuntime.ModuleException("decimal", "InvalidOperation"), message, span);
 
+    internal static LythonRuntimeException DecimalOverflow(LythonSourceSpan span)
+        => new(LythonRuntime.ModuleException("decimal", "Overflow"), "Decimal arithmetic overflowed Lython's fixed-precision range.", span);
+
     public static object Add(object left, object right, LythonSourceSpan span)
         => Binary(left, right, span, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
@@ -29,7 +32,14 @@ internal static partial class PyDecimalOps
             throw DivisionByZero("decimal division by zero", span);
         }
 
-        return new PyDecimal(lhs / rhs);
+        try
+        {
+            return new PyDecimal(lhs / rhs);
+        }
+        catch (OverflowException)
+        {
+            throw DecimalOverflow(span);
+        }
     }
 
     public static object Modulo(object left, object right, LythonSourceSpan span)
@@ -44,7 +54,14 @@ internal static partial class PyDecimalOps
             throw DivisionByZero("decimal modulo by zero", span);
         }
 
-        return new PyDecimal(lhs % rhs, Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+        try
+        {
+            return new PyDecimal(lhs % rhs, Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+        }
+        catch (OverflowException)
+        {
+            throw DecimalOverflow(span);
+        }
     }
 
     public static object Power(object left, object right, LythonSourceSpan span)
@@ -72,10 +89,24 @@ internal static partial class PyDecimalOps
                 throw DivisionByZero("decimal division by zero", span);
             }
 
-            return new PyDecimal(1m / Pow(lhs, -exponentInt));
+            try
+            {
+                return new PyDecimal(1m / Pow(lhs, -exponentInt));
+            }
+            catch (OverflowException)
+            {
+                throw DecimalOverflow(span);
+            }
         }
 
-        return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
+        try
+        {
+            return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
+        }
+        catch (OverflowException)
+        {
+            throw DecimalOverflow(span);
+        }
     }
 
     private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
@@ -108,9 +139,16 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal arithmetic requires Decimal and integer operands.", span);
         }
 
-        return new PyDecimal(
-            operation(lhs, rhs),
-            combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+        try
+        {
+            return new PyDecimal(
+                operation(lhs, rhs),
+                combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+        }
+        catch (OverflowException)
+        {
+            throw DecimalOverflow(span);
+        }
     }
 
     private static int GetOperandExponent(object value, decimal numericValue)

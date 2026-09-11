@@ -7,6 +7,11 @@ internal static partial class PyDecimalOps
 {
     public static PyDecimal Quantize(PyDecimal value, PyDecimal exponent, object? rounding, PyDecimalContext? context, LythonSourceSpan span)
     {
+        if (exponent.Exponent is < -28 or > 28)
+        {
+            throw InvalidOperation("Decimal quantize exponent is outside Lython's 28-digit fixed-precision scale.", span);
+        }
+
         if (exponent.Exponent <= 0)
         {
             return new PyDecimal(Round(value.Value, -exponent.Exponent, rounding, context, span), exponent.Exponent);
@@ -55,6 +60,18 @@ internal static partial class PyDecimalOps
 
     public static PyDecimalTuple AsTuple(PyDecimal value, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        if (value.Value == 0m)
+        {
+            // Zero needs no scaling powers, so any exponent is representable.
+            var zeroDigits = new PyTuple(new object[] { BigInteger.Zero });
+            if (governor is not null)
+            {
+                zeroDigits = new PyTuple(new object[] { BigInteger.Zero }, governor, span);
+            }
+
+            return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, zeroDigits, new BigInteger(value.Exponent));
+        }
+
         var coefficient = value.Exponent >= 0
             ? decimal.Abs(value.Value) / Pow(10m, value.Exponent)
             : decimal.Abs(value.Value) * Pow(10m, -value.Exponent);

@@ -80,8 +80,23 @@ internal static partial class PyDecimalOps
                 return new PyDecimal(boolean ? 1m : 0m);
             case BigInteger integer when integer >= (BigInteger)decimal.MinValue && integer <= (BigInteger)decimal.MaxValue:
                 return new PyDecimal((decimal)integer);
+            case BigInteger:
+                throw PyDecimalOps.InvalidOperation("Decimal integer value is outside Lython's fixed-precision Decimal range.", span);
             case double floating when double.IsFinite(floating):
-                return new PyDecimal((decimal)floating);
+                try
+                {
+                    return new PyDecimal((decimal)floating);
+                }
+                catch (OverflowException)
+                {
+                    throw PyDecimalOps.InvalidOperation("Decimal float value is outside Lython's fixed-precision Decimal range.", span);
+                }
+
+            case double:
+                throw new LythonRuntimeException(
+                    "InvalidOperation",
+                    "NaN, sNaN, and Infinity are not supported by Lython's fixed-precision Decimal.",
+                    span);
             default:
                 if (PyStringOps.TryAsString(value, out var text))
                 {
@@ -96,7 +111,21 @@ internal static partial class PyDecimalOps
 
                     if (decimal.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
                     {
-                        return new PyDecimal(parsed, ParseExponent(raw));
+                        var stringExponent = ParseExponent(raw, span);
+                        if (stringExponent < -28 && parsed != 0m)
+                        {
+                            // TryParse rounded an over-precise fraction; keep
+                            // the honest scale instead of an unusable exponent.
+                            // Zero keeps its exponent (harmless without scaling).
+                            stringExponent = -PyDecimalOps.GetScale(parsed);
+                        }
+
+                        return new PyDecimal(parsed, stringExponent);
+                    }
+
+                    if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                    {
+                        throw PyDecimalOps.InvalidOperation("Decimal string value is outside Lython's fixed-precision Decimal range.", span);
                     }
                 }
 
@@ -112,16 +141,23 @@ internal static partial class PyDecimalOps
                 normalized.Equals("infinity", StringComparison.OrdinalIgnoreCase);
         }
 
-        static int ParseExponent(string text)
+        static int ParseExponent(string text, LythonSourceSpan span)
         {
-            var exponentMarker = text.IndexOfAny(['e', 'E']);
-            var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
-            var explicitExponent = exponentMarker < 0
-                ? 0
-                : int.Parse(text[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            var decimalPoint = mantissa.IndexOf('.');
-            var fractionalDigits = decimalPoint < 0 ? 0 : mantissa.Length - decimalPoint - 1;
-            return checked(explicitExponent - fractionalDigits);
+            try
+            {
+                var exponentMarker = text.IndexOfAny(['e', 'E']);
+                var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
+                var explicitExponent = exponentMarker < 0
+                    ? 0
+                    : int.Parse(text[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                var decimalPoint = mantissa.IndexOf('.');
+                var fractionalDigits = decimalPoint < 0 ? 0 : mantissa.Length - decimalPoint - 1;
+                return checked(explicitExponent - fractionalDigits);
+            }
+            catch (Exception ex) when (ex is FormatException or OverflowException)
+            {
+                throw PyDecimalOps.InvalidOperation("Decimal exponent is outside Lython's 28-digit fixed-precision scale.", span);
+            }
         }
     }
 
