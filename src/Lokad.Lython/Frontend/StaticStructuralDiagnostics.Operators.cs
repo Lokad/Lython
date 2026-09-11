@@ -280,6 +280,7 @@ internal static partial class StaticStructuralDiagnostics
            StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           left.Kind == AbstractValueKind.CollectionsDeque && right.Kind == AbstractValueKind.CollectionsDeque ||
            left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter;
 
     private static bool CanApplyOrderedComparison(AbstractValue left, AbstractValue right)

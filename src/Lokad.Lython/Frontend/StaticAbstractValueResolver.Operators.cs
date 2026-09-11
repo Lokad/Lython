@@ -105,6 +105,12 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
+        if (left.Kind == AbstractValueKind.CollectionsDeque && right.Kind == AbstractValueKind.CollectionsDeque)
+        {
+            value = AbstractValue.CollectionsDeque(binary.Span);
+            return true;
+        }
+
         if (left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple)
         {
             value = AbstractValue.Tuple(

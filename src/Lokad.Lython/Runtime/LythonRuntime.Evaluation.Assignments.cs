@@ -580,6 +580,15 @@ internal sealed partial class LythonRuntime
             return currentList;
         }
 
+        if (op == AugmentedAssignmentOperatorSyntax.Add &&
+            currentValue is PyDeque currentDeque)
+        {
+            // Snapshot deque sources (which may be this deque) so extending
+            // appends the original elements, mirroring the list path above.
+            currentDeque.Extend(right is PyDeque sourceDeque ? sourceDeque.Iterate().ToArray() : ToSequence(right, span, context));
+            return currentDeque;
+        }
+
         if (op == AugmentedAssignmentOperatorSyntax.Multiply &&
             currentValue is PyList multipliedList &&
             right is BigInteger repeatCount)

@@ -315,7 +315,8 @@ internal sealed partial class LythonRuntime
     {
         if (PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) ||
             left is PyList && right is PyList ||
-            left is PyTuple && right is PyTuple)
+            left is PyTuple && right is PyTuple ||
+            left is PyDeque && right is PyDeque)
         {
             return EvaluateAdd(left, right, context, span);
         }

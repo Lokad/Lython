@@ -71,6 +71,18 @@ internal sealed partial class LythonRuntime
                 : new PyTuple(leftItems.Concat(rightItems), governor, allocationSpan);
         }
 
+        if (left is PyDeque leftDeque && right is PyDeque rightDeque)
+        {
+            // Concatenation keeps the left maxlen with append discipline
+            // (bounded eviction), mirroring the deque slice path.
+            var dequeGovernor = leftDeque.OwnerMemoryGovernor ?? rightDeque.OwnerMemoryGovernor;
+            var dequeSpan = leftDeque.AllocationSpan ?? rightDeque.AllocationSpan;
+            var joined = leftDeque.Iterate().Concat(rightDeque.Iterate());
+            return dequeGovernor is null
+                ? new PyDeque(joined, leftDeque.MaxLength)
+                : new PyDeque(joined, leftDeque.MaxLength, dequeGovernor, dequeSpan);
+        }
+
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span);
@@ -104,6 +116,11 @@ internal sealed partial class LythonRuntime
         if (left is PyBytes)
         {
             throw RuntimeErrors.CantConcatToBytes(right, span);
+        }
+
+        if (left is PyDeque)
+        {
+            throw RuntimeErrors.ConcatError("deque", right, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))

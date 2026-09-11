@@ -253,6 +253,99 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_DequeConcat_BehavesLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+import operator
+
+a = deque([1, 2])
+b = deque([3])
+
+parts = []
+parts.append(str(a + b))
+parts.append(str(deque([1, 2], maxlen=2) + deque([3])))
+parts.append(str(deque([1]) + deque([2, 3], maxlen=5)))
+parts.append(str(operator.concat(deque([1]), deque([2]))))
+parts.append(str(a))
+
+d = deque([1])
+hold = d
+d += deque([2])
+parts.append(str(d))
+parts.append(str(hold is d))
+d += [3]
+parts.append(str(d))
+e = deque([1])
+e += e
+parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("deque([1, 2, 3])|deque([2, 3], maxlen=2)|deque([1, 2, 3])|deque([1, 2])|deque([1, 2])|deque([1, 2])|True|deque([1, 2, 3])|deque([1, 1])", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void Collections_DequeErrorTexts_NameDottedType()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+def add(a, b):
+    return a + b
+def neg(a):
+    return -a
+
+d = deque([1])
+parts = []
+try:
+    parts.append(str(neg(d)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(hash(d)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(next(d)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(format(d, "d")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(add([1], d)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(add(d, [2])))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(add((1,), d)))
+except TypeError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("bad operand type for unary -: 'collections.deque'|unhashable type: 'collections.deque'|'collections.deque' object is not an iterator|unsupported format string passed to collections.deque.__format__|can only concatenate list (not \"collections.deque\") to list|can only concatenate deque (not \"list\") to deque|can only concatenate tuple (not \"collections.deque\") to tuple", host.ReadText("/out.txt"));
+    }
+
+
+    [Fact]
     public void Collections_CounterLengthCountsStoredDistinctKeys()
     {
         var result = new LythonEngine().Run(
