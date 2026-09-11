@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "swapcase", "title", "translate", "upper"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rstrip", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "swapcase", "title", "translate", "upper"])
+            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rstrip", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4414,6 +4414,80 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BytesStripMembers()
+    {
+        // bytes strips follow CPython over ASCII whitespace or a bytes
+        // strip set, with the usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"  hello  ".strip() == b"hello")
+            results.append(b"  hello  ".lstrip() == b"hello  ")
+            results.append(b"  hello  ".rstrip() == b"  hello")
+            results.append(b"\x09\x0a\x0b\x0c\x0d x \x0d\x0a".strip() == b"x")
+            results.append(b"aabHello baa".strip(b"ab") == b"Hello ")
+            results.append(b"aabHello baa".lstrip(b"ab") == b"Hello baa")
+            results.append(b"aabHello baa".rstrip(b"ab") == b"aabHello ")
+            results.append(b"abc".strip(None) == b"abc")
+            results.append(b"abc".strip(b"") == b"abc")
+            results.append(b"   ".strip() == b"")
+            results.append(b"\xff\xfeab\xff".strip(b"\xff") == b"\xfeab")
+            results.append(bytes.strip(b"  ab  ") == b"ab")
+            results.append(type(bytes.strip).__name__)
+            results.append(bytes.strip.__name__)
+            results.append(hasattr(bytes, "lstrip"))
+            results.append("rstrip" in dir(b"ab"))
+            results.append("strip" in dir(bytes))
+            s = b"abc"
+            results.append(s.strip == s.strip)
+            results.append(bytes.rstrip == bytes.rstrip)
+            results.append(s.strip(b"") is s)
+            results.append(s.strip(b"x") is s)
+            results.append(s.strip() is s)
+            t = b"   "
+            results.append(t.strip() is t)
+            e = b""
+            results.append(e.strip() is e)
+            results.append(e.lstrip() is e)
+            try:
+                getattr(b"abc", "strip")(b"a", b"b")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"abc", "lstrip")(x=b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"abc", "strip")("a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"abc", "rstrip")(1)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, "method_descriptor", "strip", true, true, true, true, true,
+            true, true, true, false, true, true,
+            "bytes.strip([chars]) expects zero or one argument.",
+            "bytes.lstrip() takes no keyword arguments",
+            "a bytes-like object is required, not 'str'",
+            "a bytes-like object is required, not 'int'",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {

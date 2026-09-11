@@ -126,6 +126,12 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "strip", 0, 1, "LA3180", "bytes.strip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "strip", 0, 1, "LA3180", "bytes.strip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "lstrip", 0, 1, "LA3180", "bytes.lstrip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "lstrip", 0, 1, "LA3180", "bytes.lstrip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rstrip", 0, 1, "LA3180", "bytes.rstrip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rstrip", 0, 1, "LA3180", "bytes.rstrip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "capitalize", 0, 0, "LA3179", "bytes.capitalize() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "capitalize", 0, 0, "LA3179", "bytes.capitalize() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "lower", 0, 0, "LA3179", "bytes.lower() expects no arguments."));

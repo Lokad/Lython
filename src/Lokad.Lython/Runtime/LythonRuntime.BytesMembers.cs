@@ -60,6 +60,9 @@ internal sealed partial class LythonRuntime
                 "swapcase" => BoundCallable.CreateNoArguments(bytes, "bytes.swapcase", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.SwapCase, span, context)),
                 "title" => BoundCallable.CreateNoArguments(bytes, "bytes.title", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Title, span, context)),
                 "upper" => BoundCallable.CreateNoArguments(bytes, "bytes.upper", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Upper, span, context)),
+                "strip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "strip", arguments, span, context, BytesStripMode.Both)) { BoundName = "bytes.strip", BoundReceiver = bytes },
+                "lstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "lstrip", arguments, span, context, BytesStripMode.Left)) { BoundName = "bytes.lstrip", BoundReceiver = bytes },
+                "rstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "rstrip", arguments, span, context, BytesStripMode.Right)) { BoundName = "bytes.rstrip", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -1029,6 +1032,80 @@ internal sealed partial class LythonRuntime
         }
 
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
+    }
+
+    private enum BytesStripMode
+    {
+        Both,
+        Left,
+        Right,
+    }
+
+    private static object StripBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, BytesStripMode mode)
+    {
+        object? chars = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                chars = argument.Value;
+            }
+        }
+
+        if (positionals > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bytes." + methodName + "([chars]) expects zero or one argument.", span);
+        }
+
+        var stripWhitespace = chars is null || chars is PyNone;
+        ReadOnlySpan<byte> stripSet = ReadOnlySpan<byte>.Empty;
+        if (!stripWhitespace && chars is not PyBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(chars, context) + "'", span);
+        }
+
+        if (chars is PyBytes resolved)
+        {
+            stripSet = resolved.Bytes;
+        }
+
+        var source = value.Bytes;
+        var start = 0;
+        var end = source.Length;
+        if (mode != BytesStripMode.Right)
+        {
+            while (start < end && IsStrippedByte(source[start], stripSet, stripWhitespace))
+            {
+                start++;
+            }
+        }
+
+        if (mode != BytesStripMode.Left)
+        {
+            while (end > start && IsStrippedByte(source[end - 1], stripSet, stripWhitespace))
+            {
+                end--;
+            }
+        }
+
+        if (start == 0 && end == source.Length)
+        {
+            return value;
+        }
+
+        return CreateBytes(source[start..end].ToArray(), context, span);
+    }
+
+    private static bool IsStrippedByte(byte octet, ReadOnlySpan<byte> stripSet, bool stripWhitespace)
+    {
+        return stripWhitespace ? IsAsciiSpace(octet) : stripSet.IndexOf(octet) >= 0;
     }
 
     private sealed class RawBoundCallable(
