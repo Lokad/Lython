@@ -1184,27 +1184,14 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Counter.most_common([n]) expects zero or one argument.", span);
                     }
 
+                    var sortedItems = counter.Items.ToList();
+                    sortedItems.Sort((left, right) => CompareCounterCounts(right.Value, left.Value, span));
+
                     int? limit = null;
                     if (arguments.Length == 1)
                     {
-                        var integer = ExpectInteger(arguments[0], "Counter.most_common([n]) expects n to be an integer.", span);
-                        if (integer < 0)
-                        {
-                            limit = 0;
-                        }
-                        else
-                        {
-                            if (integer > int.MaxValue)
-                            {
-                                throw new LythonRuntimeException("OverflowError", "Counter.most_common() limit is too large.", span);
-                            }
-
-                            limit = (int)integer;
-                        }
+                        limit = CoerceMostCommonLimit(arguments[0], sortedItems.Count, context, span);
                     }
-
-                    var sortedItems = counter.Items.ToList();
-                    sortedItems.Sort((left, right) => CompareCounterCounts(right.Value, left.Value, span));
 
                     var count = limit is null ? sortedItems.Count : Math.Min(limit.Value, sortedItems.Count);
                     var items = new object[count];

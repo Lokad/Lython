@@ -371,6 +371,31 @@ internal sealed partial class LythonRuntime
     private static int CompareCounterCounts(object left, object right, LythonSourceSpan span)
         => PyComparison.Compare(left, right, span);
 
+    // most_common gates on n == 1, then n >= size through full operator
+    // dispatch like CPython (heapq.nlargest does the same); the general path
+    // negates and slices, so each failure propagates with its own text.
+    private static int CoerceMostCommonLimit(object value, int size, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is null || ReferenceEquals(value, PyNone.Instance))
+        {
+            return size;
+        }
+
+        if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, value, BigInteger.One, context, span), context, span))
+        {
+            return 1;
+        }
+
+        if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.GreaterEqual, value, new BigInteger(size), context, span), context, span))
+        {
+            // CPython slices the sorted result with the raw bound here.
+            return PyIndexing.NormalizeSliceBounds(size, null, PyIndexing.CoerceSliceBound(value, context, span), null, span).Count;
+        }
+
+        var stop = InterpretByteInteger(EvaluateUnaryOperator(UnaryOperatorSyntax.Minus, value, context, span), context, span);
+        return stop >= 0 ? 0 : (int)BigInteger.Min(-stop, new BigInteger(size));
+    }
+
     private static PyCounter CreateCounterResult(PyCounter left, PyCounter? right, LythonSourceSpan span)
     {
         var governor = left.OwnerMemoryGovernor ?? right?.OwnerMemoryGovernor;

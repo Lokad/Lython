@@ -5958,6 +5958,70 @@ __lython_file.close()
     }
 
     [Fact]
+    public void CounterMostCommon_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter
+
+class J:
+    def __index__(self):
+        return 2
+class Jbad:
+    def __index__(self):
+        return "x"
+class C: pass
+class G:
+    def __ge__(self, other):
+        return True
+class H:
+    def __ge__(self, other):
+        return True
+    def __index__(self):
+        return 2
+class B2:
+    def __ge__(self, other):
+        return False
+    def __index__(self):
+        return 2
+class B3:
+    def __ge__(self, other):
+        return False
+    def __neg__(self):
+        return 1
+
+def mc(n):
+    return Counter("aabbcc").most_common(n)
+
+parts = []
+parts.append(str(mc(2)))
+parts.append(str(mc(None)))
+parts.append(str(mc(-1)))
+parts.append(str(mc(True)))
+parts.append(str(mc(0)))
+parts.append(str(mc(10)))
+for v in [J(), Jbad(), "x", 2.0, C()]:
+    try:
+        parts.append(str(mc(v)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [G(), H(), B2(), B3()]:
+    try:
+        parts.append(str(mc(v)))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[('a', 2), ('b', 2)]|[('a', 2), ('b', 2), ('c', 2)]|[]|[('a', 2)]|[]|[('a', 2), ('b', 2), ('c', 2)]|'>=' not supported between instances of 'J' and 'int'|'>=' not supported between instances of 'Jbad' and 'int'|'>=' not supported between instances of 'str' and 'int'|'float' object cannot be interpreted as an integer|'>=' not supported between instances of 'C' and 'int'|slice indices must be integers or None or have an __index__ method|[('a', 2), ('b', 2)]|bad operand type for unary -: 'B2'|[]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
