@@ -35,6 +35,25 @@ internal static class StaticHostRequirementDiagnostics
                 break;
 
             case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null:
+                switch (annotated.Target)
+                {
+                    case SubscriptAssignmentTargetSyntax subscript:
+                        AnalyzeHostExecutableExpression(subscript.Target, context, host);
+                        AnalyzeHostExecutableExpression(subscript.Index, context, host);
+                        break;
+
+                    case SliceAssignmentTargetSyntax slice:
+                        AnalyzeHostExecutableExpression(slice.Target, context, host);
+                        AnalyzeHostExecutableExpressionIfPresent(slice.Start, context, host);
+                        AnalyzeHostExecutableExpressionIfPresent(slice.End, context, host);
+                        AnalyzeHostExecutableExpressionIfPresent(slice.Step, context, host);
+                        break;
+
+                    case MemberAssignmentTargetSyntax member:
+                        AnalyzeHostExecutableExpression(member.Target, context, host);
+                        break;
+                }
+
                 AnalyzeHostExecutableExpression(annotated.Expression, context, host);
                 break;
 

@@ -165,7 +165,11 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case AnnotatedAssignmentStatementSyntax annotated:
-                    names.Add(annotated.Name);
+                    if (annotated.Target is NameAssignmentTargetSyntax name)
+                    {
+                        names.Add(name.Name);
+                    }
+
                     break;
 
                 case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:

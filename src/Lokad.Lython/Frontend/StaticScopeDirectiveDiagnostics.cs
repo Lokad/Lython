@@ -213,7 +213,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(chained.Expression, names);
                 break;
             case AnnotatedAssignmentStatementSyntax annotated:
-                names.Add(annotated.Name);
+                CollectSeenNames(annotated.Target, names);
                 CollectSeenNames(annotated.Annotation, names);
                 if (annotated.Expression is not null) CollectSeenNames(annotated.Expression, names);
                 break;

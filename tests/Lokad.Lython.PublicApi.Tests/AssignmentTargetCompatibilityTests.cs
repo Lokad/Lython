@@ -245,8 +245,6 @@ __lython_file.close()
     [InlineData("row = [1, 2]\nif ((a, b) := row):\n    pass", "assignment expression target")]
     [InlineData("row = [1]\nif ([a] := row):\n    pass", "assignment expression target")]
     [InlineData("if ((a := 1) := 2):\n    pass", "assignment expression target")]
-    [InlineData("class Box:\n    pass\nbox = Box()\nbox.value: int = 1", "Unsupported assignment target")]
-    [InlineData("items = [0]\nitems[0]: int = 1", "Unsupported assignment target")]
     public void UnsupportedAssignmentTargetForms_ReportCompileDiagnostics(string source, string messageFragment)
     {
         var compiled = new LythonEngine().Compile(source);
@@ -735,6 +733,58 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Null(result.Failure);
         Assert.Equal("3|15|19|23|27|[9, 3]:7|[[15]]:16|35", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ComplexAnnotatedTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+items = [0, 0]
+items[0]: int = 1
+
+class Box:
+    pass
+
+box = Box()
+box.v = 0
+box.w = 0
+box.v: int = 5
+(box.w): int = 6
+
+row = {}
+row["k"]: int = 7
+
+bare = [0]
+bare[0]: int
+
+sliced = [1, 2, 3]
+sliced[0:2]: list = [9]
+
+def run():
+    local = [0]
+    local[0]: int = 8
+    return local[0]
+
+values = [
+    str(items),
+    str(box.v + box.w),
+    str(row["k"]),
+    str(bare),
+    str(sliced),
+    str(run()),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("[1, 0]|11|7|[0]|[9, 3]|8", host.ReadText("/out.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)

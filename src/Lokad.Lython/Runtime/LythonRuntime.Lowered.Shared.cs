@@ -390,8 +390,13 @@ internal sealed partial class LythonRuntime
             PyDict? annotations = null;
             foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
             {
+                if (statement.Target is not NameAssignmentTargetSyntax name)
+                {
+                    continue;
+                }
+
                 annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
-                annotations.SetItem(PyString.FromString(statement.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
+                annotations.SetItem(PyString.FromString(name.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
             }
 
             if (annotations is not null)

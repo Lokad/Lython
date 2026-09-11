@@ -71,7 +71,7 @@ internal sealed record ChainedAssignmentStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal sealed record AnnotatedAssignmentStatementSyntax(
-    string Name,
+    AssignmentTargetSyntax Target,
     ExpressionSyntax Annotation,
     ExpressionSyntax? Expression,
     LythonSourceSpan Span) : StatementSyntax(Span);

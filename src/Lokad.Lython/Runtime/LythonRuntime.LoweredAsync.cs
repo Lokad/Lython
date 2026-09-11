@@ -275,7 +275,7 @@ internal sealed partial class LythonRuntime
                 case LoweredAnnotatedAssignmentStatement annotated:
                     if (annotated.Expression is not null)
                     {
-                        StoreName(annotated.Assignment.Name, await EvaluateLoweredExpressionAsync(annotated.Expression, context).ConfigureAwait(false), context, annotated.Span);
+                        AssignTarget(annotated.Assignment.Target, await EvaluateLoweredExpressionAsync(annotated.Expression, context).ConfigureAwait(false), context);
                     }
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:

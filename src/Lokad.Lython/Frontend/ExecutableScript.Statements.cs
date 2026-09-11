@@ -112,8 +112,14 @@ internal sealed partial class ExecutableScript
                         throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
                     }
 
+                    if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
+                        return currentBlock;
+                    }
+
                     CompileExpression(annotated.Expression, currentBlock);
-                    CompileStoreBoundName(annotated.Assignment.Name, annotated.Span, currentBlock);
+                    CompileStoreBoundName(targetName.Name, annotated.Span, currentBlock);
                     return currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:

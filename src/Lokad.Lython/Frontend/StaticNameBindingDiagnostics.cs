@@ -111,9 +111,9 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case AnnotatedAssignmentStatementSyntax annotated:
-                if (annotated.Expression is not null)
+                if (annotated.Expression is not null && annotated.Target is NameAssignmentTargetSyntax name)
                 {
-                    maybeAssigned.Add(annotated.Name);
+                    maybeAssigned.Add(name.Name);
                 }
                 break;
 

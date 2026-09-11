@@ -227,7 +227,7 @@ internal sealed partial class ExecutableScript
                     if (IsLocalBindingName(assignment.Name)) InternLocal(assignment.Name);
                     break;
                 case AnnotatedAssignmentStatementSyntax annotated:
-                    if (IsLocalBindingName(annotated.Name)) InternLocal(annotated.Name);
+                    if (annotated.Target is NameAssignmentTargetSyntax targetName && IsLocalBindingName(targetName.Name)) InternLocal(targetName.Name);
                     break;
                 case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
                     if (IsLocalBindingName(nameTarget.Name)) InternLocal(nameTarget.Name);

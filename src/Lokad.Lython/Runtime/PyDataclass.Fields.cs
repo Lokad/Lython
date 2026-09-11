@@ -35,25 +35,30 @@ internal static partial class PyDataclass
 
         foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
         {
+            if (statement.Target is not NameAssignmentTargetSyntax name)
+            {
+                continue;
+            }
+
             if (IsKwOnlyMarker(statement.Annotation))
             {
                 defaultKwOnly = true;
-                type.RemoveOwnMember(statement.Name);
+                type.RemoveOwnMember(name.Name);
                 continue;
             }
 
             var kind = ClassifyFieldKind(statement.Annotation);
 
-            var fieldDefinition = members.TryGetValue(statement.Name, out var rawMember) && rawMember is PyDataclassFieldDefinition definition
+            var fieldDefinition = members.TryGetValue(name.Name, out var rawMember) && rawMember is PyDataclassFieldDefinition definition
                 ? definition
                 : null;
 
             var hasDefault = fieldDefinition?.HasDefault ?? (statement.Expression is not null);
-            var classMemberValue = fieldDefinition?.DefaultValue ?? (statement.Expression is not null && members.TryGetValue(statement.Name, out var value) ? value : PyNone.Instance);
+            var classMemberValue = fieldDefinition?.DefaultValue ?? (statement.Expression is not null && members.TryGetValue(name.Name, out var value) ? value : PyNone.Instance);
             fields.Add(CreateOwnField(
                 new OwnFieldFacts(
-                statement.Name,
-                GetAnnotationValue(annotations, statement.Name, statement.Annotation),
+                name.Name,
+                GetAnnotationValue(annotations, name.Name, statement.Annotation),
                 kind,
                 fieldDefinition,
                 hasDefault,

@@ -295,6 +295,12 @@ internal sealed partial class Parser
             {
                 return targetAssignment;
             }
+
+            var complexAnnotatedAssignment = TryParseComplexAnnotatedAssignmentStatement();
+            if (complexAnnotatedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return complexAnnotatedAssignment;
+            }
         }
 
         // A leading parenthesis may parenthesize a single assignment target like CPython.
@@ -313,7 +319,7 @@ internal sealed partial class Parser
                 return parenthesizedAssignment;
             }
 
-            var parenthesizedAnnotatedAssignment = TryParseParenthesizedAnnotatedAssignmentStatement();
+            var parenthesizedAnnotatedAssignment = TryParseComplexAnnotatedAssignmentStatement();
             if (parenthesizedAnnotatedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
             {
                 return parenthesizedAnnotatedAssignment;

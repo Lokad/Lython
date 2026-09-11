@@ -24,6 +24,7 @@ internal static partial class StaticAbstractInterpreter
 
                 case AnnotatedAssignmentStatementSyntax annotated:
                     AnalyzeExpressionIfPresent(annotated.Expression, diagnostics, bindings);
+                    AnalyzeAnnotatedTarget(annotated.Target, diagnostics, bindings);
                     return true;
 
                 case SubscriptAssignmentStatementSyntax subscript:
@@ -63,6 +64,33 @@ internal static partial class StaticAbstractInterpreter
 
                 default:
                     return false;
+            }
+        }
+
+        private static void AnalyzeAnnotatedTarget(
+            AssignmentTargetSyntax target,
+            List<LythonDiagnostic> diagnostics,
+            AbstractState bindings)
+        {
+            // Names bind through StaticBindingEngine; every other target reads like
+            // the matching single-target assignment.
+            switch (target)
+            {
+                case SubscriptAssignmentTargetSyntax subscript:
+                    AnalyzeExpression(subscript.Target, diagnostics, bindings);
+                    AnalyzeExpression(subscript.Index, diagnostics, bindings);
+                    break;
+
+                case SliceAssignmentTargetSyntax slice:
+                    AnalyzeExpression(slice.Target, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                    break;
+
+                case MemberAssignmentTargetSyntax member:
+                    AnalyzeExpression(member.Target, diagnostics, bindings);
+                    break;
             }
         }
     }

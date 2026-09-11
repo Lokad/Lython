@@ -21,6 +21,7 @@ internal static class StatementSyntaxTraversal
             case AnnotatedAssignmentStatementSyntax annotated:
                 yield return annotated.Annotation;
                 if (annotated.Expression is not null) yield return annotated.Expression;
+                foreach (var read in EnumerateTargetExpressions(annotated.Target)) yield return read;
                 break;
 
             case SubscriptAssignmentStatementSyntax subscript:

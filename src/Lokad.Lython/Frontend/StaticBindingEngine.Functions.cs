@@ -301,7 +301,7 @@ internal static partial class StaticBindingEngine
                     break;
 
                 case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null:
-                    UpdateBinding(annotated.Name, annotated.Expression, bindings);
+                    UpdateAnnotatedTargetBinding(annotated.Target, annotated.Expression, bindings);
                     break;
 
                 case ExpressionStatementSyntax expressionStatement:

@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
                 case LoweredAnnotatedAssignmentStatement annotated:
                     if (annotated.Expression is not null)
                     {
-                        StoreName(annotated.Assignment.Name, EvaluateLoweredExpression(annotated.Expression, context), context, annotated.Span);
+                        AssignTarget(annotated.Assignment.Target, EvaluateLoweredExpression(annotated.Expression, context), context);
                     }
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:

@@ -33,7 +33,7 @@ internal static partial class StaticBindingEngine
                     }
                     break;
 
-                case AnnotatedAssignmentStatementSyntax annotated:
+                case AnnotatedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax name } annotated:
                     if (IsClassOnlyDataclassField(annotated.Annotation))
                     {
                         break;
@@ -45,7 +45,7 @@ internal static partial class StaticBindingEngine
                     var keywordOnly = classDefinition.DataclassDecorator.RequireNotNull().KwOnly ||
                         (TryGetDataclassFieldKeywordOnly(annotated.Expression, out var kwOnly) && kwOnly);
                     fields.Add(new AbstractClassFieldSummary(
-                        annotated.Name,
+                        name.Name,
                         hasDefault ? defaultValue : AbstractValue.Unknown(annotated.Span),
                         hasDefault,
                         includeInInit,

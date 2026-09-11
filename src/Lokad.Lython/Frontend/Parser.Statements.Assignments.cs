@@ -40,22 +40,30 @@ internal sealed partial class Parser
         }
 
         return new AnnotatedAssignmentStatementSyntax(
-            IdentifierText(nameToken),
+            new NameAssignmentTargetSyntax(IdentifierText(nameToken), SpanOf(nameToken)),
             annotation,
             expression,
             Merge(nameToken, (expression ?? annotation).Span));
     }
 
-    // Parentheses never change the target like CPython; only single names
-    // are supported here, mirroring ParseAnnotatedAssignmentStatement.
-    private StatementSyntax? TryParseParenthesizedAnnotatedAssignmentStatement()
+    // Parentheses never change the target like CPython. Only single targets
+    // are supported here; tuple and list displays keep the existing diagnostic.
+    private StatementSyntax? TryParseComplexAnnotatedAssignmentStatement()
     {
         var startPosition = _position;
         var startDiagnosticCount = _diagnostics.Count;
 
         var target = ParsePostfixExpression();
-        var unwrapped = target is null ? null : UnwrapParenthesizedTarget(target);
-        if (unwrapped is not IdentifierExpressionSyntax identifier || CurrentToken != Token.Colon)
+        AssignmentTargetSyntax? assignmentTarget = target is null ? null : UnwrapParenthesizedTarget(target) switch
+        {
+            IdentifierExpressionSyntax identifier => new NameAssignmentTargetSyntax(identifier.Name, identifier.Span),
+            SubscriptExpressionSyntax subscript => new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
+            SliceExpressionSyntax slice => new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
+            MemberExpressionSyntax member => new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
+            _ => null,
+        };
+
+        if (assignmentTarget is null || CurrentToken != Token.Colon)
         {
             _position = startPosition;
             if (_diagnostics.Count > startDiagnosticCount)
@@ -70,7 +78,7 @@ internal sealed partial class Parser
         var annotation = ParseExpression();
         if (annotation is null)
         {
-            AddDiagnostic("LA1059", "Expected annotation expression after ':'.", identifier.Span);
+            AddDiagnostic("LA1059", "Expected annotation expression after ':'.", target.Span);
             return null;
         }
 
@@ -81,13 +89,13 @@ internal sealed partial class Parser
             expression = ParseExpressionList();
             if (expression is null)
             {
-                AddDiagnostic("LA1060", "Expected expression on the right side of annotated assignment.", identifier.Span);
+                AddDiagnostic("LA1060", "Expected expression on the right side of annotated assignment.", target.Span);
                 return null;
             }
         }
 
         return new AnnotatedAssignmentStatementSyntax(
-            identifier.Name,
+            assignmentTarget,
             annotation,
             expression,
             Merge(startPosition, (expression ?? annotation).Span));

@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
     {
         if (statement.Expression is not null)
         {
-            StoreName(statement.Name, EvaluateExpression(statement.Expression, context), context, statement.Span);
+            AssignTarget(statement.Target, EvaluateExpression(statement.Expression, context), context);
         }
     }
 

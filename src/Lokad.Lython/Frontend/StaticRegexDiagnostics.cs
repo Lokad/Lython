@@ -174,8 +174,8 @@ internal static class StaticRegexDiagnostics
                 UpdateRegexBindingForName(assignment.Name, assignment.Expression, stringBindings, localeFlagBindings);
                 break;
 
-            case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null:
-                UpdateRegexBindingForName(annotated.Name, annotated.Expression, stringBindings, localeFlagBindings);
+            case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null && annotated.Target is NameAssignmentTargetSyntax name:
+                UpdateRegexBindingForName(name.Name, annotated.Expression, stringBindings, localeFlagBindings);
                 break;
 
             case ChainedAssignmentStatementSyntax chained:

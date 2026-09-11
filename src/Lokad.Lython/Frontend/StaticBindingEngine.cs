@@ -77,7 +77,7 @@ internal static partial class StaticBindingEngine
                 break;
 
             case AnnotatedAssignmentStatementSyntax annotated when annotated.Expression is not null:
-                UpdateBinding(annotated.Name, annotated.Expression, bindings);
+                UpdateAnnotatedTargetBinding(annotated.Target, annotated.Expression, bindings);
                 break;
 
             case UnpackingAssignmentStatementSyntax unpacking:
@@ -164,6 +164,28 @@ internal static partial class StaticBindingEngine
             } => bindings.IsKnownMutableSequence(identifier.Name),
             _ => false
         };
+    }
+
+    private static void UpdateAnnotatedTargetBinding(AssignmentTargetSyntax target, ExpressionSyntax value, AbstractState bindings)
+    {
+        switch (target)
+        {
+            case NameAssignmentTargetSyntax name:
+                UpdateBinding(name.Name, value, bindings);
+                break;
+
+            case SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax subscriptIdentifier }:
+                bindings.Remove(subscriptIdentifier.Name);
+                break;
+
+            case SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax sliceIdentifier }:
+                bindings.Remove(sliceIdentifier.Name);
+                break;
+
+            case MemberAssignmentTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
+                bindings.Remove(memberIdentifier.Name);
+                break;
+        }
     }
 
     private static void RemoveDeleteTargetBindings(ExpressionSyntax target, AbstractState bindings)
