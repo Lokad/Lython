@@ -736,7 +736,7 @@ internal sealed partial class LythonRuntime
 
         var formatted = type switch
         {
-            null when precision is null => value.ToString(CultureInfo.InvariantCulture),
+            null when precision is null => Numbers.PyNumberOps.RenderFloat(value),
             null => RenderFloatDefaultPrecision(value, precision.Value, spec.Alternate),
             'f' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'F' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),

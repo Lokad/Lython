@@ -288,6 +288,36 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(1e16)", "1e+16")]
+    [InlineData("repr(1e16)", "1e+16")]
+    [InlineData("format(1e16, \"\")", "1e+16")]
+    [InlineData("str(12345678901234568.0)", "1.2345678901234568e+16")]
+    [InlineData("format(12345678901234568.0, \"\")", "1.2345678901234568e+16")]
+    [InlineData("str(9.999999999999999e15)", "1e+16")]
+    [InlineData("str(1e15)", "1000000000000000.0")]
+    [InlineData("format(1e15, \"\")", "1000000000000000.0")]
+    [InlineData("str(-1e16)", "-1e+16")]
+    [InlineData("format(-1e16, \"\")", "-1e+16")]
+    [InlineData("str(0.0)", "0.0")]
+    [InlineData("str(-0.0)", "-0.0")]
+    [InlineData("str(1e-5)", "1e-05")]
+    [InlineData("format(1e-5, \"\")", "1e-05")]
+    [InlineData("str(100.0)", "100.0")]
+    [InlineData("f\"{1e16}\"", "1e+16")]
+    [InlineData("\"{}\".format(1e16)", "1e+16")]
+    [InlineData("str(0.1 + 0.2)", "0.30000000000000004")]
+    [InlineData("format(0.1 + 0.2, \"\")", "0.30000000000000004")]
+    [InlineData("str(1e17)", "1e+17")]
+    [InlineData("str(1e20)", "1e+20")]
+    public void FloatReprCut_RendersPythonShapedOutput(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]

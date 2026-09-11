@@ -227,9 +227,26 @@ internal static class PyNumberOps
         }
 
         var rendered = value.ToString("R", CultureInfo.InvariantCulture).Replace('E', 'e');
-        return rendered.Contains('.', StringComparison.Ordinal) || rendered.Contains('e', StringComparison.Ordinal)
-            ? rendered
-            : rendered + ".0";
+        var sign = string.Empty;
+        if (rendered.StartsWith('-'))
+        {
+            sign = "-";
+            rendered = rendered[1..];
+        }
+
+        if (!rendered.Contains('e', StringComparison.Ordinal))
+        {
+            // BCL round-trip stays fixed through 1e17; CPython repr switches
+            // at 1e16, which surfaces here as exactly a 17-digit integer.
+            var point = rendered.IndexOf('.');
+            if (point < 0 && rendered.Length == 17)
+            {
+                var mantissa = (rendered[0] + "." + rendered[1..]).TrimEnd('0').TrimEnd('.');
+                return sign + mantissa + "e+16";
+            }
+        }
+
+        return sign + (rendered.Contains('.') || rendered.Contains('e') ? rendered : rendered + ".0");
     }
 
     public static int GetHashCode(PyNumber number)
