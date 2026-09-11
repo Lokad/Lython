@@ -4891,6 +4891,45 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RepeatCount_CoercesIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 2
+class Bad:
+    def __index__(self):
+        return "x"
+
+parts = []
+parts.append(str("a" * J()))
+parts.append(str([1] * J()))
+parts.append(str((1,) * J()))
+parts.append(str(J() * "ab"))
+l = [1]
+hold = l
+l *= J()
+parts.append(str(l))
+parts.append(str(hold is l))
+parts.append(str([1, 2, 3] * 2))
+for pair in [("a", Bad()), ([1], Bad()), (Bad(), [1])]:
+    try:
+        parts.append(str(pair[0] * pair[1]))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("aa|[1, 1]|(1, 1)|abab|[1, 1]|True|[1, 2, 3, 1, 2, 3]|__index__ returned non-int (type str)|__index__ returned non-int (type str)|__index__ returned non-int (type str)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

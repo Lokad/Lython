@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
 
         if (op == AugmentedAssignmentOperatorSyntax.Multiply &&
             currentValue is PyList multipliedList &&
-            right is BigInteger repeatCount)
+            TryRepeatCount(right, context, span, out var repeatCount))
         {
             multipliedList.RepeatInPlace(ToListRepeatCount(repeatCount, span), span);
             context.ObserveCollectionCount(multipliedList.Count, span);
@@ -600,7 +600,7 @@ internal sealed partial class LythonRuntime
 
         if (op == AugmentedAssignmentOperatorSyntax.Multiply &&
             currentValue is PyDeque multipliedDeque &&
-            right is BigInteger dequeRepeatCount)
+            TryRepeatCount(right, context, span, out var dequeRepeatCount))
         {
             multipliedDeque.RepeatInPlace(ToDequeRepeatCount(dequeRepeatCount, span), span);
             context.ObserveCollectionCount(multipliedDeque.Count, span);

@@ -188,42 +188,42 @@ internal sealed partial class LythonRuntime
             return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span), context, span);
         }
 
-        if (PyStringOps.TryAsString(left, out var leftText) && TryRepeatCount(right, out var rightCount))
+        if (PyStringOps.TryAsString(left, out var leftText) && TryRepeatCount(right, context, span, out var rightCount))
         {
             return RepeatString(leftText, rightCount, context, span);
         }
 
-        if (PyStringOps.TryAsString(right, out var rightText) && TryRepeatCount(left, out var leftCount))
+        if (PyStringOps.TryAsString(right, out var rightText) && TryRepeatCount(left, context, span, out var leftCount))
         {
             return RepeatString(rightText, leftCount, context, span);
         }
 
-        if (left is PyList leftList && TryRepeatCount(right, out var rightRepeatCount))
+        if (left is PyList leftList && TryRepeatCount(right, context, span, out var rightRepeatCount))
         {
             return RepeatList(leftList, rightRepeatCount, context, span);
         }
 
-        if (right is PyList rightList && TryRepeatCount(left, out var leftRepeatCount))
+        if (right is PyList rightList && TryRepeatCount(left, context, span, out var leftRepeatCount))
         {
             return RepeatList(rightList, leftRepeatCount, context, span);
         }
 
-        if (left is PyDeque leftDeque && TryRepeatCount(right, out var rightDequeRepeatCount))
+        if (left is PyDeque leftDeque && TryRepeatCount(right, context, span, out var rightDequeRepeatCount))
         {
             return RepeatDeque(leftDeque, rightDequeRepeatCount, context, span);
         }
 
-        if (right is PyDeque rightDeque && TryRepeatCount(left, out var leftDequeRepeatCount))
+        if (right is PyDeque rightDeque && TryRepeatCount(left, context, span, out var leftDequeRepeatCount))
         {
             return RepeatDeque(rightDeque, leftDequeRepeatCount, context, span);
         }
 
-        if (PyTupleLike.TryGetItems(left, out var repeatLeft) && TryRepeatCount(right, out var rightTupleRepeatCount))
+        if (PyTupleLike.TryGetItems(left, out var repeatLeft) && TryRepeatCount(right, context, span, out var rightTupleRepeatCount))
         {
             return RepeatTuple(repeatLeft, rightTupleRepeatCount, context, span);
         }
 
-        if (PyTupleLike.TryGetItems(right, out var repeatRight) && TryRepeatCount(left, out var leftTupleRepeatCount))
+        if (PyTupleLike.TryGetItems(right, out var repeatRight) && TryRepeatCount(left, context, span, out var leftTupleRepeatCount))
         {
             return RepeatTuple(repeatRight, leftTupleRepeatCount, context, span);
         }
@@ -256,7 +256,10 @@ internal sealed partial class LythonRuntime
         return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static bool TryRepeatCount(object value, out BigInteger count)
+    // Repeat counts coerce through __index__ like CPython; a failing __index__
+    // raises its shaped error while plain non-integers simply decline so the
+    // caller falls through to its mismatch error.
+    private static bool TryRepeatCount(object value, ExecutionContext context, LythonSourceSpan span, out BigInteger count)
     {
         if (value is BigInteger integer)
         {
@@ -268,6 +271,11 @@ internal sealed partial class LythonRuntime
         {
             count = flag ? BigInteger.One : BigInteger.Zero;
             return true;
+        }
+
+        if (value is PyInstance)
+        {
+            return PyNumberOps.TryAsInteger(CoerceIndexProtocol(value, context, span), out count);
         }
 
         count = default;
