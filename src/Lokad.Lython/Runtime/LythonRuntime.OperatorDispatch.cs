@@ -367,13 +367,16 @@ internal sealed partial class LythonRuntime
             return leftKey.CompareTo(rightKey, span, context) == 0;
         }
 
+        // A NotImplemented answer declines like a missing slot (CPython reflected
+        // dispatch): the root object slots always decline, so operators keep their
+        // identity and relational fallbacks instead of reading NotImplemented as true.
         var invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing)
+        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
         {
             invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
             ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : AreEqual(left, right);
     }
@@ -443,13 +446,16 @@ internal sealed partial class LythonRuntime
             };
         }
 
+        // A NotImplemented answer declines like a missing slot (CPython reflected
+        // dispatch): the root object slots always decline, so unsupported orderings
+        // keep the relational fallback instead of reading NotImplemented as true.
         var invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing)
+        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
         {
             invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
             ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
     }

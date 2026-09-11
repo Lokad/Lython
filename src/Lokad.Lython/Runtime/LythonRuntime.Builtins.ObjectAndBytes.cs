@@ -687,14 +687,20 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            // Default equality is pure object identity like CPython (value and dataclass comparisons keep their own paths);
-            // only the arity is enforced here.
+            // Default equality answers identity like CPython (value and dataclass
+            // comparisons keep their own paths); distinct operands get NotImplemented
+            // so reflected dispatch can proceed. Only the arity is enforced here.
             if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "object.__eq__(self, other) expects exactly two arguments.", span);
             }
 
-            return ReferenceEquals(arguments[0].Value, arguments[1].Value);
+            if (ReferenceEquals(arguments[0].Value, arguments[1].Value))
+            {
+                return true;
+            }
+
+            return PyNotImplemented.Instance;
         }
     }
 
@@ -753,14 +759,20 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = context;
-            // Default inequality negates identity like CPython (value and dataclass comparisons keep their own paths);
-            // only the arity is enforced here.
+            // Default inequality negates identity like CPython (value and dataclass
+            // comparisons keep their own paths); distinct operands get NotImplemented
+            // so reflected dispatch can proceed. Only the arity is enforced here.
             if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "object.__ne__(self, other) expects exactly two arguments.", span);
             }
 
-            return !ReferenceEquals(arguments[0].Value, arguments[1].Value);
+            if (ReferenceEquals(arguments[0].Value, arguments[1].Value))
+            {
+                return false;
+            }
+
+            return PyNotImplemented.Instance;
         }
     }
     private sealed class ObjectLtMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue

@@ -4951,6 +4951,7 @@ parts.append(str(c != c))
 parts.append(str(c.__eq__(c)))
 parts.append(str(c.__ne__(c)))
 parts.append(str(c.__eq__(C())))
+parts.append(str(c.__ne__(C())))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(parts))
 __lython_file.close()
@@ -4958,7 +4959,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("<slot wrapper '__eq__' of 'object' objects>|<slot wrapper '__ne__' of 'object' objects>|True|False|False|True|False|False", host.ReadText("/out.txt"));
+        Assert.Equal("<slot wrapper '__eq__' of 'object' objects>|<slot wrapper '__ne__' of 'object' objects>|True|False|False|True|False|NotImplemented|NotImplemented", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -5007,6 +5008,11 @@ parts.append(str(c.__ge__(C())))
 parts.append(str(object.__le__(c, c)))
 parts.append(str(1 < 2))
 parts.append(str(2 <= 1))
+try:
+    object() < object()
+    parts.append("no-error")
+except TypeError as e:
+    parts.append(str(e))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(parts))
 __lython_file.close()
@@ -5014,7 +5020,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("<slot wrapper '__lt__' of 'object' objects>|<slot wrapper '__le__' of 'object' objects>|<slot wrapper '__gt__' of 'object' objects>|<slot wrapper '__ge__' of 'object' objects>|NotImplemented|NotImplemented|NotImplemented|True|False", host.ReadText("/out.txt"));
+        Assert.Equal("<slot wrapper '__lt__' of 'object' objects>|<slot wrapper '__le__' of 'object' objects>|<slot wrapper '__gt__' of 'object' objects>|<slot wrapper '__ge__' of 'object' objects>|NotImplemented|NotImplemented|NotImplemented|True|False|'<' not supported between instances of 'object' and 'object'", host.ReadText("/out.txt"));
     }
 
     [Fact]
