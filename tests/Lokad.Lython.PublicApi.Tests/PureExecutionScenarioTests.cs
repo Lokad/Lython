@@ -5565,6 +5565,10 @@ class NInt:
     __int__ = 5
 class NIndex:
     __index__ = 5
+class NIntS:
+    __int__ = "x"
+class NTrunc5:
+    __trunc__ = 5
 class NFloat:
     __float__ = 5
 class IOnly:
@@ -5589,6 +5593,8 @@ parts.append(conv(lambda: int(C())))
 parts.append(conv(lambda: int(IJ())))
 parts.append(conv(lambda: int(NInt())))
 parts.append(conv(lambda: int(NIndex())))
+parts.append(conv(lambda: int(NIntS())))
+parts.append(conv(lambda: int(NTrunc5())))
 parts.append(conv(lambda: float(J())))
 parts.append(conv(lambda: float(Jbad())))
 parts.append(conv(lambda: float(T())))
@@ -5602,7 +5608,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(@"7|__index__ returned non-int (type str)|9|__trunc__ returned non-Integral (type str)|7|5|7|int() argument must be a string, a bytes-like object or a real number, not 'C'|__int__ returned non-int (type J)|int() argument must be a string, a bytes-like object or a real number, not 'NInt'|int() argument must be a string, a bytes-like object or a real number, not 'NIndex'|7.0|__index__ returned non-int (type str)|float() argument must be a string or a real number, not 'T'|2.5|float() argument must be a string or a real number, not 'IOnly'|float() argument must be a string or a real number, not 'NFloat'", host.ReadText("/out.txt"));
+        Assert.Equal(@"7|__index__ returned non-int (type str)|9|__trunc__ returned non-Integral (type str)|7|5|7|int() argument must be a string, a bytes-like object or a real number, not 'C'|__int__ returned non-int (type J)|'int' object is not callable|'int' object is not callable|'str' object is not callable|'int' object is not callable|7.0|__index__ returned non-int (type str)|float() argument must be a string or a real number, not 'T'|2.5|float() argument must be a string or a real number, not 'IOnly'|'int' object is not callable", host.ReadText("/out.txt"));
     }
 
     [Fact]

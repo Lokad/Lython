@@ -690,8 +690,8 @@ internal sealed partial class LythonRuntime
 
     // CPython resolves int(instance) through __int__, then __index__, then
     // the deprecated __trunc__ hook (whose result still coerces through
-    // __index__). A present but non-callable hook keeps the historical
-    // generic rejection instead of falling through.
+    // __index__). Every present hook is called like CPython, so a
+    // non-callable hook raises the typed not-callable error.
     private static BigInteger ConvertInstanceToInteger(
         PyInstance instance,
         ExecutionContext context,
@@ -701,7 +701,7 @@ internal sealed partial class LythonRuntime
         {
             if (intMember is not ICallable intCallable)
             {
-                throw IntegerConversionError(instance, context, span);
+                throw NotCallableError(intMember, context, span);
             }
 
             var converted = intCallable.Invoke([], span, context);
@@ -713,16 +713,26 @@ internal sealed partial class LythonRuntime
             return integer;
         }
 
-        if (instance.TryGetAttribute("__index__", context, span, out var indexMember) && indexMember is ICallable)
+        if (instance.TryGetAttribute("__index__", context, span, out var indexMember))
         {
+            if (indexMember is not ICallable)
+            {
+                throw NotCallableError(indexMember, context, span);
+            }
+
             // The shared choke either returns an integer or raises the shaped
             // __index__ error; the callable check above rules out its
             // missing-hook passthrough.
             return (BigInteger)CoerceIndexProtocol(instance, context, span);
         }
 
-        if (instance.TryGetAttribute("__trunc__", context, span, out var truncMember) && truncMember is ICallable truncCallable)
+        if (instance.TryGetAttribute("__trunc__", context, span, out var truncMember))
         {
+            if (truncMember is not ICallable truncCallable)
+            {
+                throw NotCallableError(truncMember, context, span);
+            }
+
             var truncated = truncCallable.Invoke([], span, context);
             var indexed = truncated is PyInstance ? CoerceIndexProtocol(truncated, context, span) : truncated;
             BigInteger truncatedInteger;
@@ -740,6 +750,9 @@ internal sealed partial class LythonRuntime
 
         throw IntegerConversionError(instance, context, span);
     }
+
+    private static LythonRuntimeException NotCallableError(object member, ExecutionContext context, LythonSourceSpan span)
+        => new("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
 
     private static LythonRuntimeException IntegerConversionError(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
         => new("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(instance, context) + "'", span);
