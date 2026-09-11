@@ -4846,6 +4846,47 @@ __lython_file.close()
         Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
     }
 
+    [Fact]
+    public void NumericProtocol_DeclinesNotImplemented()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class NI:
+    def __add__(self, other):
+        return NotImplemented
+class A:
+    def __mul__(self, other):
+        return NotImplemented
+class B:
+    def __rmul__(self, other):
+        return 99
+class S:
+    def __sub__(self, other):
+        return NotImplemented
+class R:
+    def __rsub__(self, other):
+        return 100
+
+parts = []
+try:
+    parts.append(str(NI() + 1))
+except TypeError as e:
+    parts.append(str(e))
+parts.append(str(A() * B()))
+parts.append(str(S() - R()))
+parts.append(str(1 + 2))
+parts.append(str("a" + "b"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("unsupported operand type(s) for +: 'NI' and 'int'|99|100|3|ab", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("str(functools.partial)", "<class 'functools.partial'>")]
     [InlineData("str(functools.partialmethod)", "<class 'functools.partialmethod'>")]

@@ -234,10 +234,19 @@ internal sealed partial class LythonRuntime
             return SpecialMethodInvocation.Missing;
         }
 
+        // A NotImplemented answer declines to the reflected slot like the other
+        // protocol cores; when both sides decline the operator falls back instead
+        // of leaking NotImplemented as a value.
         var leftInvocation = await invoke(left, resolvedMethods.Left, right, context, span).ConfigureAwait(false);
-        return leftInvocation.Kind == SpecialMethodInvocationKind.Invoked
-            ? leftInvocation
-            : await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
+        if (leftInvocation.Kind == SpecialMethodInvocationKind.Invoked && leftInvocation.Value is not PyNotImplemented)
+        {
+            return leftInvocation;
+        }
+
+        var rightInvocation = await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
+        return rightInvocation.Kind == SpecialMethodInvocationKind.Invoked && rightInvocation.Value is not PyNotImplemented
+            ? rightInvocation
+            : SpecialMethodInvocation.Missing;
     }
 
     private static ValueTask<SpecialMethodInvocation> InvokeBinarySpecialMethod(
