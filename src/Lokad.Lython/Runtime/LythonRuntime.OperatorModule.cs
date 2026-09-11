@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
         var converted = CoerceIndexProtocol(value, context, span);
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "operator.index(obj) expects an integer-compatible value.", span);
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         return integer;

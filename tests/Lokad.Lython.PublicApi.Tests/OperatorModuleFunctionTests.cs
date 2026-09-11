@@ -37,6 +37,31 @@ print(operator.length_hint(object(), 5))
     }
 
     [Fact]
+    public void OperatorModule_IndexFailure_NamesTypeLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+import operator
+
+class I: pass
+
+for v in ["a", 1.5, None, [1], I()]:
+    try:
+        operator.index(v)
+        print("no-error")
+    except TypeError as e:
+        print(str(e))
+print(operator.index(True))
+print(operator.index(7))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("'str' object cannot be interpreted as an integer\n'float' object cannot be interpreted as an integer\n'NoneType' object cannot be interpreted as an integer\n'list' object cannot be interpreted as an integer\n'I' object cannot be interpreted as an integer\n1\n7\n", result.StandardOutput);
+    }
+
+
+    [Fact]
     public void OperatorModule_Functions_HaveDirectCoverage()
     {
         var host = new MockLythonHost();
