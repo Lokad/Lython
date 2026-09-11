@@ -359,6 +359,9 @@ internal sealed partial class LythonRuntime
         private static LythonCallableSignature VariadicPositional(string name)
             => LythonCallableSignature.Create(name, requiredCount: 0);
 
+        internal static PySet AsSetOperand(object value, LythonSourceSpan span, ExecutionContext context)
+            => value as PySet ?? MaterializeSet(value, span, context);
+
         private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {
             var result = new PySet(context.MemoryGovernor, span);

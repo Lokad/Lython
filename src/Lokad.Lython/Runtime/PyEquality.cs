@@ -154,6 +154,19 @@ internal static class PyEquality
             return leftSet.SetEquals(rightSet);
         }
 
+        if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView)
+        {
+            // Dict keys and items views compare as sets like CPython;
+            // anything else falls through to the default comparison.
+            if (!IsSetComparableViewOperand(left) || !IsSetComparableViewOperand(right))
+            {
+                return false;
+            }
+
+            var leftItems = new HashSet<object>(ViewComparisonItems(left), PyValueComparer.Instance);
+            return leftItems.SetEquals(ViewComparisonItems(right));
+        }
+
         if (left is PyInstance leftInstance && right is PyInstance rightInstance)
         {
             // Generated dataclass equality is intentionally exact-type equality; base
@@ -205,6 +218,18 @@ internal static class PyEquality
 
         return Equals(left, right);
     }
+
+    private static bool IsSetComparableViewOperand(object value)
+        => value is PySet or LythonRuntime.DictKeysView or LythonRuntime.DictItemsView;
+
+    private static IEnumerable<object> ViewComparisonItems(object value) => value switch
+    {
+        PySet set => set,
+        LythonRuntime.DictKeysView keys => keys,
+        LythonRuntime.DictItemsView items => items,
+        _ => [],
+    };
+
 
     private static bool BoundMethodsEqual(object left, object right)
     {

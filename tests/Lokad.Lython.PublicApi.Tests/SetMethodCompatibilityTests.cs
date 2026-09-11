@@ -113,6 +113,54 @@ return "|".join([
             result.ReturnValue);
     }
 
+    [Fact]
+    public async Task DictViewSetAlgebra_MatchesPythonShapes()
+    {
+        const string source = """
+d = {"a": 1, "b": 2}
+vals = []
+vals.append(str(sorted(d.keys() & {"a"})))
+vals.append(str(sorted(d.keys() | {"c"})))
+vals.append(str(sorted(d.keys() - {"a"})))
+vals.append(str(sorted(d.keys() ^ {"a", "c"})))
+vals.append(str(sorted({"a"} & d.keys())))
+vals.append(str(sorted({"c"} - d.keys())))
+vals.append(str(sorted(d.keys() & ["a"])))
+vals.append(str(sorted(d.keys() | (x for x in ["c"]))))
+vals.append(str(sorted(d.keys() - {"a": 1})))
+vals.append(str(sorted(d.items() & {("a", 1)})))
+vals.append(str(sorted(d.items() | {("c", 3)})))
+vals.append(str(sorted(d.items() - {("a", 1)})))
+vals.append(str(d.keys() & d.items() == set()))
+vals.append(str(d.items() | d.keys() == {("a", 1), ("b", 2), "a", "b"}))
+vals.append(str({}.keys() | set() == set()))
+vals.append(str(d.keys() == {"a", "b"}))
+vals.append(str(d.items() == {("a", 1), ("b", 2)}))
+vals.append(str(d.keys() == d.keys()))
+vals.append(str(d.values() == d.values()))
+vals.append(str(d.keys() == ["a", "b"]))
+vals.append(str(d.keys() != {"a"}))
+try:
+    d.values() & {1}
+except TypeError as e:
+    vals.append(str(e))
+try:
+    d.keys() & 1
+except TypeError as e:
+    vals.append(str(e))
+return "|".join(vals)
+""";
+
+        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        const string expected = "['a']|['a', 'b', 'c']|['b']|['b', 'c']|['a']|['c']|['a']|['a', 'b', 'c']|['b']|[('a', 1)]|[('a', 1), ('b', 2), ('c', 3)]|[('b', 2)]|True|True|True|True|True|True|False|False|True|Operands are not compatible with '&'.|Object is not iterable.";
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Theory]
     [InlineData("return {1}.union([[2]])\n", "hashable")]
     [InlineData("return {1}.intersection(2)\n", "iterable")]

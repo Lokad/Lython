@@ -81,6 +81,14 @@ internal sealed partial class LythonRuntime
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
+        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        {
+            // Dict views combine as sets like CPython; other iterables
+            // materialize with the usual validation and governance.
+            left = SetMembers.AsSetOperand(left, span, context);
+            right = SetMembers.AsSetOperand(right, span, context);
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
@@ -105,6 +113,14 @@ internal sealed partial class LythonRuntime
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
             return leftBoolean ^ rightBoolean;
+        }
+
+        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        {
+            // Dict views combine as sets like CPython; other iterables
+            // materialize with the usual validation and governance.
+            left = SetMembers.AsSetOperand(left, span, context);
+            right = SetMembers.AsSetOperand(right, span, context);
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -136,6 +152,14 @@ internal sealed partial class LythonRuntime
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) <= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+        }
+
+        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        {
+            // Dict views combine as sets like CPython; other iterables
+            // materialize with the usual validation and governance.
+            left = SetMembers.AsSetOperand(left, span, context);
+            right = SetMembers.AsSetOperand(right, span, context);
         }
 
         if (left is PySet leftSet && right is PySet rightSet)

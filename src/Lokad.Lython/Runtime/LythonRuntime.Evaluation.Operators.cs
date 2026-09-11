@@ -97,6 +97,12 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
+        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        {
+            left = SetMembers.AsSetOperand(left, span, context);
+            right = SetMembers.AsSetOperand(right, span, context);
+        }
+
         if (left is PySet leftSet && right is PySet rightSet)
         {
             var governor = leftSet.OwnerMemoryGovernor ?? rightSet.OwnerMemoryGovernor;
