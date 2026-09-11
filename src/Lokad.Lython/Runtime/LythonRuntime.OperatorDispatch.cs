@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.In => Contains(right, left, context, span),
             BinaryOperatorSyntax.NotIn => !Contains(right, left, context, span),
             BinaryOperatorSyntax.Equal => AreEqualWithProtocols(left, right, context, span),
-            BinaryOperatorSyntax.NotEqual => !AreEqualWithProtocols(left, right, context, span),
+            BinaryOperatorSyntax.NotEqual => AreNotEqualWithProtocols(left, right, context, span),
             _ => EvaluateBinaryOperatorWithoutProtocols(op, left, right, context, span),
         };
     }
@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.In => await ContainsAsync(right, left, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.NotIn => !await ContainsAsync(right, left, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.Equal => await AreEqualWithProtocolsAsync(left, right, context, span).ConfigureAwait(false),
-            BinaryOperatorSyntax.NotEqual => !await AreEqualWithProtocolsAsync(left, right, context, span).ConfigureAwait(false),
+            BinaryOperatorSyntax.NotEqual => await AreNotEqualWithProtocolsAsync(left, right, context, span).ConfigureAwait(false),
             _ => EvaluateBinaryOperatorWithoutProtocols(op, left, right, context, span),
         };
     }
@@ -379,6 +379,49 @@ internal sealed partial class LythonRuntime
         return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
             ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
             : AreEqual(left, right);
+    }
+
+    private static bool AreNotEqualWithProtocols(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => AreNotEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
+            .GetAwaiter()
+            .GetResult();
+
+    private static ValueTask<bool> AreNotEqualWithProtocolsAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => AreNotEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<bool> AreNotEqualWithProtocolsCoreAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
+    {
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return leftKey.CompareTo(rightKey, span, context) != 0;
+        }
+
+        // != consults __ne__ first like CPython; a NotImplemented answer
+        // declines to the reflected slot and then to the negated __eq__
+        // protocol (which honors NotImplemented itself).
+        var invocation = await invoke(left, "__ne__", right, context, span).ConfigureAwait(false);
+        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        {
+            invocation = await invoke(right, "__ne__", left, context, span).ConfigureAwait(false);
+        }
+
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
+            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
+            : !await AreEqualWithProtocolsCoreAsync(left, right, context, span, invoke, evaluateTruthiness).ConfigureAwait(false);
     }
 
     private static bool EvaluateRichComparison(

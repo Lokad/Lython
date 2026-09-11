@@ -5051,6 +5051,46 @@ __lython_file.close()
         Assert.Equal("True|False|True|True", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void InequalityConsultsNeFirst()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class NeverNotEqual:
+    def __ne__(self, other):
+        return False
+class AlwaysEqual:
+    def __eq__(self, other):
+        return True
+class Default: pass
+from dataclasses import dataclass
+
+@dataclass
+class P:
+    x: int
+
+parts = []
+parts.append(str(NeverNotEqual() != NeverNotEqual()))
+parts.append(str(NeverNotEqual() != 1))
+parts.append(str(AlwaysEqual() != AlwaysEqual()))
+parts.append(str(Default() != Default()))
+parts.append(str(P(1) != P(2)))
+parts.append(str(P(1) != P(1)))
+parts.append(str(1 != 2))
+parts.append(str(1 != 1))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("False|False|False|True|True|False|True|False", host.ReadText("/out.txt"));
+    }
+
+
 
     [Theory]
     [InlineData("return str(object.__str__)", "<slot wrapper '__str__' of 'object' objects>")]
