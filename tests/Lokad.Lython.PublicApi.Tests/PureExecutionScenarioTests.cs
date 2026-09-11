@@ -6815,6 +6815,36 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RegexMatchStr_RendersLikeRepr()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import re
+
+parts = []
+m = re.match("a", "a")
+parts.append(str(m))
+parts.append(repr(m))
+parts.append(str(str(m) == repr(m)))
+n = re.search("(?P<w>b)", "ab")
+parts.append(f"{n}")
+parts.append("%s" % n)
+parts.append("x{}y".format(n))
+parts.append(str([m]))
+parts.append(n.group(0))
+parts.append(n.string)
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"<re.Match object; span=(0, 1), match='a'>|<re.Match object; span=(0, 1), match='a'>|True|<re.Match object; span=(1, 2), match='b'>|<re.Match object; span=(1, 2), match='b'>|x<re.Match object; span=(1, 2), match='b'>y|[<re.Match object; span=(0, 1), match='a'>]|b|ab", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

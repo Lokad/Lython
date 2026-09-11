@@ -50,7 +50,8 @@ internal static class PyRendering
                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
                 PyException exception => RenderExceptionMessage(exception, context),
-                LythonRuntime.ReMatchObject match => match.Value,
+                // Like CPython, str(match) renders the repr form, not the text.
+                LythonRuntime.ReMatchObject match => ToReprPyString(match, context),
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
             };
@@ -81,7 +82,8 @@ internal static class PyRendering
                 LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
                 LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
                 PyException exception => RenderExceptionMessage(exception, context),
-                LythonRuntime.ReMatchObject match => match.Value,
+                // Like CPython, str(match) renders the repr form, not the text.
+                LythonRuntime.ReMatchObject match => ToReprPyString(match, context),
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
                 _ => RenderOpaqueObject()
             };
