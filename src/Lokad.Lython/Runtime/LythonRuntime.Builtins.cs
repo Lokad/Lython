@@ -349,11 +349,27 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects two or three arguments.", span);
         }
 
+        // User-defined __pow__ takes precedence like CPython, binary and ternary
+        // (an explicit None modulus behaves as absent everywhere).
+        if (TryInvokePowProtocol(arguments, context, span, out var protocolResult))
+        {
+            return protocolResult;
+        }
+
         if (arguments.Length == 3 && arguments[2] is not PyNone)
         {
-            var integerBase = RuntimeArgumentValidation.ExpectInteger(arguments[0], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
-            var exponent = RuntimeArgumentValidation.ExpectInteger(arguments[1], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
-            var modulus = RuntimeArgumentValidation.ExpectInteger(arguments[2], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
+            if (!PyNumberOps.TryAsInteger(arguments[0], out var integerBase) ||
+                !PyNumberOps.TryAsInteger(arguments[1], out var exponent) ||
+                !PyNumberOps.TryAsInteger(arguments[2], out var modulus))
+            {
+                if (arguments[0] is double || arguments[1] is double || arguments[2] is double)
+                {
+                    throw new LythonRuntimeException("TypeError", "pow() 3rd argument not allowed unless all arguments are integers", span);
+                }
+
+                throw new LythonRuntimeException("TypeError", $"unsupported operand type(s) for ** or pow(): '{RuntimeErrors.OperandTypeName(arguments[0])}', '{RuntimeErrors.OperandTypeName(arguments[1])}', '{RuntimeErrors.OperandTypeName(arguments[2])}'", span);
+            }
+
             if (modulus == BigInteger.Zero)
             {
                 throw new LythonRuntimeException("ValueError", "pow() 3rd argument cannot be 0", span);
@@ -377,6 +393,62 @@ internal sealed partial class LythonRuntime
         }
 
         return EvaluatePower(arguments[0], arguments[1], context, span);
+    }
+
+    private static bool TryInvokePowProtocol(object[] arguments, ExecutionContext context, LythonSourceSpan span, out object result)
+    {
+        if (arguments.Length == 3 && arguments[2] is not PyNone)
+        {
+            // Ternary __pow__ receives (exp, mod); reflected ternary is
+            // unreachable without builtin subclassing (CPython skips it for
+            // plain classes, reporting the three-operand form instead).
+            if (arguments[0] is PyInstance powInstance &&
+                powInstance.TryGetAttribute("__pow__", context, span, out var powMember))
+            {
+                if (powMember is not ICallable powCallable)
+                {
+                    throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(powMember, context) + "' object is not callable", span);
+                }
+
+                result = CallableInvocation.InvokeBinary(powCallable, arguments[1], arguments[2], span, context);
+                return true;
+            }
+
+            result = PyNone.Instance;
+            return false;
+        }
+
+        if (TryInvokePowOperand(arguments[0], "__pow__", arguments[1], context, span, out result))
+        {
+            return true;
+        }
+
+        return TryInvokePowOperand(arguments[1], "__rpow__", arguments[0], context, span, out result);
+    }
+
+    private static bool TryInvokePowOperand(object target, string method, object argument, ExecutionContext context, LythonSourceSpan span, out object result)
+    {
+        if (target is PyInstance powInstance &&
+            powInstance.TryGetAttribute(method, context, span, out var member))
+        {
+            if (member is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+            }
+
+            var value = CallableInvocation.InvokeUnary(callable, argument, span, context);
+            if (value is PyNotImplemented)
+            {
+                result = PyNone.Instance;
+                return false;
+            }
+
+            result = value;
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
     }
 
     private static BigInteger ModularInverse(BigInteger value, BigInteger modulus, LythonSourceSpan span)

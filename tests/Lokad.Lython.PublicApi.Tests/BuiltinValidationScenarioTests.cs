@@ -262,6 +262,64 @@ print(abs(True))
     }
 
     [Fact]
+    public void PowProtocol_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class C:
+    def __pow__(self, exp):
+        return 42
+class R:
+    def __rpow__(self, other):
+        return 43
+class T:
+    def __pow__(self, exp, mod):
+        return (exp, mod)
+class A:
+    def __pow__(self, other):
+        return NotImplemented
+class B:
+    def __rpow__(self, other):
+        return (7, 8)
+class D:
+    __pow__ = 5
+
+parts = []
+parts.append(str(pow(C(), 2)))
+parts.append(str(pow(2, R())))
+parts.append(str(pow(A(), B())))
+parts.append(str(pow(T(), 2, 3)))
+parts.append(str(pow(C(), 2, None)))
+try:
+    parts.append(str(pow(2, 3, "a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(pow(2.0, 2, 3)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(pow("a", 2, 3)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(pow(D(), 2, 3)))
+except TypeError as e:
+    parts.append(str(e))
+parts.append(str(pow(2, 3, 5)))
+parts.append(str(pow(2, 3)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("42|43|(7, 8)|(2, 3)|42|unsupported operand type(s) for ** or pow(): 'int', 'int', 'str'|pow() 3rd argument not allowed unless all arguments are integers|unsupported operand type(s) for ** or pow(): 'str', 'int', 'int'|'int' object is not callable|3|8", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DivModProtocol_MatchesCpython()
     {
         var host = new MockLythonHost();
