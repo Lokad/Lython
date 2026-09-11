@@ -66,6 +66,13 @@ internal static partial class StaticAbstractValueResolver
 
         if (binary.Operator == BinaryOperatorSyntax.Multiply)
         {
+            if (left.Kind == AbstractValueKind.CollectionsDeque && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && right.Kind == AbstractValueKind.CollectionsDeque)
+            {
+                value = AbstractValue.CollectionsDeque(binary.Span);
+                return true;
+            }
+
             if (TryGetListElementAbstractValue(left, out var repeatedLeftItem) && StaticAbstractFacts.IsIntegerLike(right))
             {
                 value = AbstractValue.ListOf(repeatedLeftItem.WithSpan(binary.Span), binary.Span);

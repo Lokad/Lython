@@ -292,6 +292,52 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_DequeRepeat_BehavesLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+import operator
+
+def mul(a, b):
+    return a * b
+
+parts = []
+parts.append(str(deque([1, 2]) * 2))
+parts.append(str(2 * deque([1])))
+parts.append(str(deque([1, 2], maxlen=3) * 2))
+parts.append(str(deque([1], maxlen=2) * 0))
+parts.append(str(deque([1]) * True))
+parts.append(str(operator.mul(deque([1]), 3)))
+n = 0 - 1
+parts.append(str(deque([1]) * n))
+
+d = deque([1])
+hold = d
+d *= 2
+parts.append(str(d))
+parts.append(str(hold is d))
+e = deque([1, 2], maxlen=3)
+e *= 2
+parts.append(str(e))
+
+for pair in [(deque([1]), "a"), ("a", deque([1])), ([1], deque([2]))]:
+    try:
+        parts.append(str(mul(pair[0], pair[1])))
+    except TypeError as ex:
+        parts.append(str(ex))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("deque([1, 2, 1, 2])|deque([1, 1])|deque([2, 1, 2], maxlen=3)|deque([], maxlen=2)|deque([1])|deque([1, 1, 1])|deque([])|deque([1, 1])|True|deque([2, 1, 2], maxlen=3)|can't multiply sequence by non-int of type 'str'|can't multiply sequence by non-int of type 'collections.deque'|can't multiply sequence by non-int of type 'collections.deque'", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_DequeErrorTexts_NameDottedType()
     {
         var host = new MockLythonHost();

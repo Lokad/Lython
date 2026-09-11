@@ -390,6 +390,34 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
     }
 
+    public void RepeatInPlace(int count, LythonSourceSpan span)
+    {
+        if (count <= 0 || Count == 0)
+        {
+            Clear();
+            return;
+        }
+
+        var totalLength = (long)Count * count;
+        if (totalLength > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Deque repetition is too large.", span);
+        }
+
+        // Snapshot the source (which may be this deque) so repeating
+        // appends the original elements; clearing first releases the live
+        // charges that the re-appends below recommit through Append.
+        var snapshot = _items.ToArray();
+        Clear();
+        for (var i = 0; i < count; i++)
+        {
+            foreach (var item in snapshot)
+            {
+                Append(item);
+            }
+        }
+    }
+
     public int CountValue(object candidate) => _items.Count(item => PyEquality.AreEqual(item, candidate));
 
     public int IndexOf(object candidate, int start, int stop)

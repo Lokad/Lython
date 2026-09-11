@@ -208,6 +208,16 @@ internal sealed partial class LythonRuntime
             return RepeatList(rightList, leftRepeatCount, context, span);
         }
 
+        if (left is PyDeque leftDeque && TryRepeatCount(right, out var rightDequeRepeatCount))
+        {
+            return RepeatDeque(leftDeque, rightDequeRepeatCount, context, span);
+        }
+
+        if (right is PyDeque rightDeque && TryRepeatCount(left, out var leftDequeRepeatCount))
+        {
+            return RepeatDeque(rightDeque, leftDequeRepeatCount, context, span);
+        }
+
         if (PyTupleLike.TryGetItems(left, out var repeatLeft) && TryRepeatCount(right, out var rightTupleRepeatCount))
         {
             return RepeatTuple(repeatLeft, rightTupleRepeatCount, context, span);
@@ -265,7 +275,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool IsSequenceOperand(object value)
-        => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or PyString or PyBytes;
+        => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or PyString or PyBytes or PyDeque;
 
     private static (MemoryGovernor? Governor, LythonSourceSpan? Span) TupleLikeOwnership(object value) => value switch
     {

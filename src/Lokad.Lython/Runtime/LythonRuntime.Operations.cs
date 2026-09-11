@@ -530,6 +530,46 @@ internal sealed partial class LythonRuntime
         return new PyTuple(items, context.MemoryGovernor, span);
     }
 
+    private static PyDeque RepeatDeque(PyDeque source, BigInteger count, ExecutionContext context, LythonSourceSpan span)
+    {
+        var repeatCount = ToDequeRepeatCount(count, span);
+        var governor = source.OwnerMemoryGovernor ?? context.MemoryGovernor;
+        if (repeatCount == 0 || source.Count == 0)
+        {
+            return new PyDeque([], source.MaxLength, governor, span);
+        }
+
+        var totalLength = (long)source.Count * repeatCount;
+        if (totalLength > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Deque repetition is too large.", span);
+        }
+
+        var result = new PyDeque([], source.MaxLength, governor, span);
+        for (var i = 0; i < repeatCount; i++)
+        {
+            result.Extend(source.Iterate());
+            context.ObserveCollectionCount(result.Count, span);
+        }
+
+        return result;
+    }
+
+    private static int ToDequeRepeatCount(BigInteger count, LythonSourceSpan span)
+    {
+        if (count <= BigInteger.Zero)
+        {
+            return 0;
+        }
+
+        if (count > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Deque repetition is too large.", span);
+        }
+
+        return (int)count;
+    }
+
     private static int ToListRepeatCount(BigInteger count, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero)

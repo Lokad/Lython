@@ -598,6 +598,15 @@ internal sealed partial class LythonRuntime
             return multipliedList;
         }
 
+        if (op == AugmentedAssignmentOperatorSyntax.Multiply &&
+            currentValue is PyDeque multipliedDeque &&
+            right is BigInteger dequeRepeatCount)
+        {
+            multipliedDeque.RepeatInPlace(ToDequeRepeatCount(dequeRepeatCount, span), span);
+            context.ObserveCollectionCount(multipliedDeque.Count, span);
+            return multipliedDeque;
+        }
+
         if (currentValue is PySet currentSet && right is PySet rightSet)
         {
             switch (op)

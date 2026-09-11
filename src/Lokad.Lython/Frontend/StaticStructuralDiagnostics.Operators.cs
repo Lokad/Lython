@@ -117,7 +117,9 @@ internal static partial class StaticStructuralDiagnostics
                 StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsListLike(right) ||
                 StaticAbstractFacts.IsTupleLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
-                StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsTupleLike(right),
+                StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsTupleLike(right) ||
+                left.Kind == AbstractValueKind.CollectionsDeque && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && right.Kind == AbstractValueKind.CollectionsDeque,
             BinaryOperatorSyntax.Divide => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _) ||
                 left.Kind == AbstractValueKind.StatisticsNormalDist && StaticAbstractFacts.IsNumericLike(right) ||
