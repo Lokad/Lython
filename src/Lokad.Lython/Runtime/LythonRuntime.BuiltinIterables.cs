@@ -57,6 +57,15 @@ internal sealed partial class LythonRuntime
         return length;
     }
 
+    // Explicit __dir__ calls preserve member order like CPython (only the dir
+    // builtin sorts); construction is governed exactly like the sorted list.
+    private static PyList CreateUnsortedNameList(IEnumerable<string> names, ExecutionContext context, LythonSourceSpan span)
+        => new(
+            names.Distinct(StringComparer.Ordinal)
+                .Select(name => PyString.FromString(name, context.MemoryGovernor, span)),
+            context.MemoryGovernor,
+            span);
+
     private static PyList CreateNameList(IEnumerable<string> names, ExecutionContext context, LythonSourceSpan span)
         => new(
             names.Distinct(StringComparer.Ordinal)

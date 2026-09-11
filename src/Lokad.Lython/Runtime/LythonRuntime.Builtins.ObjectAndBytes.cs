@@ -1077,6 +1077,100 @@ internal sealed partial class LythonRuntime
             return ToInterpolatedPyString(receiver, context);
         }
     }
+    // object.__dir__ behaves like CPython method descriptors: the unbound
+    // shape renders like one, calls forward through a bound engine method,
+    // and binding reports the receiver type through the shared helper.
+    private sealed class ObjectDirMethod : ICallable, IPyBindableCallable, IPyDynamicAttributes, IPyHashableValue, IPyRenderableValue, IClassOwnedMember
+    {
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<method '__dir__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => HashCode.Combine(StringComparer.Ordinal.GetHashCode("object"), StringComparer.Ordinal.GetHashCode("__dir__"));
+
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString("__dir__");
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object.__dir__");
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self)
+        {
+            var bound = BoundCallable.Create(
+                (arguments, span, context) => DirImpl(self, span, context),
+                "object.__dir__");
+            bound.AttachReceiver(self);
+            return bound;
+        }
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var receiverIndex = -1;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i].IsPositional)
+                {
+                    receiverIndex = i;
+                    break;
+                }
+            }
+
+            if (receiverIndex < 0)
+            {
+                throw new LythonRuntimeException("TypeError", "unbound method object.__dir__() needs an argument", span);
+            }
+
+            var receiver = arguments[receiverIndex].Value;
+            var bound = (ICallable)Bind(receiver);
+            var rest = new CallArgumentValue[arguments.Length - 1];
+            Array.Copy(arguments, 0, rest, 0, receiverIndex);
+            Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
+            return bound.Invoke(rest, span, context);
+        }
+
+        // Listing delegates to the same helpers as the dir builtin so
+        // explicit calls always agree with dir() by construction.
+        private static object DirImpl(object receiver, LythonSourceSpan span, ExecutionContext context)
+        {
+            var names = EnumerateDirNames(receiver);
+            if (names is null)
+            {
+                throw new LythonRuntimeException("TypeError", "dir(object) is not supported for this object.", span);
+            }
+
+            return CreateUnsortedNameList(names, context, span);
+        }
+    }
     private static ICallable? ParsePropertyCallable(object value, string parameterName, LythonSourceSpan span)
     {
         return value switch

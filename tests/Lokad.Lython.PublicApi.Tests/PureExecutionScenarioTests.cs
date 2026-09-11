@@ -5121,6 +5121,50 @@ c.__format__("x")
     }
 
     [Theory]
+    [InlineData("return str(object.__dir__)", "<method '__dir__' of 'object' objects>")]
+    [InlineData("class C: pass\nreturn str(C.__dir__)", "<method '__dir__' of 'object' objects>")]
+    [InlineData("return repr(object.__dir__)", "<method '__dir__' of 'object' objects>")]
+    [InlineData("return str(type(object.__dir__))", "<class 'method_descriptor'>")]
+    [InlineData("return str(list.append)", "<method 'append' of 'list' objects>")]
+    public void ObjectDirSlot_RenderMethodDescriptorForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Fact]
+    public void ObjectDirSlot_ListsLikeDirBuiltin()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+
+class D:
+    def __dir__(self):
+        return ["a"]
+d = D()
+
+parts = []
+parts.append(str(sorted(c.__dir__()) == dir(c)))
+parts.append(str("__dir__" in c.__dir__()))
+parts.append(str(d.__dir__()))
+parts.append(str(c.__dir__))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|['a']|<built-in method __dir__ of C object>", host.ReadText("/out.txt"));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
