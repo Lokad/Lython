@@ -47,6 +47,36 @@ public sealed class BuiltinValidationScenarioTests
         }
     }
 
+    [Fact]
+    public void SumWithInstances_ResolvesAddProtocols()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class C:
+    def __init__(self, v):
+        self.v = v
+    def __add__(self, o):
+        return self.v + o
+    def __radd__(self, o):
+        return self.v + o
+
+parts = []
+parts.append(str(sum([C(1), C(2)])))
+parts.append(str(sum([C(1), C(2)], C(10))))
+parts.append(str(sum([])))
+parts.append(str(sum([1, 2, 3])))
+parts.append(str(sum([1.5, 2])))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("3|13|0|6|3.5", host.ReadText("/out.txt"));
+    }
+
     [Theory]
     [InlineData("dict([([], 1)])\n", "TypeError", "hashable")]
     public void DictConstructorFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)

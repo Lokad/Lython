@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Globalization;
+using Lokad.Lython.Frontend;
 using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Numbers;
@@ -93,7 +94,11 @@ internal sealed partial class LythonRuntime
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             EnsureSummableValue(item, span);
-            total = EvaluateAdd(total, item, context, span);
+            // Instances resolve __add__/__radd__ through operator dispatch like
+            // CPython; plain values take the direct path with identical results.
+            total = total is PyInstance || item is PyInstance
+                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, total, item, context, span)
+                : EvaluateAdd(total, item, context, span);
         }
 
         return total;
@@ -111,7 +116,9 @@ internal sealed partial class LythonRuntime
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             EnsureSummableValue(item, span);
-            total = EvaluateAdd(total, item, context, span);
+            total = total is PyInstance || item is PyInstance
+                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item, context, span).ConfigureAwait(false)
+                : EvaluateAdd(total, item, context, span);
         }
 
         return total;
