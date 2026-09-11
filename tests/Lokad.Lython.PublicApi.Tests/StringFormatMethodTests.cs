@@ -80,6 +80,23 @@ public sealed class StringFormatMethodTests
     }
 
     [Theory]
+    [InlineData("format(10**400, \".2e\")")]
+    [InlineData("format(10**400, \".2f\")")]
+    [InlineData("format(10**400, \"e\")")]
+    [InlineData("format(-(10**400), \".2E\")")]
+    [InlineData("format(10**400, \"g\")")]
+    [InlineData("format(10**400, \"%\")")]
+    public void OversizedIntegersForFloatCodes_RaiseOverflow(string expression)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("OverflowError", result.Failure?.ExceptionType);
+        Assert.Contains("int too large to convert to float", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("format(1.5, \".2e\")", "1.50e+00")]
     [InlineData("format(1.5, \".2E\")", "1.50E+00")]
     [InlineData("format(1.5, \"e\")", "1.500000e+00")]
@@ -109,6 +126,9 @@ public sealed class StringFormatMethodTests
     [InlineData("format(1000000000000000000000000000000, \".2e\")", "1.00e+30")]
     [InlineData("format(123456789012345678901234567890, \".2e\")", "1.23e+29")]
     [InlineData("format(10, \".3g\")", "10")]
+    [InlineData("format(1e308, \"%\")", "inf%")]
+    [InlineData("format(-1e308, \"%\")", "-inf%")]
+    [InlineData("format(10**308, \"%\")", "inf%")]
     public void FloatFormatSpecs_RenderPythonShapedOutput(string expression, string expected)
     {
         var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());

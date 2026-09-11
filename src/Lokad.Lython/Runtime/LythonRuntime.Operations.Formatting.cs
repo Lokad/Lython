@@ -187,7 +187,16 @@ internal sealed partial class LythonRuntime
         {
             if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%' or 'e' or 'E')
             {
-                return TryFormatFloatingValue((double)integer, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(value));
+                // Like CPython's int-to-double conversion, integers past
+                // the double range fail explicitly instead of rendering
+                // infinity.
+                var asDouble = (double)integer;
+                if (!double.IsFinite(asDouble))
+                {
+                    throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+                }
+
+                return TryFormatFloatingValue(asDouble, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(value));
             }
 
             text = FormatIntegerValue(integer, spec, span, RuntimeErrors.OperandTypeName(value), out numericPrefixLength);
@@ -363,7 +372,7 @@ internal sealed partial class LythonRuntime
             'G' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
             'e' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
             'E' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
-            '%' => (value * 100.0).ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) + "%",
+            '%' => FormatPercentText(value, precision),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span)
         };
 
@@ -380,6 +389,19 @@ internal sealed partial class LythonRuntime
         text = ApplyNumericSign(formatted, spec.Sign);
         numericPrefixLength = GetNumericPrefixLength(text);
         return true;
+    }
+
+    // Scaling by 100 can overflow a large finite value to infinity;
+    // CPython then renders the non-finite word with the percent suffix.
+    private static string FormatPercentText(double value, int? precision)
+    {
+        var scaled = value * 100.0;
+        if (!double.IsFinite(scaled))
+        {
+            return (double.IsNaN(scaled) ? "nan" : scaled < 0 ? "-inf" : "inf") + "%";
+        }
+
+        return scaled.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) + "%";
     }
 
     // BCL scientific notation pads exponents to three digits with an
