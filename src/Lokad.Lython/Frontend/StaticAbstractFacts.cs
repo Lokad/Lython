@@ -144,6 +144,9 @@ internal static class StaticAbstractFacts
     public static bool IsListLike(AbstractValue value)
         => value.Kind is AbstractValueKind.List or AbstractValueKind.ListType;
 
+    public static bool IsTupleLike(AbstractValue value)
+        => value.Kind == AbstractValueKind.Tuple;
+
     public static bool IsSetLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Set or AbstractValueKind.SetType;
 

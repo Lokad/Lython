@@ -2695,6 +2695,38 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task TupleRepeatConcat()
+    {
+        // Plain tuples repeat and concatenate like CPython, with the
+        // usual element-preserving result shapes.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append((1, 2) * 2 == (1, 2, 1, 2))
+            results.append(() * 5 == ())
+            results.append(2 * (1,) == (1, 1))
+            results.append((1,) * 0 == ())
+            results.append((1, 2) * -1 == ())
+            results.append((1, 2) + (3,) == (1, 2, 3))
+            results.append(() + () == ())
+            results.append((1, 2) == (1, 2))
+            results.append((1, 2) == (2, 1))
+            results.append((1,) * True == (1,))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, false, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task NamedTupleSequenceMembers()
     {
         // Namedtuple values serve the tuple index/count shapes like CPython

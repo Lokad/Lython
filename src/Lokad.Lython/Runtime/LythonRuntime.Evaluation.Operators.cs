@@ -169,6 +169,16 @@ internal sealed partial class LythonRuntime
             return RepeatList(rightList, leftRepeatCount, context, span);
         }
 
+        if (left is PyTuple leftTuple && TryRepeatCount(right, out var rightTupleRepeatCount))
+        {
+            return RepeatTuple(leftTuple, rightTupleRepeatCount, context, span);
+        }
+
+        if (right is PyTuple rightTuple && TryRepeatCount(left, out var leftTupleRepeatCount))
+        {
+            return RepeatTuple(rightTuple, leftTupleRepeatCount, context, span);
+        }
+
         if (left is PyTimedelta || right is PyTimedelta)
         {
             return PyDateTimeOps.Multiply(left, right, context, span);

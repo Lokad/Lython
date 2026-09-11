@@ -497,6 +497,39 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static PyTuple RepeatTuple(PyTuple tuple, BigInteger count, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (count <= BigInteger.Zero || tuple.Count == 0)
+        {
+            return new PyTuple([], context.MemoryGovernor, span);
+        }
+
+        if (count > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Tuple repetition is too large.", span);
+        }
+
+        var repeatCount = (int)count;
+        var totalLength = (long)tuple.Count * repeatCount;
+        if (totalLength > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Tuple repetition is too large.", span);
+        }
+
+        var items = new object[(int)totalLength];
+        for (var i = 0; i < repeatCount; i++)
+        {
+            for (var j = 0; j < tuple.Count; j++)
+            {
+                items[i * tuple.Count + j] = tuple[j];
+            }
+
+            context.ObserveCollectionCount((i + 1) * tuple.Count, span);
+        }
+
+        return new PyTuple(items, context.MemoryGovernor, span);
+    }
+
     private static int ToListRepeatCount(BigInteger count, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero)
