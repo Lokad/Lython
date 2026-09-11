@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PySuper : IPyRenderableValue
 {
-    public PySuper(PyType anchorType, object boundObject, PyType boundType)
+    public PySuper(PyType anchorType, object? boundObject, PyType? boundType)
     {
         AnchorType = anchorType;
         BoundObject = boundObject;
@@ -13,12 +13,18 @@ internal sealed class PySuper : IPyRenderableValue
 
     public PyType AnchorType { get; }
 
-    public object BoundObject { get; }
+    public object? BoundObject { get; }
 
-    public PyType BoundType { get; }
+    public PyType? BoundType { get; }
 
     public PyString RenderPython(PyRenderingContext context)
     {
+        // Unbound super names NULL like CPython.
+        if (BoundType is null)
+        {
+            return PyString.FromString($"<super: {PyRendering.ToPythonString(AnchorType, context)}, NULL>");
+        }
+
         // CPython spells the anchor via repr and abbreviates the bound object
         // as <{Type} object>, ignoring custom __repr__ (probed); the anchor
         // follows Lython class-rendering shapes (short, not __main__-qualified).

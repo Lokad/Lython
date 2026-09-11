@@ -328,6 +328,7 @@ internal static class PyMemberAccess
         PyDateTime or PyDate or PyTime or PyTimedelta or
             PyTimezone or PyDecimal or PyDefaultDict => RuntimeErrors.OperandTypeName(target),
         PyDeque => "collections.deque",
+        PySuper => "super",
         _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context),
     };
 

@@ -31,6 +31,20 @@ internal sealed partial class LythonRuntime
             return zeroResult;
         }
 
+        if (arguments.Length == 1)
+        {
+            if (arguments[0] is not PyType singleAnchorType)
+            {
+                throw new LythonRuntimeException("TypeError", "super(type) expects the argument to be a class.", span);
+            }
+
+            // Unbound super carries no object; member lookup beyond its own
+            // descriptors misses like CPython.
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new PySuper(singleAnchorType, null, null);
+        }
+
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "super(type, object) expects exactly two arguments in Lython.", span);

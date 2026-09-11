@@ -5155,6 +5155,42 @@ __lython_file.close()
         Assert.Equal("<super: <class 'B'>, <B object>>|<super: <class 'B'>, <C object>>|<super: <class 'A'>, <C object>>|A", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void SuperServesDescriptorsAndUnbound()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class A: pass
+class B(A): pass
+b = B()
+
+parts = []
+parts.append(str(super(B)))
+parts.append(str(super(B).__thisclass__ is B))
+parts.append(str(super(B).__self__ is None))
+parts.append(str(super(B).__self_class__ is None))
+parts.append(str(super(B, b).__thisclass__ is B))
+parts.append(str(super(B, b).__self__ is b))
+parts.append(str(super(B, b).__self_class__ is B))
+parts.append(str(super(B, B).__self__ is B))
+try:
+    super(B).missing
+    parts.append("no-error")
+except AttributeError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<super: <class 'B'>, NULL>|True|True|True|True|True|True|True|'super' object has no attribute 'missing'.", host.ReadText("/out.txt"));
+    }
+
+
 
 
 

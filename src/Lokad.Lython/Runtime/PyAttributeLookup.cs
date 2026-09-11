@@ -354,15 +354,43 @@ internal static class PyAttributeLookup
 
     public static bool TryResolveSuperMember(PySuper superObject, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (!superObject.BoundType.TryGetSuccessorMroIndex(superObject.AnchorType, out var startIndex))
+        // Super serves its own descriptors on the proxy itself like CPython:
+        // __thisclass__ is always the anchor while __self__ and
+        // __self_class__ fall back to None when unbound.
+        if (memberName is "__thisclass__")
+        {
+            value = superObject.AnchorType;
+            return true;
+        }
+
+        if (memberName is "__self__")
+        {
+            value = superObject.BoundObject ?? (object)PyNone.Instance;
+            return true;
+        }
+
+        if (memberName is "__self_class__")
+        {
+            value = superObject.BoundType ?? (object)PyNone.Instance;
+            return true;
+        }
+
+        if (superObject.BoundType is not PyType boundType)
+        {
+            // Unbound super exposes no instance MRO like CPython.
+            value = PyNone.Instance;
+            return false;
+        }
+
+        if (!boundType.TryGetSuccessorMroIndex(superObject.AnchorType, out var startIndex))
         {
             value = PyNone.Instance;
             return false;
         }
 
-        if (superObject.BoundType.TryLookupInMro(memberName, startIndex, out var rawValue, out _))
+        if (boundType.TryLookupInMro(memberName, startIndex, out var rawValue, out _))
         {
-            value = BindForSuper(superObject, rawValue, context, span);
+            value = BindForSuper(superObject.BoundObject, boundType, rawValue, context, span);
             return true;
         }
 
@@ -420,9 +448,9 @@ internal static class PyAttributeLookup
             : rawValue;
     }
 
-    private static object BindForSuper(PySuper superObject, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static object BindForSuper(object? boundObject, PyType boundType, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        return TryBindDynamicDescriptor(rawValue, superObject.BoundObject, superObject.BoundType, context, span, out var value)
+        return TryBindDynamicDescriptor(rawValue, boundObject, boundType, context, span, out var value)
             ? value
             : rawValue;
     }
