@@ -6438,6 +6438,37 @@ ChainMap().pop(1, 2, 3)
     }
 
     [Fact]
+    public void CounterMostCommon_KeepsTieOrderLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter
+
+parts = []
+def ties():
+    out = []
+    c = Counter("zyxwvutsrqponmlkjihgfedcba")
+    out.append(str(c.most_common(25)))
+    out.append(str(c.most_common(26)))
+    out.append(str(c.most_common(1)))
+    out.append(str(c.most_common()))
+    d = Counter({"a": 3, "b": 1, "c": 3, "d": 2, "e": 3, "f": 1})
+    out.append(str(d.most_common(3)))
+    out.append(str(d.most_common(5)))
+    return out
+parts.extend(ties())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[('z', 1), ('y', 1), ('x', 1), ('w', 1), ('v', 1), ('u', 1), ('t', 1), ('s', 1), ('r', 1), ('q', 1), ('p', 1), ('o', 1), ('n', 1), ('m', 1), ('l', 1), ('k', 1), ('j', 1), ('i', 1), ('h', 1), ('g', 1), ('f', 1), ('e', 1), ('d', 1), ('c', 1), ('b', 1)]|[('z', 1), ('y', 1), ('x', 1), ('w', 1), ('v', 1), ('u', 1), ('t', 1), ('s', 1), ('r', 1), ('q', 1), ('p', 1), ('o', 1), ('n', 1), ('m', 1), ('l', 1), ('k', 1), ('j', 1), ('i', 1), ('h', 1), ('g', 1), ('f', 1), ('e', 1), ('d', 1), ('c', 1), ('b', 1), ('a', 1)]|[('z', 1)]|[('z', 1), ('y', 1), ('x', 1), ('w', 1), ('v', 1), ('u', 1), ('t', 1), ('s', 1), ('r', 1), ('q', 1), ('p', 1), ('o', 1), ('n', 1), ('m', 1), ('l', 1), ('k', 1), ('j', 1), ('i', 1), ('h', 1), ('g', 1), ('f', 1), ('e', 1), ('d', 1), ('c', 1), ('b', 1), ('a', 1)]|[('a', 3), ('c', 3), ('e', 3)]|[('a', 3), ('c', 3), ('e', 3), ('d', 2), ('b', 1)]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

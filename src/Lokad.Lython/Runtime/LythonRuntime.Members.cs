@@ -1184,8 +1184,14 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Counter.most_common([n]) expects zero or one argument.", span);
                     }
 
-                    var sortedItems = counter.Items.ToList();
-                    sortedItems.Sort((left, right) => CompareCounterCounts(right.Value, left.Value, span));
+                    // heapq.nlargest matches sorted(reverse) even on ties, so equal
+                    // counts keep insertion order; List.Sort is unstable, while
+                    // OrderByDescending is documented stable.
+                    var sortedItems = counter.Items
+                        .OrderByDescending(
+                            pair => pair.Value,
+                            Comparer<object>.Create((left, right) => CompareCounterCounts(left, right, span)))
+                        .ToList();
 
                     int? limit = null;
                     if (arguments.Length == 1)
