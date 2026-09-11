@@ -4740,6 +4740,20 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("return str(int.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("return str(dict.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("return str(list.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("return repr(int.__new__)", "<built-in method __new__ of type object>")]
+    [InlineData("import collections\nP = collections.namedtuple(\"P\", [\"x\"])\nreturn str(P.__new__)", "<function P.__new__>")]
+    public void NewSlotMethods_RenderMethodForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

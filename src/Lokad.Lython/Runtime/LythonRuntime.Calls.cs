@@ -2003,7 +2003,7 @@ internal sealed partial class LythonRuntime
     // is int.__new__, qualified by the type, bound to it). Construction
     // through the slot is unsupported; type(...) builds values. Wrappers
     // are cached as fixed type metadata, beside their owning type object.
-    internal sealed class TypeNewMethod : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod
+    internal sealed class TypeNewMethod : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod, IPyRenderableValue
     {
         private readonly object _owner;
         private readonly string _shortName;
@@ -2044,6 +2044,16 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        // Type __new__ slots render like CPython built-in methods bound to
+        // the type, minus the address suffix.
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<built-in method __new__ of type object>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             // Construction routes to the owning type like CPython
@@ -2074,7 +2084,7 @@ internal sealed partial class LythonRuntime
     // Pure-Python-modeled types expose their __new__ slot as a plain function
     // like CPython (no __self__, function identity); wrappers are cached on
     // the owning type object beside it.
-    internal sealed class FunctionNewMethod : ICallable, IPyDynamicAttributes
+    internal sealed class FunctionNewMethod : ICallable, IPyDynamicAttributes, IPyRenderableValue
     {
         private readonly object _owner;
         private readonly string _shortName;
@@ -2108,6 +2118,16 @@ internal sealed partial class LythonRuntime
             value = PyNone.Instance;
             return false;
         }
+
+        // Pure-Python-modeled __new__ slots render like CPython plain
+        // functions, minus the address suffix.
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<function " + _shortName + ".__new__>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
