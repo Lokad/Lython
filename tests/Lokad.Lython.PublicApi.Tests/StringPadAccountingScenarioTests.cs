@@ -173,7 +173,8 @@ public sealed class StringPadAccountingScenarioTests
     public async Task FloatPrecisionContractsStayExact()
     {
         // MG07: preflighting precision must not change formatted output, and
-        // small precisions plus non-finite values behave exactly as before.
+        // small precisions behave exactly as before. Non-finite values
+        // render CPython words ("inf", not BCL "Infinity") at any precision.
         var script = new LythonEngine().Compile(
             """
             a = f"{1.5:.2f}"
@@ -185,7 +186,7 @@ public sealed class StringPadAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
-        var expected = new List<object?> { "1.50", "1.23", "12.6%", "123", "Infinity" };
+        var expected = new List<object?> { "1.50", "1.23", "12.6%", "123", "inf" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));

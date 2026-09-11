@@ -79,6 +79,34 @@ public sealed class StringFormatMethodTests
         Assert.Contains(message, result.Failure?.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("format(1.5, \".2e\")", "1.50e+00")]
+    [InlineData("format(1.5, \".2E\")", "1.50E+00")]
+    [InlineData("format(1.5, \"e\")", "1.500000e+00")]
+    [InlineData("format(0.0, \".2e\")", "0.00e+00")]
+    [InlineData("format(-1.5, \".2e\")", "-1.50e+00")]
+    [InlineData("format(1e100, \".2e\")", "1.00e+100")]
+    [InlineData("format(1e-5, \".2e\")", "1.00e-05")]
+    [InlineData("format(1e20, \"g\")", "1e+20")]
+    [InlineData("format(1e20, \"G\")", "1E+20")]
+    [InlineData("format(0.0001, \"g\")", "0.0001")]
+    [InlineData("format(123456.0, \"g\")", "123456")]
+    [InlineData("format(float(\"inf\"), \".2f\")", "inf")]
+    [InlineData("format(float(\"-inf\"), \".2e\")", "-inf")]
+    [InlineData("format(float(\"nan\"), \".2f\")", "nan")]
+    [InlineData("format(float(\"inf\"), \"F\")", "INF")]
+    [InlineData("format(float(\"nan\"), \"E\")", "NAN")]
+    [InlineData("format(float(\"-inf\"), \"G\")", "-INF")]
+    [InlineData("format(float(\"inf\"), \"+\")", "+inf")]
+    [InlineData("format(float(\"inf\"), \"%\")", "inf%")]
+    public void FloatFormatSpecs_RenderPythonShapedOutput(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
     [Fact]
     public void FormatMethod_ComposesConversionsNestedSpecsAndMapping()
     {

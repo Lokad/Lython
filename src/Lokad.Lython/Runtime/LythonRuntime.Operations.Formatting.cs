@@ -325,6 +325,23 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "Alternate floating-point formatting is not supported.", span);
         }
 
+        if (!double.IsFinite(value))
+        {
+            var nonFinite = double.IsNaN(value) ? "nan" : value < 0 ? "-inf" : "inf";
+            if (spec.Type is 'F' or 'E' or 'G')
+            {
+                nonFinite = nonFinite.ToUpperInvariant();
+            }
+            if (spec.Type == '%')
+            {
+                nonFinite += "%";
+            }
+
+            text = ApplyNumericSign(nonFinite, spec.Sign);
+            numericPrefixLength = GetNumericPrefixLength(text);
+            return true;
+        }
+
         // Guest-controlled precision scales the output without bound from a
         // tiny input, so bound it before BCL formatting materializes it.
         // Small precisions behave exactly as before; non-finite values
@@ -342,8 +359,10 @@ internal sealed partial class LythonRuntime
             null => value.ToString("G" + precision.Value.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'f' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'F' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-            'g' => value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-            'G' => value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+            'g' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
+            'G' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
+            'e' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
+            'E' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
             '%' => (value * 100.0).ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) + "%",
             _ => throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span)
         };
@@ -361,6 +380,29 @@ internal sealed partial class LythonRuntime
         text = ApplyNumericSign(formatted, spec.Sign);
         numericPrefixLength = GetNumericPrefixLength(text);
         return true;
+    }
+
+    // BCL scientific notation pads exponents to three digits with an
+    // uppercase marker; CPython uses a lowercase marker for 'e'/'g' and a
+    // minimum of two exponent digits.
+    private static string NormalizeExponentMarker(string raw, bool upper)
+    {
+        var marker = raw.IndexOf('E');
+        if (marker < 0)
+        {
+            return raw;
+        }
+
+        var digits = raw[(marker + 2)..];
+        var stripped = digits.TrimStart('0');
+        stripped = stripped.Length switch
+        {
+            0 => "00",
+            1 => "0" + stripped,
+            _ => stripped,
+        };
+
+        return raw[..marker] + (upper ? 'E' : 'e') + raw[marker + 1] + stripped;
     }
 
     private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span)
