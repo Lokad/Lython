@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -9,18 +10,41 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class RandomModule : PyModule
     {
-        private static BigInteger ComputeRangeCount(BigInteger start, BigInteger stop, BigInteger step, string owner, LythonSourceSpan span)
+        // Integer arguments coerce through __index__ like CPython; hooks run
+        // with full dispatch while plain non-integers name the type.
+        private static BigInteger CoerceRandomIndex(object value, ExecutionContext context, LythonSourceSpan span)
+        {
+            var coerced = CoerceIndexProtocol(value, context, span);
+            if (coerced is bool flag)
+            {
+                return flag ? BigInteger.One : BigInteger.Zero;
+            }
+
+            if (coerced is int small)
+            {
+                return new BigInteger(small);
+            }
+
+            if (coerced is BigInteger integer)
+            {
+                return integer;
+            }
+
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        }
+
+        private static BigInteger ComputeRangeCount(BigInteger start, BigInteger stop, BigInteger step, string emptyMessage, LythonSourceSpan span)
         {
             if (step == BigInteger.Zero)
             {
-                throw new LythonRuntimeException("ValueError", $"{owner}(...) arg 3 must not be zero.", span);
+                throw new LythonRuntimeException("ValueError", "zero step for randrange()", span);
             }
 
             if (step > BigInteger.Zero)
             {
                 if (stop <= start)
                 {
-                    throw new LythonRuntimeException("ValueError", $"{owner}(...) empty range for randrange().", span);
+                    throw new LythonRuntimeException("ValueError", emptyMessage, span);
                 }
 
                 return ((stop - start - BigInteger.One) / step) + BigInteger.One;
@@ -28,7 +52,7 @@ internal sealed partial class LythonRuntime
 
             if (stop >= start)
             {
-                throw new LythonRuntimeException("ValueError", $"{owner}(...) empty range for randrange().", span);
+                throw new LythonRuntimeException("ValueError", emptyMessage, span);
             }
 
             var magnitude = BigInteger.Abs(step);
@@ -114,7 +138,7 @@ internal sealed partial class LythonRuntime
         private static object SampleCountedPositions(
             List<object> population,
             object countsValue,
-            int count,
+            object rawCount,
             PyRandomState state,
             LythonSourceSpan span,
             ExecutionContext context)
@@ -205,11 +229,16 @@ internal sealed partial class LythonRuntime
             }
 
             context.ObserveCollectionCount((int)total, span);
-            if (count > total)
+            // Raw CLR ints sit outside the numeric tower; normalize like the chokes.
+            rawCount = rawCount is int smallCount ? new BigInteger(smallCount) : rawCount;
+            // Like CPython, k validates against the expanded total through
+            // operator dispatch before the multiply gate sizes the draw.
+            if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.Greater, rawCount, new BigInteger(total), context, span), context, span))
             {
-                throw new LythonRuntimeException("ValueError", "Sample larger than population or is negative.", span);
+                throw new LythonRuntimeException("ValueError", "Sample larger than population or is negative", span);
             }
 
+            var count = CoerceSampleCount(rawCount, span);
             var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
             if (count > 0)
             {

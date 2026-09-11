@@ -239,8 +239,8 @@ random.setstate(("bad", 1))
 import random
 random.randbytes(-1)
 """,
-        "TypeError",
-        "non-negative integer")]
+        "ValueError",
+        "number of bits must be non-negative")]
     [InlineData(
         """
 import random

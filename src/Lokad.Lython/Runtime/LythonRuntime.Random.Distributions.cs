@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class RandomModule : PyModule
     {
-        private readonly record struct RangeArguments(BigInteger Start, BigInteger Stop, BigInteger Step);
+        private readonly record struct RangeArguments(BigInteger Start, BigInteger Stop, BigInteger Step, string EmptyRangeMessage);
 
         private static object Uniform(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
             return hash;
         }
 
-        private static RangeArguments ParseRangeArguments(object[] arguments, string owner, LythonSourceSpan span)
+        private static RangeArguments ParseRangeArguments(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 1 or > 3)
             {
@@ -258,21 +258,27 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(start, stop[, step]) expects one to three integer arguments.", span);
             }
 
-            BigInteger start;
-            BigInteger stop;
-            if (stopArg is PyNone)
+            if (stopArg is PyNone && stepArg is not PyNone)
             {
-                start = BigInteger.Zero;
-                stop = ExpectInteger(startArg, $"{owner}(...) expects integer arguments.", span);
-            }
-            else
-            {
-                start = startArg is PyNone ? BigInteger.Zero : ExpectInteger(startArg, $"{owner}(...) expects integer arguments.", span);
-                stop = ExpectInteger(stopArg, $"{owner}(...) expects integer arguments.", span);
+                // Like CPython: an explicit step needs a stop bound.
+                throw new LythonRuntimeException("TypeError", "Missing a non-None stop argument", span);
             }
 
-            var step = stepArg is PyNone ? BigInteger.One : ExpectInteger(stepArg, $"{owner}(...) expects integer arguments.", span);
-            return new RangeArguments(start, stop, step);
+            // Omitted bounds arrive binder-filled as None and keep their
+            // defaults; every other bound coerces through __index__.
+            if (stopArg is PyNone)
+            {
+                var stop = CoerceRandomIndex(startArg, context, span);
+                return new RangeArguments(BigInteger.Zero, stop, BigInteger.One, "empty range for randrange()");
+            }
+
+            var start = startArg is PyNone ? BigInteger.Zero : CoerceRandomIndex(startArg, context, span);
+            var stopBound = CoerceRandomIndex(stopArg, context, span);
+            var step = stepArg is PyNone ? BigInteger.One : CoerceRandomIndex(stepArg, context, span);
+            var emptyMessage = stepArg is PyNone
+                ? $"empty range in randrange({start}, {stopBound})"
+                : $"empty range in randrange({start}, {stopBound}, {step})";
+            return new RangeArguments(start, stopBound, step, emptyMessage);
         }
     }
 }

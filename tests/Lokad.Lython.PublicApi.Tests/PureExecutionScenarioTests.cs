@@ -6469,6 +6469,152 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RandomIntegerArguments_FlowLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import random
+
+class J:
+    def __index__(self):
+        return 2
+
+parts = []
+def coerced(j):
+    out = []
+    out.append(str(2 <= random.randint(j, 3) <= 3))
+    out.append(str(2 <= random.randrange(j, 5) <= 5))
+    try:
+        random.randbytes(j)
+    except TypeError as e:
+        out.append(str(e))
+    out.append(str(len(random.choices([1, 2, 3], k=j))))
+    out.append(str(random.getrandbits(0)))
+    return out
+parts.extend(coerced(J()))
+
+def bad_types(f, s):
+    out = []
+    try:
+        random.randint(f, 3)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        random.randrange(s, 5)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        random.randbytes(f)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        random.getrandbits(s)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        random.choices([1, 2, 3], k=f)
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(bad_types(1.5, "1"))
+
+def empties():
+    out = []
+    try:
+        random.randint(3, 1)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        random.randrange(0, 0, 5)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        random.randrange(0)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        random.randrange(1, 2, 0)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        random.randrange(0, None, 2)
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(empties())
+
+def sample_float(k):
+    try:
+        random.sample([1, 2, 3], k)
+    except TypeError as e:
+        return str(e)
+def sample_str(k):
+    try:
+        random.sample([1, 2, 3], k)
+    except TypeError as e:
+        return str(e)
+def sample_neg(k):
+    try:
+        random.sample([1, 2, 3], k)
+    except ValueError as e:
+        return str(e)
+def sample_hook(k):
+    try:
+        random.sample([1, 2, 3], k)
+    except TypeError as e:
+        return str(e)
+parts.append(sample_float(2.0))
+parts.append(sample_str("2"))
+parts.append(sample_neg(-1))
+parts.append(sample_hook(J()))
+parts.append(sample_neg(10**30))
+def sample_counts(k):
+    try:
+        return str(len(random.sample(["red", "blue"], k, counts=[2, 4])))
+    except ValueError as e:
+        return str(e)
+    except TypeError as e:
+        return str(e)
+parts.append(sample_counts(3))
+parts.append(sample_counts(2.0))
+parts.append(sample_counts("2"))
+parts.append(str(len(random.sample([1, 2, 3], True))))
+parts.append(str(len(random.sample([1, 2, 3], 2))))
+
+def bits_neg(k):
+    try:
+        random.getrandbits(k)
+    except ValueError as e:
+        return str(e)
+def bytes_neg(n):
+    try:
+        random.randbytes(n)
+    except ValueError as e:
+        return str(e)
+parts.append(bits_neg(-1))
+parts.append(bytes_neg(-1))
+parts.append(str(len(random.randbytes(4))))
+parts.append(str(len(random.choices([1, 2, 3], k=-1))))
+parts.append(str(len(random.choices([1, 2, 3], k=True))))
+
+r = random.Random(1)
+parts.append(str(2 <= r.randint(J(), 3) <= 3))
+try:
+    r.randbytes(-1)
+except ValueError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"True|True|unsupported operand type(s) for *: 'J' and 'int'|2|0|'float' object cannot be interpreted as an integer|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|empty range in randrange(3, 2)|empty range in randrange(0, 0, 5)|empty range for randrange()|zero step for randrange()|Missing a non-None stop argument|can't multiply sequence by non-int of type 'float'|'<=' not supported between instances of 'int' and 'str'|Sample larger than population or is negative|'<=' not supported between instances of 'int' and 'J'|Sample larger than population or is negative|3|can't multiply sequence by non-int of type 'float'|'<=' not supported between instances of 'int' and 'str'|1|2|number of bits must be non-negative|number of bits must be non-negative|4|0|1|True|number of bits must be non-negative", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
