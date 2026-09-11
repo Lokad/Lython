@@ -317,6 +317,12 @@ internal static class PyMemberAccess
     private static string MissingMemberTypeName(object? target, LythonRuntime.ExecutionContext context) => target switch
     {
         PyException exception => exception.TypeName,
+        LythonRuntime.DictKeysView => "dict_keys",
+        LythonRuntime.DictValuesView => "dict_values",
+        LythonRuntime.DictItemsView => "dict_items",
+        ChainMapKeysView => "KeysView",
+        ChainMapValuesView => "ValuesView",
+        ChainMapItemsView => "ItemsView",
         _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context),
     };
 

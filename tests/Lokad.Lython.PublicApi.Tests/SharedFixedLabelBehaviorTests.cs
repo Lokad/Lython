@@ -5316,6 +5316,32 @@ public sealed class SharedFixedLabelBehaviorTests
                 object.__getattribute__((1, 2), "x")
             except AttributeError as e2:
                 results.append(str(e2))
+            try:
+                getattr({}.keys(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                getattr({}.values(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                getattr({}.items(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            from collections import ChainMap
+            chain = ChainMap({"a": 1})
+            try:
+                getattr(chain.keys(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                getattr(chain.values(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                getattr(chain.items(), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
             return results
             """);
         Assert.True(script.IsValid);
@@ -5355,6 +5381,12 @@ public sealed class SharedFixedLabelBehaviorTests
             "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",
             "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",
             "'tuple' object has no attribute 'x'.",
+            "'dict_keys' object has no attribute 'x'.",
+            "'dict_values' object has no attribute 'x'.",
+            "'dict_items' object has no attribute 'x'.",
+            "'KeysView' object has no attribute 'x'.",
+            "'ValuesView' object has no attribute 'x'.",
+            "'ItemsView' object has no attribute 'x'.",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
