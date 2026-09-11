@@ -61,6 +61,35 @@ public sealed class IterationIndexingSubsystemTests
     }
 
     [Fact]
+    public void ApplyIndexBounds_NamesOperationsLikePython()
+    {
+        var read = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span, PyIndexing.IndexTargetName.List, PyIndexing.IndexOperation.Read));
+        Assert.Equal("list index out of range", read.Message);
+
+        var delete = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span, PyIndexing.IndexTargetName.List, PyIndexing.IndexOperation.Delete));
+        Assert.Equal("list assignment index out of range", delete.Message);
+
+        var assign = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span, PyIndexing.IndexTargetName.Tuple, PyIndexing.IndexOperation.Assign));
+        Assert.Equal("tuple assignment index out of range", assign.Message);
+
+        var deque = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span, PyIndexing.IndexTargetName.Sequence, PyIndexing.IndexOperation.Delete));
+        Assert.Equal("deque index out of range", deque.Message);
+
+        var pop = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizePopIndex(new BigInteger(5), 1, Span));
+        Assert.Equal("pop index out of range", pop.Message);
+
+        var huge = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(BigInteger.Pow(10, 30), 1, Span, PyIndexing.IndexTargetName.List, PyIndexing.IndexOperation.Read));
+        Assert.Equal("cannot fit 'int' into an index-sized integer", huge.Message);
+
+        var hugePop = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizePopIndex(BigInteger.Pow(10, 30), 1, Span));
+        Assert.Equal("OverflowError", hugePop.ExceptionType);
+        Assert.Equal("Python int too large to convert to C ssize_t", hugePop.Message);
+
+        var legacy = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span));
+        Assert.Equal("Index is out of range.", legacy.Message);
+    }
+
+    [Fact]
     public void DictionaryMutationDuringIterationRaisesCatchableRuntimeError()
     {
         var result = new LythonEngine().Run(

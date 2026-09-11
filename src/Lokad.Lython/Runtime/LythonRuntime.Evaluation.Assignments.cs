@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
                         return;
 
                     case IMutablePySequenceValue sequence:
-                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span, PyIndexing.TargetKind(sequence)));
+                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
                         return;
 
                     case PyDict dict:
@@ -274,7 +274,7 @@ internal sealed partial class LythonRuntime
                 return;
 
             case IMutablePySequenceValue sequence:
-                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence)), value);
+                sequence.SetItem(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Assign), value);
                 return;
             case PyDict dict:
                 dict.AttachMemoryGovernor(context.MemoryGovernor, span);

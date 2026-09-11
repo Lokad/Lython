@@ -16,6 +16,15 @@ internal static class PyIndexing
         Sequence,
     }
 
+    // Distinguishes reads from deletions and stores because out-of-range
+    // failures name the operation like CPython.
+    internal enum IndexOperation
+    {
+        Read,
+        Delete,
+        Assign,
+    }
+
     public readonly record struct SliceBounds(int Start, int End, int Step)
     {
         public int Count => Step > 0
@@ -92,6 +101,9 @@ internal static class PyIndexing
         => NormalizeIndex(index, length, span, IndexTargetName.Unnamed);
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span, IndexTargetName target)
+        => NormalizeIndex(index, length, span, target, IndexOperation.Read);
+
+    public static int NormalizeIndex(object? index, int length, LythonSourceSpan span, IndexTargetName target, IndexOperation operation)
     {
         BigInteger integer;
         if (index is bool flag)
@@ -107,7 +119,7 @@ internal static class PyIndexing
             integer = big;
         }
 
-        return ApplyIndexBounds(integer, length, span);
+        return ApplyIndexBounds(integer, length, span, target, operation);
     }
 
     public static int NormalizePopIndex(object? index, int length, LythonSourceSpan span)
@@ -126,7 +138,23 @@ internal static class PyIndexing
             integer = (BigInteger)index;
         }
 
-        return ApplyIndexBounds(integer, length, span);
+        if (integer < int.MinValue || integer > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        }
+
+        var position = (int)integer;
+        if (position < 0)
+        {
+            position += length;
+        }
+
+        if (position < 0 || position >= length)
+        {
+            throw new LythonRuntimeException("IndexError", "pop index out of range", span);
+        }
+
+        return position;
     }
 
     internal static IndexTargetName TargetKind(object target) => target switch
@@ -138,11 +166,16 @@ internal static class PyIndexing
         _ => IndexTargetName.Unnamed,
     };
 
-    private static int ApplyIndexBounds(BigInteger integer, int length, LythonSourceSpan span)
+    private static int ApplyIndexBounds(BigInteger integer, int length, LythonSourceSpan span, IndexTargetName target, IndexOperation operation)
     {
         if (integer < int.MinValue || integer > int.MaxValue)
         {
-            throw new LythonRuntimeException("IndexError", "Index is out of range.", span);
+            if (target == IndexTargetName.Unnamed)
+            {
+                throw new LythonRuntimeException("IndexError", "Index is out of range.", span);
+            }
+
+            throw new LythonRuntimeException("IndexError", "cannot fit 'int' into an index-sized integer", span);
         }
 
         var position = (int)integer;
@@ -153,10 +186,33 @@ internal static class PyIndexing
 
         if (position < 0 || position >= length)
         {
-            throw new LythonRuntimeException("IndexError", "Index is out of range.", span);
+            throw OutOfRange(target, operation, span);
         }
 
         return position;
+    }
+
+    private static LythonRuntimeException OutOfRange(IndexTargetName target, IndexOperation operation, LythonSourceSpan span)
+    {
+        if (target == IndexTargetName.Unnamed)
+        {
+            return new LythonRuntimeException("IndexError", "Index is out of range.", span);
+        }
+
+        var name = target switch
+        {
+            IndexTargetName.List => "list",
+            IndexTargetName.Tuple => "tuple",
+            IndexTargetName.Text => "string",
+            _ => "deque",
+        };
+
+        // Deque never names the operation; lists and tuples name stores.
+        var message = operation == IndexOperation.Read || target == IndexTargetName.Sequence
+            ? $"{name} index out of range"
+            : $"{name} assignment index out of range";
+
+        return new LythonRuntimeException("IndexError", message, span);
     }
 
     private static LythonRuntimeException InvalidIndexType(object? index, IndexTargetName target, LythonSourceSpan span)

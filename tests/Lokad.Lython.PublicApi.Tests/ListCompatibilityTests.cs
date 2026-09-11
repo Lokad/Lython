@@ -120,7 +120,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("list.index(value): value is not in list|list.remove(value): value is not in list|pop from empty list|Index is out of range.", host.ReadText("/out.txt"));
+        Assert.Equal("list.index(value): value is not in list|list.remove(value): value is not in list|pop from empty list|pop index out of range", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -180,6 +180,73 @@ __lython_file.close()
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Equal("list indices must be integers or slices, not str|list indices must be integers or slices, not float|tuple indices must be integers or slices, not str|string indices must be integers, not 'str'|sequence index must be integer, not 'str'|'str' object cannot be interpreted as an integer|list indices must be integers or slices, not str|list indices must be integers or slices, not str|tuple indices must be integers or slices, not str|2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void SequenceIndexOutOfRange_ReportPythonShapedTexts()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+vals = []
+try:
+    [1][5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    (1,)[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    "ab"[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    [1].pop(5)
+except IndexError as err:
+    vals.append(err.message)
+try:
+    items = [1]
+    del items[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    items = [1]
+    items[5] = 2
+except IndexError as err:
+    vals.append(err.message)
+try:
+    [1][10**30]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    [1].pop(10**30)
+except OverflowError as err:
+    vals.append(err.message)
+try:
+    deque([1])[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    queue = deque([1])
+    del queue[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    queue = deque([1])
+    queue[5] = 2
+except IndexError as err:
+    vals.append(err.message)
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("list index out of range|tuple index out of range|string index out of range|pop index out of range|list assignment index out of range|list assignment index out of range|cannot fit 'int' into an index-sized integer|Python int too large to convert to C ssize_t|deque index out of range|deque index out of range|deque index out of range", host.ReadText("/out.txt"));
     }
 
     [Fact]
