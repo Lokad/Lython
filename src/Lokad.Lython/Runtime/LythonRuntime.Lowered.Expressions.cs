@@ -376,9 +376,9 @@ internal sealed partial class LythonRuntime
                 InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
                 return;
             case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", span);
+                throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
             case PyString:
-                throw new LythonRuntimeException("TypeError", "String does not support item deletion.", span);
+                throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
         }

@@ -4545,8 +4545,8 @@ __lython_file.close()
     [InlineData("1 << -1\n", "ValueError", "negative shift count")]
     [InlineData("1.5 | 2\n", "TypeError", "Operands are not compatible with '|'")]
     [InlineData("~1.5\n", "TypeError", "Operand is not an integer")]
-    [InlineData("items = (1, 2)\nitems[0] = 3\n", "TypeError", "Tuple does not support item assignment")]
-    [InlineData("items = (1, 2)\ndel items[0]\n", "TypeError", "Tuple does not support item deletion")]
+    [InlineData("items = (1, 2)\nitems[0] = 3\n", "TypeError", "'tuple' object does not support item assignment")]
+    [InlineData("items = (1, 2)\ndel items[0]\n", "TypeError", "'tuple' object doesn't support item deletion")]
     public void BitwiseFailures_ReportExpectedErrors(string source, string exceptionType, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

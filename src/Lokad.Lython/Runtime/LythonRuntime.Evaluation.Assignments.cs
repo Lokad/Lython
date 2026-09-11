@@ -83,10 +83,10 @@ internal sealed partial class LythonRuntime
                         return;
 
                     case PyTuple:
-                        throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", statement.Span);
+                        throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", statement.Span);
 
                     case PyString:
-                        throw new LythonRuntimeException("TypeError", "String does not support item deletion.", statement.Span);
+                        throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", statement.Span);
 
                     default:
                         throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
@@ -300,9 +300,9 @@ internal sealed partial class LythonRuntime
                     span);
                 return;
             case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item assignment.", span);
+                throw new LythonRuntimeException("TypeError", "'tuple' object does not support item assignment", span);
             case PyString:
-                throw new LythonRuntimeException("TypeError", "String does not support item assignment.", span);
+                throw new LythonRuntimeException("TypeError", "'str' object does not support item assignment", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);
         }
@@ -439,12 +439,12 @@ internal sealed partial class LythonRuntime
 
         if (target is PyTuple)
         {
-            throw new LythonRuntimeException("TypeError", "Tuple does not support slice assignment.", span);
+            throw new LythonRuntimeException("TypeError", "'tuple' object does not support item assignment", span);
         }
 
         if (PyStringOps.TryAsString(target, out _))
         {
-            throw new LythonRuntimeException("TypeError", "String does not support slice assignment.", span);
+            throw new LythonRuntimeException("TypeError", "'str' object does not support item assignment", span);
         }
 
         throw new LythonRuntimeException("TypeError", "Object does not support slice assignment.", span);
@@ -466,12 +466,12 @@ internal sealed partial class LythonRuntime
 
         if (target is PyTuple)
         {
-            throw new LythonRuntimeException("TypeError", "Tuple does not support slice deletion.", span);
+            throw new LythonRuntimeException("TypeError", "'tuple' object does not support item deletion", span);
         }
 
         if (PyStringOps.TryAsString(target, out _))
         {
-            throw new LythonRuntimeException("TypeError", "String does not support slice deletion.", span);
+            throw new LythonRuntimeException("TypeError", "'str' object does not support item deletion", span);
         }
 
         throw new LythonRuntimeException("TypeError", "Object does not support slice deletion.", span);

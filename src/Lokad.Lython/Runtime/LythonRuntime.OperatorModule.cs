@@ -382,11 +382,11 @@ internal sealed partial class LythonRuntime
                 _ = counter.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor));
                 return PyNone.Instance;
             case PyTuple:
-                throw new LythonRuntimeException("TypeError", "Tuple does not support item deletion.", span);
+                throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
             default:
                 if (PyStringOps.TryAsString(target, out _))
                 {
-                    throw new LythonRuntimeException("TypeError", "String does not support item deletion.", span);
+                    throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
                 }
 
                 throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);

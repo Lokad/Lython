@@ -189,9 +189,26 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("items = (1, 2)\nitems[0] += 1", "TypeError", "Tuple does not support item assignment")]
+    [InlineData("items = (1, 2)\nitems[0] += 1", "TypeError", "'tuple' object does not support item assignment")]
     [InlineData("class Box:\n    pass\nbox = Box()\nbox.missing += 1", "AttributeError", "'Box' object has no attribute 'missing'")]
     public void AugmentedAssignment_InvalidRuntimeTargets_FailClearly(string source, string exceptionType, string messageFragment)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal(exceptionType, result.Failure?.ExceptionType);
+        Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("text = \"ab\"\ntext[0] = \"x\"", "TypeError", "'str' object does not support item assignment")]
+    [InlineData("text = \"ab\"\ndel text[0]", "TypeError", "'str' object doesn't support item deletion")]
+    [InlineData("items = (1, 2)\ntry:\n    items[0:1] = [9]\nexcept TypeError as err:\n    raise AssertionError(err.message)", "AssertionError", "'tuple' object does not support item assignment")]
+    [InlineData("items = (1, 2)\ndel items[0:1]", "TypeError", "'tuple' object does not support item deletion")]
+    [InlineData("text = \"ab\"\ntry:\n    text[0:1] = \"x\"\nexcept TypeError as err:\n    raise AssertionError(err.message)", "AssertionError", "'str' object does not support item assignment")]
+    [InlineData("text = \"ab\"\ndel text[0:1]", "TypeError", "'str' object does not support item deletion")]
+    public void ImmutableSequenceMutation_FailsClearly(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
 

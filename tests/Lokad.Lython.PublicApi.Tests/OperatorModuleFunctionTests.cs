@@ -177,14 +177,14 @@ import operator
 operator.setitem((1, 2), 0, 9)
 """,
         "TypeError",
-        "Tuple does not support item assignment")]
+        "'tuple' object does not support item assignment")]
     [InlineData(
         """
 import operator
 operator.delitem((1, 2), 0)
 """,
         "TypeError",
-        "Tuple does not support item deletion")]
+        "'tuple' object doesn't support item deletion")]
     [InlineData(
         """
 import operator
