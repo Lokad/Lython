@@ -218,13 +218,12 @@ internal sealed partial class LythonRuntime
 
     private static object IsInstance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "isinstance(value, type) expects two arguments.", span);
         }
 
-        return IsInstanceOf(arguments[0], arguments[1], span);
+        return IsInstanceOf(arguments[0], arguments[1], span, context);
     }
 
     private static object IsSubclass(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -238,9 +237,9 @@ internal sealed partial class LythonRuntime
         return IsSubclassOf(arguments[0], arguments[1], span);
     }
 
-    private static bool IsInstanceOf(object value, object typeSpec, LythonSourceSpan span)
+    private static bool IsInstanceOf(object value, object typeSpec, LythonSourceSpan span, ExecutionContext context)
     {
-        if (TryMatchTypeTuple(typeSpec, candidate => IsInstanceAgainstSingleType(value, candidate), out var matched))
+        if (TryMatchTypeTuple(typeSpec, candidate => IsInstanceAgainstSingleType(value, candidate, context), out var matched))
         {
             return matched;
         }
@@ -304,7 +303,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static bool IsInstanceAgainstSingleType(object value, object typeSpec)
+    private static bool IsInstanceAgainstSingleType(object value, object typeSpec, ExecutionContext context)
     {
         return typeSpec switch
         {
@@ -312,7 +311,7 @@ internal sealed partial class LythonRuntime
             {
                 PyInstance instance => instance.Type.IsSubtypeOf(runtimeType),
                 PyType typeValue => typeValue.MetaType is not null && typeValue.MetaType.IsSubtypeOf(runtimeType),
-                _ => false
+                _ => IsObjectRootType(runtimeType, context)
             },
             PyNamedTupleType namedTupleType => value is PyNamedTupleObject namedTuple && ReferenceEquals(namedTuple.Type, namedTupleType),
             TimeStructTimeType => value is TimeStructTimeValue,
@@ -322,6 +321,11 @@ internal sealed partial class LythonRuntime
             _ => false
         };
     }
+
+    // The object root matches every value like CPython; it resolves through
+    // the run builtins table since each run owns its type graph.
+    private static bool IsObjectRootType(PyType runtimeType, ExecutionContext context)
+        => context.TryGetBuiltin("object", out var objectBase) && ReferenceEquals(runtimeType, objectBase);
 
     private static bool IsSubclassAgainstSingleType(object type, object baseSpec)
     {

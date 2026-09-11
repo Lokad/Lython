@@ -1322,6 +1322,12 @@ parts.append(str(isinstance({1, 2}, set)))
 parts.append(str(isinstance("x", str)))
 parts.append(str(isinstance(b"x", bytes)))
 parts.append(str(isinstance(Path("/tmp"), Path)))
+parts.append(str(isinstance([1, 2], object)))
+parts.append(str(isinstance("x", object)))
+parts.append(str(isinstance(1, object)))
+parts.append(str(isinstance(None, object)))
+parts.append(str(isinstance(1, str)))
+parts.append(str(isinstance("x", int)))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(parts))
 __lython_file.close()
@@ -1329,7 +1335,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|True|True|True|True|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|True|True|True|True|True|True|True|True|True|False|False", host.ReadText("/out.txt"));
     }
 
     [Fact]

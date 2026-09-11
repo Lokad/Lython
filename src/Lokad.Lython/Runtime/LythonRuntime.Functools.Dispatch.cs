@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "singledispatch function requires at least one dispatch argument.", span);
             }
 
-            var callable = ResolveForValue(arguments[dispatchIndex].Value);
+            var callable = ResolveForValue(arguments[dispatchIndex].Value, context);
             return callable.Invoke(arguments, span, context);
         }
 
@@ -179,14 +179,14 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        public ICallable ResolveForValue(object value)
+        public ICallable ResolveForValue(object value, ExecutionContext context)
         {
             SingleDispatchRegistration? best = null;
             var bestDistance = int.MaxValue;
             for (var i = _registrations.Count - 1; i >= 0; i--)
             {
                 var registration = _registrations[i];
-                if (IsInstanceAgainstSingleType(value, registration.TypeSpec))
+                if (IsInstanceAgainstSingleType(value, registration.TypeSpec, context))
                 {
                     var distance = GetDispatchDistance(value, registration.TypeSpec);
                     if (distance < bestDistance)
@@ -498,7 +498,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "singledispatchmethod call requires a dispatch argument.", span);
             }
 
-            var callable = _dispatcher.ResolveForValue(arguments[0].Value);
+            var callable = _dispatcher.ResolveForValue(arguments[0].Value, context);
             var forwarded = new CallArgumentValue[arguments.Length + 1];
             forwarded[0] = CallArgumentValue.Positional(_self);
             Array.Copy(arguments, 0, forwarded, 1, arguments.Length);

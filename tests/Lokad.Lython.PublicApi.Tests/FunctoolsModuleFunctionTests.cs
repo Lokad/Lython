@@ -311,6 +311,27 @@ return f(Child()) + "|" + f.dispatch(Child)(Child())
     }
 
     [Fact]
+    public void SingleDispatch_ResolvesExplicitObjectRegistration()
+    {
+        var result = new LythonEngine().Run(
+            """
+from functools import singledispatch
+
+@singledispatch
+def f(value): return "default"
+
+@f.register(object)
+def obj(value): return "object"
+
+return f(1) + "|" + f("x")
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("object|object", result.ReturnValue);
+    }
+
+    [Fact]
     public void LruCache_MaintainsConstantTimeRecencyAndSkipsItWhenUnbounded()
     {
         var result = new LythonEngine().Run(
