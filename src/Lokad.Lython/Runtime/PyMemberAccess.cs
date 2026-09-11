@@ -252,6 +252,8 @@ internal static class PyMemberAccess
             throw ImmutableTypeError(target, memberName, span);
         }
 
+        ThrowIfReadOnlyBuiltinMember(target, memberName, span, context);
+
         return false;
     }
 
@@ -282,7 +284,38 @@ internal static class PyMemberAccess
             throw ImmutableTypeError(target, memberName, span);
         }
 
+        ThrowIfReadOnlyBuiltinMember(target, memberName, span, context);
+
         return false;
+    }
+
+    // Members served by the per-type instance tables cannot be written or
+    // deleted like CPython: methods report read-only while plain values use
+    // the not-writable shape (bool names its int owner). The tables are
+    // side-effect free, so probing them never runs guest code; dict-bearing
+    // targets keep their own paths above.
+    private static void ThrowIfReadOnlyBuiltinMember(object? target, string memberName, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (target is null
+            || HasInstanceDict(target)
+            || !TryResolveInstanceTableMember(target, memberName, out var resolved))
+        {
+            return;
+        }
+
+        if (resolved is not LythonRuntime.ICallable)
+        {
+            var ownerName = target is bool ? "int" : MissingMemberTypeName(target, context);
+            throw new LythonRuntimeException(
+                "AttributeError",
+            $"attribute '{memberName}' of '{ownerName}' objects is not writable",
+                span);
+        }
+
+        throw new LythonRuntimeException(
+            "AttributeError",
+            $"'{MissingMemberTypeName(target, context)}' object attribute '{memberName}' is read-only",
+            span);
     }
 
     private static bool IsImmutableBuiltinType(object target, LythonRuntime.ExecutionContext context)
@@ -304,7 +337,7 @@ internal static class PyMemberAccess
     {
         return new LythonRuntimeException(
             "TypeError",
-            $"cannot set '{memberName}' attribute of immutable type '{TypeObjectName(target)}'.",
+            $"cannot set '{memberName}' attribute of immutable type '{TypeObjectName(target)}'",
             span);
     }
 

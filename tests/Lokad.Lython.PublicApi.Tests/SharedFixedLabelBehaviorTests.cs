@@ -5505,15 +5505,15 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
-            "cannot set 'x' attribute of immutable type 'int'.",
-            "cannot set 'x' attribute of immutable type 'object'.",
-            "cannot set 'x' attribute of immutable type 'Exception'.",
+            "cannot set 'x' attribute of immutable type 'int'",
+            "cannot set 'x' attribute of immutable type 'object'",
+            "cannot set 'x' attribute of immutable type 'Exception'",
             true,
-            "cannot set 'x' attribute of immutable type 'int'.",
+            "cannot set 'x' attribute of immutable type 'int'",
             "type object 'C' has no attribute 'x'",
-            "cannot set 'x' attribute of immutable type 'object'.",
-            "cannot set 'x' attribute of immutable type 'int'.",
-            "cannot set 'x' attribute of immutable type 'int'.",
+            "cannot set 'x' attribute of immutable type 'object'",
+            "cannot set 'x' attribute of immutable type 'int'",
+            "cannot set 'x' attribute of immutable type 'int'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

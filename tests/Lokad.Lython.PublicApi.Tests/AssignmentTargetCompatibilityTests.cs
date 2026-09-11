@@ -942,7 +942,57 @@ __lython_file.close()
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Null(result.Failure);
-        Assert.Equal("False|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'str' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'dict' object has no attribute 'foo' and no __dict__ for setting new attributes|'Box' object has no attribute 'missing'|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'append' and no __dict__ for setting new attributes", host.ReadText("/out.txt"));
+        Assert.Equal("False|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'str' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'dict' object has no attribute 'foo' and no __dict__ for setting new attributes|'Box' object has no attribute 'missing'|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object attribute 'append' is read-only", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ReadOnlyMemberTargets_ReportPythonTexts()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+texts = []
+x = []
+try:
+    del x.append
+except AttributeError as e:
+    texts.append(str(e))
+try:
+    x.append = 1
+except AttributeError as e:
+    texts.append(str(e))
+try:
+    delattr(x, "append")
+except AttributeError as e:
+    texts.append(str(e))
+try:
+    setattr(x, "append", 1)
+except AttributeError as e:
+    texts.append(str(e))
+n = 5
+try:
+    n.real = 1
+except AttributeError as e:
+    texts.append(str(e))
+try:
+    del n.real
+except AttributeError as e:
+    texts.append(str(e))
+b = True
+try:
+    b.imag = 1
+except AttributeError as e:
+    texts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|attribute 'real' of 'int' objects is not writable|attribute 'real' of 'int' objects is not writable|attribute 'imag' of 'int' objects is not writable", host.ReadText("/out.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)
