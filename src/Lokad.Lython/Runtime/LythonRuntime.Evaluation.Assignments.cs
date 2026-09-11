@@ -449,7 +449,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         // Mappings store colon slices as keys like CPython; bounds stay raw.
-        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
             SetSubscriptValue(target, PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), value, span, context);
             return;
@@ -518,11 +518,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         // Mappings delete colon slices as keys like CPython; bounds stay raw.
-        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
             var key = ValidateDictionaryKey(PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), span);
             switch (target)
             {
+                case PyChainMap chainMap:
+                    chainMap.DeleteSubscript(key, span);
+                    return;
                 case PyDict dict:
                     if (!dict.Remove(key))
                     {

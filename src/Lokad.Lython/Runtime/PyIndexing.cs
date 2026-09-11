@@ -75,6 +75,13 @@ internal static class PyIndexing
             return ReadCounterIndex(counter, index, span);
         }
 
+        // ChainMaps resolve every key through the mapped lookup like CPython,
+        // so slice objects serve as keys instead of slicing the mapping.
+        if (target is PyChainMap chainMap)
+        {
+            return chainMap.GetSubscript(index, span);
+        }
+
         if (index is PySlice slice)
         {
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
@@ -103,7 +110,7 @@ internal static class PyIndexing
     {
         // Mappings resolve colon slices as keys like CPython, ahead of any
         // bound coercion or sequence slicing.
-        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
             var key = CreateMappingSliceKey(start, end, step, context?.MemoryGovernor, span);
             if (target is PyDict dict)
@@ -114,6 +121,11 @@ internal static class PyIndexing
             if (target is PyCounter counter)
             {
                 return ReadCounterIndex(counter, key, span);
+            }
+
+            if (target is PyChainMap chainMap)
+            {
+                return chainMap.GetSubscript(key, span);
             }
 
             var defaultDict = (PyDefaultDict)target;

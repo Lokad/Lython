@@ -6224,6 +6224,65 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ChainMapSliceKeys_ResolveLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import ChainMap
+
+parts = []
+def chainmap_shapes():
+    out = []
+    cm = ChainMap({1: 2})
+    cm[slice(1, 2)] = 9
+    out.append(str(cm[slice(1, 2)]))
+    out.append(str(cm[1:2]))
+    cm[1:2] = 10
+    out.append(str(cm[1:2]))
+    del cm[1:2]
+    out.append(str(len(cm)))
+    cm[1.5:2] = 1
+    out.append(str(list(cm.maps[0].keys())))
+    cm[True:2] = 7
+    out.append(str(cm[1:2]))
+    cm[1:2] += 4
+    out.append(str(cm[1:2]))
+    try:
+        cm[9:9]
+    except KeyError as e:
+        out.append(str(e))
+    try:
+        del cm[9:9]
+    except KeyError as e:
+        out.append(str(e))
+    return out
+parts.extend(chainmap_shapes())
+
+def chainmap_multimap():
+    out = []
+    cm = ChainMap({1: 2}, {slice(5, 6): 7})
+    out.append(str(cm[5:6]))
+    cm[1:2] = 9
+    out.append(str(cm.maps))
+    empty = ChainMap()
+    try:
+        empty[1:2]
+    except KeyError as e:
+        out.append(str(e))
+    return out
+parts.extend(chainmap_multimap())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"9|9|10|1|[1, slice(1.5, 2, None)]|7|11|slice(9, 9, None)|'Key not found in the first mapping: slice(9, 9, None)'|7|[{1: 2, slice(1, 2, None): 9}, {slice(5, 6, None): 7}]|slice(1, 2, None)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

@@ -260,7 +260,8 @@ internal static partial class StaticStructuralDiagnostics
             : target.Kind;
         return kind is AbstractValueKind.Dict or
             AbstractValueKind.CollectionsCounter or
-            AbstractValueKind.CollectionsDefaultDict;
+            AbstractValueKind.CollectionsDefaultDict or
+            AbstractValueKind.CollectionsChainMap;
     }
 
     private static void AnalyzeSliceBound(ExpressionSyntax? bound, List<LythonDiagnostic> diagnostics, AbstractState bindings)
