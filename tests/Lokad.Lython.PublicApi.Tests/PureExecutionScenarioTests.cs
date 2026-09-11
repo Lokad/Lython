@@ -5165,6 +5165,21 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(P(1).__eq__(P(2)))", "False")]
+    [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(P(1).__init__)", "<bound method __init__>")]
+    [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(P(1).__repr__())", "P(x=1)")]
+    [InlineData("from dataclasses import dataclass\n@dataclass(frozen=True)\nclass F:\n    x: int\nreturn str(isinstance(F(1).__hash__(), int))", "True")]
+    [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(P(1).__format__(str()))", "P(x=1)")]
+    [InlineData("from dataclasses import dataclass\n@dataclass\nclass P:\n    x: int\nreturn str(sorted(P(1).__dir__()) == dir(P(1)))", "True")]
+    public void DataclassDunders_PassStaticMemberCheck(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

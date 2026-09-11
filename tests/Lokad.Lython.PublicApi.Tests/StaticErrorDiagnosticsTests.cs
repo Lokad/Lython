@@ -1849,6 +1849,24 @@ functools.recursive_repr(fillvalue=1)
     }
 
     [Fact]
+    public void DataclassOrderDunders_StayStaticallyPrecise()
+    {
+        var compiled = new LythonEngine().Compile(
+            """
+from dataclasses import dataclass
+
+@dataclass
+class P:
+    x: int
+
+P(1).__lt__(P(2))
+""");
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("__lt__", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Run_DoesNotStartExecutionWhenLiteralLoopShapeErrorsExist()
     {
         var host = new MockLythonHost("/repo");

@@ -660,5 +660,9 @@ internal static partial class StaticContracts
     private static bool HasKnownDataclassInstanceMember(AbstractInstanceSummary instance, string memberName)
         => instance.Class.IsDataclass &&
            (instance.Class.FieldsByName.TryGetValue(memberName, out var field) && field.StoreOnInstance ||
-            instance.Class.Methods.ContainsKey(memberName));
+            instance.Class.Methods.ContainsKey(memberName) ||
+            // Root object slots served at runtime (equality, value, format and
+            // dir families) resolve through inheritance; flag-conditional
+            // generated members (order comparisons) stay precise below.
+            memberName is "__eq__" or "__ne__" or "__str__" or "__repr__" or "__hash__" or "__format__" or "__dir__");
 }
