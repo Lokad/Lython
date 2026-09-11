@@ -273,12 +273,20 @@ internal sealed partial class LythonRuntime
         var numberBase = 10;
         if (arguments.Length == 2)
         {
-            if (!PyNumberOps.TryAsInteger(arguments[1], out var parsedBase) || parsedBase < 0 || parsedBase > 36 || parsedBase == 1)
+            var requestedBase = CoerceIndexProtocol(arguments[1], context, span) switch
+            {
+                BigInteger big => big,
+                int small => new BigInteger(small),
+                bool flag => flag ? BigInteger.One : BigInteger.Zero,
+                _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span),
+            };
+
+            if (requestedBase < 0 || requestedBase > 36 || requestedBase == 1)
             {
                 throw new LythonRuntimeException("ValueError", "int() base must be >= 2 and <= 36, or 0", span);
             }
 
-            numberBase = (int)parsedBase;
+            numberBase = (int)requestedBase;
             if (arguments[0] is not PyString and not PyBytes)
             {
                 throw new LythonRuntimeException("TypeError", "int() can't convert non-string with explicit base", span);
@@ -292,8 +300,8 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => integer,
                 double floating => OwnHeapInteger(FloatToInteger(floating, "int", span, Math.Truncate), context.MemoryGovernor, span),
                 PyDecimal decimalValue => OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
-                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span), context.MemoryGovernor, span),
-                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span), context.MemoryGovernor, span),
+                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, PyRendering.ToReprPyString(text, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
+                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, PyRendering.ToReprPyString(bytes, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)
             };
@@ -518,7 +526,7 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(sign + prefix + digits, governor, span);
     }
 
-    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span)
+    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, string literal)
     {
         var value = text.Trim();
         var negative = false;
@@ -552,7 +560,7 @@ internal sealed partial class LythonRuntime
         detectedBase = detectedBase == 0 ? 10 : detectedBase;
         if (value.Length == 0 || value.StartsWith('_') || value.EndsWith('_') || value.Contains("__", StringComparison.Ordinal))
         {
-            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}", span);
+            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {literal}", span);
         }
 
         var result = BigInteger.Zero;
@@ -573,7 +581,7 @@ internal sealed partial class LythonRuntime
             };
             if (digit < 0 || digit >= detectedBase)
             {
-                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}", span);
+                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {literal}", span);
             }
 
             sawNonZero |= digit != 0;
@@ -582,7 +590,7 @@ internal sealed partial class LythonRuntime
 
         if (numberBase == 0 && detectedBase == 10 && value.Length > 1 && value[0] == '0' && sawNonZero)
         {
-            throw new LythonRuntimeException("ValueError", "invalid literal for int() with base 0", span);
+            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base 0: {literal}", span);
         }
 
         return negative ? -result : result;

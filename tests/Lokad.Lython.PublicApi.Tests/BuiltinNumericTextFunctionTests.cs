@@ -19,6 +19,50 @@ return str(int()) + "|" + str(float()) + "|" + str(bool()) + "|" + str(int("101"
     }
 
     [Fact]
+    public void IntBaseAndLiteralDiagnosticsMatchPython()
+    {
+        var result = new LythonEngine().Run(
+            """
+values = []
+try:
+    int("1", "2")
+except TypeError as e:
+    values.append(str(e))
+try:
+    int("1", 2.0)
+except TypeError as e:
+    values.append(str(e))
+try:
+    int("1", None)
+except TypeError as e:
+    values.append(str(e))
+try:
+    int("1", True)
+except ValueError as e:
+    values.append(str(e))
+try:
+    int("010", 0)
+except ValueError as e:
+    values.append(str(e))
+try:
+    int("  0xFF  ")
+except ValueError as e:
+    values.append(str(e))
+try:
+    int(b"0xFF")
+except ValueError as e:
+    values.append(str(e))
+values.append(str(int("10", 0)))
+return "|".join(values)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            "'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|int() base must be >= 2 and <= 36, or 0|invalid literal for int() with base 0: '010'|invalid literal for int() with base 10: '  0xFF  '|invalid literal for int() with base 10: b'0xFF'|10",
+            result.ReturnValue);
+    }
+    [Fact]
     public void BytesConstructorAndOrdMatchPythonForms()
     {
         var result = new LythonEngine().Run(
