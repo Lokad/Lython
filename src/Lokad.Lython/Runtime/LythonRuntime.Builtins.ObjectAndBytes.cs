@@ -763,7 +763,271 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(arguments[0].Value, arguments[1].Value);
         }
     }
-    private sealed class ObjectStrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    private sealed class ObjectLtMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__lt__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__lt__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default ordering is undefined like CPython (value and dataclass
+            // comparisons keep their own paths); the slot always answers
+            // NotImplemented, even for identical operands. Only the arity is
+            // enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__lt__(self, other) expects exactly two arguments.", span);
+            }
+
+            return PyNotImplemented.Instance;
+        }
+    }    private sealed class ObjectLeMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__le__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__le__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default ordering is undefined like CPython (value and dataclass
+            // comparisons keep their own paths); the slot always answers
+            // NotImplemented, even for identical operands. Only the arity is
+            // enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__le__(self, other) expects exactly two arguments.", span);
+            }
+
+            return PyNotImplemented.Instance;
+        }
+    }    private sealed class ObjectGtMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__gt__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__gt__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default ordering is undefined like CPython (value and dataclass
+            // comparisons keep their own paths); the slot always answers
+            // NotImplemented, even for identical operands. Only the arity is
+            // enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__gt__(self, other) expects exactly two arguments.", span);
+            }
+
+            return PyNotImplemented.Instance;
+        }
+    }    private sealed class ObjectGeMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__ge__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__ge__";
+
+        // The owning type is threaded at class construction so
+        // __objclass__ reports the defining type like CPython.
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        // Slot wrappers expose the short __name__ and the qualified
+        // __qualname__ like CPython; __module__ stays missing (CPython
+        // raises AttributeError there), unlike builtin methods.
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            // Default ordering is undefined like CPython (value and dataclass
+            // comparisons keep their own paths); the slot always answers
+            // NotImplemented, even for identical operands. Only the arity is
+            // enforced here.
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__ge__(self, other) expects exactly two arguments.", span);
+            }
+
+            return PyNotImplemented.Instance;
+        }
+    }    private sealed class ObjectStrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
         // Unbound object slots render like CPython slot wrappers (quoted
         // owner, plural objects).

@@ -20,6 +20,10 @@ internal sealed partial class LythonRuntime
                 ["__dir__"] = new ObjectDirMethod(),
                 ["__eq__"] = new ObjectEqMethod(),
                 ["__ne__"] = new ObjectNeMethod(),
+                ["__lt__"] = new ObjectLtMethod(),
+                ["__le__"] = new ObjectLeMethod(),
+                ["__gt__"] = new ObjectGtMethod(),
+                ["__ge__"] = new ObjectGeMethod(),
                 ["__str__"] = new ObjectStrMethod(),
                 ["__repr__"] = new ObjectReprMethod(),
                 ["__hash__"] = new ObjectHashMethod()

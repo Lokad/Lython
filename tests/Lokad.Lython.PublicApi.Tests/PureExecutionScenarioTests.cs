@@ -4988,6 +4988,64 @@ __lython_file.close()
         Assert.Equal("True|False|True", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void ObjectOrderSlots_ReturnNotImplemented()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+parts = []
+parts.append(str(object.__lt__))
+parts.append(str(object.__le__))
+parts.append(str(object.__gt__))
+parts.append(str(object.__ge__))
+parts.append(str(c.__lt__(c)))
+parts.append(str(c.__ge__(C())))
+parts.append(str(object.__le__(c, c)))
+parts.append(str(1 < 2))
+parts.append(str(2 <= 1))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<slot wrapper '__lt__' of 'object' objects>|<slot wrapper '__le__' of 'object' objects>|<slot wrapper '__gt__' of 'object' objects>|<slot wrapper '__ge__' of 'object' objects>|NotImplemented|NotImplemented|NotImplemented|True|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DataclassExplicitOrder_KeepsFieldComparison()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass
+
+@dataclass(order=True)
+class P:
+    x: int
+
+vals = []
+vals.append(str(getattr(P(1), "__lt__")(P(2))))
+vals.append(str(getattr(P(2), "__lt__")(P(1))))
+vals.append(str(P(1) < P(2)))
+vals.append(str(P(1) <= P(1)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|False|True|True", host.ReadText("/out.txt"));
+    }
+
+
     [Theory]
     [InlineData("return str(object.__str__)", "<slot wrapper '__str__' of 'object' objects>")]
     [InlineData("return str(object.__repr__)", "<slot wrapper '__repr__' of 'object' objects>")]
