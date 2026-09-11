@@ -108,9 +108,9 @@ internal sealed partial class LythonRuntime
         {
             _ = context;
             // Collection types render like CPython type objects; the namedtuple
-            // factory keeps its bare display name (CPython reports a function
-            // with an address there).
-            return PyString.FromString(IsCollectionType(Name) ? $"<class '{Name}'>" : Name);
+            // factory renders like the other engine builtins (CPython reports a
+            // function with an address there).
+            return PyString.FromString(IsCollectionType(Name) ? $"<class '{Name}'>" : Name is "collections.namedtuple" ? "<built-in function namedtuple>" : Name);
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

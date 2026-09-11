@@ -4902,6 +4902,24 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("import functools\nreturn str(functools.lru_cache)", "<built-in function lru_cache>")]
+    [InlineData("import functools\nreturn str(functools.cache)", "<built-in function cache>")]
+    [InlineData("import functools\nreturn str(functools.singledispatch)", "<built-in function singledispatch>")]
+    [InlineData("import functools\nreturn str(functools.wraps)", "<built-in function wraps>")]
+    [InlineData("import functools\nreturn str(functools.update_wrapper)", "<built-in function update_wrapper>")]
+    [InlineData("import functools\nreturn str(functools.recursive_repr)", "<built-in function recursive_repr>")]
+    [InlineData("import copy\nreturn str(copy.replace)", "<built-in function replace>")]
+    [InlineData("import collections\nreturn str(collections.namedtuple)", "<built-in function namedtuple>")]
+    [InlineData("import functools\nreturn str(functools.total_ordering)", "<built-in function total_ordering>")]
+    public void EngineFunctionKinds_RenderBuiltinFunction(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

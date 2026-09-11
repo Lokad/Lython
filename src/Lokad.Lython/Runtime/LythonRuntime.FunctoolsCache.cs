@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.lru_cache");
+            return PyString.FromString("<built-in function lru_cache>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.cache");
+            return PyString.FromString("<built-in function cache>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

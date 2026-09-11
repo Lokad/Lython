@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.singledispatch");
+            return PyString.FromString("<built-in function singledispatch>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -548,7 +548,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.recursive_repr");
+            return PyString.FromString("<built-in function recursive_repr>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

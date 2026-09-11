@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.update_wrapper");
+            return PyString.FromString("<built-in function update_wrapper>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -426,7 +426,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.wraps");
+            return PyString.FromString("<built-in function wraps>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

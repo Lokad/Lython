@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("copy.replace");
+            return PyString.FromString("<built-in function replace>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
