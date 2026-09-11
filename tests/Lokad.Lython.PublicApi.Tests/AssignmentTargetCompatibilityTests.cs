@@ -995,6 +995,75 @@ __lython_file.close()
         Assert.Equal("'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|'list' object attribute 'append' is read-only|attribute 'real' of 'int' objects is not writable|attribute 'real' of 'int' objects is not writable|attribute 'imag' of 'int' objects is not writable", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void MissingMemberWriteTargets_ReportPythonTexts()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+texts = []
+tup = (1, 2)
+try:
+    tup.foo = 1
+except AttributeError as e:
+    texts.append(str(e))
+
+s = "ab"
+try:
+    s.foo = 1
+except AttributeError as e:
+    texts.append(str(e))
+
+lst = [1]
+try:
+    lst.foo = 1
+except AttributeError as e:
+    texts.append(str(e))
+
+d = {1: 2}
+try:
+    d.foo = 1
+except AttributeError as e:
+    texts.append(str(e))
+
+n = 5
+try:
+    n.foo = 1
+except AttributeError as e:
+    texts.append(str(e))
+
+items = [1]
+try:
+    setattr(items, "foo", 1)
+except AttributeError as e:
+    texts.append(str(e))
+
+other = [1]
+try:
+    object.__setattr__(other, "foo", 1)
+except AttributeError as e:
+    texts.append(str(e))
+
+def run():
+    local = (1, 2)
+    try:
+        local.foo = 9
+    except AttributeError as e:
+        return str(e)
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'str' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'dict' object has no attribute 'foo' and no __dict__ for setting new attributes|'int' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }

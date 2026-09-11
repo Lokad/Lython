@@ -66,7 +66,7 @@ f()
     }
 
     [Fact]
-    public void AttributeAssignment_OnUnsupportedObjectFailsAtRuntime()
+    public void AttributeAssignment_OnBuiltinMissingMemberReportsAttributeError()
     {
         var result = new LythonEngine().Run(
             """
@@ -77,8 +77,8 @@ value.member = 1
 
         Assert.False(result.Success);
         var failure = result.Failure;
-        Assert.Equal("TypeError", failure?.ExceptionType);
-        Assert.Contains("attribute assignment", failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("AttributeError", failure?.ExceptionType);
+        Assert.Contains("'str' object has no attribute 'member' and no __dict__ for setting new attributes", failure?.Message, StringComparison.Ordinal);
     }
 }
 

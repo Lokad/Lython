@@ -254,7 +254,15 @@ internal static class PyMemberAccess
 
         ThrowIfReadOnlyBuiltinMember(target, memberName, span, context);
 
-        return false;
+        if (HasInstanceDict(target))
+        {
+            // Dict-bearing targets (modules, exceptions, instances) keep
+            // their own paths above; anything reaching here stays
+            // caller-rejected like before.
+            return false;
+        }
+
+        throw CreateMissingMemberError(target, memberName, span, context, operation: MissingMemberOperation.Write);
     }
 
     public static bool TryDelete(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
