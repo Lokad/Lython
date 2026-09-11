@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                 double floating => floating,
                 BigInteger integer => (double)integer,
                 PyDecimal decimalValue => (double)decimalValue.Value,
-                PyString text => ParsePythonFloatText(text.AsString()),
+                PyString text => ParsePythonFloatText(text.AsString(), context, span),
                 bool boolean => boolean ? 1.0 : 0.0,
                 _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
@@ -53,15 +53,29 @@ internal sealed partial class LythonRuntime
         catch (FormatException)
         {
             // Only the PyString arm parses, so only it can fail this way.
-            // The message quotes the original text (whitespace included) with
-            // CPython repr quote choice, not the BCL or normalized shapes.
-            var original = ((PyString)arguments[0]).AsString();
-            throw new LythonRuntimeException("ValueError", "could not convert string to float: " + QuoteFloatFailureText(original, context), span);
+            throw FloatConversionError(((PyString)arguments[0]).AsString(), context, span);
         }
 
-        static double ParsePythonFloatText(string text)
+        static double ParsePythonFloatText(string text, ExecutionContext context, LythonSourceSpan span)
         {
-            var normalized = text.Trim().Replace("_", string.Empty, StringComparison.Ordinal);
+            // Underscores must sit between two ASCII digits like CPython;
+            // lax stripping would otherwise accept leading, trailing,
+            // doubled or dot/exponent-adjacent separators.
+            var trimmed = text.Trim();
+            for (var i = 0; i < trimmed.Length; i++)
+            {
+                if (trimmed[i] != '_')
+                {
+                    continue;
+                }
+
+                if (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))
+                {
+                    throw FloatConversionError(text, context, span);
+                }
+            }
+
+            var normalized = trimmed.Replace("_", string.Empty, StringComparison.Ordinal);
             return normalized.ToLowerInvariant() switch
             {
                 "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
@@ -72,6 +86,11 @@ internal sealed partial class LythonRuntime
             };
         }
     }
+
+    // Shared float() conversion failure: quotes the original text (whitespace
+    // included) with CPython repr quote choice.
+    private static LythonRuntimeException FloatConversionError(string original, ExecutionContext context, LythonSourceSpan span)
+        => new("ValueError", "could not convert string to float: " + QuoteFloatFailureText(original, context), span);
 
     // CPython repr quote choice for a pre-rendered failure message: double
     // quotes only when the text holds a single quote but no double quote,

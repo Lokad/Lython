@@ -159,6 +159,26 @@ for f in [len, all, any]:
     }
 
     [Fact]
+    public void FloatUnderscorePlacement_RejectsLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+for src in ["1__0", "_1", "1_", "+_1", "1_.5", "1._5", "1e_5", "0.5_"]:
+    try:
+        print(float(src))
+    except ValueError as e:
+        print(str(e))
+print(float("1_0"))
+print(float("1_0e1_0"))
+print(float("1.5_0"))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("could not convert string to float: '1__0'\ncould not convert string to float: '_1'\ncould not convert string to float: '1_'\ncould not convert string to float: '+_1'\ncould not convert string to float: '1_.5'\ncould not convert string to float: '1._5'\ncould not convert string to float: '1e_5'\ncould not convert string to float: '0.5_'\n10.0\n100000000000.0\n1.5\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void FloatFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(
