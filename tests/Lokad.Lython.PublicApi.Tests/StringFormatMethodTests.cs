@@ -318,6 +318,44 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("format(1.5, \"#.6g\")", "1.50000")]
+    [InlineData("format(1.5, \"#.3g\")", "1.50")]
+    [InlineData("format(1.5, \"#.0g\")", "2.")]
+    [InlineData("format(1.5, \"#.1g\")", "2.")]
+    [InlineData("format(100.0, \"#.6g\")", "100.000")]
+    [InlineData("format(100.0, \"#.3g\")", "100.")]
+    [InlineData("format(100.0, \"#G\")", "100.000")]
+    [InlineData("format(0.0001, \"#.6g\")", "0.000100000")]
+    [InlineData("format(0.0, \"#.6g\")", "0.00000")]
+    [InlineData("format(0.0, \"#.0g\")", "0.")]
+    [InlineData("format(1e20, \"#.6g\")", "1.00000e+20")]
+    [InlineData("format(1e20, \"#.3G\")", "1.00E+20")]
+    [InlineData("format(1e20, \"#.0g\")", "1.e+20")]
+    [InlineData("format(10, \"#.6g\")", "10.0000")]
+    [InlineData("format(10, \"#.3g\")", "10.0")]
+    [InlineData("format(10, \"#.0g\")", "1.e+01")]
+    [InlineData("format(123456.0, \"#.6g\")", "123456.")]
+    [InlineData("format(1.23456789, \"#.6g\")", "1.23457")]
+    [InlineData("format(-2.5, \"#.3g\")", "-2.50")]
+    [InlineData("format(1500.5, \"#,.3g\")", "1.50e+03")]
+    [InlineData("format(1.5, \"+#.3g\")", "+1.50")]
+    [InlineData("format(1.5, \" #.3g\")", " 1.50")]
+    [InlineData("format(1.5, \"#010.3g\")", "0000001.50")]
+    [InlineData("format(1.5, \">#12.3g\")", "        1.50")]
+    [InlineData("format(1.23456789, \".0g\")", "1")]
+    [InlineData("format(1.5, \".0g\")", "2")]
+    [InlineData("format(1234567.891, \"#.6g\")", "1.23457e+06")]
+    [InlineData("f\"{1.5:#.3g}\"", "1.50")]
+    [InlineData("\"{:#.3g}\".format(1.5)", "1.50")]
+    public void FloatAlternateGeneralSpecs_RenderPythonShapedOutput(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]

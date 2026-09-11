@@ -701,11 +701,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", $"Cannot specify '{floatGrouping}' with '{type}'.", span);
         }
 
-        if (spec.Alternate && spec.Type is 'g' or 'G')
-        {
-            throw new LythonRuntimeException("ValueError", "Alternate floating-point formatting is not supported.", span);
-        }
-
         if (!double.IsFinite(value))
         {
             var nonFinite = double.IsNaN(value) ? "nan" : value < 0 ? "-inf" : "inf";
@@ -740,8 +735,8 @@ internal sealed partial class LythonRuntime
             null => RenderFloatDefaultPrecision(value, precision.Value, spec.Alternate),
             'f' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'F' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-            'g' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
-            'G' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
+            'g' => FormatGeneralFloat(value, precision, spec.Alternate, upper: false),
+            'G' => FormatGeneralFloat(value, precision, spec.Alternate, upper: true),
             'e' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
             'E' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
             '%' => FormatPercentText(value, precision),
@@ -915,6 +910,43 @@ internal sealed partial class LythonRuntime
     // BCL scientific notation pads exponents to three digits with an
     // uppercase marker; CPython uses a lowercase marker for 'e'/'g' and a
     // minimum of two exponent digits.
+    // General float rendering with CPython precision semantics (a zero
+    // precision keeps one digit). Alternate pads the mantissa to the full
+    // width and forces a decimal point. BCL G rounds to at most keep digits.
+    private static string FormatGeneralFloat(double value, int? precision, bool alternate, bool upper)
+    {
+        var keep = precision is null ? 6 : precision.Value < 1 ? 1 : precision.Value;
+        var raw = value.ToString("G" + keep.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        return NormalizeExponentMarker(PadAlternateGeneral(raw, keep, alternate), upper);
+    }
+
+    private static string PadAlternateGeneral(string raw, int precision, bool alternate)
+    {
+        if (!alternate)
+        {
+            return raw;
+        }
+
+        var marker = raw.IndexOf('E');
+        var mantissa = marker < 0 ? raw : raw[..marker];
+        var tail = marker < 0 ? string.Empty : raw[marker..];
+        var sign = mantissa.StartsWith('-') ? "-" : string.Empty;
+        var unsigned = sign.Length == 0 ? mantissa : mantissa[1..];
+        var point = unsigned.IndexOf('.');
+        var intPart = point < 0 ? unsigned : unsigned[..point];
+        var fracPart = point < 0 ? string.Empty : unsigned[(point + 1)..];
+        var significant = (intPart + fracPart).TrimStart('0');
+        if (significant.Length == 0)
+        {
+            return sign + "0." + new string('0', precision - 1) + tail;
+        }
+
+        // Padding extends the fraction so the integer digits keep their value.
+        var padded = point < 0 ? unsigned + "." : unsigned;
+        padded += new string('0', precision - significant.Length);
+        return sign + padded + tail;
+    }
+
     private static string NormalizeExponentMarker(string raw, bool upper)
     {
         var marker = raw.IndexOf('E');
