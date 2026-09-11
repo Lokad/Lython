@@ -42,6 +42,18 @@ internal static class PyComparison
             return CompareSequences(leftTuple, rightTuple, span, operation);
         }
 
+        // Slices order lexicographically over their bounds like CPython;
+        // shared equality skips equal prefixes while shared comparison
+        // names the first differing element pair.
+        if (left is PySlice leftSlice && right is PySlice rightSlice)
+        {
+            return CompareSequences(
+                [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
+                [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
+                span,
+                operation);
+        }
+
         if (left is PyTimedelta or PyDate or PyTime or PyDateTime)
         {
             return PyDateTimeOps.Compare(left, right, span, operation);

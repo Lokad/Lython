@@ -63,6 +63,18 @@ internal static class PyIndexing
 
     public static object ReadIndex(object target, object index, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        // Keyed lookups resolve first like CPython, so slice objects serve
+        // as dictionary keys instead of slicing the mapping.
+        if (target is PyDict dict)
+        {
+            return ReadDictIndex(dict, index, span);
+        }
+
+        if (target is PyCounter counter)
+        {
+            return ReadCounterIndex(counter, index, span);
+        }
+
         if (index is PySlice slice)
         {
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
@@ -72,8 +84,6 @@ internal static class PyIndexing
         {
             IPySubscriptableValue value => value.GetSubscript(index, span),
             IPyIndexableValue value => value.GetIndex(NormalizeIndex(index, value.Length, span, TargetKind(value))),
-            PyDict dict => ReadDictIndex(dict, index, span),
-            PyCounter counter => ReadCounterIndex(counter, index, span),
             _ when PyStringOps.TryAsString(target, out var text) => text.Index(NormalizeIndex(index, text.Length, span, IndexTargetName.Text)),
             _ => throw RuntimeErrors.NotSubscriptable(span)
         };
@@ -264,6 +274,7 @@ internal static class PyIndexing
         PySet => "set",
         PyBytes => "bytes",
         PyRange => "range",
+        PySlice => "slice",
         PyDeque => "deque",
         PyChainMap => "ChainMap",
         PyInstance instance => instance.Type.Name,

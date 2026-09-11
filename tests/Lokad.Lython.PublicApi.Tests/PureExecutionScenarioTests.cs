@@ -6022,6 +6022,108 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SliceObjects_CompareHashAndKeyLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, defaultdict
+import operator
+
+parts = []
+parts.append(str(slice(1, 2, 3) == slice(1, 2, 3)))
+parts.append(str(slice(1, 2, 3) == slice(1, 2, 4)))
+parts.append(str(slice(1, 2) == slice(1, 2, None)))
+parts.append(str(slice(1, 2, 3) != slice(1, 2, 4)))
+parts.append(str(slice(True, 2) == slice(1, 2)))
+parts.append(str(slice(1.0, 2) == slice(1, 2)))
+parts.append(str(slice(1, 2, 3) == (1, 2, 3)))
+parts.append(str(slice(1, 2) == 5))
+parts.append(str(slice(1, 2) != 5))
+parts.append(str(slice("a", 1) == slice("a", 1)))
+parts.append(str(hash(slice(1, 2, 3)) == hash(slice(1, 2, 3))))
+parts.append(str(hash(slice(1, 2)) == hash(slice(1, 2, None))))
+parts.append(str(len({slice(1, 2), slice(1, 2, None)})))
+parts.append(str(len({slice(1, 2): 1, slice(1, 2, None): 2})))
+
+def lookup():
+    out = []
+    s = slice(1, 2)
+    d = {}
+    d[s] = 5
+    out.append(str(d[s]))
+    out.append(str(d[slice(1, 2, None)]))
+    out.append(str(s in d))
+    d2 = {slice(1, 2): 9}
+    out.append(str(d2[s]))
+    out.append(str(d2.get(slice(1, 2, None))))
+    out.append(str(d2.pop(slice(1, 2))))
+    out.append(str(len(d2)))
+    del d[s]
+    out.append(str(len(d)))
+    try:
+        d[slice(9, 9)]
+    except KeyError as e:
+        out.append(str(e))
+    return out
+parts.extend(lookup())
+
+def counters():
+    out = []
+    c = Counter()
+    out.append(str(c[slice(1, 2)]))
+    s = slice(1, 2)
+    c[s] = 7
+    out.append(str(c[s]))
+    out.append(str(c[slice(1, 2, None)]))
+    del c[s]
+    out.append(str(c[s]))
+    dd = defaultdict(list)
+    out.append(str(dd[s]))
+    dd[s].append(1)
+    out.append(str(dd[s]))
+    out.append(str(operator.getitem({slice(1, 2): 3}, slice(1, 2))))
+    return out
+parts.extend(counters())
+
+def ordering():
+    out = []
+    out.append(str(slice(1, 2) < slice(1, 3)))
+    out.append(str(slice(1, 2) <= slice(1, 2)))
+    out.append(str(slice(1, 2) > slice(1, 2)))
+    out.append(str(slice(2, 3) >= slice(1, 9)))
+    out.append(str(sorted([slice(2, 3), slice(1, 2)])))
+    out.append(str(min(slice(2, 3), slice(1, 2))))
+    out.append(str(slice(1, 2) in [slice(1, 2, None)]))
+    try:
+        slice(1, 2) < 5
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        slice("a", 1) < slice(1, 2)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        slice(None, 2) < slice(1, 2)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        slice(1, 2, 3) > slice(1, 2)
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(ordering())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"True|False|True|True|True|True|False|False|True|True|True|True|1|1|5|5|True|9|9|9|0|0|slice(9, 9, None)|0|7|7|0|[]|[1]|3|True|True|False|True|[slice(1, 2, None), slice(2, 3, None)]|slice(1, 2, None)|True|'<' not supported between instances of 'slice' and 'int'|'<' not supported between instances of 'str' and 'int'|'<' not supported between instances of 'NoneType' and 'int'|'>' not supported between instances of 'int' and 'NoneType'", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

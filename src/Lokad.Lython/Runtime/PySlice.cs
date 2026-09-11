@@ -4,7 +4,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue
+internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue
 {
     public PySlice(object start, object stop, object step)
     {
@@ -54,6 +54,14 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue
                 ")");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    // Slices hash structurally like CPython; bounds hash through the shared
+    // comparer so nested values behave uniformly.
+    public int GetPyHashCode()
+        => HashCode.Combine(
+            PyValueComparer.Instance.GetHashCode(StartBound ?? PyNone.Instance),
+            PyValueComparer.Instance.GetHashCode(StopBound ?? PyNone.Instance),
+            PyValueComparer.Instance.GetHashCode(StepBound ?? PyNone.Instance));
 
     // slice.indices(length) normalises the stored bounds against an explicit
     // length like CPython, coercing the length and any index bounds on the way.

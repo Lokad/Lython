@@ -77,6 +77,7 @@ internal static class RuntimeErrors
         PySet => "set",
         PyBytes => "bytes",
         PyRange => "range",
+        PySlice => "slice",
         PyDeque => "collections.deque",
         PyChainMap => "ChainMap",
         LythonRuntime.DictKeysView => "dict_keys",

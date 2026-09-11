@@ -105,6 +105,15 @@ internal static class PyEquality
             return true;
         }
 
+        // Slices compare structurally like CPython; bounds compare through
+        // shared equality over the null-normalised bound shape.
+        if (left is PySlice leftSlice && right is PySlice rightSlice)
+        {
+            return AreEqual(leftSlice.StartBound ?? PyNone.Instance, rightSlice.StartBound ?? PyNone.Instance)
+                && AreEqual(leftSlice.StopBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance)
+                && AreEqual(leftSlice.StepBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance);
+        }
+
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
             return DictContentEqual(
