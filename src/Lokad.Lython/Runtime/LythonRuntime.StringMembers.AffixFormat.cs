@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.removeprefix(prefix) expects one string argument.", span);
                         }
 
-                        return text.StartsWith(prefix)
+                        return prefix.Length != 0 && text.StartsWith(prefix)
                             ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span)
                             : text;
                     }, "str.removeprefix", ["prefix"]),

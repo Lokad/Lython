@@ -4430,6 +4430,34 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task StrRemoveAffixIdentityMembers()
+    {
+        // Empty str affixes return the same object like CPython, with fresh
+        // objects only on real matches.
+        var script = new LythonEngine().Compile("""
+            s = 'abc'
+            e = ''
+            return [s.removeprefix('') is s, s.removesuffix('') is s,
+                e.removeprefix('') is e, e.removesuffix('') is e,
+                s.removeprefix('x') is s, s.removesuffix('x') is s,
+                s.removeprefix('a') is s, s.removesuffix('c') is s,
+                s.removeprefix('a') == 'bc', s.removesuffix('c') == 'ab']
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, false, false, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave
