@@ -174,7 +174,7 @@ internal static class StaticStringContractFamily
 
     private static void AnalyzeStringSplitCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (arguments.TryGetValue(0, "separator", out var separatorExpression) &&
+        if (arguments.TryGetValue(0, "sep", out var separatorExpression) &&
             separatorExpression is not NoneLiteralExpressionSyntax &&
             !StaticAbstractValueResolver.TryResolveKnownString(separatorExpression, bindings, out _) &&
             StaticAbstractFacts.IsDefinitelyKnownLiteral(separatorExpression, bindings))
@@ -183,8 +183,8 @@ internal static class StaticStringContractFamily
                 diagnostics,
                 "LA3091",
                 memberName == "split"
-                    ? "str.split([separator[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit."
-                    : "str.rsplit([separator[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.",
+                    ? "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit."
+                    : "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.",
                 separatorExpression.Span);
         }
 
@@ -194,8 +194,8 @@ internal static class StaticStringContractFamily
             "maxsplit",
             "LA3092",
             memberName == "split"
-                ? "str.split([separator[, maxsplit]]) expects maxsplit to be an integer."
-                : "str.rsplit([separator[, maxsplit]]) expects maxsplit to be an integer.",
+                ? "str.split([sep[, maxsplit]]) expects maxsplit to be an integer."
+                : "str.rsplit([sep[, maxsplit]]) expects maxsplit to be an integer.",
             diagnostics,
             bindings,
             allowBoolean: true);

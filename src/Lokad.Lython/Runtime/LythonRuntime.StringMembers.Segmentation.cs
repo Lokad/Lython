@@ -24,16 +24,16 @@ internal sealed partial class LythonRuntime
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([separator[, maxsplit]])", span) : -1;
+                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span) : -1;
                             return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
                         if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var separator))
                         {
-                            throw new LythonRuntimeException("TypeError", "str.split([separator[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+                            throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
                         }
 
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([separator[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span) : -1;
                         try
                         {
                             return PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span);
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "str.split", ["separator", "maxsplit"], 0),
+                    }, "str.split", ["sep", "maxsplit"], 0),
                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)
@@ -53,16 +53,16 @@ internal sealed partial class LythonRuntime
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([separator[, maxsplit]])", span) : -1;
+                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span) : -1;
                             return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
                         if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var separator))
                         {
-                            throw new LythonRuntimeException("TypeError", "str.rsplit([separator[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+                            throw new LythonRuntimeException("TypeError", "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
                         }
 
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([separator[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span) : -1;
                         try
                         {
                             return PyStringOps.RSplit(text, separator, maxSplit, context.MemoryGovernor, span);
@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "str.rsplit", ["separator", "maxsplit"], 0),
+                    }, "str.rsplit", ["sep", "maxsplit"], 0),
                     "splitlines" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
 
                         var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
                         return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
-                    }, LythonCallableSignature.Create("str.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1)),
+                    }, LythonCallableSignature.Create("str.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
                     "expandtabs" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)

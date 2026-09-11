@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, $"str.{methodName}", ["sep"]);
+                    }, LythonCallableSignature.Create("str." + methodName, ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1));
             }
         }
 

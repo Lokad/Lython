@@ -4489,6 +4489,48 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task StrSplitKeywordMembers()
+    {
+        // str split keywords follow CPython names: sep and maxsplit bind,
+        // keepends binds, and partition stays positional-only.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append("a,b".split(sep=",") == ["a", "b"])
+            results.append("a,b,c".rsplit(sep=",", maxsplit=1) == ["a,b", "c"])
+            results.append("a,b,c".split(",", maxsplit=1) == ["a", "b,c"])
+            results.append("a\nb\n".splitlines(keepends=True) == ["a\n", "b\n"])
+            results.append("a,b".partition(",") == ("a", ",", "b"))
+            try:
+                getattr("a,b", "split")(separator=",")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr("a,b", "partition")(sep=",")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr("a,b", "rpartition")(sep=",")
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true,
+            "Method 'str.split' got an unexpected keyword argument 'separator'.",
+            "Method 'str.partition' got an unexpected keyword argument 'sep'.",
+            "Method 'str.rpartition' got an unexpected keyword argument 'sep'.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task BytesSplitMembers()
     {
         // bytes splits follow CPython over an explicit separator,
