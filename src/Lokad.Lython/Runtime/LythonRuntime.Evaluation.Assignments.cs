@@ -87,6 +87,8 @@ internal sealed partial class LythonRuntime
 
                     case PyString:
                         throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", statement.Span);
+                    case PyBytes:
+                        throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", statement.Span);
 
                     default:
                         throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
@@ -303,6 +305,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'tuple' object does not support item assignment", span);
             case PyString:
                 throw new LythonRuntimeException("TypeError", "'str' object does not support item assignment", span);
+            case PyBytes:
+                throw new LythonRuntimeException("TypeError", "'bytes' object does not support item assignment", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);
         }

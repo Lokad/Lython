@@ -14,6 +14,7 @@ internal static class PyIndexing
         Tuple,
         Text,
         Sequence,
+        Byte,
     }
 
     // Distinguishes reads from deletions and stores because out-of-range
@@ -163,6 +164,7 @@ internal static class PyIndexing
         PyList => IndexTargetName.List,
         PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject => IndexTargetName.Tuple,
         PyDeque => IndexTargetName.Sequence,
+        PyBytes => IndexTargetName.Byte,
         _ => IndexTargetName.Unnamed,
     };
 
@@ -199,11 +201,17 @@ internal static class PyIndexing
             return new LythonRuntimeException("IndexError", "Index is out of range.", span);
         }
 
+        if (target == IndexTargetName.Byte && operation == IndexOperation.Read)
+        {
+            return new LythonRuntimeException("IndexError", "index out of range", span);
+        }
+
         var name = target switch
         {
             IndexTargetName.List => "list",
             IndexTargetName.Tuple => "tuple",
             IndexTargetName.Text => "string",
+            IndexTargetName.Byte => "byte",
             _ => "deque",
         };
 
@@ -224,6 +232,7 @@ internal static class PyIndexing
             IndexTargetName.Tuple => $"tuple indices must be integers or slices, not {name}",
             IndexTargetName.Text => $"string indices must be integers, not '{name}'",
             IndexTargetName.Sequence => $"sequence index must be integer, not '{name}'",
+            IndexTargetName.Byte => $"byte indices must be integers or slices, not {name}",
             _ => "Indices must be integers.",
         };
 

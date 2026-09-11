@@ -52,6 +52,12 @@ public sealed class IterationIndexingSubsystemTests
         var pop = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizePopIndex(PyString.FromString("x"), 3, Span));
         Assert.Equal("'str' object cannot be interpreted as an integer", pop.Message);
 
+        var bytes = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyString.FromString("x"), 3, Span, PyIndexing.IndexTargetName.Byte));
+        Assert.Equal("byte indices must be integers or slices, not str", bytes.Message);
+
+        var bytesRange = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(new BigInteger(5), 1, Span, PyIndexing.IndexTargetName.Byte, PyIndexing.IndexOperation.Read));
+        Assert.Equal("index out of range", bytesRange.Message);
+
         var legacy = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyString.FromString("x"), 3, Span));
         Assert.Equal("Indices must be integers.", legacy.Message);
 

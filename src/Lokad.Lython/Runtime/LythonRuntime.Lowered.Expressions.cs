@@ -379,6 +379,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
             case PyString:
                 throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
+            case PyBytes:
+                throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
             default:
                 throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
         }

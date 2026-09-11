@@ -250,6 +250,47 @@ __lython_file.close()
     }
 
     [Fact]
+    public void BytesIndexFailures_ReportPythonShapedTexts()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+vals = []
+try:
+    b"ab"["x"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    b"ab"[5]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    b"ab"[10**30]
+except IndexError as err:
+    vals.append(err.message)
+try:
+    data = b"ab"
+    del data[0]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    data = b"ab"
+    data[0] = 65
+except TypeError as err:
+    vals.append(err.message)
+vals.append(str(b"ab"[0]))
+vals.append(str(b"ab"[-1]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("byte indices must be integers or slices, not str|index out of range|cannot fit 'int' into an index-sized integer|'bytes' object doesn't support item deletion|'bytes' object does not support item assignment|97|98", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ListRepetitionAndAugmentedRepetition_ArePythonShaped()
     {
         var host = new MockLythonHost();
