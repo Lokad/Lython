@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", "len(value) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "len() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
         return arguments[0] switch

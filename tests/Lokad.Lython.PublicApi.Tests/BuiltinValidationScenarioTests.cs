@@ -77,8 +77,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("repr()\n", "is missing argument 'value'")]
     [InlineData("sum()\n", "is missing argument 'iterable'")]
     [InlineData("sorted()\n", "is missing argument 'iterable'")]
-    [InlineData("any()\n", "expects one argument")]
-    [InlineData("all()\n", "expects one argument")]
+    [InlineData("any()\n", "any() takes exactly one argument (0 given)")]
+    [InlineData("all()\n", "all() takes exactly one argument (0 given)")]
     [InlineData("enumerate()\n", "is missing argument 'iterable'")]
     [InlineData("list(1, 2)\n", "received too many positional arguments")]
     [InlineData("tuple(1, 2)\n", "received too many positional arguments")]
@@ -136,6 +136,28 @@ return "|".join(values)
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("a\n|[2, 1]|[2, 1]|caught", result.ReturnValue);
     }
+
+    [Fact]
+    public void LenAllAnyArityFailures_NameCountLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+for f in [len, all, any]:
+    try:
+        print(f())
+    except TypeError as e:
+        print(str(e))
+    try:
+        print(f([1], [2]))
+    except TypeError as e:
+        print(str(e))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("len() takes exactly one argument (0 given)\nlen() takes exactly one argument (2 given)\nall() takes exactly one argument (0 given)\nall() takes exactly one argument (2 given)\nany() takes exactly one argument (0 given)\nany() takes exactly one argument (2 given)\n", result.StandardOutput);
+    }
+
 
     [Fact]
     public void DictionaryConstructionUpdateAndPopMatchPythonForms()

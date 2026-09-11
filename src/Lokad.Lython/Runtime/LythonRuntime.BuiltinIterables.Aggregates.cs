@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
         foreach (var item in ToSequence(arguments[0], span, context))
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", "any(iterable) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
         foreach (var item in ToSequence(arguments[0], span, context))
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", "all(iterable) expects one argument.", span);
+            throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
