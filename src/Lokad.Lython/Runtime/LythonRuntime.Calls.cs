@@ -781,6 +781,18 @@ internal sealed partial class LythonRuntime
 
             return "object";
         }
+
+        // Bound engine methods render like CPython built-in methods minus the
+        // address suffix (Lython display names stay deterministic): the short
+        // member name plus the receiver owner resolved through the shared
+        // value-class helper (type objects report type like CPython).
+        internal static string BoundEngineMethodDisplay(string shortName, object? receiver, ExecutionContext context)
+            => "<built-in method " + shortName + " of " + PythonTypeName(receiver, context) + " object>";
+
+        // Only plain dotted owner.member names take the builtin-method shape;
+        // decorated display names (spaces, brackets) keep the legacy rendering.
+        internal static bool IsPlainBoundMethodName(string name)
+            => name.Contains(".") && !name.Contains(" ") && !name.Contains("(") && !name.Contains("[");
     }
 
     // The __get__ slot of unbound descriptors behaves like CPython method
@@ -1212,7 +1224,7 @@ internal sealed partial class LythonRuntime
     // shapes (the engine keeps no doc corpus). Keyword arguments always fail
     // with the qualified wrapper text; arity and value validation live in
     // each implementation with the exact CPython texts.
-    internal sealed class BuiltinTypeMethod : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyHashableValue
+    internal sealed class BuiltinTypeMethod : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IPyHashableValue
     {
         private readonly string _ownerName;
         private readonly string _memberName;
@@ -1289,6 +1301,16 @@ internal sealed partial class LythonRuntime
 
             return TryGetMember(name, out value);
         }
+
+        // Type methods (dict.fromkeys and kin) render like CPython built-in
+        // methods bound to the type, minus the address suffix.
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<built-in method " + _memberName + " of type object>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public int GetPyHashCode() => HashCode.Combine(StringComparer.Ordinal.GetHashCode(_ownerName), StringComparer.Ordinal.GetHashCode(_memberName));
     }
@@ -2430,7 +2452,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
+    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyRenderableValue, IPyBoundEngineMethod, IPyHashableValue
     {
         public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_receiver), StringComparer.Ordinal.GetHashCode(ShortMethodName(Signature.Name)));
 
@@ -2440,6 +2462,16 @@ internal sealed partial class LythonRuntime
         private object? _receiver;
 
         internal void AttachReceiver(object receiver) => _receiver = receiver;
+
+        // Bound engine methods render like CPython built-in methods minus the
+        // address suffix; decorated display names keep the legacy shape.
+        public PyString RenderPython(PyRenderingContext context)
+            => PyString.FromString(
+                UnboundTypeMethod.IsPlainBoundMethodName(Signature.Name)
+                    ? UnboundTypeMethod.BoundEngineMethodDisplay(ShortMethodName(Signature.Name), _receiver, context.Context)
+                    : "<object>");
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         // Bound engine methods expose CPython-style __name__/__module__ like
         // C-implemented methods: the short decorated name and None, since every
@@ -2556,7 +2588,7 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes, IPyBoundEngineMethod, IPyHashableValue
+    private sealed class NoArgumentsReceiverBoundCallable<TReceiver> : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPyBoundEngineMethod, IPyHashableValue
     {
         public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_receiver), StringComparer.Ordinal.GetHashCode(ShortMethodName(Name)));
 
@@ -2641,6 +2673,16 @@ internal sealed partial class LythonRuntime
             => new(receiver, name, implementation, asyncImplementation);
 
         private string Name { get; }
+
+        // Bound engine methods render like CPython built-in methods minus the
+        // address suffix; decorated display names keep the legacy shape.
+        public PyString RenderPython(PyRenderingContext context)
+            => PyString.FromString(
+                UnboundTypeMethod.IsPlainBoundMethodName(Name)
+                    ? UnboundTypeMethod.BoundEngineMethodDisplay(ShortMethodName(Name), _receiver, context.Context)
+                    : "<object>");
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

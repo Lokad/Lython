@@ -1682,11 +1682,21 @@ internal sealed partial class LythonRuntime
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
     private sealed class RawBoundCallable(
-        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyRawBoundCallable
     {
         public string? BoundName { get; init; }
 
         public object? BoundReceiver { get; init; }
+
+        // Named bound shapes render like CPython built-in methods minus the
+        // address suffix; anonymous shapes keep the legacy rendering.
+        public PyString RenderPython(PyRenderingContext context)
+            => PyString.FromString(
+                BoundName is not null && UnboundTypeMethod.IsPlainBoundMethodName(BoundName)
+                    ? UnboundTypeMethod.BoundEngineMethodDisplay(ShortMethodName(BoundName), BoundReceiver, context.Context)
+                    : "<object>");
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

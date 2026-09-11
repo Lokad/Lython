@@ -4724,6 +4724,22 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("def f():\n    x = []\n    return str(x.append)\nreturn f()", "<built-in method append of list object>")]
+    [InlineData("def f():\n    d = {}\n    return str(d.get)\nreturn f()", "<built-in method get of dict object>")]
+    [InlineData("def f():\n    d = {}\n    return str(d.keys)\nreturn f()", "<built-in method keys of dict object>")]
+    [InlineData("def f():\n    d = {}\n    return str(d.update)\nreturn f()", "<built-in method update of dict object>")]
+    [InlineData("return str(dict.fromkeys)", "<built-in method fromkeys of type object>")]
+    [InlineData("def f():\n    s = \"a\"\n    return str(s.join)\nreturn f()", "<built-in method join of str object>")]
+    [InlineData("def f():\n    x = []\n    return repr(x.append)\nreturn f()", "<built-in method append of list object>")]
+    public void BoundEngineMethods_RenderBuiltinMethodForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
