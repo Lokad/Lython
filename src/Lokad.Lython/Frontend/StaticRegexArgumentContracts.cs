@@ -14,7 +14,14 @@ internal static class StaticRegexArgumentContracts
         var emitted = false;
         if (string.Equals(targetName, LythonKnownCallableSignatures.ReCompile.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzeStringArgument(arguments, 0, "pattern", "re.compile(pattern[, flags]) expects pattern to be a string.", diagnostics, bindings);
+            emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", "re.compile(pattern[, flags]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
+            if (IsCompiledRegexPattern(arguments, 0, "pattern", bindings) &&
+                TryGetArgument(arguments, 1, "flags", bindings, out var compiledFlagsExpression, out var compiledFlagsValue) &&
+                IsKnownTruthyFlags(compiledFlagsExpression, compiledFlagsValue))
+            {
+                AddDiagnostic(diagnostics, "LA3158", "re.compile(pattern[, flags]) expects integer flags and no flags when pattern is compiled.", compiledFlagsExpression.Span);
+                emitted = true;
+            }
             if (TryGetArgument(arguments, 1, "flags", bindings, out var flagsExpression, out _) &&
                 ContainsRegexDebugFlag(flagsExpression))
             {
@@ -132,7 +139,8 @@ internal static class StaticRegexArgumentContracts
         }
 
         if (TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue) &&
-            patternValue.Kind == AbstractValueKind.RegexPattern)
+            patternValue.Kind == AbstractValueKind.RegexPattern &&
+            IsKnownTruthyFlags(flagsExpression, flagsValue))
         {
             AddDiagnostic(diagnostics, "LA3158", message, flagsExpression.Span);
             return true;
@@ -140,6 +148,31 @@ internal static class StaticRegexArgumentContracts
 
         return AnalyzeKnownArgumentValue(flagsExpression, flagsValue, message, diagnostics, static value => value.Kind == AbstractValueKind.None || StaticAbstractFacts.IsStrictIntegerLike(value));
     }
+
+    private static bool IsCompiledRegexPattern(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        AbstractState bindings)
+        => TryGetArgument(arguments, position, keyword, bindings, out _, out var value) &&
+            value.Kind == AbstractValueKind.RegexPattern;
+
+    // Compiled patterns reject truthy flags like CPython; falsy flags pass
+    // while unknown shapes stay for runtime truthiness, except named re flag
+    // members whose values are fixed vocabulary.
+    private static bool IsKnownTruthyFlags(ExpressionSyntax expression, AbstractValue value)
+        => value.Kind switch
+        {
+            AbstractValueKind.None => false,
+            AbstractValueKind.Boolean => value.RequireBoolean(),
+            AbstractValueKind.Integer => TryGetInt32(value, out var integer) && integer != 0,
+            AbstractValueKind.IntegerType => IsKnownTruthyFlagMember(expression),
+            _ => false,
+        };
+
+    private static bool IsKnownTruthyFlagMember(ExpressionSyntax expression)
+        => expression is MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "NOFLAG" } == false
+            && expression is MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "IGNORECASE" or "I" or "UNICODE" or "U" or "MULTILINE" or "M" or "DOTALL" or "S" or "VERBOSE" or "X" or "ASCII" or "A" or "LOCALE" or "L" or "DEBUG" };
 
     public static bool ContainsRegexDebugFlag(ExpressionSyntax expression)
     {

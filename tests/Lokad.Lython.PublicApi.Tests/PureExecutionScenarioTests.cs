@@ -6615,6 +6615,140 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RegexFlags_FlowLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import re
+
+class J:
+    def __index__(self):
+        return 2
+
+class A:
+    def __and__(self, other):
+        calls.append(("and", other))
+        return 2
+
+calls = []
+parts = []
+def flag_types(f, s):
+    out = []
+    try:
+        re.compile("a", f)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        re.compile("a", s)
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        re.compile("a", J())
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(flag_types(1.5, "x"))
+
+def hook_shapes():
+    out = []
+    try:
+        re.compile("a", A())
+    except ValueError as e:
+        out.append(str(e))
+    out.append(str(calls))
+    return out
+parts.extend(hook_shapes())
+
+def flag_values():
+    out = []
+    out.append(str(re.compile("a", True).flags))
+    out.append(str(re.compile("a", 1).flags))
+    out.append(str(re.compile("a", 1024).flags))
+    out.append(str(re.compile("a", 0).flags))
+    out.append(str(re.compile("a", 2).flags))
+    try:
+        re.compile("a", 2**40)
+    except OverflowError as e:
+        out.append(str(e))
+    try:
+        re.compile("a", -1)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        re.compile("a", 290)
+    except ValueError as e:
+        out.append(str(e))
+    return out
+parts.extend(flag_values())
+
+def compiled_shapes(p, f):
+    out = []
+    out.append(str(re.compile(p) is p))
+    out.append(str(re.compile(p, 0) is p))
+    out.append(str(re.compile(p, None) is p))
+    try:
+        re.compile(p, f)
+    except ValueError as e:
+        out.append(str(e))
+    try:
+        re.match(p, "a", f)
+    except ValueError as e:
+        out.append(str(e))
+    out.append(str(re.match(p, "a", 0) is None))
+    return out
+parts.extend(compiled_shapes(re.compile("a"), 2))
+
+def unhashable_shapes(x):
+    out = []
+    try:
+        re.compile("a", x)
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(unhashable_shapes({}.keys()))
+
+def verbose_shape(v):
+    out = []
+    p = re.compile("a b", v)
+    out.append(str(bool(p.match("ab"))))
+    out.append(str(bool(p.match("a b"))))
+    out.append(str(p.flags))
+    return out
+
+class S6B:
+    def __and__(self, other):
+        return 1 if other == 64 else 0
+    def __or__(self, other):
+        return 2
+    def __ror__(self, other):
+        return 2
+    def __ior__(self, other):
+        return 3
+parts.extend(verbose_shape(S6B()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"unsupported operand type(s) for &: 'float' and 'int'|unsupported operand type(s) for &: 'str' and 'int'|unsupported operand type(s) for &: 'J' and 'int'|cannot use LOCALE flag with a str pattern|[('and', 64), ('and', 4)]|33|33|1056|32|34|Python int too large to convert to C int|cannot use LOCALE flag with a str pattern|ASCII and UNICODE flags are incompatible|True|True|True|cannot process flags argument with a compiled pattern|cannot process flags argument with a compiled pattern|False|unhashable type: 'dict_keys'|True|False|2", host.ReadText("/out.txt"));
+
+        var invalid = new LythonEngine().Compile(
+            """
+import re
+re.compile("a", "x")
+re.compile("a", 1.5)
+re.search(re.compile("a"), "a", 2)
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("expects flags to be an integer or None", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("no flags when pattern is compiled", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

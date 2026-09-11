@@ -18,16 +18,6 @@ internal sealed partial class LythonRuntime
         internal const int RegexDebugFlag = 128;
         internal const int PythonAsciiFlag = 256;
 
-        private const int SupportedPythonFlags =
-            PythonIgnoreCaseFlag |
-            PythonLocaleFlag |
-            PythonMultilineFlag |
-            PythonDotAllFlag |
-            PythonUnicodeFlag |
-            PythonVerboseFlag |
-            RegexDebugFlag |
-            PythonAsciiFlag;
-
         // Retained dependency compilation state scales with capture slots and
         // pattern size, not just pattern count. Base allowance holds the
         // audited single-group shape (~65MiB per 1000 retained compilations of
@@ -60,14 +50,30 @@ internal sealed partial class LythonRuntime
 
         internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+            if (arguments.Length is < 1 or > 2)
             {
                 throw new LythonRuntimeException("TypeError", $"{signature} expects a string pattern and optional flags.", span);
             }
 
-            var options = arguments.Length == 2
-                ? ParseFlags(arguments[1], signature, span)
-                : PythonReCompileOptions.None;
+            CheckFlagsHashable(arguments, 1, span);
+            if (arguments[0] is RePatternObject existing)
+            {
+                if (arguments.Length == 2 && IsTruthy(arguments[1], context, span))
+                {
+                    throw new LythonRuntimeException("ValueError", "cannot process flags argument with a compiled pattern", span);
+                }
+
+                return existing;
+            }
+
+            if (!PyStringOps.TryAsString(arguments[0], out var pattern))
+            {
+                throw new LythonRuntimeException("TypeError", "first argument must be string or compiled pattern", span);
+            }
+
+            var (options, rawFlags) = arguments.Length == 2
+                ? ParseFlags(arguments[1], span, context)
+                : (PythonReCompileOptions.None, PythonUnicodeFlag);
 
             // Summarizing never throws (best-effort scan); hoisting it ahead of
             // the reservation sizes both the peak scratch and the durable charge.
@@ -80,11 +86,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var compiled = new Utf8PythonRegex(pattern.Utf8Bytes.Span, options);
-                var reportedFlags = ToPythonFlags(options) | ParseLeadingInlinePythonFlags(pattern.AsString());
-                if ((reportedFlags & PythonAsciiFlag) == 0)
-                {
-                    reportedFlags |= PythonUnicodeFlag;
-                }
+                var reportedFlags = rawFlags | ParseLeadingInlinePythonFlags(pattern.AsString());
 
                 var result = new RePatternObject(
                     pattern,
@@ -103,6 +105,32 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // The cache lookup hashes flags first, so unhashable flags fail before
+        // any dispatch or compiled-pattern check like CPython.
+        private static void CheckFlagsHashable(object[] arguments, int flagsIndex, LythonSourceSpan span)
+        {
+            if (arguments.Length > flagsIndex)
+            {
+                try
+                {
+                    _ = PyValueComparer.Instance.GetHashCode(arguments[flagsIndex]);
+                }
+                catch (InvalidOperationException)
+                {
+                    throw RuntimeErrors.UnhashableType(arguments[flagsIndex], span);
+                }
+            }
+        }
+
+        // A compiled pattern with truthy flags fails like CPython before any dispatch.
+        private static void ThrowIfCompiledFlags(object[] arguments, int flagsIndex, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > flagsIndex && IsTruthy(arguments[flagsIndex], context, span))
+            {
+                throw new LythonRuntimeException("ValueError", "cannot process flags argument with a compiled pattern", span);
+            }
+        }
+
         internal static RegexPatternRange CreatePatternAndRange(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
@@ -110,21 +138,21 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{signature} expects pattern, string, optional flags, pos, and endpos.", span);
             }
 
+            CheckFlagsHashable(arguments, 2, span);
             var pos = arguments.Length >= 4 ? ParseOptionalIntOrDefault(arguments[3], 0, "pos", signature, span, context) : 0;
             var endPos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", signature, span, context) : text.Length;
 
             if (arguments[0] is RePatternObject compiled)
             {
-                if (arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
+                ThrowIfCompiledFlags(arguments, 2, span, context);
                 return new RegexPatternRange(compiled, CreateSubjectRange(text, pos, endPos));
             }
 
+            object[] patternArguments = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
+                ? [arguments[0], arguments[2]]
+                : [arguments[0]];
             return new RegexPatternRange(
-                CreatePattern(arguments.Length >= 3 ? [arguments[0], arguments[2]] : [arguments[0]], signature, span, context),
+                CreatePattern(patternArguments, signature, span, context),
                 CreateSubjectRange(text, pos, endPos));
         }
 
@@ -147,19 +175,18 @@ internal sealed partial class LythonRuntime
             var pos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], 0, "pos", signature, span, context) : 0;
             var endPos = arguments.Length >= 7 ? ParseOptionalIntOrDefault(arguments[6], text.Length, "endpos", signature, span, context) : text.Length;
 
+            CheckFlagsHashable(arguments, 4, span);
             RePatternObject pattern;
             if (arguments[0] is RePatternObject compiled)
             {
-                if (arguments.Length >= 5 && !ReferenceEquals(arguments[4], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
+                ThrowIfCompiledFlags(arguments, 4, span, context);
                 pattern = compiled;
             }
             else
             {
-                object[] patternArguments = arguments.Length >= 5 ? [arguments[0], arguments[4]] : [arguments[0]];
+                object[] patternArguments = arguments.Length >= 5 && !ReferenceEquals(arguments[4], PyNone.Instance)
+                    ? [arguments[0], arguments[4]]
+                    : [arguments[0]];
                 pattern = CreatePattern(patternArguments, signature, span, context);
             }
 
@@ -177,14 +204,11 @@ internal sealed partial class LythonRuntime
             var pos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], 0, "pos", signature, span, context) : 0;
             var endPos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], text.Length, "endpos", signature, span, context) : text.Length;
 
+            CheckFlagsHashable(arguments, 3, span);
             RePatternObject pattern;
             if (arguments[0] is RePatternObject compiled)
             {
-                if (arguments.Length >= 4 && !ReferenceEquals(arguments[3], PyNone.Instance))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{signature} does not accept flags when passed a compiled pattern.", span);
-                }
-
+                ThrowIfCompiledFlags(arguments, 3, span, context);
                 pattern = compiled;
                 if (arguments.Length == 3)
                 {
@@ -193,7 +217,9 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                object[] patternArguments = arguments.Length >= 4 ? [arguments[0], arguments[3]] : [arguments[0]];
+                object[] patternArguments = arguments.Length >= 4 && !ReferenceEquals(arguments[3], PyNone.Instance)
+                    ? [arguments[0], arguments[3]]
+                    : [arguments[0]];
                 pattern = CreatePattern(patternArguments, signature, span, context);
                 if (arguments.Length >= 3)
                 {
@@ -272,65 +298,109 @@ internal sealed partial class LythonRuntime
             return new RegexSubjectRange(text, text.SliceByByteRange(startByte, endByte), normalizedPos, normalizedEnd);
         }
 
-        private static PythonReCompileOptions ParseFlags(object value, string signature, LythonSourceSpan span)
+        // Flags flow through operator dispatch like CPython (sre fix_flags plus
+        // the _code/_sre combines): verbose/locale/ascii checks, the unicode
+        // combine, debug checks, then the state combines; the converted C int
+        // carries unknown bits through to the echo.
+        private static (PythonReCompileOptions Options, int Flags) ParseFlags(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            if (ReferenceEquals(value, PyNone.Instance))
+            // Verbose parsing follows the dispatched bit like CPython.
+            var verbose = IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonVerboseFlag), context, span), context, span);
+            if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonLocaleFlag), context, span), context, span))
             {
-                return PythonReCompileOptions.None;
+                throw new LythonRuntimeException("ValueError", "cannot use LOCALE flag with a str pattern", span);
             }
 
-            var flags = value switch
+            object stateFlags;
+            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonAsciiFlag), context, span), context, span))
             {
-                BigInteger integer => integer,
-                int integer => new BigInteger(integer),
-                _ => throw new LythonRuntimeException("TypeError", $"{signature} expects flags to be an integer bitmask.", span)
-            };
+                stateFlags = OrAssignFlags(value, span, context);
+            }
+            else
+            {
+                if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(PythonUnicodeFlag), context, span), context, span))
+                {
+                    throw new LythonRuntimeException("ValueError", "ASCII and UNICODE flags are incompatible", span);
+                }
 
-            if (flags < 0 || flags > int.MaxValue)
-            {
-                throw new LythonRuntimeException("ValueError", "Regex flags are out of range.", span);
+                stateFlags = value;
             }
 
-            var flagBits = (int)flags;
-            if ((flagBits & ~SupportedPythonFlags) != 0)
-            {
-                throw new LythonRuntimeException("ValueError", "Unsupported regular expression flags.", span);
-            }
+            // Debug checks run through dispatch like CPython; Lython cannot print,
+            // so a set DEBUG bit stays NotImplementedError on the converted value.
+            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
+            var combined = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, stateFlags, value, context, span);
+            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
+            var flagBits = ToRegexCInt(EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, value, combined, context, span), span, context);
+            _ = EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseAnd, value, new BigInteger(RegexDebugFlag), context, span);
 
             if ((flagBits & RegexDebugFlag) != 0)
             {
                 throw new LythonRuntimeException("NotImplementedError", "re.DEBUG is not supported by Lython's regex runtime.", span);
             }
 
-            if ((flagBits & PythonLocaleFlag) != 0)
-            {
-                throw new LythonRuntimeException("NotImplementedError", "re.LOCALE is not supported by Lython's Unicode-only regex runtime.", span);
-            }
-
-            if ((flagBits & PythonAsciiFlag) != 0 && (flagBits & PythonUnicodeFlag) != 0)
-            {
-                throw new LythonRuntimeException("ValueError", "ASCII and UNICODE flags are incompatible.", span);
-            }
-
             var options = PythonReCompileOptions.None;
+            if (verbose) options |= PythonReCompileOptions.Verbose;
             if ((flagBits & PythonIgnoreCaseFlag) != 0) options |= PythonReCompileOptions.IgnoreCase;
             if ((flagBits & PythonMultilineFlag) != 0) options |= PythonReCompileOptions.Multiline;
             if ((flagBits & PythonDotAllFlag) != 0) options |= PythonReCompileOptions.DotAll;
-            if ((flagBits & PythonVerboseFlag) != 0) options |= PythonReCompileOptions.Verbose;
             if ((flagBits & PythonAsciiFlag) != 0) options |= PythonReCompileOptions.Ascii;
-            return options;
+            return (options, flagBits);
         }
 
-        private static int ToPythonFlags(PythonReCompileOptions options)
+        // `flags |= UNICODE` like CPython. Only instances carry hooks, so only
+        // they need the manual __ior__/__or__/__ror__ chain with `|=` text;
+        // int-like values ride the shared binary shape, which cannot fail them.
+        private static object OrAssignFlags(object flags, LythonSourceSpan span, ExecutionContext context)
         {
-            var flags = 0;
-            if ((options & PythonReCompileOptions.IgnoreCase) != 0) flags |= PythonIgnoreCaseFlag;
-            if ((options & PythonReCompileOptions.Multiline) != 0) flags |= PythonMultilineFlag;
-            if ((options & PythonReCompileOptions.DotAll) != 0) flags |= PythonDotAllFlag;
-            if ((options & PythonReCompileOptions.Verbose) != 0) flags |= PythonVerboseFlag;
-            if ((options & PythonReCompileOptions.Ascii) != 0) flags |= PythonAsciiFlag;
-            return flags;
+            var uni = new BigInteger(PythonUnicodeFlag);
+            if (flags is PyInstance)
+            {
+                object? assigned;
+                if (TryHookOrAssign(flags, "__ior__", uni, context, span, out assigned))
+                {
+                    return assigned.RequireNotNull();
+                }
+
+                if (TryHookOrAssign(flags, "__or__", uni, context, span, out assigned))
+                {
+                    return assigned.RequireNotNull();
+                }
+
+                if (TryHookOrAssign(uni, "__ror__", flags, context, span, out assigned))
+                {
+                    return assigned.RequireNotNull();
+                }
+
+                throw RuntimeErrors.UnsupportedOperands("|=", flags, uni, span);
+            }
+
+            return EvaluateBinaryOperator(BinaryOperatorSyntax.BitwiseOr, flags, uni, context, span);
         }
+
+        private static bool TryHookOrAssign(object target, string method, object argument, ExecutionContext context, LythonSourceSpan span, out object? result)
+        {
+            if (TryInvokeBinarySpecialMethod(target, method, argument, context, span, out var value) && value is not PyNotImplemented)
+            {
+                result = value;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        // The converted C int carries unknown bits through; out-of-range
+        // magnitudes report the C-int overflow while other shapes name the type.
+        private static int ToRegexCInt(object value, LythonSourceSpan span, ExecutionContext context)
+            => value switch
+            {
+                bool flag => flag ? 1 : 0,
+                int small => small,
+                BigInteger big when big >= int.MinValue && big <= int.MaxValue => (int)big,
+                BigInteger => throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span),
+                _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span),
+            };
 
         private static int ParseLeadingInlinePythonFlags(string pattern)
         {
