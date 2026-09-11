@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : CallableInvocation.InvokeUnary(keyCallable, candidate, span, context);
-            var comparison = Compare(candidateKey, bestKey, span);
+            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
-            var comparison = Compare(candidateKey, bestKey, span);
+            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;
@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
-            var comparison = Compare(candidateKey, bestKey, span);
+            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
             if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
             {
                 best = candidate;

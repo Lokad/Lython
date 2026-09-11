@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "^", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "^", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, span);
@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "&", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "&", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, span);
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
     {
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "<<", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "<<", left, right, span);
         }
 
         try
@@ -207,7 +207,7 @@ internal sealed partial class LythonRuntime
     {
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? ">>", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? ">>", left, right, span);
         }
 
         try
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(operand, out _))
         {
-            throw RuntimeErrors.BadUnaryOperand("+", operand, context, span);
+            throw RuntimeErrors.BadUnaryOperand("+", operand, span);
         }
 
         return operand;
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(operand, out var numeric))
         {
-            throw RuntimeErrors.BadUnaryOperand("-", operand, context, span);
+            throw RuntimeErrors.BadUnaryOperand("-", operand, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, span);
@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
     {
         if (!PyNumberOps.TryAsInteger(operand, out var integer))
         {
-            throw RuntimeErrors.BadUnaryOperand("~", operand, context, span);
+            throw RuntimeErrors.BadUnaryOperand("~", operand, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, span);

@@ -5,11 +5,16 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyComparison
 {
-    public static int Compare(object left, object right, LythonSourceSpan span)
+    private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
+        => operation is null
+            ? new LythonRuntimeException("TypeError", "Values are not comparable.", span)
+            : RuntimeErrors.UnsupportedComparison(operation, left, right, span);
+
+    public static int Compare(object left, object right, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return PyDecimalOps.Compare(left, right, span);
+            return PyDecimalOps.Compare(left, right, span, operation);
         }
 
         if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
@@ -29,17 +34,17 @@ internal static class PyComparison
 
         if (left is PyList leftList && right is PyList rightList)
         {
-            return CompareSequences(leftList, rightList, span);
+            return CompareSequences(leftList, rightList, span, operation);
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftTuple) && PyTupleLike.TryGetItems(right, out var rightTuple))
         {
-            return CompareSequences(leftTuple, rightTuple, span);
+            return CompareSequences(leftTuple, rightTuple, span, operation);
         }
 
         if (left is PyTimedelta or PyDate or PyTime or PyDateTime)
         {
-            return PyDateTimeOps.Compare(left, right, span);
+            return PyDateTimeOps.Compare(left, right, span, operation);
         }
 
         if (left is PyInstance leftInstance &&
@@ -50,10 +55,10 @@ internal static class PyComparison
             return PyDataclass.CompareOrderedInstances(leftInstance, rightInstance, span);
         }
 
-        throw new LythonRuntimeException("TypeError", "Values are not comparable.", span);
+        throw CompareFailed(operation, left, right, span);
     }
 
-    private static int CompareSequences(IReadOnlyList<object> left, IReadOnlyList<object> right, LythonSourceSpan span)
+    private static int CompareSequences(IReadOnlyList<object> left, IReadOnlyList<object> right, LythonSourceSpan span, string? operation = null)
     {
         var common = Math.Min(left.Count, right.Count);
         for (var i = 0; i < common; i++)
@@ -63,7 +68,7 @@ internal static class PyComparison
                 continue;
             }
 
-            return Compare(left[i], right[i], span);
+            return Compare(left[i], right[i], span, operation);
         }
 
         return left.Count.CompareTo(right.Count);

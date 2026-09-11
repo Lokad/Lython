@@ -1,3 +1,6 @@
+using System.Numerics;
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Runtime;
 
 internal static class RuntimeErrors
@@ -21,33 +24,59 @@ internal static class RuntimeErrors
         string operation,
         object left,
         object right,
-        LythonRuntime.ExecutionContext context,
         LythonSourceSpan? span)
     {
-        var lhs = OperandTypeName(left, context);
-        var rhs = OperandTypeName(right, context);
-        return Type($"unsupported operand type(s) for {operation}: '{lhs}' and '{rhs}'", span);
+        return Type($"unsupported operand type(s) for {operation}: '{OperandTypeName(left)}' and '{OperandTypeName(right)}'", span);
     }
 
     public static LythonRuntimeException BadUnaryOperand(
         string operation,
         object operand,
-        LythonRuntime.ExecutionContext context,
         LythonSourceSpan? span)
     {
-        var name = OperandTypeName(operand, context);
-        return Type($"bad operand type for unary {operation}: '{name}'", span);
+        return Type($"bad operand type for unary {operation}: '{OperandTypeName(operand)}'", span);
     }
 
-    private static string OperandTypeName(object? value, LythonRuntime.ExecutionContext context) => value switch
+    public static LythonRuntimeException UnsupportedComparison(
+        string operation,
+        object left,
+        object right,
+        LythonSourceSpan? span)
     {
+        return Type($"'{operation}' not supported between instances of '{OperandTypeName(left)}' and '{OperandTypeName(right)}'", span);
+    }
+
+    public static string OperandTypeName(object? value) => value switch
+    {
+        null => "NoneType",
+        PyNone => "NoneType",
+        PyString => "str",
+        double => "float",
+        bool => "bool",
+        BigInteger or int => "int",
+        PyList => "list",
+        PyDict or PyDefaultDict or PyCounter => "dict",
+        PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject => "tuple",
+        PySet => "set",
+        PyBytes => "bytes",
+        PyRange => "range",
+        PyDeque => "deque",
+        PyChainMap => "ChainMap",
         LythonRuntime.DictKeysView => "dict_keys",
         LythonRuntime.DictValuesView => "dict_values",
         LythonRuntime.DictItemsView => "dict_items",
         ChainMapKeysView => "KeysView",
         ChainMapValuesView => "ValuesView",
         ChainMapItemsView => "ItemsView",
-        _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context),
+        PyDecimal => "Decimal",
+        PyDate => "date",
+        PyTime => "time",
+        PyDateTime => "datetime",
+        PyTimedelta => "timedelta",
+        PyTimezone => "timezone",
+        LythonRuntime.StatisticsModule.PyNormalDist => "NormalDist",
+        PyInstance instance => instance.Type.Name,
+        _ => "object",
     };
 
     public static LythonRuntimeException Value(string message, LythonSourceSpan? span)

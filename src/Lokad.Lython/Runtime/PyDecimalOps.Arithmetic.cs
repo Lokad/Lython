@@ -78,11 +78,16 @@ internal static partial class PyDecimalOps
         return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
     }
 
-    public static int Compare(object left, object right, LythonSourceSpan span)
+    private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
+        => operation is null
+            ? new LythonRuntimeException("TypeError", "Values are not comparable.", span)
+            : RuntimeErrors.UnsupportedComparison(operation, left, right, span);
+
+    public static int Compare(object left, object right, LythonSourceSpan span, string? operation = null)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Values are not comparable.", span);
+            throw CompareFailed(operation, left, right, span);
         }
 
         return lhs.CompareTo(rhs);

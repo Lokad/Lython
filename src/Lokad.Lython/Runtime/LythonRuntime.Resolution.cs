@@ -265,14 +265,14 @@ internal sealed partial class LythonRuntime
 
     private static int Compare(object left, object right, LythonSourceSpan span) => PyComparison.Compare(left, right, span);
 
-    private static bool CompareRelational(object left, object right, LythonSourceSpan span, Func<int, bool> predicate)
+    private static bool CompareRelational(object left, object right, LythonSourceSpan span, Func<int, bool> predicate, string operation)
     {
         if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
         {
             return PyNumberOps.TryCompare(lhs, rhs, out var comparison) && predicate(comparison);
         }
 
-        return predicate(Compare(left, right, span));
+        return predicate(PyComparison.Compare(left, right, span, operation));
     }
 
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);

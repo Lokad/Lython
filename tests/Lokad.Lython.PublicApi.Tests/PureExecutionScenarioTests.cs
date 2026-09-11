@@ -4615,11 +4615,20 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("sorted([1, \"a\"])\n", "TypeError", "Values are not comparable")]
-    [InlineData("min([1, \"a\"])\n", "TypeError", "Values are not comparable")]
-    [InlineData("max([1, \"a\"])\n", "TypeError", "Values are not comparable")]
+    [InlineData("sorted([1, \"a\"])\n", "TypeError", "'<' not supported between instances of")]
+    [InlineData("min([1, \"a\"])\n", "TypeError", "'<' not supported between instances of")]
+    [InlineData("max([1, \"a\"])\n", "TypeError", "'>' not supported between instances of")]
     [InlineData("1 in 2\n", "TypeError", "membership testing")]
-    [InlineData("1 < \"a\"\n", "TypeError", "Values are not comparable")]
+    [InlineData("1 < \"a\"\n", "TypeError", "'<' not supported between instances of 'int' and 'str'")]
+    [InlineData("1 <= \"a\"\n", "TypeError", "'<=' not supported between instances of 'int' and 'str'")]
+    [InlineData("\"a\" > 1\n", "TypeError", "'>' not supported between instances of 'str' and 'int'")]
+    [InlineData("\"a\" >= 1\n", "TypeError", "'>=' not supported between instances of 'str' and 'int'")]
+    [InlineData("(1,) < [2]\n", "TypeError", "'<' not supported between instances of 'tuple' and 'list'")]
+    [InlineData("None < 1\n", "TypeError", "'<' not supported between instances of 'NoneType' and 'int'")]
+    [InlineData("import operator\noperator.lt(1, \"a\")\n", "TypeError", "'<' not supported between instances of 'int' and 'str'")]
+    [InlineData("import operator\noperator.le(1, \"a\")\n", "TypeError", "'<=' not supported between instances of 'int' and 'str'")]
+    [InlineData("import operator\noperator.gt(\"a\", 1)\n", "TypeError", "'>' not supported between instances of 'str' and 'int'")]
+    [InlineData("import operator\noperator.ge(\"a\", 1)\n", "TypeError", "'>=' not supported between instances of 'str' and 'int'")]
     public void UnsupportedComparisonShapes_ReportExpectedFailure(string source, string exceptionType, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

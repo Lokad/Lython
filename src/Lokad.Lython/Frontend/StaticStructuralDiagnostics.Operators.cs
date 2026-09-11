@@ -81,7 +81,7 @@ internal static partial class StaticStructuralDiagnostics
         {
             if (!CanApplyOrderedComparison(left, right))
             {
-                AddDiagnostic(diagnostics, "LA3143", "Values are not comparable.", span);
+                AddDiagnostic(diagnostics, "LA3143", ComparisonMessage(op, left, right), span);
             }
 
             return;
@@ -309,6 +309,24 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
             AbstractValueKind.SetType;
+    }
+
+    private static string ComparisonMessage(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)
+    {
+        var operation = op switch
+        {
+            BinaryOperatorSyntax.Less => "<",
+            BinaryOperatorSyntax.LessEqual => "<=",
+            BinaryOperatorSyntax.Greater => ">",
+            _ => ">=",
+        };
+
+        if (TryOperandTypeName(left, out var lhs) && TryOperandTypeName(right, out var rhs))
+        {
+            return $"'{operation}' not supported between instances of '{lhs}' and '{rhs}'";
+        }
+
+        return "Values are not comparable.";
     }
 
     private static string BinaryOperandsMessage(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)

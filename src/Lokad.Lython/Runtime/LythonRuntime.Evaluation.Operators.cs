@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, span);
         }
 
         try
@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, span);
         }
 
         try
@@ -314,7 +314,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, span);
         }
 
         try
@@ -339,7 +339,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw RuntimeErrors.UnsupportedOperands(operation ?? "** or pow()", left, right, context, span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "** or pow()", left, right, span);
         }
 
         try

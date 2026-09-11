@@ -451,8 +451,16 @@ internal sealed partial class LythonRuntime
 
         return invocation.Kind == SpecialMethodInvocationKind.Invoked
             ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : CompareRelational(left, right, span, fallback);
+            : CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
     }
+
+    private static string ComparisonSymbol(string method) => method switch
+    {
+        "__lt__" => "<",
+        "__le__" => "<=",
+        "__gt__" => ">",
+        _ => ">=",
+    };
 
     private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
         => ContainsCoreAsync(container, candidate, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)

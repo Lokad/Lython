@@ -695,7 +695,7 @@ internal static partial class PyDateTimeOps
             (PyTimedelta delta, PyDate date) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
             (PyDateTime dateTime, PyTimedelta delta) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
             (PyTimedelta delta, PyDateTime dateTime) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
-            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, context, span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span)
         };
     }
 
@@ -708,7 +708,7 @@ internal static partial class PyDateTimeOps
             (PyDate lhs, PyDate rhs) => OwnDateTimeValue(new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)), context, span),
             (PyDateTime lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold), context, span),
             (PyDateTime lhs, PyDateTime rhs) => OwnDateTimeValue(SubtractDateTimes(lhs, rhs, span), context, span),
-            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, context, span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, span)
         };
     }
 
@@ -717,7 +717,7 @@ internal static partial class PyDateTimeOps
         return operand switch
         {
             PyTimedelta delta => OwnDateTimeValue(CreateTimedelta(-delta.TotalMicroseconds, span), context, span),
-            _ => throw RuntimeErrors.BadUnaryOperand("-", operand, context, span)
+            _ => throw RuntimeErrors.BadUnaryOperand("-", operand, span)
         };
     }
 
@@ -727,7 +727,7 @@ internal static partial class PyDateTimeOps
         {
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
             (_, PyTimedelta delta) when TryGetScale(left, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
-            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, context, span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, span)
         };
     }
 
@@ -737,7 +737,7 @@ internal static partial class PyDateTimeOps
         {
             (PyTimedelta delta, PyTimedelta other) => DivideTimedeltas(delta, other, span),
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true), context, span),
-            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, context, span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, span)
         };
     }
 
@@ -747,7 +747,7 @@ internal static partial class PyDateTimeOps
         {
             (PyTimedelta delta, PyTimedelta other) => FloorDivideMicroseconds(delta.TotalMicroseconds, other.TotalMicroseconds, span),
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true), context, span),
-            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, context, span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, span)
         };
     }
 
@@ -758,7 +758,7 @@ internal static partial class PyDateTimeOps
             return OwnDateTimeValue(TimedeltaModulo(delta, other, span), context, span);
         }
 
-        throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, context, span);
+        throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, span);
     }
 
     public static PyTuple DivMod(PyTimedelta left, PyTimedelta right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -768,7 +768,12 @@ internal static partial class PyDateTimeOps
         return PyTuple.FromOwnedArray([quotient, remainder], context.MemoryGovernor, span);
     }
 
-    public static int Compare(object left, object right, LythonSourceSpan span)
+    private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
+        => operation is null
+            ? new LythonRuntimeException("TypeError", "Values are not comparable.", span)
+            : RuntimeErrors.UnsupportedComparison(operation, left, right, span);
+
+    public static int Compare(object left, object right, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
@@ -776,7 +781,7 @@ internal static partial class PyDateTimeOps
             (PyDate lhs, PyDate rhs) => lhs.Value.CompareTo(rhs.Value),
             (PyTime lhs, PyTime rhs) => CompareTimes(lhs, rhs, span),
             (PyDateTime lhs, PyDateTime rhs) => CompareDateTimes(lhs, rhs, span),
-            _ => throw new LythonRuntimeException("TypeError", "Values are not comparable.", span)
+            _ => throw CompareFailed(operation, left, right, span)
         };
     }
 
