@@ -4551,6 +4551,9 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(b"a b".split(None, 0) == [b"a b"])
             results.append(b"a,b".split(sep=b",") == [b"a", b"b"])
             results.append(b"a,b,c".rsplit(sep=b",", maxsplit=1) == [b"a,b", b"c"])
+            results.append(b"aaa".rsplit(b"aa") == [b"a", b""])
+            results.append(b"aaaaa".rsplit(b"aa", 2) == [b"a", b"", b""])
+            results.append(b"ababab".rsplit(b"abab") == [b"ab", b""])
             results.append(bytes.split(b"a,b", b",") == [b"a", b"b"])
             results.append(type(bytes.split).__name__)
             results.append(bytes.split.__name__)
@@ -4590,7 +4593,7 @@ public sealed class SharedFixedLabelBehaviorTests
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true, true, true,
-            true, true, true, true, "method_descriptor", "split", true, true, true, true, true,
+            true, true, true, true, true, true, true, "method_descriptor", "split", true, true, true, true, true,
             "Method 'bytes.split' received too many positional arguments.",
             "Method 'bytes.splitlines' received too many positional arguments.",
             "Method 'bytes.split' got an unexpected keyword argument 'x'.",
@@ -4625,6 +4628,8 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(b"a,b".partition(s)[1] is s)
             results.append(bytes.partition(b"a,b", b",") == (b"a", b",", b"b"))
             results.append(bytes.rpartition(b"a,b", b",") == (b"a", b",", b"b"))
+            results.append(b"aaa".rpartition(b"aa") == (b"a", b"aa", b""))
+            results.append(b"ababab".rpartition(b"abab") == (b"ab", b"abab", b""))
             results.append(type(bytes.partition).__name__)
             results.append(bytes.partition.__name__)
             results.append(hasattr(bytes, "rpartition"))
@@ -4663,7 +4668,7 @@ public sealed class SharedFixedLabelBehaviorTests
         var expected = new List<object?>
         {
             true, true, true, true, true, true, true, true, true, true,
-            "method_descriptor", "partition", true, true, true, true, true,
+            true, true, "method_descriptor", "partition", true, true, true, true, true,
             "bytes.partition() takes exactly one argument (0 given)",
             "bytes.partition() takes exactly one argument (2 given)",
             "bytes.partition() takes no keyword arguments",

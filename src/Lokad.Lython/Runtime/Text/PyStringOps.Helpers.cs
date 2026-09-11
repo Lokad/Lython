@@ -157,7 +157,7 @@ internal static partial class PyStringOps
             : trimChars.Contains(rune);
     }
 
-    private static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
+    internal static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
         => haystack.LastIndexOf(needle);
 
     private static int LastFind(PyString value, PyString needle)

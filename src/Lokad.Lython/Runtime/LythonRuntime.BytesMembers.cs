@@ -1365,26 +1365,26 @@ internal sealed partial class LythonRuntime
 
         var source = value.Bytes;
         var matches = new List<int>();
-        var searchFrom = 0;
-        while (searchFrom <= source.Length)
+        var searchEnd = source.Length;
+        while (maxSplit < 0 || matches.Count < maxSplit)
         {
-            var found = PyString.IndexOfBytes(source[searchFrom..], needle);
+            var found = PyStringOps.LastIndexOfBytes(source[..searchEnd], needle);
             if (found < 0)
             {
                 break;
             }
 
-            matches.Add(searchFrom + found);
-            searchFrom += found + needle.Length;
+            matches.Add(found);
+            searchEnd = found;
         }
 
-        var firstKept = maxSplit < 0 ? 0 : int.Max(0, matches.Count - maxSplit);
+        matches.Reverse();
         var parts = NewBytesPartList(context.MemoryGovernor, span);
         var offset = 0;
-        for (var i = firstKept; i < matches.Count; i++)
+        foreach (var match in matches)
         {
-            parts.Add(SliceBytesRange(source, offset, matches[i], context, span));
-            offset = matches[i] + needle.Length;
+            parts.Add(SliceBytesRange(source, offset, match, context, span));
+            offset = match + needle.Length;
         }
 
         parts.Add(SliceBytesRange(source, offset, source.Length, context, span));
@@ -1462,24 +1462,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "empty separator", span);
         }
 
-        var match = -1;
-        var searchFrom = 0;
-        while (searchFrom <= source.Length)
-        {
-            var found = PyString.IndexOfBytes(source[searchFrom..], needle);
-            if (found < 0)
-            {
-                break;
-            }
-
-            match = searchFrom + found;
-            if (isFirst)
-            {
-                break;
-            }
-
-            searchFrom = match + needle.Length;
-        }
+        var match = isFirst
+            ? PyString.IndexOfBytes(source, needle)
+            : PyStringOps.LastIndexOfBytes(source, needle);
 
         var governor = context.MemoryGovernor;
         if (match < 0)
