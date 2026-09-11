@@ -147,12 +147,16 @@ try:
 except TypeError:
     values.append("complex")
 values.append(str(pow(2, -1, 5)))
+try:
+    pow(2, 3, 0)
+except ValueError as e:
+    values.append(str(e))
 return "|".join(values)
 """,
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("zero|complex|3", result.ReturnValue);
+        Assert.Equal("zero|complex|3|pow() 3rd argument cannot be 0", result.ReturnValue);
     }
 
     [Fact]

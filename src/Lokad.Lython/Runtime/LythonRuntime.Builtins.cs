@@ -356,7 +356,7 @@ internal sealed partial class LythonRuntime
             var modulus = RuntimeArgumentValidation.ExpectInteger(arguments[2], "pow(base, exp, mod) expects integer arguments when mod is provided.", span);
             if (modulus == BigInteger.Zero)
             {
-                throw new LythonRuntimeException("ValueError", "pow() 3rd argument cannot be 0.", span);
+                throw new LythonRuntimeException("ValueError", "pow() 3rd argument cannot be 0", span);
             }
 
             if (exponent < BigInteger.Zero)
