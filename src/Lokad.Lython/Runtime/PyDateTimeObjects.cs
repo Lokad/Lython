@@ -65,7 +65,36 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
     {
         _ = context;
         var parts = _normalized;
-        return PyString.FromString($"datetime.timedelta(days={parts.Days}, seconds={parts.Seconds}, microseconds={parts.Microseconds})");
+        if (parts.Days.IsZero && parts.Seconds == 0 && parts.Microseconds == 0)
+        {
+            return PyString.FromString("datetime.timedelta(0)");
+        }
+
+        var builder = new StringBuilder("datetime.timedelta(");
+        var first = true;
+        AppendField(ref first, builder, "days", parts.Days.IsZero ? null : parts.Days.ToString(CultureInfo.InvariantCulture));
+        AppendField(ref first, builder, "seconds", parts.Seconds == 0 ? null : parts.Seconds.ToString(CultureInfo.InvariantCulture));
+        AppendField(ref first, builder, "microseconds", parts.Microseconds == 0 ? null : parts.Microseconds.ToString(CultureInfo.InvariantCulture));
+        builder.Append(')');
+        return PyString.FromString(builder.ToString());
+    }
+
+    private static void AppendField(ref bool first, StringBuilder builder, string name, string? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        if (!first)
+        {
+            builder.Append(", ");
+        }
+
+        builder.Append(name);
+        builder.Append('=');
+        builder.Append(value);
+        first = false;
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)

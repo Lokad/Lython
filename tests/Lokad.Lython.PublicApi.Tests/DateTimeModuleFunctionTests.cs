@@ -36,6 +36,35 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DateTime_TimedeltaReprElidesZeroFields()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import datetime
+vals = []
+vals.append(repr(datetime.timedelta(0)))
+vals.append(repr(datetime.timedelta(days=-1)))
+vals.append(repr(datetime.timedelta(seconds=86399)))
+vals.append(repr(datetime.timedelta(microseconds=1)))
+vals.append(repr(datetime.timedelta(days=-2, seconds=3)))
+vals.append(repr(datetime.timedelta(hours=25)))
+vals.append(str(datetime.timedelta(seconds=-1)))
+vals.append("{!r}".format(datetime.timedelta(days=1)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            "datetime.timedelta(0)|datetime.timedelta(days=-1)|datetime.timedelta(seconds=86399)|datetime.timedelta(microseconds=1)|datetime.timedelta(days=-2, seconds=3)|datetime.timedelta(days=1, seconds=3600)|-1 day, 23:59:59|datetime.timedelta(days=1)",
+            host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void DateTime_TimezonePreservesSubMinuteOffsets()
     {
         var host = new MockLythonHost();
