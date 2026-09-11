@@ -7,8 +7,8 @@ namespace Lokad.Lython.Tests;
 /// million-item pair raises the same ValueError either way, but pre-fix it
 /// allocated tens of megabytes of transient list backing to discover that.
 /// The drill measures per-thread allocations around a synchronous failure.
-/// (Pairs arrive through a parameter; list literals are statically rejected
-/// by LA3104 before reaching the runtime pair loop.)
+/// (Pairs arrive through a parameter; unbounded iterables validate with a
+/// bounded pull horizon, so the message stays generic past it.)
 /// </summary>
 public sealed class DictUpdatePairsAccountingTests
 {

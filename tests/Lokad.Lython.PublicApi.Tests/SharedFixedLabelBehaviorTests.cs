@@ -2463,6 +2463,62 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task DictUpdatePopMembers()
+    {
+        // dict.pop takes an optional default and dict.update takes pair
+        // sequences and keywords like CPython, with indexed sequence errors.
+        var script = new LythonEngine().Compile("""
+            results = []
+            d = {"a": 1}
+            results.append(d.pop("a", 9))
+            results.append(str(d))
+            results.append({}.pop("b", 9))
+            results.append({}.pop("b", None) is None)
+            d2 = {"a": 1}
+            d2.update([("b", 2)])
+            results.append(str(d2))
+            d3 = {}
+            d3.update(x=1)
+            results.append(str(d3))
+            d4 = {}
+            d4.update()
+            results.append(str(d4))
+            try:
+                getattr({"a": 1}, "pop")("a", 1, 2)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr({"a": 1}, "update")({"b": 2}, {"c": 3})
+            except TypeError as e:
+                results.append(str(e))
+            def get_dict(pairs):
+                return dict(pairs)
+            try:
+                get_dict([("a",)])
+            except ValueError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(1), "{}", new BigInteger(9), true,
+            "{'a': 1, 'b': 2}",
+            "{'x': 1}",
+            "{}",
+            "Method 'dict.pop' received too many positional arguments.",
+            "dict.update expected at most 1 positional argument",
+            "dictionary update sequence element #0 has length 1; 2 is required",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task DictPopitem()
     {
         // dict.popitem removes the last pair like CPython (last-enumerated,

@@ -754,7 +754,7 @@ mapping.get()
 mapping.keys(1)
 mapping.values(1)
 mapping.items(1)
-mapping.update()
+mapping.update({}, {})
 mapping.pop()
 mapping.copy(1)
 mapping.clear(1)
@@ -907,7 +907,7 @@ with open("/repo/out.txt", "w") as writer:
     writer_items.extend(writer)
 
 mapping = {}
-mapping.update([])
+mapping.update(1)
 """);
 
         Assert.False(compiled.IsValid);
@@ -1764,7 +1764,7 @@ mapping2 = mapping1
 "{name}".format_map(mapping2)
 
 d = {}
-update1 = []
+update1 = 1
 update2 = update1
 d.update(update2)
 

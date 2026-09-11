@@ -7,7 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// MG05: dict.update validates pair lengths before materializing them: at most
 /// three items are ever pulled from each pair, so an oversized pair raises the
 /// same ValueError without a proportional transient. Pairs arrive through a
-/// parameter (list literals are statically rejected by LA3104) and values read
+/// parameter (list literals compile and validate their elements at runtime) and values read
 /// back through get (literal keys are statically tracked by LA3157).
 /// </summary>
 public sealed class DictUpdatePairsAccountingScenarioTests
@@ -40,9 +40,9 @@ public sealed class DictUpdatePairsAccountingScenarioTests
     {
         var cases = new List<(string Source, string Type, string? Message)>
         {
-            ("[(97,)]", "ValueError", "dictionary update sequence element has length other than 2"),
-            ("[()]", "ValueError", "dictionary update sequence element has length other than 2"),
-            ("[(x for x in range(10))]", "ValueError", "dictionary update sequence element has length other than 2"),
+            ("[(97,)]", "ValueError", "dictionary update sequence element #0 has length 1; 2 is required"),
+            ("[()]", "ValueError", "dictionary update sequence element #0 has length 0; 2 is required"),
+            ("[(x for x in range(10))]", "ValueError", "dictionary update sequence element #0 has length 10; 2 is required"),
             ("[42]", "TypeError", null),
         };
         foreach (var (source, expectedType, expectedMessage) in cases)

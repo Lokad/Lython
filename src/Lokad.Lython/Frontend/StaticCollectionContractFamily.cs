@@ -266,12 +266,19 @@ internal static class StaticCollectionContractFamily
             return;
         }
 
-        if (StaticAbstractValueResolver.TryResolve(mappingExpression, bindings, out var value) &&
-            value.Kind != AbstractValueKind.Unknown &&
-            value.Kind != AbstractValueKind.Dict)
+        if (StaticAbstractValueResolver.TryResolve(mappingExpression, bindings, out var value))
         {
-            AddDiagnostic(diagnostics, "LA3104", "dict.update(mapping) expects one dictionary argument.", mappingExpression.Span);
-            return;
+            if (value.Kind == AbstractValueKind.List || value.Kind == AbstractValueKind.Tuple)
+            {
+                // Pair sequences validate their elements at runtime like CPython.
+                return;
+            }
+
+            if (value.Kind != AbstractValueKind.Unknown && value.Kind != AbstractValueKind.Dict)
+            {
+                AddDiagnostic(diagnostics, "LA3104", "dict.update(mapping) expects one dictionary argument.", mappingExpression.Span);
+                return;
+            }
         }
 
         if (StaticAbstractFacts.IsDefinitelyKnownLiteral(mappingExpression, bindings) &&

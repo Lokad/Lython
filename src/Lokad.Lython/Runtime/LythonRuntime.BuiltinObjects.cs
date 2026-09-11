@@ -390,28 +390,71 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        var elementIndex = 0;
         foreach (var pair in ToSequence(source, span, context))
         {
-            using var enumerator = ToSequence(pair, span, context).GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
-            }
-
-            var key = enumerator.Current;
-            if (!enumerator.MoveNext())
-            {
-                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
-            }
-
-            var value = enumerator.Current;
-            if (enumerator.MoveNext())
-            {
-                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
-            }
-
-            target.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), value);
+            ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
+            target.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), elementValue);
+            elementIndex++;
         }
+    }
+
+    // Pair elements validate with at most BoundedPairValidationCount pulls:
+    // small shapes report their exact length while unbounded iterables never
+    // pay a proportional transient for the message.
+    private const int BoundedPairValidationCount = 100;
+
+    private static void ReadUpdatePair(object pair, int elementIndex, ExecutionContext context, LythonSourceSpan span, out object key, out object elementValue)
+    {
+        if (TryGetPairLength(pair, out var knownLength) && knownLength != 2)
+        {
+            throw new LythonRuntimeException("ValueError", "dictionary update sequence element #" + elementIndex + " has length " + knownLength + "; 2 is required", span);
+        }
+
+        using var enumerator = ToSequence(pair, span, context).GetEnumerator();
+        key = PyNone.Instance;
+        elementValue = PyNone.Instance;
+        var pulled = 0;
+        while (enumerator.MoveNext())
+        {
+            if (pulled == 0)
+            {
+                key = enumerator.Current;
+            }
+            else if (pulled == 1)
+            {
+                elementValue = enumerator.Current;
+            }
+
+            pulled++;
+            if (pulled > BoundedPairValidationCount)
+            {
+                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
+            }
+        }
+
+        if (pulled != 2)
+        {
+            throw new LythonRuntimeException("ValueError", "dictionary update sequence element #" + elementIndex + " has length " + pulled + "; 2 is required", span);
+        }
+    }
+
+    private static bool TryGetPairLength(object pair, out int length)
+    {
+        length = pair switch
+        {
+            PyList list => list.Count,
+            PyTuple tuple => tuple.Count,
+            PyString text => text.Length,
+            PyBytes bytes => bytes.Length,
+            PyDict mapping => mapping.Count,
+            PySet set => set.Count,
+            PyRange range => range.Length > int.MaxValue ? -1 : (int)range.Length,
+            System.Collections.ICollection collection => collection.Count,
+            _ => -1,
+        };
+
+        return length >= 0;
     }
 
     internal static object UpdateDictionary(
