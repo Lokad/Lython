@@ -298,7 +298,7 @@ return "|".join([
     }
 
     [Theory]
-    [InlineData("abs('x')\n", "TypeError", "numeric")]
+    [InlineData("abs('x')\n", "TypeError", "bad operand type for abs()")]
     [InlineData("pow(2, 3, 0)\n", "ValueError", "cannot be 0")]
     [InlineData("bin(1.2)\n", "TypeError", "integer")]
     [InlineData("chr(1114112)\n", "ValueError", "range")]

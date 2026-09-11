@@ -240,6 +240,28 @@ __lython_file.close()
     }
 
     [Fact]
+    public void AbsFailures_MatchCpythonShapes()
+    {
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+
+for bad in ["a", None, [1], C()]:
+    try:
+        print(abs(bad))
+    except TypeError as e:
+        print(str(e))
+print(abs(-5))
+print(abs(3.5))
+print(abs(True))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("bad operand type for abs(): 'str'\nbad operand type for abs(): 'NoneType'\nbad operand type for abs(): 'list'\nbad operand type for abs(): 'C'\n5\n3.5\n1\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void IntFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(

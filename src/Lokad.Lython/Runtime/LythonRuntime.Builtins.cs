@@ -336,7 +336,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(arguments[0], out var number))
         {
-            throw new LythonRuntimeException("TypeError", "abs(x) expects a numeric value.", span);
+            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
         }
 
         return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
