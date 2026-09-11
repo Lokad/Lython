@@ -30,7 +30,9 @@ internal sealed class PyStaticMethod : IPyRenderableValue, IPyBindableCallable, 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => _callable.InvokeAsync(arguments, span, context);
 
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<staticmethod>");
+    // Like CPython, the wrapper names its wrapped callable (partial renders the
+    // same way); only the callable repr varies, never an address here.
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<staticmethod({PyRendering.ToPythonString(_callable, context)})>");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }
@@ -77,7 +79,9 @@ internal sealed class PyClassMethod : IPyRenderableValue, IPyBindableCallable, I
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => _callable.InvokeAsync(arguments, span, context);
 
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<classmethod>");
+    // Like CPython, the wrapper names its wrapped callable (partial renders the
+    // same way); only the callable repr varies, never an address here.
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<classmethod({PyRendering.ToPythonString(_callable, context)})>");
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }

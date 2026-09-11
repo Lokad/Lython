@@ -5090,6 +5090,41 @@ __lython_file.close()
         Assert.Equal("False|False|False|True|True|False|True|False", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DescriptorWrappers_NameWrappedCallable()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C:
+    @staticmethod
+    def f(x):
+        return x + 1
+    @classmethod
+    def g(cls, x):
+        return x + 2
+
+parts = []
+parts.append(str(staticmethod(int)))
+parts.append(str(staticmethod(len)))
+parts.append(str(classmethod(int)))
+parts.append(str(classmethod(str)))
+parts.append(str(C().f(1)))
+parts.append(str(C().g(1)))
+parts.append(str(C.f(1)))
+parts.append(str(C.g(1)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<staticmethod(<class 'int'>)>|<staticmethod(<built-in function len>)>|<classmethod(<class 'int'>)>|<classmethod(<class 'str'>)>|2|3|2|3", host.ReadText("/out.txt"));
+    }
+
+
 
 
     [Theory]
