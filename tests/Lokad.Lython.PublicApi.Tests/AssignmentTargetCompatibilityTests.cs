@@ -247,7 +247,6 @@ __lython_file.close()
     [InlineData("if ((a := 1) := 2):\n    pass", "assignment expression target")]
     [InlineData("class Box:\n    pass\nbox = Box()\nbox.value: int = 1", "Unsupported assignment target")]
     [InlineData("items = [0]\nitems[0]: int = 1", "Unsupported assignment target")]
-    [InlineData("(a, (b, c)) = [1, [2, 3]]", "Unsupported assignment target")]
     public void UnsupportedAssignmentTargetForms_ReportCompileDiagnostics(string source, string messageFragment)
     {
         var compiled = new LythonEngine().Compile(source);
@@ -591,6 +590,85 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Null(result.Failure);
         Assert.Equal("1:2|15|[9, 3]:7|7|[5]:6|(7, 8):15|19|23", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void NestedDisplayTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+a = 0
+b = 0
+c = 0
+(a, (b, c)) = (1, (2, 3))
+
+d = 0
+e = 0
+[d, [e]] = [4, [5]]
+
+slots = [0]
+f = 0
+(slots[0], (f,)) = (6, (7,))
+
+g = 0
+h = 0
+((g, h)) = (8, 9)
+
+r = []
+s = 0
+(s, (*r,)) = (10, (11, 12))
+
+t = 0
+u = 0
+v = 0
+(t, (u, (v,))) = (13, (14, (15,)))
+
+x = 1
+y = 2
+z = 3
+del ((x, y), z)
+
+gone = []
+try:
+    x
+except NameError:
+    gone.append("x")
+try:
+    y
+except NameError:
+    gone.append("y")
+try:
+    z
+except NameError:
+    gone.append("z")
+
+def run():
+    p = 0
+    q = 0
+    (p, (q,)) = (16, (17,))
+    return p + q
+
+values = [
+    str(a + b + c),
+    str(d + e),
+    str(slots[0] + f),
+    str(g + h),
+    str(s) + ":" + str(r),
+    str(t + u + v),
+    "|".join(gone),
+    str(run()),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("6|9|13|17|10:[11, 12]|42|x|y|z|33", host.ReadText("/out.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)

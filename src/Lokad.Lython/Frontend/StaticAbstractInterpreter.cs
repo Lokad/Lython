@@ -83,24 +83,42 @@ internal static partial class StaticAbstractInterpreter
         // the matching single-target assignment.
         foreach (var target in unpacking.Targets)
         {
-            switch (target)
+            AnalyzeUnpackingTarget(target, diagnostics, bindings);
+        }
+    }
+
+    private static void AnalyzeUnpackingTarget(
+        UnpackingTargetSyntax target,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+    {
+        if (target is UnpackingNestedTargetSyntax nested)
+        {
+            foreach (var nestedItem in nested.Items)
             {
-                case UnpackingSubscriptTargetSyntax subscript:
-                    AnalyzeExpression(subscript.Target, diagnostics, bindings);
-                    AnalyzeExpression(subscript.Index, diagnostics, bindings);
-                    break;
-
-                case UnpackingSliceTargetSyntax slice:
-                    AnalyzeExpression(slice.Target, diagnostics, bindings);
-                    AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
-                    AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
-                    AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
-                    break;
-
-                case UnpackingMemberTargetSyntax member:
-                    AnalyzeExpression(member.Target, diagnostics, bindings);
-                    break;
+                AnalyzeUnpackingTarget(nestedItem, diagnostics, bindings);
             }
+
+            return;
+        }
+
+        switch (target)
+        {
+            case UnpackingSubscriptTargetSyntax subscript:
+                AnalyzeExpression(subscript.Target, diagnostics, bindings);
+                AnalyzeExpression(subscript.Index, diagnostics, bindings);
+                break;
+
+            case UnpackingSliceTargetSyntax slice:
+                AnalyzeExpression(slice.Target, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                break;
+
+            case UnpackingMemberTargetSyntax member:
+                AnalyzeExpression(member.Target, diagnostics, bindings);
+                break;
         }
     }
 

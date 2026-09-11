@@ -441,9 +441,16 @@ internal sealed partial class Parser
         IReadOnlyList<CollectionDisplayItemSyntax> items,
         out IReadOnlyList<UnpackingTargetSyntax> targets)
     {
+        var starredCount = 0;
         var converted = new UnpackingTargetSyntax[items.Count];
         for (var i = 0; i < items.Count; i++)
         {
+            if (items[i].IsUnpacking && ++starredCount > 1)
+            {
+                targets = Array.Empty<UnpackingTargetSyntax>();
+                return false;
+            }
+
             if (!TryConvertUnpackingItem(items[i], out var convertedItem))
             {
                 targets = Array.Empty<UnpackingTargetSyntax>();
@@ -487,10 +494,28 @@ internal sealed partial class Parser
                 member.MemberName,
                 item.IsUnpacking,
                 member.Span),
+            TupleLiteralExpressionSyntax tuple when TryConvertNestedDisplay(tuple.Items, tuple.Span, item.IsUnpacking, out var nestedTuple) => nestedTuple,
+            ListLiteralExpressionSyntax list when TryConvertNestedDisplay(list.Items, list.Span, item.IsUnpacking, out var nestedList) => nestedList,
             _ => null,
         };
 
         return target is not null;
+    }
+
+    private static bool TryConvertNestedDisplay(
+        IReadOnlyList<CollectionDisplayItemSyntax> items,
+        LythonSourceSpan span,
+        bool isStarred,
+        out UnpackingTargetSyntax? nested)
+    {
+        if (!TryConvertSequenceExpressionToTargets(items, out var nestedTargets))
+        {
+            nested = null;
+            return false;
+        }
+
+        nested = new UnpackingNestedTargetSyntax(nestedTargets, isStarred, span);
+        return true;
     }
 
     private StatementSyntax? TryParseAugmentedAssignmentStatement()

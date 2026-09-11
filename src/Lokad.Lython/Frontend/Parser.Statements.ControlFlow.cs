@@ -129,18 +129,36 @@ internal sealed partial class Parser
     }
 
     // Only displays of direct single targets are supported like CPython; anything
-    // else (starred or mixed shapes) keeps the existing diagnostic. Empty displays delete nothing like CPython.
+    // else (starred or non-target shapes) keeps the existing diagnostic. Empty displays delete nothing like CPython.
     private static bool IsSupportedDeleteDisplay(IReadOnlyList<CollectionDisplayItemSyntax> items)
     {
         foreach (var item in items)
         {
-            if (item.IsUnpacking || item.Expression is not (IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax))
+            if (!IsSupportedDeleteItem(item))
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    // Parentheses never change the target like CPython; nested displays delete
+    // every leaf like the flat form.
+    private static bool IsSupportedDeleteItem(CollectionDisplayItemSyntax item)
+    {
+        if (item.IsUnpacking)
+        {
+            return false;
+        }
+
+        return UnwrapParenthesizedTarget(item.Expression) switch
+        {
+            IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => true,
+            TupleLiteralExpressionSyntax tuple => IsSupportedDeleteDisplay(tuple.Items),
+            ListLiteralExpressionSyntax list => IsSupportedDeleteDisplay(list.Items),
+            _ => false,
+        };
     }
 
     private StatementSyntax? AddUnsupportedDeleteTarget(ExpressionSyntax target, string construct)

@@ -225,7 +225,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(augmented.Expression, names);
                 break;
             case UnpackingAssignmentStatementSyntax unpacking:
-                foreach (var target in unpacking.Targets) { if (target is UnpackingNameTargetSyntax name) names.Add(name.Name); }
+                foreach (var target in unpacking.Targets) CollectSeenNames(target, names);
                 CollectSeenNames(unpacking.Expression, names);
                 break;
             case SubscriptAssignmentStatementSyntax subscript:
@@ -329,7 +329,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 names.Add(name.Name);
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:
-                foreach (var nested in group.Targets) { if (nested is UnpackingNameTargetSyntax nestedName) names.Add(nestedName.Name); }
+                foreach (var nested in group.Targets) CollectSeenNames(nested, names);
                 break;
             case SubscriptAssignmentTargetSyntax subscript:
                 CollectSeenNames(subscript.Target, names);
@@ -343,6 +343,36 @@ internal static class StaticScopeDirectiveDiagnostics
                 break;
             case MemberAssignmentTargetSyntax member:
                 CollectSeenNames(member.Target, names);
+                break;
+        }
+    }
+
+    private static void CollectSeenNames(UnpackingTargetSyntax target, HashSet<string> names)
+    {
+        switch (target)
+        {
+            case UnpackingNameTargetSyntax name:
+                names.Add(name.Name);
+                break;
+
+            case UnpackingSubscriptTargetSyntax subscript:
+                CollectSeenNames(subscript.Target, names);
+                CollectSeenNames(subscript.Index, names);
+                break;
+
+            case UnpackingSliceTargetSyntax slice:
+                CollectSeenNames(slice.Target, names);
+                if (slice.Start is not null) CollectSeenNames(slice.Start, names);
+                if (slice.End is not null) CollectSeenNames(slice.End, names);
+                if (slice.Step is not null) CollectSeenNames(slice.Step, names);
+                break;
+
+            case UnpackingMemberTargetSyntax member:
+                CollectSeenNames(member.Target, names);
+                break;
+
+            case UnpackingNestedTargetSyntax nested:
+                foreach (var nestedItem in nested.Items) CollectSeenNames(nestedItem, names);
                 break;
         }
     }

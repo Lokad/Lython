@@ -173,7 +173,7 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case UnpackingAssignmentStatementSyntax unpacking:
-                    foreach (var target in unpacking.Targets) { if (target is UnpackingNameTargetSyntax name) names.Add(name.Name); }
+                    foreach (var target in unpacking.Targets) CollectUnpackingTargetNames(target, names);
                     break;
 
                 case ForStatementSyntax forStatement:
@@ -225,8 +225,25 @@ internal static class ScopeDirectiveFactsCollector
                     names.Add(name.Name);
                     break;
                 case UnpackingAssignmentTargetGroupSyntax unpacking:
-                    foreach (var nestedTarget in unpacking.Targets) { if (nestedTarget is UnpackingNameTargetSyntax nestedName) names.Add(nestedName.Name); }
+                    foreach (var nestedTarget in unpacking.Targets) CollectUnpackingTargetNames(nestedTarget, names);
                     break;
+            }
+        }
+
+        static void CollectUnpackingTargetNames(UnpackingTargetSyntax target, HashSet<string> names)
+        {
+            if (target is UnpackingNameTargetSyntax name)
+            {
+                names.Add(name.Name);
+                return;
+            }
+
+            if (target is UnpackingNestedTargetSyntax nested)
+            {
+                foreach (var nestedItem in nested.Items)
+                {
+                    CollectUnpackingTargetNames(nestedItem, names);
+                }
             }
         }
     }

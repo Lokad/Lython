@@ -288,7 +288,19 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteLoweredDeleteStatement(LoweredDeleteStatement statement, ExecutionContext context)
     {
-        if (TryGetDeleteDisplayItems(statement.Target, out var syntaxItems, out var loweredItems))
+        ExecuteLoweredDeleteTarget(statement.Target.Syntax, statement.Target, statement.Span, context);
+    }
+
+    private static void ExecuteLoweredDeleteTarget(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
+    {
+        while (syntax is ParenthesizedExpressionSyntax parenthesized
+            && loweredTarget is LoweredParenthesizedExpression loweredParenthesized)
+        {
+            syntax = parenthesized.Inner;
+            loweredTarget = loweredParenthesized.Inner;
+        }
+
+        if (TryGetDeleteDisplayItems(loweredTarget, out var syntaxItems, out var loweredItems))
         {
             for (var i = 0; i < syntaxItems.Count; i++)
             {
@@ -305,11 +317,6 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        ExecuteLoweredDeleteTarget(statement.Target.Syntax, statement.Target, statement.Span, context);
-    }
-
-    private static void ExecuteLoweredDeleteTarget(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
-    {
         switch (syntax)
         {
             case IdentifierExpressionSyntax identifier:

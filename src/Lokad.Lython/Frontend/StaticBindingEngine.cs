@@ -168,6 +168,11 @@ internal static partial class StaticBindingEngine
 
     private static void RemoveDeleteTargetBindings(ExpressionSyntax target, AbstractState bindings)
     {
+        while (target is ParenthesizedExpressionSyntax parenthesized)
+        {
+            target = parenthesized.Inner;
+        }
+
         if (target is IdentifierExpressionSyntax identifier)
         {
             bindings.Remove(identifier.Name);
@@ -188,9 +193,9 @@ internal static partial class StaticBindingEngine
 
         foreach (var item in items)
         {
-            if (item is { IsUnpacking: false, Expression: IdentifierExpressionSyntax itemIdentifier })
+            if (!item.IsUnpacking)
             {
-                bindings.Remove(itemIdentifier.Name);
+                RemoveDeleteTargetBindings(item.Expression, bindings);
             }
         }
     }
@@ -412,6 +417,15 @@ internal static partial class StaticBindingEngine
             return false;
         }
 
+        return BindUnpackingTargetList(targets, items, expression.Span, bindings);
+    }
+
+    private static bool BindUnpackingTargetList(
+        IReadOnlyList<UnpackingTargetSyntax> targets,
+        IReadOnlyList<AbstractValue> items,
+        LythonSourceSpan span,
+        AbstractState bindings)
+    {
         var layout = UnpackingLayout.FromTargets(targets);
         if (!layout.AcceptsValueCount(items.Count))
         {
@@ -422,7 +436,7 @@ internal static partial class StaticBindingEngine
         {
             for (var i = 0; i < targets.Count; i++)
             {
-                BindUnpackingTarget(targets[i], items[i].WithSpan(expression.Span), bindings);
+                BindUnpackingTarget(targets[i], items[i].WithSpan(span), bindings);
             }
 
             return true;
@@ -430,22 +444,22 @@ internal static partial class StaticBindingEngine
 
         for (var i = 0; i < layout.StarredTargetIndex; i++)
         {
-            BindUnpackingTarget(targets[i], items[i].WithSpan(expression.Span), bindings);
+            BindUnpackingTarget(targets[i], items[i].WithSpan(span), bindings);
         }
 
         var starredValueCount = layout.StarredValueCount(items.Count);
         var rest = new List<AbstractValue>(starredValueCount);
         for (var i = 0; i < starredValueCount; i++)
         {
-            rest.Add(items[layout.StarredTargetIndex + i].WithSpan(expression.Span));
+            rest.Add(items[layout.StarredTargetIndex + i].WithSpan(span));
         }
 
-        BindUnpackingTarget(targets[layout.StarredTargetIndex], AbstractValue.List(rest, expression.Span), bindings);
+        BindUnpackingTarget(targets[layout.StarredTargetIndex], AbstractValue.List(rest, span), bindings);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
             var offset = layout.SourceIndexForTrailingTarget(i, items.Count);
-            BindUnpackingTarget(targets[i], items[offset].WithSpan(expression.Span), bindings);
+            BindUnpackingTarget(targets[i], items[offset].WithSpan(span), bindings);
         }
 
         return true;
@@ -453,10 +467,20 @@ internal static partial class StaticBindingEngine
 
     private static void BindUnpackingTarget(UnpackingTargetSyntax target, AbstractValue value, AbstractState bindings)
     {
-        if (target is UnpackingNameTargetSyntax name)
+        switch (target)
         {
-            bindings.Set(name.Name, value);
-            return;
+            case UnpackingNameTargetSyntax name:
+                bindings.Set(name.Name, value);
+                return;
+
+            case UnpackingNestedTargetSyntax nested:
+                if (TryGetFixedSequenceItems(value, out var nestedItems)
+                    && BindUnpackingTargetList(nested.Items, nestedItems, nested.Span, bindings))
+                {
+                    return;
+                }
+
+                break;
         }
 
         RemoveUnpackingTargetBinding(target, bindings);
@@ -480,6 +504,14 @@ internal static partial class StaticBindingEngine
 
             case UnpackingMemberTargetSyntax { Target: IdentifierExpressionSyntax memberIdentifier }:
                 bindings.Remove(memberIdentifier.Name);
+                break;
+
+            case UnpackingNestedTargetSyntax nested:
+                foreach (var nestedItem in nested.Items)
+                {
+                    RemoveUnpackingTargetBinding(nestedItem, bindings);
+                }
+
                 break;
         }
     }

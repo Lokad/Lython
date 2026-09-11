@@ -339,7 +339,19 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask ExecuteLoweredDeleteStatementAsync(LoweredDeleteStatement statement, ExecutionContext context)
     {
-        if (TryGetDeleteDisplayItems(statement.Target, out var syntaxItems, out var loweredItems))
+        await ExecuteLoweredDeleteTargetAsync(statement.Target.Syntax, statement.Target, statement.Span, context).ConfigureAwait(false);
+    }
+
+    private static async ValueTask ExecuteLoweredDeleteTargetAsync(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
+    {
+        while (syntax is ParenthesizedExpressionSyntax parenthesized
+            && loweredTarget is LoweredParenthesizedExpression loweredParenthesized)
+        {
+            syntax = parenthesized.Inner;
+            loweredTarget = loweredParenthesized.Inner;
+        }
+
+        if (TryGetDeleteDisplayItems(loweredTarget, out var syntaxItems, out var loweredItems))
         {
             for (var i = 0; i < syntaxItems.Count; i++)
             {
@@ -356,15 +368,6 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        await ExecuteLoweredDeleteTargetAsync(
-            statement.Target.Syntax,
-            statement.Target,
-            statement.Span,
-            context).ConfigureAwait(false);
-    }
-
-    private static async ValueTask ExecuteLoweredDeleteTargetAsync(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
-    {
         switch (syntax)
         {
             case IdentifierExpressionSyntax identifier:

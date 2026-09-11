@@ -128,9 +128,9 @@ internal static class StaticNameBindingDiagnostics
             case UnpackingAssignmentStatementSyntax unpacking:
                 foreach (var target in unpacking.Targets)
                 {
-                    if (target is UnpackingNameTargetSyntax name)
+                    foreach (var boundName in UnpackingTargetNames(target))
                     {
-                        maybeAssigned.Add(name.Name);
+                        maybeAssigned.Add(boundName);
                     }
                 }
                 break;
@@ -273,17 +273,42 @@ internal static class StaticNameBindingDiagnostics
                 case UnpackingAssignmentTargetGroupSyntax unpacking:
                     foreach (var nested in unpacking.Targets)
                     {
-                        if (nested is UnpackingNameTargetSyntax nestedName)
+                        foreach (var nestedName in UnpackingTargetNames(nested))
                         {
-                            maybeAssigned.Add(nestedName.Name);
+                            maybeAssigned.Add(nestedName);
                         }
                     }
                     break;
             }
         }
 
+        static IEnumerable<string> UnpackingTargetNames(UnpackingTargetSyntax target)
+        {
+            if (target is UnpackingNameTargetSyntax name)
+            {
+                yield return name.Name;
+                yield break;
+            }
+
+            if (target is UnpackingNestedTargetSyntax nested)
+            {
+                foreach (var nestedItem in nested.Items)
+                {
+                    foreach (var nestedName in UnpackingTargetNames(nestedItem))
+                    {
+                        yield return nestedName;
+                    }
+                }
+            }
+        }
+
         static IEnumerable<string> DeleteTargetNames(ExpressionSyntax target)
         {
+            while (target is ParenthesizedExpressionSyntax parenthesized)
+            {
+                target = parenthesized.Inner;
+            }
+
             if (target is IdentifierExpressionSyntax identifier)
             {
                 yield return identifier.Name;
@@ -304,9 +329,14 @@ internal static class StaticNameBindingDiagnostics
 
             foreach (var item in items)
             {
-                if (item is { IsUnpacking: false, Expression: IdentifierExpressionSyntax itemIdentifier })
+                if (item.IsUnpacking)
                 {
-                    yield return itemIdentifier.Name;
+                    continue;
+                }
+
+                foreach (var nestedName in DeleteTargetNames(item.Expression))
+                {
+                    yield return nestedName;
                 }
             }
         }

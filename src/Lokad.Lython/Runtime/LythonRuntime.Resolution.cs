@@ -583,6 +583,10 @@ internal sealed partial class LythonRuntime
                     context);
                 return;
 
+            case UnpackingNestedTargetSyntax nested:
+                AssignTargets(nested.Items, value, nested.Span, context);
+                return;
+
             default:
                 throw new InvalidOperationException($"Unsupported unpacking target syntax: {target.GetType().Name}");
         }

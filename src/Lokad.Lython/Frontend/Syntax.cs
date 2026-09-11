@@ -160,6 +160,14 @@ internal sealed record UnpackingMemberTargetSyntax(
     public override bool IsStarred => Starred;
 }
 
+internal sealed record UnpackingNestedTargetSyntax(
+    IReadOnlyList<UnpackingTargetSyntax> Items,
+    bool Starred,
+    LythonSourceSpan Span) : UnpackingTargetSyntax(Span)
+{
+    public override bool IsStarred => Starred;
+}
+
 internal readonly struct UnpackingLayout
 {
     private UnpackingLayout(int targetCount, int starredTargetIndex)

@@ -35,26 +35,6 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)
     {
-        var items = statement.Target switch
-        {
-            TupleLiteralExpressionSyntax tuple => tuple.Items,
-            ListLiteralExpressionSyntax list => list.Items,
-            _ => null,
-        };
-
-        if (items is not null)
-        {
-            foreach (var item in items)
-            {
-                if (item is CollectionValueItemSyntax valueItem)
-                {
-                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
-                }
-            }
-
-            return;
-        }
-
         ExecuteDeleteTarget(statement.Target, statement.Span, context);
     }
 
@@ -86,6 +66,37 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteDeleteTarget(ExpressionSyntax targetSyntax, LythonSourceSpan span, ExecutionContext context)
     {
+        while (targetSyntax is ParenthesizedExpressionSyntax parenthesized)
+        {
+            targetSyntax = parenthesized.Inner;
+        }
+
+        if (targetSyntax is TupleLiteralExpressionSyntax tuple)
+        {
+            foreach (var item in tuple.Items)
+            {
+                if (item is CollectionValueItemSyntax valueItem)
+                {
+                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
+                }
+            }
+
+            return;
+        }
+
+        if (targetSyntax is ListLiteralExpressionSyntax list)
+        {
+            foreach (var item in list.Items)
+            {
+                if (item is CollectionValueItemSyntax valueItem)
+                {
+                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
+                }
+            }
+
+            return;
+        }
+
         switch (targetSyntax)
         {
             case IdentifierExpressionSyntax identifier:
