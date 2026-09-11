@@ -5843,6 +5843,73 @@ __lython_file.close()
     }
 
     [Fact]
+    public void RegexBounds_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import re
+
+class J:
+    def __index__(self):
+        return 1
+class Jbad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def mpos(p, e):
+    return re.compile("aba").match("a", p, e)
+def mcnt(c):
+    return re.sub("a", "b", "aba", c)
+def msp(m):
+    return re.split("a", "aba", m)
+def mend(e):
+    return re.compile("aba").search("a", 0, e)
+def mfind(p):
+    return re.compile("aba").findall("a", p)
+
+n = None
+parts = []
+parts.append(str(mpos(J(), 3)))
+parts.append(str(mend(J())))
+parts.append(str(mcnt(J())))
+parts.append(str(msp(J())))
+parts.append(str(mfind(J())))
+for v in [Jbad(), "x", 1.5, C(), n]:
+    try:
+        parts.append(str(mpos(v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Jbad(), "x"]:
+    try:
+        parts.append(str(mcnt(v)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Jbad(), "x"]:
+    try:
+        parts.append(str(msp(v)))
+    except TypeError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(mpos(1, Jbad())))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(mpos(1, 10**100)))
+except OverflowError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"None|None|bba|['', 'ba']|[]|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|__index__ returned non-int (type str)|Python int too large to convert to C ssize_t", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

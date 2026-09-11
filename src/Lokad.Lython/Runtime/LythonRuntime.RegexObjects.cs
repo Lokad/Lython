@@ -407,8 +407,8 @@ internal sealed partial class LythonRuntime
 
             var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "compiled regex method", span) : 0,
-                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "compiled regex method", span) : text.Length);
+                arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "compiled regex method", span, context) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "compiled regex method", span, context) : text.Length);
             if (!range.IsValid)
             {
                 return PyNone.Instance;
@@ -428,8 +428,8 @@ internal sealed partial class LythonRuntime
 
             var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.findall", span) : 0,
-                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.findall", span) : text.Length);
+                arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "pattern.findall", span, context) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "pattern.findall", span, context) : text.Length);
             return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
         }
 
@@ -478,8 +478,8 @@ internal sealed partial class LythonRuntime
 
             var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "pos", "pattern.finditer", span) : 0,
-                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], text.Length, "endpos", "pattern.finditer", span) : text.Length);
+                arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "pattern.finditer", span, context) : 0,
+                arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "pattern.finditer", span, context) : text.Length);
             return RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
         }
 
@@ -502,11 +502,11 @@ internal sealed partial class LythonRuntime
                     : "pattern.sub(...) replacement must be a string or callable.", span);
             }
 
-            var count = arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], 0, "count", operationName, span) : 0;
+            var count = arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "count", operationName, span, context) : 0;
             var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 4 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[3], 0, "pos", operationName, span) : 0,
-                arguments.Length >= 5 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", operationName, span) : text.Length);
+                arguments.Length >= 4 ? RegexCompiler.ParseExplicitInt(arguments[3], "pos", operationName, span, context) : 0,
+                arguments.Length >= 5 ? RegexCompiler.ParseExplicitInt(arguments[4], "endpos", operationName, span, context) : text.Length);
             return RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, mode);
         }
 
@@ -518,11 +518,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects a string and optional maxsplit/pos/endpos.", span);
             }
 
-            var maxSplit = arguments.Length >= 2 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[1], 0, "maxsplit", "pattern.split", span) : 0;
+            var maxSplit = arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "maxsplit", "pattern.split", span, context) : 0;
             var range = RegexCompiler.CreateSubjectRange(
                 text,
-                arguments.Length >= 3 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[2], 0, "pos", "pattern.split", span) : 0,
-                arguments.Length >= 4 ? RegexCompiler.ParseOptionalIntOrDefault(arguments[3], text.Length, "endpos", "pattern.split", span) : text.Length);
+                arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "pos", "pattern.split", span, context) : 0,
+                arguments.Length >= 4 ? RegexCompiler.ParseExplicitInt(arguments[3], "endpos", "pattern.split", span, context) : text.Length);
             return RegexMatcher.ProjectSplitResult(pattern.Regex.SplitDetailed(range.Segment.Utf8Bytes.Span, maxSplit), span, context);
         }
     }
