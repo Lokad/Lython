@@ -102,7 +102,8 @@ internal static partial class PyDecimalOps
 
         try
         {
-            return new PyDecimal(Pow(lhs, exponentInt), checked(GetOperandExponent(left, lhs) * exponentInt));
+            var result = Pow(lhs, exponentInt);
+            return new PyDecimal(result, ConsistentExponent(result, checked(GetOperandExponent(left, lhs) * exponentInt)));
         }
         catch (OverflowException)
         {
@@ -128,6 +129,12 @@ internal static partial class PyDecimalOps
     public static bool AreEqual(object left, object right)
         => TryAsDecimal(left, out var lhs) && TryAsDecimal(right, out var rhs) && lhs == rhs;
 
+    // BCL multiplication rounds to fit instead of throwing, so a declared
+    // exponent can overstate the stored scale and poison later rendering;
+    // clamp it to the stored scale (a no-op for exact results and zeros).
+    private static int ConsistentExponent(decimal value, int declared)
+        => value == 0m || declared >= 0 ? declared : Math.Max(declared, -GetScale(value));
+
     private static object Binary(
         object left,
         object right,
@@ -142,9 +149,10 @@ internal static partial class PyDecimalOps
 
         try
         {
+            var result = operation(lhs, rhs);
             return new PyDecimal(
-                operation(lhs, rhs),
-                combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
+                result,
+                ConsistentExponent(result, combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs))));
         }
         catch (OverflowException)
         {

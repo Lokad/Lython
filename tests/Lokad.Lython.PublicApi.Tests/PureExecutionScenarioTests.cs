@@ -4920,6 +4920,20 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("from decimal import Decimal\nreturn str(Decimal(\"9.99\") ** 10)", "9900448802.097482098800449900")]
+    [InlineData("from decimal import Decimal\nreturn str(Decimal(\"2.00\") ** 3)", "8.000000")]
+    [InlineData("from decimal import Decimal\nreturn str(Decimal(\"1E+10\") ** 2)", "1E+20")]
+    [InlineData("from decimal import Decimal\nreturn str(Decimal(\"1.5\") ** 2)", "2.25")]
+    [InlineData("from decimal import Decimal\nreturn str(Decimal(\"9.999999999999999999999999999\") * Decimal(\"9.999999999999999999999999999\"))", "99.99999999999999999999999998")]
+    public void DecimalPower_KeepsConsistentCoefficients(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
