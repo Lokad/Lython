@@ -225,7 +225,14 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     public IEnumerable<object> Iterate() => Keys;
 
     public PyString RenderPython(PyRenderingContext context)
-        => PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(_items, context, interpolated: false)], ")", context);
+    {
+        if (Count == 0)
+        {
+            return PyString.FromString("Counter()", context.Context.MemoryGovernor);
+        }
+
+        return PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(_items, context, interpolated: false)], ")", context);
+    }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 

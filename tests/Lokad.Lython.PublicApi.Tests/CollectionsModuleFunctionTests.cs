@@ -467,6 +467,24 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_EmptyCounterRendersBare()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter
+vals = [repr(Counter()), str(Counter()), repr(Counter({"a": 1})), f"{Counter()}", "{}".format(Counter())]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Counter()|Counter()|Counter({'a': 1})|Counter()|Counter()", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_CounterRetainsNumericCountsAndSupportsUnaryFiltering()
     {
         var host = new MockLythonHost();

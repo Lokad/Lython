@@ -5313,7 +5313,7 @@ public sealed class SharedFixedLabelBehaviorTests
             except AttributeError as e:
                 results.append(str(e))
             from decimal import Decimal
-            from collections import defaultdict
+            from collections import Counter, defaultdict
             try:
                 getattr(datetime.datetime.now(), "x")
             except AttributeError as e:
@@ -5324,6 +5324,10 @@ public sealed class SharedFixedLabelBehaviorTests
                 results.append(str(e))
             try:
                 getattr(defaultdict(int), "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(Counter(), "x")
             except AttributeError as e:
                 results.append(str(e))
             try:
@@ -5426,6 +5430,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "'datetime.datetime' object has no attribute 'x'.",
             "'decimal.Decimal' object has no attribute 'x'.",
             "'collections.defaultdict' object has no attribute 'x'.",
+            "'Counter' object has no attribute 'x'.",
             "'C' object has no attribute 'x'.",
             "'ValueError' object has no attribute 'x'.",
             "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",

@@ -4590,6 +4590,12 @@ __lython_file.close()
     [InlineData("import datetime\ndef f(a, b):\n    return a + b\nf(datetime.datetime.now(), \"a\")\n", "unsupported operand type(s) for +: 'datetime.datetime' and 'str'")]
     [InlineData("from decimal import Decimal\nDecimal(\"1\") + \"a\"\n", "unsupported operand type(s) for +: 'decimal.Decimal' and 'str'")]
     [InlineData("from collections import defaultdict\ndef f(a, b):\n    return a + b\nf(defaultdict(int), 1)\n", "unsupported operand type(s) for +: 'collections.defaultdict' and 'int'")]
+    [InlineData("from collections import Counter\nCounter() - 1\n", "unsupported operand type(s) for -: 'Counter' and 'int'")]
+    [InlineData("from collections import Counter\nCounter() | 1\n", "unsupported operand type(s) for |: 'Counter' and 'int'")]
+    [InlineData("from collections import Counter\nCounter() < 1\n", "'<' not supported between instances of 'Counter' and 'int'")]
+    [InlineData("from collections import Counter\nCounter() * 2.5\n", "unsupported operand type(s) for *: 'Counter' and 'float'")]
+    [InlineData("from collections import Counter\ndef f(a, b):\n    return a + b\nf(Counter(), 1)\n", "unsupported operand type(s) for +: 'Counter' and 'int'")]
+    [InlineData("from collections import Counter\ndef f(a, b):\n    return a * b\nf(Counter(), \"a\")\n", "can't multiply sequence by non-int of type 'Counter'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

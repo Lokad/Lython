@@ -308,6 +308,7 @@ return "|".join([
     [InlineData("hash({})\n", "TypeError", "unhashable type: 'dict'")]
     [InlineData("hash({1})\n", "TypeError", "unhashable type: 'set'")]
     [InlineData("from collections import defaultdict\nhash(defaultdict(int))\n", "TypeError", "unhashable type: 'collections.defaultdict'")]
+    [InlineData("from collections import Counter\nhash(Counter())\n", "TypeError", "unhashable type: 'Counter'")]
     [InlineData("import math\nint(math.nan)\n", "ValueError", "NaN")]
     [InlineData("import math\nint(math.inf)\n", "OverflowError", "infinity")]
     [InlineData("import math\nround(math.nan)\n", "ValueError", "NaN")]
