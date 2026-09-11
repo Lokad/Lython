@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
                 PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, PyRendering.ToReprPyString(text, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
                 PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, PyRendering.ToReprPyString(bytes, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
-                _ => throw new LythonRuntimeException("TypeError", "int() does not support this value.", span)
+                _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }
         catch (FormatException ex)
@@ -604,13 +604,13 @@ internal sealed partial class LythonRuntime
     {
         if (!instance.TryGetAttribute(methodName, context, span, out var member) || member is not ICallable callable)
         {
-            throw new LythonRuntimeException("TypeError", "int() argument must be a number or a string", span);
+            throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(instance, context) + "'", span);
         }
 
         var converted = callable.Invoke([], span, context);
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", methodName + " returned non-int", span);
+            throw new LythonRuntimeException("TypeError", methodName + " returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
         }
 
         return integer;

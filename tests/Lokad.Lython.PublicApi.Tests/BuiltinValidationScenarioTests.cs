@@ -196,6 +196,35 @@ for src in [b"1", b" 1.5 ", b"1_0", b"a", b"  a  ", bytes([97, 39, 98]), bytes([
     }
 
     [Fact]
+    public void IntFailures_MatchCpythonShapes()
+    {
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+class I:
+    def __int__(self):
+        return "x"
+
+for bad in [[], None, object(), C]:
+    try:
+        print(int(bad))
+    except TypeError as e:
+        print(str(e))
+try:
+    print(int(I()))
+except TypeError as e:
+    print(str(e))
+print(int("12"))
+print(int(3.9))
+print(int(True))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("int() argument must be a string, a bytes-like object or a real number, not 'list'\nint() argument must be a string, a bytes-like object or a real number, not 'NoneType'\nint() argument must be a string, a bytes-like object or a real number, not 'object'\nint() argument must be a string, a bytes-like object or a real number, not 'type'\n__int__ returned non-int (type str)\n12\n3\n1\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void FloatFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(
