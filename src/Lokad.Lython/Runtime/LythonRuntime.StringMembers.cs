@@ -58,12 +58,25 @@ internal sealed partial class LythonRuntime
             int textLength,
             object[] arguments,
             LythonSourceSpan span,
+            ExecutionContext context,
             string signature)
         {
+            // Search bounds coerce through __index__ like CPython; bad
+            // __index__ results propagate while other rejections stay Invalid.
+            object? start = arguments.Length >= 2 ? arguments[1] : null;
+            object? end = arguments.Length == 3 ? arguments[2] : null;
+            if (start is not null)
+            {
+                start = CoerceIndexProtocol(start, context, span);
+            }
+
+            if (end is not null)
+            {
+                end = CoerceIndexProtocol(end, context, span);
+            }
+
             try
             {
-                object? start = arguments.Length >= 2 ? arguments[1] : null;
-                object? end = arguments.Length == 3 ? arguments[2] : null;
                 var normalized = PyStringOps.NormalizeRange(textLength, start, end);
                 var startBeyondLength = start switch
                 {

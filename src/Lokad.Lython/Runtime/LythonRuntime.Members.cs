@@ -36,15 +36,15 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.extend", ["iterable"]),
-                "index" => BoundCallable.Create((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
                         throw new LythonRuntimeException("TypeError", "list.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, "list.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, "list.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, context, span);
                     for (var i = start; i < stop; i++)
                     {
                         if (AreEqual(list[i], arguments[0]))
@@ -277,15 +277,15 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "index" => BoundCallable.Create((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, "tuple.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
                     for (var i = start; i < stop; i++)
                     {
                         if (AreEqual(getItem(i), arguments[0]))

@@ -440,6 +440,18 @@ internal sealed partial class LythonRuntime
         }
 
         var source = value.Bytes;
+
+        // Search bounds coerce through __index__ like CPython; bad
+        // __index__ results propagate while other rejections stay Invalid.
+        if (startArgument is not null)
+        {
+            startArgument = CoerceIndexProtocol(startArgument, context, span);
+        }
+
+        if (endArgument is not null)
+        {
+            endArgument = CoerceIndexProtocol(endArgument, context, span);
+        }
         int start;
         int end;
         try
@@ -670,6 +682,18 @@ internal sealed partial class LythonRuntime
         }
 
         var source = value.Bytes;
+
+        // Search bounds coerce through __index__ like CPython; bad
+        // __index__ results propagate while other rejections stay Invalid.
+        if (startArgument is not null)
+        {
+            startArgument = CoerceIndexProtocol(startArgument, context, span);
+        }
+
+        if (endArgument is not null)
+        {
+            endArgument = CoerceIndexProtocol(endArgument, context, span);
+        }
         int start;
         int end;
         try

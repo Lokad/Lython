@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
                     string methodName,
                     Func<PyString, PyString, int, int, BigInteger> operation,
                     bool throwWhenMissing)
-                    => BoundCallable.Create((arguments, span, _) =>
+                    => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(sub[, start[, end]])";
                         if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var needle))
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", $"{signature} expects one string argument plus optional integer bounds.", span);
                         }
 
-                        var (start, end, _) = ParseStringBounds(text.Length, arguments, span, signature);
+                        var (start, end, _) = ParseStringBounds(text.Length, arguments, span, context, signature);
                         if (end < start)
                         {
                             if (methodName == "count")

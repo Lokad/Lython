@@ -102,15 +102,15 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(deque.CountValue(arguments[0]));
                 }),
-                "index" => BoundCallable.Create((arguments, span, _) =>
+                "index" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3)
                     {
                         throw new LythonRuntimeException("TypeError", "deque.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, "deque.index(value[, start[, stop]]) expects integer start/stop bounds.", span);
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, context, span);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, context, span);
                     var index = deque.IndexOf(arguments[0], start, stop);
                     if (index < 0)
                     {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.insert(index, value) expects two arguments.", span);
                     }
 
-                    var index = ExpectDequeInsertIndex(arguments[0], span);
+                    var index = ExpectDequeInsertIndex(arguments[0], context, span);
                     try
                     {
                         deque.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -159,14 +159,14 @@ internal sealed partial class LythonRuntime
                     receiver.Reverse();
                     return PyNone.Instance;
                 }),
-                "rotate" => BoundCallable.Create((arguments, span, _) =>
+                "rotate" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
                     {
                         throw new LythonRuntimeException("TypeError", "deque.rotate([n]) expects zero or one integer argument.", span);
                     }
 
-                    var offset = arguments.Length == 0 ? BigInteger.One : ExpectInteger(arguments[0], "deque.rotate([n]) expects n to be an integer.", span);
+                    var offset = CoerceRotateOffset(arguments, context, span);
                     deque.Rotate(offset);
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
@@ -176,9 +176,15 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static int ExpectDequeInsertIndex(object value, LythonSourceSpan span)
+        private static int ExpectDequeInsertIndex(object value, ExecutionContext context, LythonSourceSpan span)
         {
-            var integer = ExpectInteger(value, "deque.insert(index, value) expects an integer index.", span);
+            // The index coerces through __index__ like CPython; failures name the
+            // type instead of the builtin signature.
+            var coerced = CoerceIndexProtocol(value, context, span);
+            if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            }
             if (integer < int.MinValue)
             {
                 return int.MinValue;
@@ -192,6 +198,24 @@ internal sealed partial class LythonRuntime
             return (int)integer;
         }
     }
+
+        private static BigInteger CoerceRotateOffset(object[] arguments, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (arguments.Length == 0)
+            {
+                return BigInteger.One;
+            }
+
+            // The count coerces through __index__ like CPython; failures name
+            // the type instead of the builtin signature.
+            var coerced = CoerceIndexProtocol(arguments[0], context, span);
+            if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var offset))
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+            }
+
+            return offset;
+        }
 
     private static BigInteger ExpectInteger(object value, string message, LythonSourceSpan span)
     {

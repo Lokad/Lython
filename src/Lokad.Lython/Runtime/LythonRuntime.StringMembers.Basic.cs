@@ -44,24 +44,24 @@ internal sealed partial class LythonRuntime
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span) : -1;
                         return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count), text, context.MemoryGovernor, span);
                     }, "str.replace", ["old", "new", "count"], 2),
-                    "startswith" => BoundCallable.Create((arguments, span, _) =>
+                    "startswith" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 3)
                         {
                             throw new LythonRuntimeException("TypeError", "str.startswith(prefix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
                         }
 
-                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.startswith(prefix[, start[, end]])");
+                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.startswith(prefix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: true, span);
                     }, "str.startswith", ["prefix", "start", "end"], 1),
-                    "endswith" => BoundCallable.Create((arguments, span, _) =>
+                    "endswith" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 3)
                         {
                             throw new LythonRuntimeException("TypeError", "str.endswith(suffix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.", span);
                         }
 
-                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, "str.endswith(suffix[, start[, end]])");
+                        var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.endswith(suffix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
                     }, "str.endswith", ["suffix", "start", "end"], 1),
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, span, context) => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span)),

@@ -5053,6 +5053,133 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SequenceSearchBounds_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+class J:
+    def __index__(self):
+        return 1
+class Bad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def li(v, a, b):
+    return [10, 20, 30].index(v, a, b)
+def ti(v, a, b):
+    return (10, 20, 30).index(v, a, b)
+def di(v, a, b):
+    return deque([10, 20, 30]).index(v, a, b)
+def sf(a, b):
+    return "abcabc".find("b", a, b)
+def bf(a, b):
+    return b"abcabc".find(b"b", a, b)
+
+n = None
+parts = []
+parts.append(str(li(20, J(), 3)))
+parts.append(str(ti(20, J(), 3)))
+parts.append(str(di(20, J(), 3)))
+parts.append(str(sf(J(), 6)))
+parts.append(str(bf(J(), 6)))
+parts.append(str("abcabc".count("b", J(), 6)))
+parts.append(str(b"abcabc".count(b"b", J(), 6)))
+parts.append(str("abcabc".startswith("b", J())))
+parts.append(str(li(20, True, 3)))
+parts.append(str(li(20, -5, 100)))
+for v in [Bad(), "a", 1.5, C(), n]:
+    try:
+        parts.append(str(li(20, v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a", n]:
+    try:
+        parts.append(str(ti(20, v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a", n]:
+    try:
+        parts.append(str(di(20, v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a"]:
+    try:
+        parts.append(str(sf(v, 6)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a"]:
+    try:
+        parts.append(str(bf(v, 6)))
+    except TypeError as e:
+        parts.append(str(e))
+parts.append(str(sf(n, n)))
+parts.append(str(bf(n, n)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"1|1|1|1|1|2|2|True|1|1|__index__ returned non-int (type str)|slice indices must be integers or have an __index__ method|slice indices must be integers or have an __index__ method|slice indices must be integers or have an __index__ method|slice indices must be integers or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or have an __index__ method|slice indices must be integers or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or have an __index__ method|slice indices must be integers or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|1|1", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DequeIndexArgs_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+class J:
+    def __index__(self):
+        return 1
+class Bad:
+    def __index__(self):
+        return "x"
+
+def dn(x, v):
+    d = deque([1, 2, 3])
+    d.insert(x, v)
+    return list(d)
+def rot(x):
+    d = deque([1, 2, 3])
+    d.rotate(x)
+    return list(d)
+def rot0():
+    d = deque([1, 2, 3])
+    d.rotate()
+    return list(d)
+
+parts = []
+parts.append(str(dn(J(), 99)))
+parts.append(str(dn(True, 7)))
+parts.append(str(rot(J())))
+parts.append(str(rot0()))
+for v in [Bad(), "a", 1.5, None]:
+    try:
+        parts.append(str(dn(v, 99)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a", 1.5, None]:
+    try:
+        parts.append(str(rot(v)))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[1, 99, 2, 3]|[1, 7, 2, 3]|[3, 1, 2]|[3, 1, 2]|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

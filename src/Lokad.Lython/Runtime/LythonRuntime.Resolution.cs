@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
         return CallableInvocation.InvokeUnary(callable, index, span, context);
     }
 
-    private static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
+    internal static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
     {
         if (index is not PyInstance instance)
         {

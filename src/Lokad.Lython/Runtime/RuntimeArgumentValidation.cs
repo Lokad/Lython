@@ -53,7 +53,7 @@ internal static class RuntimeArgumentValidation
         object? value,
         int length,
         int defaultValue,
-        string typeErrorMessage,
+        LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
         if (value is null)
@@ -61,7 +61,27 @@ internal static class RuntimeArgumentValidation
             return defaultValue;
         }
 
-        var integer = ExpectInteger(value, typeErrorMessage, span);
+        // Search bounds coerce through __index__ like CPython; explicit
+        // non-index values (including None) report the slice-indices text.
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        BigInteger integer;
+        if (coerced is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (coerced is int small)
+        {
+            integer = new BigInteger(small);
+        }
+        else if (coerced is not BigInteger big)
+        {
+            throw new LythonRuntimeException("TypeError", "slice indices must be integers or have an __index__ method", span);
+        }
+        else
+        {
+            integer = big;
+        }
+
         if (integer < int.MinValue)
         {
             return 0;
