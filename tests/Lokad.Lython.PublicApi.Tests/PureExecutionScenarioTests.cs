@@ -4814,6 +4814,33 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(operator.itemgetter)", "<class 'operator.itemgetter'>")]
+    [InlineData("str(operator.attrgetter)", "<class 'operator.attrgetter'>")]
+    [InlineData("str(operator.methodcaller)", "<class 'operator.methodcaller'>")]
+    [InlineData("repr(operator.itemgetter)", "<class 'operator.itemgetter'>")]
+    public void OperatorTypes_RenderClassWrapper(string expression, string expected)
+    {
+        var source = "import operator\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("str(operator.call)", "<built-in function call>")]
+    public void OperatorCall_RenderBuiltinFunction(string expression, string expected)
+    {
+        var source = "import operator\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

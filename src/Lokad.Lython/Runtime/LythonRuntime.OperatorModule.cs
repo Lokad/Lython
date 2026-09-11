@@ -101,7 +101,13 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString(_name);
+            // operator factories denote types like CPython, except call (a
+            // plain builtin function).
+            return PyString.FromString(BuiltinCallable.ShortCallableName(_name) switch
+            {
+                "call" => "<built-in function call>",
+                _ => $"<class '{_name}'>",
+            });
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
