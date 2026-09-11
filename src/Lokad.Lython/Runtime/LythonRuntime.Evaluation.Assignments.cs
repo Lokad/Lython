@@ -48,6 +48,14 @@ internal sealed partial class LythonRuntime
             case SubscriptExpressionSyntax subscript:
                 var target = EvaluateExpression(subscript.Target, context);
                 var index = EvaluateExpression(subscript.Index, context);
+                // Slice objects delete through the shared slice path on lists like
+                // CPython; every other receiver keeps its existing behaviour.
+                if (index is PySlice sliceIndex && target is PyList)
+                {
+                    ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, statement.Span, context);
+                    return;
+                }
+
                 switch (target)
                 {
                     case IDeletablePySubscriptableValue subscriptable:
@@ -269,6 +277,14 @@ internal sealed partial class LythonRuntime
 
     private static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
     {
+        // Slice objects assign through the shared slice path on lists like
+        // CPython; every other receiver keeps its existing behaviour.
+        if (index is PySlice slice && target is PyList)
+        {
+            ExecuteSliceAssignment(target, slice.StartBound, slice.StopBound, slice.StepBound, value, span, context);
+            return;
+        }
+
         switch (target)
         {
             case IMutablePySubscriptableValue subscriptable:

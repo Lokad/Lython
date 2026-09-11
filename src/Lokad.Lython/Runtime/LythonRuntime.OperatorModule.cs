@@ -363,6 +363,14 @@ internal sealed partial class LythonRuntime
 
         var target = arguments[0];
         var index = arguments[1];
+        // Slice objects delete through the shared slice path on lists like
+        // CPython; every other receiver keeps its existing behaviour.
+        if (index is PySlice slice && target is PyList)
+        {
+            ExecuteSliceDeletion(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
+            return PyNone.Instance;
+        }
+
         switch (target)
         {
             case IDeletablePySubscriptableValue subscriptable:

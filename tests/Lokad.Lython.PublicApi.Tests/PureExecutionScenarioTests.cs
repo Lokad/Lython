@@ -5367,6 +5367,85 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SliceObjectAssignDelete_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import operator
+
+class J:
+    def __index__(self):
+        return 1
+class Bad:
+    def __index__(self):
+        return "x"
+
+def wplain():
+    l = [10, 20, 30, 40]
+    l[slice(0, 2)] = [7, 8]
+    return l
+def dplain():
+    l = [10, 20, 30, 40]
+    del l[slice(0, 2)]
+    return l
+def wj():
+    l = [10, 20, 30, 40]
+    s = slice(J(), 3)
+    l[s] = [7, 8]
+    return l
+def dj():
+    l = [10, 20, 30, 40]
+    s = slice(J(), 3)
+    del l[s]
+    return l
+def wbad():
+    l = [10, 20, 30, 40]
+    s = slice(Bad(), 3)
+    l[s] = [7, 8]
+    return l
+def dbad():
+    l = [10, 20, 30, 40]
+    s = slice(Bad(), 3)
+    del l[s]
+    return l
+def wop():
+    l = [10, 20, 30, 40]
+    operator.setitem(l, slice(0, 2), [7, 8])
+    return l
+def dop():
+    l = [10, 20, 30, 40]
+    operator.delitem(l, slice(0, 2))
+    return l
+def aug():
+    l = [10, 20, 30, 40]
+    l[slice(0, 2)] += [7]
+    return l
+
+parts = []
+parts.append(str(wplain()))
+parts.append(str(dplain()))
+parts.append(str(wj()))
+parts.append(str(dj()))
+parts.append(str(wop()))
+parts.append(str(dop()))
+parts.append(str(aug()))
+for fn in [wbad, dbad]:
+    try:
+        parts.append(str(fn()))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[7, 8, 30, 40]|[30, 40]|[10, 7, 8, 40]|[10, 40]|[7, 8, 30, 40]|[30, 40]|[10, 20, 7, 30, 40]|__index__ returned non-int (type str)|__index__ returned non-int (type str)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
