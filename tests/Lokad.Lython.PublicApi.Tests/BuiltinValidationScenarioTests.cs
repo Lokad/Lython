@@ -262,6 +262,61 @@ print(abs(True))
     }
 
     [Fact]
+    public void RoundProtocol_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class C:
+    def __round__(self):
+        return 7
+class N:
+    def __round__(self, n):
+        return n + 10
+class B:
+    def __round__(self):
+        return "x"
+class P: pass
+class D:
+    __round__ = 5
+
+parts = []
+parts.append(str(round(C())))
+parts.append(str(round(N(), 1)))
+parts.append(str(round(B())))
+try:
+    parts.append(str(round("a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(round(P())))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(round(1.5, "a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(round(D())))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(round(C(), "a")))
+except TypeError as e:
+    parts.append(str(e))
+parts.append(str(round(2.5)))
+parts.append(str(round(1.5, None)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("7|11|x|type str doesn't define __round__ method|type P doesn't define __round__ method|'str' object cannot be interpreted as an integer|'int' object is not callable|Function '__round__' received too many positional arguments.|2|2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void IntFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(
