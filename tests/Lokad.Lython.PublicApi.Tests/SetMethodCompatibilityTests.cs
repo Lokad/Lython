@@ -161,12 +161,52 @@ return "|".join(vals)
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
+    [Fact]
+    public async Task DictViewIsDisjoint_MatchesPythonShapes()
+    {
+        const string source = """
+d = {"a": 1, "b": 2}
+vals = []
+vals.append(str(d.keys().isdisjoint(["c"])))
+vals.append(str(d.keys().isdisjoint(["a"])))
+vals.append(str(d.keys().isdisjoint({"b": 9})))
+vals.append(str(d.keys().isdisjoint((x for x in ["c"]))))
+vals.append(str(d.items().isdisjoint([("c", 3)])))
+vals.append(str(d.items().isdisjoint([("a", 1)])))
+vals.append(str(d.items().isdisjoint([("a", 9)])))
+vals.append(str(d.items().isdisjoint([["a", 1]])))
+vals.append(str({}.keys().isdisjoint([])))
+vals.append(str({}.items().isdisjoint([])))
+vals.append(str(d.keys().isdisjoint(d.keys())))
+vals.append(str(d.items().isdisjoint(d.items())))
+return "|".join(vals)
+""";
+
+        const string expected = "True|False|False|True|True|False|True|True|True|True|False|False";
+
+        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Theory]
     [InlineData("return {1}.union([[2]])\n", "hashable")]
     [InlineData("return {1}.intersection(2)\n", "iterable")]
     [InlineData("return {1}.symmetric_difference()\n", "expects")]
     [InlineData("return {1}.symmetric_difference([2], [3])\n", "expects")]
     [InlineData("return {1}.isdisjoint()\n", "expects")]
+    [InlineData("return {1: 2}.keys().isdisjoint(1)\n", "iterable")]
+    [InlineData("return {1: 2}.keys().isdisjoint([[]])\n", "hashable")]
+    [InlineData("return {1: 2}.keys().isdisjoint()\n", "missing argument")]
+    [InlineData("return {1: 2}.keys().isdisjoint([1], [2])\n", "too many positional")]
+    [InlineData("return {1: 2}.keys().isdisjoint(other=[1])\n", "unexpected keyword")]
+    [InlineData("return {(1, 2): 3}.items().isdisjoint(5)\n", "iterable")]
+    [InlineData("return {(1, 2): 3}.items().isdisjoint([([1], 2)])\n", "hashable")]
+    [InlineData("return {1: 2}.values().isdisjoint([1])\n", "has no attribute")]
     [InlineData("return {1}.union(other={2})\n", "positional")]
     public void InvalidSetMethodOperandsAndCalls_FailExplicitly(string source, string expectedFragment)
     {

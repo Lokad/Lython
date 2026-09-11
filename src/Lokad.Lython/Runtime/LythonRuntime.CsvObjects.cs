@@ -318,6 +318,8 @@ internal sealed partial class LythonRuntime
             _dict = dict;
         }
 
+        internal PyDict Source => _dict;
+
         public int Count => _dict.Count;
 
         public IEnumerator<object> GetEnumerator() => _dict.Keys.GetEnumerator();
@@ -349,6 +351,8 @@ internal sealed partial class LythonRuntime
         {
             _dict = dict;
         }
+
+        internal PyDict Source => _dict;
 
         public int Count => _dict.Count;
 

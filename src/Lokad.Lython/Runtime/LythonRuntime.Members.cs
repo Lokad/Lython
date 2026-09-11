@@ -920,6 +920,58 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static class DictViewMembers
+    {
+        public static bool TryGetKeysMember(DictKeysView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (view.Source.ContainsKey(ValidateDictionaryKey(item, span)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("dict_keys.isdisjoint", "other")),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        public static bool TryGetItemsMember(DictItemsView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (item is PyTuple pair && pair.Count == 2 &&
+                            view.Source.TryGetValue(ValidateDictionaryKey(pair[0], span), out var found) &&
+                            PyEquality.AreEqual(found, pair[1]))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("dict_items.isdisjoint", "other")),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        private static LythonCallableSignature OnePositional(string name, string parameterName)
+            => LythonCallableSignature.Create(name, [parameterName], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+    }
+
     internal static class DefaultDictMembers
     {
         public static bool TryGetMember(PyDefaultDict dict, string name, [MaybeNullWhen(false)] out object value)

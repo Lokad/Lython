@@ -30,6 +30,8 @@ internal static class PyMemberAccess
             [typeof(PyNamedTupleObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyNamedTupleObject)target, memberName, out value),
             [typeof(PyTypingNamedTupleObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.TupleMembers.TryGetMember((PyTypingNamedTupleObject)target, memberName, out value),
             [typeof(PySet)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.SetMembers.TryGetMember((PySet)target, memberName, out value),
+            [typeof(LythonRuntime.DictKeysView)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictViewMembers.TryGetKeysMember((LythonRuntime.DictKeysView)target, memberName, out value),
+            [typeof(LythonRuntime.DictItemsView)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DictViewMembers.TryGetItemsMember((LythonRuntime.DictItemsView)target, memberName, out value),
             [typeof(PyPath)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.PathMembers.TryGetMember((PyPath)target, memberName, out value),
             [typeof(PyDecimal)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DecimalMembers.TryGetMember((PyDecimal)target, memberName, out value),
             [typeof(PyDate)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DateMembers.TryGetMember((PyDate)target, memberName, out value),
