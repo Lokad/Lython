@@ -485,6 +485,32 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_CounterDictEqualityFollowsDictRules()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, defaultdict
+vals = []
+vals.append(str(Counter([1, 2]) == {1: 1, 2: 1}))
+vals.append(str({1: 1, 2: 1} == Counter([1, 2])))
+vals.append(str(Counter({"a": 0}) == {}))
+vals.append(str(Counter({"a": 1, "b": 0}) == {"a": 1}))
+vals.append(str(Counter({"a": 1}) == defaultdict(int, {"a": 1})))
+vals.append(str(defaultdict(int, {"a": 1}) == Counter({"a": 1})))
+vals.append(str(Counter([1]) != {1: 1}))
+vals.append(str(Counter("aab") == {"a": 2, "b": 1}))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|False|False|True|True|False|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_CounterRetainsNumericCountsAndSupportsUnaryFiltering()
     {
         var host = new MockLythonHost();

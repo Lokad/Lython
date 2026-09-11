@@ -114,6 +114,16 @@ internal static class PyEquality
                 key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null));
         }
 
+        if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
+        {
+            return CounterDictContentEquals(counterLeft, right);
+        }
+
+        if (right is PyCounter counterRight && (left is PyDict || left is PyDefaultDict))
+        {
+            return CounterDictContentEquals(counterRight, left);
+        }
+
         if (left is PyDefaultDict leftDefaultDict)
         {
             return DefaultDictContentEquals(leftDefaultDict, right);
@@ -299,6 +309,31 @@ internal static class PyEquality
         }
 
         return true;
+    }
+
+    // A Counter facing a plain or default dict compares exactly like dicts;
+    // only Counter-facing-Counter fills absent keys with zero counts.
+    private static bool CounterDictContentEquals(PyCounter counter, object other)
+    {
+        if (other is PyDict plain)
+        {
+            return DictContentEqual(
+                counter.Count,
+                counter.Items,
+                plain.Count,
+                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
+
+        if (other is PyDefaultDict fellow)
+        {
+            return DictContentEqual(
+                counter.Count,
+                counter.Items,
+                fellow.Count,
+                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
+
+        return false;
     }
 
     private static bool DefaultDictContentEquals(PyDefaultDict candidate, object other)
