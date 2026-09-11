@@ -102,6 +102,116 @@ public sealed class StringFormatMethodTests
     }
 
     [Theory]
+    [InlineData("format(Decimal(\"1.5\"), \".2f\")", "1.50")]
+    [InlineData("format(Decimal(\"1.5\"), \"f\")", "1.5")]
+    [InlineData("format(Decimal(\"1.5\"), \"e\")", "1.5e+0")]
+    [InlineData("format(Decimal(\"1.5\"), \".2e\")", "1.50e+0")]
+    [InlineData("format(Decimal(\"1.5\"), \"g\")", "1.5")]
+    [InlineData("format(Decimal(\"1E+20\"), \"g\")", "1e+20")]
+    [InlineData("format(Decimal(\"1E+20\"), \"G\")", "1E+20")]
+    [InlineData("format(Decimal(\"1E+20\"), \"f\")", "100000000000000000000")]
+    [InlineData("format(Decimal(\"1E+20\"), \"e\")", "1e+20")]
+    [InlineData("format(Decimal(\"0.1\"), \"e\")", "1e-1")]
+    [InlineData("format(Decimal(\"0.0001\"), \"g\")", "0.0001")]
+    [InlineData("format(Decimal(\"-2.675\"), \".2f\")", "-2.68")]
+    [InlineData("format(Decimal(\"0\"), \"f\")", "0")]
+    [InlineData("format(Decimal(\"0\"), \".2e\")", "0.00e+2")]
+    [InlineData("format(Decimal(\"-0.0\"), \"e\")", "-0e-1")]
+    [InlineData("format(Decimal(\"0E+5\"), \"g\")", "0e+5")]
+    [InlineData("format(Decimal(\"0.00\"), \".1g\")", "0.00")]
+    [InlineData("format(Decimal(\"0\"), \".2g\")", "0")]
+    [InlineData("format(Decimal(\"1.5\"), \"%\")", "150%")]
+    [InlineData("format(Decimal(\"1.5\"), \".1%\")", "150.0%")]
+    [InlineData("format(Decimal(\"1.5\"), \"#.0f\")", "2.")]
+    [InlineData("format(Decimal(\"100\"), \"#g\")", "100.")]
+    [InlineData("format(Decimal(\"100\"), \"#f\")", "100.")]
+    [InlineData("format(Decimal(\"1E+20\"), \"#\")", "1.E+20")]
+    [InlineData("format(Decimal(\"1500.5\"), \",.2f\")", "1,500.50")]
+    [InlineData("format(Decimal(\"150.0\"), \",.0%\")", "15,000%")]
+    [InlineData("format(Decimal(\"1234567.891\"), \",g\")", "1,234,567.891")]
+    [InlineData("format(Decimal(\"1234567.891\"), \",e\")", "1.234567891e+6")]
+    [InlineData("format(Decimal(\"1.5\"), \"n\")", "1.5")]
+    [InlineData("format(Decimal(\"1234567\"), \"n\")", "1234567")]
+    [InlineData("format(Decimal(\"1.5\"), \"=10\")", "       1.5")]
+    [InlineData("format(Decimal(\"-2.675\"), \"=10\")", "-    2.675")]
+    [InlineData("format(Decimal(\"1.5\"), \"010.2f\")", "0000001.50")]
+    [InlineData("format(Decimal(\"0.1234567890123456789012345678\"), \"e\")", "1.234567890123456789012345678e-1")]
+    [InlineData("format(Decimal(\"999\"), \".2g\")", "1.0e+3")]
+    [InlineData("format(Decimal(\"9.999\"), \".3g\")", "10.0")]
+    [InlineData("format(Decimal(\"150\"), \".1g\")", "2e+2")]
+    [InlineData("format(Decimal(\"0.000012345\"), \".3g\")", "0.0000123")]
+    [InlineData("format(Decimal(\"1e-7\"), \".3g\")", "1e-7")]
+    [InlineData("format(Decimal(\"1.5E+3\"), \".5g\")", "1.5e+3")]
+    [InlineData("format(Decimal(\"1E+20\"), \".25g\")", "1e+20")]
+    [InlineData("format(Decimal(\"2.6750\"), \"g\")", "2.6750")]
+    [InlineData("format(Decimal(\"1.50\"), \"g\")", "1.50")]
+    [InlineData("format(Decimal(\"1.500\"), \".3g\")", "1.50")]
+    [InlineData("format(Decimal(\"2.5\"), \".0f\")", "2")]
+    [InlineData("format(Decimal(\"0.125\"), \".2f\")", "0.12")]
+    [InlineData("format(Decimal(\"1.5\"), \".0e\")", "2e+0")]
+    [InlineData("format(Decimal(\"5\"), \".1e\")", "5.0e+0")]
+    [InlineData("format(Decimal(\"1.5\"), \".28e\")", "1.5000000000000000000000000000e+0")]
+    [InlineData("format(Decimal(\"100\"), \".1g\")", "1e+2")]
+    [InlineData("format(Decimal(\"0.9\"), \".0g\")", "0.9")]
+    public void DecimalFormatSpecs_RenderPythonShapedOutput(string expression, string expected)
+    {
+        var source = "from decimal import Decimal\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("format(Decimal(\"1.5\"), \"d\")")]
+    [InlineData("format(Decimal(\"1.5\"), \"s\")")]
+    [InlineData("format(Decimal(\"1.5\"), \"_\")")]
+    [InlineData("format(Decimal(\"1.5\"), \",n\")")]
+    [InlineData("format(Decimal(\"1.5\"), \"_.2f\")")]
+    [InlineData("format(Decimal(\"1.5\"), \".2q\")")]
+    [InlineData("format(Decimal(\"1\"), \"x\")")]
+    public void InvalidDecimalSpecs_ReportInvalidFormatString(string expression)
+    {
+        var source = "from decimal import Decimal\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("ValueError", result.Failure?.ExceptionType);
+        Assert.Contains("invalid format string", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DecimalFormatSpecs_HonorAmbientRounding()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+from decimal import Decimal, ROUND_DOWN, ROUND_UP, getcontext
+context = getcontext()
+vals = []
+vals.append(format(Decimal("2.675"), ".2f"))
+context.rounding = ROUND_DOWN
+vals.append(format(Decimal("2.675"), ".2f"))
+vals.append(format(Decimal("2.675"), ".2e"))
+vals.append(format(Decimal("-2.675"), ".2f"))
+context.rounding = ROUND_UP
+vals.append(format(Decimal("2.611"), ".2f"))
+vals.append(format(Decimal("2.675"), ".2g"))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("2.68|2.67|2.67e+0|-2.67|2.62|2.7", host.ReadText("/out.txt"));
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]

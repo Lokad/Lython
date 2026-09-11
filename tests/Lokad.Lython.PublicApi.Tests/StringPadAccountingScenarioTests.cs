@@ -170,6 +170,39 @@ public sealed class StringPadAccountingScenarioTests
     }
 
     [Fact]
+    public async Task DecimalPrecisionPeakStaysBounded()
+    {
+        // MG07: the Decimal precision preflight must fail before digit runs
+        // materialize. Mirrors FloatPrecisionPeakStaysBounded on the exact
+        // decimal path (stash round-trip would show tens-of-MB peaks without
+        // the preflight, as tens of thousands of padded zeros prove).
+        var script = new LythonEngine().Compile(
+            """
+            from decimal import Decimal
+            try:
+                x = f"{Decimal(1.5):.20000000f}"
+            except MemoryError:
+                return "memory"
+            return "unexpected"
+            """);
+        Assert.True(script.IsValid);
+
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        var beforeSync = GC.GetAllocatedBytesForCurrentThread();
+        var sync = script.Run(new MockLythonHost(), options);
+        var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("memory", Assert.IsType<string>(sync.ReturnValue));
+        Assert.True(syncAllocated < 1048576, $"decimal precision allocated {syncAllocated} bytes before failing");
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("memory", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
     public async Task FloatPrecisionContractsStayExact()
     {
         // MG07: preflighting precision must not change formatted output, and

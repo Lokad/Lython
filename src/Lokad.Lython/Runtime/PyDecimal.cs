@@ -227,7 +227,7 @@ internal static partial class PyDecimalOps
         return new PyTuple(materialized, governor, span);
     }
 
-    private static string DigitsToString(PyTuple digits)
+    internal static string DigitsToString(PyTuple digits)
     {
         var builder = new StringBuilder(digits.Count);
         foreach (var item in digits)

@@ -223,16 +223,380 @@ internal sealed partial class LythonRuntime
 
         if (value is PyDecimal decimalValue)
         {
-            if (spec.Type is 'd' or 'b' or 'o' or 'x' or 'X' or 'n')
-            {
-                throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for object of type '{RuntimeErrors.OperandTypeName(decimalValue)}'", span);
-            }
-
-            return TryFormatFloatingValue((double)decimalValue.Value, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(decimalValue));
+            return TryFormatDecimalValue(decimalValue, spec, span, context, out text, out numericPrefixLength);
         }
 
         _ = context;
         return false;
+    }
+
+    // Decimal has its own format grammar: exact coefficient rendering with
+    // the ambient context rounding, per-code default precisions, single-digit
+    // exponents and 'invalid format string' failures.
+    private static bool TryFormatDecimalValue(
+        PyDecimal decimalValue,
+        InterpolatedFormatSpecifier spec,
+        LythonSourceSpan span,
+        ExecutionContext context,
+        out string text,
+        out int numericPrefixLength)
+    {
+        text = string.Empty;
+        numericPrefixLength = 0;
+
+        var type = spec.Type;
+        var supported = type is null or 'f' or 'F' or 'e' or 'E' or 'g' or 'G' or 'n' or '%';
+        if (!supported || spec.Grouping == '_' || (type == 'n' && spec.Grouping == ','))
+        {
+            throw new LythonRuntimeException("ValueError", "invalid format string", span);
+        }
+
+        // Guest-controlled precision scales the output without bound from a
+        // tiny input, so bound it before materializing digit runs.
+        if (context.MemoryGovernor is not null && spec.Precision is { } digits && digits > 1024)
+        {
+            var headroom = type is null or 'g' or 'G' or 'n' ? 16L : 320L;
+            context.MemoryGovernor.EnsureCanReserve(32L + headroom + digits, span);
+        }
+
+        var tuple = PyDecimalOps.AsTuple(decimalValue);
+        var negative = tuple.Sign == 1;
+        var coefficient = PyDecimalOps.DigitsToString(tuple.Digits);
+        var exponent = decimalValue.Exponent;
+        var isZero = coefficient is "0";
+        var rounding = context.DecimalContext.Rounding;
+
+        string body = type switch
+        {
+            '%' => RenderDecimalPercent(coefficient, exponent, isZero, spec, rounding, negative, span),
+            'e' or 'E' => RenderDecimalScientific(coefficient, exponent, isZero, spec.Precision is null ? null : spec.Precision.Value + 1, spec.Alternate, upper: type == 'E', rounding, negative, span),
+            'g' or 'G' or 'n' => RenderDecimalGeneral(coefficient, exponent, isZero, spec, upper: type == 'G', rounding, negative, span),
+            null => RenderDecimalDefault(decimalValue, spec),
+            _ => RenderDecimalFixed(coefficient, exponent, isZero, spec.Precision, spec.Alternate, rounding, negative, span),
+        };
+
+        if (negative && !body.StartsWith('-'))
+        {
+            body = "-" + body;
+        }
+
+        if (spec.Grouping == ',')
+        {
+            body = GroupFloatingDigits(body, ',');
+        }
+
+        text = ApplyNumericSign(body, spec.Sign);
+        numericPrefixLength = GetNumericPrefixLength(text);
+        return true;
+    }
+
+    private static string RenderDecimalDefault(PyDecimal decimalValue, InterpolatedFormatSpecifier spec)
+    {
+        var body = PyDecimalOps.Format(decimalValue);
+        if (spec.Alternate && !body.Contains('.'))
+        {
+            var marker = body.IndexOf('E');
+            body = marker < 0 ? body + "." : body[..marker] + "." + body[marker..];
+        }
+
+        return body;
+    }
+
+    // Unsigned fixed-point body. A null precision renders the natural scale.
+    private static string RenderDecimalFixed(
+        string coefficient,
+        int exponent,
+        bool isZero,
+        int? precision,
+        bool alternate,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+    {
+        string digits;
+        int point;
+        if (precision is null)
+        {
+            digits = coefficient;
+            point = coefficient.Length + exponent;
+        }
+        else
+        {
+            (digits, var scaled) = RoundToFractionDigits(coefficient, exponent, isZero, precision.Value, rounding, negative, span);
+            point = digits.Length + scaled;
+        }
+
+        string body;
+        if (point <= 0)
+        {
+            body = "0." + new string('0', -point) + digits;
+        }
+        else if (point >= digits.Length)
+        {
+            body = StripLeadingZeros(digits + new string('0', point - digits.Length));
+        }
+        else
+        {
+            body = digits[..point] + "." + digits[point..];
+        }
+
+        if (alternate && !body.Contains('.'))
+        {
+            body += ".";
+        }
+
+        return body;
+    }
+
+    private static string RenderDecimalPercent(
+        string coefficient,
+        int exponent,
+        bool isZero,
+        InterpolatedFormatSpecifier spec,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+        => RenderDecimalFixed(coefficient, exponent + 2, isZero, spec.Precision, spec.Alternate, rounding, negative, span) + "%";
+
+    // Unsigned scientific body with single-digit-minimum Decimal exponents.
+    private static string RenderDecimalScientific(
+        string coefficient,
+        int exponent,
+        bool isZero,
+        int? precision,
+        bool alternate,
+        bool upper,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+    {
+        var keep = precision ?? coefficient.Length;
+        if (keep < 1)
+        {
+            keep = 1;
+        }
+
+        string digits;
+        int scaled;
+        if (isZero)
+        {
+            digits = new string('0', keep);
+            scaled = exponent;
+        }
+        else
+        {
+            (digits, scaled) = RoundSignificant(coefficient, exponent, keep, rounding, negative, span);
+        }
+
+        return RenderDecimalMantissa(digits, scaled, alternate, upper);
+    }
+
+    private static string RenderDecimalMantissa(string digits, int scaled, bool alternate, bool upper)
+    {
+        var mantissa = digits.Length == 1 ? digits : digits[0] + "." + digits[1..];
+        if (alternate && digits.Length == 1)
+        {
+            mantissa += ".";
+        }
+
+        var shown = scaled + digits.Length - 1;
+        return mantissa + (upper ? 'E' : 'e') + (shown < 0 ? "-" : "+") + Math.Abs(shown).ToString(CultureInfo.InvariantCulture);
+    }
+
+    // Unsigned general body: an explicit precision rounds first and then
+    // picks fixed/scientific from the rounded digits; the default shows
+    // every digit with the str() cut. Zeros are never padded or stripped
+    // here, so exactly the significant digits survive.
+    private static string RenderDecimalGeneral(
+        string coefficient,
+        int exponent,
+        bool isZero,
+        InterpolatedFormatSpecifier spec,
+        bool upper,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+    {
+        if (spec.Precision is null)
+        {
+            var spontaneous = isZero ? exponent : coefficient.Length - 1 + exponent;
+            var body = exponent > 0 || spontaneous < -6
+                ? RenderDecimalScientific(coefficient, exponent, isZero, null, alternate: false, upper, rounding, negative, span)
+                : RenderDecimalFixed(coefficient, exponent, isZero, null, alternate: false, rounding, negative, span);
+            return ForceGeneralPoint(body, spec.Alternate);
+        }
+
+        var keep = spec.Precision.Value < 1 ? 1 : spec.Precision.Value;
+        var effective = isZero ? 1 : Math.Min(keep, coefficient.Length);
+        var (digits, scaled) = RoundSignificant(coefficient, exponent, effective, rounding, negative, span);
+
+        var adjusted = digits.Length - 1 + scaled;
+        if (exponent > 0 || adjusted < -6 || adjusted >= keep)
+        {
+            return ForceGeneralPoint(RenderDecimalMantissa(digits, scaled, spec.Alternate, upper), spec.Alternate);
+        }
+
+        int? fraction = isZero ? null : keep - (adjusted + 1);
+        var fixedBody = RenderDecimalFixed(digits, scaled, isZero, fraction, alternate: false, rounding, negative, span);
+        if (isZero)
+        {
+            return ForceGeneralPoint(fixedBody, spec.Alternate);
+        }
+
+        var floor = Math.Max(0, digits.Length - (adjusted + 1));
+        return ForceGeneralPoint(StripToFloor(fixedBody, floor, spec.Alternate), spec.Alternate);
+    }
+
+    private static string StripToFloor(string body, int floor, bool alternate)
+    {
+        var point = body.IndexOf('.');
+        if (point < 0)
+        {
+            return body;
+        }
+
+        var end = body.Length;
+        var kept = body.Length - point - 1;
+        while (kept > floor && body[end - 1] == '0')
+        {
+            end--;
+            kept--;
+        }
+
+        var trimmed = body[..end];
+        if (trimmed.EndsWith('.') && !alternate)
+        {
+            trimmed = trimmed[..^1];
+        }
+
+        return trimmed;
+    }
+
+    private static string ForceGeneralPoint(string body, bool alternate)
+    {
+        if (!alternate || body.Contains('.'))
+        {
+            return body;
+        }
+
+        var marker = body.IndexOfAny(['e', 'E']);
+        return marker < 0 ? body + "." : body[..marker] + "." + body[marker..];
+    }
+
+    private static string StripLeadingZeros(string digits)
+    {
+        var stripped = digits.TrimStart('0');
+        return stripped.Length == 0 ? "0" : stripped;
+    }
+
+    private static (string Digits, int Exponent) RoundToFractionDigits(
+        string coefficient,
+        int exponent,
+        bool isZero,
+        int precision,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+    {
+        if (isZero)
+        {
+            return ("0", -precision);
+        }
+
+        var shift = exponent + precision;
+        if (shift >= 0)
+        {
+            return (coefficient + new string('0', shift), -precision);
+        }
+
+        var keep = coefficient.Length + shift;
+        if (keep < 1)
+        {
+            coefficient = new string('0', 1 - keep) + coefficient;
+            keep = 1;
+        }
+
+        return RoundSignificant(coefficient, exponent, keep, rounding, negative, span);
+    }
+
+    // Rounds the coefficient to `keep` significant digits (keep >= 1),
+    // shifting the exponent so the value is preserved (zeros keep theirs).
+    private static (string Digits, int Exponent) RoundSignificant(
+        string coefficient,
+        int exponent,
+        int keep,
+        DecimalRoundingMode rounding,
+        bool negative,
+        LythonSourceSpan span)
+    {
+        if (coefficient is "0")
+        {
+            return ("0", exponent);
+        }
+
+        if (keep >= coefficient.Length)
+        {
+            var pad = keep - coefficient.Length;
+            return (pad == 0 ? coefficient : coefficient + new string('0', pad), exponent - pad);
+        }
+
+        var head = coefficient[..keep];
+        var scaled = exponent + (coefficient.Length - keep);
+        if (RoundUp(head[^1] - '0', coefficient[keep..], rounding, negative, span))
+        {
+            head = IncrementDigits(head);
+            if (head.Length > keep)
+            {
+                head = head[..^1];
+                scaled += 1;
+            }
+        }
+
+        return (head, scaled);
+    }
+
+    private static bool RoundUp(int lastKept, string tail, DecimalRoundingMode rounding, bool negative, LythonSourceSpan span)
+    {
+        var first = tail[0] - '0';
+        var sticky = false;
+        for (var i = 1; i < tail.Length; i++)
+        {
+            if (tail[i] != '0')
+            {
+                sticky = true;
+                break;
+            }
+        }
+
+        return rounding switch
+        {
+            DecimalRoundingMode.HalfEven => first > 5 || (first == 5 && (sticky || lastKept % 2 == 1)),
+            DecimalRoundingMode.HalfUp => first >= 5,
+            DecimalRoundingMode.HalfDown => first > 5 || (first == 5 && sticky),
+            DecimalRoundingMode.Down => false,
+            DecimalRoundingMode.Up => first > 0 || sticky,
+            DecimalRoundingMode.Ceiling => !negative && (first > 0 || sticky),
+            DecimalRoundingMode.Floor => negative && (first > 0 || sticky),
+            DecimalRoundingMode.ZeroFiveUp => (first > 0 || sticky) && lastKept is 0 or 5,
+            _ => throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span),
+        };
+    }
+
+    private static string IncrementDigits(string head)
+    {
+        var chars = head.ToCharArray();
+        for (var i = chars.Length - 1; i >= 0; i--)
+        {
+            if (chars[i] != '9')
+            {
+                chars[i]++;
+                return new string(chars);
+            }
+
+            chars[i] = '0';
+        }
+
+        return "1" + new string(chars);
     }
 
     private static bool TryGetIntegerFormatValue(object value, out BigInteger integer)
@@ -648,17 +1012,20 @@ internal sealed partial class LythonRuntime
 
     private static string GroupFloatingDigits(string text, char separator)
     {
-        var signLength = GetNumericPrefixLength(text);
-        var exponentIndex = text.IndexOfAny(['e', 'E']);
-        var mantissaEnd = exponentIndex >= 0 ? exponentIndex : text.Length;
-        var decimalIndex = text.IndexOf('.');
+        // A percent suffix is not part of the grouped digits.
+        var suffix = text.EndsWith('%') ? "%" : string.Empty;
+        var core = suffix.Length == 0 ? text : text[..^1];
+        var signLength = GetNumericPrefixLength(core);
+        var exponentIndex = core.IndexOfAny(['e', 'E']);
+        var mantissaEnd = exponentIndex >= 0 ? exponentIndex : core.Length;
+        var decimalIndex = core.IndexOf('.');
         if (decimalIndex < 0 || decimalIndex > mantissaEnd)
         {
             decimalIndex = mantissaEnd;
         }
 
-        var grouped = GroupDigits(text[signLength..decimalIndex], separator);
-        return text[..signLength] + grouped + text[decimalIndex..];
+        var grouped = GroupDigits(core[signLength..decimalIndex], separator);
+        return core[..signLength] + grouped + core[decimalIndex..] + suffix;
     }
 
     private sealed record InterpolatedFormatSpecifier(
