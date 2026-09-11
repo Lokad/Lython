@@ -5301,6 +5301,72 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SliceIndices_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 3
+class Jbad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def idx(s, n):
+    return s.indices(n)
+
+parts = []
+parts.append(str(slice(1, 8, 2).indices(10)))
+parts.append(str(slice(None, None, None).indices(5)))
+parts.append(str(slice(-8, 8, 1).indices(5)))
+parts.append(str(slice(0, 10, 1).indices(J())))
+parts.append(str(slice(J(), 8, 2).indices(10)))
+parts.append(str(slice(1, 2).indices(10)))
+parts.append(str(slice(10).indices(10)))
+parts.append(str(slice(1, 2).indices(True)))
+parts.append(str(slice(1, 2).indices(0)))
+try:
+    parts.append(str(slice(0, 10, 1).indices(-1)))
+except ValueError as e:
+    parts.append(str(e))
+for v in [Jbad(), "a", 1.5, None, C()]:
+    try:
+        parts.append(str(idx(slice(0, 10, 1), v)))
+    except TypeError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(slice("a", 8, 2).indices(10)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(slice(1, 2, 0).indices(10)))
+except ValueError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(slice(1, 2).indices()))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(slice(1, 2).indices(5, 6)))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(slice(1, 2).indices(length=5)))
+except TypeError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"(1, 8, 2)|(0, 5, 1)|(0, 5, 1)|(0, 3, 1)|(3, 8, 2)|(1, 2, 1)|(0, 10, 1)|(1, 1, 1)|(0, 0, 1)|length should not be negative|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|slice indices must be integers or None or have an __index__ method|slice step cannot be zero|slice.indices() takes exactly one argument (0 given)|slice.indices() takes exactly one argument (2 given)|slice.indices() takes no keyword arguments", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
