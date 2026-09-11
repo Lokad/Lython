@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4638,6 +4638,82 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
+    [Fact]
+    public async Task BytesJoinMembers()
+    {
+        // bytes join follows CPython over any iterable of bytes, with the
+        // usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b",".join([b"a", b"b"]) == b"a,b")
+            results.append(b",".join((b"a", b"b")) == b"a,b")
+            results.append(b",".join(x for x in [b"a", b"b"]) == b"a,b")
+            results.append(b",".join([]) == b"")
+            results.append(b"".join([b"a", b"b"]) == b"ab")
+            results.append(b"-".join([b""]) == b"")
+            one = b"ab"
+            results.append(b",".join([one]) is one)
+            results.append(b"".join([one]) is one)
+            results.append(bytes.join(b",", [b"a", b"b"]) == b"a,b")
+            results.append(type(bytes.join).__name__)
+            results.append(bytes.join.__name__)
+            results.append(hasattr(bytes, "join"))
+            results.append("join" in dir(b"ab"))
+            results.append("join" in dir(bytes))
+            j = b","
+            results.append(j.join == j.join)
+            results.append(bytes.join == bytes.join)
+            try:
+                getattr(b",", "join")()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")([b"a"], [b"b"])
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")(iterable=[b"a"])
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")([b"a", "b"])
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")([b"a", None])
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b",", "join")(b"ab")
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+            "method_descriptor", "join", true, true, true, true, true,
+            "bytes.join() takes exactly one argument (0 given)",
+            "bytes.join() takes exactly one argument (2 given)",
+            "bytes.join() takes no keyword arguments",
+            "Object is not iterable.",
+            "sequence item 1: expected a bytes-like object, str found",
+            "sequence item 1: expected a bytes-like object, NoneType found",
+            "sequence item 0: expected a bytes-like object, int found",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {

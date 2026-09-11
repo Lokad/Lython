@@ -71,6 +71,7 @@ internal static partial class StaticContracts
         "isspace",
         "istitle",
         "isupper",
+        "join",
         "lower",
         "lstrip",
         "maketrans",

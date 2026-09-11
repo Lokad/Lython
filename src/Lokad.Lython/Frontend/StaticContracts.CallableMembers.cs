@@ -126,6 +126,8 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "join", 1, 1, "LA3183", "bytes.join(iterable) expects one argument.", parameterNames: ["iterable"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "join", 1, 1, "LA3183", "bytes.join(iterable) expects one argument.", parameterNames: ["iterable"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "partition", 1, 1, "LA3182", "bytes.partition(sep) expects one argument.", parameterNames: ["sep"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "partition", 1, 1, "LA3182", "bytes.partition(sep) expects one argument.", parameterNames: ["sep"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rpartition", 1, 1, "LA3182", "bytes.rpartition(sep) expects one argument.", parameterNames: ["sep"]));

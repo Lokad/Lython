@@ -64,6 +64,8 @@ internal static partial class StaticContracts
         new(AbstractValueKind.BytesType, "removeprefix", StaticReturnShape.Bytes),
         new(AbstractValueKind.Bytes, "removesuffix", StaticReturnShape.Bytes),
         new(AbstractValueKind.BytesType, "removesuffix", StaticReturnShape.Bytes),
+        new(AbstractValueKind.Bytes, "join", StaticReturnShape.Bytes),
+        new(AbstractValueKind.BytesType, "join", StaticReturnShape.Bytes),
         new(AbstractValueKind.Bytes, "split", StaticReturnShape.ListOfBytes),
         new(AbstractValueKind.BytesType, "split", StaticReturnShape.ListOfBytes),
         new(AbstractValueKind.Bytes, "rsplit", StaticReturnShape.ListOfBytes),
