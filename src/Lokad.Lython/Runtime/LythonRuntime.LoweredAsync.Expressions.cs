@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false),
                     slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false),
                     slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false),
-                    statement.Span);
+                    statement.Span, context);
                 return;
 
             case MemberExpressionSyntax memberSyntax:

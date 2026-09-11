@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span, context.MemoryGovernor), context, span);
         }
 
-        return PyIndexing.ReadIndex(target, index, span);
+        return PyIndexing.ReadIndex(target, index, span, context);
     }
 
     private static object DelItem(object[] arguments, LythonSourceSpan span, ExecutionContext context)

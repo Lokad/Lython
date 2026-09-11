@@ -61,11 +61,11 @@ internal static class PyIndexing
         }
     }
 
-    public static object ReadIndex(object target, object index, LythonSourceSpan span)
+    public static object ReadIndex(object target, object index, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
         if (index is PySlice slice)
         {
-            return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span);
+            return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
         }
 
         return target switch
@@ -81,6 +81,15 @@ internal static class PyIndexing
 
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        if (context is not null)
+        {
+            // Subscript bounds coerce through __index__ like CPython; bad
+            // __index__ results propagate while other rejections name the slice.
+            start = CoerceSliceBound(start, context, span);
+            end = CoerceSliceBound(end, context, span);
+            step = CoerceSliceBound(step, context, span);
+        }
+
         var result = target switch
         {
             IPySliceableValue value => value.GetSlice(start, end, step, span),
@@ -97,6 +106,9 @@ internal static class PyIndexing
 
         return result;
     }
+
+    internal static object? CoerceSliceBound(object? bound, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => bound is null ? null : LythonRuntime.CoerceIndexProtocol(bound, context, span);
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)
         => NormalizeIndex(index, length, span, IndexTargetName.Unnamed);
@@ -303,8 +315,9 @@ internal static class PyIndexing
         {
             null => null,
             BigInteger integer => integer,
+            int small => new BigInteger(small),
             bool flag => flag ? BigInteger.One : BigInteger.Zero,
-            _ => throw RuntimeErrors.Type("Slice indices must be integers or None.", span)
+            _ => throw RuntimeErrors.Type("slice indices must be integers or None or have an __index__ method", span)
         };
     }
 

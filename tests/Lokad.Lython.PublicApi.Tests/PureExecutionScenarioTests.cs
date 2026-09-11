@@ -5180,6 +5180,123 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SubscriptSliceBounds_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 1
+class J2:
+    def __index__(self):
+        return 2
+class Bad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def sl2(a, b):
+    return [10, 20, 30, 40][a:b]
+def sl3(a, b, c):
+    return [10, 20, 30, 40][a:b:c]
+def st(a, b):
+    return (10, 20, 30, 40)[a:b]
+def ss(a, b):
+    return "abcd"[a:b]
+def sb(a, b):
+    return b"abcd"[a:b]
+def rd(s):
+    return [10, 20, 30, 40][s]
+
+z = 0
+parts = []
+parts.append(str(sl2(J(), 3)))
+parts.append(str(sl2(1, J2())))
+parts.append(str(sl3(0, 4, J2())))
+parts.append(str(sl3(J(), J2(), J2())))
+parts.append(str(st(J(), 3)))
+parts.append(str(ss(J(), 3)))
+parts.append(str(sb(J(), 3)))
+parts.append(str(rd(slice(J(), 3))))
+parts.append(str(sl2(True, 4)))
+parts.append(str(sl2(-3, 30)))
+for v in [Bad(), "a", 1.5, C()]:
+    try:
+        parts.append(str(sl2(v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a"]:
+    try:
+        parts.append(str(sl3(0, 4, v)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a"]:
+    try:
+        parts.append(str(rd(slice(v, 3))))
+    except TypeError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(sl3(0, 4, z)))
+except ValueError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[20, 30]|[20]|[10, 30]|[20]|(20, 30)|bc|b'bc'|[20, 30]|[20, 30, 40]|[20, 30, 40]|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice step cannot be zero", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void SliceAssignDeleteBounds_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 1
+class Bad:
+    def __index__(self):
+        return "x"
+
+def sa(a, b):
+    l = [10, 20, 30, 40]
+    l[a:b] = [7, 8]
+    return l
+def sd(a, b):
+    l = [10, 20, 30, 40]
+    del l[a:b]
+    return l
+
+parts = []
+parts.append(str(sa(J(), 3)))
+parts.append(str(sa(1, J())))
+parts.append(str(sd(J(), 3)))
+for v in [Bad(), "a", 1.5]:
+    try:
+        parts.append(str(sa(v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+for v in [Bad(), "a"]:
+    try:
+        parts.append(str(sd(v, 3)))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[10, 7, 8, 40]|[10, 7, 8, 20, 30, 40]|[10, 40]|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

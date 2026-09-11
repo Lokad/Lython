@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
         }
 
-        return PyIndexing.ReadIndex(target, index, span);
+        return PyIndexing.ReadIndex(target, index, span, context);
     }
 
     private static object ResolveLoweredMemberValue(

@@ -320,7 +320,7 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context),
                     slice.End is null ? null : EvaluateLoweredExpression(slice.End, context),
                     slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context),
-                    statement.Span);
+                    statement.Span, context);
                 return;
 
             case MemberExpressionSyntax memberSyntax:

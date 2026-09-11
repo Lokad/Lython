@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : EvaluateExpression(slice.Start, context),
                     slice.End is null ? null : EvaluateExpression(slice.End, context),
                     slice.Step is null ? null : EvaluateExpression(slice.Step, context),
-                    statement.Span);
+                    statement.Span, context);
                 return;
 
             case MemberExpressionSyntax member:
@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, span);
         }
 
-        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span);
+        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, span), span, context);
     }
 
     private static void ExecuteSliceAssignment(
@@ -432,6 +432,13 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        // Subscript bounds coerce through __index__ like CPython; bad
+        // __index__ results propagate while other rejections name the slice.
+        // Coercion runs before the value drain so bound failures keep priority.
+        start = PyIndexing.CoerceSliceBound(start, context, span);
+        end = PyIndexing.CoerceSliceBound(end, context, span);
+        step = PyIndexing.CoerceSliceBound(step, context, span);
+
         if (target is PyList list)
         {
             list.AttachMemoryGovernor(context.MemoryGovernor, span);
@@ -484,8 +491,15 @@ internal sealed partial class LythonRuntime
         object? start,
         object? end,
         object? step,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        ExecutionContext context)
     {
+        // Subscript bounds coerce through __index__ like CPython; bad
+        // __index__ results propagate while other rejections name the slice.
+        start = PyIndexing.CoerceSliceBound(start, context, span);
+        end = PyIndexing.CoerceSliceBound(end, context, span);
+        step = PyIndexing.CoerceSliceBound(step, context, span);
+
         if (target is PyList list)
         {
             var bounds = PyIndexing.NormalizeSliceBounds(list.Count, start, end, step, span);

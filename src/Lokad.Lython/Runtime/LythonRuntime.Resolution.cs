@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
             return GetUserItem(instance, index, context, subscript.Span);
         }
 
-        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, subscript.Span), subscript.Span);
+        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, subscript.Span), subscript.Span, context);
     }
 
     private static object EvaluateSlice(SliceExpressionSyntax slice, ExecutionContext context)
