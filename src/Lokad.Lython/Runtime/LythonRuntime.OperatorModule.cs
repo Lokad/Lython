@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
                 }
 
-                throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
+                throw DeletionNotSupported(target, context, span);
         }
     }
 

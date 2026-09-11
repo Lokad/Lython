@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
             case PyBytes:
                 throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
             default:
-                throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", span);
+                throw DeletionNotSupported(target, context, span);
         }
     }
 

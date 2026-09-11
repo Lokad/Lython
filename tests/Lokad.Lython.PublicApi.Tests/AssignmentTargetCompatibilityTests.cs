@@ -219,6 +219,27 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("r = range(3)\ndel r[0]", "TypeError", "'range' object doesn't support item deletion")]
+    [InlineData("r = range(3)\nr[0] = 9", "TypeError", "'range' object does not support item assignment")]
+    [InlineData("x = 1\ntry:\n    del x[0]\nexcept TypeError as err:\n    raise AssertionError(err.message)", "AssertionError", "'int' object does not support item deletion")]
+    [InlineData("x = 1\nx[0] = 9", "TypeError", "'int' object does not support item assignment")]
+    [InlineData("x = {1}\ntry:\n    del x[0]\nexcept TypeError as err:\n    raise AssertionError(err.message)", "AssertionError", "'set' object doesn't support item deletion")]
+    [InlineData("x = {1}\nx[0] = 9", "TypeError", "'set' object does not support item assignment")]
+    [InlineData("try:\n    del None[0]\nexcept TypeError as err:\n    raise AssertionError(err.message)", "AssertionError", "'NoneType' object does not support item deletion")]
+    [InlineData("x = 1.5\nx[0] = 9", "TypeError", "'float' object does not support item assignment")]
+    [InlineData("from collections import namedtuple\nP = namedtuple(\"P\", [\"x\", \"y\"])\np = P(1, 2)\ndel p[0]", "TypeError", "'P' object doesn't support item deletion")]
+    [InlineData("from collections import namedtuple\nP = namedtuple(\"P\", [\"x\", \"y\"])\np = P(1, 2)\np[0] = 9", "TypeError", "'P' object does not support item assignment")]
+    public void UnsupportedMutationTargets_NameReceivers(string source, string exceptionType, string messageFragment)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal(exceptionType, result.Failure?.ExceptionType);
+        Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("items = [0]\nif (items[0] := 1):\n    pass", "assignment expression target")]
     [InlineData("class Box:\n    pass\nbox = Box()\nif (box.value := 1):\n    pass", "assignment expression target")]
     [InlineData("row = [1, 2]\nif ((a, b) := row):\n    pass", "assignment expression target")]

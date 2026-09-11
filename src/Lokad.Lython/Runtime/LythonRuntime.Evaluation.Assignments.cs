@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", statement.Span);
 
                     default:
-                        throw new LythonRuntimeException("TypeError", "Object does not support item deletion.", statement.Span);
+                        throw DeletionNotSupported(target, context, statement.Span);
                 }
 
             case SliceExpressionSyntax slice:
@@ -308,8 +308,33 @@ internal sealed partial class LythonRuntime
             case PyBytes:
                 throw new LythonRuntimeException("TypeError", "'bytes' object does not support item assignment", span);
             default:
-                throw new LythonRuntimeException("TypeError", "Object does not support item assignment.", span);
+                throw AssignmentNotSupported(target, context, span);
         }
+    }
+
+    // Deletion names scalar receivers with does-not like CPython and every
+    // other receiver with doesn't; stores always use does-not.
+    private static LythonRuntimeException DeletionNotSupported(object target, ExecutionContext context, LythonSourceSpan span)
+    {
+        var name = target switch
+        {
+            PyNamedTupleObject named => named.Type.Name,
+            PyTypingNamedTupleObject typingNamed => typingNamed.TypeName,
+            _ => UnboundTypeMethod.PythonTypeName(target, context),
+        };
+        var verb = target is BigInteger or int or bool or double || target is PyNone ? "does not" : "doesn't";
+        return new LythonRuntimeException("TypeError", $"'{name}' object {verb} support item deletion", span);
+    }
+
+    private static LythonRuntimeException AssignmentNotSupported(object target, ExecutionContext context, LythonSourceSpan span)
+    {
+        var name = target switch
+        {
+            PyNamedTupleObject named => named.Type.Name,
+            PyTypingNamedTupleObject typingNamed => typingNamed.TypeName,
+            _ => UnboundTypeMethod.PythonTypeName(target, context),
+        };
+        return new LythonRuntimeException("TypeError", $"'{name}' object does not support item assignment", span);
     }
 
     private static void AssignSliceTarget(SliceAssignmentTargetSyntax slice, object value, ExecutionContext context)
