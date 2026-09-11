@@ -4707,6 +4707,23 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(collections.Counter)", "<class 'collections.Counter'>")]
+    [InlineData("repr(collections.Counter)", "<class 'collections.Counter'>")]
+    [InlineData("str(collections.deque)", "<class 'collections.deque'>")]
+    [InlineData("str(collections.defaultdict)", "<class 'collections.defaultdict'>")]
+    [InlineData("str(collections.OrderedDict)", "<class 'collections.OrderedDict'>")]
+    [InlineData("str(collections.ChainMap)", "<class 'collections.ChainMap'>")]
+    public void CollectionTypes_RenderClassWrapper(string expression, string expected)
+    {
+        var source = "import collections\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

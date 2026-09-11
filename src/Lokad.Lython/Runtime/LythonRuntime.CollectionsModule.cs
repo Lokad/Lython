@@ -107,10 +107,16 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString(Name);
+            // Collection types render like CPython type objects; the namedtuple
+            // factory keeps its bare display name (CPython reports a function
+            // with an address there).
+            return PyString.FromString(IsCollectionType(Name) ? $"<class '{Name}'>" : Name);
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        private static bool IsCollectionType(string name)
+            => name is "collections.defaultdict" or "collections.Counter" or "collections.deque" or "collections.OrderedDict" or "collections.ChainMap";
     }
 
     private sealed class UnsupportedCollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
