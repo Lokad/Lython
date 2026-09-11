@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1 && arguments[0] is PyInstance intInstance)
         {
-            return InvokeIntegerConversion(intInstance, "__int__", context, span);
+            return ConvertInstanceToInteger(intInstance, context, span);
         }
 
         var numberBase = 10;
@@ -688,25 +688,61 @@ internal sealed partial class LythonRuntime
         return negative ? -result : result;
     }
 
-    private static BigInteger InvokeIntegerConversion(
+    // CPython resolves int(instance) through __int__, then __index__, then
+    // the deprecated __trunc__ hook (whose result still coerces through
+    // __index__). A present but non-callable hook keeps the historical
+    // generic rejection instead of falling through.
+    private static BigInteger ConvertInstanceToInteger(
         PyInstance instance,
-        string methodName,
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (!instance.TryGetAttribute(methodName, context, span, out var member) || member is not ICallable callable)
+        if (instance.TryGetAttribute("__int__", context, span, out var intMember))
         {
-            throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(instance, context) + "'", span);
+            if (intMember is not ICallable intCallable)
+            {
+                throw IntegerConversionError(instance, context, span);
+            }
+
+            var converted = intCallable.Invoke([], span, context);
+            if (!PyNumberOps.TryAsInteger(converted, out var integer))
+            {
+                throw new LythonRuntimeException("TypeError", "__int__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+            }
+
+            return integer;
         }
 
-        var converted = callable.Invoke([], span, context);
-        if (!PyNumberOps.TryAsInteger(converted, out var integer))
+        if (instance.TryGetAttribute("__index__", context, span, out var indexMember) && indexMember is ICallable)
         {
-            throw new LythonRuntimeException("TypeError", methodName + " returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+            // The shared choke either returns an integer or raises the shaped
+            // __index__ error; the callable check above rules out its
+            // missing-hook passthrough.
+            return (BigInteger)CoerceIndexProtocol(instance, context, span);
         }
 
-        return integer;
+        if (instance.TryGetAttribute("__trunc__", context, span, out var truncMember) && truncMember is ICallable truncCallable)
+        {
+            var truncated = truncCallable.Invoke([], span, context);
+            var indexed = truncated is PyInstance ? CoerceIndexProtocol(truncated, context, span) : truncated;
+            BigInteger truncatedInteger;
+            if (indexed is int smallTrunc)
+            {
+                truncatedInteger = new BigInteger(smallTrunc);
+            }
+            else if (!PyNumberOps.TryAsInteger(indexed, out truncatedInteger))
+            {
+                throw new LythonRuntimeException("TypeError", "__trunc__ returned non-Integral (type " + UnboundTypeMethod.PythonTypeName(truncated, context) + ")", span);
+            }
+
+            return truncatedInteger;
+        }
+
+        throw IntegerConversionError(instance, context, span);
     }
+
+    private static LythonRuntimeException IntegerConversionError(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+        => new("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(instance, context) + "'", span);
 
     private static BigInteger FloatToInteger(
         double value,

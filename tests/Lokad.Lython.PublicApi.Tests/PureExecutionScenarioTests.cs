@@ -5525,6 +5525,87 @@ __lython_file.close()
     }
 
     [Fact]
+    public void IntFloatConversion_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 7
+class Jbad:
+    def __index__(self):
+        return "x"
+class T:
+    def __trunc__(self):
+        return 9
+class Tbad:
+    def __trunc__(self):
+        return "x"
+class Both:
+    def __index__(self):
+        return 7
+    def __trunc__(self):
+        return 9
+class HasInt:
+    def __int__(self):
+        return 5
+    def __index__(self):
+        return 7
+class HasFloat:
+    def __float__(self):
+        return 2.5
+    def __index__(self):
+        return 7
+class C: pass
+class IJ:
+    def __int__(self):
+        return J()
+class NInt:
+    __int__ = 5
+class NIndex:
+    __index__ = 5
+class NFloat:
+    __float__ = 5
+class IOnly:
+    def __int__(self):
+        return 5
+
+def conv(fn):
+    try:
+        return str(fn())
+    except (TypeError, ValueError, OverflowError) as e:
+        return str(e)
+
+parts = []
+parts.append(conv(lambda: int(J())))
+parts.append(conv(lambda: int(Jbad())))
+parts.append(conv(lambda: int(T())))
+parts.append(conv(lambda: int(Tbad())))
+parts.append(conv(lambda: int(Both())))
+parts.append(conv(lambda: int(HasInt())))
+parts.append(conv(lambda: int(HasFloat())))
+parts.append(conv(lambda: int(C())))
+parts.append(conv(lambda: int(IJ())))
+parts.append(conv(lambda: int(NInt())))
+parts.append(conv(lambda: int(NIndex())))
+parts.append(conv(lambda: float(J())))
+parts.append(conv(lambda: float(Jbad())))
+parts.append(conv(lambda: float(T())))
+parts.append(conv(lambda: float(HasFloat())))
+parts.append(conv(lambda: float(IOnly())))
+parts.append(conv(lambda: float(NFloat())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"7|__index__ returned non-int (type str)|9|__trunc__ returned non-Integral (type str)|7|5|7|int() argument must be a string, a bytes-like object or a real number, not 'C'|__int__ returned non-int (type J)|int() argument must be a string, a bytes-like object or a real number, not 'NInt'|int() argument must be a string, a bytes-like object or a real number, not 'NIndex'|7.0|__index__ returned non-int (type str)|float() argument must be a string or a real number, not 'T'|2.5|float() argument must be a string or a real number, not 'IOnly'|float() argument must be a string or a real number, not 'NFloat'", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

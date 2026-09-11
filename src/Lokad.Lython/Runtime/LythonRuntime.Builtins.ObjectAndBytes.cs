@@ -24,18 +24,29 @@ internal sealed partial class LythonRuntime
 
         if (arguments[0] is PyInstance floatInstance)
         {
-            if (!floatInstance.TryGetAttribute("__float__", context, span, out var member) || member is not ICallable callable)
+            // CPython consults __float__, then __index__ (but neither
+            // __int__ nor __trunc__). A present but non-callable hook keeps
+            // the historical generic rejection instead of falling through.
+            if (floatInstance.TryGetAttribute("__float__", context, span, out var member) && member is ICallable callable)
             {
-                throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
+                var converted = callable.Invoke([], span, context);
+                if (converted is not double floating)
+                {
+                    throw new LythonRuntimeException("TypeError", floatInstance.Type.Name + ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+                }
+
+                return floating;
             }
 
-            var converted = callable.Invoke([], span, context);
-            if (converted is not double floating)
+            if (floatInstance.TryGetAttribute("__index__", context, span, out var indexMember) && indexMember is ICallable)
             {
-                throw new LythonRuntimeException("TypeError", floatInstance.Type.Name + ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
+                // The shared choke either returns an integer or raises the
+                // shaped __index__ error; huge magnitudes share the known
+                // int-to-float overflow gap instead of raising like CPython.
+                return (double)(BigInteger)CoerceIndexProtocol(floatInstance, context, span);
             }
 
-            return floating;
+            throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
         }
 
         try
