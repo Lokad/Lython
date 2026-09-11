@@ -59,6 +59,15 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
 
         if (sliceStep < 0)
         {
+            var sliceFrom = AdjustNegativeStart(start, span);
+            var sliceTo = AdjustNegativeStop(end, span);
+            var sliceLength = sliceFrom > sliceTo ? (sliceFrom - sliceTo - 1) / (-sliceStep) + 1 : BigInteger.Zero;
+            var sliceNewStart = Start + sliceFrom * Step;
+            return new PyRange(sliceNewStart, sliceNewStart + sliceLength * Step * sliceStep, Step * sliceStep);
+        }
+
+        if (sliceStep < 0)
+        {
             throw new LythonRuntimeException("NotImplementedError", "negative range slice steps are not supported", span);
         }
 
@@ -71,6 +80,56 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         var newStart = Start + from * Step;
         var newStop = Start + BigInteger.Max(from, to) * Step;
         return new PyRange(newStart, newStop, Step * sliceStep);
+    }
+
+    private BigInteger AdjustNegativeStart(object? value, LythonSourceSpan span)
+    {
+        // Mirror CPython slice.indices for negative steps: omitted starts
+        // begin past the end, out-of-range values clamp inside.
+        var bound = value is null || value is PyNone ? Length - 1 : Bound(value, BigInteger.Zero, span);
+        if (bound < 0)
+        {
+            bound += Length;
+        }
+
+        if (bound < 0)
+        {
+            return BigInteger.MinusOne;
+        }
+
+        if (bound >= Length)
+        {
+            return Length - 1;
+        }
+
+        return bound;
+    }
+
+    private BigInteger AdjustNegativeStop(object? value, LythonSourceSpan span)
+    {
+        // Omitted stops end before the beginning for negative steps.
+        if (value is null || value is PyNone)
+        {
+            return BigInteger.MinusOne;
+        }
+
+        var bound = Bound(value, BigInteger.Zero, span);
+        if (bound < 0)
+        {
+            bound += Length;
+        }
+
+        if (bound < 0)
+        {
+            return BigInteger.MinusOne;
+        }
+
+        if (bound >= Length)
+        {
+            return Length - 1;
+        }
+
+        return bound;
     }
 
     public PyString RenderPython(PyRenderingContext context)

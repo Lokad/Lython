@@ -3656,6 +3656,49 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task RangeSequenceBehavior()
+    {
+        // Ranges behave as sequences like CPython: length, reverse
+        // iteration, negative-step slices and sequence equality.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(len(range(5)))
+            results.append(len(range(0)))
+            results.append(len(range(10, 0, -3)))
+            results.append(list(range(10)[::-1]))
+            results.append(list(range(0, 10, 3)[::-2]))
+            results.append(range(5) == range(5))
+            results.append(range(5) == range(6))
+            results.append(range(0, 6, 2) == range(0, 6, 2))
+            results.append(range(5) != range(6))
+            results.append(range(0, 1, 5) == range(0, 1, 7))
+            results.append(range(5, 5) == range(9, 9))
+            results.append(list(reversed(range(5))))
+            results.append(list(reversed(range(0))))
+            results.append(list(reversed(range(2, 20, 5))))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new BigInteger(5), new BigInteger(0), new BigInteger(4),
+            new List<object?> { new BigInteger(9), new BigInteger(8), new BigInteger(7), new BigInteger(6), new BigInteger(5), new BigInteger(4), new BigInteger(3), new BigInteger(2), new BigInteger(1), new BigInteger(0) },
+            new List<object?> { new BigInteger(9), new BigInteger(3) },
+            true, false, true, true, true, true,
+            new List<object?> { new BigInteger(4), new BigInteger(3), new BigInteger(2), new BigInteger(1), new BigInteger(0) },
+            new List<object?>(),
+            new List<object?> { new BigInteger(17), new BigInteger(12), new BigInteger(7), new BigInteger(2) },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task StringClassificationMembers()
     {
         // The Unicode classification members behave like CPython across

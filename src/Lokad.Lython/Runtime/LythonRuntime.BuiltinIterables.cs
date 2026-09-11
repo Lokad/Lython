@@ -19,6 +19,7 @@ internal sealed partial class LythonRuntime
         return arguments[0] switch
         {
             PyChainMap chainMap => LenChainMap(chainMap, span, context),
+            PyRange range => range.Length,
             IPySizedValue sized => new BigInteger(sized.Length),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
@@ -346,6 +347,12 @@ internal sealed partial class LythonRuntime
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             return new PyReversedIterator(indexable.Length, indexable.GetIndex);
+        }
+
+        if (target is PyRange range)
+        {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            return new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
         }
 
         if (PyStringOps.TryAsString(target, out var text))

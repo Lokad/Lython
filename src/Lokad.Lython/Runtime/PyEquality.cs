@@ -154,6 +154,17 @@ internal static class PyEquality
             return leftSet.SetEquals(rightSet);
         }
 
+        if (left is PyRange leftRange && right is PyRange rightRange)
+        {
+            // Ranges compare as sequences like CPython: equal lengths
+            // with matching starts, ignoring step on singletons.
+            return leftRange.Length == rightRange.Length
+                && (leftRange.Length.IsZero
+                    || (leftRange.Start == rightRange.Start
+                        && (leftRange.Length == BigInteger.One
+                            || leftRange.Step == rightRange.Step)));
+        }
+
         if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView)
         {
             // Dict keys and items views compare as sets like CPython;
