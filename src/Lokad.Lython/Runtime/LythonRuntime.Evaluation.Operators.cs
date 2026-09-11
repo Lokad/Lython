@@ -60,13 +60,15 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        if (left is PyTuple leftTuple && right is PyTuple rightTuple)
+        if (PyTupleLike.TryGetItems(left, out var leftItems) && PyTupleLike.TryGetItems(right, out var rightItems))
         {
-            var governor = leftTuple.OwnerMemoryGovernor ?? rightTuple.OwnerMemoryGovernor;
-            var allocationSpan = leftTuple.AllocationSpan ?? rightTuple.AllocationSpan;
+            var (leftGovernor, leftSpan) = TupleLikeOwnership(left);
+            var (rightGovernor, rightSpan) = TupleLikeOwnership(right);
+            var governor = leftGovernor ?? rightGovernor;
+            var allocationSpan = leftSpan ?? rightSpan;
             return governor is null
-                ? new PyTuple(leftTuple.Concat(rightTuple))
-                : new PyTuple(leftTuple.Concat(rightTuple), governor, allocationSpan);
+                ? new PyTuple(leftItems.Concat(rightItems))
+                : new PyTuple(leftItems.Concat(rightItems), governor, allocationSpan);
         }
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
@@ -189,14 +191,14 @@ internal sealed partial class LythonRuntime
             return RepeatList(rightList, leftRepeatCount, context, span);
         }
 
-        if (left is PyTuple leftTuple && TryRepeatCount(right, out var rightTupleRepeatCount))
+        if (PyTupleLike.TryGetItems(left, out var repeatLeft) && TryRepeatCount(right, out var rightTupleRepeatCount))
         {
-            return RepeatTuple(leftTuple, rightTupleRepeatCount, context, span);
+            return RepeatTuple(repeatLeft, rightTupleRepeatCount, context, span);
         }
 
-        if (right is PyTuple rightTuple && TryRepeatCount(left, out var leftTupleRepeatCount))
+        if (PyTupleLike.TryGetItems(right, out var repeatRight) && TryRepeatCount(left, out var leftTupleRepeatCount))
         {
-            return RepeatTuple(rightTuple, leftTupleRepeatCount, context, span);
+            return RepeatTuple(repeatRight, leftTupleRepeatCount, context, span);
         }
 
         if (left is PyTimedelta || right is PyTimedelta)
@@ -247,6 +249,14 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSequenceOperand(object value)
         => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or PyString or PyBytes;
+
+    private static (MemoryGovernor? Governor, LythonSourceSpan? Span) TupleLikeOwnership(object value) => value switch
+    {
+        PyTuple tuple => (tuple.OwnerMemoryGovernor, tuple.AllocationSpan),
+        PyNamedTupleObject named => (named.OwnerMemoryGovernor, named.AllocationSpan),
+        PyTypingNamedTupleObject typingNamed => (typingNamed.OwnerMemoryGovernor, typingNamed.AllocationSpan),
+        _ => (null, null),
+    };
 
     private static bool IsIntLikeOperand(object value)
         => value is BigInteger or int or bool;

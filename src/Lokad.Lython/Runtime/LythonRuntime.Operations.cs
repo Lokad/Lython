@@ -497,7 +497,7 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static PyTuple RepeatTuple(PyTuple tuple, BigInteger count, ExecutionContext context, LythonSourceSpan span)
+    private static PyTuple RepeatTuple(IReadOnlyList<object> tuple, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
         if (count <= BigInteger.Zero || tuple.Count == 0)
         {

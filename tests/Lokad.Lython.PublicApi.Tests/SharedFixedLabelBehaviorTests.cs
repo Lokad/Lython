@@ -2726,6 +2726,44 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task NamedTupleConcatRepeat()
+    {
+        // Namedtuple values concatenate and repeat like plain tuples (with
+        // plain-tuple results) on both namedtuple flavors.
+        var script = new LythonEngine().Compile("""
+            import collections
+            import typing
+            results = []
+            P = collections.namedtuple("P", ["x", "y"])
+            results.append(P(1, 2) + (3,) == (1, 2, 3))
+            results.append(P(1, 2) * 2 == (1, 2, 1, 2))
+            results.append(2 * P(1, 2) == (1, 2, 1, 2))
+            results.append(P(1, 2) + P(3, 4) == (1, 2, 3, 4))
+            results.append((1, 2) + P(3, 4) == (1, 2, 3, 4))
+            results.append(type(P(1, 2) + (3,)) is tuple)
+            p = P(1, 2)
+            p += (3,)
+            results.append(p == (1, 2, 3))
+            Q = typing.NamedTuple("Q", [("x", int)])
+            results.append(Q(1) + (2,) == (1, 2))
+            results.append(Q(1) * 2 == (1, 1))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
     [Fact]
     public async Task NamedTupleSequenceMembers()
     {
