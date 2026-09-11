@@ -448,6 +448,13 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        // Mappings store colon slices as keys like CPython; bounds stay raw.
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        {
+            SetSubscriptValue(target, PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), value, span, context);
+            return;
+        }
+
         // Subscript bounds coerce through __index__ like CPython; bad
         // __index__ results propagate while other rejections name the slice.
         // Coercion runs before the value drain so bound failures keep priority.
@@ -510,6 +517,34 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        // Mappings delete colon slices as keys like CPython; bounds stay raw.
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        {
+            var key = ValidateDictionaryKey(PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), span);
+            switch (target)
+            {
+                case PyDict dict:
+                    if (!dict.Remove(key))
+                    {
+                        throw RuntimeErrors.MissingKey(key, span);
+                    }
+
+                    return;
+
+                case PyDefaultDict defaultDict:
+                    if (!defaultDict.Remove(key))
+                    {
+                        throw RuntimeErrors.MissingKey(key, span);
+                    }
+
+                    return;
+
+                default:
+                    _ = ((PyCounter)target).Remove(key);
+                    return;
+            }
+        }
+
         // Subscript bounds coerce through __index__ like CPython; bad
         // __index__ results propagate while other rejections name the slice.
         start = PyIndexing.CoerceSliceBound(start, context, span);

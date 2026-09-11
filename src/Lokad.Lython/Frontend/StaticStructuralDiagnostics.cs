@@ -125,6 +125,12 @@ internal static partial class StaticStructuralDiagnostics
             return;
         }
 
+        if (IsMappingKind(target))
+        {
+            // Colon slices on mappings are key lookups with raw bounds.
+            return;
+        }
+
         if (StaticAbstractFacts.IsDefinitelyNonSliceable(target))
         {
             AddDiagnostic(diagnostics, "LA3118", "Object does not support slicing.", slice.Target.Span);
@@ -165,6 +171,12 @@ internal static partial class StaticStructuralDiagnostics
     {
         if (!StaticAbstractValueResolver.TryResolve(slice.Target, bindings, out var target))
         {
+            return;
+        }
+
+        if (IsMappingKind(target))
+        {
+            // Colon slices on mappings are key lookups with raw bounds.
             return;
         }
 
@@ -239,6 +251,16 @@ internal static partial class StaticStructuralDiagnostics
                 $"Extended slice assignment expects {selectedLength} replacement items, got {replacementLength}.",
                 slice.Expression.Span);
         }
+    }
+
+    private static bool IsMappingKind(AbstractValue target)
+    {
+        var kind = target.Kind == AbstractValueKind.MaybeNone
+            ? target.RequireNestedValue().Kind
+            : target.Kind;
+        return kind is AbstractValueKind.Dict or
+            AbstractValueKind.CollectionsCounter or
+            AbstractValueKind.CollectionsDefaultDict;
     }
 
     private static void AnalyzeSliceBound(ExpressionSyntax? bound, List<LythonDiagnostic> diagnostics, AbstractState bindings)

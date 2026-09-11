@@ -6124,6 +6124,106 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ColonSliceSyntaxOnMappings_KeysLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, defaultdict
+
+class J:
+    def __index__(self):
+        return 1
+
+parts = []
+def dict_shapes():
+    out = []
+    d = {}
+    d[1:2] = 5
+    out.append(str(d[slice(1, 2)]))
+    out.append(str(d[1:2]))
+    d[1:2] = 6
+    out.append(str(d[1:2]))
+    del d[1:2]
+    out.append(str(len(d)))
+    d2 = {slice(1, 2): 9}
+    out.append(str(d2[1:2]))
+    d[1.5:2] = 1
+    out.append(str(list(d.keys())))
+    d[1:2:0] = 2
+    out.append(str(d[slice(1, 2, 0)]))
+    d[True:2] = 7
+    out.append(str(d[1:2]))
+    d[1:2] += 4
+    out.append(str(d[1:2]))
+    try:
+        d[9:9]
+    except KeyError as e:
+        out.append(str(e))
+    try:
+        del d[9:9]
+    except KeyError as e:
+        out.append(str(e))
+    dj = {}
+    dj[J():2] = 7
+    out.append(str(len(dj)))
+    dn = {}
+    dn[1:2] = {}
+    dn[1:2][3:4] = 1
+    out.append(str(dn[1:2][3:4]))
+    return out
+parts.extend(dict_shapes())
+
+def counter_shapes():
+    out = []
+    c = Counter()
+    out.append(str(c[1:2]))
+    c[1:2] = 5
+    out.append(str(c[1:2]))
+    del c[1:2]
+    out.append(str(c[1:2]))
+    del c[1:2]
+    out.append(str(c[1:2]))
+    return out
+parts.extend(counter_shapes())
+
+def defaultdict_shapes():
+    out = []
+    dd = defaultdict(list)
+    out.append(str(dd[1:2]))
+    dd[1:2] = [1]
+    out.append(str(dd[1:2]))
+    del dd[1:2]
+    out.append(str(dd[1:2]))
+    try:
+        del dd[9:9]
+    except KeyError as e:
+        out.append(str(e))
+    return out
+parts.extend(defaultdict_shapes())
+
+def control_shapes():
+    out = []
+    out.append(str([1, 2, 3][1:2]))
+    l = [1, 2, 3]
+    l[1:2] = [7, 8]
+    out.append(str(l))
+    del l[1:2]
+    out.append(str(l))
+    out.append(str((1, 2, 3)[1:2]))
+    return out
+parts.extend(control_shapes())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"5|5|6|0|9|[slice(1.5, 2, None)]|2|7|11|slice(9, 9, None)|slice(9, 9, None)|1|1|0|5|0|0|[]|[1]|[]|slice(9, 9, None)|[2]|[1, 7, 8, 3]|[1, 8, 3]|(2,)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

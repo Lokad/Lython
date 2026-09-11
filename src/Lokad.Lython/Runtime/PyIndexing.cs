@@ -89,8 +89,47 @@ internal static class PyIndexing
         };
     }
 
+    // Colon-slice keys on mappings materialize exactly like explicit slice()
+    // calls: the bounds stay raw (no __index__ coercion) and the 64B shell
+    // is owned when a governor is available.
+    internal static PySlice CreateMappingSliceKey(object? start, object? end, object? step, MemoryGovernor? governor, LythonSourceSpan span)
+    {
+        governor?.Reserve(64L, span);
+        governor?.Commit(64L);
+        return new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+    }
+
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        // Mappings resolve colon slices as keys like CPython, ahead of any
+        // bound coercion or sequence slicing.
+        if (target is PyDict || target is PyCounter || target is PyDefaultDict)
+        {
+            var key = CreateMappingSliceKey(start, end, step, context?.MemoryGovernor, span);
+            if (target is PyDict dict)
+            {
+                return ReadDictIndex(dict, key, span);
+            }
+
+            if (target is PyCounter counter)
+            {
+                return ReadCounterIndex(counter, key, span);
+            }
+
+            var defaultDict = (PyDefaultDict)target;
+            if (context is not null)
+            {
+                return defaultDict.GetOrCreate(LythonRuntime.ValidateDictionaryKey(key, span), context, span);
+            }
+
+            if (defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(key, span), out var value))
+            {
+                return value;
+            }
+
+            throw RuntimeErrors.MissingKey(key, span);
+        }
+
         if (context is not null)
         {
             // Subscript bounds coerce through __index__ like CPython; bad

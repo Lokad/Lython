@@ -94,8 +94,7 @@ internal static class StaticAbstractFacts
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonSubscriptable);
 
     public static bool IsDefinitelyNonSliceable(AbstractValue value)
-        => IsDefinitelyNonSubscriptable(value) ||
-           value.Kind == AbstractValueKind.Dict;
+        => IsDefinitelyNonSubscriptable(value);
 
     public static bool RequiresIntegerIndex(AbstractValue value)
         => value.Kind is AbstractValueKind.String or
