@@ -26,13 +26,13 @@ internal sealed partial class LythonRuntime
         {
             if (!floatInstance.TryGetAttribute("__float__", context, span, out var member) || member is not ICallable callable)
             {
-                throw new LythonRuntimeException("TypeError", "float() argument must be a real number", span);
+                throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
             }
 
             var converted = callable.Invoke([], span, context);
             if (converted is not double floating)
             {
-                throw new LythonRuntimeException("TypeError", "__float__ returned non-float", span);
+                throw new LythonRuntimeException("TypeError", floatInstance.Type.Name + ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
             }
 
             return floating;
@@ -47,12 +47,16 @@ internal sealed partial class LythonRuntime
                 PyDecimal decimalValue => (double)decimalValue.Value,
                 PyString text => ParsePythonFloatText(text.AsString()),
                 bool boolean => boolean ? 1.0 : 0.0,
-                _ => throw new LythonRuntimeException("TypeError", "float() does not support this value.", span)
+                _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }
-        catch (FormatException ex)
+        catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
+            // Only the PyString arm parses, so only it can fail this way.
+            // The message quotes the original text (whitespace included) with
+            // CPython repr quote choice, not the BCL or normalized shapes.
+            var original = ((PyString)arguments[0]).AsString();
+            throw new LythonRuntimeException("ValueError", "could not convert string to float: " + QuoteFloatFailureText(original, context), span);
         }
 
         static double ParsePythonFloatText(string text)
@@ -68,6 +72,14 @@ internal sealed partial class LythonRuntime
             };
         }
     }
+
+    // CPython repr quote choice for a pre-rendered failure message: double
+    // quotes only when the text holds a single quote but no double quote,
+    // otherwise the shared single-quote renderer.
+    private static string QuoteFloatFailureText(string text, ExecutionContext context)
+        => text.Contains((char)39) && !text.Contains((char)34)
+            ? "\"" + text + "\""
+            : PyRendering.ToReprPyString(PyString.FromString(text, context.MemoryGovernor), new PyRenderingContext(context)).AsString();
 
     private static object Bytes(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

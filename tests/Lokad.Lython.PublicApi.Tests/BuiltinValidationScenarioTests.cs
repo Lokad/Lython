@@ -9,7 +9,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("max([])\n", "ValueError", "empty sequence")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
-    [InlineData("float(\"bad\")\n", "ValueError", "input string")]
+    [InlineData("float(\"bad\")\n", "ValueError", "could not convert string to float: 'bad'")]
     [InlineData("sum([\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("sum([b\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("raise \"bad\"\n", "TypeError", "raise expects an exception instance")]
@@ -157,6 +157,35 @@ for f in [len, all, any]:
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("len() takes exactly one argument (0 given)\nlen() takes exactly one argument (2 given)\nall() takes exactly one argument (0 given)\nall() takes exactly one argument (2 given)\nany() takes exactly one argument (0 given)\nany() takes exactly one argument (2 given)\n", result.StandardOutput);
     }
+
+    [Fact]
+    public void FloatFailures_MatchCpythonShapes()
+    {
+        var result = new LythonEngine().Run(
+            """
+class F:
+    def __float__(self):
+        return "x"
+
+for src in ["a", "  a  ", "a" + chr(39) + "b"]:
+    try:
+        print(float(src))
+    except ValueError as e:
+        print(str(e))
+for bad in [object(), [1], None, F()]:
+    try:
+        print(float(bad))
+    except TypeError as e:
+        print(str(e))
+print(float("inf"))
+print(float(" 1.5 "))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("could not convert string to float: 'a'\ncould not convert string to float: '  a  '\ncould not convert string to float: \"a'b\"\nfloat() argument must be a string or a real number, not 'object'\nfloat() argument must be a string or a real number, not 'list'\nfloat() argument must be a string or a real number, not 'NoneType'\nF.__float__ returned non-float (type str)\ninf\n1.5\n", result.StandardOutput);
+    }
+
 
 
     [Fact]
