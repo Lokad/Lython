@@ -534,7 +534,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "math.prod(...) expects an iterable of real numbers.", span);
             }
 
-            return PyNumberOps.Multiply(left, right);
+            try
+            {
+                return PyNumberOps.Multiply(left, right);
+            }
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", ex.Message, span);
+            }
         }
 
         private static object ExpectFloorLike(
@@ -562,7 +569,7 @@ internal sealed partial class LythonRuntime
                 return number.Integer;
             }
 
-            return OwnHeapInteger(FloatToInteger(number.Floating, owner, span, func), context.MemoryGovernor, span);
+            return OwnHeapInteger(FloatToInteger(number.Floating, span, func), context.MemoryGovernor, span);
         }
     }
 

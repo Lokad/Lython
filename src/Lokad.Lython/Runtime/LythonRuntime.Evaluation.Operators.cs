@@ -128,7 +128,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
+        try
+        {
+            return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
@@ -178,7 +185,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
+        try
+        {
+            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -253,7 +267,14 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
+        try
+        {
+            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     // Repeat counts coerce through __index__ like CPython; a failing __index__
@@ -374,6 +395,10 @@ internal sealed partial class LythonRuntime
                 left is double || right is double ? "float floor division by zero" : "integer division or modulo by zero",
                 span);
         }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     private static object EvaluateModulo(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -409,6 +434,10 @@ internal sealed partial class LythonRuntime
                 left is double || right is double ? "float modulo by zero" : "integer modulo by zero",
                 span);
         }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
     }
 
     private static object EvaluatePower(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -430,8 +459,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ZeroDivisionError", "0.0 cannot be raised to a negative power", span);
             }
 
-            var leftValue = lhs.IsFloat ? lhs.Floating : (double)lhs.Integer;
-            var rightValue = rhs.IsFloat ? rhs.Floating : (double)rhs.Integer;
+            var leftValue = lhs.IsFloat ? lhs.Floating : PyNumberOps.ToDoubleChecked(lhs);
+            var rightValue = rhs.IsFloat ? rhs.Floating : PyNumberOps.ToDoubleChecked(rhs);
             if (leftValue < 0 && double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
             {
                 throw new LythonRuntimeException("TypeError", "complex results are not supported by Lython", span);
@@ -439,6 +468,10 @@ internal sealed partial class LythonRuntime
 
             GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
             return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
+        }
+        catch (OverflowException ex) when (ex.Message == "int too large to convert to float")
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
         catch (OverflowException)
         {

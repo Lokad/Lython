@@ -385,8 +385,17 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "math.sumprod(...) expects iterables of real numbers.", span);
                 }
 
-                var product = OwnHeapInteger(PyNumberOps.Multiply(left, right), context.MemoryGovernor, span);
-                total = EvaluateAdd(total, product, context, span);
+                object product;
+                try
+                {
+                    product = PyNumberOps.Multiply(left, right);
+                }
+                catch (OverflowException ex)
+                {
+                    throw new LythonRuntimeException("OverflowError", ex.Message, span);
+                }
+
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
             }
 
             return RuntimeValue(total);

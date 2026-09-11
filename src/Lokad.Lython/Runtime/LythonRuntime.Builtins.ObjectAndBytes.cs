@@ -52,12 +52,24 @@ internal sealed partial class LythonRuntime
                 }
 
                 // The shared choke either returns an integer or raises the
-                // shaped __index__ error; huge magnitudes share the known
-                // int-to-float overflow gap instead of raising like CPython.
-                return (double)(BigInteger)CoerceIndexProtocol(floatInstance, context, span);
+                // shaped __index__ error; out-of-range magnitudes fail like
+                // CPython instead of saturating to infinity.
+                return FloatFromInteger((BigInteger)CoerceIndexProtocol(floatInstance, context, span), span);
             }
 
             throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
+        }
+
+        // Like CPython, out-of-range integers fail instead of saturating.
+        static double FloatFromInteger(BigInteger integer, LythonSourceSpan span)
+        {
+            var value = (double)integer;
+            if (!double.IsFinite(value))
+            {
+                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+            }
+
+            return value;
         }
 
         try
@@ -65,7 +77,7 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 double floating => floating,
-                BigInteger integer => (double)integer,
+                BigInteger integer => FloatFromInteger(integer, span),
                 PyDecimal decimalValue => (double)decimalValue.Value,
                 PyString text => ParsePythonFloatText(text.AsString(), text, context, span),
                 PyBytes bytesValue => ParsePythonFloatBytes(bytesValue, context, span),

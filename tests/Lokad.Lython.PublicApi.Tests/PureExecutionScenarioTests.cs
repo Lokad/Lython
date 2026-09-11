@@ -6749,6 +6749,65 @@ re.search(re.compile("a"), "a", 2)
     }
 
     [Fact]
+    public void IntToFloatOverflow_RaisesLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+parts = []
+try:
+    float(10**400)
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    10**400 * 1.5
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    10**400 + 1.5
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    10**400 % 1.5
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    10**400 // 1.5
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    (10**400) ** 1.0
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    2.0 ** (10**400)
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    -(10**400) + 1.5
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    int(float("inf"))
+except OverflowError as e:
+    parts.append(str(e))
+try:
+    int(float("nan"))
+except ValueError as e:
+    parts.append(str(e))
+parts.append(str(10**400 > 1.5))
+parts.append(str(10**400 == float("inf")))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|cannot convert float infinity to integer|cannot convert float NaN to integer|True|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

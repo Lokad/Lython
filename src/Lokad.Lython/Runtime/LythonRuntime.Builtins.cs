@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
-                double floating => OwnHeapInteger(FloatToInteger(floating, "int", span, Math.Truncate), context.MemoryGovernor, span),
+                double floating => OwnHeapInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
                 PyDecimal decimalValue => OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
                 PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, PyRendering.ToReprPyString(text, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
                 PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, PyRendering.ToReprPyString(bytes, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
@@ -759,18 +759,17 @@ internal sealed partial class LythonRuntime
 
     private static BigInteger FloatToInteger(
         double value,
-        string owner,
         LythonSourceSpan span,
         Func<double, double> transform)
     {
         if (double.IsNaN(value))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner} cannot convert float NaN to integer.", span);
+            throw new LythonRuntimeException("ValueError", "cannot convert float NaN to integer", span);
         }
 
         if (double.IsInfinity(value))
         {
-            throw new LythonRuntimeException("OverflowError", $"{owner} cannot convert float infinity to integer.", span);
+            throw new LythonRuntimeException("OverflowError", "cannot convert float infinity to integer", span);
         }
 
         try

@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
         {
             if (digits is null)
             {
-                return FloatToInteger(value, "round", span, static number => Math.Round(number, MidpointRounding.ToEven));
+                return FloatToInteger(value, span, static number => Math.Round(number, MidpointRounding.ToEven));
             }
 
             try

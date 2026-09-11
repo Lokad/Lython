@@ -36,14 +36,28 @@ internal static class PyNumberOps
         return false;
     }
 
+    // Like CPython, converting an out-of-range integer to float fails
+    // instead of saturating to infinity; the boundary funnels report the
+    // BCL message with their own span.
+    internal static double ToDoubleChecked(PyNumber number)
+    {
+        var value = number.ToDouble();
+        if (!number.IsFloat && !double.IsFinite(value))
+        {
+            throw new OverflowException("int too large to convert to float");
+        }
+
+        return value;
+    }
+
     public static object Add(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer + rhs.Integer : lhs.ToDouble() + rhs.ToDouble();
+        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer + rhs.Integer : ToDoubleChecked(lhs) + ToDoubleChecked(rhs);
 
     public static object Subtract(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer - rhs.Integer : lhs.ToDouble() - rhs.ToDouble();
+        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer - rhs.Integer : ToDoubleChecked(lhs) - ToDoubleChecked(rhs);
 
     public static object Multiply(PyNumber lhs, PyNumber rhs)
-        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer * rhs.Integer : lhs.ToDouble() * rhs.ToDouble();
+        => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer * rhs.Integer : ToDoubleChecked(lhs) * ToDoubleChecked(rhs);
 
     public static object TrueDivide(PyNumber lhs, PyNumber rhs)
     {
@@ -52,13 +66,18 @@ internal static class PyNumberOps
             throw new DivideByZeroException();
         }
 
-        var result = lhs.ToDouble() / rhs.ToDouble();
-        if (!lhs.IsFloat && !rhs.IsFloat && !double.IsFinite(result))
+        if (!lhs.IsFloat && !rhs.IsFloat)
         {
-            throw new OverflowException("integer division result too large for a float");
+            var result = lhs.ToDouble() / rhs.ToDouble();
+            if (!double.IsFinite(result))
+            {
+                throw new OverflowException("integer division result too large for a float");
+            }
+
+            return result;
         }
 
-        return result;
+        return ToDoubleChecked(lhs) / ToDoubleChecked(rhs);
     }
 
     public static object FloorDivide(PyNumber lhs, PyNumber rhs)
@@ -73,7 +92,7 @@ internal static class PyNumberOps
             return FloorDivideIntegers(lhs.Integer, rhs.Integer);
         }
 
-        return Math.Floor(lhs.ToDouble() / rhs.ToDouble());
+        return Math.Floor(ToDoubleChecked(lhs) / ToDoubleChecked(rhs));
     }
 
     public static object Modulo(PyNumber lhs, PyNumber rhs)
@@ -88,8 +107,8 @@ internal static class PyNumberOps
             return lhs.Integer - FloorDivideIntegers(lhs.Integer, rhs.Integer) * rhs.Integer;
         }
 
-        var left = lhs.ToDouble();
-        var right = rhs.ToDouble();
+        var left = ToDoubleChecked(lhs);
+        var right = ToDoubleChecked(rhs);
         if (double.IsFinite(left) && double.IsInfinity(right))
         {
             if (left == 0.0 || Math.CopySign(1.0, left) == Math.CopySign(1.0, right))
@@ -111,7 +130,7 @@ internal static class PyNumberOps
             return BigInteger.Pow(lhs.Integer, checked((int)rhs.Integer));
         }
 
-        return Math.Pow(lhs.ToDouble(), rhs.ToDouble());
+        return Math.Pow(ToDoubleChecked(lhs), ToDoubleChecked(rhs));
     }
 
     public static BigInteger BitwiseOr(BigInteger lhs, BigInteger rhs) => lhs | rhs;
