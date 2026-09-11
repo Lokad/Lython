@@ -5235,6 +5235,72 @@ public sealed class SharedFixedLabelBehaviorTests
     }
 
     [Fact]
+    public async Task ImmutableTypeAttributeMutation()
+    {
+        // Attribute writes and deletes on builtin immutable types raise
+        // the CPython TypeError instead of a missing-attribute error.
+        var script = new LythonEngine().Compile("""
+            class C:
+                pass
+            results = []
+            try:
+                setattr(int, "x", 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                setattr(object, "x", 1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                setattr(Exception, "x", 1)
+            except TypeError as e:
+                results.append(str(e))
+            setattr(C, "y", 1)
+            results.append(C.y == 1)
+            try:
+                delattr(int, "x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                delattr(C, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                delattr(object, "x")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                int.x = 1
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                del int.x
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "cannot set 'x' attribute of immutable type 'int'.",
+            "cannot set 'x' attribute of immutable type 'object'.",
+            "cannot set 'x' attribute of immutable type 'Exception'.",
+            true,
+            "cannot set 'x' attribute of immutable type 'int'.",
+            "type object 'C' has no attribute 'x'.",
+            "cannot set 'x' attribute of immutable type 'object'.",
+            "cannot set 'x' attribute of immutable type 'int'.",
+            "cannot set 'x' attribute of immutable type 'int'.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
     public async Task EllipsisAndNotImplemented()
     {
         // The Ellipsis literal and the NotImplemented singleton behave

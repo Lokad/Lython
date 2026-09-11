@@ -200,9 +200,17 @@ internal static class PyMemberAccess
             return true;
         }
 
-        if (target is PyType type && type.TrySetMember(memberName, value))
+        if (target is PyType type)
         {
-            return true;
+            if (type.Name is "object" or "type")
+            {
+                throw ImmutableTypeError(target, memberName, span);
+            }
+
+            if (type.TrySetMember(memberName, value))
+            {
+                return true;
+            }
         }
 
         if (target is IPyMutableDynamicAttributes dynamicAttributes && dynamicAttributes.TrySetMember(memberName, value))
@@ -235,6 +243,11 @@ internal static class PyMemberAccess
             }
         }
 
+        if (IsImmutableBuiltinType(target, context))
+        {
+            throw ImmutableTypeError(target, memberName, span);
+        }
+
         return false;
     }
 
@@ -260,7 +273,35 @@ internal static class PyMemberAccess
             }
         }
 
+        if (IsImmutableBuiltinType(target, context))
+        {
+            throw ImmutableTypeError(target, memberName, span);
+        }
+
         return false;
+    }
+
+    private static bool IsImmutableBuiltinType(object target, LythonRuntime.ExecutionContext context)
+    {
+        // Builtin immutable types reject attribute writes and deletes like
+        // CPython instead of reporting a missing attribute; user classes,
+        // modules and instances keep their own paths above.
+        if (target is PyType type)
+        {
+            return type.Name is "object" or "type";
+        }
+
+        return target is not null
+            && LythonRuntime.TryGetValueClass(target, context, out var classValue)
+            && classValue is PyType { Name: "type" };
+    }
+
+    private static LythonRuntimeException ImmutableTypeError(object target, string memberName, LythonSourceSpan span)
+    {
+        return new LythonRuntimeException(
+            "TypeError",
+            $"cannot set '{memberName}' attribute of immutable type '{TypeObjectName(target)}'.",
+            span);
     }
 
     private static string RuntimeTypeName(string name)
