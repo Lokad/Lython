@@ -123,6 +123,13 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.DivMod(leftDelta, rightDelta, context, span);
         }
 
+        // User-defined __divmod__ takes precedence like CPython, with reflected
+        // fallback; a NotImplemented answer declines like the other protocol cores.
+        if (TryInvokeDivModProtocol(arguments[0], arguments[1], context, span, out var protocolResult))
+        {
+            return protocolResult;
+        }
+
         try
         {
             return new PyTuple(
@@ -138,6 +145,26 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ZeroDivisionError", "float divmod()", span);
         }
+    }
+
+    private static bool TryInvokeDivModProtocol(object left, object right, ExecutionContext context, LythonSourceSpan span, out object result)
+    {
+        var invocation = InvokeBinarySpecialMethod(left, "__divmod__", right, context, span).GetAwaiter().GetResult();
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            result = invocation.Value;
+            return true;
+        }
+
+        invocation = InvokeBinarySpecialMethod(right, "__rdivmod__", left, context, span).GetAwaiter().GetResult();
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            result = invocation.Value;
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
     }
 
     // Range bounds are inline values; charge one table slot for the object itself.

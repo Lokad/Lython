@@ -262,6 +262,42 @@ print(abs(True))
     }
 
     [Fact]
+    public void DivModProtocol_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class C:
+    def __divmod__(self, other):
+        return 42
+class R:
+    def __rdivmod__(self, other):
+        return (9, 9)
+class A:
+    def __divmod__(self, other):
+        return NotImplemented
+class B:
+    def __rdivmod__(self, other):
+        return (7, 8)
+
+parts = []
+parts.append(str(divmod(C(), 3)))
+parts.append(str(divmod(1, R())))
+parts.append(str(divmod(A(), B())))
+parts.append(str(divmod(7, 2)))
+parts.append(str(divmod(-7, 2)))
+parts.append(str(divmod(7.0, 2)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("42|(9, 9)|(7, 8)|(3, 1)|(-4, 1)|(3.0, 1.0)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void RoundProtocol_MatchesCpython()
     {
         var host = new MockLythonHost();
