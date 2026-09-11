@@ -191,6 +191,37 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_ViewAndDequeRendering_QuotesElements()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+d = {"a": "x"}
+q = deque(["a", 1])
+
+vals = []
+vals.append(str(d.keys()))
+vals.append(repr(d.keys()))
+vals.append(f"{d.keys()}")
+vals.append(str(d.values()))
+vals.append(str(d.items()))
+vals.append(str(q))
+vals.append(repr(q))
+vals.append(f"{q}")
+vals.append(str(deque(["a"], maxlen=2)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("dict_keys(['a'])|dict_keys(['a'])|dict_keys(['a'])|dict_values(['x'])|dict_items([('a', 'x')])|deque(['a', 1])|deque(['a', 1])|deque(['a', 1])|deque(['a'], maxlen=2)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_CounterLengthCountsStoredDistinctKeys()
     {
         var result = new LythonEngine().Run(

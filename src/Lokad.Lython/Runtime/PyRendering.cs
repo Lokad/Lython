@@ -46,9 +46,9 @@ internal static class PyRendering
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 BigInteger integer => PyString.FromString(integer.ToString(), context.Context.MemoryGovernor),
                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
-                LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: true),
-                LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: true),
-                LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: true),
+                LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
+                LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
+                LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
                 PyException exception => RenderExceptionMessage(exception, context),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
@@ -77,9 +77,9 @@ internal static class PyRendering
                 bool boolean => boolean ? TrueLiteral : FalseLiteral,
                 BigInteger integer => PyString.FromString(integer.ToString(), context.Context.MemoryGovernor),
                 double floating => PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating), context.Context.MemoryGovernor),
-                LythonRuntime.DictKeysView view => JoinRenderedValues("dict_keys([", view, "])", context, interpolated: false),
-                LythonRuntime.DictValuesView view => JoinRenderedValues("dict_values([", view, "])", context, interpolated: false),
-                LythonRuntime.DictItemsView view => JoinRenderedValues("dict_items([", view, "])", context, interpolated: false),
+                LythonRuntime.DictKeysView view => JoinRenderedReprValues("dict_keys([", view, "])", context),
+                LythonRuntime.DictValuesView view => JoinRenderedReprValues("dict_values([", view, "])", context),
+                LythonRuntime.DictItemsView view => JoinRenderedReprValues("dict_items([", view, "])", context),
                 PyException exception => RenderExceptionMessage(exception, context),
                 LythonRuntime.ReMatchObject match => match.Value,
                 LythonRuntime.ExecutionContext.TextFileHandle => FileLiteral,
@@ -109,6 +109,30 @@ internal static class PyRendering
         }
     }
 
+
+    public static PyString JoinRenderedReprValues(
+        string prefix,
+        IEnumerable<object> values,
+        string suffix,
+        PyRenderingContext context)
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        builder.AppendString(prefix);
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.AppendAscii(", ");
+            }
+
+            builder.Append(ToReprPyString(value, context));
+            first = false;
+        }
+
+        builder.AppendString(suffix);
+        return builder.ToPyStringAndRelease();
+    }
 
     public static PyString JoinRenderedSequence(string prefix, IEnumerable<PyString> items, string suffix, PyRenderingContext context)
     {

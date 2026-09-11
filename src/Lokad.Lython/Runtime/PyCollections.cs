@@ -573,13 +573,13 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public PyString RenderPython(PyRenderingContext context)
     {
         var suffix = MaxLength is null ? "])" : $"], maxlen={MaxLength.Value})";
-        return PyRendering.JoinRenderedValues("deque([", _items, suffix, context, interpolated: false);
+        return PyRendering.JoinRenderedReprValues("deque([", _items, suffix, context);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
         var suffix = MaxLength is null ? "])" : $"], maxlen={MaxLength.Value})";
-        return PyRendering.JoinRenderedValues("deque([", _items, suffix, context, interpolated: true);
+        return PyRendering.JoinRenderedReprValues("deque([", _items, suffix, context);
     }
 
     public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
