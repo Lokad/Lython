@@ -610,18 +610,18 @@ internal sealed partial class LythonRuntime
 
         return op switch
         {
-            AugmentedAssignmentOperatorSyntax.Add => EvaluateAdd(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.Subtract => EvaluateSubtract(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.Multiply => EvaluateMultiply(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.Divide => EvaluateDivide(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.FloorDivide => EvaluateFloorDivide(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.Modulo => EvaluateModulo(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.Power => EvaluatePower(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.LeftShift => EvaluateLeftShift(currentValue, right, context, span),
-            AugmentedAssignmentOperatorSyntax.RightShift => EvaluateRightShift(currentValue, right, context, span),
+            AugmentedAssignmentOperatorSyntax.Add => EvaluateAdd(currentValue, right, context, span, "+="),
+            AugmentedAssignmentOperatorSyntax.Subtract => EvaluateSubtract(currentValue, right, context, span, "-="),
+            AugmentedAssignmentOperatorSyntax.Multiply => EvaluateMultiply(currentValue, right, context, span, "*="),
+            AugmentedAssignmentOperatorSyntax.Divide => EvaluateDivide(currentValue, right, context, span, "/="),
+            AugmentedAssignmentOperatorSyntax.FloorDivide => EvaluateFloorDivide(currentValue, right, context, span, "//="),
+            AugmentedAssignmentOperatorSyntax.Modulo => EvaluateModulo(currentValue, right, context, span, "%="),
+            AugmentedAssignmentOperatorSyntax.Power => EvaluatePower(currentValue, right, context, span, "**="),
+            AugmentedAssignmentOperatorSyntax.BitwiseOr => EvaluateBitwiseOr(currentValue, right, context, span, "|="),
+            AugmentedAssignmentOperatorSyntax.BitwiseXor => EvaluateBitwiseXor(currentValue, right, context, span, "^="),
+            AugmentedAssignmentOperatorSyntax.BitwiseAnd => EvaluateBitwiseAnd(currentValue, right, context, span, "&="),
+            AugmentedAssignmentOperatorSyntax.LeftShift => EvaluateLeftShift(currentValue, right, context, span, "<<="),
+            AugmentedAssignmentOperatorSyntax.RightShift => EvaluateRightShift(currentValue, right, context, span, ">>="),
             _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
         };
     }

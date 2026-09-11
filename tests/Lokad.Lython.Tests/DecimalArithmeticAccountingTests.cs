@@ -20,9 +20,12 @@ public sealed class DecimalArithmeticAccountingTests
     {
         var method = typeof(LythonRuntime).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException(name + " not found.");
-        object?[] arguments = method.GetParameters().Length == 4
-            ? [left, right, context, span]
-            : [left, right, span];
+        object?[] arguments = method.GetParameters().Length switch
+        {
+            5 => [left, right, context, span, null],
+            4 => [left, right, context, span],
+            _ => [left, right, span],
+        };
         return method.Invoke(null, arguments)
             ?? throw new InvalidOperationException(name + " returned null.");
     }

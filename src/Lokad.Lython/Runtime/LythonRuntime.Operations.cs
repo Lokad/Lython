@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
-    private static object EvaluateBitwiseOr(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateBitwiseOr(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -102,13 +102,13 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '|'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateBitwiseXor(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateBitwiseXor(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -136,13 +136,13 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '^'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "^", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateBitwiseAnd(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateBitwiseAnd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
@@ -175,17 +175,17 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '&'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "&", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateLeftShift(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateLeftShift(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '<<'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "<<", left, right, context, span);
         }
 
         try
@@ -203,11 +203,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateRightShift(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateRightShift(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '>>'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? ">>", left, right, context, span);
         }
 
         try
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(operand, out _))
         {
-            throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
+            throw RuntimeErrors.BadUnaryOperand("+", operand, context, span);
         }
 
         return operand;
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(operand, out var numeric))
         {
-            throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span);
+            throw RuntimeErrors.BadUnaryOperand("-", operand, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, span);
@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
     {
         if (!PyNumberOps.TryAsInteger(operand, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "Operand is not an integer.", span);
+            throw RuntimeErrors.BadUnaryOperand("~", operand, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, span);

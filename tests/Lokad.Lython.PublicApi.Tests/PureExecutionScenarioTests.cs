@@ -3081,7 +3081,7 @@ __lython_file.close()
 
     [Theory]
     [InlineData("missing += 1\n", "NameError", "is not defined")]
-    [InlineData("items = [1]\nitems -= [1]\n", "TypeError", "Operands are not compatible with '-'")]
+    [InlineData("items = [1]\nitems -= [1]\n", "TypeError", "unsupported operand type(s) for -=: 'list' and 'list'")]
     public void AugmentedAssignment_FailureCasesArePinned(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -4542,9 +4542,39 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("def f(a, b):\n    return a + b\nf(1, \"a\")\n", "unsupported operand type(s) for +: 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a - b\nf([1], {2})\n", "unsupported operand type(s) for -: 'list' and 'set'")]
+    [InlineData("def f(a, b):\n    return a - b\nf(\"a\", \"b\")\n", "unsupported operand type(s) for -: 'str' and 'str'")]
+    [InlineData("def f(a, b):\n    return a + b\nf({\"a\": 1}, {})\n", "unsupported operand type(s) for +: 'dict' and 'dict'")]
+    [InlineData("def f(a):\n    return -a\nf(\"a\")\n", "bad operand type for unary -: 'str'")]
+    [InlineData("def f(a):\n    return +a\nf(\"a\")\n", "bad operand type for unary +: 'str'")]
+    [InlineData("def f(a):\n    return ~a\nf(\"a\")\n", "bad operand type for unary ~: 'str'")]
+    [InlineData("x = 1\nx += \"a\"\n", "unsupported operand type(s) for +=: 'int' and 'str'")]
+    [InlineData("x = 1\nx -= \"a\"\n", "unsupported operand type(s) for -=: 'int' and 'str'")]
+    [InlineData("x = 2\nx **= \"a\"\n", "unsupported operand type(s) for **=: 'int' and 'str'")]
+    [InlineData("x = 1\nx <<= \"a\"\n", "unsupported operand type(s) for <<=: 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a << b\nf(1, \"a\")\n", "unsupported operand type(s) for <<: 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a ** b\nf(2, \"a\")\n", "unsupported operand type(s) for ** or pow(): 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a // b\nf(7, \"a\")\n", "unsupported operand type(s) for //: 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a % b\nf(1, \"a\")\n", "unsupported operand type(s) for %: 'int' and 'str'")]
+    [InlineData("def f(a, b):\n    return a + b\nf(True, \"a\")\n", "unsupported operand type(s) for +: 'bool' and 'str'")]
+    [InlineData("def f(a, b):\n    return a + b\nf(None, 1)\n", "unsupported operand type(s) for +: 'NoneType' and 'int'")]
+    [InlineData("class C:\n    pass\nC() + 1\n", "unsupported operand type(s) for +: 'C' and 'int'")]
+    [InlineData("def f(a, b):\n    return divmod(a, b)\nf(1, \"a\")\n", "unsupported operand type(s) for divmod(): 'int' and 'str'")]
+    [InlineData("def f(a):\n    return pow(a, 2)\nf(\"a\")\n", "unsupported operand type(s) for ** or pow(): 'str' and 'int'")]
+    public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Equal(message, result.Failure?.Message);
+    }
+
+    [Theory]
     [InlineData("1 << -1\n", "ValueError", "negative shift count")]
-    [InlineData("1.5 | 2\n", "TypeError", "Operands are not compatible with '|'")]
-    [InlineData("~1.5\n", "TypeError", "Operand is not an integer")]
+    [InlineData("1.5 | 2\n", "TypeError", "unsupported operand type(s) for |: 'float' and 'int'")]
+    [InlineData("~1.5\n", "TypeError", "bad operand type for unary ~: 'float'")]
     [InlineData("items = (1, 2)\nitems[0] = 3\n", "TypeError", "'tuple' object does not support item assignment")]
     [InlineData("items = (1, 2)\ndel items[0]\n", "TypeError", "'tuple' object doesn't support item deletion")]
     public void BitwiseFailures_ReportExpectedErrors(string source, string exceptionType, string message)

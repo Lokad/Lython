@@ -29,7 +29,7 @@ internal static partial class StaticStructuralDiagnostics
                 operand.Kind != AbstractValueKind.StatisticsNormalDist &&
                 operand.Kind != AbstractValueKind.CollectionsCounter)
             {
-                AddDiagnostic(diagnostics, "LA3144", "Operand is not numeric.", unary.Span);
+                AddDiagnostic(diagnostics, "LA3144", UnaryOperandMessage(unary.Operator == UnaryOperatorSyntax.Plus ? "+" : "-", operand), unary.Span);
             }
 
             return;
@@ -37,7 +37,7 @@ internal static partial class StaticStructuralDiagnostics
 
         if (unary.Operator == UnaryOperatorSyntax.BitwiseNot && !StaticAbstractFacts.IsIntegerLike(operand))
         {
-            AddDiagnostic(diagnostics, "LA3145", "Operand is not an integer.", unary.Span);
+            AddDiagnostic(diagnostics, "LA3145", UnaryOperandMessage("~", operand), unary.Span);
         }
     }
 
@@ -89,7 +89,7 @@ internal static partial class StaticStructuralDiagnostics
 
         if (!CanApplyBinaryOperator(op, left, right))
         {
-            AddDiagnostic(diagnostics, "LA3141", $"Operands are not compatible with '{DescribeBinaryOperator(op)}'.", span);
+            AddDiagnostic(diagnostics, "LA3141", BinaryOperandsMessage(op, left, right), span);
         }
     }
 
@@ -309,6 +309,62 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.Dict or
             AbstractValueKind.Set or
             AbstractValueKind.SetType;
+    }
+
+    private static string BinaryOperandsMessage(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)
+    {
+        var operation = op == BinaryOperatorSyntax.Power ? "** or pow()" : DescribeBinaryOperator(op);
+        if (TryOperandTypeName(left, out var lhs) && TryOperandTypeName(right, out var rhs))
+        {
+            return $"unsupported operand type(s) for {operation}: '{lhs}' and '{rhs}'";
+        }
+
+        return $"Operands are not compatible with '{DescribeBinaryOperator(op)}'.";
+    }
+
+    private static string UnaryOperandMessage(string operation, AbstractValue operand)
+        => TryOperandTypeName(operand, out var name)
+            ? $"bad operand type for unary {operation}: '{name}'"
+            : operation == "~" ? "Operand is not an integer." : "Operand is not numeric.";
+
+    private static bool TryOperandTypeName(AbstractValue value, out string name)
+    {
+        name = value.Kind switch
+        {
+            AbstractValueKind.String => "str",
+            AbstractValueKind.Bytes => "bytes",
+            AbstractValueKind.Integer => "int",
+            AbstractValueKind.Float => "float",
+            AbstractValueKind.Boolean => "bool",
+            AbstractValueKind.None => "NoneType",
+            AbstractValueKind.Ellipsis => "ellipsis",
+            AbstractValueKind.List => "list",
+            AbstractValueKind.Tuple => "tuple",
+            AbstractValueKind.Dict => "dict",
+            AbstractValueKind.Set => "set",
+            AbstractValueKind.CollectionsDefaultDict => "defaultdict",
+            AbstractValueKind.CollectionsCounter => "Counter",
+            AbstractValueKind.CollectionsDeque => "deque",
+            AbstractValueKind.CollectionsChainMap => "ChainMap",
+            AbstractValueKind.Decimal => "Decimal",
+            AbstractValueKind.DateTimeTimedelta => "timedelta",
+            AbstractValueKind.DateTimeDate => "date",
+            AbstractValueKind.DateTimeTime => "time",
+            AbstractValueKind.DateTimeDateTime => "datetime",
+            AbstractValueKind.DateTimeTimezone => "timezone",
+            AbstractValueKind.StatisticsNormalDist => "NormalDist",
+            AbstractValueKind.Random => "Random",
+            AbstractValueKind.StringType or
+            AbstractValueKind.BytesType or
+            AbstractValueKind.IntegerType or
+            AbstractValueKind.FloatType or
+            AbstractValueKind.BooleanType or
+            AbstractValueKind.ListType or
+            AbstractValueKind.SetType => "type",
+            _ => null,
+        };
+
+        return name is not null;
     }
 
     private static string DescribeBinaryOperator(BinaryOperatorSyntax op)

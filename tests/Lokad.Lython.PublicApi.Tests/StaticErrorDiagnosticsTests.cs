@@ -1264,6 +1264,21 @@ b"a" + b"b"
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3072") >= 4);
     }
 
+    [Theory]
+    [InlineData("1 + \"a\"\n", "LA3141", "unsupported operand type(s) for +: 'int' and 'str'")]
+    [InlineData("[1] - {2}\n", "LA3141", "unsupported operand type(s) for -: 'list' and 'set'")]
+    [InlineData("1.5 | 2\n", "LA3141", "unsupported operand type(s) for |: 'float' and 'int'")]
+    [InlineData("2 ** \"a\"\n", "LA3141", "unsupported operand type(s) for ** or pow(): 'int' and 'str'")]
+    [InlineData("-\"a\"\n", "LA3144", "bad operand type for unary -: 'str'")]
+    [InlineData("~1.5\n", "LA3145", "bad operand type for unary ~: 'float'")]
+    public void InvalidOperands_ReportPythonShapedStaticTexts(string source, string code, string message)
+    {
+        var compiled = new LythonEngine().Compile(source);
+
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == code && d.Message.Contains(message, StringComparison.Ordinal));
+    }
+
     [Fact]
     public void TimedeltaOperatorDiagnostics_ShareTheRuntimeCompatibilityMatrix()
     {

@@ -90,10 +90,10 @@ public sealed class CounterDecimalAccountingTests
     {
         var method = typeof(LythonRuntime).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException(name + " not found.");
-        var arguments = new object?[operands.Length + 2];
+        var arguments = new object?[method.GetParameters().Length];
         Array.Copy(operands, arguments, operands.Length);
-        arguments[^2] = context;
-        arguments[^1] = span;
+        arguments[operands.Length] = context;
+        arguments[operands.Length + 1] = span;
         return method.Invoke(null, arguments)
             ?? throw new InvalidOperationException(name + " returned null.");
     }

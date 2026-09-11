@@ -17,6 +17,39 @@ internal static class RuntimeErrors
     public static LythonRuntimeException Type(string message, LythonSourceSpan? span)
         => new("TypeError", message, span);
 
+    public static LythonRuntimeException UnsupportedOperands(
+        string operation,
+        object left,
+        object right,
+        LythonRuntime.ExecutionContext context,
+        LythonSourceSpan? span)
+    {
+        var lhs = OperandTypeName(left, context);
+        var rhs = OperandTypeName(right, context);
+        return Type($"unsupported operand type(s) for {operation}: '{lhs}' and '{rhs}'", span);
+    }
+
+    public static LythonRuntimeException BadUnaryOperand(
+        string operation,
+        object operand,
+        LythonRuntime.ExecutionContext context,
+        LythonSourceSpan? span)
+    {
+        var name = OperandTypeName(operand, context);
+        return Type($"bad operand type for unary {operation}: '{name}'", span);
+    }
+
+    private static string OperandTypeName(object? value, LythonRuntime.ExecutionContext context) => value switch
+    {
+        LythonRuntime.DictKeysView => "dict_keys",
+        LythonRuntime.DictValuesView => "dict_values",
+        LythonRuntime.DictItemsView => "dict_items",
+        ChainMapKeysView => "KeysView",
+        ChainMapValuesView => "ValuesView",
+        ChainMapItemsView => "ItemsView",
+        _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context),
+    };
+
     public static LythonRuntimeException Value(string message, LythonSourceSpan? span)
         => new("ValueError", message, span);
 

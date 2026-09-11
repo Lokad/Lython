@@ -686,7 +686,7 @@ internal static partial class PyDateTimeOps
         }
     }
 
-    public static object Add(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object Add(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
@@ -695,11 +695,11 @@ internal static partial class PyDateTimeOps
             (PyTimedelta delta, PyDate date) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
             (PyDateTime dateTime, PyTimedelta delta) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
             (PyTimedelta delta, PyDateTime dateTime) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, context, span)
         };
     }
 
-    public static object Subtract(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object Subtract(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
@@ -708,7 +708,7 @@ internal static partial class PyDateTimeOps
             (PyDate lhs, PyDate rhs) => OwnDateTimeValue(new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)), context, span),
             (PyDateTime lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold), context, span),
             (PyDateTime lhs, PyDateTime rhs) => OwnDateTimeValue(SubtractDateTimes(lhs, rhs, span), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '-'.", span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, context, span)
         };
     }
 
@@ -717,48 +717,48 @@ internal static partial class PyDateTimeOps
         return operand switch
         {
             PyTimedelta delta => OwnDateTimeValue(CreateTimedelta(-delta.TotalMicroseconds, span), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operand is not numeric.", span)
+            _ => throw RuntimeErrors.BadUnaryOperand("-", operand, context, span)
         };
     }
 
-    public static object Multiply(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object Multiply(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
             (_, PyTimedelta delta) when TryGetScale(left, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '*'.", span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, context, span)
         };
     }
 
-    public static object Divide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object Divide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => DivideTimedeltas(delta, other, span),
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '/'.", span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, context, span)
         };
     }
 
-    public static object FloorDivide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object FloorDivide(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => FloorDivideMicroseconds(delta.TotalMicroseconds, other.TotalMicroseconds, span),
             (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true), context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Operands are not compatible with '//'.", span)
+            _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, context, span)
         };
     }
 
-    public static object Modulo(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static object Modulo(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyTimedelta delta && right is PyTimedelta other)
         {
             return OwnDateTimeValue(TimedeltaModulo(delta, other, span), context, span);
         }
 
-        throw new LythonRuntimeException("TypeError", "Operands are not compatible with '%'.", span);
+        throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, context, span);
     }
 
     public static PyTuple DivMod(PyTimedelta left, PyTimedelta right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

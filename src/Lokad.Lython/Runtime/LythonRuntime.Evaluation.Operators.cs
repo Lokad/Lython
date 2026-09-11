@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.ParseFloat(floating.ValueText);
     }
 
-    private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
-            return PyDateTimeOps.Add(left, right, context, span);
+            return PyDateTimeOps.Add(left, right, context, span, operation);
         }
 
         if (StatisticsModule.TryAddNormalDist(left, right, span, out var normalDistSum))
@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '+'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAdd(left, right, context, span);
 
-    private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
-            return PyDateTimeOps.Subtract(left, right, context, span);
+            return PyDateTimeOps.Subtract(left, right, context, span, operation);
         }
 
         if (StatisticsModule.TrySubtractNormalDist(left, right, span, out var normalDistDifference))
@@ -136,13 +136,13 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '-'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
     }
 
-    private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Multiply(left, right, context, span);
+            return PyDateTimeOps.Multiply(left, right, context, span, operation);
         }
 
         if (StatisticsModule.TryMultiplyNormalDist(left, right, span, out var normalDistProduct))
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '*'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, context, span);
         }
 
         return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static object EvaluateDivide(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Divide(left, right, context, span);
+            return PyDateTimeOps.Divide(left, right, context, span, operation);
         }
 
         if (StatisticsModule.TryDivideNormalDist(left, right, span, out var normalDistQuotient))
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '/'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, context, span);
         }
 
         try
@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateFloorDivide(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateFloorDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyTimedelta || right is PyTimedelta)
         {
@@ -279,7 +279,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '//'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, context, span);
         }
 
         try
@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateModulo(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluateModulo(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyString template)
         {
@@ -309,12 +309,12 @@ internal sealed partial class LythonRuntime
 
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            return PyDateTimeOps.Modulo(left, right, context, span);
+            return PyDateTimeOps.Modulo(left, right, context, span, operation);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '%'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "%", left, right, context, span);
         }
 
         try
@@ -330,7 +330,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluatePower(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    private static object EvaluatePower(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
@@ -339,7 +339,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '**'.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation ?? "** or pow()", left, right, context, span);
         }
 
         try

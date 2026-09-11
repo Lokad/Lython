@@ -153,7 +153,7 @@ return "|".join(vals)
 
         var sync = new LythonEngine().Run(source, new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
-        const string expected = "['a']|['a', 'b', 'c']|['b']|['b', 'c']|['a']|['c']|['a']|['a', 'b', 'c']|['b']|[('a', 1)]|[('a', 1), ('b', 2), ('c', 3)]|[('b', 2)]|True|True|True|True|True|True|False|False|True|Operands are not compatible with '&'.|Object is not iterable.";
+        const string expected = "['a']|['a', 'b', 'c']|['b']|['b', 'c']|['a']|['c']|['a']|['a', 'b', 'c']|['b']|[('a', 1)]|[('a', 1), ('b', 2), ('c', 3)]|[('b', 2)]|True|True|True|True|True|True|False|False|True|unsupported operand type(s) for &: 'dict_values' and 'set'|Object is not iterable.";
         Assert.Equal(expected, sync.ReturnValue);
 
         var asyncResult = await new LythonEngine().RunAsync(source, new MockLythonHost());
