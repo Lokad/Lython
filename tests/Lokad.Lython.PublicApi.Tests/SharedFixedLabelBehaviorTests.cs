@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "capitalize", "center", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "center", "count", "decode", "endswith", "expandtabs", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["capitalize", "center", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
+            results.append(dir(b"") == ["capitalize", "center", "count", "decode", "endswith", "expandtabs", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4826,6 +4826,71 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
+    [Fact]
+    public async Task BytesExpandTabsMembers()
+    {
+        // bytes expandtabs follows CPython tab stops over octets, with
+        // the usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"a\tb" == b"a\tb")
+            results.append(b"a\tb".expandtabs(4) == b"a   b")
+            results.append(b"\ta\t".expandtabs(4) == b"    a   ")
+            results.append(b"ab\tc".expandtabs(4) == b"ab  c")
+            results.append(b"a\n\tb".expandtabs(4) == b"a\n    b")
+            results.append(b"a\r\tb".expandtabs(4) == b"a\r    b")
+            results.append(b"a\x0b\tb".expandtabs(4) == b"a\x0b  b")
+            results.append(b"a\tb".expandtabs(0) == b"ab")
+            results.append(b"a\tb".expandtabs(-1) == b"ab")
+            results.append(b"a\tb".expandtabs() == b"a       b")
+            results.append(b"\xff\t\xfe".expandtabs(4) == b"\xff   \xfe")
+            results.append(b"a\tb".expandtabs(tabsize=4) == b"a   b")
+            results.append(bytes.expandtabs(b"a\tb", 4) == b"a   b")
+            results.append(type(bytes.expandtabs).__name__)
+            results.append(bytes.expandtabs.__name__)
+            results.append(hasattr(bytes, "expandtabs"))
+            results.append("expandtabs" in dir(b"ab"))
+            results.append("expandtabs" in dir(bytes))
+            e = b""
+            results.append(e.expandtabs() is e)
+            t = b"ab"
+            results.append(t.expandtabs() is t)
+            try:
+                getattr(b"a", "expandtabs")(4, 5)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"a", "expandtabs")("4")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"a", "expandtabs")(None)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                getattr(b"a", "expandtabs")(x=4)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            true, true, true, "method_descriptor", "expandtabs", true, true, true, true, false,
+            "Method 'bytes.expandtabs' received too many positional arguments.",
+            "bytes.expandtabs([tabsize]) expects tabsize to be an integer.",
+            "bytes.expandtabs([tabsize]) expects tabsize to be an integer.",
+            "Method 'bytes.expandtabs' got an unexpected keyword argument 'x'.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {

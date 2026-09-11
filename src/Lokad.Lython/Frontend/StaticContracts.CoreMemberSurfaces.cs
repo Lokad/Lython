@@ -60,6 +60,7 @@ internal static partial class StaticContracts
         "count",
         "decode",
         "endswith",
+        "expandtabs",
         "find",
         "fromhex",
         "hex",

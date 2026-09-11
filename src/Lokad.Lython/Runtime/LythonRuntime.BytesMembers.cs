@@ -70,6 +70,16 @@ internal sealed partial class LythonRuntime
                 "ljust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "ljust", arguments, span, context, BytesPadMode.LJust)) { BoundName = "bytes.ljust", BoundReceiver = bytes },
                 "rjust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "rjust", arguments, span, context, BytesPadMode.RJust)) { BoundName = "bytes.rjust", BoundReceiver = bytes },
                 "zfill" => new RawBoundCallable((arguments, span, context) => ZFillBytes(bytes, arguments, span, context)) { BoundName = "bytes.zfill", BoundReceiver = bytes },
+                "expandtabs" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.expandtabs([tabsize]) expects zero or one integer argument.", span);
+                    }
+
+                    var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.ParseInt32(arguments[0], "tabsize", "bytes.expandtabs([tabsize])", span) : 8;
+                    return ExpandBytesTabs(bytes, tabSize, context, span);
+                }, "bytes.expandtabs", ["tabsize"], 0),
                 "split" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
@@ -1650,6 +1660,40 @@ internal sealed partial class LythonRuntime
         builder.Append(source[..prefixLength]);
         builder.AppendRepeated((byte)'0', width - source.Length);
         builder.Append(source[prefixLength..]);
+        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+    }
+    private static object ExpandBytesTabs(PyBytes value, int tabSize, ExecutionContext context, LythonSourceSpan span)
+    {
+        var source = value.Bytes;
+        if (source.IsEmpty)
+        {
+            return value;
+        }
+
+        if (tabSize < 0)
+        {
+            tabSize = 0;
+        }
+
+        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
+            ? new GovernedByteBuilder()
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
+        var column = 0;
+        foreach (var octet in source)
+        {
+            if (octet == (byte)'\t')
+            {
+                var spaces = tabSize == 0 ? 0 : tabSize - (column % tabSize);
+                builder.AppendRepeated((byte)' ', spaces);
+                column += spaces;
+            }
+            else
+            {
+                builder.Append(octet);
+                column = octet is 10 or 13 ? 0 : column + 1;
+            }
+        }
+
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
     private sealed class RawBoundCallable(

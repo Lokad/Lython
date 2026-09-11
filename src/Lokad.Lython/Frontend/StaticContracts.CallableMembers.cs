@@ -126,6 +126,8 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "expandtabs", 0, 1, "LA3185", "bytes.expandtabs([tabsize]) expects zero or one argument.", parameterNames: ["tabsize"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "expandtabs", 0, 1, "LA3185", "bytes.expandtabs([tabsize]) expects zero or one argument.", parameterNames: ["tabsize"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "center", 1, 2, "LA3184", "bytes.center(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "center", 1, 2, "LA3184", "bytes.center(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "ljust", 1, 2, "LA3184", "bytes.ljust(width[, fillchar]) expects one or two arguments.", parameterNames: ["width", "fillchar"]));
