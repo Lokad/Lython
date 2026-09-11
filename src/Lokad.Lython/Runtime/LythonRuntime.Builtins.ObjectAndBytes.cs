@@ -251,8 +251,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
+    private sealed class ObjectInitMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__init__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
         public string Name => "__init__";
 
         // The owning type is threaded at class construction so
@@ -358,8 +368,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
+    private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__setattr__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
         public string Name => "__setattr__";
 
         // The owning type is threaded at class construction so
@@ -436,8 +456,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
+    private sealed class ObjectDelAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__delattr__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
         public string Name => "__delattr__";
 
         // The owning type is threaded at class construction so
@@ -516,8 +546,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember
+    private sealed class ObjectGetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__getattribute__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
         public string Name => "__getattribute__";
 
         // The owning type is threaded at class construction so

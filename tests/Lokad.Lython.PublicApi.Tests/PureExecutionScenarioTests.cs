@@ -4876,6 +4876,32 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("return str(object.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
+    [InlineData("return str(object.__getattribute__)", "<slot wrapper '__getattribute__' of 'object' objects>")]
+    [InlineData("return str(object.__setattr__)", "<slot wrapper '__setattr__' of 'object' objects>")]
+    [InlineData("return str(object.__delattr__)", "<slot wrapper '__delattr__' of 'object' objects>")]
+    [InlineData("class C: pass\nreturn str(C.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
+    [InlineData("return repr(object.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
+    public void ObjectSlotWrappers_RenderSlotWrapperForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("def f():\n    x = []\n    return str(x.__init__)\nreturn f()", "<method-wrapper '__init__' of list object>")]
+    [InlineData("def f():\n    s = \"x\"\n    return str(s.__init__)\nreturn f()", "<method-wrapper '__init__' of str object>")]
+    public void BoundObjectSlots_RenderReceiverOwner(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

@@ -81,28 +81,28 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         return _function.InvokeAsync(bound, span, context);
     }
 
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString(DisplayText());
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString(DisplayText(context));
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    public override string ToString() => DisplayText();
+    // Host-side ToString keeps the legacy bound-method shape (no rendering
+    // context available there); guest output always goes through RenderPython.
+    public override string ToString() => $"<bound method {_displayName}>";
 
-    private string DisplayText()
+    private string DisplayText(PyRenderingContext context)
     {
         // Bound slot wrappers render like CPython method-wrappers (minus the
-        // address suffix), reusing the wrapped slot __name__/__qualname__ so
-        // the display stays in sync with the mirrored members; this also keeps
-        // CLR type names out of guest-visible output.
+        // address suffix): the slot short name plus the receiver type like
+        // CPython, so instance-bound object slots report their own type while
+        // descriptor slots report their descriptor kind; this also keeps CLR
+        // type names out of guest-visible output.
         if (_function is IPySlotWrapper &&
             _function is IPyDynamicAttributes attributes &&
             attributes.TryGetMember("__name__", out var rawName) &&
-            attributes.TryGetMember("__qualname__", out var rawQualname) &&
-            rawName is PyString shortName &&
-            rawQualname is PyString qualifiedName)
+            attributes.TryGetMember("__qualname__", out _) &&
+            rawName is PyString shortName)
         {
-            var qualified = qualifiedName.AsString();
-            var dot = qualified.LastIndexOf(".");
-            var owner = dot < 0 ? qualified : qualified.Substring(0, dot);
+            var owner = LythonRuntime.UnboundTypeMethod.PythonTypeName(_self, context.Context);
             return "<method-wrapper '" + shortName.AsString() + "' of " + owner + " object>";
         }
 
