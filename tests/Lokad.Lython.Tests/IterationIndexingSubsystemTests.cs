@@ -33,6 +33,34 @@ public sealed class IterationIndexingSubsystemTests
     }
 
     [Fact]
+    public void NormalizeIndex_NamesReceiversLikePython()
+    {
+        Assert.Equal(1, PyIndexing.NormalizeIndex(new BigInteger(1), 3, Span, PyIndexing.IndexTargetName.List));
+
+        var list = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyString.FromString("x"), 3, Span, PyIndexing.IndexTargetName.List));
+        Assert.Equal("list indices must be integers or slices, not str", list.Message);
+
+        var tuple = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(1.5, 3, Span, PyIndexing.IndexTargetName.Tuple));
+        Assert.Equal("tuple indices must be integers or slices, not float", tuple.Message);
+
+        var text = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyNone.Instance, 3, Span, PyIndexing.IndexTargetName.Text));
+        Assert.Equal("string indices must be integers, not 'NoneType'", text.Message);
+
+        var sequence = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyString.FromString("x"), 3, Span, PyIndexing.IndexTargetName.Sequence));
+        Assert.Equal("sequence index must be integer, not 'str'", sequence.Message);
+
+        var pop = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizePopIndex(PyString.FromString("x"), 3, Span));
+        Assert.Equal("'str' object cannot be interpreted as an integer", pop.Message);
+
+        var legacy = Assert.Throws<LythonRuntimeException>(() => PyIndexing.NormalizeIndex(PyString.FromString("x"), 3, Span));
+        Assert.Equal("Indices must be integers.", legacy.Message);
+
+        Assert.Equal(PyIndexing.IndexTargetName.List, PyIndexing.TargetKind(new PyList([])));
+        Assert.Equal(PyIndexing.IndexTargetName.Text, PyIndexing.TargetKind(PyString.FromString("x")));
+        Assert.Equal(PyIndexing.IndexTargetName.Unnamed, PyIndexing.TargetKind(new BigInteger(1)));
+    }
+
+    [Fact]
     public void DictionaryMutationDuringIterationRaisesCatchableRuntimeError()
     {
         var result = new LythonEngine().Run(

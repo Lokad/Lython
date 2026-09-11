@@ -124,6 +124,65 @@ __lython_file.close()
     }
 
     [Fact]
+    public void SequenceIndexTypes_ReportPythonShapedTexts()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque, namedtuple
+
+vals = []
+try:
+    [1]["a"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    [1][1.5]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    (1,)["a"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    "ab"["a"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    deque(["a"])["x"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    [1].pop("x")
+except TypeError as err:
+    vals.append(err.message)
+try:
+    items = [1]
+    del items["x"]
+except TypeError as err:
+    vals.append(err.message)
+try:
+    items = [1]
+    items["x"] = 2
+except TypeError as err:
+    vals.append(err.message)
+Point = namedtuple("Point", ["x", "y"])
+try:
+    Point(1, 2)["x"]
+except TypeError as err:
+    vals.append(err.message)
+vals.append(str([1, 2][True]))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Equal("list indices must be integers or slices, not str|list indices must be integers or slices, not float|tuple indices must be integers or slices, not str|string indices must be integers, not 'str'|sequence index must be integer, not 'str'|'str' object cannot be interpreted as an integer|list indices must be integers or slices, not str|list indices must be integers or slices, not str|tuple indices must be integers or slices, not str|2", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ListRepetitionAndAugmentedRepetition_ArePythonShaped()
     {
         var host = new MockLythonHost();

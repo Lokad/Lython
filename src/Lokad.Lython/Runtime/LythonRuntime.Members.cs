@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
 
                     var index = arguments.Length == 0
                         ? list.Count - 1
-                        : PyIndexing.NormalizeIndex(arguments[0], list.Count, span);
+                        : PyIndexing.NormalizePopIndex(arguments[0], list.Count, span);
                     var item = list[index];
                     list.RemoveAt(index);
                     return item;

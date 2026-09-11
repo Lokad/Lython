@@ -5,6 +5,17 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyIndexing
 {
+    // Names the receiver for index-type failures like CPython; Unnamed keeps
+    // the legacy context-free text where no receiver shape is known.
+    internal enum IndexTargetName
+    {
+        Unnamed,
+        List,
+        Tuple,
+        Text,
+        Sequence,
+    }
+
     public readonly record struct SliceBounds(int Start, int End, int Step)
     {
         public int Count => Step > 0
@@ -50,10 +61,10 @@ internal static class PyIndexing
         return target switch
         {
             IPySubscriptableValue value => value.GetSubscript(index, span),
-            IPyIndexableValue value => value.GetIndex(NormalizeIndex(index, value.Length, span)),
+            IPyIndexableValue value => value.GetIndex(NormalizeIndex(index, value.Length, span, TargetKind(value))),
             PyDict dict => ReadDictIndex(dict, index, span),
             PyCounter counter => ReadCounterIndex(counter, index, span),
-            _ when PyStringOps.TryAsString(target, out var text) => text.Index(NormalizeIndex(index, text.Length, span)),
+            _ when PyStringOps.TryAsString(target, out var text) => text.Index(NormalizeIndex(index, text.Length, span, IndexTargetName.Text)),
             _ => throw RuntimeErrors.NotSubscriptable(span)
         };
     }
@@ -78,6 +89,9 @@ internal static class PyIndexing
     }
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)
+        => NormalizeIndex(index, length, span, IndexTargetName.Unnamed);
+
+    public static int NormalizeIndex(object? index, int length, LythonSourceSpan span, IndexTargetName target)
     {
         BigInteger integer;
         if (index is bool flag)
@@ -86,13 +100,46 @@ internal static class PyIndexing
         }
         else if (index is not BigInteger big)
         {
-            throw RuntimeErrors.Type("Indices must be integers.", span);
+            throw InvalidIndexType(index, target, span);
         }
         else
         {
             integer = big;
         }
 
+        return ApplyIndexBounds(integer, length, span);
+    }
+
+    public static int NormalizePopIndex(object? index, int length, LythonSourceSpan span)
+    {
+        BigInteger integer;
+        if (index is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (index is not BigInteger)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{IndexTypeName(index)}' object cannot be interpreted as an integer", span);
+        }
+        else
+        {
+            integer = (BigInteger)index;
+        }
+
+        return ApplyIndexBounds(integer, length, span);
+    }
+
+    internal static IndexTargetName TargetKind(object target) => target switch
+    {
+        PyString => IndexTargetName.Text,
+        PyList => IndexTargetName.List,
+        PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject => IndexTargetName.Tuple,
+        PyDeque => IndexTargetName.Sequence,
+        _ => IndexTargetName.Unnamed,
+    };
+
+    private static int ApplyIndexBounds(BigInteger integer, int length, LythonSourceSpan span)
+    {
         if (integer < int.MinValue || integer > int.MaxValue)
         {
             throw new LythonRuntimeException("IndexError", "Index is out of range.", span);
@@ -111,6 +158,40 @@ internal static class PyIndexing
 
         return position;
     }
+
+    private static LythonRuntimeException InvalidIndexType(object? index, IndexTargetName target, LythonSourceSpan span)
+    {
+        var name = IndexTypeName(index);
+        var message = target switch
+        {
+            IndexTargetName.List => $"list indices must be integers or slices, not {name}",
+            IndexTargetName.Tuple => $"tuple indices must be integers or slices, not {name}",
+            IndexTargetName.Text => $"string indices must be integers, not '{name}'",
+            IndexTargetName.Sequence => $"sequence index must be integer, not '{name}'",
+            _ => "Indices must be integers.",
+        };
+
+        return RuntimeErrors.Type(message, span);
+    }
+
+    private static string IndexTypeName(object? index) => index switch
+    {
+        null => "NoneType",
+        PyNone => "NoneType",
+        PyString => "str",
+        double => "float",
+        BigInteger or int or bool => "int",
+        PyList => "list",
+        PyDict or PyDefaultDict or PyCounter => "dict",
+        PyTuple => "tuple",
+        PySet => "set",
+        PyBytes => "bytes",
+        PyRange => "range",
+        PyDeque => "deque",
+        PyChainMap => "ChainMap",
+        PyInstance instance => instance.Type.Name,
+        _ => "object",
+    };
 
     public static IEnumerable<int> SliceIndices(int length, object? start, object? end, object? step, LythonSourceSpan span)
         => NormalizeSliceBounds(length, start, end, step, span).Indices();

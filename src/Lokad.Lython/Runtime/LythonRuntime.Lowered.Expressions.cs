@@ -353,7 +353,7 @@ internal sealed partial class LythonRuntime
                 subscriptable.DeleteSubscript(index, span);
                 return;
             case IMutablePySequenceValue sequence:
-                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span));
+                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence)));
                 return;
             case PyDict dict:
                 if (!dict.Remove(ValidateDictionaryKey(index, span)))
