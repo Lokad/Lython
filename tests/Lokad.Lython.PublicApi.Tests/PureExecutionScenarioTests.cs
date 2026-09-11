@@ -5124,6 +5124,38 @@ __lython_file.close()
         Assert.Equal("<staticmethod(<class 'int'>)>|<staticmethod(<built-in function len>)>|<classmethod(<class 'int'>)>|<classmethod(<class 'str'>)>|2|3|2|3", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void SuperRendersAnchorAndAbbreviatedBound()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class A:
+    def who(self):
+        return "A"
+class B(A):
+    pass
+class C(B):
+    pass
+b = B()
+
+parts = []
+parts.append(str(super(B, b)))
+parts.append(str(super(B, C)))
+parts.append(str(super(A, C())))
+parts.append(str(super(B, b).who()))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<super: <class 'B'>, <B object>>|<super: <class 'B'>, <C object>>|<super: <class 'A'>, <C object>>|A", host.ReadText("/out.txt"));
+    }
+
+
 
 
 
