@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
             case IdentifierExpressionSyntax identifier:
                 if (!DeleteName(identifier.Name, context, span))
                 {
-                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", span);
+                    throw new LythonRuntimeException("NameError", $"name '{identifier.Name}' is not defined", span);
                 }
 
                 return;

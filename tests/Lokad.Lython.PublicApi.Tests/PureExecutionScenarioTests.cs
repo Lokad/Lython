@@ -3098,6 +3098,21 @@ __lython_file.close()
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("print(no_such_name)\n", "name 'no_such_name' is not defined")]
+    [InlineData("x = 1\ndel x\nprint(x)\n", "name 'x' is not defined")]
+    [InlineData("x = 1\ndel (x, y_missing)\n", "name 'y_missing' is not defined")]
+    [InlineData("def f():\n    return local_missing\nf()\n", "name 'local_missing' is not defined")]
+    public void UndefinedNames_ReportPythonShapedTexts(string source, string expectedMessage)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("NameError", result.Failure?.ExceptionType);
+        Assert.Equal(expectedMessage, result.Failure?.Message);
+    }
+
     [Fact]
     public void Comprehensions_SupportSimpleForAndOptionalIfWithoutLeakingLoopVariable()
     {

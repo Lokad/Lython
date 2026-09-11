@@ -127,7 +127,7 @@ internal static class RuntimeErrors
         => Type("Object does not support slicing.", span);
 
     public static LythonRuntimeException NameNotDefined(string name, LythonSourceSpan? span)
-        => new("NameError", $"Name '{name}' is not defined.", span);
+        => new("NameError", $"name '{name}' is not defined", span);
 
     public static LythonRuntimeException RaiseExpectsException(LythonSourceSpan? span)
         => Type("raise expects an exception instance.", span);
