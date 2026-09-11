@@ -191,6 +191,37 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_ChainMap_DelMiss_NamesKeyLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import ChainMap
+
+cm = ChainMap({"a": 1})
+cm["b"] = 2
+del cm["b"]
+
+parts = []
+parts.append(str(sorted(cm.keys())))
+for k in ["zzz", 5, ("x",), chr(34) + "q" + chr(39)]:
+    try:
+        del cm[k]
+        parts.append("no-error")
+    except KeyError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['a']|\"Key not found in the first mapping: 'zzz'\"|'Key not found in the first mapping: 5'|\"Key not found in the first mapping: ('x',)\"|'Key not found in the first mapping: \\'\"q\\\\\\'\\''", host.ReadText("/out.txt"));
+    }
+
+
+    [Fact]
     public void Collections_ViewAndDequeRendering_QuotesElements()
     {
         var host = new MockLythonHost();

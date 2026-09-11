@@ -627,6 +627,36 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     }
 }
 
+// ChainMap del-miss carries its key for lazy rendering: CPython spells the
+// failure as one quoted composite, which cannot be composed at the
+// governor-less del site, so the composite (including its double quotes)
+// renders at display time through the display governor like other governed
+// renderer outputs.
+internal sealed class ChainMapMissingKey(object key) : IPyRenderableValue
+{
+    public object Key { get; } = key;
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        builder.AppendAscii("Key not found in the first mapping: ");
+        builder.Append(PyRendering.ToReprPyString(Key, context));
+        var composite = builder.ToPyStringAndRelease();
+        // Quote like CPython repr: double quotes only when the text holds
+        // a single quote but no double quote, otherwise single-quoted with
+        // escapes through the shared renderer.
+        var text = composite.AsString();
+        if (text.Contains((char)39) && !text.Contains((char)34))
+        {
+            return PyString.FromString("\"" + text + "\"", context.Context.MemoryGovernor);
+        }
+
+        return PyRendering.ToReprPyString(composite, context);
+    }
+
+    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+}
+
 internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPySizedValue
 {
     private static readonly LythonCallableSignature GetCallSignature = LythonCallableSignature.Create(
@@ -688,7 +718,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
         if (!_maps[0].Remove(key))
         {
-            throw new LythonRuntimeException("KeyError", "Key not found in the first ChainMap mapping.", span);
+            throw new LythonRuntimeException("KeyError", "Key not found in the first ChainMap mapping.", span, null, new ChainMapMissingKey(key));
         }
     }
 
