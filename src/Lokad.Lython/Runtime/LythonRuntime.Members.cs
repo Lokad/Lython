@@ -968,6 +968,52 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
+        public static bool TryGetChainMapKeysMember(ChainMapKeysView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (view.Owner.TryGetMergedValue(ValidateDictionaryKey(item, span), out _))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("ChainMap.keys.isdisjoint", "other")),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        public static bool TryGetChainMapItemsMember(ChainMapItemsView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context))
+                    {
+                        if (item is PyTuple pair && pair.Count == 2 &&
+                            view.Owner.TryGetMergedValue(ValidateDictionaryKey(pair[0], span), out var found) &&
+                            PyEquality.AreEqual(found, pair[1]))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }, OnePositional("ChainMap.items.isdisjoint", "other")),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
         private static LythonCallableSignature OnePositional(string name, string parameterName)
             => LythonCallableSignature.Create(name, [parameterName], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
     }

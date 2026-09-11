@@ -153,6 +153,44 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_ChainMap_ViewsAreLive()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import ChainMap
+
+m = ChainMap({"a": 1}, {"b": 2})
+live_keys = m.keys()
+live_items = m.items()
+m["c"] = 3
+
+vals = []
+vals.append(str(sorted(live_keys)))
+vals.append(str(sorted(live_items)))
+vals.append(str(m.keys().isdisjoint(["x"])))
+vals.append(str(m.keys().isdisjoint(["a"])))
+vals.append(str(m.items().isdisjoint([("a", 1)])))
+vals.append(str(sorted(m.keys() & {"a", "c"})))
+vals.append(str(sorted(m.keys() | {"z"})))
+vals.append(str(sorted(m.keys() - {"a"})))
+vals.append(str(m.keys() == {"a", "b", "c"}))
+vals.append(str(m.keys()))
+vals.append(str("isdisjoint" in dir(m.keys())))
+vals.append(str(len(m.keys())))
+vals.append(str("b" in m.keys()))
+vals.append(str(sorted(m.values())))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['a', 'b', 'c']|[('a', 1), ('b', 2), ('c', 3)]|True|False|False|['a', 'c']|['a', 'b', 'c', 'z']|['b', 'c']|True|KeysView(ChainMap({'a': 1, 'c': 3}, {'b': 2}))|True|3|True|[1, 2, 3]", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_CounterLengthCountsStoredDistinctKeys()
     {
         var result = new LythonEngine().Run(
@@ -573,6 +611,20 @@ defaultdict(int, {"a": 1}).items().isdisjoint(5)
 """,
         "TypeError",
         "not iterable")]
+    [InlineData(
+        """
+from collections import ChainMap
+ChainMap({"a": 1}).keys().isdisjoint(1)
+""",
+        "TypeError",
+        "not iterable")]
+    [InlineData(
+        """
+from collections import ChainMap
+ChainMap({"a": 1}).keys().isdisjoint([[]])
+""",
+        "TypeError",
+        "hashable")]
     [InlineData(
         """
 from collections import deque

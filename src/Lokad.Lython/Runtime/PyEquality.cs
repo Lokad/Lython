@@ -165,7 +165,7 @@ internal static class PyEquality
                             || leftRange.Step == rightRange.Step)));
         }
 
-        if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView)
+        if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             // Dict keys and items views compare as sets like CPython;
             // anything else falls through to the default comparison.
@@ -231,13 +231,15 @@ internal static class PyEquality
     }
 
     private static bool IsSetComparableViewOperand(object value)
-        => value is PySet or LythonRuntime.DictKeysView or LythonRuntime.DictItemsView;
+        => value is PySet or LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView;
 
     private static IEnumerable<object> ViewComparisonItems(object value) => value switch
     {
         PySet set => set,
         LythonRuntime.DictKeysView keys => keys,
         LythonRuntime.DictItemsView items => items,
+        ChainMapKeysView chainKeys => chainKeys,
+        ChainMapItemsView chainItems => chainItems,
         _ => [],
     };
 

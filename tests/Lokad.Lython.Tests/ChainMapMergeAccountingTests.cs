@@ -5,13 +5,13 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG11: ChainMap merged views reserve their transient list plus dedup-set peak;
-/// the reservation releases when the governed copy takes over.
+/// MG11: ChainMap merged views are live shells over the maps: keys() commits a
+/// small shell charge with no merge scratch, and later writes stay visible.
 /// </summary>
 public sealed class ChainMapMergeAccountingTests
 {
     [Fact]
-    public void MergedKeysReserveTransientScratch()
+    public void MergedKeysReturnLiveViewsWithoutMergeScratch()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -25,10 +25,14 @@ public sealed class ChainMapMergeAccountingTests
         var member = chainMap.TryGetMember("keys", out var value)
             ? value
             : throw new InvalidOperationException("keys member not found.");
-        _ = ((LythonRuntime.ICallable)member).Invoke([], span, context);
-        // 1,280,000B merge scratch plus the ten-key governed copy reserved
-        // beside it; the copy alone peaks at 320B without the reservation.
-        Assert.Equal(1280224L, context.MemoryGovernor.PeakReservedBytes);
+        var view = Assert.IsType<ChainMapKeysView>(((LythonRuntime.ICallable)member).Invoke([], span, context));
+        // The view borrows the maps instead of copying them: later writes
+        // stay visible through the same view object.
+        map.SetItem(new BigInteger(10), new BigInteger(10));
+        Assert.Equal(11, view.Count);
+        // No merge scratch is reserved anymore; only small shell charges peak,
+        // far below the 1,280,000B transient the snapshot copy required.
+        Assert.True(context.MemoryGovernor.PeakReservedBytes < 1280224L);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

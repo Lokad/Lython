@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
-        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             // Dict views combine as sets like CPython; other iterables
             // materialize with the usual validation and governance.
@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
             return leftBoolean ^ rightBoolean;
         }
 
-        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             // Dict views combine as sets like CPython; other iterables
             // materialize with the usual validation and governance.
@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) <= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
-        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             // Dict views combine as sets like CPython; other iterables
             // materialize with the usual validation and governance.

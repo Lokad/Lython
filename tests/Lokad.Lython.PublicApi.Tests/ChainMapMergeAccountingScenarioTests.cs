@@ -4,13 +4,14 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG11: ChainMap merged views reserve their transient merge peak. Two thousand
-/// layers over one shared ten-key map must exceed a 512KiB budget in both modes.
+/// MG11: ChainMap merged views are live shells: two thousand layers over one
+/// shared ten-key map resolve within a 512KiB budget in both modes because no
+/// merge scratch is reserved anymore.
 /// </summary>
 public sealed class ChainMapMergeAccountingScenarioTests
 {
     [Fact]
-    public async Task MergedKeysRespectTransientBudget()
+    public async Task MergedKeysAvoidMergeScratch()
     {
         var script = new LythonEngine().Compile(
             """
@@ -26,12 +27,14 @@ public sealed class ChainMapMergeAccountingScenarioTests
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
         var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(10), sync.ReturnValue);
+        Assert.True(sync.PeakExecutionMemoryBytes <= 524288);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(10), asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 524288);
     }
 
     [Fact]

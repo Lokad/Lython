@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
-        if (left is DictKeysView or DictItemsView || right is DictKeysView or DictItemsView)
+        if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             left = SetMembers.AsSetOperand(left, span, context);
             right = SetMembers.AsSetOperand(right, span, context);

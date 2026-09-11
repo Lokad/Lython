@@ -651,6 +651,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     public bool IsTruthy() => _maps.Any(map => map.Count != 0);
 
+    internal MemoryGovernor? OwnerMemoryGovernor => _maps[0].OwnerMemoryGovernor;
+
     // Generic for-loop/list()/any() iteration builds the same merged list as
     // the key views beside no governed copy of its own; hold the merge
     // estimate over the eager build (released before streaming, so slow
@@ -764,7 +766,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return checked(total * 64L);
     }
 
-    private IReadOnlyList<object> BuildMergedKeys()
+    internal IReadOnlyList<object> BuildMergedKeys()
     {
         var keys = new List<object>();
         var seen = new HashSet<object>(PyValueComparer.Instance);
@@ -782,7 +784,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return keys;
     }
 
-    private IReadOnlyList<KeyValuePair<object, object>> BuildMergedItems()
+    internal IReadOnlyList<KeyValuePair<object, object>> BuildMergedItems()
     {
         var items = new List<KeyValuePair<object, object>>();
         var seen = new HashSet<object>(PyValueComparer.Instance);
@@ -800,7 +802,21 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return items;
     }
 
-    private int CountMergedKeys()
+    internal bool TryGetMergedValue(object key, [MaybeNullWhen(false)] out object value)
+    {
+        foreach (var map in _maps)
+        {
+            if (map.TryGetValue(key, out value))
+            {
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
+    }
+
+    internal int CountMergedKeys()
     {
         var keys = new HashSet<object>(PyValueComparer.Instance);
         foreach (var map in _maps)
@@ -862,8 +878,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.keys() expects no arguments.", span);
             }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
-            return new PyList(_owner.BuildMergedKeys(), context.MemoryGovernor, span);
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new ChainMapKeysView(_owner);
         }
     }
 
@@ -881,8 +898,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.values() expects no arguments.", span);
             }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
-            return new PyList(_owner.BuildMergedItems().Select(pair => pair.Value), context.MemoryGovernor, span);
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new ChainMapValuesView(_owner);
         }
     }
 
@@ -900,11 +918,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.items() expects no arguments.", span);
             }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(_owner.EstimateMergeScratchBytes(), span);
-            return new PyList(
-                _owner.BuildMergedItems().Select(pair => PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span)),
-                context.MemoryGovernor,
-                span);
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            return new ChainMapItemsView(_owner);
         }
     }
 
@@ -972,4 +988,80 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+}
+
+internal sealed class ChainMapKeysView : IReadOnlyCollection<object>, IPyRenderableValue
+{
+    private readonly PyChainMap _owner;
+
+    public ChainMapKeysView(PyChainMap owner) => _owner = owner;
+
+    internal PyChainMap Owner => _owner;
+
+    public int Count => _owner.CountMergedKeys();
+
+    public IEnumerator<object> GetEnumerator() => _owner.BuildMergedKeys().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("KeysView(", [_owner], ")", context, interpolated: false);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("KeysView(", [_owner], ")", context, interpolated: true);
+}
+
+internal sealed class ChainMapValuesView : IReadOnlyCollection<object>, IPyRenderableValue
+{
+    private readonly PyChainMap _owner;
+
+    public ChainMapValuesView(PyChainMap owner) => _owner = owner;
+
+    public int Count => _owner.CountMergedKeys();
+
+    public IEnumerator<object> GetEnumerator()
+    {
+        foreach (var pair in _owner.BuildMergedItems())
+        {
+            yield return pair.Value;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("ValuesView(", [_owner], ")", context, interpolated: false);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("ValuesView(", [_owner], ")", context, interpolated: true);
+}
+
+internal sealed class ChainMapItemsView : IReadOnlyCollection<object>, IPyRenderableValue
+{
+    private readonly PyChainMap _owner;
+
+    public ChainMapItemsView(PyChainMap owner) => _owner = owner;
+
+    internal PyChainMap Owner => _owner;
+
+    public int Count => _owner.CountMergedKeys();
+
+    public IEnumerator<object> GetEnumerator()
+    {
+        var governor = _owner.OwnerMemoryGovernor;
+        foreach (var pair in _owner.BuildMergedItems())
+        {
+            yield return governor is null
+                ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
+                : PyTuple.FromOwnedArray([pair.Key, pair.Value], governor, null);
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("ItemsView(", [_owner], ")", context, interpolated: false);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => PyRendering.JoinRenderedValues("ItemsView(", [_owner], ")", context, interpolated: true);
 }

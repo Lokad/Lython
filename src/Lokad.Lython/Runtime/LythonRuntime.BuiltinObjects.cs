@@ -861,6 +861,17 @@ internal sealed partial class LythonRuntime
                 names.AddRange(DictKeysViewDirNames);
                 return names;
 
+            case ChainMapKeysView:
+                names.AddRange(DictKeysViewDirNames);
+                return names;
+
+            case ChainMapItemsView:
+                names.AddRange(DictItemsViewDirNames);
+                return names;
+
+            case ChainMapValuesView:
+                return names;
+
             case DictItemsView:
                 names.AddRange(DictItemsViewDirNames);
                 return names;
