@@ -172,49 +172,46 @@ internal sealed partial class LythonRuntime
 
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        BigInteger start;
-        BigInteger stop;
-        BigInteger step;
+        if (arguments.Length < 1)
+        {
+            throw new LythonRuntimeException("TypeError", "range expected at least 1 argument, got 0", span);
+        }
 
-        if (arguments.Length == 1 && TryRangeBound(arguments[0], out var stopOnly))
+        if (arguments.Length > 3)
         {
-            start = BigInteger.Zero;
-            stop = stopOnly;
-            step = BigInteger.One;
+            throw new LythonRuntimeException("TypeError", $"range expected at most 3 arguments, got {arguments.Length}", span);
         }
-        else if (arguments.Length == 2 && TryRangeBound(arguments[0], out var startArg) && TryRangeBound(arguments[1], out var stopArg))
+
+        BigInteger start = BigInteger.Zero;
+        BigInteger stop;
+        BigInteger step = BigInteger.One;
+
+        if (arguments.Length == 1)
         {
-            start = startArg;
-            stop = stopArg;
-            step = BigInteger.One;
+            stop = RangeBound(arguments[0], context, span);
         }
-        else if (arguments.Length == 3 && TryRangeBound(arguments[0], out var startValue) && TryRangeBound(arguments[1], out var stopValue) && TryRangeBound(arguments[2], out var stepValue))
+        else if (arguments.Length == 2)
         {
-            start = startValue;
-            stop = stopValue;
-            step = stepValue;
+            start = RangeBound(arguments[0], context, span);
+            stop = RangeBound(arguments[1], context, span);
         }
         else
         {
-            throw new LythonRuntimeException("TypeError", "range(stop), range(start, stop), or range(start, stop, step) expects integer arguments.", span);
+            start = RangeBound(arguments[0], context, span);
+            stop = RangeBound(arguments[1], context, span);
+            step = RangeBound(arguments[2], context, span);
         }
 
-        static bool TryRangeBound(object value, out BigInteger bound)
+        // Bounds coerce through __index__ like CPython; failures name the type.
+        static BigInteger RangeBound(object value, ExecutionContext context, LythonSourceSpan span)
         {
-            if (value is BigInteger integer)
+            var coerced = CoerceIndexProtocol(value, context, span);
+            if (!PyNumberOps.TryAsInteger(coerced, out var bound))
             {
-                bound = integer;
-                return true;
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
 
-            if (value is bool flag)
-            {
-                bound = flag ? BigInteger.One : BigInteger.Zero;
-                return true;
-            }
-
-            bound = default;
-            return false;
+            return bound;
         }
 
         if (step == BigInteger.Zero)

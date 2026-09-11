@@ -114,7 +114,7 @@ __lython_file.close()
     [InlineData("tuple(1, 2)\n", "received too many positional arguments")]
     [InlineData("dict(1, 2)\n", "expected at most 1 positional argument")]
     [InlineData("set(1, 2)\n", "received too many positional arguments")]
-    [InlineData("range(\"a\")\n", "expects integer arguments")]
+    [InlineData("range(\"a\")\n", "'str' object cannot be interpreted as an integer")]
     [InlineData("type(\"Name\", (), {})\n", "supports exactly one argument in Lython")]
     public void BuiltinArityFailure_ReportsTypeError(string source, string messageFragment)
     {
@@ -383,6 +383,48 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("42|(9, 9)|(7, 8)|(3, 1)|(-4, 1)|(3.0, 1.0)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void RangeBounds_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 3
+class C: pass
+
+parts = []
+parts.append(str(list(range(J()))))
+parts.append(str(list(range(1, J()))))
+parts.append(str(list(range(0, 10, J()))))
+parts.append(str(list(range(True, False))))
+try:
+    parts.append(str(range("a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(range(C())))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(range()))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(range(1, 2, 3, 4)))
+except TypeError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[0, 1, 2]|[1, 2]|[0, 3, 6, 9]|[]|'str' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|range expected at least 1 argument, got 0|range expected at most 3 arguments, got 4", host.ReadText("/out.txt"));
     }
 
     [Fact]
