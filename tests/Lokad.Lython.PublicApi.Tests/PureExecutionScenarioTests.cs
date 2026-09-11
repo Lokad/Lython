@@ -4675,6 +4675,38 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(len)", "<built-in function len>")]
+    [InlineData("repr(len)", "<built-in function len>")]
+    [InlineData("str(abs)", "<built-in function abs>")]
+    [InlineData("str(sum)", "<built-in function sum>")]
+    [InlineData("str(iter)", "<built-in function iter>")]
+    [InlineData("str(print)", "<built-in function print>")]
+    [InlineData("str(open)", "<built-in function open>")]
+    [InlineData("str(min)", "<built-in function min>")]
+    [InlineData("str(max)", "<built-in function max>")]
+    [InlineData("str(next)", "<built-in function next>")]
+    [InlineData("str(sorted)", "<built-in function sorted>")]
+    public void BuiltinFunctions_RenderBuiltinFunctionWrapper(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("str(math.sqrt)", "<built-in function sqrt>")]
+    [InlineData("str(sys.exit)", "<built-in function exit>")]
+    public void ModuleBuiltinFunctions_RenderShortName(string expression, string expected)
+    {
+        var source = "import math\nimport sys\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

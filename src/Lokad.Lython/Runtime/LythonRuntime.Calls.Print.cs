@@ -1,11 +1,12 @@
 using Lokad.Lython.Runtime.Calls;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class PrintCallable : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    private sealed class PrintCallable : ICallable, IPyRenderableValue, IPyHashableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public string Name => "print";
 
@@ -39,6 +40,12 @@ internal sealed partial class LythonRuntime
             value = PyNone.Instance;
             return false;
         }
+
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<built-in function {Name}>");
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

@@ -2306,8 +2306,9 @@ internal sealed partial class LythonRuntime
         {
             _ = context;
             // Type constructors render like CPython type objects; plain
-            // builtins keep their short display name.
-            return PyString.FromString(BuiltinTypeBaseNames.ContainsKey(Name) ? $"<class '{Name}'>" : Name);
+            // builtins render like CPython builtin functions under their
+            // short name.
+            return PyString.FromString(BuiltinTypeBaseNames.ContainsKey(Name) ? $"<class '{Name}'>" : $"<built-in function {ShortCallableName(Name)}>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -2714,7 +2715,7 @@ internal sealed partial class LythonRuntime
             return MinMaxAsync(arguments, operation, span, context);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<built-in function {Name}>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
@@ -2893,7 +2894,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString(Name);
+            return PyString.FromString($"<built-in function {Name}>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
