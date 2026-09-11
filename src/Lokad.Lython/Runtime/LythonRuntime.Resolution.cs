@@ -456,10 +456,10 @@ internal sealed partial class LythonRuntime
                 StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
-                var values = MaterializeSequenceForUnpacking(value, span, context);
+                var values = MaterializeUnpackingSequence(value, span, context);
                 if (values.Length != tuple.Items.Count)
                 {
-                    throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
+                    throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Length), span);
                 }
 
                 for (var i = 0; i < tuple.Items.Count; i++)
@@ -516,11 +516,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var values = MaterializeSequenceForUnpacking(value, span, context);
+        var values = MaterializeUnpackingSequence(value, span, context);
         var layout = UnpackingLayout.FromTargets(targets);
         if (!layout.AcceptsValueCount(values.Length))
         {
-            throw new LythonRuntimeException("ValueError", "unpacking assignment has the wrong number of values", span);
+            throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Length), span);
         }
 
         if (!layout.HasStarredTarget)
@@ -591,6 +591,28 @@ internal sealed partial class LythonRuntime
                 throw new InvalidOperationException($"Unsupported unpacking target syntax: {target.GetType().Name}");
         }
     }
+
+    private static object[] MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        try
+        {
+            return MaterializeSequenceForUnpacking(value, span, context);
+        }
+        catch (LythonRuntimeException ex) when (IsNonIterableFailure(ex, value))
+        {
+            throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);
+        }
+    }
+
+    private static bool IsNonIterableFailure(LythonRuntimeException ex, object value)
+        => ex.ExceptionType == "TypeError"
+            && (ex.Message == "Object is not iterable."
+                || (value is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable"));
+
+    private static string DescribeLoopArityMismatch(int targetCount, int valueCount)
+        => valueCount > targetCount
+            ? $"too many values to unpack (expected {targetCount})"
+            : $"not enough values to unpack (expected {targetCount}, got {valueCount})";
 
     private static object[] MaterializeSequenceForUnpacking(object value, LythonSourceSpan span, ExecutionContext context)
     {

@@ -72,6 +72,40 @@ internal static class StaticAbstractFacts
     public static bool IsDefinitelyKnownNonIterable(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.TryResolve(expression, bindings, out var value) && IsDefinitelyNonIterable(value);
 
+    public static bool TryGetNonIterablePrimitiveTypeName(
+        ExpressionSyntax expression,
+        AbstractState bindings,
+        out string? typeName)
+    {
+        typeName = null;
+        return StaticAbstractValueResolver.TryResolve(expression, bindings, out var value)
+            && TryGetNonIterablePrimitiveTypeName(value.Kind, out typeName);
+    }
+
+    private static bool TryGetNonIterablePrimitiveTypeName(AbstractValueKind kind, out string? typeName)
+    {
+        typeName = kind switch
+        {
+            AbstractValueKind.Integer => "int",
+            AbstractValueKind.Float => "float",
+            AbstractValueKind.Boolean => "bool",
+            AbstractValueKind.None => "NoneType",
+            AbstractValueKind.Ellipsis => "ellipsis",
+            AbstractValueKind.Module => "module",
+            AbstractValueKind.Decimal => "Decimal",
+            AbstractValueKind.IntegerType or
+            AbstractValueKind.FloatType or
+            AbstractValueKind.BooleanType or
+            AbstractValueKind.StringType or
+            AbstractValueKind.BytesType or
+            AbstractValueKind.ListType or
+            AbstractValueKind.SetType => "type",
+            _ => null,
+        };
+
+        return typeName is not null;
+    }
+
     public static bool IsDefinitelyNonIterable(AbstractValue value)
         => value.Kind == AbstractValueKind.MaybeNone
             ? IsDefinitelyNonIterable(value.RequireNestedValue())

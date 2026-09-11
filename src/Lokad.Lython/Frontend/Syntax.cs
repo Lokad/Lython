@@ -202,6 +202,18 @@ internal readonly struct UnpackingLayout
             ? valueCount >= RequiredValueCount
             : valueCount == TargetCount;
 
+    public string DescribeArityMismatch(int valueCount)
+    {
+        if (HasStarredTarget)
+        {
+            return $"not enough values to unpack (expected at least {RequiredValueCount}, got {valueCount})";
+        }
+
+        return valueCount > TargetCount
+            ? $"too many values to unpack (expected {TargetCount})"
+            : $"not enough values to unpack (expected {TargetCount}, got {valueCount})";
+    }
+
     public int StarredValueCount(int valueCount)
     {
         if (!HasStarredTarget)

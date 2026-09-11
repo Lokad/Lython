@@ -3545,8 +3545,15 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("a, b = [1]\n", "LA3030", "wrong number of values")]
-    [InlineData("a, b = 1\n", "LA3031", "Object is not iterable")]
+    [InlineData("a, b = [1]\n", "LA3030", "not enough values to unpack (expected 2, got 1)")]
+    [InlineData("a, b = 1\n", "LA3031", "cannot unpack non-iterable int object")]
+    [InlineData("(a, b) = (1, 2, 3)\n", "LA3030", "too many values to unpack (expected 2)")]
+    [InlineData("*a, b = ()\n", "LA3030", "not enough values to unpack (expected at least 1, got 0)")]
+    [InlineData("a, b = None\n", "LA3031", "cannot unpack non-iterable NoneType object")]
+    [InlineData("for a, b in [(1, 2, 3)]:\n    pass\n", "LA3030", "too many values to unpack (expected 2)")]
+    [InlineData("for a, b in [1]:\n    pass\n", "LA3031", "cannot unpack non-iterable int object")]
+    [InlineData("a, b = ...\n", "LA3031", "cannot unpack non-iterable ellipsis object")]
+    [InlineData("import os\na, b = os\n", "LA3031", "cannot unpack non-iterable module object")]
     public void UnpackingAssignment_LiteralFailureCasesAreRejectedAtCompileTime(string source, string diagnosticCode, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

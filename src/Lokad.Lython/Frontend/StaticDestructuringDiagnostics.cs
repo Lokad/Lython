@@ -13,15 +13,17 @@ internal static class StaticDestructuringDiagnostics
         {
             if (StaticAbstractFacts.IsDefinitelyKnownNonIterable(valueExpression, bindings))
             {
-                AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", valueExpression.Span);
+                StaticAbstractFacts.TryGetNonIterablePrimitiveTypeName(valueExpression, bindings, out var primitiveTypeName);
+                AddDiagnostic(diagnostics, "LA3031", primitiveTypeName is null ? "Object is not iterable." : $"cannot unpack non-iterable {primitiveTypeName} object", valueExpression.Span);
             }
 
             return;
         }
 
-        if (!UnpackingLayout.FromTargets(targets).AcceptsValueCount(count))
+        var layout = UnpackingLayout.FromTargets(targets);
+        if (!layout.AcceptsValueCount(count))
         {
-            AddDiagnostic(diagnostics, "LA3030", "unpacking assignment has the wrong number of values", span);
+            AddDiagnostic(diagnostics, "LA3030", layout.DescribeArityMismatch(count), span);
         }
     }
 

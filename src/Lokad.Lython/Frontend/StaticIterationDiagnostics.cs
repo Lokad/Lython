@@ -54,7 +54,8 @@ internal static class StaticIterationDiagnostics
             {
                 if (StaticAbstractFacts.IsDefinitelyKnownNonIterable(item.Expression, bindings))
                 {
-                    AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", item.Span);
+                    StaticAbstractFacts.TryGetNonIterablePrimitiveTypeName(item.Expression, bindings, out var primitiveTypeName);
+                    AddDiagnostic(diagnostics, "LA3031", primitiveTypeName is null ? "Object is not iterable." : $"cannot unpack non-iterable {primitiveTypeName} object", item.Span);
                     return;
                 }
 
@@ -63,7 +64,10 @@ internal static class StaticIterationDiagnostics
 
             if (count != target.Items.Count)
             {
-                AddDiagnostic(diagnostics, "LA3030", "unpacking assignment has the wrong number of values", span);
+                var message = count > target.Items.Count
+                    ? $"too many values to unpack (expected {target.Items.Count})"
+                    : $"not enough values to unpack (expected {target.Items.Count}, got {count})";
+                AddDiagnostic(diagnostics, "LA3030", message, span);
                 return;
             }
         }

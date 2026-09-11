@@ -787,6 +787,89 @@ __lython_file.close()
         Assert.Equal("[1, 0]|11|7|[0]|[9, 3]|8", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void UnpackingFailureTexts_MatchPython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+def too_many(v):
+    a, b = v
+    return a
+
+def too_few(v):
+    a, b = v
+    return a
+
+def starred_short(v):
+    *a, b = v
+    return b
+
+def non_iterable(v):
+    a, b = v
+    return a
+
+def loop_mismatch(vs):
+    for a, b in vs:
+        pass
+
+def loop_non_iterable(vs):
+    for a, b in vs:
+        pass
+
+def nested_short(v):
+    (a, (b, c)) = v
+    return a
+
+parts = []
+try:
+    too_many((1, 2, 3))
+except ValueError as e:
+    parts.append(str(e))
+try:
+    too_few((1,))
+except ValueError as e:
+    parts.append(str(e))
+try:
+    starred_short(())
+except ValueError as e:
+    parts.append(str(e))
+try:
+    non_iterable(1)
+except TypeError as e:
+    parts.append(str(e))
+try:
+    non_iterable(None)
+except TypeError as e:
+    parts.append(str(e))
+try:
+    non_iterable(len)
+except TypeError as e:
+    parts.append(str(e))
+try:
+    loop_mismatch([(1, 2, 3)])
+except ValueError as e:
+    parts.append(str(e))
+try:
+    loop_non_iterable([1])
+except TypeError as e:
+    parts.append(str(e))
+try:
+    nested_short((1, (2,)))
+except ValueError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("too many values to unpack (expected 2)|not enough values to unpack (expected 2, got 1)|not enough values to unpack (expected at least 1, got 0)|cannot unpack non-iterable int object|cannot unpack non-iterable NoneType object|cannot unpack non-iterable builtin_function_or_method object|too many values to unpack (expected 2)|cannot unpack non-iterable int object|not enough values to unpack (expected 2, got 1)", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }
