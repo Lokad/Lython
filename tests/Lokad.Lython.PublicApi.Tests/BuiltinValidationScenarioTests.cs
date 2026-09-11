@@ -154,6 +154,21 @@ return str(d) + "|" + str(d.pop("missing", None)) + "|" + str(d.pop("other", 9))
     }
 
     [Fact]
+    public void DictionaryUpdateAcceptsSetsOfPairs()
+    {
+        var result = new LythonEngine().Run(
+            """
+d = {}
+d.update({("f", 6), ("g", 7)})
+return str(sorted(d.items()))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal("[('f', 6), ('g', 7)]", result.ReturnValue);
+    }
+
+    [Fact]
     public void PythonKeywordSpellings_AreAcceptedForSupportedBuiltinsAndMethods()
     {
         var host = new MockLythonHost();

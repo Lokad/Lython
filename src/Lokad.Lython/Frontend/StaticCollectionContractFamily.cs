@@ -268,7 +268,7 @@ internal static class StaticCollectionContractFamily
 
         if (StaticAbstractValueResolver.TryResolve(mappingExpression, bindings, out var value))
         {
-            if (value.Kind == AbstractValueKind.List || value.Kind == AbstractValueKind.Tuple)
+            if (value.Kind == AbstractValueKind.List || value.Kind == AbstractValueKind.Tuple || value.Kind == AbstractValueKind.Set)
             {
                 // Pair sequences validate their elements at runtime like CPython.
                 return;
@@ -283,7 +283,7 @@ internal static class StaticCollectionContractFamily
 
         if (StaticAbstractFacts.IsDefinitelyKnownLiteral(mappingExpression, bindings) &&
             (!StaticAbstractValueResolver.TryResolveKnownValue(mappingExpression, bindings, out var knownValue) ||
-             knownValue.Kind != AbstractValueKind.Dict))
+             (knownValue.Kind != AbstractValueKind.Dict && knownValue.Kind != AbstractValueKind.Set)))
         {
             AddDiagnostic(diagnostics, "LA3104", "dict.update(mapping) expects one dictionary argument.", mappingExpression.Span);
         }
