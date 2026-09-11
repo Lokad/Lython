@@ -99,6 +99,8 @@ internal sealed partial class LythonRuntime
     private static readonly string[] IntMethodDirNames = ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"];
     private static readonly string[] DictDirNames = ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"];
     private static readonly string[] SetDirNames = ["add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"];
+    private static readonly string[] DictKeysViewDirNames = ["isdisjoint"];
+    private static readonly string[] DictItemsViewDirNames = ["isdisjoint"];
 
     private static object DivMod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

@@ -857,6 +857,17 @@ internal sealed partial class LythonRuntime
                 names.AddRange(SetDirNames);
                 return names;
 
+            case DictKeysView:
+                names.AddRange(DictKeysViewDirNames);
+                return names;
+
+            case DictItemsView:
+                names.AddRange(DictItemsViewDirNames);
+                return names;
+
+            case DictValuesView:
+                return names;
+
             case BuiltinCallable builtin when builtin.Name is "list" or "str" or "bytes" or "set" or "tuple" or "int" or "float" or "bool" or "range":
                 names.AddRange(builtin.Name switch
                 {

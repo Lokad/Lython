@@ -21,6 +21,17 @@ return type(1).__name__ + "|" + str(issubclass(bool, int)) + "|" + str(issubclas
     }
 
     [Fact]
+    public void DictViewsExposeDirNames()
+    {
+        var result = new LythonEngine().Run(
+            "return str(dir({1: 2}.keys())) + \"|\" + str(dir({1: 2}.items())) + \"|\" + str(dir({1: 2}.values())) + \"|\" + str(\"isdisjoint\" in dir({}.keys()))\n",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['isdisjoint']|['isdisjoint']|[]|True", result.ReturnValue);
+    }
+
+    [Fact]
     public void InstancesDispatchTruthLengthAndCallProtocols()
     {
         var result = new LythonEngine().Run(
