@@ -155,33 +155,30 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        private static object ResolveFormatField(
-            string field,
-            IReadOnlyList<object> positional,
-            IReadOnlyDictionary<string, object> keywords,
+        private static object ResolveFormatFieldSuffix(
+            object current,
+            string suffix,
             LythonSourceSpan span,
             ExecutionContext context)
         {
             var index = 0;
-            var current = ResolveFormatFieldRoot(field, positional, keywords, ref index);
-
-            while (index < field.Length)
+            while (index < suffix.Length)
             {
-                if (field[index] == '.')
+                if (suffix[index] == '.')
                 {
                     index++;
                     var start = index;
-                    while (index < field.Length && field[index] is not '.' and not '[')
+                    while (index < suffix.Length && suffix[index] is not '.' and not '[')
                     {
                         index++;
                     }
 
                     if (start == index)
                     {
-                        throw new InvalidOperationException("Invalid format field.");
+                        throw new InvalidOperationException("Empty attribute in format string");
                     }
 
-                    var memberName = field[start..index];
+                    var memberName = suffix[start..index];
                     var memberTarget = current;
                     if (!PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out current))
                     {
@@ -191,22 +188,27 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                if (field[index] == '[')
+                if (suffix[index] == '[')
                 {
                     index++;
                     var start = index;
-                    while (index < field.Length && field[index] != ']')
+                    while (index < suffix.Length && suffix[index] != ']')
                     {
                         index++;
                     }
 
-                    if (index >= field.Length)
+                    if (index >= suffix.Length)
                     {
-                        throw new InvalidOperationException("Invalid format field.");
+                        throw new InvalidOperationException("expected '}' before end of string");
                     }
 
-                    var token = field[start..index];
+                    var token = suffix[start..index];
                     index++;
+                    if (token.Length == 0)
+                    {
+                        throw new InvalidOperationException("Empty attribute in format string");
+                    }
+
                     object key = int.TryParse(token, out var intIndex)
                         ? new BigInteger(intIndex)
                         : PyString.FromString(token);
@@ -214,46 +216,10 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                throw new InvalidOperationException("Invalid format field.");
+                throw new InvalidOperationException("Only '.' or '[' may follow ']' in format field specifier");
             }
 
             return current;
-        }
-
-        private static object ResolveFormatFieldRoot(
-            string field,
-            IReadOnlyList<object> positional,
-            IReadOnlyDictionary<string, object> keywords,
-            ref int index)
-        {
-            var start = index;
-            while (index < field.Length && field[index] is not '.' and not '[')
-            {
-                index++;
-            }
-
-            var root = field[start..index];
-            if (root.Length == 0)
-            {
-                throw new InvalidOperationException("Invalid format field.");
-            }
-
-            if (int.TryParse(root, out var intIndex))
-            {
-                if (intIndex < 0 || intIndex >= positional.Count)
-                {
-                    throw new IndexOutOfRangeException($"Replacement index {intIndex} out of range for positional args tuple");
-                }
-
-                return positional[intIndex];
-            }
-
-            if (!keywords.TryGetValue(root, out var value))
-            {
-                throw new KeyNotFoundException(root);
-            }
-
-            return value;
         }
     }
 }

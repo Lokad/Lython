@@ -4677,10 +4677,8 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("\"{1}\".format(\"x\")\n", "Invalid positional format field.")]
-    [InlineData("\"{\".format()\n", "Expected '}' in format string.")]
-    [InlineData("\"}\".format()\n", "Unexpected '}' in format string.")]
-    [InlineData("\"{0:>3}\".format(\"x\")\n", "Format specifiers are not supported.")]
+    [InlineData("\"{\".format()\n", "Single '{' encountered in format string")]
+    [InlineData("\"}\".format()\n", "Single '}' encountered in format string")]
     public void Format_InvalidPattern_FailsWithValueError(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

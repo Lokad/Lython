@@ -66,7 +66,7 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"{foo}\".format()\n", "foo")]
     [InlineData("\"{foo}\".format_map([])\n", "expects one dictionary argument.")]
     [InlineData("\"{p.name}\".format()\n", "p")]
-    [InlineData("\"{user[name}\".format(user={\"name\": \"x\"})\n", "Invalid format field.")]
+    [InlineData("\"{user[name}\".format(user={\"name\": \"x\"})\n", "expected '}' before end of string")]
     public void StringMethodContractFailure_ReportsTypeError(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

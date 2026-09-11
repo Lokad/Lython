@@ -78,7 +78,12 @@ internal sealed partial class LythonRuntime
                                 }
                             }
 
-                            return OwnMethodResult(PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context)), text, context.MemoryGovernor, span);
+                            return OwnMethodResult(PyStringOps.Format(
+                                text,
+                                positional,
+                                keywords,
+                                (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)), text, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -104,7 +109,13 @@ internal sealed partial class LythonRuntime
                         {
                             var positional = Array.Empty<object>();
                             var keywords = PyStringOps.ExtractStringKeyDictionary(mapping);
-                            return OwnMethodResult(PyStringOps.Format(text, positional, keywords, field => ResolveFormatField(field, positional, keywords, span, context)), text, context.MemoryGovernor, span);
+                            return OwnMethodResult(PyStringOps.Format(
+                                text,
+                                positional,
+                                keywords,
+                                (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
+                                forbidPositionalFields: true), text, context.MemoryGovernor, span);
                         }
                         catch (InvalidOperationException ex)
                         {
