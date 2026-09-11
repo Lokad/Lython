@@ -125,7 +125,11 @@ internal static class StaticCollectionContractFamily
 
         if (StaticAbstractFacts.IsDefinitelyKnownNonSized(valueExpression, bindings))
         {
-            AddDiagnostic(diagnostics, "LA3032", "Object has no len().", valueExpression.Span);
+            var message = arguments.TryResolveValue(0, "value", bindings, out var resolved) &&
+                StaticStructuralDiagnostics.TryOperandTypeName(resolved, out var name)
+                ? $"object of type '{name}' has no len()"
+                : "Object has no len().";
+            AddDiagnostic(diagnostics, "LA3032", message, valueExpression.Span);
         }
     }
 

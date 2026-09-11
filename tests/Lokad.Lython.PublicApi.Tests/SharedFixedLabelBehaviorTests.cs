@@ -5312,6 +5312,20 @@ public sealed class SharedFixedLabelBehaviorTests
                 getattr(datetime.date, "x")
             except AttributeError as e:
                 results.append(str(e))
+            from decimal import Decimal
+            from collections import defaultdict
+            try:
+                getattr(datetime.datetime.now(), "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(Decimal("1"), "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(defaultdict(int), "x")
+            except AttributeError as e:
+                results.append(str(e))
             try:
                 delattr(C(), "x")
             except AttributeError as e:
@@ -5409,6 +5423,9 @@ public sealed class SharedFixedLabelBehaviorTests
             "type object 'property' has no attribute 'x'.",
             "type object 'Random' has no attribute 'x'.",
             "type object 'datetime.date' has no attribute 'x'.",
+            "'datetime.datetime' object has no attribute 'x'.",
+            "'decimal.Decimal' object has no attribute 'x'.",
+            "'collections.defaultdict' object has no attribute 'x'.",
             "'C' object has no attribute 'x'.",
             "'ValueError' object has no attribute 'x'.",
             "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",

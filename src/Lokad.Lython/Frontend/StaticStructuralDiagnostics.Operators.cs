@@ -395,7 +395,7 @@ internal static partial class StaticStructuralDiagnostics
             ? $"bad operand type for unary {operation}: '{name}'"
             : operation == "~" ? "Operand is not an integer." : "Operand is not numeric.";
 
-    private static bool TryOperandTypeName(AbstractValue value, out string name)
+    internal static bool TryOperandTypeName(AbstractValue value, out string name)
     {
         name = value.Kind switch
         {
@@ -410,16 +410,16 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.Tuple => "tuple",
             AbstractValueKind.Dict => "dict",
             AbstractValueKind.Set => "set",
-            AbstractValueKind.CollectionsDefaultDict => "defaultdict",
+            AbstractValueKind.CollectionsDefaultDict => "collections.defaultdict",
             AbstractValueKind.CollectionsCounter => "Counter",
             AbstractValueKind.CollectionsDeque => "deque",
             AbstractValueKind.CollectionsChainMap => "ChainMap",
-            AbstractValueKind.Decimal => "Decimal",
-            AbstractValueKind.DateTimeTimedelta => "timedelta",
-            AbstractValueKind.DateTimeDate => "date",
-            AbstractValueKind.DateTimeTime => "time",
-            AbstractValueKind.DateTimeDateTime => "datetime",
-            AbstractValueKind.DateTimeTimezone => "timezone",
+            AbstractValueKind.Decimal => "decimal.Decimal",
+            AbstractValueKind.DateTimeTimedelta => "datetime.timedelta",
+            AbstractValueKind.DateTimeDate => "datetime.date",
+            AbstractValueKind.DateTimeTime => "datetime.time",
+            AbstractValueKind.DateTimeDateTime => "datetime.datetime",
+            AbstractValueKind.DateTimeTimezone => "datetime.timezone",
             AbstractValueKind.StatisticsNormalDist => "NormalDist",
             AbstractValueKind.Random => "Random",
             AbstractValueKind.StringType or

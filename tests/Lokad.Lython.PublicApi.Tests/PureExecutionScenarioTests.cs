@@ -4585,6 +4585,11 @@ __lython_file.close()
     [InlineData("\"a\" * [1]\n", "can't multiply sequence by non-int of type 'list'")]
     [InlineData("{1} * \"a\"\n", "can't multiply sequence by non-int of type 'set'")]
 
+    [InlineData("import datetime\ndatetime.datetime.now() + \"a\"\n", "unsupported operand type(s) for +: 'datetime.datetime' and 'str'")]
+    [InlineData("import datetime\ndatetime.date.today() + 1.5\n", "unsupported operand type(s) for +: 'datetime.date' and 'float'")]
+    [InlineData("import datetime\ndef f(a, b):\n    return a + b\nf(datetime.datetime.now(), \"a\")\n", "unsupported operand type(s) for +: 'datetime.datetime' and 'str'")]
+    [InlineData("from decimal import Decimal\nDecimal(\"1\") + \"a\"\n", "unsupported operand type(s) for +: 'decimal.Decimal' and 'str'")]
+    [InlineData("from collections import defaultdict\ndef f(a, b):\n    return a + b\nf(defaultdict(int), 1)\n", "unsupported operand type(s) for +: 'collections.defaultdict' and 'int'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -4618,6 +4623,28 @@ __lython_file.close()
         }
 
         Assert.Equal(exceptionType, result.Failure.ExceptionType);
+        Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
+    [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
+    [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
+    [InlineData("import datetime\ndef f(a):\n    return len(a)\nf(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
+    [InlineData("from decimal import Decimal\ndef f(a):\n    return len(a)\nf(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]
+    [InlineData("def f(a):\n    return len(a)\nf(1)\n", "object of type 'int' has no len()")]
+    public void LenMissNamedObjects_ReportPythonShapedTexts(string source, string message)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        if (result.Failure is null)
+        {
+            Assert.Contains(result.Diagnostics, d => d.Message.Contains(message, StringComparison.Ordinal));
+            return;
+        }
+
+        Assert.Equal("TypeError", result.Failure.ExceptionType);
         Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
     }
 

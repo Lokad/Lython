@@ -323,6 +323,11 @@ internal static class PyMemberAccess
         ChainMapKeysView => "KeysView",
         ChainMapValuesView => "ValuesView",
         ChainMapItemsView => "ItemsView",
+        // Dotted C-extension names match CPython; deque splits from the
+        // short concat template, so it keeps its literal here.
+        PyDateTime or PyDate or PyTime or PyTimedelta or
+            PyTimezone or PyDecimal or PyDefaultDict => RuntimeErrors.OperandTypeName(target),
+        PyDeque => "collections.deque",
         _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context),
     };
 

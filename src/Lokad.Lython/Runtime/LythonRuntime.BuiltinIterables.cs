@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
             PyInstance instance => GetInstanceLength(instance, context, span),
-            _ => throw new LythonRuntimeException("TypeError", "Object has no len().", span)
+            _ => throw new LythonRuntimeException("TypeError", $"object of type '{RuntimeErrors.OperandTypeName(arguments[0])}' has no len()", span)
         };
     }
 
