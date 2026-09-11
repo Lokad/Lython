@@ -4770,6 +4770,50 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(itertools.chain)", "<class 'itertools.chain'>")]
+    [InlineData("str(itertools.count)", "<class 'itertools.count'>")]
+    [InlineData("str(itertools.repeat)", "<class 'itertools.repeat'>")]
+    [InlineData("str(itertools.cycle)", "<class 'itertools.cycle'>")]
+    [InlineData("str(itertools.islice)", "<class 'itertools.islice'>")]
+    [InlineData("str(itertools.product)", "<class 'itertools.product'>")]
+    [InlineData("str(itertools.zip_longest)", "<class 'itertools.zip_longest'>")]
+    [InlineData("str(itertools.combinations)", "<class 'itertools.combinations'>")]
+    [InlineData("str(itertools.combinations_with_replacement)", "<class 'itertools.combinations_with_replacement'>")]
+    [InlineData("str(itertools.permutations)", "<class 'itertools.permutations'>")]
+    [InlineData("str(itertools.accumulate)", "<class 'itertools.accumulate'>")]
+    [InlineData("str(itertools.compress)", "<class 'itertools.compress'>")]
+    [InlineData("str(itertools.filterfalse)", "<class 'itertools.filterfalse'>")]
+    [InlineData("str(itertools.dropwhile)", "<class 'itertools.dropwhile'>")]
+    [InlineData("str(itertools.takewhile)", "<class 'itertools.takewhile'>")]
+    [InlineData("str(itertools.starmap)", "<class 'itertools.starmap'>")]
+    [InlineData("str(itertools.pairwise)", "<class 'itertools.pairwise'>")]
+    [InlineData("str(itertools.groupby)", "<class 'itertools.groupby'>")]
+    [InlineData("str(itertools.batched)", "<class 'itertools.batched'>")]
+    [InlineData("repr(itertools.chain)", "<class 'itertools.chain'>")]
+    public void ItertoolsTypes_RenderClassWrapper(string expression, string expected)
+    {
+        var source = "import itertools\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("str(itertools.tee)", "<built-in function tee>")]
+    [InlineData("str(itertools.chain.from_iterable)", "<built-in method from_iterable of type object>")]
+    public void ItertoolsSpecials_RenderBuiltinForm(string expression, string expected)
+    {
+        var source = "import itertools\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

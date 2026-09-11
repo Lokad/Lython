@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -45,9 +46,18 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class ChainFactory : ICallable
+    internal sealed class ChainFactory : ICallable, IPyRenderableValue
     {
         public static readonly ChainFactory Instance = new();
+
+        // itertools.chain denotes a type like CPython.
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<class 'itertools.chain'>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -95,7 +105,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class ItertoolsCallable : ICallable
+    private sealed class ItertoolsCallable : ICallable, IPyRenderableValue
     {
         private readonly string _name;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
@@ -126,6 +136,21 @@ internal sealed partial class LythonRuntime
                 ? _implementation(arguments, span, context)
                 : await _asyncImplementation(arguments, span, context).ConfigureAwait(false);
         }
+
+        // itertools factories denote types like CPython, except tee (a plain
+        // builtin function) and chain.from_iterable (a builtin method of type).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString(BuiltinCallable.ShortCallableName(_name) switch
+            {
+                "tee" => "<built-in function tee>",
+                "from_iterable" => "<built-in method from_iterable of type object>",
+                _ => $"<class '{_name}'>",
+            });
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     private static object Count(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
