@@ -212,6 +212,34 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("format(1.0, \"#.0f\")", "1.")]
+    [InlineData("format(1.5, \"#.0f\")", "2.")]
+    [InlineData("format(100.0, \"#.0f\")", "100.")]
+    [InlineData("format(1.0, \"#.0e\")", "1.e+00")]
+    [InlineData("format(1.5, \"#.0E\")", "2.E+00")]
+    [InlineData("format(1.0, \"#.0F\")", "1.")]
+    [InlineData("format(1.5, \"#.0%\")", "150.%")]
+    [InlineData("format(1.0, \"#\")", "1.0")]
+    [InlineData("format(100.0, \"#\")", "100.0")]
+    [InlineData("format(0.0, \"#\")", "0.0")]
+    [InlineData("format(1e-5, \"#\")", "1.e-05")]
+    [InlineData("format(1.5e-7, \"#\")", "1.5e-07")]
+    [InlineData("format(1, \"#.0f\")", "1.")]
+    [InlineData("format(1, \"#.0e\")", "1.e+00")]
+    [InlineData("format(150.0, \"#,.0f\")", "150.")]
+    [InlineData("format(1500.0, \"#,.0f\")", "1,500.")]
+    [InlineData("format(1.0, \">#10.0f\")", "        1.")]
+    [InlineData("f\"{1.0:#.0f}\"", "1.")]
+    [InlineData("\"{:#.0%}\".format(1.5)", "150.%")]
+    public void FloatAlternateSpecs_ForceDecimalPoint(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]

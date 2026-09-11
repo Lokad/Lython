@@ -753,6 +753,38 @@ internal sealed partial class LythonRuntime
             formatted = formatted.ToUpperInvariant();
         }
 
+        // Alternate form forces a decimal point when the rendering has
+        // none (g/G stay rejected above, like before).
+        // Null-type precision has its own significant-digits rendering
+        // (a separate slice); the point-only rule below covers the
+        // precision-free null type.
+        var hashType = type is 'f' or 'F' or 'e' or 'E' or '%' || (type is null && precision is null);
+        if (spec.Alternate && type is null && precision is null)
+        {
+            // CPython renders the no-type form float-style (lowercase
+            // marker); the bare rendering keeps the shared BCL shape.
+            formatted = formatted.Replace('E', 'e');
+        }
+        if (spec.Alternate && hashType && !formatted.Contains('.'))
+        {
+            var pointAt = formatted.IndexOfAny(['e', 'E']);
+            if (pointAt < 0 && formatted.EndsWith('%'))
+            {
+                pointAt = formatted.Length - 1;
+            }
+
+            if (pointAt >= 0)
+            {
+                formatted = formatted[..pointAt] + "." + formatted[pointAt..];
+            }
+            else
+            {
+                // With no presentation type the point carries a zero so the
+                // rendering still parses as a float.
+                formatted += type is null ? ".0" : ".";
+            }
+        }
+
         if (spec.Grouping is { } grouping)
         {
             formatted = GroupFloatingDigits(formatted, grouping);
