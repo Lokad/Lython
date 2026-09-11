@@ -5612,6 +5612,67 @@ __lython_file.close()
     }
 
     [Fact]
+    public void WidthCountArgs_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 4
+class Jbad:
+    def __index__(self):
+        return "x"
+
+def lj(w):
+    return "ab".ljust(w)
+def rj(w):
+    return "ab".rjust(w)
+def ct(w):
+    return "ab".center(w)
+def zf(w):
+    return "ab".zfill(w)
+def et(w):
+    return "a\tb".expandtabs(w)
+def sp(w):
+    return "a,b,c".split(",", w)
+def rp(w):
+    return "aaa".replace("a", "b", w)
+def blj(w):
+    return b"ab".ljust(w)
+def bzf(w):
+    return b"ab".zfill(w)
+def bsp(w):
+    return b"a,b,c".split(b",", w)
+def brp(w):
+    return b"aaa".replace(b"a", b"b", w)
+def bhx(w):
+    return b"ab".hex(" ", w)
+
+parts = []
+for f in [lj, rj, ct, zf, et, sp, rp, blj, bzf, bsp, brp, bhx]:
+    parts.append(str(f(J())))
+for f in [lj, zf, sp, rp, blj]:
+    try:
+        parts.append(str(f(Jbad())))
+    except TypeError as e:
+        parts.append(str(e))
+for p in [(lj, "x"), (lj, 1.5), (lj, None), (sp, "x"), (blj, "x")]:
+    try:
+        parts.append(str(p[0](p[1])))
+    except TypeError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"ab  |  ab| ab |00ab|a   b|['a', 'b', 'c']|bbb|b'ab  '|b'00ab'|[b'a', b'b', b'c']|b'bbb'|6162|__index__ returned non-int (type str)|__index__ returned non-int (type str)|__index__ returned non-int (type str)|__index__ returned non-int (type str)|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'str' object cannot be interpreted as an integer|'str' object cannot be interpreted as an integer", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

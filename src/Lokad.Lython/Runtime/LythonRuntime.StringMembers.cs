@@ -51,8 +51,8 @@ internal sealed partial class LythonRuntime
             value = null;
             return false;
         }
-        private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span)
-            => RuntimeArgumentValidation.ParseInt32(value, name, signature, span);
+        private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
+            => RuntimeArgumentValidation.ParseIndexInt32(value, name, signature, span, context);
 
         private static StringSearchBounds ParseStringBounds(
             int textLength,

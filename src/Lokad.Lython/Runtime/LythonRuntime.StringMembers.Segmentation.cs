@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span) : -1;
+                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
                             return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
                         }
 
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
                         try
                         {
                             return PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span);
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span) : -1;
+                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
                             return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
                         }
 
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
                         try
                         {
                             return PyStringOps.RSplit(text, separator, maxSplit, context.MemoryGovernor, span);
@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.expandtabs([tabsize]) expects zero or one integer argument.", span);
                         }
 
-                        var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span) : 8;
+                        var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span, context) : 8;
                         return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize), text, context.MemoryGovernor, span);
                     }, "str.expandtabs", ["tabsize"], 0),
                     "strip" => CreateStripMethod(text, name, PyStringOps.Strip),

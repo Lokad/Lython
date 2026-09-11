@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "bytes.expandtabs([tabsize]) expects zero or one integer argument.", span);
                     }
 
-                    var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.ParseInt32(arguments[0], "tabsize", "bytes.expandtabs([tabsize])", span) : 8;
+                    var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[0], "tabsize", "bytes.expandtabs([tabsize])", span, context) : 8;
                     return ExpandBytesTabs(bytes, tabSize, context, span);
                 }, "bytes.expandtabs", ["tabsize"], 0),
                 "split" => BoundCallable.Create((arguments, span, context) =>
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                     int maxSplit;
                     if (arguments[0] is PyNone)
                     {
-                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span, context) : -1;
                         return SplitBytesWhitespace(bytes, maxSplit, context, span);
                     }
 
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "bytes.split([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
                     }
 
-                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span) : -1;
+                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span, context) : -1;
                     try
                     {
                         return SplitBytes(bytes, separator, maxSplit, context, span);
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
                     int maxSplit;
                     if (arguments[0] is PyNone)
                     {
-                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span) : -1;
+                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span, context) : -1;
                         return RSplitBytesWhitespace(bytes, maxSplit, context, span);
                     }
 
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
                     }
 
-                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span) : -1;
+                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span, context) : -1;
                     try
                     {
                         return RSplitBytes(bytes, separator, maxSplit, context, span);
@@ -307,7 +307,7 @@ internal sealed partial class LythonRuntime
         var perSep = 1;
         if (group is not null)
         {
-            perSep = RuntimeArgumentValidation.ParseInt32(group, "bytes_per_sep", "bytes.hex([sep[, bytes_per_sep]])", span);
+            perSep = RuntimeArgumentValidation.ParseIndexInt32(group, "bytes_per_sep", "bytes.hex([sep[, bytes_per_sep]])", span, context);
         }
 
         if (perSep < 0)
@@ -804,7 +804,7 @@ internal sealed partial class LythonRuntime
         var count = -1;
         if (countArgument is not null)
         {
-            count = RuntimeArgumentValidation.ParseInt32(countArgument, "count", "bytes.replace(old, new[, count])", span);
+            count = RuntimeArgumentValidation.ParseIndexInt32(countArgument, "count", "bytes.replace(old, new[, count])", span, context);
         }
 
         if (count == 0)
@@ -1597,7 +1597,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", signature + " expects one or two arguments.", span);
         }
 
-        var width = RuntimeArgumentValidation.ParseInt32(widthArgument, "width", signature, span);
+        var width = RuntimeArgumentValidation.ParseIndexInt32(widthArgument, "width", signature, span, context);
         var fill = (byte)' ';
         if (fillArgument is not null)
         {
@@ -1655,7 +1655,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bytes.zfill() takes exactly one argument (" + positionals + " given)", span);
         }
 
-        var width = RuntimeArgumentValidation.ParseInt32(widthArgument, "width", "bytes.zfill(width)", span);
+        var width = RuntimeArgumentValidation.ParseIndexInt32(widthArgument, "width", "bytes.zfill(width)", span, context);
         var source = value.Bytes;
         if (width <= source.Length)
         {

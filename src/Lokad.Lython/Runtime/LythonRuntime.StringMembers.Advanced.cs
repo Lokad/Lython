@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.zfill(width) expects one integer width argument.", span);
                         }
 
-                        var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span);
+                        var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span, context);
                         return OwnMethodResult(PyStringOps.ZFill(text, width), text, context.MemoryGovernor, span);
                     }, "str.zfill", ["width"]),
                     "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false),
@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", $"{signature} expects one integer width and an optional fill string.", span);
                         }
 
-                        var width = ParseStringOptionalInt(arguments[0], "width", signature, span);
+                        var width = ParseStringOptionalInt(arguments[0], "width", signature, span, context);
                         var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], signature, span) : null;
                         try
                         {

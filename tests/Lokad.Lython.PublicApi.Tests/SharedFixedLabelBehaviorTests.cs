@@ -3984,7 +3984,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "hex() expects sep to be str or bytes.",
             "sep must be length 1.",
             "sep must be ASCII.",
-            "bytes.hex([sep[, bytes_per_sep]]) expects bytes_per_sep to be an integer.",
+            "'str' object cannot be interpreted as an integer",
             "argument for hex() given by name ('sep') and position (1)",
             "hex() got an unexpected keyword argument 'bogus'",
         };
@@ -4464,7 +4464,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "bytes.replace() takes no keyword arguments",
             "a bytes-like object is required, not 'str'",
             "a bytes-like object is required, not 'int'",
-            "bytes.replace(old, new[, count]) expects count to be an integer.",
+            "'str' object cannot be interpreted as an integer",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -4768,7 +4768,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "Method 'bytes.split' got an unexpected keyword argument 'x'.",
             "empty separator",
             "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.",
-            "bytes.split([sep[, maxsplit]]) expects maxsplit to be an integer.",
+            "'str' object cannot be interpreted as an integer",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -5027,10 +5027,10 @@ public sealed class SharedFixedLabelBehaviorTests
             "The fill character must be exactly one byte long",
             "bytes.ljust(width[, fillchar]) expects fillchar to be a bytes-like object.",
             "bytes.ljust(width[, fillchar]) expects fillchar to be a bytes-like object.",
-            "bytes.center(width[, fillchar]) expects width to be an integer.",
+            "'str' object cannot be interpreted as an integer",
             "bytes.zfill() takes exactly one argument (0 given)",
             "bytes.zfill() takes exactly one argument (2 given)",
-            "bytes.zfill(width) expects width to be an integer.",
+            "'str' object cannot be interpreted as an integer",
             "bytes.zfill() takes no keyword arguments",
         };
         var sync = script.Run(new MockLythonHost());
@@ -5095,8 +5095,8 @@ public sealed class SharedFixedLabelBehaviorTests
             true, true, true, true, true, true, true, true, true, true,
             true, true, true, "method_descriptor", "expandtabs", true, true, true, true, false,
             "Method 'bytes.expandtabs' received too many positional arguments.",
-            "bytes.expandtabs([tabsize]) expects tabsize to be an integer.",
-            "bytes.expandtabs([tabsize]) expects tabsize to be an integer.",
+            "'str' object cannot be interpreted as an integer",
+            "'NoneType' object cannot be interpreted as an integer",
             "Method 'bytes.expandtabs' got an unexpected keyword argument 'x'.",
         };
         var sync = script.Run(new MockLythonHost());

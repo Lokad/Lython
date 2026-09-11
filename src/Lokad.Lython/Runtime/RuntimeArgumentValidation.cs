@@ -49,6 +49,27 @@ internal static class RuntimeArgumentValidation
         };
     }
 
+    // Width/count-style arguments coerce through __index__ like CPython;
+    // failures name the type instead of the builtin signature.
+    public static int ParseIndexInt32(
+        object value,
+        string name,
+        string signature,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        return coerced switch
+        {
+            BigInteger integer => integer < int.MinValue || integer > int.MaxValue
+                ? throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span)
+                : (int)integer,
+            int integer => integer,
+            bool flag => flag ? 1 : 0,
+            _ => throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span)
+        };
+    }
+
     public static int NormalizeSearchBound(
         object? value,
         int length,

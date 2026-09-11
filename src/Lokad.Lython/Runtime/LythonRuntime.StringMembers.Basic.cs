@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", span);
                         }
 
-                        var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span) : -1;
+                        var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
                         return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count), text, context.MemoryGovernor, span);
                     }, "str.replace", ["old", "new", "count"], 2),
                     "startswith" => BoundCallable.Create((arguments, span, context) =>
