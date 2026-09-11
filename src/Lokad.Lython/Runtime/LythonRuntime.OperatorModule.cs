@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                 var memberTarget = current;
                 if (!PyMemberAccess.TryResolve(memberTarget, part, context, span, out current))
                 {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, part, span);
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, part, span, context);
                 }
             }
 
@@ -226,7 +226,7 @@ internal sealed partial class LythonRuntime
 
             if (!PyMemberAccess.TryResolve(arguments[0].Value, _name, context, span, out var member))
             {
-                throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, _name, span);
+                throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, _name, span, context);
             }
 
             return InvokeCallableTarget(member, span, span, context, () => _arguments);

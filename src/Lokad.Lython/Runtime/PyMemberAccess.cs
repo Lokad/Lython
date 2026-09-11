@@ -3,6 +3,13 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+internal enum MissingMemberOperation
+{
+    Read,
+    Delete,
+    Write,
+}
+
 internal static class PyMemberAccess
 {
     private delegate bool ExactMemberResolver(object target, string memberName, [MaybeNullWhen(false)] out object value);
@@ -256,23 +263,74 @@ internal static class PyMemberAccess
         return false;
     }
 
-    public static LythonRuntimeException CreateMissingMemberError(object target, string memberName, LythonSourceSpan span)
+    private static string RuntimeTypeName(string name)
     {
+        // CPython spells natively modeled C extension types dotted (datetime.date, re.Pattern) but Python-defined classes short (Random, NormalDist).
+        return name is "random.Random" or "statistics.NormalDist" ? ShortTypeName(name) : name;
+    }
+
+    private static string MissingMemberTypeName(object? target, LythonRuntime.ExecutionContext context) => target switch
+    {
+        PyException exception => exception.TypeName,
+        _ => LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context),
+    };
+
+    private static bool HasInstanceDict(object target) => target switch
+    {
+        PyModule => true,
+        PyException => true,
+        PyInstance instance => instance.Type.Name != "object",
+        _ => false,
+    };
+
+    private static string TypeObjectName(object target) => target switch
+    {
+        PyType type => type.Name,
+        PyBuiltinRuntimeType runtimeType => RuntimeTypeName(runtimeType.Name),
+        LythonRuntime.ExceptionTypeValue exceptionType => exceptionType.TypeName,
+        INamedRuntimeCallable named => ShortTypeName(named.Name),
+        _ => "type",
+    };
+
+    private static string ShortTypeName(string name)
+    {
+        var dot = name.LastIndexOf('.');
+        return dot < 0 ? name : name.Substring(dot + 1);
+    }
+
+    public static LythonRuntimeException CreateMissingMemberError(object target, string memberName, LythonSourceSpan span, LythonRuntime.ExecutionContext context, MissingMemberOperation operation = MissingMemberOperation.Read)
+    {
+        // Reads name modules after the module itself; deletions and writes
+        // use the plain object shape, with a no-dict suffix outside
+        // instance-dict populations, exactly like CPython.
+        var suffix = operation != MissingMemberOperation.Read && !HasInstanceDict(target)
+            ? " and no __dict__ for setting new attributes"
+            : string.Empty;
         return target switch
         {
             PyPath when memberName is "write_bytes" or "read_bytes"
                 => new LythonRuntimeException(
-                    "AttributeError",
-                    $"Path.{memberName}(...) is not supported by Lython. The host boundary is UTF-8 text-shaped only.",
-                    span),
+                "AttributeError",
+                $"Path.{memberName}(...) is not supported by Lython. The host boundary is UTF-8 text-shaped only.",
+                span),
             PyPath when memberName == "glob"
                 => new LythonRuntimeException(
-                    "AttributeError",
-                    "Path.glob(...) is not supported by Lython. Use Path.rglob(...) for the supported recursive form.",
-                    span),
+                "AttributeError",
+                "Path.glob(...) is not supported by Lython. Use Path.rglob(...) for the supported recursive form.",
+                span),
+            PyModule module when operation == MissingMemberOperation.Read => new LythonRuntimeException(
+                "AttributeError",
+                $"module '{module.Name}' has no attribute '{memberName}'.",
+                span),
+            _ when target is not null
+                && LythonRuntime.TryGetValueClass(target, context, out var classValue)
+                && classValue is PyType { Name: "type" } => new LythonRuntimeException(
+                "AttributeError",
+                $"type object '{TypeObjectName(target)}' has no attribute '{memberName}'.",
+                span),
             _ => new LythonRuntimeException(
                 "AttributeError",
-                $"Object has no attribute '{memberName}'.",
+                $"'{MissingMemberTypeName(target, context)}' object has no attribute '{memberName}'{suffix}.",
                 span)
         };
     }

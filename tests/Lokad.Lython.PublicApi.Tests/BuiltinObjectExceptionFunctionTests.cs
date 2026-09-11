@@ -290,7 +290,7 @@ except Exception:
     [Theory]
     [InlineData("getattr(object(), 1)\n", "TypeError", "name")]
     [InlineData("getattr(object(), 'missing')\n", "AttributeError", "missing")]
-    [InlineData("setattr(1, 'x', 2)\n", "AttributeError", "writable")]
+    [InlineData("setattr(1, 'x', 2)\n", "AttributeError", "no __dict__ for setting new attributes")]
     [InlineData("delattr(object(), 'x')\n", "AttributeError", "x")]
     [InlineData("vars(1)\n", "TypeError", "attribute dictionary")]
     public void ObjectHelpers_ReportExplicitFailures(string source, string exceptionType, string messageFragment)

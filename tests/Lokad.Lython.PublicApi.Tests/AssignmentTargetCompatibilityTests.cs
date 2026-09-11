@@ -190,7 +190,7 @@ __lython_file.close()
 
     [Theory]
     [InlineData("items = (1, 2)\nitems[0] += 1", "TypeError", "Tuple does not support item assignment")]
-    [InlineData("class Box:\n    pass\nbox = Box()\nbox.missing += 1", "AttributeError", "Object has no attribute 'missing'")]
+    [InlineData("class Box:\n    pass\nbox = Box()\nbox.missing += 1", "AttributeError", "'Box' object has no attribute 'missing'")]
     public void AugmentedAssignment_InvalidRuntimeTargets_FailClearly(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

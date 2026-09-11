@@ -1783,7 +1783,7 @@ __lython_file.close()
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("AttributeError", result.Failure?.ExceptionType);
-        Assert.Contains("Object has no attribute 'value'", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("'Box' object has no attribute 'value'", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

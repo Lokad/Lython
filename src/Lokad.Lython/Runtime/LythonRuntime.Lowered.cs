@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
                 var memberTarget = EvaluateLoweredExpression(member.Receiver, context);
                 if (!TryResolveRuntimeMember(memberTarget, member.Target.MemberName, context, member.Span, out var memberValue))
                 {
-                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.Target.MemberName, member.Span);
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.Target.MemberName, member.Span, context);
                 }
 
                 return new AugmentedAssignmentTargetReference(

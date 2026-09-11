@@ -422,7 +422,7 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, name.AsString(), span);
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, name.AsString(), span, context, operation: MissingMemberOperation.Write);
         }
     }
 
@@ -489,7 +489,7 @@ internal sealed partial class LythonRuntime
 
                 if (!instance.RemoveAttribute(memberName))
                 {
-                    throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
+                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context, operation: MissingMemberOperation.Delete);
                 }
 
                 return PyNone.Instance;
@@ -502,7 +502,7 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span);
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span, context, operation: MissingMemberOperation.Delete);
         }
     }
 
@@ -566,7 +566,7 @@ internal sealed partial class LythonRuntime
                     return value;
                 }
 
-                throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{memberName}'.", span);
+                throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
             }
 
             // Other receivers resolve through the same choke as ordinary
@@ -577,7 +577,7 @@ internal sealed partial class LythonRuntime
                 return resolved;
             }
 
-            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span);
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span, context);
         }
     }
 

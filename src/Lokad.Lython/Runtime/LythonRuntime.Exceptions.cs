@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
             {
                 if (!TryResolveRuntimeMember(caughtType, parts[i], context, span, out var member))
                 {
-                    throw PyMemberAccess.CreateMissingMemberError(caughtType, parts[i], span);
+                    throw PyMemberAccess.CreateMissingMemberError(caughtType, parts[i], span, context);
                 }
 
                 caughtType = member;

@@ -5034,6 +5034,206 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
+
+    [Fact]
+    public async Task MissingAttributeTypeNames()
+    {
+        // Dynamic attribute misses name the receiver type like CPython,
+        // with module and type-object shapes beside the plain form.
+        var script = new LythonEngine().Compile("""
+            import math
+            class C:
+                pass
+            results = []
+            try:
+                getattr((1, 2), "append")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr([1], "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr("a", "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(1, "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr({}, "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr({1}, "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(None, "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(True, "nosuch")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(C(), "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(C, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(len, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr([].append, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(math, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(int, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(range, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(slice, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(zip, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(Exception, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(KeyError, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(super, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(staticmethod, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(property, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            import random
+            import datetime
+            try:
+                getattr(random.Random, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                getattr(datetime.date, "x")
+            except AttributeError as e:
+                results.append(str(e))
+            try:
+                delattr(C(), "x")
+            except AttributeError as e:
+                results.append(str(e))
+            e = ValueError("m")
+            o = object()
+            try:
+                getattr(e, "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                delattr((1, 2), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                delattr(o, "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                delattr(e, "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                delattr(math, "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                setattr(1, "x", 2)
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                object.__setattr__((1, 2), "x", 3)
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                object.__delattr__((1, 2), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            try:
+                object.__getattribute__((1, 2), "x")
+            except AttributeError as e2:
+                results.append(str(e2))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "'tuple' object has no attribute 'append'.",
+            "'list' object has no attribute 'nosuch'.",
+            "'str' object has no attribute 'nosuch'.",
+            "'int' object has no attribute 'nosuch'.",
+            "'dict' object has no attribute 'nosuch'.",
+            "'set' object has no attribute 'nosuch'.",
+            "'NoneType' object has no attribute 'nosuch'.",
+            "'bool' object has no attribute 'nosuch'.",
+            "'C' object has no attribute 'x'.",
+            "type object 'C' has no attribute 'x'.",
+            "'builtin_function_or_method' object has no attribute 'x'.",
+            "'builtin_function_or_method' object has no attribute 'x'.",
+            "module 'math' has no attribute 'x'.",
+            "type object 'int' has no attribute 'x'.",
+            "type object 'range' has no attribute 'x'.",
+            "type object 'slice' has no attribute 'x'.",
+            "type object 'zip' has no attribute 'x'.",
+            "type object 'Exception' has no attribute 'x'.",
+            "type object 'KeyError' has no attribute 'x'.",
+            "type object 'super' has no attribute 'x'.",
+            "type object 'staticmethod' has no attribute 'x'.",
+            "type object 'property' has no attribute 'x'.",
+            "type object 'Random' has no attribute 'x'.",
+            "type object 'datetime.date' has no attribute 'x'.",
+            "'C' object has no attribute 'x'.",
+            "'ValueError' object has no attribute 'x'.",
+            "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",
+            "'object' object has no attribute 'x' and no __dict__ for setting new attributes.",
+            "'ValueError' object has no attribute 'x'.",
+            "'module' object has no attribute 'x'.",
+            "'int' object has no attribute 'x' and no __dict__ for setting new attributes.",
+            "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",
+            "'tuple' object has no attribute 'x' and no __dict__ for setting new attributes.",
+            "'tuple' object has no attribute 'x'.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Fact]
     public async Task EllipsisAndNotImplemented()
     {

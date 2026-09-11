@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        throw PyMemberAccess.CreateMissingMemberError(target, member.MemberName, member.Span);
+        throw PyMemberAccess.CreateMissingMemberError(target, member.MemberName, member.Span, context);
     }
 
     internal static bool TryResolveRuntimeMember(object target, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)

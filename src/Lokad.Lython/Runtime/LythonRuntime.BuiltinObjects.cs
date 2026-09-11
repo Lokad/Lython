@@ -531,7 +531,7 @@ internal sealed partial class LythonRuntime
             return arguments[2];
         }
 
-        throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span);
+        throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context);
     }
 
     private static object HasAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -566,7 +566,7 @@ internal sealed partial class LythonRuntime
         var name = ExpectAttributeName(arguments[1], "setattr(object, name, value)", span);
         if (!PyMemberAccess.TryAssign(arguments[0], name, arguments[2], context, span))
         {
-            throw new LythonRuntimeException("AttributeError", $"Object has no writable attribute '{name}'.", span);
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context, operation: MissingMemberOperation.Write);
         }
 
         return PyNone.Instance;
@@ -582,7 +582,7 @@ internal sealed partial class LythonRuntime
         var name = ExpectAttributeName(arguments[1], "delattr(object, name)", span);
         if (!PyMemberAccess.TryDelete(arguments[0], name, context, span))
         {
-            throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{name}'.", span);
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context, operation: MissingMemberOperation.Delete);
         }
 
         return PyNone.Instance;

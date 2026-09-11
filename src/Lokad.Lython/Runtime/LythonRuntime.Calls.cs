@@ -710,7 +710,7 @@ internal sealed partial class LythonRuntime
 
             if (!TryResolveRuntimeMember(receiver, _memberName, context, span, out var bound) || bound is not ICallable)
             {
-                throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span);
+                throw PyMemberAccess.CreateMissingMemberError(receiver, _memberName, span, context);
             }
 
             return bound;
@@ -1056,7 +1056,7 @@ internal sealed partial class LythonRuntime
 
             if (!TryResolveRuntimeMember(target, descriptor.MemberName, context, span, out var bound))
             {
-                throw PyMemberAccess.CreateMissingMemberError(target, descriptor.MemberName, span);
+                throw PyMemberAccess.CreateMissingMemberError(target, descriptor.MemberName, span, context);
             }
 
             return bound;

@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var colonModule = ResolveImportedModule(parts[0], context, span);
-                return ResolveObjectPath(colonModule, parts[1], span);
+                return ResolveObjectPath(colonModule, parts[1], span, context);
             }
 
             var segments = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
@@ -197,7 +197,7 @@ internal sealed partial class LythonRuntime
                 var candidate = moduleName + "." + segments[index];
                 if (!TryCanImportModule(candidate, context, span))
                 {
-                    return ResolveObjectPath(resolvedModule, string.Join(".", segments, index, segments.Length - index), span);
+                    return ResolveObjectPath(resolvedModule, string.Join(".", segments, index, segments.Length - index), span, context);
                 }
 
                 moduleName = candidate;
@@ -604,13 +604,13 @@ internal sealed partial class LythonRuntime
             return descriptors;
         }
 
-        private static object ResolveObjectPath(object current, string objectPath, LythonSourceSpan span)
+        private static object ResolveObjectPath(object current, string objectPath, LythonSourceSpan span, ExecutionContext context)
         {
             foreach (var member in objectPath.Split('.', StringSplitOptions.RemoveEmptyEntries))
             {
                 if (!PyMemberAccess.TryResolve(current, member, out var next))
                 {
-                    throw new LythonRuntimeException("AttributeError", $"Object has no attribute '{member}'.", span);
+                    throw PyMemberAccess.CreateMissingMemberError(current, member, span, context);
                 }
 
                 current = next;
