@@ -71,6 +71,8 @@ internal static partial class StaticContracts
         "istitle",
         "isupper",
         "maketrans",
+        "removeprefix",
+        "removesuffix",
         "replace",
         "rfind",
         "rindex",

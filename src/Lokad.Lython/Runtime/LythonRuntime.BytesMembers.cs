@@ -53,6 +53,8 @@ internal sealed partial class LythonRuntime
                 "isspace" => BoundCallable.CreateNoArguments(bytes, "bytes.isspace", static (receiver, _, _) => IsAsciiSpace(receiver)),
                 "istitle" => BoundCallable.CreateNoArguments(bytes, "bytes.istitle", static (receiver, _, _) => IsAsciiTitle(receiver)),
                 "isupper" => BoundCallable.CreateNoArguments(bytes, "bytes.isupper", static (receiver, _, _) => IsAsciiUpper(receiver)),
+                "removeprefix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removeprefix", arguments, span, context, isPrefix: true)) { BoundName = "bytes.removeprefix", BoundReceiver = bytes },
+                "removesuffix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removesuffix", arguments, span, context, isPrefix: false)) { BoundName = "bytes.removesuffix", BoundReceiver = bytes },
                 _ => MissingMemberValue.Instance
             };
 
@@ -916,6 +918,54 @@ internal sealed partial class LythonRuntime
         }
 
         return foundCased;
+    }
+
+    private static object RemoveBytesAffix(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool isPrefix)
+    {
+        object? affix = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                affix = argument.Value;
+            }
+        }
+
+        if (positionals != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes exactly one argument (" + positionals + " given)", span);
+        }
+
+        if (affix is not PyBytes affixBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(affix, context) + "'", span);
+        }
+
+        var source = value.Bytes;
+        var affixSpan = affixBytes.Bytes;
+        if (affixSpan.IsEmpty)
+        {
+            return value;
+        }
+
+        bool matches = isPrefix
+            ? affixSpan.Length <= source.Length && source[..affixSpan.Length].SequenceEqual(affixSpan)
+            : affixSpan.Length <= source.Length && source[^affixSpan.Length..].SequenceEqual(affixSpan);
+
+        if (!matches)
+        {
+            return value;
+        }
+
+        var stripped = isPrefix ? source[affixSpan.Length..].ToArray() : source[..^affixSpan.Length].ToArray();
+        return CreateBytes(stripped, context, span);
     }
 
     private sealed class RawBoundCallable(

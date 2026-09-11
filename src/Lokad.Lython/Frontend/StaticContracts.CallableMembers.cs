@@ -106,6 +106,10 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "endswith", 1, 3, "LA3175", "bytes.endswith(suffix[, start[, end]]) expects one to three arguments.", parameterNames: ["suffix", "start", "end"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "replace", 2, 3, "LA3176", "bytes.replace(old, new[, count]) expects two or three arguments.", parameterNames: ["old", "new", "count"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "removeprefix", 1, 1, "LA3178", "bytes.removeprefix(prefix) expects one argument.", parameterNames: ["prefix"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "removeprefix", 1, 1, "LA3178", "bytes.removeprefix(prefix) expects one argument.", parameterNames: ["prefix"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "removesuffix", 1, 1, "LA3178", "bytes.removesuffix(suffix) expects one argument.", parameterNames: ["suffix"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "removesuffix", 1, 1, "LA3178", "bytes.removesuffix(suffix) expects one argument.", parameterNames: ["suffix"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isalnum", 0, 0, "LA3177", "bytes.isalnum() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isalnum", 0, 0, "LA3177", "bytes.isalnum() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isalpha", 0, 0, "LA3177", "bytes.isalpha() expects no arguments."));

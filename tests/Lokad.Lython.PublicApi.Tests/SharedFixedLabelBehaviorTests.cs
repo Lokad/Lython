@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "replace", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(bytes) == ["__new__", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "translate"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "replace", "rfind", "rindex", "startswith", "translate"])
+            results.append(dir(b"") == ["count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "startswith", "translate"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4351,6 +4351,74 @@ public sealed class SharedFixedLabelBehaviorTests
             true, false, true, false, false, true, false, true, true,
             "method_descriptor", "isalpha", true, true, true,
             "bytes.isalpha() expects no arguments.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task BytesRemoveAffixMembers()
+    {
+        // bytes affixes like CPython, with failure paths and the descriptor
+        // surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"abc".removeprefix(b"a") == b"bc")
+            results.append(b"abc".removeprefix(b"x") == b"abc")
+            results.append(b"abc".removeprefix(b"") == b"abc")
+            results.append(b"abc".removesuffix(b"c") == b"ab")
+            results.append(b"abc".removesuffix(b"x") == b"abc")
+            results.append(b"abc".removesuffix(b"") == b"abc")
+            results.append(b"".removeprefix(b"a") == b"")
+            results.append(bytes.removeprefix(b"abc", b"a") == b"bc")
+            results.append(bytes.removesuffix(b"abc", b"c") == b"ab")
+            results.append(type(b"ab".removeprefix).__name__)
+            results.append(type(bytes.removeprefix).__name__)
+            results.append(bytes.removeprefix.__name__)
+            results.append(hasattr(bytes, "removesuffix"))
+            results.append("removeprefix" in dir(b"ab"))
+            results.append("removesuffix" in dir(bytes))
+            h = b"ab"
+            results.append(h.removeprefix == h.removeprefix)
+            results.append(bytes.removeprefix == bytes.removeprefix)
+            try:
+                b"ab".removeprefix()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".removeprefix(b"a", b"b")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".removeprefix(prefix=b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".removeprefix(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".removesuffix((1,))
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true,
+            "builtin_function_or_method", "method_descriptor", "removeprefix",
+            true, true, true, true, true,
+            "bytes.removeprefix() takes exactly one argument (0 given)",
+            "bytes.removeprefix() takes exactly one argument (2 given)",
+            "bytes.removeprefix() takes no keyword arguments",
+            "a bytes-like object is required, not 'int'",
+            "a bytes-like object is required, not 'tuple'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
