@@ -92,6 +92,33 @@ return "|".join(values)
     }
 
     [Fact]
+    public void EnumerateStart_CoercesIndexLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 5
+
+parts = []
+parts.append(str(list(enumerate("ab", J()))))
+parts.append(str(list(enumerate("ab", True))))
+parts.append(str(list(enumerate("ab", 2))))
+try:
+    list(enumerate("ab", "a"))
+    parts.append("no-error")
+except TypeError as e:
+    parts.append(str(e))
+return "|".join(parts)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[(5, 'a'), (6, 'b')]|[(1, 'a'), (2, 'b')]|[(2, 'a'), (3, 'b')]|'str' object cannot be interpreted as an integer", result.ReturnValue);
+    }
+
+
+    [Fact]
     public void SetOperatorsMatchPythonAndInPlaceDifferencePreservesIdentity()
     {
         var result = new LythonEngine().Run(

@@ -231,11 +231,19 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "enumerate(iterable[, start]) expects one or two arguments.", span);
         }
 
-        var index = arguments.Length == 2 && arguments[1] is BigInteger start
-            ? start
-            : arguments.Length == 1
-                ? BigInteger.Zero
-                : throw new LythonRuntimeException("TypeError", "enumerate(iterable, start) expects an integer start.", span);
+        BigInteger index = BigInteger.Zero;
+        if (arguments.Length == 2)
+        {
+            // The start coerces through __index__ like CPython; failures name
+            // the type instead of the builtin signature.
+            var coerced = CoerceIndexProtocol(arguments[1], context, span);
+            if (!PyNumberOps.TryAsInteger(coerced, out var startValue))
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span);
+            }
+
+            index = startValue;
+        }
 
         return new PyEnumerateIterator(arguments[0], index, span, context);
     }
