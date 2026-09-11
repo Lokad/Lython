@@ -6797,6 +6797,13 @@ except ValueError as e:
     parts.append(str(e))
 parts.append(str(10**400 > 1.5))
 parts.append(str(10**400 == float("inf")))
+parts.append(str(float(10**308)))
+parts.append(str(float(2**1024 - 2**971)))
+try:
+    float(2**1024 - 2**971 + 2**970)
+except OverflowError as e:
+    parts.append(str(e))
+parts.append(str(float(2**1024 - 2**971 + 2**970 - 1)))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(parts))
 __lython_file.close()
@@ -6804,7 +6811,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(@"int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|cannot convert float infinity to integer|cannot convert float NaN to integer|True|False", host.ReadText("/out.txt"));
+        Assert.Equal(@"int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|int too large to convert to float|cannot convert float infinity to integer|cannot convert float NaN to integer|True|False|1e+308|1.7976931348623157e+308|int too large to convert to float|1.7976931348623157e+308", host.ReadText("/out.txt"));
     }
 
     [Fact]

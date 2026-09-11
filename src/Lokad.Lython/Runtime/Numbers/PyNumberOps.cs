@@ -40,14 +40,51 @@ internal static class PyNumberOps
     // instead of saturating to infinity; the boundary funnels report the
     // BCL message with their own span.
     internal static double ToDoubleChecked(PyNumber number)
+        => number.IsFloat ? number.Floating : BigIntegerToDouble(number.Integer);
+
+    // Correctly rounded like CPython (the BCL cast clamps near the range
+    // top and rounds some magnitudes down by one ulp); ties go to even and
+    // true overflow raises.
+    internal static double BigIntegerToDouble(BigInteger value)
     {
-        var value = number.ToDouble();
-        if (!number.IsFloat && !double.IsFinite(value))
+        if (value >= -9007199254740992L && value <= 9007199254740992L)
+        {
+            return (double)value;
+        }
+
+        var negative = value.Sign < 0;
+        var magnitude = BigInteger.Abs(value);
+        var bitLength = magnitude.GetBitLength();
+        if (bitLength > 1024)
+        {
+            // Past 1024 bits every rounding lands above double.MaxValue.
+            throw new OverflowException("int too large to convert to float");
+        }
+
+        var shift = (int)bitLength - 53;
+        var truncated = magnitude >> shift;
+        var dropped = magnitude & ((BigInteger.One << shift) - BigInteger.One);
+        var halfway = BigInteger.One << (shift - 1);
+        if (dropped > halfway || (dropped == halfway && !truncated.IsEven))
+        {
+            truncated += BigInteger.One;
+        }
+
+        // A round-up past 2**53 renormalizes to 2**52 with the next exponent.
+        var exponent = (int)bitLength - 1;
+        if (truncated == (BigInteger.One << 53))
+        {
+            truncated = BigInteger.One << 52;
+            exponent += 1;
+        }
+
+        if (exponent > 1023)
         {
             throw new OverflowException("int too large to convert to float");
         }
 
-        return value;
+        var result = Math.ScaleB((double)(ulong)truncated, exponent - 52);
+        return negative ? -result : result;
     }
 
     public static object Add(PyNumber lhs, PyNumber rhs)

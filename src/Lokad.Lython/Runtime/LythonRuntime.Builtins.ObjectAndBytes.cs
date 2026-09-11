@@ -60,16 +60,18 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(floatInstance, context) + "'", span);
         }
 
-        // Like CPython, out-of-range integers fail instead of saturating.
+        // Like CPython, conversion rounds exactly and out-of-range integers
+        // fail instead of saturating.
         static double FloatFromInteger(BigInteger integer, LythonSourceSpan span)
         {
-            var value = (double)integer;
-            if (!double.IsFinite(value))
+            try
             {
-                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+                return PyNumberOps.BigIntegerToDouble(integer);
             }
-
-            return value;
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", ex.Message, span);
+            }
         }
 
         try
