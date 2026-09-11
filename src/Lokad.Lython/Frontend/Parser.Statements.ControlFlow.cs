@@ -94,12 +94,53 @@ internal sealed partial class Parser
             return null;
         }
 
+        // CPython deletes every target in `del a, b` like the parenthesized form.
+        if (CurrentToken == Token.Comma)
+        {
+            var items = new List<CollectionDisplayItemSyntax> { new CollectionValueItemSyntax(target) };
+            while (CurrentToken == Token.Comma)
+            {
+                ReadToken();
+                if (CurrentToken is Token.Eol or Token.Semicolon or Token.End)
+                {
+                    break;
+                }
+
+                var next = ParsePostfixExpression();
+                if (next is null)
+                {
+                    return null;
+                }
+
+                items.Add(new CollectionValueItemSyntax(next));
+            }
+
+            target = new TupleLiteralExpressionSyntax(items, Merge(target.Span, items[^1].Span));
+        }
+
         target = UnwrapParenthesizedTarget(target);
         return target switch
         {
             IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
+            TupleLiteralExpressionSyntax tuple when IsSupportedDeleteDisplay(tuple.Items) => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
+            ListLiteralExpressionSyntax list when IsSupportedDeleteDisplay(list.Items) => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),
             _ => AddUnsupportedDeleteTarget(target, "delete target")
         };
+    }
+
+    // Only displays of direct single targets are supported like CPython; anything
+    // else (starred or mixed shapes) keeps the existing diagnostic. Empty displays delete nothing like CPython.
+    private static bool IsSupportedDeleteDisplay(IReadOnlyList<CollectionDisplayItemSyntax> items)
+    {
+        foreach (var item in items)
+        {
+            if (item.IsUnpacking || item.Expression is not (IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private StatementSyntax? AddUnsupportedDeleteTarget(ExpressionSyntax target, string construct)

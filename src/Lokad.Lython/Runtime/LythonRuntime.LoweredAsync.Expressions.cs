@@ -339,29 +339,55 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask ExecuteLoweredDeleteStatementAsync(LoweredDeleteStatement statement, ExecutionContext context)
     {
-        switch (statement.Target.Syntax)
+        if (TryGetDeleteDisplayItems(statement.Target, out var syntaxItems, out var loweredItems))
+        {
+            for (var i = 0; i < syntaxItems.Count; i++)
+            {
+                if (syntaxItems[i] is CollectionValueItemSyntax valueItem)
+                {
+                    await ExecuteLoweredDeleteTargetAsync(
+                        valueItem.Expression,
+                        loweredItems[i].Expression,
+                        valueItem.Span,
+                        context).ConfigureAwait(false);
+                }
+            }
+
+            return;
+        }
+
+        await ExecuteLoweredDeleteTargetAsync(
+            statement.Target.Syntax,
+            statement.Target,
+            statement.Span,
+            context).ConfigureAwait(false);
+    }
+
+    private static async ValueTask ExecuteLoweredDeleteTargetAsync(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
+    {
+        switch (syntax)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, statement.Span))
+                if (!DeleteName(identifier.Name, context, span))
                 {
-                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
+                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", span);
                 }
 
                 return;
 
             case SubscriptExpressionSyntax:
-                if (statement.Target is not LoweredSubscriptExpression subscript)
+                if (loweredTarget is not LoweredSubscriptExpression subscript)
                 {
                     break;
                 }
 
                 var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
                 var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                ExecuteResolvedSubscriptDeletion(target, index, statement.Span, context);
+                ExecuteResolvedSubscriptDeletion(target, index, span, context);
                 return;
 
             case SliceExpressionSyntax:
-                if (statement.Target is not LoweredSliceExpression slice)
+                if (loweredTarget is not LoweredSliceExpression slice)
                 {
                     break;
                 }
@@ -371,25 +397,25 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false),
                     slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false),
                     slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false),
-                    statement.Span, context);
+                    span, context);
                 return;
 
             case MemberExpressionSyntax memberSyntax:
-                if (statement.Target is not LoweredMemberExpression member)
+                if (loweredTarget is not LoweredMemberExpression member)
                 {
                     break;
                 }
 
                 var memberTarget = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, statement.Span))
+                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, span))
                 {
-                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", statement.Span);
+                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", span);
                 }
 
                 return;
         }
 
-        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", statement.Span);
+        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
     }
 
     private static async ValueTask ExecuteLoweredRaiseStatementAsync(LoweredRaiseStatement statement, ExecutionContext context)

@@ -205,10 +205,11 @@ internal static class StaticNameBindingDiagnostics
                 }
 
             case DeleteStatementSyntax deleteStatement:
-                if (deleteStatement.Target is IdentifierExpressionSyntax identifier)
+                foreach (var deletedName in DeleteTargetNames(deleteStatement.Target))
                 {
-                    maybeAssigned.Remove(identifier.Name);
+                    maybeAssigned.Remove(deletedName);
                 }
+
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
@@ -272,6 +273,35 @@ internal static class StaticNameBindingDiagnostics
                         maybeAssigned.Add(nested.Name);
                     }
                     break;
+            }
+        }
+
+        static IEnumerable<string> DeleteTargetNames(ExpressionSyntax target)
+        {
+            if (target is IdentifierExpressionSyntax identifier)
+            {
+                yield return identifier.Name;
+                yield break;
+            }
+
+            var items = target switch
+            {
+                TupleLiteralExpressionSyntax tuple => tuple.Items,
+                ListLiteralExpressionSyntax list => list.Items,
+                _ => null,
+            };
+
+            if (items is null)
+            {
+                yield break;
+            }
+
+            foreach (var item in items)
+            {
+                if (item is { IsUnpacking: false, Expression: IdentifierExpressionSyntax itemIdentifier })
+                {
+                    yield return itemIdentifier.Name;
+                }
             }
         }
     }

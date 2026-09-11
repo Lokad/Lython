@@ -35,12 +35,63 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)
     {
-        switch (statement.Target)
+        var items = statement.Target switch
+        {
+            TupleLiteralExpressionSyntax tuple => tuple.Items,
+            ListLiteralExpressionSyntax list => list.Items,
+            _ => null,
+        };
+
+        if (items is not null)
+        {
+            foreach (var item in items)
+            {
+                if (item is CollectionValueItemSyntax valueItem)
+                {
+                    ExecuteDeleteTarget(valueItem.Expression, valueItem.Span, context);
+                }
+            }
+
+            return;
+        }
+
+        ExecuteDeleteTarget(statement.Target, statement.Span, context);
+    }
+
+    private static bool TryGetDeleteDisplayItems(
+        LoweredExpression loweredTarget,
+        out IReadOnlyList<CollectionDisplayItemSyntax> syntaxItems,
+        out IReadOnlyList<LoweredCollectionDisplayItem> loweredItems)
+    {
+        if (loweredTarget is LoweredTupleLiteralExpression loweredTuple
+            && loweredTuple.Items.Count == loweredTuple.Tuple.Items.Count)
+        {
+            syntaxItems = loweredTuple.Tuple.Items;
+            loweredItems = loweredTuple.Items;
+            return true;
+        }
+
+        if (loweredTarget is LoweredListLiteralExpression loweredList
+            && loweredList.Items.Count == loweredList.List.Items.Count)
+        {
+            syntaxItems = loweredList.List.Items;
+            loweredItems = loweredList.Items;
+            return true;
+        }
+
+        syntaxItems = [];
+        loweredItems = [];
+        return false;
+    }
+
+    private static void ExecuteDeleteTarget(ExpressionSyntax targetSyntax, LythonSourceSpan span, ExecutionContext context)
+    {
+        switch (targetSyntax)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, statement.Span))
+                if (!DeleteName(identifier.Name, context, span))
                 {
-                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
+                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", span);
                 }
 
                 return;
@@ -52,54 +103,54 @@ internal sealed partial class LythonRuntime
                 // CPython; every other receiver keeps its existing behaviour.
                 if (index is PySlice sliceIndex && target is PyList)
                 {
-                    ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, statement.Span, context);
+                    ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, span, context);
                     return;
                 }
 
                 switch (target)
                 {
                     case IDeletablePySubscriptableValue subscriptable:
-                        subscriptable.DeleteSubscript(index, statement.Span);
+                        subscriptable.DeleteSubscript(index, span);
                         return;
 
                     case IMutablePySequenceValue sequence:
-                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, statement.Span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
+                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
                         return;
 
                     case PyDict dict:
-                        if (!dict.Remove(ValidateDictionaryKey(index, statement.Span)))
+                        if (!dict.Remove(ValidateDictionaryKey(index, span)))
                         {
-                            throw RuntimeErrors.MissingKey(index, statement.Span);
+                            throw RuntimeErrors.MissingKey(index, span);
                         }
 
                         return;
 
                     case PyDefaultDict defaultDict:
-                        if (!defaultDict.Remove(ValidateDictionaryKey(index, statement.Span)))
+                        if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
                         {
-                            throw RuntimeErrors.MissingKey(index, statement.Span);
+                            throw RuntimeErrors.MissingKey(index, span);
                         }
 
                         return;
 
                     case PyCounter counter:
-                        _ = counter.Remove(ValidateDictionaryKey(index, statement.Span));
+                        _ = counter.Remove(ValidateDictionaryKey(index, span));
                         return;
 
                     case PyInstance instance:
-                        InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, statement.Span);
+                        InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
                         return;
 
                     case PyTuple:
-                        throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", statement.Span);
+                        throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
 
                     case PyString:
-                        throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", statement.Span);
+                        throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
                     case PyBytes:
-                        throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", statement.Span);
+                        throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
 
                     default:
-                        throw DeletionNotSupported(target, context, statement.Span);
+                        throw DeletionNotSupported(target, context, span);
                 }
 
             case SliceExpressionSyntax slice:
@@ -108,20 +159,20 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : EvaluateExpression(slice.Start, context),
                     slice.End is null ? null : EvaluateExpression(slice.End, context),
                     slice.Step is null ? null : EvaluateExpression(slice.Step, context),
-                    statement.Span, context);
+                    span, context);
                 return;
 
             case MemberExpressionSyntax member:
                 var memberTarget = EvaluateExpression(member.Target, context);
-                if (!PyMemberAccess.TryDelete(memberTarget, member.MemberName, context, statement.Span))
+                if (!PyMemberAccess.TryDelete(memberTarget, member.MemberName, context, span))
                 {
-                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", statement.Span);
+                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", span);
                 }
 
                 return;
 
             default:
-                throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", statement.Span);
+                throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
         }
     }
 

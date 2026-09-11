@@ -288,29 +288,51 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteLoweredDeleteStatement(LoweredDeleteStatement statement, ExecutionContext context)
     {
-        switch (statement.Target.Syntax)
+        if (TryGetDeleteDisplayItems(statement.Target, out var syntaxItems, out var loweredItems))
+        {
+            for (var i = 0; i < syntaxItems.Count; i++)
+            {
+                if (syntaxItems[i] is CollectionValueItemSyntax valueItem)
+                {
+                    ExecuteLoweredDeleteTarget(
+                        valueItem.Expression,
+                        loweredItems[i].Expression,
+                        valueItem.Span,
+                        context);
+                }
+            }
+
+            return;
+        }
+
+        ExecuteLoweredDeleteTarget(statement.Target.Syntax, statement.Target, statement.Span, context);
+    }
+
+    private static void ExecuteLoweredDeleteTarget(ExpressionSyntax syntax, LoweredExpression loweredTarget, LythonSourceSpan span, ExecutionContext context)
+    {
+        switch (syntax)
         {
             case IdentifierExpressionSyntax identifier:
-                if (!DeleteName(identifier.Name, context, statement.Span))
+                if (!DeleteName(identifier.Name, context, span))
                 {
-                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", statement.Span);
+                    throw new LythonRuntimeException("NameError", $"Name '{identifier.Name}' is not defined.", span);
                 }
 
                 return;
 
             case SubscriptExpressionSyntax:
-                if (statement.Target is not LoweredSubscriptExpression subscript)
+                if (loweredTarget is not LoweredSubscriptExpression subscript)
                 {
                     break;
                 }
 
                 var target = EvaluateLoweredExpression(subscript.Target, context);
                 var index = EvaluateLoweredExpression(subscript.Index, context);
-                ExecuteResolvedSubscriptDeletion(target, index, statement.Span, context);
+                ExecuteResolvedSubscriptDeletion(target, index, span, context);
                 return;
 
             case SliceExpressionSyntax:
-                if (statement.Target is not LoweredSliceExpression slice)
+                if (loweredTarget is not LoweredSliceExpression slice)
                 {
                     break;
                 }
@@ -320,25 +342,25 @@ internal sealed partial class LythonRuntime
                     slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context),
                     slice.End is null ? null : EvaluateLoweredExpression(slice.End, context),
                     slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context),
-                    statement.Span, context);
+                    span, context);
                 return;
 
             case MemberExpressionSyntax memberSyntax:
-                if (statement.Target is not LoweredMemberExpression member)
+                if (loweredTarget is not LoweredMemberExpression member)
                 {
                     break;
                 }
 
                 var memberTarget = EvaluateLoweredExpression(member.Target, context);
-                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, statement.Span))
+                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, span))
                 {
-                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", statement.Span);
+                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", span);
                 }
 
                 return;
         }
 
-        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", statement.Span);
+        throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
     }
 
     private static void ExecuteResolvedSubscriptDeletion(

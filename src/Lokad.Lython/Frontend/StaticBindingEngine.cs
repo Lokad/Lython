@@ -94,8 +94,8 @@ internal static partial class StaticBindingEngine
                 RemoveAugmentedAssignmentBindings(augmented.Target, bindings);
                 break;
 
-            case DeleteStatementSyntax { Target: IdentifierExpressionSyntax identifier }:
-                bindings.Remove(identifier.Name);
+            case DeleteStatementSyntax deleteStatement:
+                RemoveDeleteTargetBindings(deleteStatement.Target, bindings);
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
@@ -164,6 +164,35 @@ internal static partial class StaticBindingEngine
             } => bindings.IsKnownMutableSequence(identifier.Name),
             _ => false
         };
+    }
+
+    private static void RemoveDeleteTargetBindings(ExpressionSyntax target, AbstractState bindings)
+    {
+        if (target is IdentifierExpressionSyntax identifier)
+        {
+            bindings.Remove(identifier.Name);
+            return;
+        }
+
+        var items = target switch
+        {
+            TupleLiteralExpressionSyntax tuple => tuple.Items,
+            ListLiteralExpressionSyntax list => list.Items,
+            _ => null,
+        };
+
+        if (items is null)
+        {
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            if (item is { IsUnpacking: false, Expression: IdentifierExpressionSyntax itemIdentifier })
+            {
+                bindings.Remove(itemIdentifier.Name);
+            }
+        }
     }
 
     private static void RemoveAugmentedAssignmentBindings(AssignmentTargetSyntax target, AbstractState bindings)

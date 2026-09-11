@@ -410,6 +410,123 @@ __lython_file.close()
         Assert.Equal("3|7|5:[6, 7]|8|9|10|(11,):11|25|29", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DeleteDisplayTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+a = 1
+b = 2
+del (a, b)
+
+c = 3
+d = 4
+del c, d
+
+e = 5
+f = 6
+del [e, f]
+
+items = [1, 2, 3]
+del (items[0], items[1])
+
+class Box:
+    pass
+
+box = Box()
+box.v = 1
+box.w = 2
+other = 3
+del (box.v, other)
+del box.w
+
+solo = 1
+del (solo,)
+
+t1 = 1
+del t1,
+
+del ()
+del []
+
+def run():
+    p = 1
+    q = 2
+    del (p, q)
+    return 7
+
+g = 0
+def set_global():
+    global g
+    tmp = 1
+    g = 5
+    del (tmp, g)
+    return 6
+
+gone = []
+try:
+    a
+except NameError:
+    gone.append("a")
+try:
+    b
+except NameError:
+    gone.append("b")
+try:
+    c
+except NameError:
+    gone.append("c")
+try:
+    d
+except NameError:
+    gone.append("d")
+try:
+    e
+except NameError:
+    gone.append("e")
+try:
+    f
+except NameError:
+    gone.append("f")
+try:
+    solo
+except NameError:
+    gone.append("solo")
+try:
+    t1
+except NameError:
+    gone.append("t1")
+try:
+    other
+except NameError:
+    gone.append("other")
+
+marker = set_global()
+try:
+    g
+except NameError:
+    gone.append("g")
+
+values = [
+    "|".join(gone),
+    str(items),
+    str(hasattr(box, "v")) + ":" + str(hasattr(box, "w")),
+    str(run()),
+    str(marker),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("a|b|c|d|e|f|solo|t1|other|g|[2]|False:False|7|6", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }
