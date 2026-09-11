@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
 
         if (TryGetIntegerFormatValue(value, out var integer))
         {
-            if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%')
+            if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%' or 'e' or 'E')
             {
                 return TryFormatFloatingValue((double)integer, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(value));
             }

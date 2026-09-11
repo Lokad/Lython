@@ -99,6 +99,16 @@ public sealed class StringFormatMethodTests
     [InlineData("format(float(\"-inf\"), \"G\")", "-INF")]
     [InlineData("format(float(\"inf\"), \"+\")", "+inf")]
     [InlineData("format(float(\"inf\"), \"%\")", "inf%")]
+    [InlineData("format(1, \".2e\")", "1.00e+00")]
+    [InlineData("format(1, \".2E\")", "1.00E+00")]
+    [InlineData("format(42, \"e\")", "4.200000e+01")]
+    [InlineData("format(-42, \".1E\")", "-4.2E+01")]
+    [InlineData("format(0, \"e\")", "0.000000e+00")]
+    [InlineData("format(True, \".2e\")", "1.00e+00")]
+    [InlineData("format(False, \"E\")", "0.000000E+00")]
+    [InlineData("format(1000000000000000000000000000000, \".2e\")", "1.00e+30")]
+    [InlineData("format(123456789012345678901234567890, \".2e\")", "1.23e+29")]
+    [InlineData("format(10, \".3g\")", "10")]
     public void FloatFormatSpecs_RenderPythonShapedOutput(string expression, string expected)
     {
         var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
