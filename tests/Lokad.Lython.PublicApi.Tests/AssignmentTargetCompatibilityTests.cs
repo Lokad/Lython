@@ -314,6 +314,41 @@ __lython_file.close()
         Assert.Equal("2|[19]|1|3:3|deleted", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void ParenthesizedAnnotatedTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+x = 0
+(x): int = 1
+((x)): int = 2
+
+bare = 0
+(bare): int
+
+def run():
+    local = 0
+    (local): int = 4
+    return local
+
+values = [
+    str(x),
+    str(bare),
+    str(run()),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("2|0|4", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }

@@ -46,6 +46,53 @@ internal sealed partial class Parser
             Merge(nameToken, (expression ?? annotation).Span));
     }
 
+    // Parentheses never change the target like CPython; only single names
+    // are supported here, mirroring ParseAnnotatedAssignmentStatement.
+    private StatementSyntax? TryParseParenthesizedAnnotatedAssignmentStatement()
+    {
+        var startPosition = _position;
+        var startDiagnosticCount = _diagnostics.Count;
+
+        var target = ParsePostfixExpression();
+        var unwrapped = target is null ? null : UnwrapParenthesizedTarget(target);
+        if (unwrapped is not IdentifierExpressionSyntax identifier || CurrentToken != Token.Colon)
+        {
+            _position = startPosition;
+            if (_diagnostics.Count > startDiagnosticCount)
+            {
+                _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
+            }
+
+            return null;
+        }
+
+        ReadToken();
+        var annotation = ParseExpression();
+        if (annotation is null)
+        {
+            AddDiagnostic("LA1059", "Expected annotation expression after ':'.", identifier.Span);
+            return null;
+        }
+
+        ExpressionSyntax? expression = null;
+        if (CurrentToken == Token.Assign)
+        {
+            ReadToken();
+            expression = ParseExpressionList();
+            if (expression is null)
+            {
+                AddDiagnostic("LA1060", "Expected expression on the right side of annotated assignment.", identifier.Span);
+                return null;
+            }
+        }
+
+        return new AnnotatedAssignmentStatementSyntax(
+            identifier.Name,
+            annotation,
+            expression,
+            Merge(startPosition, (expression ?? annotation).Span));
+    }
+
     private StatementSyntax? TryParsePostfixAssignmentStatement()
     {
         var startPosition = _position;

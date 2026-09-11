@@ -312,6 +312,12 @@ internal sealed partial class Parser
             {
                 return parenthesizedAssignment;
             }
+
+            var parenthesizedAnnotatedAssignment = TryParseParenthesizedAnnotatedAssignmentStatement();
+            if (parenthesizedAnnotatedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return parenthesizedAnnotatedAssignment;
+            }
         }
 
         {
