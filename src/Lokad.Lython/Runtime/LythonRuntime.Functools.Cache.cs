@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.cached_property");
+            return PyString.FromString("<class 'functools.cached_property'>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

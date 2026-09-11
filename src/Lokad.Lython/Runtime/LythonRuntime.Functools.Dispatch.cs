@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.singledispatchmethod");
+            return PyString.FromString("<class 'functools.singledispatchmethod'>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

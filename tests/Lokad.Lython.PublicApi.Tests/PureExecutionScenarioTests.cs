@@ -4841,6 +4841,22 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(functools.partial)", "<class 'functools.partial'>")]
+    [InlineData("str(functools.partialmethod)", "<class 'functools.partialmethod'>")]
+    [InlineData("str(functools.cached_property)", "<class 'functools.cached_property'>")]
+    [InlineData("str(functools.singledispatchmethod)", "<class 'functools.singledispatchmethod'>")]
+    [InlineData("repr(functools.partial)", "<class 'functools.partial'>")]
+    public void FunctoolsTypes_RenderClassWrapper(string expression, string expected)
+    {
+        var source = "import functools\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.partial");
+            return PyString.FromString("<class 'functools.partial'>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -363,7 +363,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString("functools.partialmethod");
+            return PyString.FromString("<class 'functools.partialmethod'>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
