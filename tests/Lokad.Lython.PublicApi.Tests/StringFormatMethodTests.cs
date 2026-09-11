@@ -80,6 +80,23 @@ public sealed class StringFormatMethodTests
     }
 
     [Theory]
+    [InlineData("format(None, \"5\")", "NoneType")]
+    [InlineData("format(None, \">10\")", "NoneType")]
+    [InlineData("format([1, 2], \">10\")", "list")]
+    [InlineData("format((1,), \"d\")", "tuple")]
+    [InlineData("format({1: 2}, \".2f\")", "dict")]
+    [InlineData("format(b\"a\", \"5\")", "bytes")]
+    public void ExoticValuesWithNonEmptySpecs_ReportUnsupportedFormat(string expression, string typeName)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Contains("unsupported format string passed to " + typeName + ".__format__", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]

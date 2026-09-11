@@ -128,6 +128,14 @@ internal sealed partial class LythonRuntime
             return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context.MemoryGovernor);
         }
 
+        // CPython's default __format__ only accepts the empty spec; any
+        // other spec on a non-string value reports TypeError naming the
+        // type instead of formatting str(value).
+        if (value is not PyString && formatSpecifier.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", $"unsupported format string passed to {RuntimeErrors.OperandTypeName(value)}.__format__", span);
+        }
+
         if (spec.Grouping is { } stringGrouping)
         {
             throw new LythonRuntimeException("ValueError", $"Cannot specify '{stringGrouping}' with '{spec.Type ?? 's'}'.", span);
