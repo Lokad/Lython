@@ -7248,7 +7248,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("<super: <class 'B'>, NULL>|True|True|True|True|True|True|True|'super' object has no attribute 'missing'.", host.ReadText("/out.txt"));
+        Assert.Equal("<super: <class 'B'>, NULL>|True|True|True|True|True|True|True|'super' object has no attribute 'missing'", host.ReadText("/out.txt"));
     }
 
 

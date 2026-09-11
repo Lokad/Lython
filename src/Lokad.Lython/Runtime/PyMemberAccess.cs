@@ -377,17 +377,17 @@ internal static class PyMemberAccess
                 span),
             PyModule module when operation == MissingMemberOperation.Read => new LythonRuntimeException(
                 "AttributeError",
-                $"module '{module.Name}' has no attribute '{memberName}'.",
+                $"module '{module.Name}' has no attribute '{memberName}'",
                 span),
             _ when target is not null
                 && LythonRuntime.TryGetValueClass(target, context, out var classValue)
                 && classValue is PyType { Name: "type" } => new LythonRuntimeException(
                 "AttributeError",
-                $"type object '{TypeObjectName(target)}' has no attribute '{memberName}'.",
+                $"type object '{TypeObjectName(target)}' has no attribute '{memberName}'",
                 span),
             _ => new LythonRuntimeException(
                 "AttributeError",
-                $"'{MissingMemberTypeName(target, context)}' object has no attribute '{memberName}'{suffix}.",
+                $"'{MissingMemberTypeName(target, context)}' object has no attribute '{memberName}'{suffix}",
                 span)
         };
     }
