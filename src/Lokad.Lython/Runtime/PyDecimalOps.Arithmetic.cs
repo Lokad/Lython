@@ -93,8 +93,9 @@ internal static partial class PyDecimalOps
             {
                 return new PyDecimal(1m / Pow(lhs, -exponentInt));
             }
-            catch (OverflowException)
+            catch (Exception ex) when (ex is OverflowException or DivideByZeroException)
             {
+                // An underflowed divisor means a reciprocal past the range.
                 throw DecimalOverflow(span);
             }
         }

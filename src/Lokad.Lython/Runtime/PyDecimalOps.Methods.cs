@@ -12,13 +12,27 @@ internal static partial class PyDecimalOps
             throw InvalidOperation("Decimal quantize exponent is outside Lython's 28-digit fixed-precision scale.", span);
         }
 
-        if (exponent.Exponent <= 0)
+        try
         {
-            return new PyDecimal(Round(value.Value, -exponent.Exponent, rounding, context, span), exponent.Exponent);
-        }
+            if (exponent.Exponent <= 0)
+            {
+                var rounded = Round(value.Value, -exponent.Exponent, rounding, context, span);
+                var integerDigits = rounded == 0m ? 1 : new BigInteger(decimal.Truncate(decimal.Abs(rounded))).ToString(CultureInfo.InvariantCulture).Length;
+                if (integerDigits - exponent.Exponent > 29)
+                {
+                    throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
+                }
 
-        var factor = Pow(10m, exponent.Exponent);
-        return new PyDecimal(Round(value.Value / factor, 0, rounding, context, span) * factor, exponent.Exponent);
+                return new PyDecimal(rounded, exponent.Exponent);
+            }
+
+            var factor = Pow(10m, exponent.Exponent);
+            return new PyDecimal(Round(value.Value / factor, 0, rounding, context, span) * factor, exponent.Exponent);
+        }
+        catch (OverflowException)
+        {
+            throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
+        }
     }
 
     public static PyDecimal Normalize(PyDecimal value)
@@ -34,7 +48,7 @@ internal static partial class PyDecimalOps
         return name switch
         {
             "sqrt" => new PyDecimal((decimal)Math.Sqrt((double)value.Value)),
-            "exp" => new PyDecimal((decimal)Math.Exp((double)value.Value)),
+            "exp" => FromDouble(Math.Exp((double)value.Value), span),
             "ln" => new PyDecimal((decimal)Math.Log((double)value.Value)),
             "log10" => new PyDecimal((decimal)Math.Log10((double)value.Value)),
             "copy_abs" => new PyDecimal(decimal.Abs(value.Value), value.Exponent),
@@ -53,6 +67,18 @@ internal static partial class PyDecimalOps
 
         var magnitude = decimal.Abs(value.Value);
         return new PyDecimal(IsSigned(sign) ? decimal.Negate(magnitude) : magnitude, value.Exponent);
+    }
+
+    private static PyDecimal FromDouble(double result, LythonSourceSpan span)
+    {
+        try
+        {
+            return new PyDecimal((decimal)result);
+        }
+        catch (OverflowException)
+        {
+            throw DecimalOverflow(span);
+        }
     }
 
     public static PyDecimalTuple AsTuple(PyDecimal value)
