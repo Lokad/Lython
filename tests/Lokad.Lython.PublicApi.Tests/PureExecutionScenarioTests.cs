@@ -5210,6 +5210,7 @@ def rd(s):
     return [10, 20, 30, 40][s]
 
 z = 0
+n = None
 parts = []
 parts.append(str(sl2(J(), 3)))
 parts.append(str(sl2(1, J2())))
@@ -5221,6 +5222,9 @@ parts.append(str(sb(J(), 3)))
 parts.append(str(rd(slice(J(), 3))))
 parts.append(str(sl2(True, 4)))
 parts.append(str(sl2(-3, 30)))
+parts.append(str(sl2(n, 3)))
+parts.append(str(sl2(1, n)))
+parts.append(str(sl3(n, n, n)))
 for v in [Bad(), "a", 1.5, C()]:
     try:
         parts.append(str(sl2(v, 3)))
@@ -5247,7 +5251,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(@"[20, 30]|[20]|[10, 30]|[20]|(20, 30)|bc|b'bc'|[20, 30]|[20, 30, 40]|[20, 30, 40]|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice step cannot be zero", host.ReadText("/out.txt"));
+        Assert.Equal(@"[20, 30]|[20]|[10, 30]|[20]|(20, 30)|bc|b'bc'|[20, 30]|[20, 30, 40]|[20, 30, 40]|[10, 20, 30]|[20, 30, 40]|[10, 20, 30, 40]|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|__index__ returned non-int (type str)|slice indices must be integers or None or have an __index__ method|slice step cannot be zero", host.ReadText("/out.txt"));
     }
 
     [Fact]

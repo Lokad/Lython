@@ -314,6 +314,7 @@ internal static class PyIndexing
         return value switch
         {
             null => null,
+            PyNone _ => null,
             BigInteger integer => integer,
             int small => new BigInteger(small),
             bool flag => flag ? BigInteger.One : BigInteger.Zero,
