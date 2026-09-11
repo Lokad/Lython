@@ -46,6 +46,15 @@ internal static class RuntimeErrors
         return Type($"'{operation}' not supported between instances of '{OperandTypeName(left)}' and '{OperandTypeName(right)}'", span);
     }
 
+    public static LythonRuntimeException ConcatError(string left, object right, LythonSourceSpan? span)
+        => Type($"can only concatenate {left} (not \"{OperandTypeName(right)}\") to {left}", span);
+
+    public static LythonRuntimeException CantConcatToBytes(object right, LythonSourceSpan? span)
+        => Type($"can't concat {OperandTypeName(right)} to bytes", span);
+
+    public static LythonRuntimeException MultiplySequenceError(object other, LythonSourceSpan? span)
+        => Type($"can't multiply sequence by non-int of type '{OperandTypeName(other)}'", span);
+
     public static string OperandTypeName(object? value) => value switch
     {
         null => "NoneType",

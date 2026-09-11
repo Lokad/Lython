@@ -331,6 +331,21 @@ internal static partial class StaticStructuralDiagnostics
 
     private static string BinaryOperandsMessage(BinaryOperatorSyntax op, AbstractValue left, AbstractValue right)
     {
+        if (op == BinaryOperatorSyntax.Add && TrySequenceOperand(left, out var concat) &&
+            TryOperandTypeName(right, out var other))
+        {
+            return concat == "bytes"
+                ? $"can't concat {other} to bytes"
+                : $"can only concatenate {concat} (not \"{other}\") to {concat}";
+        }
+
+        if (op == BinaryOperatorSyntax.Multiply &&
+            (TryMultiplySequenceOperand(left, right, out var multiplied) ||
+             TryMultiplySequenceOperand(right, left, out multiplied)))
+        {
+            return $"can't multiply sequence by non-int of type '{multiplied}'";
+        }
+
         var operation = op == BinaryOperatorSyntax.Power ? "** or pow()" : DescribeBinaryOperator(op);
         if (TryOperandTypeName(left, out var lhs) && TryOperandTypeName(right, out var rhs))
         {
@@ -338,6 +353,41 @@ internal static partial class StaticStructuralDiagnostics
         }
 
         return $"Operands are not compatible with '{DescribeBinaryOperator(op)}'.";
+    }
+
+    private static bool TrySequenceOperand(AbstractValue value, out string name)
+    {
+        switch (value.Kind)
+        {
+            case AbstractValueKind.List:
+                name = "list";
+                return true;
+            case AbstractValueKind.Tuple:
+                name = "tuple";
+                return true;
+            case AbstractValueKind.String:
+                name = "str";
+                return true;
+            case AbstractValueKind.Bytes:
+                name = "bytes";
+                return true;
+            default:
+                name = string.Empty;
+                return false;
+        }
+    }
+
+    private static bool TryMultiplySequenceOperand(AbstractValue sequence, AbstractValue other, out string name)
+    {
+        if (TrySequenceOperand(sequence, out _) &&
+            other.Kind is not (AbstractValueKind.Integer or AbstractValueKind.Boolean) &&
+            TryOperandTypeName(other, out name))
+        {
+            return true;
+        }
+
+        name = string.Empty;
+        return false;
     }
 
     private static string UnaryOperandMessage(string operation, AbstractValue operand)

@@ -84,6 +84,26 @@ internal sealed partial class LythonRuntime
             return StatisticsModule.OwnNormalDist(normalDistSum, context, span);
         }
 
+        if (left is PyList)
+        {
+            throw RuntimeErrors.ConcatError("list", right, span);
+        }
+
+        if (left is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject)
+        {
+            throw RuntimeErrors.ConcatError("tuple", right, span);
+        }
+
+        if (left is PyString)
+        {
+            throw RuntimeErrors.ConcatError("str", right, span);
+        }
+
+        if (left is PyBytes)
+        {
+            throw RuntimeErrors.CantConcatToBytes(right, span);
+        }
+
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
             throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span);
@@ -189,6 +209,16 @@ internal sealed partial class LythonRuntime
             return StatisticsModule.OwnNormalDist(normalDistProduct, context, span);
         }
 
+        if (IsSequenceOperand(left) && !IsIntLikeOperand(right))
+        {
+            throw RuntimeErrors.MultiplySequenceError(right, span);
+        }
+
+        if (IsSequenceOperand(right) && !IsIntLikeOperand(left))
+        {
+            throw RuntimeErrors.MultiplySequenceError(left, span);
+        }
+
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
         {
             throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, span);
@@ -214,6 +244,12 @@ internal sealed partial class LythonRuntime
         count = default;
         return false;
     }
+
+    private static bool IsSequenceOperand(object value)
+        => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or PyString or PyBytes;
+
+    private static bool IsIntLikeOperand(object value)
+        => value is BigInteger or int or bool;
 
     private static object EvaluateDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {

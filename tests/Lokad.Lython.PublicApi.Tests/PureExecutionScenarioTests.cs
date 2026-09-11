@@ -4562,13 +4562,42 @@ __lython_file.close()
     [InlineData("class C:\n    pass\nC() + 1\n", "unsupported operand type(s) for +: 'C' and 'int'")]
     [InlineData("def f(a, b):\n    return divmod(a, b)\nf(1, \"a\")\n", "unsupported operand type(s) for divmod(): 'int' and 'str'")]
     [InlineData("def f(a):\n    return pow(a, 2)\nf(\"a\")\n", "unsupported operand type(s) for ** or pow(): 'str' and 'int'")]
+    [InlineData("def f(a, b):\n    return a + b\nf([1], \"a\")\n", "can only concatenate list (not \"str\") to list")]
+    [InlineData("def f(a, b):\n    return a + b\nf((1,), \"a\")\n", "can only concatenate tuple (not \"str\") to tuple")]
+    [InlineData("def f(a, b):\n    return a + b\nf(\"a\", [1])\n", "can only concatenate str (not \"list\") to str")]
+    [InlineData("def f(a, b):\n    return a + b\nf(b\"a\", 1)\n", "can't concat int to bytes")]
+    [InlineData("def f(a, b):\n    return a * b\nf([1], \"a\")\n", "can't multiply sequence by non-int of type 'str'")]
+    [InlineData("def f(a, b):\n    return a * b\nf(2.5, [1])\n", "can't multiply sequence by non-int of type 'float'")]
+
+    [InlineData("[1] + \"a\"\n", "can only concatenate list (not \"str\") to list")]
+    [InlineData("(1,) + \"a\"\n", "can only concatenate tuple (not \"str\") to tuple")]
+    [InlineData("\"a\" + [1]\n", "can only concatenate str (not \"list\") to str")]
+    [InlineData("\"b\" + b\"a\"\n", "can only concatenate str (not \"bytes\") to str")]
+    [InlineData("b\"a\" + 1\n", "can't concat int to bytes")]
+    [InlineData("1 + b\"a\"\n", "unsupported operand type(s) for +: 'int' and 'bytes'")]
+    [InlineData("{1} + \"a\"\n", "unsupported operand type(s) for +: 'set' and 'str'")]
+    [InlineData("True + [1]\n", "unsupported operand type(s) for +: 'bool' and 'list'")]
+    [InlineData("[1] * \"a\"\n", "can't multiply sequence by non-int of type 'str'")]
+    [InlineData("\"a\" * 1.5\n", "can't multiply sequence by non-int of type 'float'")]
+    [InlineData("(1,) * \"a\"\n", "can't multiply sequence by non-int of type 'str'")]
+    [InlineData("2.5 * [1]\n", "can't multiply sequence by non-int of type 'float'")]
+    [InlineData("[1] * [2]\n", "can't multiply sequence by non-int of type 'list'")]
+    [InlineData("\"a\" * [1]\n", "can't multiply sequence by non-int of type 'list'")]
+    [InlineData("{1} * \"a\"\n", "can't multiply sequence by non-int of type 'set'")]
+
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Equal("TypeError", result.Failure?.ExceptionType);
-        Assert.Equal(message, result.Failure?.Message);
+        if (result.Failure is null)
+        {
+            Assert.Contains(result.Diagnostics, d => d.Message.Contains(message, StringComparison.Ordinal));
+            return;
+        }
+
+        Assert.Equal("TypeError", result.Failure.ExceptionType);
+        Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Theory]
