@@ -64,8 +64,12 @@ internal sealed partial class Parser
         }
 
         ReadToken();
+        target = UnwrapParenthesizedTarget(target);
         return target switch
         {
+            IdentifierExpressionSyntax identifier => ParseAssignmentAfterFirstTarget(
+                new NameAssignmentTargetSyntax(identifier.Name, identifier.Span),
+                startPosition),
             SubscriptExpressionSyntax subscript => ParseAssignmentAfterFirstTarget(
                 new SubscriptAssignmentTargetSyntax(subscript.Target, subscript.Index, subscript.Span),
                 startPosition),
@@ -335,9 +339,21 @@ internal sealed partial class Parser
         };
     }
 
+    // Parentheses never change the target like CPython; tuples and other
+    // shapes stay unsupported.
+    private static ExpressionSyntax UnwrapParenthesizedTarget(ExpressionSyntax target)
+    {
+        while (target is ParenthesizedExpressionSyntax parenthesized)
+        {
+            target = parenthesized.Inner;
+        }
+
+        return target;
+    }
+
     private bool TryConvertExpressionToAssignmentTarget(ExpressionSyntax expression, out AssignmentTargetSyntax? target)
     {
-        switch (expression)
+        switch (UnwrapParenthesizedTarget(expression))
         {
             case IdentifierExpressionSyntax identifier:
                 target = new NameAssignmentTargetSyntax(identifier.Name, identifier.Span);

@@ -94,6 +94,7 @@ internal sealed partial class Parser
             return null;
         }
 
+        target = UnwrapParenthesizedTarget(target);
         return target switch
         {
             IdentifierExpressionSyntax or SubscriptExpressionSyntax or SliceExpressionSyntax or MemberExpressionSyntax => new DeleteStatementSyntax(target, Merge(SpanOf(delToken), target.Span)),

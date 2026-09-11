@@ -247,7 +247,6 @@ __lython_file.close()
     [InlineData("if ((a := 1) := 2):\n    pass", "assignment expression target")]
     [InlineData("class Box:\n    pass\nbox = Box()\nbox.value: int = 1", "Unsupported assignment target")]
     [InlineData("items = [0]\nitems[0]: int = 1", "Unsupported assignment target")]
-    [InlineData("(target) = 1", "Unsupported assignment target")]
     [InlineData("(a, b) = [1, 2]", "Unsupported assignment target")]
     [InlineData("[a, b] = [1, 2]", "Unsupported assignment target")]
     [InlineData("(a, (b, c)) = [1, [2, 3]]", "Unsupported assignment target")]
@@ -257,6 +256,62 @@ __lython_file.close()
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, diagnostic => diagnostic.Message.Contains(messageFragment, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ParenthesizedSingleTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+x = 0
+(x) = 1
+((x)) = 2
+
+items = [1, 2]
+(items[0]) = 9
+(items)[0] += 10
+del (items[1])
+
+class Box:
+    pass
+
+box = Box()
+box.value = 1
+(box.value) += 2
+del (box.value)
+
+count = 0
+(count) += 1
+
+first = 0
+second = 0
+first = (second) = 3
+
+def run():
+    local = 0
+    (local) = 4
+    (local) += 1
+    del (local)
+    return "deleted"
+
+values = [
+    str(x),
+    str(items),
+    str(count),
+    str(first) + ":" + str(second),
+    run(),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("2|[19]|1|3:3|deleted", host.ReadText("/out.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)

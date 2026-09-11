@@ -297,6 +297,23 @@ internal sealed partial class Parser
             }
         }
 
+        // A leading parenthesis may parenthesize a single assignment target like CPython.
+        if (CurrentToken == Token.OpenParen)
+        {
+            var startDiagnosticCount = _diagnostics.Count;
+            var parenthesizedAugmentedAssignment = TryParseAugmentedAssignmentStatement();
+            if (parenthesizedAugmentedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return parenthesizedAugmentedAssignment;
+            }
+
+            var parenthesizedAssignment = TryParsePostfixAssignmentStatement();
+            if (parenthesizedAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return parenthesizedAssignment;
+            }
+        }
+
         {
             var startDiagnosticCount = _diagnostics.Count;
             var unsupportedTargetAssignment = TryParseUnsupportedAssignmentTargetStatement();
