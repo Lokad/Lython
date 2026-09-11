@@ -2423,13 +2423,13 @@ public sealed class SharedFixedLabelBehaviorTests
             results = []
             results.append(dir(list) == ["__new__", "append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir(str) == ["__new__", "capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(bytes) == ["__new__", "capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             results.append(dir(dict) == ["__new__", "clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir(set) == ["__new__", "add", "clear", "copy", "difference", "difference_update", "discard", "intersection", "intersection_update", "isdisjoint", "issubset", "issuperset", "pop", "remove", "symmetric_difference", "symmetric_difference_update", "union", "update"])
             results.append(dir([]) == ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"])
             results.append(dir({}) == ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"])
             results.append(dir("") == ["capitalize", "casefold", "center", "count", "encode", "endswith", "expandtabs", "find", "format", "format_map", "index", "isalnum", "isalpha", "isascii", "isdecimal", "isdigit", "isidentifier", "islower", "isnumeric", "isprintable", "isspace", "istitle", "isupper", "join", "ljust", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill"])
-            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
+            results.append(dir(b"") == ["capitalize", "count", "decode", "endswith", "find", "fromhex", "hex", "index", "isalnum", "isalpha", "isascii", "isdigit", "islower", "isspace", "istitle", "isupper", "lower", "lstrip", "maketrans", "partition", "removeprefix", "removesuffix", "replace", "rfind", "rindex", "rpartition", "rsplit", "rstrip", "split", "splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper"])
             for n in dir(list):
                 if not hasattr(list, n):
                     results.append(n)
@@ -4564,6 +4564,80 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BytesPartitionMembers()
+    {
+        // bytes partitions follow CPython around the first or last
+        // separator, with the usual descriptor surface beside the values.
+        var script = new LythonEngine().Compile("""
+            results = []
+            results.append(b"a,b,c".partition(b",") == (b"a", b",", b"b,c"))
+            results.append(b"a,b,c".rpartition(b",") == (b"a,b", b",", b"c"))
+            results.append(b"abc".partition(b",") == (b"abc", b"", b""))
+            results.append(b"abc".rpartition(b",") == (b"", b"", b"abc"))
+            results.append(b"".partition(b",") == (b"", b"", b""))
+            results.append(b",".partition(b",") == (b"", b",", b""))
+            s = b","
+            results.append(b"a,b".partition(s) == (b"a", b",", b"b"))
+            results.append(b"a,b".partition(s)[1] is s)
+            results.append(bytes.partition(b"a,b", b",") == (b"a", b",", b"b"))
+            results.append(bytes.rpartition(b"a,b", b",") == (b"a", b",", b"b"))
+            results.append(type(bytes.partition).__name__)
+            results.append(bytes.partition.__name__)
+            results.append(hasattr(bytes, "rpartition"))
+            results.append("partition" in dir(b"ab"))
+            results.append("rpartition" in dir(bytes))
+            h = b"ab"
+            results.append(h.partition == h.partition)
+            results.append(bytes.rpartition == bytes.rpartition)
+            try:
+                b"ab".partition()
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".partition(b"a", b"b")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".partition(sep=b"a")
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".partition(1)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".rpartition((1,))
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                b"ab".partition(b"")
+            except ValueError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            true, true, true, true, true, true, true, true, true, true,
+            "method_descriptor", "partition", true, true, true, true, true,
+            "bytes.partition() takes exactly one argument (0 given)",
+            "bytes.partition() takes exactly one argument (2 given)",
+            "bytes.partition() takes no keyword arguments",
+            "a bytes-like object is required, not 'int'",
+            "a bytes-like object is required, not 'tuple'",
+            "empty separator",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     [Fact]
     public async Task BytesRemoveAffixMembers()
     {

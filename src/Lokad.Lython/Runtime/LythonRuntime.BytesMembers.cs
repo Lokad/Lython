@@ -63,6 +63,8 @@ internal sealed partial class LythonRuntime
                 "strip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "strip", arguments, span, context, BytesStripMode.Both)) { BoundName = "bytes.strip", BoundReceiver = bytes },
                 "lstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "lstrip", arguments, span, context, BytesStripMode.Left)) { BoundName = "bytes.lstrip", BoundReceiver = bytes },
                 "rstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "rstrip", arguments, span, context, BytesStripMode.Right)) { BoundName = "bytes.rstrip", BoundReceiver = bytes },
+                "partition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "partition", arguments, span, context, isFirst: true)) { BoundName = "bytes.partition", BoundReceiver = bytes },
+                "rpartition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "rpartition", arguments, span, context, isFirst: false)) { BoundName = "bytes.rpartition", BoundReceiver = bytes },
                 "split" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
@@ -1409,6 +1411,72 @@ internal sealed partial class LythonRuntime
         }
 
         return parts;
+    }
+    private static object PartitionBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool isFirst)
+    {
+        object? separator = null;
+        var positionals = 0;
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
+            }
+
+            positionals++;
+            if (positionals == 1)
+            {
+                separator = argument.Value;
+            }
+        }
+
+        if (positionals != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes exactly one argument (" + positionals + " given)", span);
+        }
+
+        if (separator is not PyBytes separatorBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(separator, context) + "'", span);
+        }
+
+        var source = value.Bytes;
+        var needle = separatorBytes.Bytes;
+        if (needle.IsEmpty)
+        {
+            throw new LythonRuntimeException("ValueError", "empty separator", span);
+        }
+
+        var match = -1;
+        var searchFrom = 0;
+        while (searchFrom <= source.Length)
+        {
+            var found = PyString.IndexOfBytes(source[searchFrom..], needle);
+            if (found < 0)
+            {
+                break;
+            }
+
+            match = searchFrom + found;
+            if (isFirst)
+            {
+                break;
+            }
+
+            searchFrom = match + needle.Length;
+        }
+
+        var governor = context.MemoryGovernor;
+        if (match < 0)
+        {
+            var missed = isFirst
+                ? new object[] { value, CreateBytes([], context, span), CreateBytes([], context, span) }
+                : new object[] { CreateBytes([], context, span), CreateBytes([], context, span), value };
+            return governor is null ? new PyTuple(missed) : new PyTuple(missed, governor, span);
+        }
+
+        var parts = new object[] { SliceBytesRange(source, 0, match, context, span), separatorBytes, SliceBytesRange(source, match + needle.Length, source.Length, context, span) };
+        return governor is null ? new PyTuple(parts) : new PyTuple(parts, governor, span);
     }
     private sealed class RawBoundCallable(
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable
