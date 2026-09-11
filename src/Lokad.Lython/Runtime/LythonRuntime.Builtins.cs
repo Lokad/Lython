@@ -403,17 +403,17 @@ internal sealed partial class LythonRuntime
 
     private static object Bin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span, context.MemoryGovernor);
+        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span, context);
     }
 
     private static object Oct(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span, context.MemoryGovernor);
+        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span, context);
     }
 
     private static object Hex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span, context.MemoryGovernor);
+        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span, context);
     }
 
     private static object Chr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -423,10 +423,14 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "chr(i) expects one integer argument.", span);
         }
 
-        var codePoint = RuntimeArgumentValidation.ExpectInteger(arguments[0], "chr(i) expects one integer argument.", span);
+        var index = CoerceIndexProtocol(arguments[0], context, span);
+        if (!PyNumberOps.TryAsInteger(index, out var codePoint))
+        {
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+        }
         if (codePoint < BigInteger.Zero || codePoint > new BigInteger(0x10FFFF))
         {
-            throw new LythonRuntimeException("ValueError", "chr() arg not in range(0x110000).", span);
+            throw new LythonRuntimeException("ValueError", "chr() arg not in range(0x110000)", span);
         }
 
         var value = (int)codePoint;
@@ -440,25 +444,37 @@ internal sealed partial class LythonRuntime
 
     private static object Ord(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length == 1 && arguments[0] is PyBytes bytes && bytes.Length == 1)
         {
             return new BigInteger(bytes.Bytes[0]);
         }
 
-        if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text) || text.Length != 1)
+        if (arguments.Length == 1 && PyStringOps.TryAsString(arguments[0], out var text))
         {
-            throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
+            if (text.Length == 1)
+            {
+                var source = text.AsString();
+                var status = Rune.DecodeFromUtf16(source, out var rune, out var consumed);
+                if (status == OperationStatus.Done && consumed == source.Length)
+                {
+                    return new BigInteger(rune.Value);
+                }
+            }
+
+            throw new LythonRuntimeException("TypeError", $"ord() expected a character, but string of length {text.Length} found", span);
         }
 
-        var source = text.AsString();
-        var status = Rune.DecodeFromUtf16(source, out var rune, out var consumed);
-        if (status != OperationStatus.Done || consumed != source.Length)
+        if (arguments.Length == 1 && arguments[0] is PyBytes wrongLengthBytes)
         {
-            throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
+            throw new LythonRuntimeException("TypeError", $"ord() expected a character, but string of length {wrongLengthBytes.Length} found", span);
         }
 
-        return new BigInteger(rune.Value);
+        if (arguments.Length == 1)
+        {
+            throw new LythonRuntimeException("TypeError", $"ord() expected string of length 1, but {UnboundTypeMethod.PythonTypeName(arguments[0], context)} found", span);
+        }
+
+        throw new LythonRuntimeException("TypeError", "ord(c) expects a character.", span);
     }
 
     private static object Callable(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -513,17 +529,21 @@ internal sealed partial class LythonRuntime
         return (int)value;
     }
 
-    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span, MemoryGovernor governor)
+    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", message, span);
         }
 
-        var integer = RuntimeArgumentValidation.ExpectInteger(arguments[0], message, span);
+        var indexed = CoerceIndexProtocol(arguments[0], context, span);
+        if (!PyNumberOps.TryAsInteger(indexed, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+        }
         var sign = integer < BigInteger.Zero ? "-" : string.Empty;
         var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);
-        return PyString.FromString(sign + prefix + digits, governor, span);
+        return PyString.FromString(sign + prefix + digits, context.MemoryGovernor, span);
     }
 
     private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, string literal)

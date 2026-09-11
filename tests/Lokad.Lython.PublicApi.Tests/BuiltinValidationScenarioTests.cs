@@ -196,6 +196,50 @@ for src in [b"1", b" 1.5 ", b"1_0", b"a", b"  a  ", bytes([97, 39, 98]), bytes([
     }
 
     [Fact]
+    public void CharBaseFailures_MatchCpythonShapes()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+class J:
+    def __index__(self):
+        return 65
+
+parts = []
+parts.append(str(chr(J())))
+parts.append(str(hex(J())))
+parts.append(str(oct(J())))
+parts.append(str(bin(J())))
+for bad in ["", "ab", None, 12, 1.5, b"ab"]:
+    try:
+        parts.append(str(ord(bad)))
+    except TypeError as e:
+        parts.append(str(e))
+parts.append(str(ord(b"x")))
+parts.append(str(ord("A")))
+try:
+    parts.append(str(chr("a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(hex("a")))
+except TypeError as e:
+    parts.append(str(e))
+try:
+    parts.append(str(chr(1114112)))
+except ValueError as e:
+    parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("A|0x41|0o101|0b1000001|ord() expected a character, but string of length 0 found|ord() expected a character, but string of length 2 found|ord() expected string of length 1, but NoneType found|ord() expected string of length 1, but int found|ord() expected string of length 1, but float found|ord() expected a character, but string of length 2 found|120|65|'str' object cannot be interpreted as an integer|'str' object cannot be interpreted as an integer|chr() arg not in range(0x110000)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void IntFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(
