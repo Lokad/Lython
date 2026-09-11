@@ -179,6 +179,23 @@ print(float("1.5_0"))
     }
 
     [Fact]
+    public void FloatBytesInputs_ParseLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+for src in [b"1", b" 1.5 ", b"1_0", b"a", b"  a  ", bytes([97, 39, 98]), bytes([255]), b""]:
+    try:
+        print(float(src))
+    except ValueError as e:
+        print(str(e))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1.0\n1.5\n10.0\ncould not convert string to float: b'a'\ncould not convert string to float: b'  a  '\ncould not convert string to float: b\"a'b\"\ncould not convert string to float: b'\\xff'\ncould not convert string to float: b''\n", result.StandardOutput);
+    }
+
+    [Fact]
     public void FloatFailures_MatchCpythonShapes()
     {
         var result = new LythonEngine().Run(

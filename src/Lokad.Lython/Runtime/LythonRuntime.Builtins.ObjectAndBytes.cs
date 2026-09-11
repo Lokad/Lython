@@ -45,18 +45,23 @@ internal sealed partial class LythonRuntime
                 double floating => floating,
                 BigInteger integer => (double)integer,
                 PyDecimal decimalValue => (double)decimalValue.Value,
-                PyString text => ParsePythonFloatText(text.AsString(), context, span),
+                PyString text => ParsePythonFloatText(text.AsString(), text, context, span),
+                PyBytes bytesValue => ParsePythonFloatBytes(bytesValue, context, span),
                 bool boolean => boolean ? 1.0 : 0.0,
                 _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }
         catch (FormatException)
         {
-            // Only the PyString arm parses, so only it can fail this way.
-            throw FloatConversionError(((PyString)arguments[0]).AsString(), context, span);
+            // Only string/bytes parsing can fail this way.
+            throw FloatConversionError(arguments[0], context, span);
         }
 
-        static double ParsePythonFloatText(string text, ExecutionContext context, LythonSourceSpan span)
+        // CPython parses ascii bytes like str but quotes the bytes form on failure.
+        static double ParsePythonFloatBytes(PyBytes bytesValue, ExecutionContext context, LythonSourceSpan span)
+            => ParsePythonFloatText(Encoding.ASCII.GetString(bytesValue.Bytes), bytesValue, context, span);
+
+        static double ParsePythonFloatText(string text, object displaySource, ExecutionContext context, LythonSourceSpan span)
         {
             // Underscores must sit between two ASCII digits like CPython;
             // lax stripping would otherwise accept leading, trailing,
@@ -71,7 +76,7 @@ internal sealed partial class LythonRuntime
 
                 if (i == 0 || i + 1 >= trimmed.Length || !char.IsAsciiDigit(trimmed[i - 1]) || !char.IsAsciiDigit(trimmed[i + 1]))
                 {
-                    throw FloatConversionError(text, context, span);
+                    throw FloatConversionError(displaySource, context, span);
                 }
             }
 
@@ -87,10 +92,29 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Shared float() conversion failure: quotes the original text (whitespace
-    // included) with CPython repr quote choice.
-    private static LythonRuntimeException FloatConversionError(string original, ExecutionContext context, LythonSourceSpan span)
-        => new("ValueError", "could not convert string to float: " + QuoteFloatFailureText(original, context), span);
+
+    // Shared float() conversion failure: quotes the offending source like
+    // CPython (str form for strings, bytes form for bytes) with repr quote choice.
+    private static LythonRuntimeException FloatConversionError(object source, ExecutionContext context, LythonSourceSpan span)
+        => new("ValueError", "could not convert string to float: " + FloatFailureDisplay(source, context), span);
+
+    private static string FloatFailureDisplay(object source, ExecutionContext context)
+    {
+        if (source is PyBytes bytesValue)
+        {
+            foreach (var octet in bytesValue.Bytes)
+            {
+                if (octet > 127)
+                {
+                    return PyRendering.ToReprPyString(bytesValue, new PyRenderingContext(context)).AsString();
+                }
+            }
+
+            return "b" + QuoteFloatFailureText(Encoding.ASCII.GetString(bytesValue.Bytes), context);
+        }
+
+        return QuoteFloatFailureText(((PyString)source).AsString(), context);
+    }
 
     // CPython repr quote choice for a pre-rendered failure message: double
     // quotes only when the text holds a single quote but no double quote,
