@@ -64,6 +64,11 @@ public sealed class StringFormatMethodTests
     [InlineData("format(\"a\", \"_\")", "ValueError", "Cannot specify '_' with 's'.")]
     [InlineData("format(1.5, \"d\")", "ValueError", "Unknown format code 'd' for object of type 'float'")]
     [InlineData("format(\"a\", \"d\")", "ValueError", "Unknown format code 'd' for object of type 'str'")]
+    [InlineData("format(1.5, \"s\")", "ValueError", "Unknown format code 's' for object of type 'float'")]
+    [InlineData("format(1, \"s\")", "ValueError", "Unknown format code 's' for object of type 'int'")]
+    [InlineData("format(True, \"s\")", "ValueError", "Unknown format code 's' for object of type 'bool'")]
+    [InlineData("f\"{1.5:s}\"", "ValueError", "Unknown format code 's' for object of type 'float'")]
+    [InlineData("\"{:s}\".format(1.5)", "ValueError", "Unknown format code 's' for object of type 'float'")]
     public void InvalidFormatSpecs_ReportPythonShapedRuntimeFailures(
         string expression,
         string exceptionType,
