@@ -870,6 +870,81 @@ __lython_file.close()
         Assert.Equal("too many values to unpack (expected 2)|not enough values to unpack (expected 2, got 1)|not enough values to unpack (expected at least 1, got 0)|cannot unpack non-iterable int object|cannot unpack non-iterable NoneType object|cannot unpack non-iterable builtin_function_or_method object|too many values to unpack (expected 2)|cannot unpack non-iterable int object|not enough values to unpack (expected 2, got 1)", host.ReadText("/out.txt"));
     }
 
+    [Fact]
+    public void DeleteMemberTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class Box:
+    pass
+
+box = Box()
+box.v = 1
+del box.v
+
+texts = []
+tup = (1, 2)
+try:
+    del tup.foo
+except AttributeError as e:
+    texts.append(str(e))
+
+s = "ab"
+try:
+    del s.foo
+except AttributeError as e:
+    texts.append(str(e))
+
+lst = [1]
+try:
+    del lst.foo
+except AttributeError as e:
+    texts.append(str(e))
+
+d = {1: 2}
+try:
+    del d.foo
+except AttributeError as e:
+    texts.append(str(e))
+
+c = Box()
+try:
+    del c.missing
+except AttributeError as e:
+    texts.append(str(e))
+
+def run():
+    local = (1, 2)
+    try:
+        del local.foo
+    except AttributeError as e:
+        return str(e)
+
+texts.append(run())
+
+methods = [1]
+try:
+    del methods.append
+except AttributeError as e:
+    texts.append(str(e))
+
+values = [
+    str(hasattr(box, "v")),
+    "|".join(texts),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("False|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'str' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'foo' and no __dict__ for setting new attributes|'dict' object has no attribute 'foo' and no __dict__ for setting new attributes|'Box' object has no attribute 'missing'|'tuple' object has no attribute 'foo' and no __dict__ for setting new attributes|'list' object has no attribute 'append' and no __dict__ for setting new attributes", host.ReadText("/out.txt"));
+    }
+
     private static string DescribeFailure(LythonExecutionResult result)
         => result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(diagnostic => diagnostic.Message));
 }

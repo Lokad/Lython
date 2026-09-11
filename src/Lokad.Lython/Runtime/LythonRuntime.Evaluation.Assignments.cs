@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                 var memberTarget = EvaluateExpression(member.Target, context);
                 if (!PyMemberAccess.TryDelete(memberTarget, member.MemberName, context, span))
                 {
-                    throw new LythonRuntimeException("TypeError", "Object does not support attribute deletion.", span);
+                    throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.MemberName, span, context, operation: MissingMemberOperation.Delete);
                 }
 
                 return;
