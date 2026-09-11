@@ -4989,6 +4989,75 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("return str(object.__str__)", "<slot wrapper '__str__' of 'object' objects>")]
+    [InlineData("return str(object.__repr__)", "<slot wrapper '__repr__' of 'object' objects>")]
+    [InlineData("return str(object.__hash__)", "<slot wrapper '__hash__' of 'object' objects>")]
+    [InlineData("class C: pass\nreturn str(C.__str__)", "<slot wrapper '__str__' of 'object' objects>")]
+    [InlineData("return repr(object.__repr__)", "<slot wrapper '__repr__' of 'object' objects>")]
+    [InlineData("return str(object.__init__)", "<slot wrapper '__init__' of 'object' objects>")]
+    public void ObjectValueSlots_RenderSlotWrapperForm(string source, string expected)
+    {
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Fact]
+    public void ObjectValueSlots_BehaveLikeDefaults()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class C: pass
+c = C()
+
+class D:
+    def __repr__(self):
+        return "D!"
+d = D()
+
+parts = []
+parts.append(str(c.__str__()))
+parts.append(str(c.__repr__()))
+parts.append(str(d.__str__()))
+parts.append(str(d.__repr__()))
+parts.append(str(isinstance(hash(c), int)))
+parts.append(str(hash(c) == c.__hash__()))
+parts.append(str(hash(c) == hash(c)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("<C object>|<C object>|D!|D!|True|True|True", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void ObjectHash_UnhashableDataclassFails()
+    {
+        var result = new LythonEngine().Run(
+            """
+from dataclasses import dataclass
+
+@dataclass
+class P:
+    x: int
+
+hash(P(1))
+""",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Contains("unhashable type: 'P'", result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

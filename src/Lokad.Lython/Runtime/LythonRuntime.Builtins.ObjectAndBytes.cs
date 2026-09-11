@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -760,6 +761,219 @@ internal sealed partial class LythonRuntime
             }
 
             return !ReferenceEquals(arguments[0].Value, arguments[1].Value);
+        }
+    }
+    private sealed class ObjectStrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__str__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__str__";
+
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__str__(self) expects exactly one argument.", span);
+            }
+
+            // Like CPython, the default string conversion defers to __repr__
+            // so custom representations win; otherwise the default applies.
+            if (arguments[0].Value is PyInstance instance &&
+                instance.TryGetAttribute("__repr__", context, span, out var member) &&
+                member is ICallable reprCallable)
+            {
+                var text = reprCallable.Invoke([], span, context);
+                if (PyStringOps.TryAsString(text, out var rendered))
+                {
+                    return rendered;
+                }
+
+                throw new LythonRuntimeException("TypeError", "__repr__ returned non-string", null);
+            }
+
+            if (arguments[0].Value is PyInstance plain)
+            {
+                return PyString.FromString("<" + plain.Type.Name + " object>");
+            }
+
+            return PyRendering.ToInterpolatedPyString(arguments[0].Value, new PyRenderingContext(context));
+        }
+    }
+    private sealed class ObjectReprMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__repr__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__repr__";
+
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            _ = context;
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__repr__(self) expects exactly one argument.", span);
+            }
+
+            // The default representation never consults overrides (explicit
+            // root-slot calls bypass them like CPython); user and generated
+            // representations shadow this slot through member lookup.
+            if (arguments[0].Value is PyInstance instance)
+            {
+                return PyString.FromString("<" + instance.Type.Name + " object>");
+            }
+
+            return PyRendering.ToReprPyString(arguments[0].Value, new PyRenderingContext(context));
+        }
+    }
+    private sealed class ObjectHashMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
+    {
+        // Unbound object slots render like CPython slot wrappers (quoted
+        // owner, plural objects).
+        public PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<slot wrapper '__hash__' of 'object' objects>");
+        }
+
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+        public string Name => "__hash__";
+
+        private PyType? _owner;
+
+        public void BindOwner(PyType owner) => _owner = owner;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name is "__name__")
+            {
+                value = PyString.FromString(Name);
+                return true;
+            }
+
+            if (name is "__qualname__")
+            {
+                value = PyString.FromString("object." + Name);
+                return true;
+            }
+
+            if (name is "__objclass__" && _owner is not null)
+            {
+                value = _owner;
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public object Bind(object self) => new PyBoundMethod(self, this);
+
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => instance is null ? this : Bind(instance);
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "object.__hash__(self) expects exactly one argument.", span);
+            }
+
+            // Unhashable dataclass instances keep their shaped failure like
+            // the hash builtin (generated hashes shadow this slot instead).
+            if (arguments[0].Value is PyInstance instance &&
+                instance.Type.DataclassFields is { } &&
+                instance.Type.DataclassHashMode == DataclassHashMode.Unhashable)
+            {
+                throw RuntimeErrors.UnhashableType(arguments[0].Value, span);
+            }
+
+            // Identity hashes surface as BigInteger like every other guest
+            // integer (raw CLR integers stay second-class in numeric paths).
+            return new BigInteger(RuntimeHelpers.GetHashCode(arguments[0].Value));
         }
     }
     private static ICallable? ParsePropertyCallable(object value, string parameterName, LythonSourceSpan span)
